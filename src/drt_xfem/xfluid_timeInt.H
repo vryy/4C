@@ -72,6 +72,7 @@ public:
       const Teuchos::RCP<XFEM::FluidDofSet>   dofset_old,                        /// dofset at t^n
       const Teuchos::RCP<XFEM::FluidDofSet>   dofset_new,                        /// dofset at t^(n+1)
       const Teuchos::ParameterList&           params,                            /// parameter list
+      INPAR::XFEM::XFluidTimeIntScheme        xfluid_timintapproach,             /// xfluid_timintapproch
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
       int                                     step                               /// global time step
   );
@@ -97,9 +98,6 @@ public:
       );
 
 
-  /// return the output map containing reconstruction method for each dofset of node
-  std::map<int, std::vector<int> >& Get_Output_Reconstr(){return output_reconstr_;};
-
   /// get for each type of reconstruction method the number of nodes for that this method has to be applied on this proc
   std::map<INPAR::XFEM::XFluidTimeInt,int>& Get_Reconstr_Counts(){return reconstr_counts_;};
 
@@ -117,11 +115,19 @@ public:
   /// all surrounding elements uncut?
   bool UncutEles(GEO::CUT::Node* n);
 
+  /// find all ghost dofsets around this node and its std-dofset
+  void FindSurroundingGhostDofsets(
+      std::map<int,std::vector<int> >& ghostDofsets,   /// surrounding ghost dofsets to be filled
+      DRT::Node*                       node,           /// node
+      int                              nds_new         /// dofset of node used for finding the surrounding ghost dofs
+  );
+
   /// copy dofs from old vectors to new vector for all row vectors
   void CopyDofs(
       DRT::Node*                                 node,               /// drt node
       const int                                  nds_new,            /// nodal dofset at t^(n+1)
       const int                                  nds_old,            /// nodal dofset at t^n
+      INPAR::XFEM::XFluidTimeInt                 method,               /// reconstruction method
       std::vector<RCP<Epetra_Vector> >&          newRowStateVectors, /// row map based state vectors at t^(n+1)
       std::vector<RCP<const Epetra_Vector> >&    oldRowStateVectors, /// row map based state vectors at t^n
       Teuchos::RCP<std::set<int> >               dbcgids             /// set of DBC global ids
@@ -136,8 +142,15 @@ public:
       Teuchos::RCP<std::set<int> >        dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
   );
 
-  /// set the reconstruction method for current nodal dofset
-  void SetReconstrMethod(
+  /// mark one specific nodal dofset with used for export
+  void MarkDofsForExport(
+      int                        nid,         /// node id
+      int                        dofset,      /// ghost dofset number
+      INPAR::XFEM::XFluidTimeInt method       /// reconstruction method used for marking the nodal dofset
+      );
+
+  /// set the reconstruction method for current nodal dofset, return if set
+  bool SetReconstrMethod(
       DRT::Node*                     node,                 /// drt node
       const int                      nds_new,              /// nodal dofset at t^(n+1)
       INPAR::XFEM::XFluidTimeInt     method                /// which type of reconstruction method
@@ -186,6 +199,21 @@ public:
   template<DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
   bool CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time>&  xyze_st );
 
+  /// export data about reconstruction method to neighbor proc and receive data from previous proc
+  void ExportMethods(
+      std::vector<RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
+      Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
+  );
+
+  /*!
+  \brief Basic function sending data to destination and receiving data from source
+   */
+  void sendData(
+      DRT::PackBuffer& dataSend,                        //!< pack buffer
+      int& dest,                                        //!< destination proc
+      int& source,                                      //!< source proc
+      std::vector<char>& dataRecv                       //!< received data
+  ) const;
 
   Teuchos::RCP<DRT::Discretization> dis_;         /// background  discretization
 
@@ -201,12 +229,13 @@ public:
   int myrank_;
   int numproc_;
 
-  // TODO: remove this and do this with help of reconstr_method_
-  std::map<int, std::vector<int> > output_reconstr_; /// map of nodeIds and reconstruction method for all nodal dofsets (just for output)
+  INPAR::XFEM::XFluidTimeIntScheme timeint_scheme_; /// which type of time integration scheme shall be used for reconstructing values
 
   std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method_; /// map of nodeIds and reconstruction method for all nodal dofsets
 
   std::map<INPAR::XFEM::XFluidTimeInt,int> reconstr_counts_; /// counts the number of dofsets that have to be reconstructed using each method
+
+  std::map<int, std::map<int,int> > dofset_marker_export_; /// map<nid, map<dofset_number,method> > that contains marker for reconstruction method of single nodal dofsets used for export in parallel
 
   // global timestep
   int step_;

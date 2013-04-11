@@ -52,13 +52,13 @@ public:
 
   //! constructor
   explicit XFLUID_SemiLagrange(
-      XFEM::XFLUID_TIMEINT_BASE&                                     timeInt,          /// time integration base class object
-      const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
-      INPAR::XFEM::XFluidTimeInt&                                    timeIntType,      /// type of time integration
-      const RCP<Epetra_Vector>                                       veln,             /// velocity at time t^n
-      const double&                                                  dt,               /// time step size
-      const double&                                                  theta,            /// OST theta
-      bool                                                           initialize        /// is initialization?
+      XFEM::XFLUID_TIMEINT_BASE&                                     timeInt,          ///< time integration base class object
+      const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  ///< reconstruction map for nodes and its dofsets
+      INPAR::XFEM::XFluidTimeInt&                                    timeIntType,      ///< type of time integration
+      const Teuchos::RCP<Epetra_Vector>                              veln,             ///< velocity at time t^n
+      const double&                                                  dt,               ///< time step size
+      const double&                                                  theta,            ///< OST theta
+      bool                                                           initialize        ///< is initialization?
 
   );
 
@@ -70,7 +70,7 @@ public:
   /*========================================================================*/
 
   //! get startvalues in time step for nodes which changed interface-side
-  void compute( vector<RCP<Epetra_Vector> >& newRowVectorsn );
+  void compute( vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn );
 
 private:
 
@@ -80,22 +80,21 @@ private:
 
   //! run a Newton loop in order to compute the exact Lagrangian origin for a node which changed interface side
   void NewtonLoop(
-      DRT::Element*&          ele,              /// pointer to element
-      TimeIntData*            data,             /// current data
-      LINALG::Matrix<3,1>&    xi,               /// local coordinates of point
-      LINALG::Matrix<3,1>&    vel,              /// velocity at current point
-      bool&                   elefound          /// is element found ?
+      DRT::Element*&          ele,              ///< pointer to element
+      TimeIntData*            data,             ///< current data
+      LINALG::Matrix<3,1>&    xi,               ///< local coordinates of point
+      LINALG::Matrix<3,1>&    vel,              ///< velocity at current point
+      bool&                   elefound          ///< is element found ?
   );
 
   //! perform one Newton iteration in order to compute the exact Lagrangian origin for a node which changed its interface side
-  template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
   void NewtonIter(
-      DRT::Element*&          ele,              /// pointer to element to be updated
-      TimeIntData*            data,             /// current data to be updated
-      LINALG::Matrix<3,1>&    xi,               /// local coordinates w.r.t ele to be updated
-      LINALG::Matrix<3,1>&    residuum,         /// residual for semilagrangean backtracking to be updated
-      LINALG::Matrix<3,1>&    incr,             /// computed increment for lagrangean origin to be updated
-      bool&                   elefound          /// element found ?
+      DRT::Element*&          ele,              ///< pointer to element to be updated
+      TimeIntData*            data,             ///< current data to be updated
+      LINALG::Matrix<3,1>&    xi,               ///< local coordinates w.r.t ele to be updated
+      LINALG::Matrix<3,1>&    residuum,         ///< residual for semilagrangean backtracking to be updated
+      LINALG::Matrix<3,1>&    incr,             ///< computed increment for lagrangean origin to be updated
+      bool&                   elefound          ///< element found ?
   );
 
   //! check if newton iteration has finished
@@ -112,10 +111,10 @@ private:
   void getDataForNotConvergedNodes();
 
   //! prepare new iteration
-  void newIteration_prepare( vector<RCP<Epetra_Vector> > newRowVectors );
+  void newIteration_prepare( vector<Teuchos::RCP<Epetra_Vector> > newRowVectors );
 
   //! gradients at a node
-  void newIteration_nodalData( vector<RCP<Epetra_Vector> > newColVectors );
+  void newIteration_nodalData( vector<Teuchos::RCP<Epetra_Vector> > newColVectors );
 
   //! reinitialize some data for new computations, e.g. at a new FGI
   void reinitializeData();
@@ -127,19 +126,19 @@ private:
 
   //! call the back tracking which computes the final values
   void callBackTracking(
-      DRT::Element*&        ele,                 /// pointer to element
-      TimeIntData*          data,                /// data
-      LINALG::Matrix<3,1>&  xi,                  /// local coordinates
-      const char*           backTrackingType     /// type of backTracking
+      DRT::Element*&        ele,                 ///< pointer to element
+      TimeIntData*          data,                ///< data
+      LINALG::Matrix<3,1>&  xi,                  ///< local coordinates
+      const char*           backTrackingType     ///< type of backTracking
   );
 
   //! track back the Lagrangian origin to get final values
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
   void backTracking(
-      DRT::Element*&        fittingele,          /// pointer to element
-      TimeIntData*          data,                /// data
-      LINALG::Matrix<3,1>&  xi,                  /// local coordinates
-      const char*           backTrackingType     /// type of backTrackingwVectors
+      DRT::Element*&        fittingele,          ///< pointer to element
+      TimeIntData*          data,                ///< data
+      LINALG::Matrix<3,1>&  xi,                  ///< local coordinates
+      const char*           backTrackingType     ///< type of backTrackingwVectors
   );
 
   /*========================================================================*/
@@ -148,30 +147,30 @@ private:
 
   //! determine point's dofset in element ele w.r.t old or new interface position
   void getNodalDofSet(
-      DRT::Element*           ele,    /// pointer to element
-      LINALG::Matrix<3,1>&    x ,     /// global coordinates of point
-      std::vector<int>&       nds,    /// determine the points dofset w.r.t old/new interface position
-      GEO::CUT::VolumeCell*&  vc,     /// valid fluid volumecell the point x lies in
-      bool                    step_np /// computation w.r.t old or new interface position?
+      DRT::Element*           ele,    ///< pointer to element
+      LINALG::Matrix<3,1>&    x ,     ///< global coordinates of point
+      std::vector<int>&       nds,    ///< determine the points dofset w.r.t old/new interface position
+      GEO::CUT::VolumeCell*&  vc,     ///< valid fluid volumecell the point x lies in
+      bool                    step_np ///< computation w.r.t old or new interface position?
       );
 
-  template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
+  template<const int numnode>
   void extractNodalValuesFromVector(
-      LINALG::Matrix<3,numnode>& evel,
-      LINALG::Matrix<numnode,1>& epre,
-      RCP<Epetra_Vector> vel_vec,
-      std::vector<int>& lm);
+      LINALG::Matrix<3,numnode>&  evel,     ///< element velocities
+      LINALG::Matrix<numnode,1>&  epre,     ///< element pressure
+      Teuchos::RCP<Epetra_Vector> vel_vec,  ///< global vector
+      std::vector<int>&           lm        ///< local map
+      );
 
   //! compute the nodal gradient
-  template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
   void computeNodalGradient(
-      vector<RCP<Epetra_Vector> >& newColVectors,
-      const Epetra_Map& newdofcolmap,
-      std::map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
-      const DRT::Element* ele,
-      DRT::Node* node,
-      vector<LINALG::Matrix<3,3> >& velnpDeriv1,
-      vector<LINALG::Matrix<1,3> >& presnpDeriv1
+      const std::vector<Teuchos::RCP<Epetra_Vector> >&  colVectors,     ///< all vectors for that we reconstruct the their gradients
+      DRT::Node*                         node,           ///< node at which we reconstruct the gradients
+      std::vector<DRT::Element*>&        eles,           ///< elements around node used for the reconstruction
+      std::vector<std::vector<int> >&    ele_nds,        ///< corresonding elements nodal dofset information
+      XFEM::FluidDofSet &                dofset,         ///< fluid dofset
+      std::vector<LINALG::Matrix<3,3> >& velDeriv_avg,   ///< velocity/acc component derivatives for several vectors
+      std::vector<LINALG::Matrix<1,3> >& preDeriv_avg    ///< pressure-component derivatives for several vectors
   ) const;
 
 

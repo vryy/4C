@@ -122,12 +122,30 @@ namespace INPAR
       Xff_TimeInt_IncompProj
     };
 
-    /// xfluid time integration approach
+    /// xfluid time integration technique
+    enum XFluidTimeIntScheme
+    {
+      //! std-DOFS:   only copying for std-dofs allowed (no semi-lagrangean algo (SL))
+      //! ghost-DOFS: copy dofs or ghost-penalty reconstruction
+      Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP,
+      //! std-DOFS:   copying for std-dofs preferred and semi-lagrangean algo (SL) used for large displacements
+      //! ghost-DOFS: copy dofs or ghost-penalty reconstruction
+      Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP,
+      //! std-DOFS:   semi-lagrangean algo (SL) used for large displacements in the whole cut-zone
+      //! ghost-DOFS: only ghost-penalty reconstruction
+      Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP
+    };
+
+    /// xfluid time integration approach for single dofs
     enum XFluidTimeInt
     {
-      Xf_TimeInt_SemiLagrange,
-      Xf_TimeInt_GhostPenalty,
-      Xf_TimeInt_Copy
+      Xf_TimeInt_STD_by_SL,                 //! Semi-lagrangean algorithm for standard dof
+      Xf_TimeInt_STD_by_COPY_from_STD,      //! copy value for std-dof at t^(n+1) from std-dof at t^n
+      Xf_TimeInt_STD_by_COPY_from_GHOST,    //! copy value for std-dof at t^(n+1) from ghost-dof at t^n
+      Xf_TimeInt_GHOST_by_GP,               //! Ghost-penalty reconstruction for ghost dof
+      Xf_TimeInt_GHOST_by_COPY_from_STD,    //! copy value for ghost-dof at t^(n+1) from std-dof at t^n
+      Xf_TimeInt_GHOST_by_COPY_from_GHOST,  //! copy value for ghost-dof at t^(n+1) from ghost-dof at t^n
+      Xf_TimeInt_undefined
     };
 
     /// type of face

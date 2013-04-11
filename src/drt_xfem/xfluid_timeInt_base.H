@@ -253,9 +253,9 @@ public:
       //------------------------------------------
       //! @name data for the quantities at the node
       //------------------------------------------
-      LINALG::Matrix<3,1>                 vel_;        //! velocity at point x (=x_Lagr(t^n+1))
-      std::vector<LINALG::Matrix<3,3> >   velDeriv_;   //! velocity gradient at point x (=x_Lagr(t^n+1))
-      vector<LINALG::Matrix<1,3> >        presDeriv_;  //! pressure gradient at point x (=x_Lagr(t^n+1))
+      LINALG::Matrix<3,1>                 vel_;        //! velocity at point x (=x_Lagr(t^n+1))=node, only for the real velocity vector (transport velocity)
+      std::vector<LINALG::Matrix<3,3> >   velDeriv_;   //! velocity gradient at point x (=x_Lagr(t^n+1))=node, averaged around elements, for all vectors to be reconstructed
+      std::vector<LINALG::Matrix<1,3> >   presDeriv_;  //! pressure gradient at point x (=x_Lagr(t^n+1))=node, averaged around elements, for all vectors to be reconstructed
 
       //------------------------------------------
       //! @name data for current startpoint (Lagrangean origin) approximation
@@ -558,8 +558,8 @@ protected:
   const Epetra_Map olddofcolmap_;                     //! dofcolmap w.r.t. old interface position
   const Epetra_Map newdofrowmap_;                     //! dofcolmap w.r.t. new interface position
 
-  const std::vector<RCP<Epetra_Vector> > oldVectors_; //! vector of col-vectors w.r.t. old interface position
-  std::vector<RCP<Epetra_Vector> > newVectors_;       //! vector of col-vectors w.r.t. new interface position
+  const std::vector<RCP<Epetra_Vector> > oldVectors_; //! vector of col!-vectors w.r.t. old interface position
+  std::vector<RCP<Epetra_Vector> > newVectors_;       //! vector of row!-vectors w.r.t. new interface position (overwritten with new information for non-predictor case and filled otherwise)
 
   RCP<std::vector<TimeIntData> > timeIntData_;        //! data-vector containing all data for computation with help of sub-class TimeIntData
 
@@ -642,9 +642,12 @@ public:
       DRT::Element*                 ele,                 ///< pointer to element
       LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
       std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
-      bool                          step_np,             ///< computation w.r.t. old or new interface position
+      XFEM::FluidDofSet&            dofset,              ///< fluid dofset
       LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
       LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
+      double &                      pres,                ///< pressure
+      LINALG::Matrix<1,3>&          pres_deriv,          ///< pressure gradient
+      Teuchos::RCP<const Epetra_Vector> vel_vec,         ///< vector used for interpolating at gp
       bool                          compute_deriv=true   ///< shall derivatives be computed?
   ) const;
 
@@ -654,9 +657,12 @@ public:
       DRT::Element*                 ele,                 ///< pointer to element
       LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
       std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
-      bool                          step_np,             ///< computation w.r.t. old or new interface position
+      XFEM::FluidDofSet&            dofset,              ///< fluid dofset
       LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
       LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
+      double &                      pres,                ///< pressure
+      LINALG::Matrix<1,3>&          pres_deriv,          ///< pressure gradient
+      Teuchos::RCP<const Epetra_Vector> vel_vec,         ///< vector used for interpolating at gp
       bool                          compute_deriv=true   ///< shall derivatives be computed?
   ) const;
 

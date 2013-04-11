@@ -1943,6 +1943,9 @@ FLD::XFluid::XFluid(
   interface_disp_           = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(params_xf_gen,"INTERFACE_DISP");
   interface_disp_func_no_   = params_xf_gen.get<int>("DISP_FUNCT_NO", -1);
 
+  xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
+
+
   // output for used FUNCT
   if(myrank_ == 0)
   {
@@ -1971,7 +1974,7 @@ FLD::XFluid::XFluid(
   visc_stab_hk_      = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
-  edge_based_        = (params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
+  edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
@@ -2098,6 +2101,7 @@ FLD::XFluid::XFluid(
   idispn_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 
   itrueresidual_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+
 
 
   // set an initial interface velocity field
@@ -3833,7 +3837,7 @@ void FLD::XFluid::CutAndSetStateVectors()
   if(step_ > 0)
   {
     bool screen_out = true;
-    bool gmsh_ref_sol_out_ = true;
+    bool gmsh_ref_sol_out_ = false;
 
     //---------------------------------------------------------------
     // save state data from the last XFSI iteration or timestep
@@ -3973,9 +3977,9 @@ void FLD::XFluid::CutAndSetStateVectors()
 
     std::map<INPAR::XFEM::XFluidTimeInt, int>::iterator it;
 
-    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_GhostPenalty)) != reconstr_count.end())
+    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_GHOST_by_GP)) != reconstr_count.end())
       proc_timint_ghost_penalty = it->second;
-    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_SemiLagrange)) != reconstr_count.end())
+    if((it = reconstr_count.find(INPAR::XFEM::Xf_TimeInt_STD_by_SL)) != reconstr_count.end())
       proc_timint_semi_lagrangean = it->second;
 
     // parallel communication if at least one node has to do a semilagrangean backtracking or ghost penalty reconstruction
@@ -4026,7 +4030,7 @@ void FLD::XFluid::CutAndSetStateVectors()
       Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_ =  Teuchos::null;
       Teuchos::RCP<XFEM::XFLUID_STD> timeIntStd_ = Teuchos::null;
 
-      INPAR::XFEM::XFluidTimeInt xfemtimeint_ = INPAR::XFEM::Xf_TimeInt_SemiLagrange;
+      INPAR::XFEM::XFluidTimeInt xfemtimeint_ = INPAR::XFEM::Xf_TimeInt_STD_by_SL;
 
       if (totalitnumFRS_==0) // construct time int classes once every time step
       {
@@ -4047,7 +4051,7 @@ void FLD::XFluid::CutAndSetStateVectors()
 
         switch (xfemtimeint_)
         {
-        case INPAR::XFEM::Xf_TimeInt_SemiLagrange:
+        case INPAR::XFEM::Xf_TimeInt_STD_by_SL:
         {
           // time integration data for standard dofs, semi-lagrangean approach
           timeIntStd_ = Teuchos::rcp(new XFEM::XFLUID_SemiLagrange(
@@ -4070,7 +4074,7 @@ void FLD::XFluid::CutAndSetStateVectors()
         totalitnumFRS_++;
 
         timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
-        timeIntStd_->compute(newRowStateVectors);    // call computation
+        timeIntStd_->compute(newRowStateVectors);     // call computation
 
       } //totalit
 
@@ -4222,7 +4226,7 @@ void FLD::XFluid::TransferDofsBetweenSteps(
 )
 {
   bool print_status = true;
-  bool reconstruct_method_output = true;
+  bool reconstruct_method_output = false;
 
   xfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidTimeInt(dis,
       wizard_old,
@@ -4230,6 +4234,7 @@ void FLD::XFluid::TransferDofsBetweenSteps(
       dofset_old,
       dofset_new,
       params,
+      xfluid_timintapproach_,
       reconstr_method,
       step_));
 
@@ -4274,7 +4279,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
 
   if (myrank_ == 0 and screen_out)
   {
-    printf("\n+++++++++++++++++++++ Gradient Penalty Ghost value reconstruction++++++++++++++++++++++++++++\n");
+    printf("\n+++++++++++++++++++++ Gradient Penalty Ghost value reconstruction ++++++++++++++++++++++++++++\n");
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
   }
@@ -5417,61 +5422,87 @@ void FLD::XFluid::SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
         if (nodedofset.size()!=0)
         {
 
-          double time_offset = 0.35;
+          double t_1 = 1.0;         // ramp the rotation
+          double t_2 = t_1+1.0;     // reached the constant angle velocity
+          double t_3 = t_2+12.0;    // decrease the velocity and turn around
+          double t_4 = t_3+2.0;     // constant negative angle velocity
 
-          if(time_ > time_offset)
+          double arg= 0.0; // prescribe a time-dependent angle
+
+          double T = 16.0;  // time period for 2*Pi
+          double angle_vel = 2.*M_PI/T;
+
+          if(time_ <= t_1)
           {
-          // rotation with constant angle velocity around point
-          LINALG::Matrix<3,1> center(true);
-
-          center(0) = 0.0;
-          center(1) = 0.0;
-          center(2) = 0.0;
-
-          const double* x_coord = lnode->X();
-
-          LINALG::Matrix<3,1> node_coord(true);
-          node_coord(0) = x_coord[0];
-          node_coord(1) = x_coord[1];
-          node_coord(2) = x_coord[2];
-
-          LINALG::Matrix<3,1> diff(true);
-          diff(0) = node_coord(0)-center(0);
-          diff(1) = node_coord(1)-center(1);
-          diff(2) = node_coord(2)-center(2);
-
-          // rotation matrix
-          double T=1.0*16.0; // time for one rotation
-
-          LINALG::Matrix<3,3> rot(true);
-          double arg=2.*M_PI*(time_-0.3)/T;
-
-          rot(0,0) = cos(arg);            rot(0,1) = -sin(arg);          rot(0,2) = 0.0;
-          rot(1,0) = sin(arg);            rot(1,1) = cos(arg);           rot(1,2) = 0.0;
-          rot(2,0) = 0.0;                 rot(2,1) = 0.0;                rot(2,2) = 1.0;
-
-//          double r= diff.Norm2();
-//
-//          rot.Scale(r);
-
-          LINALG::Matrix<3,1> x_new(true);
-          LINALG::Matrix<3,1> rotated(true);
-
-          rotated.Multiply(rot,diff);
-
-          x_new.Update(1.0,rotated,-1.0, diff);
-
-
-          for(int dof=0;dof<(int)nodedofset.size();++dof)
-          {
-            int gid = nodedofset[dof];
-
-            double initialval=0.0;
-            if(dof<3) initialval = x_new(dof);
-
-            idisp->ReplaceGlobalValues(1,&initialval,&gid);
+            arg = 0.0;
           }
-        }
+          else if(time_> t_1 and time_<= t_2)
+          {
+            arg = angle_vel / 2.0 * (time_-t_1) - angle_vel*(t_2-t_1)/(2.0*M_PI)*sin(M_PI * (time_-t_1)/(t_2-t_1));
+          }
+          else if(time_>t_2 and time_<= t_3)
+          {
+            arg = angle_vel * (time_-t_2) + M_PI/T*(t_2-t_1);
+          }
+          else if(time_>t_3 and time_<=t_4)
+          {
+            arg = angle_vel*(t_4-t_3)/(M_PI)*sin(M_PI*(time_-t_3)/(t_4-t_3)) + 2.0*M_PI/T*(t_3-t_2)+ M_PI/T*(t_2-t_1);
+          }
+          else if(time_>t_4)
+          {
+            arg = -angle_vel * (time_-t_4) + M_PI/T*(t_2-t_1)+ 2.0*M_PI/T*(t_3-t_2);
+          }
+          else dserror("for that time we did not define an implemented rotation %d", time_);
+
+          {
+            // rotation with constant angle velocity around point
+            LINALG::Matrix<3,1> center(true);
+
+            center(0) = 0.0;
+            center(1) = 0.0;
+            center(2) = 0.0;
+
+            const double* x_coord = lnode->X();
+
+            LINALG::Matrix<3,1> node_coord(true);
+            node_coord(0) = x_coord[0];
+            node_coord(1) = x_coord[1];
+            node_coord(2) = x_coord[2];
+
+            LINALG::Matrix<3,1> diff(true);
+            diff(0) = node_coord(0)-center(0);
+            diff(1) = node_coord(1)-center(1);
+            diff(2) = node_coord(2)-center(2);
+
+            // rotation matrix
+            LINALG::Matrix<3,3> rot(true);
+
+            rot(0,0) = cos(arg);            rot(0,1) = -sin(arg);          rot(0,2) = 0.0;
+            rot(1,0) = sin(arg);            rot(1,1) = cos(arg);           rot(1,2) = 0.0;
+            rot(2,0) = 0.0;                 rot(2,1) = 0.0;                rot(2,2) = 1.0;
+
+            //          double r= diff.Norm2();
+            //
+            //          rot.Scale(r);
+
+            LINALG::Matrix<3,1> x_new(true);
+            LINALG::Matrix<3,1> rotated(true);
+
+            rotated.Multiply(rot,diff);
+
+            x_new.Update(1.0,rotated,-1.0, diff);
+
+
+            for(int dof=0;dof<(int)nodedofset.size();++dof)
+            {
+              int gid = nodedofset[dof];
+
+              double initialval=0.0;
+              if(dof<3) initialval = x_new(dof);
+
+              idisp->ReplaceGlobalValues(1,&initialval,&gid);
+            }
+          }
         }
         else
         {

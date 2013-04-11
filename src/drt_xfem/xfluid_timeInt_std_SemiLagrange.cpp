@@ -19,8 +19,6 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 
-#include "dofkey.H"
-
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_xfem/xfem_fluiddofset.H"
@@ -39,7 +37,7 @@ XFEM::XFLUID_SemiLagrange::XFLUID_SemiLagrange(
     XFEM::XFLUID_TIMEINT_BASE&                                     timeInt,          /// time integration base class object
     const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
     INPAR::XFEM::XFluidTimeInt&                                    timeIntType,      /// type of time integration
-    const RCP<Epetra_Vector>                                       veln,             /// velocity at time t^n in col map
+    const Teuchos::RCP<Epetra_Vector>                              veln,             /// velocity at time t^n in col map
     const double&                                                  dt,               /// time step size
     const double&                                                  theta,            /// OST theta
     bool                                                           initialize        /// is initialization?
@@ -65,13 +63,15 @@ relTolRes_(1.0e-10)
  * Semi-Lagrangean Back-Tracking main algorithm                                      schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_SemiLagrange::compute(
-    std::vector<RCP<Epetra_Vector> >& newRowVectorsn
+    std::vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn          // row
 )
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
   handleVectors(newRowVectorsn);
 
-  // REMARK: in case of a new FGI iteration we have values! at new position
+  // REMARK: in case of a new FGI iteration we have values at new position
+  // they are used to compute nodal gradients used for non-predictor case
+  // at the end of newIteration_prepare newVectors will be cleared to fill it with new information from SL-algo
   newIteration_prepare(newVectors_);
 
   switch (FGIType_)
@@ -205,14 +205,18 @@ void XFEM::XFLUID_SemiLagrange::compute(
             IO::cout << "\n\t\t\t ... start point approximation found in element: " << ele->Id();
 #endif
             //----------------------------------------------
-            DRT::Element * initial_ele = discret_->gElement(data->initial_eid_);
+            DRT::Element * initial_ele = NULL;
 
-            if(initial_ele == NULL)
+            if( !discret_->HaveGlobalElement(data->initial_eid_))
             {
-              dserror("initial element %d not available on proc %d! -> This issue can be solved, see code!", initial_ele->Id(), myrank_);
               //TODO: modify the ChangedSide check for intersections with all sides in the boundary-dis
               // this is not so efficient but should not be called not so often
               // the check itself does not need information about the background elements
+//              dserror("element where initial point lies in not available on proc %d, no ChangedSide comparison possible", myrank_);
+            }
+            else
+            {
+              initial_ele = discret_->gElement(data->initial_eid_);
             }
 
             data->changedside_ = ChangedSide(ele, data->startpoint_,  false,
@@ -246,8 +250,11 @@ void XFEM::XFLUID_SemiLagrange::compute(
 
             //----------------------------------------------
             // compute the velocity at startpoint
-            LINALG::Matrix<nsd,nsd> vel_deriv_tmp(true); // dummy matrix for velocity derivatives
-            getGPValues(ele, xi, data->nds_, step_np, vel, vel_deriv_tmp, false);
+            LINALG::Matrix<nsd,nsd> vel_deriv(true);     // dummy matrix for velocity derivatives
+            double pres = 0.0;                           // dummy variable for pressure
+            LINALG::Matrix<1,nsd>   pres_deriv(true);    // dummy matrix for the pressure derivatives
+
+            getGPValues(ele, xi, data->nds_, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 #ifdef DEBUG_SEMILAGRANGE
             IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
@@ -451,8 +458,6 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(
   for (int i=0;i<nsd;i++)
     origNodeCoords(i) = data->node_.X()[i];
 
-  if(data->node_.Id() == 1656) cout << "node coords: " << origNodeCoords << endl;
-
   //-------------------------------------------------------
   // initialize residual (Theta = 0 at predictor step)
   residuum.Clear();
@@ -476,37 +481,33 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(
     //-------------------------------------
     // compute a new Newton iteration
     //-------------------------------------
-    switch (ele->Shape())
-    {
-    case DRT::Element::hex8:
-    {
-      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-      NewtonIter<numnode,DRT::Element::hex8>(ele,data,xi,residuum,incr,elefound);
-    }
-    break;
-    case DRT::Element::hex20:
-    {
-      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-      NewtonIter<numnode,DRT::Element::hex20>(ele,data,xi,residuum,incr,elefound);
-    }
-    break;
-    default:
-      dserror("element type not yet implemented in time integration"); break;
-    }; // end switch element type
+    NewtonIter(ele,data,xi,residuum,incr,elefound);
+
 
     //=========================================================
     // continue on this proc if the new startpoint approximation is also on this processor
     //=========================================================
     if (elefound) // element of data->startpoint_ at this processor
     {
+#ifdef DEBUG_SEMILAGRANGE
       IO::cout << "\n\t\t\t\t ... elefound " << ele->Id();
+#endif
 
-      DRT::Element* initial_ele = discret_->gElement(data->initial_eid_);
+      DRT::Element * initial_ele = NULL;
 
-      if(initial_ele == NULL) dserror("element where initial point lies in not available on proc %d, no ChangedSide comparison possible", myrank_);
+      if( !discret_->HaveGlobalElement(data->initial_eid_))
+      {
+        //TODO: modify the ChangedSide check for intersections with all sides in the boundary-dis
+        // this is not so efficient but should not be called not so often
+        // the check itself does not need information about the background elements
+//              dserror("element where initial point lies in not available on proc %d, no ChangedSide comparison possible", myrank_);
+      }
+      else
+      {
+        initial_ele = discret_->gElement(data->initial_eid_);
+      }
 
       data->changedside_ = ChangedSide(ele, data->startpoint_,false, initial_ele, data->initialpoint_, false);
-
 
       bool step_np = false; // new timestep or old timestep
       std::vector<int> nds_curr;
@@ -533,8 +534,12 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(
 
       //-------------------------------------------------------
       // compute the velocity at startpoint
-      LINALG::Matrix<nsd,nsd> vel_deriv_tmp(true); // dummy matrix
-      getGPValues(ele, xi, data->nds_, step_np, vel, vel_deriv_tmp, false);
+      LINALG::Matrix<nsd,nsd> vel_deriv(true);     // dummy matrix
+      double pres = 0.0;                           // dummy variable for pressure
+      LINALG::Matrix<1,nsd>   pres_deriv(true);    // dummy matrix for the pressure derivatives
+
+      getGPValues(ele, xi, data->nds_, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
+
 
 #ifdef DEBUG_SEMILAGRANGE
             IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
@@ -642,7 +647,6 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(
 /*------------------------------------------------------------------------------------------------*
  * One Newton iteration of the Semi-Lagrangian Back-Tracking algorithm               schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
 void XFEM::XFLUID_SemiLagrange::NewtonIter(
     DRT::Element*&          ele,              /// pointer to element to be updated
     TimeIntData*            data,             /// current data to be updated
@@ -661,36 +665,28 @@ void XFEM::XFLUID_SemiLagrange::NewtonIter(
   // Initialization
   LINALG::Matrix<nsd,1>   vel_dummy(true); // dummy matrix for the velocity
   LINALG::Matrix<nsd,nsd> vel_deriv(true); // matrix for the velocity derivatives
+  double pres_dummy = 0.0;                 // dummy variable for pressure
+  LINALG::Matrix<1,nsd>   pres_deriv(true);// dummy matrix for the pressure derivatives
+
   LINALG::Matrix<nsd,nsd> sysmat(true);    // matrix for the newton system
 
-  int step_np = false;
-
   // compute the velocity derivatives at startpoint
-  getGPValues(ele, xi, data->nds_, step_np, vel_dummy, vel_deriv, true);
+  getGPValues(ele, xi, data->nds_, *dofset_old_, vel_dummy, vel_deriv, pres_dummy, pres_deriv, veln_, true);
 
   // build sysmat
   // JAC = I + dt(1-theta)*velDerivXY
   sysmat.Update((1.0-Theta(data))*dt_,vel_deriv); // dt*(1-theta)dN/dx
 
-  if(data->node_.Id() == 1656) cout << "velderiv " << vel_deriv << endl;
-
   for (int i=0;i<nsd;i++)
     sysmat(i,i) += 1.0; // I + dt*velDerivXY
 
-  if(data->node_.Id() == 1656) cout << "sysmat " << sysmat << endl;
-
   // invers system Matrix built
   sysmat.Invert();
-
-  if(data->node_.Id() == 1656) cout << "sysmat_invert " << sysmat << endl;
-  if(data->node_.Id() == 1656) cout << "residuum " << residuum << endl;
 
 
   //solve Newton iteration
   incr.Clear();
   incr.Multiply(-1.0,sysmat,residuum); // incr = -Systemmatrix^-1 * residuum
-
-  if(data->node_.Id() == 1656)  cout << "incr " << incr << endl;
 
   // update iteration
   for (int i=0;i<nsd;i++)
@@ -857,7 +853,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
  * rewrite data for new computation                                                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_SemiLagrange::newIteration_prepare(
-    std::vector<RCP<Epetra_Vector> > newRowVectors
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors
 )
 {
   for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -869,7 +865,6 @@ void XFEM::XFLUID_SemiLagrange::newIteration_prepare(
     data->presValues_.clear();
   }
 
-  //TODO: this has to be still done
   newIteration_nodalData(newRowVectors); // data at t^n+1 not used in predictor
   newRowVectors.clear(); // no more needed
 }
@@ -877,122 +872,141 @@ void XFEM::XFLUID_SemiLagrange::newIteration_prepare(
 
 
 /*------------------------------------------------------------------------------------------------*
- * compute Gradients at side-changing nodes                                      winklmaier 06/10 *
+ * compute Gradients at side-changing nodes                                          schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
-    std::vector<RCP<Epetra_Vector> > newRowVectors
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors
 )
 {
-//  dserror("adapt implementation of this function");
 
-  IO::cout << "newIteration_nodalData not implemented yet"  << IO::endl;
+  const int nsd=3;
 
-//  const int nsd = 3;
-//
-//  // data about column vectors required
-//  const Epetra_Map& newdofcolmap = *discret_->DofColMap();
-//  std::map<XFEM::DofKey,XFEM::DofGID> newNodalDofColDistrib;
-//  newdofman_->fillNodalDofColDistributionMap(newNodalDofColDistrib);
-//
-//  std::vector<RCP<Epetra_Vector> > newColVectors;
-//
-//  for (size_t index=0;index<newRowVectors.size();index++)
-//  {
-//    RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(newdofcolmap,true));
-//    newColVectors.push_back(tmpColVector);
-//    LINALG::Export(*newRowVectors[index],*newColVectors[index]);
-//  }
-//
-//  // computed data
-//  std::vector<LINALG::Matrix<nsd,nsd> > velnpDeriv1(static_cast<int>(oldVectors_.size()),LINALG::Matrix<nsd,nsd>(true));
-//  std::vector<LINALG::Matrix<1,nsd> > presnpDeriv1(static_cast<int>(oldVectors_.size()),LINALG::Matrix<1,nsd>(true));
-//
-//  std::vector<LINALG::Matrix<nsd,nsd> > velnpDeriv1Tmp(static_cast<int>(oldVectors_.size()),LINALG::Matrix<nsd,nsd>(true));
-//  std::vector<LINALG::Matrix<1,nsd> > presnpDeriv1Tmp(static_cast<int>(oldVectors_.size()),LINALG::Matrix<1,nsd>(true));
-//
-//  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
-//      data!=timeIntData_->end(); data++)
-//  {
-//    DRT::Node& node = data->node_;
-//
-//    std::vector<const DRT::Element*> eles;
-//    addPBCelements(&node,eles);
-//    const int numeles=eles.size();
-//
-//    for (size_t i=0;i<newColVectors.size();i++)
-//    {
-//      velnpDeriv1[i].Clear();
-//      presnpDeriv1[i].Clear();
-//    }
-//
-//    for (int iele=0;iele<numeles;iele++)
-//    {
-//      const DRT::Element* currele = eles[iele]; // current element
-//
-//      switch (currele->Shape())
-//      {
-//      case DRT::Element::hex8:
-//      {
-//        const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-//        computeNodalGradient<numnode,DRT::Element::hex8>(newColVectors,newdofcolmap,newNodalDofColDistrib,currele,&node,velnpDeriv1Tmp,presnpDeriv1Tmp);
-//      }
-//      break;
-//      case DRT::Element::hex20:
-//      {
-//        const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-//        computeNodalGradient<numnode,DRT::Element::hex20>(newColVectors,newdofcolmap,newNodalDofColDistrib,currele,&node,velnpDeriv1Tmp,presnpDeriv1Tmp);
-//      }
-//      break;
-//      default:
-//        dserror("xfem assembly type not yet implemented in time integration");
-//      };
-//
-//      for (size_t i=0;i<newColVectors.size();i++)
-//      {
-//        velnpDeriv1[i]+=velnpDeriv1Tmp[i];
-//        presnpDeriv1[i]+=presnpDeriv1Tmp[i];
-//      }
-//    } // end loop over elements around node
-//
-//    // set transport velocity at this node
-//    const int gid = node.Id();
-//    const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid));
-//    for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-//        fieldenr != fieldenrset.end();++fieldenr)
-//    {
-//      const DofKey newdofkey(gid, *fieldenr);
-//
-//      if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-//      {
-//        if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-//        {
-//          const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
-//          data->vel_(0) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
-//        }
-//        else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-//        {
-//          const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
-//          data->vel_(1) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
-//        }
-//        else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-//        {
-//          const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
-//          data->vel_(2) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
-//        }
-//      }
-//    } // end loop over fieldenr
-//
-//    for (size_t i=0;i<newColVectors.size();i++)
-//    {
-//      velnpDeriv1[i].Scale(1.0/numeles);
-//      presnpDeriv1[i].Scale(1.0/numeles);
-//    }
-//
-//    data->velDeriv_ = velnpDeriv1;
-//    data->presDeriv_ = presnpDeriv1;
-//    //    cout << "after setting transportvel is " << data->vel_ << ", velderiv is " << velnpDeriv1[0]
-//    //         << " and presderiv is " << presnpDeriv1[0] << endl;
-//  }
+  std::vector<RCP<Epetra_Vector> > newColVectors;
+
+  for (size_t index=0;index<newRowVectors.size();index++)
+  {
+    const Epetra_Map* newdofcolmap = discret_->DofColMap();
+
+    RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(*newdofcolmap,true));
+    newColVectors.push_back(tmpColVector);
+    LINALG::Export(*newRowVectors[index],*newColVectors[index]);
+  }
+
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if(data->type_ == TimeIntData::predictor_) continue; // no info at new interface position required
+
+    if(data->type_ != TimeIntData::predictor_) dserror("this function is used for the first time here, check the compute gradient functionality, check also the parallel export!");
+
+    DRT::Node* node = &data->node_;
+
+    //----------------------------------------------------------
+    // Reconstruct nodal gradients for all vectors
+    //----------------------------------------------------------
+
+    // node velocities of the element nodes for the fields that should be changed
+    std::vector< LINALG::Matrix<nsd,nsd> > avg_nodevelgraddata(newColVectors.size(),LINALG::Matrix<nsd,nsd>(true));
+
+    // node pressures of the element nodes for the data that should be changed
+    std::vector< LINALG::Matrix<1,nsd> >   avg_nodepresgraddata(newColVectors.size(),LINALG::Matrix<1,nsd>(true));
+
+
+    // determine the elements used for the nodal gradient computation
+    // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
+    std::vector< DRT::Element*> eles_avg;
+    std::vector< std::vector<int> > eles_avg_nds;
+
+
+    GEO::CUT::Node* n = wizard_new_->GetNode(node->Id());
+
+    if(n!=NULL)
+    {
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_new = n->DofCellSets();
+
+      // get the nodal dofset w.r.t the Lagrangean origin
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets_new[0]; // always the standard dofset
+
+      // get for each adjacent element contained in the nodal dofset the first vc, its parent element is used for the reconstruction
+      // REMARK: adjacent elements for that no elementhandle exists in the cut won't be found here
+      for(std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>::const_iterator cellset_it=cellset.begin();
+          cellset_it!=cellset.end();
+          cellset_it++)
+      {
+        // the first vc representing the set
+        GEO::CUT::VolumeCell* vc = (*cellset_it)[0];
+        int peid = vc->ParentElement()->Id();
+
+        if(!discret_->HaveGlobalElement(peid)) dserror("element %d for averaging not on proc %d", peid, myrank_);
+
+        // get the element
+        DRT::Element* e = discret_->gElement(peid);
+        // get the vc's nds vector
+        const std::vector<int> e_nds = vc->NodalDofSet();
+
+        // add the element and the nds vector
+        eles_avg.push_back(e);
+        eles_avg_nds.push_back(e_nds);
+      }
+    }
+
+    // check all surrounding elements
+    int numele = node->NumElement();
+    DRT::Element* * eles = node->Elements();
+
+    // add surrounding std uncut elements for that no elementhandle is available
+    for(int i=0; i<numele; i++)
+    {
+      GEO::CUT::ElementHandle* eh = wizard_new_->GetElement(eles[i]);
+
+      if(eh!=NULL) continue; // element and the right nds-vec should have been found using the for-loop before
+
+      // if we are here, then the element is a standard uncut element
+      // and it is ensured that it has not been added to eles_avg yet
+      std::vector<int> std_nds(eles[i]->NumNode(), 0);
+
+      eles_avg.push_back(eles[i]);
+      eles_avg_nds.push_back(std_nds);
+    }
+
+    if(eles_avg.size() == 0) dserror("there is no element for averaging");
+
+    // compute the nodal gradients for velocity/acc and pressure component
+    computeNodalGradient(newColVectors, node, eles_avg, eles_avg_nds, *dofset_new_, avg_nodevelgraddata, avg_nodepresgraddata);
+
+
+    data->velDeriv_  = avg_nodevelgraddata;
+    data->presDeriv_ = avg_nodepresgraddata;
+
+    //----------------------------------------------------------
+    // get the transport velocity at t^(n+1) at the node
+    //----------------------------------------------------------
+
+    //-------------------------------------------------------
+    // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+    std::vector<int> lm;
+    std::vector<int> dofs;
+
+    dofset_new_->Dof(*node, 0, dofs ); // dofs for standard dofset
+
+    int size = dofs.size();
+
+    for (int j=0; j< size; ++j)
+    {
+      lm.push_back(dofs[j]);
+    }
+
+    //-------------------------------------------------------
+    // the first vector contains the velocity information
+    LINALG::Matrix<3,1> nodevel(true);
+    LINALG::Matrix<1,1> nodepre(true);
+    extractNodalValuesFromVector<1>(nodevel,nodepre, newColVectors[0],lm);
+
+    data->vel_ = nodevel;
+
+  }
+  //----------------------------------------------------------------------------------
+
 }
 
 
@@ -1178,9 +1192,15 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   LINALG::Matrix<3,1> lagrangeanOrigin(true);    // the applied Lagrangean origin (the real computed or an approximated)
 
   if(strcmp(backTrackingType,static_cast<const char*>("standard"))==0)
+  {
     lagrangeanOrigin = data->startpoint_; // use the computed start point approximation or the projected start point
+  }
   else if(strcmp(backTrackingType,static_cast<const char*>("failing"))==0)
+  {
     lagrangeanOrigin = data->initialpoint_; // use the initial guess for the Lagrangean origin
+
+    IO::cout << "\n\tWARNING: Proc " << myrank_ << ": SEMI-LAGRANGEAN algorithm: used the initial-guess instead of the real Lagrangean origin for node " << data->node_.Id() << IO::endl;
+  }
   else dserror("backTrackingType not implemented");
 
 
@@ -1262,10 +1282,101 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   //-------------------------------------------------------
   // all vectors are based on the same map
 
-  extractNodalValuesFromVector<numnode,DISTYPE>(nodevel,nodepre, veln_,lm);
+  extractNodalValuesFromVector<numnode>(nodevel,nodepre, veln_,lm);
 
   for (size_t index=0;index<oldVectors_.size();index++)
-    extractNodalValuesFromVector<numnode,DISTYPE>(nodeveldata[index],nodepresdata[index],oldVectors_[index],lm);
+    extractNodalValuesFromVector<numnode>(nodeveldata[index],nodepresdata[index],oldVectors_[index],lm);
+
+
+
+  //----------------------------------------------------------------------------------
+
+  // node velocities of the element nodes for the fields that should be changed
+  std::vector<std::vector< LINALG::Matrix<nsd,nsd> > > avg_nodevelgraddata;
+  avg_nodevelgraddata.reserve(numnode);
+
+  // node pressures of the element nodes for the data that should be changed
+  std::vector<std::vector< LINALG::Matrix<1,nsd> > > avg_nodepresgraddata;
+  avg_nodepresgraddata.reserve(numnode);
+
+  for(size_t i=0; i< numnode; i++)
+  {
+    std::vector<LINALG::Matrix<nsd,nsd> > tmp_vec(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true));
+    avg_nodevelgraddata.push_back(tmp_vec);
+
+    std::vector<LINALG::Matrix<1,nsd> > tmp_vec2(oldVectors_.size(),LINALG::Matrix<1,nsd>(true));
+    avg_nodepresgraddata.push_back(tmp_vec2);
+  }
+
+  // Reconstruct nodal gradients
+  for(int inode=0; inode< numnode; inode++)
+  {
+    DRT::Node* node = (ele->Nodes())[inode];
+
+    // determine the elements used for the nodal gradient computation
+    // determine the corresponding nodal dofset vectors used for averaging the nodal gradients
+    std::vector< DRT::Element*> eles_avg;
+    std::vector< std::vector<int> > eles_avg_nds;
+
+
+    GEO::CUT::Node* n = wizard_old_->GetNode(node->Id());
+
+    if(n!=NULL)
+    {
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_new = n->DofCellSets();
+
+      // get the nodal dofset w.r.t the Lagrangean origin
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets_new[data->nds_[inode]];
+
+      // get for each adjacent element contained in the nodal dofset the first vc, its parent element is used for the reconstruction
+      // REMARK: adjacent elements for that no elementhandle exists in the cut won't be found here
+      for(std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>::const_iterator cellset_it=cellset.begin();
+          cellset_it!=cellset.end();
+          cellset_it++)
+      {
+        // the first vc representing the set
+        GEO::CUT::VolumeCell* vc = (*cellset_it)[0];
+        int peid = vc->ParentElement()->Id();
+
+        if(!discret_->HaveGlobalElement(peid)) dserror("element %d for averaging not on proc %d", peid, myrank_);
+
+        // get the element
+        DRT::Element* e = discret_->gElement(peid);
+        // get the vc's nds vector
+        const std::vector<int> e_nds = vc->NodalDofSet();
+
+        // add the element and the nds vector
+        eles_avg.push_back(e);
+        eles_avg_nds.push_back(e_nds);
+      }
+    }
+
+    // check all surrounding elements
+    int numele = node->NumElement();
+    DRT::Element* * eles = node->Elements();
+
+    // add surrounding std uncut elements for that no elementhandle is available
+    for(int i=0; i<numele; i++)
+    {
+      GEO::CUT::ElementHandle* eh = wizard_old_->GetElement(eles[i]);
+
+      if(eh!=NULL) continue; // element and the right nds-vec should have been found using the for-loop before
+
+      // if we are here, then the element is a standard uncut element
+      // and it is ensured that it has not been added to eles_avg yet
+      std::vector<int> std_nds(eles[i]->NumNode(), 0);
+
+      eles_avg.push_back(eles[i]);
+      eles_avg_nds.push_back(std_nds);
+    }
+
+    if(eles_avg.size() == 0) dserror("there is no element for averaging");
+
+    // compute the nodal gradients for velocity/acc and pressure component
+    computeNodalGradient(oldVectors_, node, eles_avg, eles_avg_nds, *dofset_old_, avg_nodevelgraddata[inode], avg_nodepresgraddata[inode]);
+
+  }
+  //----------------------------------------------------------------------------------
 
 
   //---------------------------------------------------------------------------------
@@ -1303,14 +1414,24 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   {
     veln[index].Multiply(nodeveldata[index],shapeFcn);
 
+#if(0) // use the non-averaged gradients interpolated within the element
     velnDeriv1[index].MultiplyNT(1.0,nodeveldata[index],shapeFcnDeriv,1.0);
     presnDeriv1[index].MultiplyTT(1.0,nodepresdata[index],shapeFcnDeriv,1.0);
+#else // use the averaged nodal gradients
+    velnDeriv1[index].Clear();
+
+    for(int i=0; i< numnode; i++)
+    {
+      velnDeriv1[index].Update(shapeFcn(i), avg_nodevelgraddata[i][index], 1.0);
+      presnDeriv1[index].Update(shapeFcn(i), avg_nodepresgraddata[i][index], 1.0);
+    }
+
+#endif
   } // end loop over vectors to be read from
 
 
   for (size_t index=0;index<oldVectors_.size();index++)
   {
-
     vel.Multiply(1.0-Theta(data),velnDeriv1[index],transportVeln);    // v = (1-theta)*Dv^n/Dx*v^n
     vel.Multiply(Theta(data),data->velDeriv_[index],data->vel_,1.0);  // v = theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n
     vel.Update(1.0,veln[index],deltaT);                               // v = v_n + dt*(theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n)
@@ -1388,12 +1509,14 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 
         vc = cell;
 
+#ifdef DEBUG_SEMILAGRANGE
         IO::cout << "nds-vector " ;
         for(int i=0; i< (int)nds.size(); i++)
         {
           IO::cout << " " << nds[i];
         }
         IO::cout << "\n";
+#endif
 
         return;
       }
@@ -1447,14 +1570,14 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 
 
 /*------------------------------------------------------------------------------------------------*
- * back-tracking of data at final Lagrangian origin of a point                   winklmaier 06/10 *
+ * back-tracking of data at final Lagrangian origin of a point                       schott 04/12 *
  *------------------------------------------------------------------------------------------------*/
-template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
+template<const int numnode>
 void XFEM::XFLUID_SemiLagrange::extractNodalValuesFromVector(
-    LINALG::Matrix<3,numnode>& evel,
-    LINALG::Matrix<numnode,1>& epre,
-    RCP<Epetra_Vector> vel_vec,
-    std::vector<int>& lm
+    LINALG::Matrix<3,numnode>&  evel,     ///< element velocities
+    LINALG::Matrix<numnode,1>&  epre,     ///< element pressure
+    Teuchos::RCP<Epetra_Vector> vel_vec,  ///< global vector
+    std::vector<int>&           lm        ///< local map
     )
 {
   const int nsd = 3;
@@ -1485,169 +1608,68 @@ void XFEM::XFLUID_SemiLagrange::extractNodalValuesFromVector(
 
 
 /*------------------------------------------------------------------------------------------------*
- * compute Gradients at side-changing nodes                                      winklmaier 06/10 *
+ * compute gradients at nodes for that SL-reconstruction is called                   schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
-template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
 void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
-    std::vector<RCP<Epetra_Vector> >& newColVectors,
-    const Epetra_Map& newdofcolmap,
-    std::map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
-    const DRT::Element* ele,
-    DRT::Node* node,
-    std::vector<LINALG::Matrix<3,3> >& velnpDeriv1,
-    std::vector<LINALG::Matrix<1,3> >& presnpDeriv1
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&  colVectors,     ///< all vectors for that we reconstruct the their gradients
+    DRT::Node*                         node,           ///< node at which we reconstruct the gradients
+    std::vector<DRT::Element*>&        eles,           ///< elements around node used for the reconstruction
+    std::vector<std::vector<int> >&    ele_nds,        ///< corresonding elements nodal dofset information
+    XFEM::FluidDofSet &                dofset,         ///< fluid dofset
+    std::vector<LINALG::Matrix<3,3> >& velDeriv_avg,   ///< velocity/acc component derivatives for several vectors
+    std::vector<LINALG::Matrix<1,3> >& preDeriv_avg    ///< pressure-component derivatives for several vectors
 ) const
-{ dserror("fix computeNodalGradient");
-//  const int nsd = 3;
-//
-//  for (size_t i=0;i<newColVectors.size();i++)
-//  {
-//    velnpDeriv1[i].Clear();
-//    presnpDeriv1[i].Clear();
-//  }
-//
-//  // shape fcn data
-//  LINALG::Matrix<nsd,1> xi(true);
-//  LINALG::Matrix<nsd,2*numnode> enrShapeXYPresDeriv1(true);
-//
-//  // nodal data
-//  LINALG::Matrix<nsd,2*numnode> nodevel(true);
-//  LINALG::Matrix<1,2*numnode> nodepres(true);
-//  LINALG::Matrix<nsd,1> nodecoords(true);
-//
-//  // dummies for function call
-//  LINALG::Matrix<nsd,nsd> jacobiDummy(true);
-//  LINALG::Matrix<numnode,1> shapeFcnDummy(true);
-//  LINALG::Matrix<2*numnode,1> enrShapeFcnDummy(true);
-//
-//#ifdef COMBUST_NORMAL_ENRICHMENT
-//  LINALG::Matrix<1,numnode> nodevelenr(true);
-//  ApproxFuncNormalVector<2,2*numnode> shp;
-//#else
-//  LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
-//  LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
-//#endif
-//
-//  { // get local coordinates
-//    bool elefound = false;
-//    LINALG::Matrix<nsd,1> coords(node->X());
-//    callXToXiCoords(ele,coords,xi,elefound);
-//
-//    if (!elefound) // possibly slave node looked for element of master node or vice versa
-//    {
-//      // get pbcnode
-//      bool pbcnodefound = false; // boolean indicating whether this node is a pbc node
-//      DRT::Node* pbcnode = NULL;
-//      findPBCNode(node,pbcnode,pbcnodefound);
-//
-//      // get local coordinates
-//      LINALG::Matrix<nsd,1> pbccoords(pbcnode->X());
-//      callXToXiCoords(ele,pbccoords,xi,elefound);
-//
-//      if (!elefound) // now something is really wrong...
-//        dserror("element of a row node not on same processor as node?! BUG!");
-//    }
-//  }
-//
-//#ifdef COMBUST_NORMAL_ENRICHMENT
-//  pointdataXFEMNormal<numnode,DISTYPE>(
-//      ele,
-//#ifdef COLLAPSE_FLAME_NORMAL
-//      coords,
-//#endif
-//      xi,
-//      jacobiDummy,
-//      shapeFcnDummy,
-//      enrShapeFcnDummy,
-//      enrShapeXYPresDeriv1,
-//      shp,
-//      true);
-//#else
-//  pointdataXFEM<numnode,DISTYPE>(
-//      (DRT::Element*)ele,
-//      xi,
-//      jacobiDummy,
-//      shapeFcnDummy,
-//      enrShapeFcnVel,
-//      enrShapeFcnDummy,
-//      enrShapeXYVelDeriv1,
-//      enrShapeXYPresDeriv1,
-//      true);
-//#endif
-//
-//  //cout << "shapefcnvel is " << enrShapeFcnVel << ", velderiv is " << enrShapeXYVelDeriv1 << " and presderiv is " << enrShapeXYPresDeriv1 << endl;
-//  for (size_t i=0;i<newColVectors.size();i++)
-//  {
-//#ifdef COMBUST_NORMAL_ENRICHMENT
-//    elementsNodalData<numnode>(
-//        ele,
-//        newColVectors[i],
-//        dofman_,
-//        newdofcolmap,
-//        newNodalDofColDistrib,
-//        nodevel,
-//        nodevelenr,
-//        nodepres);
-//
-//    const int* nodeids = currele->NodeIds();
-//    size_t velncounter = 0;
-//
-//    // vderxy = enr_derxy(j,k)*evelnp(i,k);
-//    for (int inode = 0; inode < numnode; ++inode)
-//    {
-//      // standard shape functions are identical for all vector components
-//      // e.g. shp.velx.dx.s == shp.vely.dx.s == shp.velz.dx.s
-//      velnpDeriv1[i](0,0) += nodevel(0,inode)*shp.velx.dx.s(inode);
-//      velnpDeriv1[i](0,1) += nodevel(0,inode)*shp.velx.dy.s(inode);
-//      velnpDeriv1[i](0,2) += nodevel(0,inode)*shp.velx.dz.s(inode);
-//
-//      velnpDeriv1[i](1,0) += nodevel(1,inode)*shp.vely.dx.s(inode);
-//      velnpDeriv1[i](1,1) += nodevel(1,inode)*shp.vely.dy.s(inode);
-//      velnpDeriv1[i](1,2) += nodevel(1,inode)*shp.vely.dz.s(inode);
-//
-//      velnpDeriv1[i](2,0) += nodevel(2,inode)*shp.velz.dx.s(inode);
-//      velnpDeriv1[i](2,1) += nodevel(2,inode)*shp.velz.dy.s(inode);
-//      velnpDeriv1[i](2,2) += nodevel(2,inode)*shp.velz.dz.s(inode);
-//
-//      const int gid = nodeids[inode];
-//      const std::set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(gid);
-//
-//      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-//          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-//      {
-//        if (enrfield->getField() == XFEM::PHYSICS::Veln)
-//        {
-//          velnpDeriv1[i](0,0) += nodevelenr(0,velncounter)*shp.velx.dx.n(velncounter);
-//          velnpDeriv1[i](0,1) += nodevelenr(0,velncounter)*shp.velx.dy.n(velncounter);
-//          velnpDeriv1[i](0,2) += nodevelenr(0,velncounter)*shp.velx.dz.n(velncounter);
-//
-//          velnpDeriv1[i](1,0) += nodevelenr(0,velncounter)*shp.vely.dx.n(velncounter);
-//          velnpDeriv1[i](1,1) += nodevelenr(0,velncounter)*shp.vely.dy.n(velncounter);
-//          velnpDeriv1[i](1,2) += nodevelenr(0,velncounter)*shp.vely.dz.n(velncounter);
-//
-//          velnpDeriv1[i](2,0) += nodevelenr(0,velncounter)*shp.velz.dx.n(velncounter);
-//          velnpDeriv1[i](2,1) += nodevelenr(0,velncounter)*shp.velz.dy.n(velncounter);
-//          velnpDeriv1[i](2,2) += nodevelenr(0,velncounter)*shp.velz.dz.n(velncounter);
-//
-//          velncounter += 1;
-//        }
-//      }
-//    }
-//
-//#else
-//    elementsNodalData<numnode>(
-//        (DRT::Element*)ele,
-//        newColVectors[i],
-//        newdofman_,
-//        newdofcolmap,
-//        newNodalDofColDistrib,
-//        nodevel,
-//        nodepres);
-//
-//    velnpDeriv1[i].MultiplyNT(1.0,nodevel,enrShapeXYVelDeriv1,1.0);
-//    presnpDeriv1[i].MultiplyNT(1.0,nodepres,enrShapeXYPresDeriv1,1.0);
-//#endif
-//  }
+{
+  const int nsd = 3; // dimension
+
+  for(size_t vec_index=0;vec_index<colVectors.size();vec_index++)
+  {
+    velDeriv_avg[vec_index].Clear();
+    preDeriv_avg[vec_index].Clear();
+  }
+
+  int numele = (int)eles.size();
+
+  if(numele != (int)ele_nds.size()) dserror("number of nds-vector != number of elements!");
+
+
+  for(int iele=0; iele<numele; iele++)
+  {
+    DRT::Element* e=eles[iele];
+
+    // xi coordinates of node w.r.t this element
+    LINALG::Matrix<nsd,1> tmp_xi(true);
+    bool indomain = false; // dummy variable
+
+    // xyz coordinates of the node
+    LINALG::Matrix<nsd,1> x_node(node->X());
+
+    // get the local coordinates of the node w.r.t current element
+    callXToXiCoords(e, x_node, tmp_xi, indomain);
+
+
+
+    for (size_t tmp_index=0;tmp_index<colVectors.size();tmp_index++)
+    {
+      LINALG::Matrix<nsd,1>   vel(true);
+      LINALG::Matrix<nsd,nsd> vel_deriv(true);
+      double                  pres = 0.0;
+      LINALG::Matrix<1,nsd>   pres_deriv(true);
+
+      getGPValues(e, tmp_xi,ele_nds[iele],dofset, vel, vel_deriv,pres,pres_deriv,colVectors[tmp_index], true);
+
+      // add the current gradients
+      velDeriv_avg[tmp_index].Update(1.0,vel_deriv, 1.0);
+      preDeriv_avg[tmp_index].Update(1.0,pres_deriv, 1.0);
+    }
+  } // end loop ele
+
+  for (size_t vec_index=0;vec_index<colVectors.size();vec_index++)
+  {
+    velDeriv_avg[vec_index].Scale(1./numele);
+    preDeriv_avg[vec_index].Scale(1./numele);
+  }
+
 } // end function compute nodal gradient
 
 

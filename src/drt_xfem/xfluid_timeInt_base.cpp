@@ -109,7 +109,7 @@ void XFEM::XFLUID_TIMEINT_BASE::handleVectors(
   newVectors_ = newRowVectorsn;
 
   if (oldVectors_.size() != newVectors_.size())
-    dserror("Number of state-vectors at new and old discretization are different!");
+    dserror("Number of state-vectors at new and old discretization are different!"); // but they have different maps (row vs col)
 
 } // end function handleVectors
 
@@ -163,135 +163,144 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
 
   bool check_allsides=false; // flag to check all sides in case of one common node is a non-row node
 
-  std::set<int> eids;
-  std::set<int> common_nodes;
-
-  if(ele1->Id() == ele2->Id()) // line within one element
-  {
-    eids.insert(ele1->Id()); // just one element to check
-
-#ifdef DEBUG_TIMINT_STD
-    IO::cout << "\n\t\t\t\t\t check changing side just for the unique element" << ele1->Id() << IO::endl;
-#endif
-
-  }
-  else if( Neighbors(ele1,ele2, common_nodes) )
-  {
-#ifdef DEBUG_TIMINT_STD
-    IO::cout << "\n\t\t\t\t\t check changing side for neighboring elements: " << IO::endl;
-#endif
-
-    // get all elements adjacent to common nodes in ele1 and ele2
-
-    // REMARK: if at least one common node is not a row node, then there is possibly one adjacent element missing,
-    // but then there are also involved sides missing -> check all sides in cutdiscret, also if it is very slow!
-
-    for(std::set<int>::iterator it=common_nodes.begin(); it!=common_nodes.end(); it++)
-    {
-      DRT::Node* n = discret_->gNode(*it);
-
-      if(n->Owner() != myrank_)
-      {
-        check_allsides=true; // flag to check all sides in case of one common node is a non-row node
-        break;
-      }
-
-      const int numele = n->NumElement();
-
-      DRT::Element* * elements = n->Elements();
-
-      for(int e_it=0; e_it<numele; e_it++)
-      {
-        DRT::Element* ele = elements[e_it];
-
-        eids.insert(ele->Id());
-
-#ifdef DEBUG_TIMINT_STD
-        IO::cout << "\n\t\t\t\t\t add element " << ele->Id() << IO::endl;
-#endif
-      }
-    }
-  }
-  else
-  {
-    // check all sides ghosted in boundarydis
-    check_allsides=true;
-
-#ifdef DEBUG_TIMINT_STD
-    IO::cout << "\n\t\t\t\t\t all sides on boundary discretization have to be check, ele1 = " << ele1->Id()
-             << " and ele2 = " << ele2->Id()
-             << " are not Neighbors" << IO::endl;
-#endif
-
-  }
-
-  //-----------------------------------------------------------------------
-  //-----------------------------------------------------------------------
-  // second: find all boundary sides involved in cutting the determined background elements
-
-
-#ifdef DEBUG_TIMINT_STD
-  IO::cout << "\n\t\t\t\t\t --------------------------------- ";
-  IO::cout << "\n\t\t\t\t\t Find involved sides with possible cuts between trace and side ";
-  IO::cout << "\n\t\t\t\t\t --------------------------------- " << IO::endl;
-#endif
-
   std::set<int> cut_sides;
 
-  // collect all cutting sides
-  if(check_allsides)
+  if(ele1 == NULL or ele2 == NULL)
   {
-    // add all sides of cut_discret to check
-    for(int i=0; i< boundarydis_->NumMyColElements(); i++)
-    {
-      cut_sides.insert(boundarydis_->ElementColMap()->GID(i));
-    }
+    check_allsides = true; // no efficient search possible
   }
   else
   {
-    //loop all found element
-    for(std::set<int>::iterator e_it=eids.begin(); e_it!=eids.end(); e_it++)
+    std::set<int> eids;
+    std::set<int> common_nodes;
+
+
+    if(ele1->Id() == ele2->Id()) // line within one element
     {
-      DRT::Element* ele = discret_->gElement(*e_it);
-
-      GEO::CUT::ElementHandle* eh = wizard->GetElement(ele);
-
-      // no cutsides within this element, then no side changing possible
-      if(eh == NULL)
-      {
-        continue; // next element
-      }
-
-      //--------------------------------------------------------
-      // get involved side ids
-      GEO::CUT::plain_element_set elements;
-      eh->CollectElements( elements );
-
-      // get all side-ids
-      for(GEO::CUT::plain_element_set::iterator eles = elements.begin(); eles!=elements.end(); eles++)
-      {
-        GEO::CUT::Element* sub_ele = *eles;
-
-        GEO::CUT::plain_facet_set facets = sub_ele->Facets();
-
-        for(GEO::CUT::plain_facet_set::const_iterator facet_it = facets.begin(); facet_it!=facets.end(); facet_it++)
-        {
-          GEO::CUT::Facet* facet = *facet_it;
-
-          GEO::CUT::Side* parent_side = facet->ParentSide();
-
-          bool is_elements_side = sub_ele->OwnedSide(parent_side);
-
-          if(!is_elements_side) // is a cutting side
-          {
-            cut_sides.insert(parent_side->Id());
+      eids.insert(ele1->Id()); // just one element to check
 
 #ifdef DEBUG_TIMINT_STD
-            IO::cout << "\n\t\t\t\t\t add side with Id=" << parent_side->Id() << IO::endl;
+      IO::cout << "\n\t\t\t\t\t check changing side just for the unique element" << ele1->Id() << IO::endl;
 #endif
-          } // !element's side
-        } //facets
-      }//sub elements
+
+    }
+    else if( Neighbors(ele1,ele2, common_nodes) )
+    {
+#ifdef DEBUG_TIMINT_STD
+      IO::cout << "\n\t\t\t\t\t check changing side for neighboring elements: " << IO::endl;
+#endif
+
+      // get all elements adjacent to common nodes in ele1 and ele2
+
+      // REMARK: if at least one common node is not a row node, then there is possibly one adjacent element missing,
+      // but then there are also involved sides missing -> check all sides in cutdiscret, also if it is very slow!
+
+      for(std::set<int>::iterator it=common_nodes.begin(); it!=common_nodes.end(); it++)
+      {
+        DRT::Node* n = discret_->gNode(*it);
+
+        if(n->Owner() != myrank_)
+        {
+          check_allsides=true; // flag to check all sides in case of one common node is a non-row node
+          break;
+        }
+
+        const int numele = n->NumElement();
+
+        DRT::Element* * elements = n->Elements();
+
+        for(int e_it=0; e_it<numele; e_it++)
+        {
+          DRT::Element* ele = elements[e_it];
+
+          eids.insert(ele->Id());
+
+#ifdef DEBUG_TIMINT_STD
+          IO::cout << "\n\t\t\t\t\t add element " << ele->Id() << IO::endl;
+#endif
+        }
+      }
+    }
+    else
+    {
+      // check all sides ghosted in boundarydis
+      check_allsides=true;
+
+#ifdef DEBUG_TIMINT_STD
+      IO::cout << "\n\t\t\t\t\t all sides on boundary discretization have to be check, ele1 = " << ele1->Id()
+                 << " and ele2 = " << ele2->Id()
+                 << " are not Neighbors" << IO::endl;
+#endif
+
+    }
+
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    // second: find all boundary sides involved in cutting the determined background elements
+
+
+#ifdef DEBUG_TIMINT_STD
+    IO::cout << "\n\t\t\t\t\t --------------------------------- ";
+    IO::cout << "\n\t\t\t\t\t Find involved sides with possible cuts between trace and side ";
+    IO::cout << "\n\t\t\t\t\t --------------------------------- " << IO::endl;
+#endif
+
+
+    // collect all cutting sides
+    if(check_allsides)
+    {
+      // add all sides of cut_discret to check
+      for(int i=0; i< boundarydis_->NumMyColElements(); i++)
+      {
+        cut_sides.insert(boundarydis_->ElementColMap()->GID(i));
+      }
+    }
+    else
+    {
+      //loop all found element
+      for(std::set<int>::iterator e_it=eids.begin(); e_it!=eids.end(); e_it++)
+      {
+        DRT::Element* ele = discret_->gElement(*e_it);
+
+        GEO::CUT::ElementHandle* eh = wizard->GetElement(ele);
+
+        // no cutsides within this element, then no side changing possible
+        if(eh == NULL)
+        {
+          continue; // next element
+        }
+
+        //--------------------------------------------------------
+        // get involved side ids
+        GEO::CUT::plain_element_set elements;
+        eh->CollectElements( elements );
+
+        // get all side-ids
+        for(GEO::CUT::plain_element_set::iterator eles = elements.begin(); eles!=elements.end(); eles++)
+        {
+          GEO::CUT::Element* sub_ele = *eles;
+
+          GEO::CUT::plain_facet_set facets = sub_ele->Facets();
+
+          for(GEO::CUT::plain_facet_set::const_iterator facet_it = facets.begin(); facet_it!=facets.end(); facet_it++)
+          {
+            GEO::CUT::Facet* facet = *facet_it;
+
+            GEO::CUT::Side* parent_side = facet->ParentSide();
+
+            bool is_elements_side = sub_ele->OwnedSide(parent_side);
+
+            if(!is_elements_side) // is a cutting side
+            {
+              cut_sides.insert(parent_side->Id());
+
+#ifdef DEBUG_TIMINT_STD
+              IO::cout << "\n\t\t\t\t\t add side with Id=" << parent_side->Id() << IO::endl;
+#endif
+            } // !element's side
+          } //facets
+        }//sub elements
+      }
     }
   }
 
@@ -330,7 +339,6 @@ bool XFEM::XFLUID_TIMEINT_BASE::Neighbors(
     std::set<int> & common_nodes
     ) const
 {
-
   bool is_neighbor = false;
 
   const int numnode1 =  ele1->NumNode();
@@ -848,7 +856,7 @@ dt_(dt)
         // reconstruction methods just for marked dofsets
         for(size_t i=0; i<(it->second).size(); i++)
         {
-          if((it->second)[i] == INPAR::XFEM::Xf_TimeInt_SemiLagrange )
+          if((it->second)[i] == INPAR::XFEM::Xf_TimeInt_STD_by_SL )
           {
 
 #ifdef DEBUG_TIMINT_STD
@@ -980,26 +988,29 @@ void XFEM::XFLUID_STD::elementSearch(
  * interpolate velocity and derivatives for a point in an element                    schott 06/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::getGPValues(
-    DRT::Element*                 ele,            /// pointer to element
-    LINALG::Matrix<3,1>&          xi,             /// local coordinates of point w.r.t element
-    std::vector<int>&             nds,            /// nodal dofset of point for elemental nodes
-    bool                          step_np,        /// computation w.r.t. old or new interface position
-    LINALG::Matrix<3,1>&          vel,            /// determine velocity at point
-    LINALG::Matrix<3,3>&          vel_deriv,      /// determine velocity derivatives at point
-    bool                          compute_deriv   /// shall derivatives be computed?
+    DRT::Element*                 ele,            ///< pointer to element
+    LINALG::Matrix<3,1>&          xi,             ///< local coordinates of point w.r.t element
+    std::vector<int>&             nds,            ///< nodal dofset of point for elemental nodes
+    XFEM::FluidDofSet&            dofset,         ///< fluid dofset
+    LINALG::Matrix<3,1>&          vel,            ///< determine velocity at point
+    LINALG::Matrix<3,3>&          vel_deriv,      ///< determine velocity derivatives at point
+    double &                      pres,           ///< pressure
+    LINALG::Matrix<1,3>&          pres_deriv,     ///< pressure gradient
+    Teuchos::RCP<const Epetra_Vector> vel_vec,    ///< vector used for interpolating at gp
+    bool                          compute_deriv   ///< shall derivatives be computed?
 ) const
 {
 
   switch (ele->Shape())
   {
   case DRT::Element::hex8:
-    getGPValuesT<DRT::Element::hex8>(ele,xi,nds,step_np,vel,vel_deriv,compute_deriv);
+    getGPValuesT<DRT::Element::hex8>(ele,xi,nds,dofset,vel,vel_deriv,pres,pres_deriv,vel_vec, compute_deriv);
     break;
   case DRT::Element::hex20:
-    getGPValuesT<DRT::Element::hex20>(ele,xi,nds,step_np,vel,vel_deriv,compute_deriv);
+    getGPValuesT<DRT::Element::hex20>(ele,xi,nds,dofset,vel,vel_deriv,pres,pres_deriv,vel_vec, compute_deriv);
     break;
   case DRT::Element::tet4:
-    getGPValuesT<DRT::Element::tet4>(ele,xi,nds,step_np,vel,vel_deriv,compute_deriv);
+    getGPValuesT<DRT::Element::tet4>(ele,xi,nds,dofset,vel,vel_deriv,pres,pres_deriv,vel_vec, compute_deriv);
     break;
   default: dserror("add your 3D distype here!"); break;
   } // end switch
@@ -1014,19 +1025,17 @@ void XFEM::XFLUID_STD::getGPValuesT(
     DRT::Element*                 ele,                 ///< pointer to element
     LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
     std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
-    bool                          step_np,             ///< computation w.r.t. old or new interface position
+    XFEM::FluidDofSet&            dofset,              ///< fluid dofset
     LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
     LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
+    double &                      pres,                ///< pressure
+    LINALG::Matrix<1,3>&          pres_deriv,          ///< pressure gradient
+    Teuchos::RCP<const Epetra_Vector> vel_vec,         ///< vector used for interpolating at gp
     bool                          compute_deriv        ///< shall derivatives be computed?
 ) const
 {
-  Teuchos::RCP<const Epetra_Vector> vel_vec = Teuchos::null;
 
-  RCP<XFEM::FluidDofSet> dofset = step_np ? dofset_new_ : dofset_old_;
-  string state = step_np ? "velnp" : "veln";
-
-  if(step_np) vel_vec = discret_->GetState(state);
-  else vel_vec = veln_;
+  if(vel_vec == Teuchos::null) dserror("vector is not filled");
 
   const int nsd = 3; // dimension
 
@@ -1049,7 +1058,7 @@ void XFEM::XFLUID_STD::getGPValuesT(
   {
     DRT::Node* node = ele->Nodes()[inode];
     std::vector<int> dofs;
-    dofset->Dof(*node, nds[inode], dofs );
+    dofset.Dof(*node, nds[inode], dofs );
 
     int size = dofs.size();
 
@@ -1064,8 +1073,6 @@ void XFEM::XFLUID_STD::getGPValuesT(
   LINALG::Matrix<nsd,numnode> evel(true);
   LINALG::Matrix<numnode,1>   epre(true);
 
-  if(vel_vec == Teuchos::null)
-    dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
@@ -1096,13 +1103,12 @@ void XFEM::XFLUID_STD::getGPValuesT(
   vel.Clear(); // set to zero
   vel.Multiply(evel, shapeFcn);
 
-  //double pres = 0.0;
-  //pres = epre.Dot(shapeFcn);
+  pres = epre.Dot(shapeFcn);
 
   if(compute_deriv)
   {
-    vel_deriv.Clear();
     vel_deriv.MultiplyNT(evel,shapeFcnDeriv);
+    pres_deriv.MultiplyTT(epre,shapeFcnDeriv);
   }
 
   return;
@@ -1166,65 +1172,92 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
   GEO::CUT::Node* n_new = wizard_new_->GetNode(data.node_.Id());
 
-  if(n_new == NULL) dserror("node %d does not carry a node handle (semilagrange reasonable?)", data.node_.Id());
-
-  //--------------------------------------------------------
-  // get involved side ids for projection and distance computation
-  //--------------------------------------------------------
-
-  // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
-  std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_new;
-
-  const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_new = n_new->DofCellSets();
-
-  // the std-set
-  const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >& cell_set_new = dof_cellsets_new[data.nds_np_];
-
-  // get all side-ids w.r.t to all volumecells contained in current new set around the current node
-  for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator adj_eles = cell_set_new.begin(); adj_eles!=cell_set_new.end(); adj_eles++)
-  {
-    const GEO::CUT::plain_volumecell_set ele_vc = *adj_eles;
-
-    for(GEO::CUT::plain_volumecell_set::const_iterator vcs=ele_vc.begin(); vcs!=ele_vc.end(); vcs++)
-    {
-      GEO::CUT::VolumeCell* vc = *vcs;
-
-      // get sides involved in creation boundary cells (std::map<sideId,bcells>)
-      vc->GetBoundaryCells(bcells_new);
-    }
-  }
-
-  //--------------------------------------------------------
-  // distance computation w.r.t surface involved in cutting the adjacent elements(n_new to sides/edges/nodes)
-  //--------------------------------------------------------
-
   //------------------------------------
   // find all involved nodes and sides (edges) for computing distance to node
 
   std::set<int> points;
   std::set<int> sides;
 
-  // loop bcs and extract sides and nodes
-  for(std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::iterator bcells_it= bcells_new.begin();
-      bcells_it!=bcells_new.end();
-      bcells_it++)
+  // is there a nodehandle to get information about cutting sides near this node?
+  if(n_new != NULL)
   {
-    int sid=bcells_it->first;
-    sides.insert(sid);
 
-    // get the side
-    DRT::Element* side = boundarydis_->gElement(sid);
-    int numnode = side->NumNode();
-    const int * side_nodes = side->NodeIds();
+    //--------------------------------------------------------
+    // get involved side ids for projection and distance computation
+    //--------------------------------------------------------
 
-    // get the nodes
-    for(int i=0; i< numnode; i++)
+    // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
+    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_new;
+
+    const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_new = n_new->DofCellSets();
+
+    // the std-set
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >& cell_set_new = dof_cellsets_new[data.nds_np_];
+
+    // get all side-ids w.r.t to all volumecells contained in current new set around the current node
+    for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator adj_eles = cell_set_new.begin(); adj_eles!=cell_set_new.end(); adj_eles++)
     {
-      points.insert(side_nodes[i]);
+      const GEO::CUT::plain_volumecell_set ele_vc = *adj_eles;
+
+      for(GEO::CUT::plain_volumecell_set::const_iterator vcs=ele_vc.begin(); vcs!=ele_vc.end(); vcs++)
+      {
+        GEO::CUT::VolumeCell* vc = *vcs;
+
+        // get sides involved in creation boundary cells (std::map<sideId,bcells>)
+        vc->GetBoundaryCells(bcells_new);
+      }
+    }
+
+    //--------------------------------------------------------
+    // distance computation w.r.t surface involved in cutting the adjacent elements(n_new to sides/edges/nodes)
+    //--------------------------------------------------------
+
+    // loop bcs and extract sides and nodes
+    for(std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::iterator bcells_it= bcells_new.begin();
+        bcells_it!=bcells_new.end();
+        bcells_it++)
+    {
+      int sid=bcells_it->first;
+      sides.insert(sid);
+
+      // get the side
+      DRT::Element* side = boundarydis_->gElement(sid);
+      int numnode = side->NumNode();
+      const int * side_nodes = side->NodeIds();
+
+      // get the nodes
+      for(int i=0; i< numnode; i++)
+      {
+        points.insert(side_nodes[i]);
+      }
     }
   }
 
-  if(points.size() == 0 and sides.size() == 0) dserror("there are no cutting sides around node %d, why Semilagrange here?", data.node_.Id());
+  if((points.size() == 0 and sides.size() == 0) or n_new == NULL)
+  {
+    // node does not carry a node handle -> Semilagrangean algorithm for nodes with too much structural movement
+    // TODO: can this improved?!
+    // -> compute projection for all sides and nodes, that's really expensive!
+
+    // loop all column sides and extract sides and nodes
+    for(int i=0; i<boundarydis_->NumMyColElements(); i++)
+    {
+      // get the side
+      DRT::Element* side = boundarydis_->lColElement(i);
+      int numnode = side->NumNode();
+      const int * side_nodes = side->NodeIds();
+
+      sides.insert(side->Id());
+
+      // get the nodes
+      for(int i=0; i< numnode; i++)
+      {
+        points.insert(side_nodes[i]);
+      }
+    }
+  }
+
+  if(points.size() == 0 and sides.size() == 0) dserror("there are no cutting sides for node %d, that cannot be anymore", data.node_.Id());
 
   //-------------------------------------
   // initialize data holding information about minimal distance
@@ -1593,7 +1626,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
   }
 
 
-#if(1)
+#if(0)
   // GMSH debug output
 
   int myrank = 0; //discret.Comm().MyPID();
@@ -2465,8 +2498,10 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     // distance has to be smaller than the last one
     if(curr_dist < (min_dist-TOL_dist_) && curr_dist >= 0)
     {
+#ifdef DEBUG_TIMINT_STD
       cout.precision(15);
       cout << "\t\t\t>>> updated smallest distance!" << curr_dist << endl;
+#endif
 
       if(curr_dist < (min_dist-TOL_dist_)) // smaller distance found
       {
@@ -3092,7 +3127,9 @@ void XFEM::XFLUID_STD::setFinalData()
     //-------------------------------------------------------
     DRT::Node* node = discret_->gNode(gnodeid);
 
-    cout << "dofset at new timestep " << data->nds_np_ << endl;
+#ifdef DEBUG_TIMINT_STD
+    IO::cout << "dofset at new timestep " << data->nds_np_ << IO::endl;
+#endif
 
     if(data->nds_np_ == -1) dserror("cannot get dofs for dofset with number %d", data->nds_np_);
 

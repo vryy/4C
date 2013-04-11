@@ -617,6 +617,9 @@ namespace FLD
     //! @name setting an initial interface displacement
     enum INPAR::XFEM::InterfaceDisplacement interface_disp_;
     int interface_disp_func_no_;
+
+    //! @name xfluid time integration
+    enum INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach_;
     //@}
 
     /// initial flow field

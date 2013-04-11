@@ -5002,6 +5002,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       ),
                                     &xfluid_general);
 
+  setStringToIntegralParameter<int>("XFLUID_TIMEINT","STD=COPY/SL_and_GHOST=COPY/GP","The xfluid time integration approach",
+                               tuple<std::string>("STD=COPY_and_GHOST=COPY/GP", "STD=COPY/SL_and_GHOST=COPY/GP", "STD=SL(boundary-zone)_and_GHOST=GP"),
+                               tuple<int>(
+                                   INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP,       // STD= only copy, GHOST= copy or ghost penalty reconstruction
+                                   INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP, // STD= copy or SL, GHOST= copy or ghost penalty reconstruction
+                                   INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP         // STD= only SL on whole boundary zone, GHOST= ghost penalty reconstruction
+                                   ),
+                               &xfluid_general);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");
 
