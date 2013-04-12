@@ -2435,6 +2435,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
       double sum_jumpx=0.0;
       double sum_jumpe=0.0;
       double sum_jumpall=0.0;
+      double iter_slip=0.0;
 #endif
 
       // loop over all nodes
@@ -2450,6 +2451,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
           sum_jumpx+=gjtx[k];
           sum_jumpe+=gjte[k];
           sum_jumpall+=sqrt(gjtx[k]*gjtx[k] + gjte[k]*gjte[k]);
+          iter_slip=iter_slip+1.0;
 #endif
         }
 
@@ -2472,9 +2474,16 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 
 #ifdef CONTACTEXPORT
       // export averaged slip increments to xxx.jump
-      double sum_jumpx_final=sum_jumpx/((double)gnid.size());
-      double sum_jumpe_final=sum_jumpe/((double)gnid.size());
-      double sum_jumpall_final=sum_jumpall/((double)gnid.size());
+      double sum_jumpx_final=0.0;
+      double sum_jumpe_final=0.0;
+      double sum_jumpall_final=0.0;
+
+      if (iter_slip>0.0)
+      {
+        sum_jumpx_final=sum_jumpx/iter_slip;
+        sum_jumpe_final=sum_jumpe/iter_slip;
+        sum_jumpall_final=sum_jumpall/iter_slip;
+      }
 
       FILE* MyFile = NULL;
       std::ostringstream filename;
