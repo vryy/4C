@@ -45,7 +45,20 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Time.h>
-//#include <Isorropia_EpetraPartitioner.hpp>
+
+#ifdef HAVE_Trilinos_Q1_2013
+//Include Isorropia_Exception.hpp only because the helper functions at
+//the bottom of this file (which create the epetra objects) can
+//potentially throw exceptions.
+#include <Isorropia_Exception.hpp>
+
+//The Isorropia symbols being demonstrated are declared
+//in these headers:
+#include <Isorropia_Epetra.hpp>
+#include <Isorropia_EpetraRedistributor.hpp>
+#include <Isorropia_EpetraPartitioner.hpp>
+#include <Isorropia_EpetraCostDescriber.hpp>
+#endif
 
 #include <iterator>
 
@@ -1000,6 +1013,61 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   comm->Barrier();
 
+#ifdef HAVE_Trilinos_Q1_2013
+
+  // use Isorropia
+
+  Teuchos::ParameterList paramlist;
+  //No parameters. By default, Isorropia will use Zoltan hypergraph
+  //partitioning, treating the graph columns as hyperedges and the
+  //graph rows as vertices.
+
+  //This time, we'll try graph partitioning..
+  //Create a parameter sublist for Zoltan parameters.
+  /*paramlist.set("PARTITIONING METHOD", "GRAPH");
+  paramlist.set("STRUCTURALLY SYMMETRIC", "NO");
+
+  //We could also call ParMetis, if Zoltan was built with ParMetis.
+  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
+  sublist.set("GRAPH_PACKAGE", "PARMETIS");
+  sublist.set("PARMETIS_METHOD", "PARTKWAY");
+  sublist.set("CHECK_GRAPH", "2");
+  sublist.set("GRAPH_SYMMETRIZE", "TRANSPOSE");
+  sublist.set("PARMETIS_OUTPUT_LEVEL", "7");*/
+
+  Epetra_CrsGraph *balanced_graph = NULL;
+  try {
+    balanced_graph =
+      Isorropia::Epetra::createBalancedCopy(*graph, paramlist);
+
+  }
+  catch(std::exception& exc) {
+    std::cout << "Isorropia::createBalancedCopy threw "
+         << "exception '" << exc.what() << "' on proc "
+         << myrank << std::endl;
+    dserror("Error within Isorropia (graph balancing)");
+  }
+
+  // obtain the new column and row map
+  Teuchos::RCP<Epetra_CrsGraph> rcp_balanced_graph = Teuchos::rcp(balanced_graph);
+  rcp_balanced_graph->FillComplete();
+  rcp_balanced_graph->OptimizeStorage();
+  rownodes = Teuchos::rcp(new Epetra_Map(-1,
+      rcp_balanced_graph->RowMap().NumMyElements(),
+      rcp_balanced_graph->RowMap().MyGlobalElements(),0,*comm));
+  colnodes = Teuchos::rcp(new Epetra_Map(-1,
+      rcp_balanced_graph->ColMap().NumMyElements(),
+      rcp_balanced_graph->ColMap().MyGlobalElements(),0,*comm));
+
+  double t2 = timer.ElapsedTime();
+  if (!myrank && outflag)
+  {
+    printf("Graph rebalancing:    %10.5e secs\n",t2-t1);
+    fflush(stdout);
+  }
+
+#else
+
   // prepare parmetis input and call parmetis to partition the graph
   std::vector<int> vtxdist(numproc+1,0);
   std::vector<int> xadj(graph->RowMap().NumMyElements()+1);
@@ -1137,7 +1205,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     printf("parmetis cleanup  %10.5e secs\n",t4-t3);
     fflush(stdout);
   }
-
+#endif
 
   return;
 }
