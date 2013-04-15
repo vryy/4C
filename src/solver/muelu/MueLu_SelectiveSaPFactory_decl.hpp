@@ -104,6 +104,7 @@ namespace MueLu {
     //@}
 
   private:
+    Teuchos::RCP<Xpetra::Matrix<double, int, int> > MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, int, int> > const &Op, bool const & optimizeTranspose) const;
     /*
     Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> > BuildUnsmoothedBasisFunctionMap(Level &fineLevel, Level &coarseLevel) const;
     Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > RemoveColumnEntries(Teuchos::RCP<Matrix> & matrix, Teuchos::RCP<const Map> coarseNonSmoothedMap) const;

@@ -11,6 +11,8 @@
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q1_2013
 
+#include <Epetra_RowMatrixTransposer.h>
+
 #include <Xpetra_Map.hpp>
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_VectorFactory.hpp>
@@ -113,7 +115,8 @@ namespace MueLu {
       RCP<Matrix> A     = Get< RCP<Matrix> >(fineLevel, "A");
       if(restrictionMode_) {
         SubFactoryMonitor m2(*this, "Transpose A", coarseLevel);
-        A = Utils2::Transpose(A, true); // build transpose of A explicitely
+        //A = Utils2::Transpose(A, true); // build transpose of A explicitely
+        A = MyTranspose(A, true);
       }
 
       RCP<Matrix> AP;
@@ -124,9 +127,9 @@ namespace MueLu {
         //JJH -- in the scaling.  Long story short, we're doing 2 fillCompletes, where ideally we'd do just one.
         bool doFillComplete=true;
         //FIXME Improved Epetra MM returns error code -1 optimizeStorage==true.  For now, do this
-        bool optimizeStorage=false;
+        bool optimizeStorage=true;  // false
         //FIXME but once fixed, reenable the next line.
-        //if (A->getRowMap()->lib() == Xpetra::UseTpetra) optimizeStorage=false;
+        if (A->getRowMap()->lib() == Xpetra::UseTpetra) optimizeStorage=false;
         AP = Utils::Multiply(*A, false, *Ptent, false, doFillComplete, optimizeStorage);
         //Utils::Write("AP.mat", *AP);
       }
@@ -134,7 +137,7 @@ namespace MueLu {
       //bool bDoDamping = true;
       {
         SubFactoryMonitor m2(*this, "Scaling (A x Ptentative) by D^{-1}", coarseLevel);
-        bool doFillComplete=false;
+        bool doFillComplete=true; //false;
         bool optimizeStorage=false;
         Teuchos::ArrayRCP<SC> diag = Utils::GetMatrixDiagonal(*A);
 #if 0 // TODO remove me. check is done outside (e.g. in MueLu_Contact preconditioner
@@ -184,12 +187,9 @@ namespace MueLu {
         SubFactoryMonitor m2(*this, "M+M: P = (Ptentative) + (D^{-1} x A x Ptentative)", coarseLevel);
 
         bool doTranspose=false;
-        if (AP->isFillComplete())
-          Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP);
-        else {
-          Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, -dampingFactor/lambdaMax);
-          finalP = AP;
-        }
+        bool PtentHasFixedNnzPerRow=true;
+        Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
+
       }
 
       {
@@ -214,6 +214,7 @@ namespace MueLu {
       {
         // prolongation factory is in restriction mode
         RCP<Matrix> R = Utils2::Transpose(finalP, true); // use Utils2 -> specialization for double
+        //RCP<Matrix> R = MyTranspose(finalP, true);
         Set(coarseLevel, "R", R);
 
         ///////////////////////// EXPERIMENTAL
@@ -366,6 +367,34 @@ namespace MueLu {
 
      return Aout;
   }
+
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  Teuchos::RCP<Xpetra::Matrix<double, int, int> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, int, int> > const &Op, bool const & optimizeTranspose) const
+  {
+   Teuchos::TimeMonitor tm(*Teuchos::TimeMonitor::getNewTimer("My Transpose"));
+
+    Teuchos::RCP<Epetra_CrsMatrix> epetraOp;
+    epetraOp = MueLu::Utils<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Op2NonConstEpetraCrs(Op);
+
+    Epetra_RowMatrixTransposer et(&*epetraOp);
+    Epetra_CrsMatrix *A;
+    int rv = et.CreateTranspose(false,A);
+    if(rv != 0) {
+      std::ostringstream buf;
+      buf << rv;
+      std::string msg = "MueLu::Utils::Transpose: Epetra::RowMatrixTransposer returned value of " + buf.str();
+      std::cout << msg << std::endl;
+    }
+
+    RCP<Epetra_CrsMatrix> rcpA(A);
+    RCP<EpetraCrsMatrix> AA = rcp(new EpetraCrsMatrix(rcpA) );
+    RCP<Xpetra::CrsMatrix<SC> > AAA = rcp_implicit_cast<Xpetra::CrsMatrix<SC> >(AA);
+    RCP<Xpetra::CrsMatrixWrap<SC> > AAAA = rcp( new Xpetra::CrsMatrixWrap<SC>(AAA) );
+    AAAA->fillComplete(Op->getRangeMap(),Op->getDomainMap());
+    return AAAA;
+
+  } //Transpose
+
 #if 0 // outdated
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
   Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::BuildUnsmoothedBasisFunctionMap(Level &fineLevel, Level &coarseLevel) const {
