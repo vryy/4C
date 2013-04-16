@@ -163,7 +163,7 @@ STR::TimInt::TimInt
     Logo();
   }
 
-  // check wether discretisation has been completed
+  // check whether discretisation has been completed
   if (not discret_->Filled() || not actdis->HaveDofs())
   {
     dserror("Discretisation is not complete or has no dofs!");

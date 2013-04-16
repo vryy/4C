@@ -392,7 +392,7 @@ namespace STR
     //! Write internal and external forces (if necessary for restart)
     virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 
-    //! Check wether energy output file is attached
+    //! Check whether energy output file is attached
     bool AttachedEnergyFile()
     {
       if (energyfile_) return true;

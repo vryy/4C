@@ -192,7 +192,7 @@ namespace STR
     //!  Update output periods
     void UpdatePeriod();
 
-    //! Check wether step size output file is attached
+    //! Check whether step size output file is attached
     bool AttachedFileStepSize()
     {
       if (outsizefile_) return true;

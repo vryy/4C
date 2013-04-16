@@ -90,7 +90,7 @@ STR::TimAda::TimAda
   // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
-  // check wether energyout_ file handle was attached
+  // check whether energyout_ file handle was attached
   if ( (not sti_->AttachedEnergyFile())
        and (outeneperiod_ != 0.0)
        and (myrank_ == 0) )
@@ -152,7 +152,7 @@ void STR::TimAda::Integrate()
       // get local error vector on #locerrdisn_
       EvaluateLocalErrorDis();
 
-      // check wether step passes
+      // check whether step passes
       Indicate(accepted, stpsiznew);
 
       // adjust step-size

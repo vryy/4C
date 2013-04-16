@@ -1775,7 +1775,7 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
     dserror("ERROR: Chosen strategy not yet available for beam contact");
   }
 
-  // decide wether the original or the modified gapfunction definition is used
+  // decide whether the original or the modified gapfunction definition is used
   bool newgapfunction =  DRT::INPUT::IntegralValue<int>(beamcman_->InputParameters(),"BEAMS_NEWGAP");
 
   // if the modified gap function definition is used the normal vector of the last time step has to be stored

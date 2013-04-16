@@ -115,7 +115,7 @@ namespace STR
 
     //@}
 
-    //! @name Verfication
+    //! @name Verification
     //@{
 
     //! Check sanity prior resize
@@ -139,7 +139,7 @@ namespace STR
       return sane;
     }
 
-    //! Determine wether step lies in given bounds
+    //! Determine whether step lies in given bounds
     bool StepExists
     (
       const int step  //!< inquired step
@@ -148,7 +148,7 @@ namespace STR
       return ( (step >= steppast_) and (step <= stepfuture_) );
     }
 
-    //! determine wether index lies in given bounds
+    //! determine whether index lies in given bounds
     bool IndexExists
     (
       const int index //!< inquired index
@@ -269,7 +269,7 @@ namespace STR
     //! @name Actions
     //@{
 
-    //! Set entrie at #step to #value
+    //! Set entry at #step to #value
     void SetStep
     (
       const int step,
@@ -307,7 +307,7 @@ namespace STR
   /*! \brief Specialise general #TimIntMStepBase object
    *         for \c Epetra_Vector as needed for state vectors
    *         -- displacements, velocities and accelerations
-   *         (alright, accelerations do not truely belong to the phase
+   *         (all right, accelerations do not truly belong to the phase
    *         state) -- in structural dynamics
    */
   template <> class TimIntMStep<Epetra_Vector>
