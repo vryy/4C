@@ -2125,7 +2125,7 @@ else dserror("Material type is not supported");
 
 // check whether there is zero or negative (physical) viscosity
 // (expect for permeable fluid)
-if (visc_ < EPS15 and not material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+if (visc_ < EPS15 and not (material->MaterialType() == INPAR::MAT::m_permeable_fluid))
   dserror("zero or negative (physical) diffusivity");
 
 return;
@@ -3694,23 +3694,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
   {
     for (int ui=0; ui<nen_; ++ui)
     {
-      const int fui   = nsd_*ui;
-
-      for (int idim = 0; idim <nsd_; ++idim)
+      for (int vi=0; vi<nen_; ++vi)
       {
-        const int idim_nsd=idim*nsd_;
-
-        for (int vi=0; vi<nen_; ++vi)
+        for (int jdim= 0; jdim<nsd_;++jdim)
         {
-          const int fvi   = nsd_*vi;
-
-          const int fvi_p_idim = fvi+idim;
-
-          for (int jdim= 0; jdim<nsd_;++jdim)
+          for (int idim = 0; idim<nsd_; ++idim)
           {
-            estif_u(fvi_p_idim,fui+jdim) += funct_(vi)*lin_resM_Du(idim_nsd+jdim,ui);
+            estif_u(nsd_*vi+idim,nsd_*ui+jdim) += funct_(vi)*lin_resM_Du(idim*nsd_+jdim,ui);
           } // end for (jdim)
-        } // end for (idim)
+        }
       } //vi
     } // ui
   }
@@ -3718,15 +3710,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
   {
     for (int ui=0; ui<nen_; ++ui)
     {
-      const int fui   = nsd_*ui;
-
       for (int vi=0; vi<nen_; ++vi)
       {
-        const int fvi   = nsd_*vi;
-
         for (int idim = 0; idim <nsd_; ++idim)
         {
-          estif_u(fvi+idim,fui+idim) += funct_(vi)*lin_resM_Du(idim*nsd_+idim,ui);
+          estif_u(nsd_*vi+idim,nsd_*ui+idim) += funct_(vi)*lin_resM_Du(idim*nsd_+idim,ui);
         } // end for (idim)
       } //vi
     } // ui
@@ -3802,22 +3790,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ViscousGalPart(
 
   for (int vi=0; vi<nen_; ++vi)
   {
-    const int fvi   = nsd_*vi;
-
-    for (int jdim= 0; jdim<nsd_;++jdim)
+    for (int ui=0; ui<nen_; ++ui)
     {
-      const double temp=visceff_timefacfac*derxy_(jdim,vi);
-
-      for (int ui=0; ui<nen_; ++ui)
+      for (int jdim= 0; jdim<nsd_;++jdim)
       {
-        const int fui   = nsd_*ui;
+        const double temp=visceff_timefacfac*derxy_(jdim,vi);
 
         for (int idim = 0; idim <nsd_; ++idim)
         {
-          const int fvi_p_idim = fvi+idim;
-
-          estif_u(fvi_p_idim,fui+jdim) += temp*derxy_(idim, ui);
-          estif_u(fvi_p_idim,fui+idim) += temp*derxy_(jdim, ui);
+          estif_u(nsd_*vi+idim,nsd_*ui+jdim) += temp*derxy_(idim, ui);
+          estif_u(nsd_*vi+idim,nsd_*ui+idim) += temp*derxy_(jdim, ui);
         } // end for (jdim)
       } // end for (idim)
     } // ui
@@ -4251,41 +4233,30 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
 
     if (is_higher_order_ele_ || fldpara_->IsNewton())
     {
-      for(int jdim=0;jdim<nsd_;++jdim)
+      for (int ui=0; ui<nen_; ++ui)
       {
-        for (int ui=0; ui<nen_; ++ui)
+        for (int vi=0; vi<nen_; ++vi)
         {
-          const int fui_p_jdim   = nsd_*ui + jdim;
-
           for(int idim=0;idim<nsd_;++idim)
           {
-            const int nsd_idim=nsd_*idim;
-
-            for (int vi=0; vi<nen_; ++vi)
+            const double temp_vi_idim=derxy_(idim,vi)*scal_grad_q;
+            for(int jdim=0;jdim<nsd_;++jdim)
             {
-              const double temp_vi_idim=derxy_(idim,vi)*scal_grad_q;
-
-              estif_q_u(vi,fui_p_jdim) += lin_resM_Du(nsd_idim+jdim,ui)*temp_vi_idim;
+              estif_q_u(vi,nsd_*ui+jdim) += lin_resM_Du(nsd_*idim+jdim,ui)*temp_vi_idim;
             } // jdim
-          } // vi
-        } // ui
-      } //idim
+          } // idim
+        } // vi
+      } // ui
     } // end if (is_higher_order_ele_) or (newton_)
     else
     {
       for (int vi=0; vi<nen_; ++vi)
       {
-        for(int idim=0;idim<nsd_;++idim)
+        for (int ui=0; ui<nen_; ++ui)
         {
-          const int nsd_idim=nsd_*idim;
-
-          const double temp_vi_idim=derxy_(idim, vi)*scal_grad_q;
-
-          for (int ui=0; ui<nen_; ++ui)
+          for(int idim=0;idim<nsd_;++idim)
           {
-            const int fui_p_idim   = nsd_*ui + idim;
-
-            estif_q_u(vi,fui_p_idim) += lin_resM_Du(nsd_idim+idim,ui)*temp_vi_idim;
+            estif_q_u(vi,nsd_*ui+idim) += lin_resM_Du(nsd_*idim+idim,ui)*derxy_(idim, vi)*scal_grad_q;
           } // vi
         } // ui
       } //idim
@@ -4294,12 +4265,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
 
     for (int ui=0; ui<nen_; ++ui)
     {
-      for (int idim = 0; idim <nsd_; ++idim)
-      {
-        const double v=timefacfacpre*derxy_(idim,ui)*scal_grad_q;
-
-        for (int vi=0; vi<nen_; ++vi)
-        {
           /* pressure stabilisation: pressure( L_pres_p) */
           /*
                /                    \
@@ -4308,9 +4273,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
               |                      |
                \                    /
           */
-          ppmat(vi,ui)+=v*derxy_(idim,vi);
-        } // vi
-      } // end for(idim)
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        double sum = 0.;
+        for (int idim = 0; idim < nsd_; ++idim)
+          sum += derxy_(idim,ui) * derxy_(idim,vi);
+
+        ppmat(vi,ui) += timefacfacpre*scal_grad_q*sum;
+      } // vi
     }  // ui
 
     for (int idim = 0; idim <nsd_; ++idim)
@@ -4418,73 +4388,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
            |               \  /    \       (i)        /     |
             \                                              /
      */
-     if (is_higher_order_ele_ || fldpara_->IsNewton())
-     {
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         for(int idim=0;idim<nsd_;++idim)
-         {
-           const int nsd_idim=nsd_*idim;
 
-           const int fvi_p_idim = nsd_*vi+idim;
-
-           for(int jdim=0;jdim<nsd_;++jdim)
-           {
-             const int nsd_idim_p_jdim=nsd_idim+jdim;
-             for (int ui=0; ui<nen_; ++ui)
-             {
-               const int fui_p_jdim   = nsd_*ui + jdim;
-
-               estif_u(fvi_p_idim,fui_p_jdim) += lin_resM_Du(nsd_idim_p_jdim,ui)*supg_test(vi);
-             } // jdim
-           } // vi
-         } // ui
-       } //idim
-     } // end if (is_higher_order_ele_) or (newton_)
-     else
-     {
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         for(int idim=0;idim<nsd_;++idim)
-         {
-           const int fvi_p_idim = nsd_*vi+idim;
-
-           const int nsd_idim=nsd_*idim;
-
-           for (int ui=0; ui<nen_; ++ui)
-           {
-             const int fui_p_idim   = nsd_*ui + idim;
-
-             estif_u(fvi_p_idim,fui_p_idim) += lin_resM_Du(nsd_idim+idim,ui)*supg_test(vi);
-           } // ui
-         } //idim
-       } // vi
-     } // end if not (is_higher_order_ele_) nor (newton_)
-
-     /* supg stabilisation: pressure part  ( L_pres_p) */
-     /*
-              /                                    \
-             |              /       n+1       \     |
-             |  nabla Dp , |   rho*u   o nabla | v  |
-             |              \       (i)       /     |
-              \                                    /
-     */
-     for (int vi=0; vi<nen_; ++vi)
-     {
-       const double v = timefacfacpre*supg_test(vi);
-
-       for (int idim = 0; idim <nsd_; ++idim)
-       {
-         const int fvi   = nsd_*vi + idim;
-
-         for (int ui=0; ui<nen_; ++ui)
-         {
-           estif_p_v(fvi,ui) += v*derxy_(idim, ui);
-         }
-       }
-     }  // end for(idim)
-
-     /* supg stabilisation: inertia, linearisation of testfunction  */
+     /* supg stabilisation: inertia, linearisation of testfunction if Newton */
      /*
                  /                                       \
                 |         n+1       /              \      |
@@ -4492,7 +4397,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
                 |         (i)       \              /      |
                  \                                       /
      */
-     /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
+     /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) if Newton */
      /*
                  /                                                       \
                 |    /       n+1        \   n+1     /              \      |
@@ -4500,7 +4405,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
                 |    \       (i)        /   (i)     \              /      |
                  \                                                       /
      */
-     /* supg stabilisation: reaction, linearisation of testfunction  */
+     /* supg stabilisation: reaction, linearisation of testfunction if Newton */
      /*
                  /                                         \
                 |           n+1       /              \      |
@@ -4508,7 +4413,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
                 |           (i)       \              /      |
                  \                                         /
      */
-     /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
+     /* supg stabilisation: pressure part, linearisation of test function if Newton ( L_pres_p) */
      /*
                 /                                     \
                |         n+1    /                \     |
@@ -4516,7 +4421,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
                |         (i)    \                /     |
                 \                                     /
      */
-     /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
+     /* supg stabilisation: viscous part, linearisation of test function if Newton (-L_visc_u) */
      /*
                 /                                               \
                |               / n+1 \    /               \      |
@@ -4524,7 +4429,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
                |               \ (i) /    \               /      |
                 \                                               /
      */
-     /* supg stabilisation: bodyforce part, linearisation of test function */
+     /* supg stabilisation: bodyforce part, linearisation of test function if Newton */
      /*
                 /                                      \
                |                  /               \     |
@@ -4548,27 +4453,72 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
            temp(jdim)=-timefacfac*densaf_*sgvelint_(jdim);
          }
        }
-
-       for(int jdim=0;jdim<nsd_;++jdim)
+       for (int vi=0; vi<nen_; ++vi)
        {
-         for (int vi=0; vi<nen_; ++vi)
+         for (int ui=0; ui<nen_; ++ui)
          {
-           const int fvi_p_jdim = nsd_*vi+jdim;
-
            for(int idim=0;idim<nsd_;++idim)
            {
-             const double v=temp(jdim)*derxy_(idim,vi);
-
-             for (int ui=0; ui<nen_; ++ui)
+             const double w = temp(idim)*funct_(ui);
+             for(int jdim=0;jdim<nsd_;++jdim)
              {
-               const int fui_p_idim   = nsd_*ui + idim;
-
-               estif_u(fvi_p_jdim,fui_p_idim) += v*funct_(ui);
+               estif_u(nsd_*vi+idim,nsd_*ui+jdim) += lin_resM_Du(nsd_*idim+jdim,ui)*supg_test(vi)
+                   +derxy_(jdim,vi)*w;
              } // jdim
            } // vi
          } // ui
        } //idim
-     }  // end if Newton
+     } // end if (fldpara_->IsNewton())
+     else if (is_higher_order_ele_)
+     {
+       for (int vi=0; vi<nen_; ++vi)
+       {
+         for (int ui=0; ui<nen_; ++ui)
+         {
+           for(int idim=0;idim<nsd_;++idim)
+           {
+             for(int jdim=0;jdim<nsd_;++jdim)
+             {
+               estif_u(nsd_*vi+idim,nsd_*ui+jdim) += lin_resM_Du(nsd_*idim+jdim,ui)*supg_test(vi);
+             }
+           }
+         }
+       }
+     } // end if (is_higher_order_ele_)
+     else
+     {
+       for (int vi=0; vi<nen_; ++vi)
+       {
+         for (int ui=0; ui<nen_; ++ui)
+         {
+           for(int idim=0;idim<nsd_;++idim)
+           {
+             estif_u(nsd_*vi+idim,nsd_*ui+idim) += lin_resM_Du(nsd_*idim+idim,ui)*supg_test(vi);
+           } // ui
+         } //idim
+       } // vi
+     } // end if not (is_higher_order_ele_) nor (newton_)
+
+     /* supg stabilisation: pressure part  ( L_pres_p) */
+     /*
+              /                                    \
+             |              /       n+1       \     |
+             |  nabla Dp , |   rho*u   o nabla | v  |
+             |              \       (i)       /     |
+              \                                    /
+     */
+     for (int vi=0; vi<nen_; ++vi)
+     {
+       const double v = timefacfacpre*supg_test(vi);
+       for (int ui=0; ui<nen_; ++ui)
+       {
+
+         for (int idim = 0; idim <nsd_; ++idim)
+         {
+           estif_p_v(nsd_*vi+idim,ui) += v*derxy_(idim, ui);
+         }
+       }
+     }  // end for(idim)
 
      if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
      {
