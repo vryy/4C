@@ -353,6 +353,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          false,
                                          DRT::Condition::Volume));
 
+  Teuchos::RCP<ConditionDefinition> particledirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE DIRICH CONDITIONS",
+                                         "Dirichlet",
+                                         "Particle Dirichlet",
+                                         DRT::Condition::PointDirichlet,
+                                         false,
+                                         DRT::Condition::Particle));
+
   Teuchos::RCP<ConditionDefinition> pointaledirichlet =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT ALE DIRICH CONDITIONS",
                                          "ALEDirichlet",
@@ -480,6 +488,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     surfdirichlet->AddComponent(dirichletbundcomponents[i]);
     voldirichlet->AddComponent(dirichletbundcomponents[i]);
 
+    particledirichlet->AddComponent(dirichletbundcomponents[i]);
+
     pointaledirichlet->AddComponent(dirichletbundcomponents[i]);
     linealedirichlet ->AddComponent(dirichletbundcomponents[i]);
     surfaledirichlet ->AddComponent(dirichletbundcomponents[i]);
@@ -505,6 +515,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(linedirichlet);
   condlist.push_back(surfdirichlet);
   condlist.push_back(voldirichlet);
+
+  condlist.push_back(particledirichlet);
 
   condlist.push_back(pointaledirichlet);
   condlist.push_back(linealedirichlet);
@@ -571,18 +583,30 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          false,
                                          DRT::Condition::Volume));
 
+  Teuchos::RCP<ConditionDefinition> particleinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE INITIAL FIELD CONDITIONS",
+                                         "Initfield",
+                                         "Particle Initfield",
+                                         DRT::Condition::PointInitfield,
+                                         false,
+                                         DRT::Condition::Particle));
+
   for (unsigned i=0; i<initfieldscomponents.size(); ++i)
   {
     pointinitfields->AddComponent(initfieldscomponents[i]);
     lineinitfields->AddComponent(initfieldscomponents[i]);
     surfinitfields->AddComponent(initfieldscomponents[i]);
     volinitfields->AddComponent(initfieldscomponents[i]);
+
+    particleinitfields->AddComponent(initfieldscomponents[i]);
   }
 
   condlist.push_back(pointinitfields);
   condlist.push_back(lineinitfields);
   condlist.push_back(surfinitfields);
   condlist.push_back(volinitfields);
+
+  condlist.push_back(particleinitfields);
 
   /*--------------------------------------------------------------------*/
   // mortar coupling (for ALL kinds of interface problems)
@@ -3289,7 +3313,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          "Particle Inflow Condition",
                                          DRT::Condition::ParticleInflow,
                                          false,
-                                         DRT::Condition::Point));
+                                         DRT::Condition::Particle));
 
 
   for (unsigned i=0; i<particleinflowcomponents.size(); ++i)

@@ -240,7 +240,8 @@ public:
     Point,
     Line,
     Surface,
-    Volume
+    Volume,
+    Particle
   };
 
   //@}

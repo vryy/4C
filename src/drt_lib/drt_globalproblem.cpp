@@ -497,6 +497,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   int ndline = design.get<int>("NDLINE");
   int ndsurf = design.get<int>("NDSURF");
   int ndvol  = design.get<int>("NDVOL");
+  int ndparticle  = design.get<int>("NDPARTICLE");
 
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
@@ -514,6 +515,10 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   // read design volumes <-> nodes
   std::vector<std::vector<int> > dvol_fenode(ndvol);
   reader.ReadDesign("DVOL",dvol_fenode);
+
+  // read design particles
+  std::vector<std::vector<int> > dparticle(ndparticle);
+  reader.ReadDesign("DPARTICLE",dparticle);
 
   // create list of known conditions
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > vc = DRT::INPUT::ValidConditions();
@@ -566,6 +571,13 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
                   curr->first,dvol_fenode.size());
         curr->second->Add("Node Ids",dvol_fenode [curr->first]);
         break;
+      case Condition::Particle:
+        if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dparticle.size())
+          dserror("DParticle %d not in range [0:%d[\n"
+                  "DParticle condition on non existent DParticle?",
+                  curr->first,dparticle.size());
+        curr->second->Add("Node Ids",dparticle [curr->first]);
+        break;
       default:
         dserror("geometry type unspecified");
         break;
@@ -578,25 +590,42 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
       for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
       {
         Teuchos::RCP<DRT::Discretization> actdis = iter->second;
-        const std::vector<int>* nodes = curr->second->Nodes();
-        if (nodes->size()==0)
-          dserror("%s condition %d has no nodal cloud",
-              condlist[c]->Description().c_str(),
-              curr->second->Id());
+        if(actdis->Name() != "particle") // standard case
+        {
+          if(curr->second->GType() == Condition::Particle)
+            continue;
+          const std::vector<int>* nodes = curr->second->Nodes();
+          if (nodes->size()==0)
+            dserror("%s condition %d has no nodal cloud",
+                condlist[c]->Description().c_str(),
+                curr->second->Id());
 
-        int foundit = 0;
-        for (unsigned i=0; i<nodes->size(); ++i)
-        {
-          const int node = (*nodes)[i];
-          foundit = actdis->HaveGlobalNode(node);
-          if (foundit)
-            break;
+          int foundit = 0;
+          for (unsigned i=0; i<nodes->size(); ++i)
+          {
+            const int node = (*nodes)[i];
+            foundit = actdis->HaveGlobalNode(node);
+            if (foundit)
+              break;
+          }
+          int found=0;
+          actdis->Comm().SumAll(&foundit,&found,1);
+          if (found)
+          {
+            // Insert a copy since we might insert the same condition in many discretizations.
+            actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
+          }
         }
-        int found=0;
-        actdis->Comm().SumAll(&foundit,&found,1);
-        if (found)
+        else
         {
-          // Insert a copy since we might insert the same condition in many discretizations.
+          if(curr->second->GType() != Condition::Particle)
+            continue;
+          const std::vector<int>* nodes = curr->second->Nodes();
+          if (nodes->size()==0)
+            dserror("%s condition %d has no nodal cloud",
+                condlist[c]->Description().c_str(),
+                curr->second->Id());
+
           actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
         }
       }

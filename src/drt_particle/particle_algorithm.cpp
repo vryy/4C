@@ -930,7 +930,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
       }
 
       // get corresponding bin ids in ijk range and fill them into binIds
-      GidsInijkRange(binIds, &ijk_range[0]);
+      GidsInijkRange(&ijk_range[0], binIds);
     }
 
     //// 2.2) do a first negative search and remove bins that are not on this processor
@@ -966,9 +966,14 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
       {
         std::vector<LINALG::Matrix<3,1> > bincorners;
         GetBinCorners(*biniter, bincorners);
+
+        // in case wall element is axis aligned, it might not be detected as inside because projection points
+        // are located on the edges of the bin --> Remedy: bin centroid is tested as well
+        bincorners.push_back(GetBinCentroid(*biniter));
+
         bool projpointinsidebin = false;
-        // loop over all corners of one bin and project them onto the wall element
-        for(int corner=0; corner<8; corner++)
+        // loop over all corners + centroid of one bin and project them onto the wall element
+        for(size_t corner=0; corner<bincorners.size(); corner++)
         {
           //search for the closest object, more exactly it's coordinates
           LINALG::Matrix<3,1> minDistCoords;
@@ -989,10 +994,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
       }
 
       for(std::set<int>::const_iterator biniter=binfaraway.begin(); biniter!=binfaraway.end(); ++biniter)
-      {
-        dserror("This has not yet been checked. But should be fine. Just remove this line in the code.");
         binIds.erase(*biniter);
-      }
     }
 
     //// 2.3) assign wall element to remaining bins
@@ -1113,7 +1115,7 @@ void PARTICLE::Algorithm::ConvertGidToijk(int gid, int* ijk)
 /*----------------------------------------------------------------------*
  | get all bins in ijk range                               ghamm 02/13  |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GidsInijkRange(std::set<int>& binIds, int* ijk_range)
+void PARTICLE::Algorithm::GidsInijkRange(int* ijk_range, std::set<int>& binIds)
 {
   for(int i=ijk_range[0]; i<=ijk_range[1]; i++)
   {
@@ -1166,6 +1168,26 @@ void PARTICLE::Algorithm::GetBinCorners(int binId, std::vector<LINALG::Matrix<3,
   } // end for int i
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+| centroid position for given bin id                        ghamm 04/13 |
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<3,1> PARTICLE::Algorithm::GetBinCentroid(int binId)
+{
+  int ijk[3];
+  ConvertGidToijk(binId, ijk);
+  if(ijk[0] == -1)
+    dserror("given bin id is outside of bins; centroid of bin is does not make sense");
+
+  LINALG::Matrix<3,1> centroid(false);
+  for(int dim=0; dim<3; dim++)
+  {
+    centroid(dim) = XAABB_(dim,0) + bin_size_[dim]*ijk[dim] + bin_size_[dim]/2.0;
+  }
+
+  return centroid;
 }
 
 

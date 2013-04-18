@@ -859,6 +859,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NDLINE",0,"number of line clouds",&design);
   IntParameter("NDSURF",0,"number of surface clouds",&design);
   IntParameter("NDVOL",0,"number of volume clouds",&design);
+  IntParameter("NDPARTICLE",0,"number of particle clouds",&design);
 
   /*--------------------------------------------------------------------*/
   /* parameters for NOX - non-linear solution */

@@ -718,7 +718,7 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
 
       // get corresponding bin ids in ijk range
       std::set<int> binIds;
-      GidsInijkRange(binIds, &ijk_range[0]);
+      GidsInijkRange(&ijk_range[0], binIds);
 
       // assign fluid element to bins
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)

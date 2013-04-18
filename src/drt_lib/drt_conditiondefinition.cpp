@@ -897,6 +897,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
     case DRT::Condition::Line:    success = dobj=="DLINE";  break;
     case DRT::Condition::Surface: success = dobj=="DSURF";  break;
     case DRT::Condition::Volume:  success = dobj=="DVOL";   break;
+    case DRT::Condition::Particle:  success = dobj== "DPARTICLE";   break;
     default:
       dserror("geometry type unspecified");
       break;
@@ -992,6 +993,7 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(std::ostream& stream,
   case DRT::Condition::Line:    name = "DLINE";  break;
   case DRT::Condition::Surface: name = "DSURF";  break;
   case DRT::Condition::Volume:  name = "DVOL";   break;
+  case DRT::Condition::Particle:  name = "DPARTICLE";   break;
   default:
     dserror("geometry type unspecified");
     break;

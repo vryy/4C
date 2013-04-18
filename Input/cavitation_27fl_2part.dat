@@ -31,7 +31,7 @@ FLUID_VIS                       No
 ALE_DISP                        No
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
-LIMIT_OUTP_TO_PROC              0
+LIMIT_OUTP_TO_PROC              -1
 ------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   0.2 //0.2 // 0.4
@@ -152,10 +152,11 @@ STRUCTURE DIS particle NODE 6 QUANTITY velx VALUE 1.83107257388883254e-01 TOLERA
 STRUCTURE DIS particle NODE 6 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
 STRUCTURE DIS particle NODE 6 QUANTITY velz VALUE 2.39792657256535924e-01 TOLERANCE 1.0e-12
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
+NDPOINT 0
 NDLINE  0
 NDSURF  6
 NDVOL   0
+NDPARTICLE 1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // neg_x
@@ -171,11 +172,11 @@ E 5 - NUMDOF 4  ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNC
 // pos_z
 E 6 - NUMDOF 4  ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN PARTICLE INFLOW CONDITION
-DPOINT                          1
+DPARTICLE                          1
 // particle inflow
 E 1 - vertex1 -1.0 -1.0 -1.0  vertex2 1.0 1.0 -1.0  num_per_dir 2 2 1  inflow_vel 0.2 0.0 0.0  inflow_freq 100
----------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 2 DNODE 1
+---------------------------------------------------------DPARTICLE-NODE TOPOLOGY
+NODE 0 DPARTICLE 1 
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1

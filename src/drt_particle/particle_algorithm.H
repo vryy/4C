@@ -176,14 +176,19 @@ namespace PARTICLE
 
     /// get all bin ids for given range of ijk
     void GidsInijkRange(
-      std::set<int>& binIds,
-      int* ijk_bound
+      int* ijk_bound,   ///< given range of ijk
+      std::set<int>& binIds   ///< all bin ids in the specified range
       );
 
     /// get nodal coordinates of bin with given id
     void GetBinCorners(
-      int binId,
-      std::vector<LINALG::Matrix<3,1> >& bincorners
+      int binId,   ///< bin id of which corners are calculated
+      std::vector<LINALG::Matrix<3,1> >& bincorners   ///< corner position of given bin
+      );
+
+    /// centroid position for given bin id is returned
+    LINALG::Matrix<3,1> GetBinCentroid(
+      int binId   ///< bin id of which centroid is calculated
       );
 
 

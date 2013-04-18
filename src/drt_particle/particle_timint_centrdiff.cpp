@@ -91,6 +91,9 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
   // time this step
   timer_->ResetStartTime();
 
+  // get state before Dirichlet conditions are applied because ClearState is called there
+  Teuchos::RCP<const Epetra_Vector> bubbleforces = discret_->GetState("particleforces");
+
   const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
   const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
@@ -102,12 +105,15 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
   disn_->Update(1.0, *(*dis_)(0), 0.0);
   disn_->Update(dt, *veln_, 1.0);
 
+  // apply Dirichlet BCs
+  ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null, false);
+  ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
+
   // build new external forces (This is too much work here because an assembled row vector
   // for the forces would be enough. But in later applications with particle contact
   // it is necessary to evaluate also ghost bubbles.
   // in short: correct col layout is available but only row layout is needed
   // --> LINALG::Export(col->row) from bubbleforces to fextn_
-  Teuchos::RCP<const Epetra_Vector> bubbleforces = discret_->GetState("particleforces");
   fextn_->PutScalar(0.0);
   LINALG::Export(*bubbleforces, *fextn_);
 
@@ -131,6 +137,9 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
 
   // update of end-velocities \f$V_{n+1}\f$
   veln_->Update(dthalf, *accn_, 1.0);
+
+  // apply Dirichlet BCs on accelerations
+  ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
 
   return;
 }
@@ -199,8 +208,8 @@ void PARTICLE::TimIntCentrDiff::UpdateStatesAfterParticleTransfer()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* State vectors are updated according to the new distribution of particles */
+/*---------------------------------------------------------------------------*/
+/* equilibrate system at initial state and identify consistent accelerations */
 void PARTICLE::TimIntCentrDiff::DetermineMassDampConsistAccel()
 {
   // build new external forces (This is too much work here because an assembled row vector
