@@ -1647,6 +1647,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("INITCONTACTGAPVALUE",0.0,"Value for initialization of init contact set with gap vector",&scontact);
 
+  // solver convergence test parameters for contact/meshtying in saddlepoint formulation
+  setStringToIntegralParameter<int>("NORMCOMBI_RESFCONTCONSTR","And",
+    "binary operator to combine contact constraints and residual force values",
+    tuple<std::string>(
+      "And",
+      "Or"),
+    tuple<int>(
+      INPAR::STR::bop_and,
+      INPAR::STR::bop_or),
+    &scontact
+    );
+
+  setStringToIntegralParameter<int>("NORMCOMBI_DISPLAGR","And",
+      "binary operator to combine displacement increments and Lagrange multiplier increment values",
+      tuple<std::string>(
+        "And",
+        "Or"),
+      tuple<int>(
+        INPAR::STR::bop_and,
+        INPAR::STR::bop_or),
+      &scontact
+      );
+
+  DoubleParameter("TOLCONTCONSTR",1.0E-6,
+                  "tolerance in the contact constraint norm for the newton iteration (saddlepoint formulation only)",
+                  &scontact);
+  DoubleParameter("TOLLAGR",1.0E-6,
+                  "tolerance in the LM norm for the newton iteration (saddlepoint formulation only)",
+                  &scontact);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 

@@ -74,6 +74,8 @@ PENALTYPARAMTAN                 1000
 SEMI_SMOOTH_CN                  1000000.0
 SEMI_SMOOTH_CT                  1000.0
 SYSTEM                          spcoupled
+TOLCONTCONSTR                   1.0E-8
+TOLLAGR                         5.0E-2 //1.0E-8
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        dual
 COUPLING_AUXPLANE               Yes

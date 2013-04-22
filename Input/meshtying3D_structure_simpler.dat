@@ -68,6 +68,7 @@ SIMPLER_SOLVER                  2
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 SYSTEM                          SaddlePointSimpler
+TOLLAGR                         1.0E-8
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
 --------------------------------------------------------------------SOLVER 1

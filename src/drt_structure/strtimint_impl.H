@@ -768,6 +768,8 @@ namespace STR
     enum INPAR::STR::BinaryOp combdispre_; //!< binary operator to combine field norms
     enum INPAR::STR::BinaryOp combfrespfres_; //!< binary operator to combine field norms
     enum INPAR::STR::BinaryOp combdisifres_; //!< binary operator to combine displacement and forces
+    enum INPAR::STR::BinaryOp combfrescontconstr_; //!< binary operator to combine field norms (forces and contact constraints, contact/meshtying in saddlepoint formulation only)
+    enum INPAR::STR::BinaryOp combdisilagr_; //!< binary operator to combine field norms (displacement increments and LM increments, contact/meshtying in saddlepoint formulation only)
 
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;  //!< maximally permitted iterations
@@ -778,6 +780,8 @@ namespace STR
     double tolfres_;  //!< tolerance force residual
     double tolpfres_; //!< norm of residual pressure forces
     double tolpres_; //!< norm of residual pressures
+    double tolcontconstr_; //!< norm of rhs for contact constraints (saddlepoint formulation only)
+    double tollagr_; //!< tolerance of LM multiplier increments (saddlepoint formulation only)
 
     double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing
                          //!< with Lagrange multipliers

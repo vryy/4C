@@ -72,8 +72,6 @@ STR::TimIntImpl::TimIntImpl
   normtypefres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),
   normtypepres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_PRES")),
   normtypepfres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_INCO")),
-  normtypecontconstr_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),  // use same norm types as for residual forces
-  normtypeplagrincr_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP")),   // and displacement increments
   combdispre_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_DISPPRES")),
   combfrespfres_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFINCO")),
   combdisifres_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFDISP")),
@@ -145,6 +143,25 @@ STR::TimIntImpl::TimIntImpl
     NoxSetup();
   else if (itertype_ == INPAR::STR::soltech_noxgeneral)
     NoxSetup(xparams.sublist("NOX"));
+
+  // setup tolerances and binary operators for convergence check of contact/meshtying problems
+  // in saddlepoint formulation
+  tolcontconstr_ = tolfres_;
+  tollagr_ = toldisi_;
+  combfrescontconstr_ = INPAR::STR::bop_and; // default values, avoid uninitialized variables
+  combdisilagr_ = INPAR::STR::bop_and;
+  normtypecontconstr_ = INPAR::STR::convnorm_abs; //DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF"));
+  normtypeplagrincr_ = INPAR::STR::convnorm_abs; //DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP"));
+
+  if (HaveContactMeshtying())
+  {
+    // extract information from parameter lists
+    tolcontconstr_      = cmtman_->GetStrategy().Params().get<double>("TOLCONTCONSTR");
+    tollagr_            = cmtman_->GetStrategy().Params().get<double>("TOLLAGR");
+    combfrescontconstr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(cmtman_->GetStrategy().Params(),"NORMCOMBI_RESFCONTCONSTR");
+    combdisilagr_       = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(cmtman_->GetStrategy().Params(),"NORMCOMBI_DISPLAGR");
+  }
+
 
   // -------------------------------------------------------------------
   // setup Krylov projection if necessary
@@ -476,6 +493,38 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   else
     solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
 
+#if 1
+  // decide which norms have to be evaluated
+  bool bPressure = pressure_ != Teuchos::null;
+  bool bContactSP = (HaveContactMeshtying() &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+
+  if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
+  if( bPressure == false && bContactSP == false)
+  {
+    // build residual displacement norm
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  }
+  if (bPressure)
+  {
+    Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(disi_);
+    Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(disi_);
+    normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+  }
+  if (bContactSP )
+  {
+    // extract subvectors
+    Teuchos::RCP<Epetra_Vector> lagrincr  = cmtman_->GetStrategy().LagrMultSolveIncr();
+
+    // build residual displacement norm
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    // build lagrange multiplier increment norm
+    if(lagrincr!=Teuchos::null) normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
+    else normlagr_ = -1.0;
+  }
+#else
   // extract norm of disi_
   if (pressure_ != Teuchos::null)
   {
@@ -489,6 +538,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
     // build residual displacement norm
     normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
   }
+#endif
 
   // set Dirichlet increments in displacement increments
   disi_->Update(1.0, *dbcinc, 1.0);
@@ -886,7 +936,63 @@ bool STR::TimIntImpl::Converged()
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (apptype == INPAR::CONTACT::app_mortarcontact && stype == INPAR::CONTACT::solution_lagmult && semismooth)
       ccontact = cmtman_->GetStrategy().ActiveSetSemiSmoothConverged();
-  }
+
+    // add convergence check for saddlepoint formulations
+    // use separate convergence checks for contact constraints and
+    // LM increments
+    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+    if (stype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed) {
+      bool convDispLagrIncr = false;
+
+      switch ( normtypeplagrincr_ )
+      {
+      case INPAR::STR::convnorm_abs:
+        convDispLagrIncr = normlagr_ < tollagr_;
+        break;
+      /*case INPAR::STR::convnorm_rel:
+        convDispLagrIncr = normlagr_ < tollagr_;
+        break;*/
+      default:
+        dserror("You should not turn up here.");
+        break;
+      }
+
+      // switch between "and" and "or"
+      if (combdisilagr_==INPAR::STR::bop_and)
+        convdis = convdis and convDispLagrIncr;
+      else if (combdisilagr_==INPAR::STR::bop_or)
+        convdis = convdis or convDispLagrIncr;
+      else
+        dserror("Something went terribly wrong with binary operator!");
+
+      bool convResfContConstr = false;
+
+      switch ( normtypecontconstr_ )
+      {
+      case INPAR::STR::convnorm_abs:
+        convResfContConstr = normcontconstr_ < tolcontconstr_;
+        break;
+      /*case INPAR::STR::convnorm_rel:
+        //convDispLagrIncr = normcontconstr_ < std::max(tolfres_*normcharforce_,1e-15);
+        convResfContConstr = normcontconstr_ < tolcontconstr_;
+        break;*/
+      default:
+        dserror("You should not turn up here.");
+        break;
+      }
+
+      // switch between "and" and "or"
+      if (combfrescontconstr_==INPAR::STR::bop_and)
+        convfres = convfres and convResfContConstr;
+      else if (combfrescontconstr_==INPAR::STR::bop_or)
+        convfres = convfres or convResfContConstr;
+      else
+        dserror("Something went terribly wrong with binary operator!");
+
+
+    }
+
+  }  // end HaveMeshtyingContact()
 
   //pressure related stuff
   if (pressure_ != Teuchos::null)
@@ -1102,6 +1208,52 @@ void STR::TimIntImpl::NewtonFull()
       projector_->ApplyPT(*fres_);
 
     // (trivial)
+#if 1
+    // decide which norms have to be evaluated
+    bool bPressure = pressure_ != Teuchos::null;
+    bool bContactSP = (HaveContactMeshtying() &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+
+    if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
+    if( bPressure == false && bContactSP == false)
+    {
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    }
+    if (bPressure)
+    {
+      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+
+      pres = pressure_->ExtractCondVector(disi_);
+      disp = pressure_->ExtractOtherVector(disi_);
+      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+    }
+    if (bContactSP )
+    {
+      // extract subvectors
+      Teuchos::RCP<Epetra_Vector> lagrincr  = cmtman_->GetStrategy().LagrMultSolveIncr();
+      Teuchos::RCP<Epetra_Vector> constrrhs = cmtman_->GetStrategy().ConstrRhs();
+
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      // build residual constraint norm
+      if(constrrhs!=Teuchos::null) normcontconstr_ = STR::AUX::CalculateVectorNorm(iternorm_, constrrhs);
+      else normcontconstr_ = -1.0;
+      // build lagrange multiplier increment norm
+      if(lagrincr!=Teuchos::null) normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
+      else normlagr_ = -1.0;
+    }
+
+#else
     if (pressure_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
@@ -1114,7 +1266,7 @@ void STR::TimIntImpl::NewtonFull()
       normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
       normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
     }
-    else if(HaveContactMeshtying()) // TODO: not really nice, since standard case is the last one
+    else if(HaveContactMeshtying())
     {
       // strategy and system setup types
       INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
@@ -1139,7 +1291,7 @@ void STR::TimIntImpl::NewtonFull()
       }
       else
       {
-        // build standard norms // TODO refactor this: build a small routine which gives true/false if it is a contact/meshtying problem in saddlepoint formulation
+        // build standard norms
         // build residual force norm
         normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
         // build residual displacement norm
@@ -1153,6 +1305,7 @@ void STR::TimIntImpl::NewtonFull()
       // build residual displacement norm
       normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
     }
+#endif
 
     // print stuff
     PrintNewtonIter();
@@ -1934,6 +2087,51 @@ void STR::TimIntImpl::PTC()
       locsysman_->RotateLocalToGlobal(fres_);
 
     // (trivial)
+#if 1
+    // decide which norms have to be evaluated
+    bool bPressure = pressure_ != Teuchos::null;
+    bool bContactSP = (HaveContactMeshtying() &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+
+    if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
+    if( bPressure == false && bContactSP == false)
+    {
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+    }
+    if (bPressure)
+    {
+      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+
+      pres = pressure_->ExtractCondVector(disi_);
+      disp = pressure_->ExtractOtherVector(disi_);
+      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+    }
+    if (bContactSP )
+    {
+      // extract subvectors
+      Teuchos::RCP<Epetra_Vector> lagrincr  = cmtman_->GetStrategy().LagrMultSolveIncr();
+      Teuchos::RCP<Epetra_Vector> constrrhs = cmtman_->GetStrategy().ConstrRhs();
+
+      // build residual force norm
+      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+      // build residual displacement norm
+      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      // build residual constraint norm
+      if(constrrhs!=Teuchos::null) normcontconstr_ = STR::AUX::CalculateVectorNorm(iternorm_, constrrhs);
+      else normcontconstr_ = -1.0;
+      // build lagrange multiplier increment norm
+      if(lagrincr!=Teuchos::null) normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
+      else normlagr_ = -1.0;
+    }
+#else
     if (pressure_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
@@ -1953,6 +2151,7 @@ void STR::TimIntImpl::PTC()
       // build residual displacement norm
       normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
     }
+#endif
 
     // print stuff
     dti_ = dti;
@@ -2193,9 +2392,6 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   // add norms of Lagrange multiplier parts (contact/meshtying in saddlepoint formulation only)
   if(HaveContactMeshtying())
   {
-    //normtypecontconstr_
-    //normtypeplagrincr_
-
     // strategy and system setup types
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
@@ -2358,7 +2554,7 @@ void STR::TimIntImpl::PrintNewtonIterText
 
     if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
     {
-      // TODO switch for normtype
+      // we only support abs norms
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normcontconstr_; // RHS for contact constraints
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normlagr_;    // norm Lagrange multipliers
     }
@@ -2423,7 +2619,7 @@ void STR::TimIntImpl::ExportContactQuantities()
   cout << "*** averaged inttime per newton step =  " << curinttime << endl;
   cout << "*** total inttime per time step= " << curinttime*iteration << endl;
 
-  // write number of active nodes for converged newton in textfile xxx.active
+  // write number of active nodes for converged newton in textfile xx x.active
   FILE* MyFile = NULL;
   std::ostringstream filename;
   const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
