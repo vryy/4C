@@ -126,11 +126,19 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   GlobalOrdinal gMaxLagrNodeId = AmalgamationFactory::DOFGid2NodeId(
       lagrDofMap->getMaxAllGlobalIndex(), Teuchos::null /* parameter not used */,
       lagr_blockdim,
-      lagr_offset);
+      lagr_offset
+#ifdef HAVE_Trilinos_Q2_2013
+      , 0 /*indexBase*/
+#endif
+  );
   GlobalOrdinal gMinLagrNodeId = AmalgamationFactory::DOFGid2NodeId(
       lagrDofMap->getMinAllGlobalIndex(), Teuchos::null /* parameter not used */,
       lagr_blockdim,
-      lagr_offset);
+      lagr_offset
+#ifdef HAVE_Trilinos_Q2_2013
+      , 0 /*indexBase*/
+#endif
+  );
 
   // generate locally replicated vector for mapping Lagrange node ids to displacement node ids
   std::vector<GlobalOrdinal> lagrNodeId2dispNodeId(gMaxLagrNodeId-gMinLagrNodeId+1, -1);
@@ -154,7 +162,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
       GlobalOrdinal disp_nodeId = AmalgamationFactory::DOFGid2NodeId(
           disp_grid, Teuchos::null /* parameter not used */,
           disp_blockdim,
-          disp_offset);
+          disp_offset
+#ifdef HAVE_Trilinos_Q2_2013
+          , 0 /*indexBase*/
+#endif
+          );
 
       Teuchos::ArrayView<const LocalOrdinal> lagr_indices;
       Teuchos::ArrayView<const Scalar> lagr_vals;
@@ -165,7 +177,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
         GlobalOrdinal lagr_nodeId = AmalgamationFactory::DOFGid2NodeId(
             lagr_gcid, Teuchos::null /* parameter not used */,
             lagr_blockdim,
-            lagr_offset);
+            lagr_offset
+#ifdef HAVE_Trilinos_Q2_2013
+            , 0 /*indexBase*/
+#endif
+            );
 
         TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<GlobalOrdinal>(local_lagrNodeId2dispNodeId.size())<lagr_nodeId-gMinLagrNodeId,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId. error.");
         if(lagrNodeId2dispNodeId[lagr_nodeId-gMinLagrNodeId] == -1)
@@ -202,7 +218,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
     GlobalOrdinal lagr_nodeId =
         AmalgamationFactory::DOFGid2NodeId(
           lagr_grid, Teuchos::null /* parameter not used */,
-          lagr_blockdim, lagr_offset);
+          lagr_blockdim, lagr_offset
+#ifdef HAVE_Trilinos_Q2_2013
+          , 0 /*indexBase*/
+#endif
+          );
     lagr_Nodes.push_back(lagr_nodeId);
   }
 
