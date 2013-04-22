@@ -1012,6 +1012,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   
   // build constraint rhs (=empty)
   Teuchos::RCP<Epetra_Vector> constrrhs = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
+  constrrhs_ = constrrhs; // set constraint rhs vector
 #ifndef MESHTYINGUCONSTR
   dserror("ERROR: Meshtying saddle point system only implemented for MESHTYINGUCONSTR");
 #endif // #ifndef MESHTYINGUCONSTR
@@ -1116,12 +1117,14 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // extract results for displacement and LM increments
   //**********************************************************************
+  zincr_->Update(-1.0,*z_,0.0); // store old current Lagrange multiplier vector from previous linear iteration)
   Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
   LINALG::MapExtractor mapext(*mergedmap,ProblemDofs(),glmdofrowmap_);
   mapext.ExtractCondVector(mergedsol,sold);
   mapext.ExtractOtherVector(mergedsol,sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
-  z_->Update(1.0,*sollm,0.0);
+  z_->Update(1.0,*sollm,0.0);   // overwrite Lagrange multiplier vector from previous linear solver call
+  zincr_->Update(+1.0,*z_,1.0); // build Lagrange multiplier increment vector for current linear solver call
   
   return;
 }

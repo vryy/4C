@@ -762,6 +762,8 @@ namespace STR
     enum INPAR::STR::ConvNorm normtypefres_; //!< convergence check for residual forces
     enum INPAR::STR::ConvNorm normtypepres_; //!< convergence check for residual pressure
     enum INPAR::STR::ConvNorm normtypepfres_; //!< convergence check for residual pressure forces
+    enum INPAR::STR::ConvNorm normtypecontconstr_; //!< convergence check for contact constraints (saddlepoint formulation only)
+    enum INPAR::STR::ConvNorm normtypeplagrincr_;  //!< convergence check for Lagrange multiplier increment (saddlepoint formulation only)
 
     enum INPAR::STR::BinaryOp combdispre_; //!< binary operator to combine field norms
     enum INPAR::STR::BinaryOp combfrespfres_; //!< binary operator to combine field norms
@@ -789,6 +791,9 @@ namespace STR
     double normcon_;  //!< norm of constraint
     double normpfres_; //!< norm of residual pressure forces
     double normpres_; //!< norm of residual pressures
+    double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in saddlepoint formulation only)
+    double normlagr_;     //!< norm of lagrange multipliers
+
     Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$
     //! @name Various global forces

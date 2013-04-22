@@ -118,6 +118,18 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return zuzawa_; }
 
     /*!
+    \brief Return constraint rhs vector (only in saddle-point formulation
+
+    */
+    Teuchos::RCP<Epetra_Vector> ConstrRhs() { return constrrhs_; }
+
+    /*!
+    \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
+
+    */
+    Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() { return zincr_; }
+
+    /*!
     \brief provides maps needed for contact/meshtying specific multigrid preconditioners
 
     */
@@ -461,9 +473,11 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
+    Teuchos::RCP<Epetra_Vector> constrrhs_;         // global constraint rhs vector (only for saddlepoint problems)
 
     Teuchos::RCP<Epetra_Vector> z_;                 // current vector of Lagrange multipliers at t_n+1
     Teuchos::RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
+    Teuchos::RCP<Epetra_Vector> zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
 
     bool                      dualquadslave3d_;     // flag indicating whether trafo should be applied

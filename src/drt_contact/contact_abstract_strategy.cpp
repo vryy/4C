@@ -287,17 +287,17 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
 
   // make sure to remove all existing maps first
   // (do NOT remove map of non-interface dofs after redistribution)
-  gsdofrowmap_  = Teuchos::null;
-  gmdofrowmap_  = Teuchos::null;
-  gsmdofrowmap_ = Teuchos::null;
-  glmdofrowmap_ = Teuchos::null;
-  gdisprowmap_  = Teuchos::null;
-  gsnoderowmap_ = Teuchos::null;
-  gmnoderowmap_ = Teuchos::null;
-  gactivenodes_ = Teuchos::null;
-  gactivedofs_  = Teuchos::null;
-  gactiven_     = Teuchos::null;
-  gactivet_     = Teuchos::null;
+  gsdofrowmap_      = Teuchos::null;
+  gmdofrowmap_      = Teuchos::null;
+  gsmdofrowmap_     = Teuchos::null;
+  glmdofrowmap_     = Teuchos::null;
+  gdisprowmap_      = Teuchos::null;
+  gsnoderowmap_     = Teuchos::null;
+  gmnoderowmap_     = Teuchos::null;
+  gactivenodes_     = Teuchos::null;
+  gactivedofs_      = Teuchos::null;
+  gactiven_         = Teuchos::null;
+  gactivet_         = Teuchos::null;
   if (!redistributed) gndofrowmap_= Teuchos::null;
 
   if (friction_)
@@ -374,6 +374,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   {
     // setup Lagrange multiplier vectors
     z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 
@@ -393,13 +394,24 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   else
   {
     // setup Lagrange multiplier vectors
-    if (z_ == Teuchos::null)
+    if (z_ == Teuchos::null) {
       z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    }
     else
     {
       Teuchos::RCP<Epetra_Vector> newz = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       LINALG::Export(*z_,*newz);
       z_ = newz;
+    }
+
+    if (zincr_ == Teuchos::null) {
+      zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    }
+    else
+    {
+      Teuchos::RCP<Epetra_Vector> newzincr = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+      LINALG::Export(*zincr_,*newzincr);
+      zincr_ = newzincr;
     }
 
     if (zold_ == Teuchos::null)
@@ -1799,6 +1811,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 #ifndef RESTARTAFTERPRESTRESSING
   reader.ReadVector(LagrMult(),"lagrmultold");
@@ -2603,4 +2616,3 @@ void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(Teuchos::RCP<Epet
   if(pgmdofrowmap_!=Teuchos::null) MasterDofMap = pgmdofrowmap_;
   else MasterDofMap = gmdofrowmap_;
 }
-

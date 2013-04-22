@@ -2551,6 +2551,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     // build constraint rhs
     constrrhs->Update(-1.0,*gactexp,1.0);
     constrrhs->ReplaceMap(*glmdofrowmap_);
+
+    constrrhs_ = constrrhs; // set constraint rhs vector
   }
   
   //**********************************************************************
@@ -2664,6 +2666,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     constrrhs->Update(1.0,*stickexp,1.0);
     constrrhs->Update(1.0,*slipexp,1.0);
     constrrhs->ReplaceMap(*glmdofrowmap_);
+
+    constrrhs_ = constrrhs; // set constraint rhs vector
   }
 
   //**********************************************************************
@@ -2757,10 +2761,24 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   mapext.ExtractOtherVector(mergedsol,sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
+  // overwrite Lagrange multiplier vector from previous linear solver call.
   // for self contact, slave and master sets may have changed,
   // thus we have to reinitialize the LM vector map
-  if (IsSelfContact()) z_ = Teuchos::rcp(new Epetra_Vector(*sollm));
-  else                 z_->Update(1.0,*sollm,0.0);
+  if (IsSelfContact())
+  {
+    zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
+    LINALG::Export(*z_,*zincr_);   // store old current Lagrange multiplier vector from previous linear iteration)
+    z_ = Teuchos::rcp(new Epetra_Vector(*sollm));
+    zincr_->Update(+1.0,*z_,-1.0); // build Lagrange multiplier increment vector for current linear solver call
+  }
+  else
+  {
+    zincr_->Update(-1.0,*z_,0.0); // store old current Lagrange multiplier vector from previous linear iteration)
+    z_->Update(1.0,*sollm,0.0);
+    zincr_->Update(+1.0,*z_,1.0); // build Lagrange multiplier increment vector for current linear solver call
+  }
+
+
 
   return;
 }

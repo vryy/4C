@@ -72,6 +72,8 @@ STR::TimIntImpl::TimIntImpl
   normtypefres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),
   normtypepres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_PRES")),
   normtypepfres_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_INCO")),
+  normtypecontconstr_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_RESF")),  // use same norm types as for residual forces
+  normtypeplagrincr_(DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdynparams,"NORM_DISP")),   // and displacement increments
   combdispre_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_DISPPRES")),
   combfrespfres_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFINCO")),
   combdisifres_(DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(sdynparams,"NORMCOMBI_RESFDISP")),
@@ -91,6 +93,11 @@ STR::TimIntImpl::TimIntImpl
   normchardis_(0.0),
   normfres_(0.0),
   normdisi_(0.0),
+  normcon_(0.0),
+  normpfres_(0.0),
+  normpres_(0.0),
+  normcontconstr_(0.0),  // < norm of contact constraints (saddlepoint formulation)
+  normlagr_(0.0),        // < norm of lagrange multiplier increment (saddlepoint formulation)
   disi_(Teuchos::null),
   fres_(Teuchos::null),
   freact_(Teuchos::null),
@@ -1106,6 +1113,38 @@ void STR::TimIntImpl::NewtonFull()
       disp = pressure_->ExtractOtherVector(disi_);
       normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
       normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+    }
+    else if(HaveContactMeshtying()) // TODO: not really nice, since standard case is the last one
+    {
+      // strategy and system setup types
+      INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+      INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+
+      if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+      {
+        // extract subvectors
+        Teuchos::RCP<Epetra_Vector> lagrincr  = cmtman_->GetStrategy().LagrMultSolveIncr();
+        Teuchos::RCP<Epetra_Vector> constrrhs = cmtman_->GetStrategy().ConstrRhs();
+
+        // build residual force norm
+        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+        // build residual displacement norm
+        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+        // build residual constraint norm
+        if(constrrhs!=Teuchos::null) normcontconstr_ = STR::AUX::CalculateVectorNorm(iternorm_, constrrhs);
+        else normcontconstr_ = -1.0;
+        // build lagrange multiplier increment norm
+        if(lagrincr!=Teuchos::null) normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
+        else normlagr_ = -1.0;
+      }
+      else
+      {
+        // build standard norms // TODO refactor this: build a small routine which gives true/false if it is a contact/meshtying problem in saddlepoint formulation
+        // build residual force norm
+        normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+        // build residual displacement norm
+        normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+      }
     }
     else
     {
@@ -2151,6 +2190,46 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     }
   }
 
+  // add norms of Lagrange multiplier parts (contact/meshtying in saddlepoint formulation only)
+  if(HaveContactMeshtying())
+  {
+    //normtypecontconstr_
+    //normtypeplagrincr_
+
+    // strategy and system setup types
+    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+
+    if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+    {
+      switch ( normtypecontconstr_ )
+      {
+      case INPAR::STR::convnorm_rel:
+        oss <<std::setw(20)<< "rel-contconstr-norm";
+        break;
+      case INPAR::STR::convnorm_abs :
+        oss <<std::setw(20)<< "abs-contconstr-norm";
+        break;
+      default:
+        dserror("You should not turn up here.");
+        break;
+      }
+
+      switch ( normtypeplagrincr_ )
+      {
+      case INPAR::STR::convnorm_rel:
+        oss <<std::setw(20)<< "rel-lagrincr-norm";
+        break;
+      case INPAR::STR::convnorm_abs :
+        oss <<std::setw(20)<< "abs-lagrincr-norm";
+        break;
+      default:
+        dserror("You should not turn up here.");
+        break;
+      }
+    }
+  }
+
   // add constraint norm
   if (conman_->HaveConstraintLagr())
   {
@@ -2267,6 +2346,21 @@ void STR::TimIntImpl::PrintNewtonIterText
     default:
       dserror("You should not turn up here.");
       break;
+    }
+  }
+
+  // add norms of Lagrange multiplier parts (contact/meshtying in saddlepoint formulation only)
+  if(HaveContactMeshtying())
+  {
+    // strategy and system setup types
+    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+
+    if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+    {
+      // TODO switch for normtype
+      oss << std::setw(20) << std::setprecision(5) << std::scientific << normcontconstr_; // RHS for contact constraints
+      oss << std::setw(20) << std::setprecision(5) << std::scientific << normlagr_;    // norm Lagrange multipliers
     }
   }
 

@@ -52,6 +52,7 @@ namespace DRT
 
 namespace LINALG
 {
+  class MultiMapExtractor;
   class SparseMatrix;
 }
 
@@ -166,6 +167,18 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return zuzawa_; }
+
+    /*!
+    \brief Return constraint rhs vector (only in saddle-point formulation
+
+    */
+    Teuchos::RCP<Epetra_Vector> ConstrRhs() { return constrrhs_; }
+
+    /*!
+    \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
+
+    */
+    Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() { return zincr_; }
 
     /*!
     \brief Return mortar matrix D
@@ -707,6 +720,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
     Teuchos::RCP<Epetra_Vector> wearvector_;        // global weighted wear vector w
+    Teuchos::RCP<Epetra_Vector> constrrhs_;         // global constraint rhs vector (only for saddlepoint problems)
 
     Teuchos::RCP<LINALG::SparseMatrix> lindmatrix_; // global Matrix LinD containing slave fc derivatives
     Teuchos::RCP<LINALG::SparseMatrix> linmmatrix_; // global Matrix LinM containing master fc derivatives
@@ -716,6 +730,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     Teuchos::RCP<Epetra_Vector> z_;                 // current vector of Lagrange multipliers at t_n+1
     Teuchos::RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
+    Teuchos::RCP<Epetra_Vector> zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
     Teuchos::RCP<Epetra_Vector> jump_;              // displacement jump (slave dofs)
     

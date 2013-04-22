@@ -166,13 +166,13 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 
   // make sure to remove all existing maps first
   // (do NOT remove map of non-interface dofs after redistribution)
-  gsdofrowmap_  = Teuchos::null;
-  gmdofrowmap_  = Teuchos::null;
-  gsmdofrowmap_ = Teuchos::null;
-  glmdofrowmap_ = Teuchos::null;
-  gdisprowmap_  = Teuchos::null;
-  gsnoderowmap_ = Teuchos::null;
-  gmnoderowmap_ = Teuchos::null;
+  gsdofrowmap_      = Teuchos::null;
+  gmdofrowmap_      = Teuchos::null;
+  gsmdofrowmap_     = Teuchos::null;
+  glmdofrowmap_     = Teuchos::null;
+  gdisprowmap_      = Teuchos::null;
+  gsnoderowmap_     = Teuchos::null;
+  gmnoderowmap_     = Teuchos::null;
   if (!redistributed) gndofrowmap_  = Teuchos::null;
 
   // make numbering of LM dofs consecutive and unique across N interfaces
@@ -216,8 +216,12 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
 
   // setup Lagrange multiplier vectors
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+
+  // setup constraint rhs vector
+  constrrhs_ = Teuchos::null; // only for saddle point problem formulation
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -818,6 +822,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
     
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   reader.ReadVector(LagrMult(),"lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
