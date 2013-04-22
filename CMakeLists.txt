@@ -985,6 +985,7 @@ set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
   src/drt_meshfree_discret/drt_meshfree_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
+  src/drt_meshfree_discret/drt_meshfree_multibin.cpp
   src/drt_meshfree_discret/drt_meshfree_cell.cpp
   src/drt_meshfree_discret/drt_meshfree_cell_utils.cpp
   src/drt_meshfree_discret/drt_meshfree_discret.cpp

@@ -41,55 +41,12 @@ Maintainer: Georg Hammerl
 #define DRT_MESHFREE_MESHFREEBIN_H
 
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
 
 namespace DRT
 {
 namespace MESHFREE
 {
-
-/*--------------------------------------------------------------------------*/
-/*!
- * \brief The element type class of meshfree bin, creating the same
- *
- * \author Georg Hammerl (hammerl@lnm.mw.tum.de)
- *
- * \date November, 2012
- */
-/*--------------------------------------------------------------------------*/
-class MeshfreeBinType : public DRT::ElementType
-{
-public:
-
-  //!< name of specific element type
-  std::string Name() const { return "MeshfreeBinType"; }
-
-  //!< returning instance of specific element type
-  static MeshfreeBinType & Instance() { return instance_; };
-
-  //!< create parallel object of this element type
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-  //!< create element of this element type
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
-                                             const int id,
-                                             const int owner );
-
-  //!< create element of this element type
-  virtual Teuchos::RCP<DRT::Element> Create( const int id,
-                                             const int owner);
-
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np ){}
-
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ){}
-
-private:
-
-  //!< static instance of this element type (for self-instantiation)
-  static MeshfreeBinType instance_;
-};
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -144,7 +101,7 @@ public:
    *
    *///                                                  (public) ghamm 11/12
   /*------------------------------------------------------------------------*/
-  virtual DRT::Element* Clone() const;
+  virtual DRT::Element* Clone() const = 0;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -154,45 +111,7 @@ public:
    * top of drt_parobject.H
    *///                                                  (public) ghamm 11/12
   /*------------------------------------------------------------------------*/
-  virtual int UniqueParObjectId() const { return MeshfreeBinType::Instance().UniqueParObjectId(); };
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Pack this class so it can be communicated
-   *
-   * \ref Pack and \ref Unpack are used to communicate this meshfree bin
-   *
-   *///                                                  (public) ghamm 11/12
-  /*------------------------------------------------------------------------*/
-  virtual void Pack(DRT::PackBuffer& data) const;
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Unpack data from a char vector into this class
-   *
-   * \ref Pack and \ref Unpack are used to communicate this meshfree bin
-   *
-   *///                                                  (public) ghamm 11/12
-  /*------------------------------------------------------------------------*/
-  virtual void Unpack(const std::vector<char>& data);
-
-  // return meshfree bin type instance
-  virtual DRT::ElementType & ElementType() const { return MeshfreeBinType::Instance(); }
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-   *
-   * Meshfree bins do not have dofs
-   *///
-  /*------------------------------------------------------------------------*/
-  virtual int NumDofPerElement() const { return 0; }
+  virtual int UniqueParObjectId() const = 0;
 
   /*========================================================================*/
   //! @name Query methods
@@ -259,59 +178,11 @@ public:
     node_.clear();
   }
 
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Print this meshfree bin
-   *
-   * Prints basic information about this bin to ostream. This method would
-   * usually be called by the print method of a derived class.
-   *///                                                  (public) ghamm 11/12
-  /*------------------------------------------------------------------------*/
-  virtual void Print(ostream& os) const;
-
-  /*!
-  \brief Evaluate a Neumann boundary condition dummy
-
-  An element derived from this class uses the EvaluateNeumann method to receive commands
-  and parameters from some control routine in params and evaluates a Neumann boundary condition
-  given in condition
-
-  \note This class implements a dummy of this method that prints a warning and
-        returns false.
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : Force vector to be filled by element
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL)
-  { return 0; }
-
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const
-  {
-      return DRT::Element::dis_none;
-  };
-
 private:
 
 }; // class MeshfreeBin
 
 } // namespace MESHFREE
 } // namespace DRT
-
-//! << operator
-ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeBin& ele);
 
 #endif  // #ifndef DRT_MESHFREE_MESHFREEBIN_H

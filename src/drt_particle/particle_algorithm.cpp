@@ -26,7 +26,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_dofset_independent.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_meshfree_discret/drt_meshfree_bin.H"
+#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_inpar/inpar_meshfree.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
@@ -392,7 +392,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
     for(int i=0; i<bin_per_proc; i++)
     {
       int gid = i + bin_per_proc*myrank_;
-      Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEBIN","dummy", gid, myrank_);
+      Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
       particledis_->AddElement(bin);
       rowbins.push_back(gid);
     }
@@ -403,7 +403,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
     for(int i=0; i<last_bins; i++)
     {
       int gid = i + bin_per_proc*myrank_;
-      Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEBIN","dummy", gid, myrank_);
+      Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
       particledis_->AddElement(bin);
       rowbins.push_back(gid);
     }
@@ -515,9 +515,9 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node, const
   // either fill particle into correct bin on this proc or mark it as homeless
   if(found == true)
   {
-    DRT::MESHFREE::MeshfreeBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeBin*>( particledis_->gElement(binId) );
+    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->gElement(binId) );
 #ifdef DEBUG
-    if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeBin failed");
+    if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     // check whether it is a row bin
     if(currbin->Owner() == myrank_) // row bin
@@ -692,9 +692,9 @@ void PARTICLE::Algorithm::TransferParticles()
   // check in each bin whether particles have moved out
   for(int ibin=0; ibin<particledis_->NumMyRowElements(); ibin++)
   {
-    DRT::MESHFREE::MeshfreeBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeBin*>(particledis_->lRowElement(ibin));
+    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->lRowElement(ibin));
 #ifdef DEBUG
-    if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeBin failed");
+    if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     int binId = currbin->Id();
     DRT::Node** particles = currbin->Nodes();
@@ -780,6 +780,9 @@ void PARTICLE::Algorithm::TransferParticles()
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
   particledis_->FillComplete(true, false, true);
+
+  // reconstruct element -> bin pointers for particle wall elements
+  BuildWallElementToBinPointers();
 
   return;
 }
@@ -1000,11 +1003,36 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
     //// 2.3) assign wall element to remaining bins
     {
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-        particlewalls_[*biniter].insert(wallele->Id());
+        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->gElement(*biniter))->AddAssociatedWallEle(wallele->Id(), wallele);
     }
 
   } // end lid
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| build connectivity from particle wall elements to bins    ghamm 04/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::BuildWallElementToBinPointers()
+{
+  // loop over column bins and fill wall elements
+  const int numcolbin = particledis_->NumMyColElements();
+  for (int ibin=0; ibin<numcolbin; ++ibin)
+  {
+    DRT::Element* actele = particledis_->lColElement(ibin);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+    const int numwallele = actbin->NumAssociatedWallEle();
+    const int* walleleids = actbin->AssociatedWallEleIds();
+    std::vector<DRT::Element*> wallelements(numwallele);
+    for(int iwall=0; iwall<numwallele; iwall++)
+    {
+      const int wallid = walleleids[iwall];
+      wallelements[iwall] = particlewalldis_->gElement(wallid);
+    }
+    actbin->BuildWallElePointers(&wallelements[0]);
+  }
   return;
 }
 

@@ -40,7 +40,7 @@ namespace ELEMENTS
  * \date March, 2012
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeTransportType : public DRT::MESHFREE::MeshfreeBinType
+class MeshfreeTransportType : public DRT::ElementType
 {
 public:
 

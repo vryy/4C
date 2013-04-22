@@ -136,6 +136,9 @@ namespace PARTICLE
       Teuchos::RCP<DRT::Discretization> structdis
       );
 
+    /// build connectivity from particle wall elements to bins
+    virtual void BuildWallElementToBinPointers();
+
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
       int* ijk  ///< i,j,k to be converted into a bin id
@@ -212,10 +215,6 @@ namespace PARTICLE
     LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
 
     Teuchos::RCP<DRT::Discretization> particlewalldis_;     ///< fully redundant particle wall discretization
-
-    //! Info: Currently it is assumed that bins and wall elements are fixed in space (initial content is stored here)
-    //! Future: Dynamical registering of wall elements in bins when they are moving
-    std::map<int, std::set<int> > particlewalls_;   ///< map that contains all wall element ids of each bin
 
     //@}
 

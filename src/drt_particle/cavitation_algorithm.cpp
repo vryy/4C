@@ -896,7 +896,7 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
     {
       if(myrank_ == maxmyrank_per_bin[gid])
       {
-        Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEBIN","dummy", gid, myrank_);
+        Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
         particledis_->AddElement(bin);
         rowbins.push_back(gid);
       }

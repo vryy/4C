@@ -42,39 +42,6 @@ Maintainer: Georg Hammerl
 
 #include "drt_meshfree_bin.H"
 
-/// class MeshfreeTransportType
-DRT::MESHFREE::MeshfreeBinType DRT::MESHFREE::MeshfreeBinType::instance_;
-
-DRT::ParObject* DRT::MESHFREE::MeshfreeBinType::Create( const std::vector<char> & data )
-{
-  DRT::MESHFREE::MeshfreeBin* object =
-    new DRT::MESHFREE::MeshfreeBin(-1,-1);
-  object->Unpack(data);
-  return object;
-}
-
-Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeBinType::Create( const std::string eletype,
-                                                                         const std::string eledistype,
-                                                                         const int id,
-                                                                         const int owner )
-{
-  if (eletype=="MESHFREEBIN")
-  {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::MESHFREE::MeshfreeBin(id,owner));
-    return ele;
-  }
-  return Teuchos::null;
-}
-
-
-Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeBinType::Create( const int id, const int owner )
-{
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::MESHFREE::MeshfreeBin(id,owner));
-  return ele;
-}
-
-
-
 /*--------------------------------------------------------------------------*
  |  ctor                                               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
@@ -101,37 +68,6 @@ DRT::MESHFREE::MeshfreeBin::~MeshfreeBin()
   return;
 }
 
-
-/*--------------------------------------------------------------------------*
- |  clone-ctor (public)                                          ghamm 11/12|
- *--------------------------------------------------------------------------*/
-DRT::Element* DRT::MESHFREE::MeshfreeBin::Clone() const
-{
-  DRT::MESHFREE::MeshfreeBin* newele = new DRT::MESHFREE::MeshfreeBin(*this);
-  return newele;
-}
-
-
-/*--------------------------------------------------------------------------*
- |  << operator                                                 ghamm 11/12 |
- *--------------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeBin& bin)
-{
-  bin.Print(os);
-  return os;
-}
-
-/*--------------------------------------------------------------------------*
- |  print element                                      (public) ghamm 11/12 |
- *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeBin::Print(ostream& os) const
-{
-  os << "MeshfreeBin ";
-  DRT::Element::Print(os);
-  return;
-}
-
-
 /*--------------------------------------------------------------------------*
  | Delete a single node from the element               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
@@ -144,41 +80,6 @@ void DRT::MESHFREE::MeshfreeBin::DeleteNode(int gid)
       return;
     }
   }
-  dserror("Connectivity issues: No node with secified gid to delete in element. ");
-  return;
-}
-
-/*--------------------------------------------------------------------------*
- | Pack data                                           (public) ghamm 11/12 |
- *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeBin::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class DRT::Element
-  DRT::Element::Pack(data);
-  // nothing to pack for meshfree bin
-  return;
-}
-
-/*--------------------------------------------------------------------------*
- | Unpack data                                         (public) ghamm 11/12 |
- *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeBin::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  dsassert(type == UniqueParObjectId(), "wrong instance type data");
-  // extract base class DRT::Element
-  std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  DRT::Element::Unpack(basedata);
-  // nothing to extract for meshfree bin
+  dserror("Connectivity issues: No node with specified gid to delete in element. ");
   return;
 }

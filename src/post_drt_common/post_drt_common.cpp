@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_dofset_independent.H"
-#include "../drt_meshfree_discret/drt_meshfree_bin.H"
+#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_inpar/inpar_problemtype.H"
 
 #include "../pss_full/pss_cpp.h"
@@ -628,9 +628,9 @@ void PostProblem::read_meshes()
         if(comm_->MyPID()==0)
         {
           // add a single meshfree bin to get correct numdofs for nodes
-          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory("MESHFREEBIN","dummy", 0, 0);
+          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", 0, 0);
           particledis->AddElement(ele);
-          Teuchos::RCP<DRT::MESHFREE::MeshfreeBin> bin = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeBin>(ele);
+          Teuchos::RCP<DRT::MESHFREE::MeshfreeMultiBin> bin = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin>(ele);
           // find maximum number of possible particles during simulation
           int maxnodeid = get_max_nodeid("particle");
           // insert maxnodeid+1 particles into discret placed at the origin
