@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
            "*                                      *\n"
            "****************************************\n\n",
            CHANGEDREVISION+0);
+    printf("Trilinos SHA1: %s\n",Trilinos_SHA1);
     printf("Total number of processors: %d\n",gcomm->NumProc());
   }
 

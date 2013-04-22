@@ -102,6 +102,14 @@ if (HAVE_MueLu)
   add_definitions("-DHAVE_MueLu")
 endif (HAVE_MueLu)
 
+option (HAVE_Trilinos_Q2_2013 "Turn on experimental code which is available with Q2/2013 or later" OFF)
+if (HAVE_Trilinos_Q2_2013)
+  MESSAGE("II Enable experimental features from Trilinos Q2/2013 and later")
+  add_definitions("-DHAVE_MueLu")
+  add_definitions("-DHAVE_Trilinos_Q1_2013")
+  add_definitions("-DHAVE_Trilinos_Q2_2013")
+endif (HAVE_Trilinos_Q2_2013)
+
 option (HAVE_Trilinos_Q1_2013 "Turn on experimental code which is available with Q1/2013 or later" OFF)
 if (HAVE_Trilinos_Q1_2013)
   MESSAGE("II Enable experimental features from Trilinos Q1/2013 and later")
@@ -223,6 +231,17 @@ MESSAGE("   Trilinos_DIR = ${Trilinos_DIR}")
 MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
 MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
 MESSAGE("End of Trilinos details\n")
+
+# test for git executable
+FIND_PROGRAM(Git_EXECUTABLE git
+  DOC "git command line client")
+MARK_AS_ADVANCED(Git_EXECUTABLE)
+
+IF(Git_EXECUTABLE)
+	EXEC_PROGRAM(${Git_EXECUTABLE} ${Trilinos_DIR} ARGS "describe" OUTPUT_VARIABLE Trilinos_GIT_VERSION )
+	#MESSAGE(${Trilinos_GIT_VERSION})
+	ADD_DEFINITIONS( -DTrilinos_SHA1="${Trilinos_GIT_VERSION}")
+ENDIF(Git_EXECUTABLE)
 
 FIND_PACKAGE( Boost COMPONENTS graph program_options REQUIRED)
 
