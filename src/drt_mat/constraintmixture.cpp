@@ -51,6 +51,7 @@ MAT::PAR::ConstraintMixture::ConstraintMixture(
   k1_(matdata->GetDouble("K1")),
   k2_(matdata->GetDouble("K2")),
   prestretchcollagen_(matdata->GetDouble("PRECOLL")),
+  damagestretch_(matdata->GetDouble("DAMAGE")),
   k1muscle_(matdata->GetDouble("K1M")),
   k2muscle_(matdata->GetDouble("K2M")),
   phimuscle_(matdata->GetDouble("PHIM")),
@@ -146,6 +147,11 @@ void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
   {
     AddtoPack(data,massprodbasal_);
 
+    int delsize = deletemass_->size();
+    AddtoPack(data,delsize);
+    for (int iddel = 0; iddel < delsize; iddel++)
+      AddtoPack(data,deletemass_->at(iddel));
+
     // Pack history
     int sizehistory = history_->size();
     AddtoPack(data, sizehistory);
@@ -231,6 +237,16 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basal);
   massprodbasal_ = basal;
 
+  int delsize = 0;
+  ExtractfromPack(position,data,delsize);
+  deletemass_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (delsize));
+  for (int iddel = 0; iddel < delsize; iddel++)
+  {
+    LINALG::Matrix<3,1> deldata;
+    ExtractfromPack(position,data,deldata);
+    deletemass_->at(iddel) = deldata;
+  }
+
   // unpack history
   int sizehistory;
   ExtractfromPack(position, data, sizehistory);
@@ -280,7 +296,13 @@ void MAT::ConstraintMixture::Setup(int numgp, DRT::INPUT::LineDefinition* linede
 //    visrefmassdens_->at(gp)(2) = params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/5.0*2.0;
     localprestretch_->at(gp).PutScalar(params_->prestretchcollagen_);
     localhomstress_->at(gp).PutScalar(params_->homstress_);
+//    localhomstress_->at(gp)(0) = 109000.0;
+//    localhomstress_->at(gp)(1) = 62000.0;
+//    localhomstress_->at(gp)(2) = 95000.0;
+//    localhomstress_->at(gp)(3) = 95000.0;
   }
+
+  deletemass_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (0));
 
   // history
   ResetAll(numgp);
@@ -387,6 +409,18 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
  *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::Update()
 {
+  // set mass of damaged collagen to zero
+  // has to be done before history vector is changed
+  // do not erase as they are needed for computation of massprodbasal
+  int delsize = deletemass_->size();
+  for (int iddel = 0; iddel < delsize; iddel++)
+  {
+    int gpdel = deletemass_->at(iddel)(0);
+    int idpastdel = deletemass_->at(iddel)(1);
+    int idfiberdel = deletemass_->at(iddel)(2);
+    history_->at(idpastdel).SetMass(gpdel, 0.0, idfiberdel);
+  }
+
   // erase oldest collagen
   int numgp = history_->at(0).NumGP();
   int sizehistory = history_->size();
@@ -486,6 +520,9 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   std::string action = params.get<std::string>("action","none");
   bool output = false;
   if (action == "calc_struct_stress") output = true;
+
+  // stuff for collagen damage
+  deletemass_->resize(0);
 
   // differentiate between explicit and implicit description
   int firstiter = 0;
@@ -611,7 +648,7 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         for (int i = 0; i < numsteps; i++)
           history_->at(i).SetStretches(gp, actstretch);
       }
-      else if (time < params_->starttime_ - eps)
+      else if (time < params_->starttime_ - eps && params_->timecurve_ != 0)
       {
         // increase prestretch according to time curve
         int curvenum = params_->timecurve_;
@@ -642,8 +679,9 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     LINALG::Matrix<4,1> massstress(true);
     LINALG::Matrix<4,1> massprodcomp(true);
     if (*params_->growthforce_ == "All")
+    {
       MassProduction(gp, C, *stress, &massstress, &massprodcomp);
-    else {
+    } else {
       double massstresstemp = 0.0;
       double massprodtemp = 0.0;
       LINALG::Matrix<NUM_STRESS_3D,1> stresstemp(true);
@@ -699,18 +737,9 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
     } else {
       // visualization of massstresss for the other cases
-      if (time > params_->starttime_ + eps || *params_->initstretch_ == "Homeo" ||
-          (*params_->initstretch_ == "UpdatePrestretch" && abs(time - params_->starttime_) < eps))
-      {
-        vismassstress_->at(gp)(0) = massstress(0);
-        vismassstress_->at(gp)(1) = massstress(1);
-        vismassstress_->at(gp)(2) = massstress(2);
-      } else {
-        // current stretch in Massproduction is 1.0, thus we have to consider it here
-        vismassstress_->at(gp)(0) = massstress(0)/actstretch(0);
-        vismassstress_->at(gp)(1) = massstress(1)/actstretch(1);
-        vismassstress_->at(gp)(2) = massstress(2)/actstretch(2);
-      }
+      vismassstress_->at(gp)(0) = massstress(0);
+      vismassstress_->at(gp)(1) = massstress(1);
+      vismassstress_->at(gp)(2) = massstress(2);
     }
   } else {
     // in case of output everything is fully converged, we just have to evaluate stress etc.
@@ -766,6 +795,9 @@ void MAT::ConstraintMixture::EvaluateStress
   // account for isotropic prestretch of elastin
   LINALG::Matrix<NUM_STRESS_3D,1> glstrainiso(*glstrain);
   glstrainiso.Scale(prestretchelastin*prestretchelastin);
+  glstrainiso(0) = glstrainiso(0) + 0.5 *(prestretchelastin*prestretchelastin - 1.0);
+  glstrainiso(1) = glstrainiso(1) + 0.5 *(prestretchelastin*prestretchelastin - 1.0);
+  glstrainiso(2) = glstrainiso(2) + 0.5 *(prestretchelastin*prestretchelastin - 1.0);
   LINALG::Matrix<NUM_STRESS_3D,1> Siso(true);
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true);
   EvaluateElastin(&glstrainiso, &cmatiso, &Siso);
@@ -893,19 +925,28 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
     LINALG::Matrix<4,1> collstretch(true);
     history_->at(idpast).GetStretches(gp, &collstretch);
     double stretch = prestretchcollagen / collstretch(idfiber);
+    double I4_loc = I4 * stretch*stretch;  // account for prestretch and stretch at deposition time
+    if (sqrt(I4_loc) > params_->damagestretch_)
+    {
+      LINALG::Matrix<3,1> deldata(true);
+      deldata(0) = gp;
+      deldata(1) = idpast;
+      deldata(2) = idfiber;
+      deletemass_->push_back(deldata);
+    }
 
     // prestretch of collagen fibers is not apllied, might be reasonable combined with prestress
     if (*params_->initstretch_ == "experimental" && deptime <= params_->starttime_ + eps)
       stretch = 1.0 / collstretch(idfiber);
 
+    double fac_cmat_loc = 0.0;
+    double fac_stress_loc = 0.0;
+    EvaluateSingleFiberScalars(I4_loc, fac_cmat_loc, fac_stress_loc);
+
     double qdegrad = 0.0;
     Degradation(time - deptime, qdegrad);
     LINALG::Matrix<4,1> collmass(true);
     history_->at(idpast).GetMass(gp, &collmass);
-
-    double fac_cmat_loc = 0.0;
-    double fac_stress_loc = 0.0;
-    EvaluateSingleFiberScalars(I4, fac_cmat_loc, fac_stress_loc, stretch);
     fac_stress += fac_stress_loc * stretch*stretch * qdegrad * collmass(idfiber) / density * depdt;
 
     if (*params_->initstretch_ == "Homeo" || (idpast == sizehistory - 1 && time > params_->starttime_ + 1.0e-11))
@@ -950,14 +991,11 @@ void MAT::ConstraintMixture::EvaluateSingleFiberScalars
 (
   double I4,
   double& fac_cmat,
-  double& fac_stress,
-  double stretch
+  double& fac_stress
 )
 {
   const double k1 = params_->k1_;
   const double k2 = params_->k2_;
-
-  I4 = I4 * stretch*stretch;  // account for prestretch and stretch at deposition time
 
   //--------------------------------------------------------------------------------------
   // fibers can only stretch/compress down to a minimal value
@@ -1050,33 +1088,36 @@ void MAT::ConstraintMixture::EvaluateMuscle
   double I4 =  A(0)*C(0) + A(1)*C(1) + A(2)*C(2)
              + 1.*(A(3)*C(3) + A(4)*C(4) + A(5)*C(5)); // I4 = trace(A C)
 
-  //++++++++++++++++++++++ passive part ++++++++++++++++++
-  //--- determine 2nd Piola Kirchhoff stresses S -----------------------------------------
-  double preI4 = I4 * prestretchmuscle*prestretchmuscle;
-  LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A); // first compute S = 2 dW/dI4 A
-  const double exp1 = exp(k2*(preI4-1.)*(preI4-1.));
-  if (isinf(exp1))
-    dserror("stretch in fiber direction is too high");
-  const double fib1 = 2.*(k1*(preI4-1.)*exp1);  // 2 dW/dI4
-  Saniso.Scale(fib1);  //S
+  if (massfrac > 0.0 + 1.0e-12 && k1 > 0.0 + 1.0e-12)
+  {
+    //++++++++++++++++++++++ passive part ++++++++++++++++++
+    //--- determine 2nd Piola Kirchhoff stresses S -----------------------------------------
+    double preI4 = I4 * prestretchmuscle*prestretchmuscle;
+    LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A); // first compute S = 2 dW/dI4 A
+    const double exp1 = exp(k2*(preI4-1.)*(preI4-1.));
+    if (isinf(exp1))
+      dserror("stretch in fiber direction is too high");
+    const double fib1 = 2.*(k1*(preI4-1.)*exp1);  // 2 dW/dI4
+    Saniso.Scale(fib1);  //S
 
-  // consider mass fraction and prestretch
-  Saniso.Scale(massfrac * prestretchmuscle*prestretchmuscle);
+    // consider mass fraction and prestretch
+    Saniso.Scale(massfrac * prestretchmuscle*prestretchmuscle);
 
-  *stress = Saniso;
+    *stress = Saniso;
 
-  //--- do elasticity matrix -------------------------------------------------------------
-  const double delta7 = 4.0*(k1*exp1 + 2.0*k1*k2*(preI4-1.0)*(preI4-1.0)*exp1); // 4 d^2Wf/dI4dI4
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso;
-  for (int i = 0; i < 6; ++i) {
-    for (int j = 0; j < 6; ++j) {
-        cmataniso(i,j) = delta7 * A(i) * A(j);  // delta7 A x A
+    //--- do elasticity matrix -------------------------------------------------------------
+    const double delta7 = 4.0*(k1*exp1 + 2.0*k1*k2*(preI4-1.0)*(preI4-1.0)*exp1); // 4 d^2Wf/dI4dI4
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso;
+    for (int i = 0; i < 6; ++i) {
+      for (int j = 0; j < 6; ++j) {
+          cmataniso(i,j) = delta7 * A(i) * A(j);  // delta7 A x A
+      }
     }
-  }
-  // consider mass fraction and prestretch
-  cmataniso.Scale(massfrac * prestretchmuscle*prestretchmuscle*prestretchmuscle*prestretchmuscle);
+    // consider mass fraction and prestretch
+    cmataniso.Scale(massfrac * prestretchmuscle*prestretchmuscle*prestretchmuscle*prestretchmuscle);
 
-  *cmat = cmataniso;
+    *cmat = cmataniso;
+  }
 
   //++++++++++++++++++++++ active part ++++++++++++++++++
   // does not depend on mass fraction
@@ -1086,12 +1127,12 @@ void MAT::ConstraintMixture::EvaluateMuscle
   double lambda_0 = 0.7; //0.7,0.8;
   // perhaps check if lambda is between lambda_M and lambda_0
 
-  Saniso.Update(A);
+  LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A);
   double facS = Smax / lambda * (1.0 - ((lambda_M-lambda)*(lambda_M-lambda)/(lambda_M-lambda_0)/(lambda_M-lambda_0)));
   Saniso.Scale(facS);
   *stress += Saniso;
 
-  cmataniso.Scale(0.0);
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
   double faccmat = - Smax / (lambda*lambda) * ((1.0 - ((lambda_M-lambda)*(lambda_M-lambda)/(lambda_M-lambda_0)/(lambda_M-lambda_0)))/lambda
                  - 2.0 * (lambda_M-lambda)/((lambda_M-lambda_0)*(lambda_M-lambda_0)));
   for (int i = 0; i < 6; ++i) {
@@ -1211,8 +1252,7 @@ void MAT::ConstraintMixture::MassProduction
   Cmatrix(2,0) = Cmatrix(0,2);
   Cmatrix(2,1) = Cmatrix(1,2);
   Cmatrix(2,2) = C(2);
-  double detC = C(0)*C(1)*C(2) + 0.25 * C(3)*C(4)*C(5) - 0.25 * C(1)*C(5)*C(5)
-        - 0.25 * C(2)*C(3)*C(3) - 0.25 * C(0)*C(4)*C(4);
+  double detC = Cmatrix.Determinant();
 
   LINALG::Matrix<3,3> temp1(true);
   LINALG::Matrix<3,3> temp2(true);
@@ -1223,58 +1263,77 @@ void MAT::ConstraintMixture::MassProduction
   temp2.Scale(0.0);
   temp2.Multiply(1.0/detC,Cmatrix,temp1);
 
-  LINALG::Matrix<4,1> currentstretch(true);
-  history_->back().GetStretches(gp, &currentstretch);
-
-  double massstress1 = 0.0;
-  for (int i = 0; i < 3; i++){
-    for (int j = 0; j < 3; j++){
-      massstress1 += a1_->at(gp)(i) * temp2(i,j) * a1_->at(gp)(j);
-    }
-  }
-  massstress1 = sqrt(massstress1) / currentstretch(0);
+  // Fiber1
+  LINALG::Matrix<3,1> temp_vector(true);
+  LINALG::Matrix<1,1> temp_scalar(true);
+  temp_vector.Multiply(Cmatrix,a1_->at(gp));
+  temp_scalar.MultiplyTN(a1_->at(gp),temp_vector);
+  double currentstretch = sqrt(temp_scalar(0));
+  temp_vector.Multiply(temp2,a1_->at(gp));
+  temp_scalar.MultiplyTN(a1_->at(gp),temp_vector);
+  double massstress1 = sqrt(temp_scalar(0)) / currentstretch;
   if (localhomstress_->at(gp)(0) != 0.0)
     (*massprodcomp)(0) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress1 / localhomstress_->at(gp)(0) - 1.0));
   else
     (*massprodcomp)(0) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress1);
-
-  double massstress2 = 0.0;
-  for (int i=0; i < 3; i++){
-    for (int j=0; j < 3; j++){
-      massstress2 += a2_->at(gp)(i) * temp2(i,j) * a2_->at(gp)(j);
-    }
+  if ((*massprodcomp)(0) < 0.0)
+  {
+    (*massprodcomp)(0) = 0.0;
+    //cout << "warning negative massproduction rate" << endl;
   }
-  massstress2 = sqrt(massstress2) / currentstretch(1);
+
+  // Fiber2
+  temp_vector.Multiply(Cmatrix,a2_->at(gp));
+  temp_scalar.MultiplyTN(a2_->at(gp),temp_vector);
+  currentstretch = sqrt(temp_scalar(0));
+  temp_vector.Multiply(temp2,a2_->at(gp));
+  temp_scalar.MultiplyTN(a2_->at(gp),temp_vector);
+  double massstress2 = sqrt(temp_scalar(0)) / currentstretch;
   if (localhomstress_->at(gp)(1) != 0.0)
     (*massprodcomp)(1) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress2 / localhomstress_->at(gp)(1) - 1.0));
   else
     (*massprodcomp)(1) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress2);
-
-  double massstress3 = 0.0;
-  for (int i=0; i < 3; i++){
-    for (int j=0; j < 3; j++){
-      massstress3 += a3_->at(gp)(i) * temp2(i,j) * a3_->at(gp)(j);
-    }
+  if ((*massprodcomp)(1) < 0.0)
+  {
+    (*massprodcomp)(1) = 0.0;
+    //cout << "warning negative massproduction rate" << endl;
   }
-  massstress3 = sqrt(massstress3) / currentstretch(2);
+
+  // Fiber3
+  temp_vector.Multiply(Cmatrix,a3_->at(gp));
+  temp_scalar.MultiplyTN(a3_->at(gp),temp_vector);
+  currentstretch = sqrt(temp_scalar(0));
+  temp_vector.Multiply(temp2,a3_->at(gp));
+  temp_scalar.MultiplyTN(a3_->at(gp),temp_vector);
+  double massstress3 = sqrt(temp_scalar(0)) / currentstretch;
   if (localhomstress_->at(gp)(2) != 0.0)
     (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress3 / localhomstress_->at(gp)(2) - 1.0)); // /4.0 massstress3
   else
     (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress3);
 //  (*massprodcomp)(2) = 4. * (*massprodcomp)(2);
-
-  double massstress4 = 0.0;
-  for (int i=0; i < 3; i++){
-    for (int j=0; j < 3; j++){
-      massstress4 += a4_->at(gp)(i) * temp2(i,j) * a4_->at(gp)(j);
-    }
+  if ((*massprodcomp)(2) < 0.0)
+  {
+    (*massprodcomp)(2) = 0.0;
+    //cout << "warning negative massproduction rate" << endl;
   }
-  massstress4 = sqrt(massstress4) / currentstretch(3);
+
+  // Fiber4
+  temp_vector.Multiply(Cmatrix,a4_->at(gp));
+  temp_scalar.MultiplyTN(a4_->at(gp),temp_vector);
+  currentstretch = sqrt(temp_scalar(0));
+  temp_vector.Multiply(temp2,a4_->at(gp));
+  temp_scalar.MultiplyTN(a4_->at(gp),temp_vector);
+  double massstress4 = sqrt(temp_scalar(0)) / currentstretch;
   if (localhomstress_->at(gp)(3) != 0.0)
     (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress4 / localhomstress_->at(gp)(3) - 1.0)); // /4.0 massstress4
   else
     (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress4);
 //  (*massprodcomp)(3) = 4. * (*massprodcomp)(3);
+  if ((*massprodcomp)(3) < 0.0)
+  {
+    (*massprodcomp)(3) = 0.0;
+    //cout << "warning negative massproduction rate" << endl;
+  }
 
   (*massstress)(0) = massstress1;
   (*massstress)(1) = massstress2;
@@ -1334,12 +1393,13 @@ void MAT::ConstraintMixture::MassProductionSingleFiber
   SCa.Multiply(Smatrix,CSCa);
   CSCa.Multiply(Cmatrix,SCa);
   temp.MultiplyTN(1.0/detC,SCa,CSCa);
-
-  LINALG::Matrix<4,1> currentstretch(true);
-  history_->back().GetStretches(gp, &currentstretch);
-
   (*massstress) = temp(0);
-  (*massstress) = sqrt(*massstress) / currentstretch(idfiber);
+  LINALG::Matrix<3,1> temp_vector(true);
+  LINALG::Matrix<1,1> temp_scalar(true);
+  temp_vector.Multiply(Cmatrix,a);
+  temp_scalar.MultiplyTN(a,temp_vector);
+  double currentstretch = sqrt(temp_scalar(0));
+  (*massstress) = sqrt(*massstress) / currentstretch;
   double homstress = localhomstress_->at(gp)(idfiber);
 //  if (idfiber == 2 || idfiber == 3)
 //    homstress = 4. * homstress;
@@ -1349,6 +1409,11 @@ void MAT::ConstraintMixture::MassProductionSingleFiber
     (*massprodcomp) = massprodbasal_ * (1.0 + params_->growthfactor_ * (*massstress));
 //  if (idfiber == 2 || idfiber == 3)
 //    (*massprodcomp) = 4. * (*massprodcomp);
+  if ((*massprodcomp) < 0.0)
+  {
+    (*massprodcomp) = 0.0;
+    //cout << "warning negative massproduction rate" << endl;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1899,6 +1964,9 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
   // account for isotropic prestretch of elastin
   LINALG::Matrix<NUM_STRESS_3D,1> glstrainiso(*glstrain);
   glstrainiso.Scale(prestretchelastin*prestretchelastin);
+  glstrainiso(0) = glstrainiso(0) + 0.5 *(prestretchelastin*prestretchelastin - 1.0);
+  glstrainiso(1) = glstrainiso(1) + 0.5 *(prestretchelastin*prestretchelastin - 1.0);
+  glstrainiso(2) = glstrainiso(2) + 0.5 *(prestretchelastin*prestretchelastin - 1.0);
   LINALG::Matrix<NUM_STRESS_3D,1> Siso(true);
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true);
   EvaluateElastin(&glstrainiso, &cmatiso, &Siso);
@@ -1971,7 +2039,8 @@ void MAT::ConstraintMixture::GradStressDMass
   double facS = 0.0;
   double temp = 0.0;
   LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A);
-  EvaluateSingleFiberScalars(I4, temp, facS, stretch);
+  I4 = I4 * stretch*stretch;  // account for prestretch and stretch at deposition time
+  EvaluateSingleFiberScalars(I4, temp, facS);
   facS = facS * stretch*stretch * qdegrad / density * dt;
   Saniso.Scale(facS);
   if (option)
@@ -2113,7 +2182,9 @@ void MAT::ConstraintMixture::EvaluateFiberVecs
   return;
 }
 
-/// Return names of visualization data
+/*----------------------------------------------------------------------*
+ |  Return names of visualization data            (public)         03/13|
+ *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::VisNames(std::map<string,int>& names)
 {
   string fiber = "MassStress";
@@ -2132,7 +2203,9 @@ void MAT::ConstraintMixture::VisNames(std::map<string,int>& names)
   names[fiber] = 3;
 }
 
-/// Return visualization data
+/*----------------------------------------------------------------------*
+ |  Return visualization data                     (public)         03/13|
+ *----------------------------------------------------------------------*/
 bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& data, int numgp)
 {
   if (name == "MassStress")
@@ -2141,7 +2214,7 @@ bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& da
       dserror("size mismatch");
     LINALG::Matrix<3,1> temp(true);
     for (int iter=0; iter<numgp; iter++)
-      temp.Update(1.0,GetVis(iter),1.0);
+      temp.Update(1.0,vismassstress_->at(iter),1.0);
     data[0] = temp(0)/numgp;
     data[1] = temp(1)/numgp;
     data[2] = temp(2)/numgp;
@@ -2150,7 +2223,7 @@ bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& da
   {
     if ((int)data.size()!=3)
       dserror("size mismatch");
-    LINALG::Matrix<3,1> a1 = Geta1()->at(0); // get a1 of first gp
+    LINALG::Matrix<3,1> a1 = a1_->at(0); // get a1 of first gp
     data[0] = a1(0);
     data[1] = a1(1);
     data[2] = a1(2);
@@ -2159,7 +2232,7 @@ bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& da
   {
     if ((int)data.size()!=3)
       dserror("size mismatch");
-    LINALG::Matrix<3,1> a2 = Geta2()->at(0); // get a2 of first gp
+    LINALG::Matrix<3,1> a2 = a2_->at(0); // get a2 of first gp
     data[0] = a2(0);
     data[1] = a2(1);
     data[2] = a2(2);
@@ -2170,7 +2243,7 @@ bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& da
       dserror("size mismatch");
     double temp = 0.0;
     for (int iter=0; iter<numgp; iter++)
-      temp += GetMassDensity(iter);
+      temp += refmassdens_->at(iter);
     data[0] = temp/numgp;
   }
   else if (name == "CollagenMassDensity")
@@ -2179,7 +2252,7 @@ bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& da
       dserror("size mismatch");
     LINALG::Matrix<3,1> temp(true);
     for (int iter=0; iter<numgp; iter++)
-      temp.Update(1.0,GetMassDensityCollagen(iter),1.0);
+      temp.Update(1.0,visrefmassdens_->at(iter),1.0);
     data[0] = temp(0)/numgp;
     data[1] = temp(1)/numgp;
     data[2] = temp(2)/numgp;
@@ -2356,6 +2429,7 @@ void MAT::ConstraintMixtureHistory::SetStretches(int gp, LINALG::Matrix<4,1> str
     collagenstretch4_->at(gp) = stretches(3);
   } else dserror("gp out of range in SetStretches");
 }
+
 /*----------------------------------------------------------------------*
  |  History: GetStretches                         (private)        03/11|
  *----------------------------------------------------------------------*/
@@ -2381,6 +2455,25 @@ void MAT::ConstraintMixtureHistory::SetMass(int gp, LINALG::Matrix<4,1> massprod
     massprod4_->at(gp) = massprod(3);
   } else dserror("gp out of range in SetMass");
 }
+
+/*----------------------------------------------------------------------*
+ |  History: SetMass                              (private)        04/13|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::SetMass(int gp, double massprod, int idfiber)
+{
+  if (gp < numgp_) {
+    if (idfiber == 0) {
+      massprod1_->at(gp) = massprod;
+    } else if (idfiber == 1) {
+      massprod2_->at(gp) = massprod;
+    } else if (idfiber == 2) {
+      massprod3_->at(gp) = massprod;
+    } else if (idfiber == 3) {
+      massprod4_->at(gp) = massprod;
+    } else dserror("no valid fiber id: %d", idfiber);
+  } else dserror("gp out of range in SetMass");
+}
+
 /*----------------------------------------------------------------------*
  |  History: GetMass                              (private)        03/11|
  *----------------------------------------------------------------------*/

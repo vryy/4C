@@ -69,6 +69,8 @@ namespace MAT
       const double k2_;
       /// prestretch of collagen fibers
       const double prestretchcollagen_;
+      /// stretch at which collagen fibers are damaged
+      const double damagestretch_;
       /// parameter for linear fiber stiffness of smooth muscle
       const double k1muscle_;
       /// parameter for exponential fiber stiffness of smooth muscle
@@ -163,6 +165,8 @@ namespace MAT
     void GetStretches(int gp, LINALG::Matrix<4,1>* stretches);
     /// set mass production rates
     void SetMass(int gp, LINALG::Matrix<4,1> massprod);
+    /// set mass production rate of single fiber
+    void SetMass(int gp, double massprod, int idfiber);
     /// get mass production rates
     void GetMass(int gp, LINALG::Matrix<4,1>* massprod);
     /// return number of gausspoints
@@ -359,12 +363,14 @@ namespace MAT
     Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > a3_;
     /// fourth fiber vector per gp (reference), diagonal
     Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > a4_;
-    /// indicates if material is initialized
-    bool isinit_;
     /// homeostatic prestretch of collagen fibers
     Teuchos::RCP<std::vector<LINALG::Matrix<4,1> > > localprestretch_;
     /// homeostatic stress for growth
     Teuchos::RCP<std::vector<LINALG::Matrix<4,1> > > localhomstress_;
+    /// list of fibers which have been overstretched and are deleted at the end of the time step (gp, idpast, idfiber)
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > deletemass_;
+    /// indicates if material is initialized
+    bool isinit_;
 
     /// history
     Teuchos::RCP<std::vector<ConstraintMixtureHistory> > history_;
@@ -397,10 +403,9 @@ namespace MAT
     /// elastic response for one collagen fiber
     void EvaluateSingleFiberScalars
     (
-      double I4,  ///< fourth invariant
+      double I4,  ///< fourth invariant multiplied with (prestretch / stretch at deposition time)^2
       double& fac_cmat,  ///< scalar factor for material stiffness matrix
-      double& fac_stress,  ///< scalar factor for 2nd PK-stress
-      double stretch  ///< prestretch / stretch at deposition time
+      double& fac_stress  ///< scalar factor for 2nd PK-stress
     );
 
     /// elastic response for Elastin

@@ -892,28 +892,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // anisotropic cardiac material acc. to Holzapfel
-//  {
-//    Teuchos::RCP<MaterialDefinition> m
-//      = Teuchos::rcp(new MaterialDefinition("ELAST_Holzapfel_Cardiac",
-//                                            "Anisotropic cardiac material  acc. to Holtzapfel",
-//                                            INPAR::MAT::mes_holzapfel_cardiac));
-//
-//    AddNamedReal(m,"A","linear isotropic constant");
-//    AddNamedReal(m,"B","exponential isotropic constant");
-//    AddNamedReal(m,"A4","linear anisotropic constant for fiber 1");
-//    AddNamedReal(m,"B4","exponential anisotropic constant for fiber 1");
-//    AddNamedReal(m,"A6","linear anisotropic constant for fiber 2");
-//    AddNamedReal(m,"B6","exponential anisotropic constant for fiber 2");
-//    AddNamedReal(m,"A8","linear anisotropic constant for fiber 1 relating fiber 2");
-//    AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
-//
-//    AppendMaterialDefinition(matlist,m);
-//  }
-
-
-
-  /*--------------------------------------------------------------------*/
   // isochoric contribution of Neo-Hooke
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -1352,13 +1330,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"K1","Parameter for linear collagen fiber stiffness");
     AddNamedReal(m,"K2","Parameter for exponential collagen fiber stiffness");
     AddNamedReal(m,"PRECOLL","prestretch of collagen fibers");
+    AddNamedReal(m,"DAMAGE","damage stretch of collagen fibers");
     AddNamedReal(m,"K1M","Parameter for linear smooth muscle fiber stiffness");
     AddNamedReal(m,"K2M","Parameter for exponential smooth muscle fiber stiffness");
     AddNamedReal(m,"PHIM","mass fraction of smooth muscle");
     AddNamedReal(m,"PREMUS","prestretch of smooth muscle fibers");
     AddNamedReal(m,"SMAX","maximal active stress");
     AddNamedReal(m,"KAPPA","dilatation modulus");
-//    AddNamedReal(m,"BASALRATE","basal rate of mass production");
     AddNamedReal(m,"LIFETIME","lifetime of collagen fibers");
     AddNamedReal(m,"HOMSTR","homeostatic target value of scalar stress measure");
     AddNamedReal(m,"GROWTHFAC","growth factor");
