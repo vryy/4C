@@ -150,6 +150,9 @@ public:
   //! returns tempgrad type
   std::string tempgradtype() { return tempgradtype_; }
 
+  //! returns struct_vel_acc_
+  std::string struct_vel_acc() { return struct_vel_acc_; }
+
   //@}
 
 private:
@@ -212,6 +215,9 @@ private:
 
   //! spatial temperature gradient output type optionally set by command line argument
   std::string tempgradtype_;
+
+  //! structural velocity and acceleration output optionally set by command line argument
+  std::string struct_vel_acc_;
 
   //! MAP pointers into the control file map.
   // We don't own these pointers, so no reference counting.

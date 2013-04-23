@@ -701,6 +701,7 @@ void StructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
     break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
   }
 }
 
@@ -753,36 +754,45 @@ void StructMonWriter::WriteResult(
 
   // velocity
 
-  // get actual result vector velocity
-  resvec = result.read_result("velocity");
-  const Epetra_BlockMap& velmap = resvec->Map();
-
-  // compute second part of offset
-  offset2 = velmap.MinAllGID();
-
-  // do output of velocity
-  for(unsigned i=0; i <  noddof; ++i)
+  // check if velocity is available
+  MAP* dummydir;
+  if (map_find_map(result.group(), "velocity", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
   {
-    const int lid = velmap.LID(gdof[i]+offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    // get actual result vector velocity
+    resvec = result.read_result("velocity");
+    const Epetra_BlockMap& velmap = resvec->Map();
+
+    // compute second part of offset
+    offset2 = velmap.MinAllGID();
+
+    // do output of velocity
+    for(unsigned i=0; i <  noddof; ++i)
+    {
+      const int lid = velmap.LID(gdof[i]+offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
   }
 
   // acceleration
 
-  // get actual result vector acceleration
-  resvec = result.read_result("acceleration");
-  const Epetra_BlockMap& accmap = resvec->Map();
-
-  //compute second part of offset
-  offset2 = accmap.MinAllGID();
-
-  // do output for acceleration
-  for(unsigned i=0; i <  noddof; ++i)
+  // check if acceleration is available
+  if (map_find_map(result.group(), "acceleration", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
   {
-    const int lid = accmap.LID(gdof[i]+offset2);
-    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
-    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    // get actual result vector acceleration
+    resvec = result.read_result("acceleration");
+    const Epetra_BlockMap& accmap = resvec->Map();
+
+    //compute second part of offset
+    offset2 = accmap.MinAllGID();
+
+    // do output for acceleration
+    for(unsigned i=0; i <  noddof; ++i)
+    {
+      const int lid = accmap.LID(gdof[i]+offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
   }
 
   // pressure
@@ -840,6 +850,7 @@ void StructMonWriter::WriteStrTableHead(
     break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
   }
 
   return;
@@ -1004,6 +1015,7 @@ void AleMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
    break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
   }
 }
 
@@ -1066,6 +1078,7 @@ void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
    break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
   }
 }
 
@@ -1193,6 +1206,7 @@ void ScatraMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
    break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
   }
 }
 
@@ -1344,6 +1358,7 @@ void ThermoMonWriter::WriteThrTableHead(
     break;
   default:
     dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
   }
 
   return;
