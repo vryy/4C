@@ -1035,6 +1035,9 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   sublist.set("GRAPH_SYMMETRIZE", "TRANSPOSE");
   sublist.set("PARMETIS_OUTPUT_LEVEL", "7");*/
 
+  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
+  sublist.set("LB_APPROACH", "PARTITION");
+
   Epetra_CrsGraph *balanced_graph = NULL;
   try {
     balanced_graph =
