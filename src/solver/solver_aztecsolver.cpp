@@ -331,6 +331,10 @@ void LINALG::SOLVER::AztecSolver::Solve()
     {
       if (comm_.MyPID()==0) printf("Problem is near singular in AztecOO\n");
     }
+    else if (status[AZ_why] == AZ_loss)
+    {
+      if (comm_.MyPID()==0) printf("Numerical loss of precision occured in AztecOO\n");
+    }
     else if (status[AZ_why] == AZ_maxits)
     {
       if (comm_.MyPID()==0) printf("Max iterations reached in AztecOO\n");
