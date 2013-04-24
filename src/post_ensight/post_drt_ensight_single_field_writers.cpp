@@ -95,6 +95,9 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   //additional output for biofilm problems
   EnsightWriter::WriteResult("str_growth_displ", "str_growth_displ", dofbased, field->problem()->num_dim());
 
+  //additional output for poro problems
+  EnsightWriter::WriteResult("porosity_p1", "porosity_p1", dofbased, 1);
+
   EnsightWriter::WriteElementResults(field); //To comment
   if (stresstype_!="none")
   {

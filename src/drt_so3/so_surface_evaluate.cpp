@@ -28,7 +28,7 @@ Maintainer: Michael Gee
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_mat/structporo.H"
+#include "../drt_so3/so_poro_interface.H"
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
@@ -1848,16 +1848,21 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
 
     const double J = det/detJ;
 
-    //get structure material
-    Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(parentele->Material());
-    if(structmat == Teuchos::null)
-      dserror("invalid structure material for poroelasticity");
+    DRT::ELEMENTS::So_Poro_Interface* so_interface = dynamic_cast<DRT::ELEMENTS::So_Poro_Interface*>(parentele);
+    if(so_interface == NULL)
+      dserror("cast to so_interface failed!");
     double porosity=0.0;
-    structmat->ComputeSurfPorosity( params,
-                                    press,
-                                    J,
-                                    LSurfNumber(),
-                                    gp,
-                                    porosity);
+    so_interface->ComputeSurfPorosity( params,
+                                       press,
+                                       J,
+                                       LSurfNumber(),
+                                       gp,
+                                       porosity,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       true);
   }
 }

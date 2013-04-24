@@ -147,6 +147,8 @@ void POROELAST::Monolithic::Solve()
     //cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
     timer.ResetStartTime();
 
+    //PoroFDCheck();
+    //dserror("done");
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
@@ -987,6 +989,11 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   Teuchos::ParameterList fparams;
   // action for elements
   fparams.set<int>("action", FLD::calc_porousflow_fluid_coupling);
+  // physical type
+  if(porositydof_)
+    fparams.set<int>("physical type", INPAR::FLUID::poro_p1);
+  else
+    fparams.set<int>("physical type", INPAR::FLUID::poro);
   // other parameters that might be needed by the elements
   fparams.set("delta time", Dt());
   fparams.set("total time", Time());
@@ -1131,8 +1138,8 @@ void POROELAST::Monolithic::PoroFDCheck()
 {
   cout << "\n******************finite difference check***************" << endl;
 
-  int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 2;
-  int dof_fluid = (FluidField()->Discretization()->NumGlobalNodes()) * 3;
+  int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 4;
+  int dof_fluid = (FluidField()->Discretization()->NumGlobalNodes()) * 4;
 
   cout << "structure field has " << dof_struct << " DOFs" << endl;
   cout << "fluid field has " << dof_fluid << " DOFs" << endl;
@@ -1178,8 +1185,8 @@ void POROELAST::Monolithic::PoroFDCheck()
     cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
   }
 
-  int zeilennr = -1;
-  int spaltenr = -1;
+  const int zeilennr = -1;
+  const int spaltenr = -1;
   for (int i = 0; i < dofs; ++i)
   {
     if (CombinedDBCMap()->MyGID(i))

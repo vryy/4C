@@ -669,6 +669,9 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_poro.cpp
   src/drt_so3/so3_poro_evaluate.cpp
   src/drt_so3/so3_poro_eletypes.cpp
+  src/drt_so3/so3_poro_p1.cpp
+  src/drt_so3/so3_poro_p1_eletypes.cpp
+  src/drt_so3/so3_poro_p1_evaluate.cpp
   src/drt_so3/so3_scatra.cpp
   src/drt_so3/so3_scatra_evaluate.cpp
   src/drt_so3/so3_scatra_eletypes.cpp
@@ -1268,6 +1271,7 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_intfaces_calc.cpp
   src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
+  src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_weak_dbc.cpp

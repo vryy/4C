@@ -18,6 +18,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc_std.H"
 #include "fluid_ele_calc_loma.H"
 #include "fluid_ele_calc_poro.H"
+#include "fluid_ele_calc_poro_p1.H"
 #include "fluid_ele_calc_xfem.H"
 
 
@@ -110,6 +111,8 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
   else if (problem == "poro")
     return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
+  else if (problem == "poro_p1")
+    return DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 

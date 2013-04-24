@@ -145,6 +145,8 @@ namespace POROELAST
       //! Extractor used for constraint structure
       Teuchos::RCP< LINALG::MapExtractor > consplitter_;
 
+      //Teuchos::RCP< LINALG::MapExtractor > p1splitter_;
+
       //! Extractor used for poro structure interaction
       Teuchos::RCP< LINALG::MapExtractor > psiextractor_;
 
@@ -156,6 +158,8 @@ namespace POROELAST
 
       //! flag for pressure coupling condition
       bool presintcond_;
+
+      bool porositydof_;
 
     private:
 

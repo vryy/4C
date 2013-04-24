@@ -165,6 +165,7 @@ void MAT::StructPoroReaction::ComputePorosity( Teuchos::ParameterList& params,
                    dphi_dpp,
                    &dphiDphiref_,
                    save);
+
 }
 
 /*----------------------------------------------------------------------*

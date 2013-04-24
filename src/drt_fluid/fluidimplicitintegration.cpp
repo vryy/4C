@@ -280,6 +280,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     dispnm_ = LINALG::CreateVector(*dofrowmap,true);
     gridv_  = LINALG::CreateVector(*dofrowmap,true);
 
+    if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
+      gridvn_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
   // Vectors associated to boundary conditions
@@ -679,7 +681,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   SetElementTurbulenceParameter();
   if (physicaltype_ == INPAR::FLUID::loma)
     SetElementLomaParameter();
-  if (physicaltype_ == INPAR::FLUID::poro)
+  if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
     SetElementPoroParameter();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
@@ -1256,7 +1258,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("dispnp", dispnp_);
         discret_->SetState("gridv", gridv_);
 
-        if (physicaltype_ == INPAR::FLUID::poro)
+        if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
         {
           //just for porous media
           discret_->SetState("dispn", dispn_);
@@ -2902,13 +2904,14 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     discret_->SetState("dispnp", dispnp_);
     discret_->SetState("gridv", gridv_);
 
-    if (physicaltype_ == INPAR::FLUID::poro)
+    if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
     {
       //just for poroelasticity
       discret_->SetState("dispn", dispn_);
       discret_->SetState("veln", veln_);
       discret_->SetState("accnp", accnp_);
       discret_->SetState("accn", accn_);
+      discret_->SetState("gridvn", gridvn_);
 
       eleparams.set("total time", time_);
       eleparams.set("delta time", dta_);
@@ -2950,7 +2953,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   //---------------------------end of surface tension update
 
   //---------------------------
-  if (physicaltype_ == INPAR::FLUID::poro)
+  if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
   {
     std::string condname = "PoroPartInt";
     std::vector<DRT::Condition*> poroPartInt;
@@ -3125,7 +3128,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> onlyvelnp = Teuchos::null;
 
-    if (not physicaltype_ == INPAR::FLUID::poro) //standard case
+    if (not ( physicaltype_ == INPAR::FLUID::poro   or   physicaltype_ == INPAR::FLUID::poro_p1
+        ) ) //standard case
     {
       onlyaccn = velpressplitter_.ExtractOtherVector(accn_);
       onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
@@ -3164,6 +3168,9 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   // velocities/pressures of the last step
   velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
+
+  if ( physicaltype_ == INPAR::FLUID::poro_p1 )
+    gridvn_ ->Update(1.0,*gridv_,0.0);
 
   if (msht_== INPAR::FLUID::sps_coupled or msht_== INPAR::FLUID::sps_pc)
     meshtying_->UpdateLag();
@@ -3365,12 +3372,14 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("scalar_field", scalar_field);
     }
 
-    if(physicaltype_ == INPAR::FLUID::poro)
+    if(physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
     {
       RCP<Epetra_Vector>  convel= rcp(new Epetra_Vector(*velnp_));
       convel->Update(-1.0,*gridv_,1.0);
       output_->WriteVector("convel", convel);
       output_->WriteVector("gridv", gridv_);
+      if(physicaltype_ == INPAR::FLUID::poro_p1)
+        output_->WriteVector("gridvn", gridvn_);
     }
 
     //only perform stress calculation when output is needed
@@ -3494,8 +3503,10 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("dispnm",dispnm_);
     }
 
-    if(physicaltype_ == INPAR::FLUID::poro)
+    if(physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
       output_->WriteVector("gridv", gridv_);
+    if(physicaltype_ == INPAR::FLUID::poro_p1)
+      output_->WriteVector("gridvn", gridvn_);
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -3735,8 +3746,10 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     reader.ReadVector(dispn_ , "dispn");
     reader.ReadVector(dispnm_,"dispnm");
 
-    if(physicaltype_ == INPAR::FLUID::poro)
+    if(physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
       reader.ReadVector(gridv_,"gridv");
+    if(physicaltype_ == INPAR::FLUID::poro_p1)
+      reader.ReadVector(gridvn_,"gridvn");
   }
 
   // read the previously written elements including the history data
@@ -6176,7 +6189,7 @@ void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
 
     *velnp_ = *aux;
 
-    if (physicaltype_ == INPAR::FLUID::poro)
+    if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
     {
       //only one step theta
       // new end-point accelerations

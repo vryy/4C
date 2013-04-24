@@ -196,9 +196,15 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 
   // set flag for physical type of fluid flow
   physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
-  if (((physicaltype_ == INPAR::FLUID::loma) and (physicaltype_ == INPAR::FLUID::poro))
-      and (physicaltype_ == INPAR::FLUID::varying_density)
-      and (is_stationary_ == true))
+  if (
+       (
+            (physicaltype_ == INPAR::FLUID::loma)
+         or (physicaltype_ == INPAR::FLUID::poro)
+         or (physicaltype_ == INPAR::FLUID::poro_p1)
+         or (physicaltype_ == INPAR::FLUID::varying_density)
+       )
+      and (is_stationary_ == true)
+     )
     dserror("physical type is not supported in stationary FLUID implementation.");
 
   if (is_genalpha_np_ and physicaltype_ == INPAR::FLUID::loma)
@@ -222,7 +228,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     reaction_topopt_= true;
     darcy_= false;
   }
-  else if (physicaltype_ == INPAR::FLUID::poro)
+  else if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
   {
     reaction_= true;
     reaction_topopt_= false;

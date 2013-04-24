@@ -662,27 +662,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
  //   const INPAR::STR::StressType       iostress     // stress output option
     )
 {
-  // get global id of the structure element
-  const int id = Id();
-  //access fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  //get corresponding fluid element (it has the same global ID as the structure element)
-  DRT::Element* fluidele = fluiddis->gElement(id);
-  if (fluidele == NULL)
-    dserror("Fluid element %i not on local processor", id);
+  GetMaterials();
 
-  //get fluid material
-  Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat == Teuchos::null)
-    dserror("invalid fluid material for poroelasticity");
-
-  //get structure material
-  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat == Teuchos::null)
-    dserror("invalid structure material for poroelasticity");
-
-  double reacoeff = fluidmat->ComputeReactionCoeff();
+  double reacoeff = fluidmat_->ComputeReactionCoeff();
   double dt = params.get<double>("delta time");
 
   // update element geometry
@@ -1026,7 +1008,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
     double dphi_dJJ=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity( params,
+    structmat_->ComputePorosity( params,
                                 press,
                                 J,
                                 gp,
@@ -1187,9 +1169,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
      LINALG::TMatrix<FAD,1,numdim_> fad_GradJ;
      fad_GradJ.MultiplyTN(fad_J, fad_defgrd_IT_vec, fad_F_X);
 
-     double initporosity  = structmat->Initporosity();
-     double bulkmodulus = structmat->Bulkmodulus();
-     double penalty = structmat->Penaltyparameter();
+     double initporosity  = structmat_->Initporosity();
+     double bulkmodulus = structmat_->Bulkmodulus();
+     double penalty = structmat_->Penaltyparameter();
 
      FAD fad_a     = ( bulkmodulus/(1-initporosity) + fad_press - penalty/initporosity ) * fad_J;
      FAD fad_b     = -fad_a + bulkmodulus + penalty;
@@ -1220,7 +1202,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
      fad_grad_porosity(idim)=fad_dphi_dp*fad_Gradp(idim)+fad_dphi_dJ*fad_GradJ(idim);
      }
 
-     //double visc = fluidmat->Viscosity();
+     //double visc = fluidmat_->Viscosity();
      LINALG::TMatrix<FAD,numdim_,numdim_> fad_CinvFvel;
      LINALG::TMatrix<FAD,numdim_,numdim_> fad_tmp;
      LINALG::TMatrix<FAD,numstr_,1> fad_fstress;
@@ -1397,9 +1379,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
     }
 
     LINALG::Matrix<numstr_,1> fstress(true);
-    if(fluidmat->Type() == "Darcy-Brinkman")
+    if(fluidmat_->Type() == "Darcy-Brinkman")
     {
-      double visc = fluidmat->Viscosity();
+      double visc = fluidmat_->Viscosity();
       LINALG::Matrix<numdim_,numdim_> CinvFvel;
       LINALG::Matrix<numdim_,numdim_> tmp;
       CinvFvel.Multiply(C_inv,fvelder);
@@ -1598,28 +1580,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
     Teuchos::ParameterList& params)                                           // algorithmic parameters e.g. time
 {
   //=============================get parameters
-  // get global id of the structure element
-  const int id = Id();
-  //access fluid discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  if(fluiddis == Teuchos::null)
-    dserror("no fluid discretization. Panic.");
-  //get corresponding fluid element
-  DRT::Element* fluidele = fluiddis->gElement(id);
-  if (fluidele == NULL)
-    dserror("Fluid element %i not on local processor", id);
+  GetMaterials();
 
-  //get fluid material
-  Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat == Teuchos::null)
-    dserror("invalid fluid material for poroelasticity");
-  //get structure material
-  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat == Teuchos::null)
-    dserror("invalid structure material for poroelasticity");
-
-  const double reacoeff = fluidmat->ComputeReactionCoeff();
+  const double reacoeff = fluidmat_->ComputeReactionCoeff();
   double theta = params.get<double>("theta");
 
   //=======================================================================
@@ -1825,7 +1788,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity( params,
+    structmat_->ComputePorosity( params,
                                 press,
                                 J,
                                 gp,
@@ -1884,9 +1847,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
      for(int i=0; i<numdim_; i++)
      fad_GradJ(i)=GradJ(i);
 
-     double initporosity  = structmat->Initporosity();
-     double bulkmodulus = structmat->Bulkmodulus();
-     double penalty = structmat->Penaltyparameter();
+     double initporosity  = structmat_->Initporosity();
+     double bulkmodulus = structmat_->Bulkmodulus();
+     double penalty = structmat_->Penaltyparameter();
 
      FAD fad_a     = ( bulkmodulus/(1-initporosity) + fad_press - penalty/initporosity ) * J;
      FAD fad_b     = -fad_a + bulkmodulus + penalty;
@@ -1986,11 +1949,11 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
           }
         }
       }
-      if(fluidmat->Type() == "Darcy-Brinkman")
+      if(fluidmat_->Type() == "Darcy-Brinkman")
       {
         LINALG::Matrix<numstr_,1> fstress;
 
-        double visc = fluidmat->Viscosity();
+        double visc = fluidmat_->Viscosity();
         LINALG::Matrix<numdim_,numdim_> CinvFvel;
         LINALG::Matrix<numdim_,numdim_> tmp;
         CinvFvel.Multiply(C_inv,fvelder);
@@ -2321,6 +2284,76 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
 
 }  // PK2toCauchy()
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosity
+(   Teuchos::ParameterList& params,
+    double press,
+    double J,
+    int gp,
+    double& porosity,
+    double* dphi_dp,
+    double* dphi_dJ,
+    double* dphi_dJdp,
+    double* dphi_dJJ,
+    double* dphi_dpp,
+    bool save)
+{
+  structmat_->ComputePorosity( params,
+                              press,
+                              J,
+                              gp,
+                              porosity,
+                              dphi_dp,
+                              dphi_dJ,
+                              dphi_dJdp,
+                              dphi_dJJ,
+                              dphi_dpp,
+                              save
+                              );
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSurfPorosity( Teuchos::ParameterList& params,
+                       double press,
+                       double J,
+                       int surfnum,
+                       int gp,
+                       double& porosity,
+                       double* dphi_dp,
+                       double* dphi_dJ,
+                       double* dphi_dJdp,
+                       double* dphi_dJJ,
+                       double* dphi_dpp,
+                       bool save)
+{
+  structmat_->ComputeSurfPorosity( params,
+                              press,
+                              J,
+                              surfnum,
+                              gp,
+                              porosity,
+                              dphi_dp,
+                              dphi_dJ,
+                              dphi_dJdp,
+                              dphi_dJJ,
+                              dphi_dpp,
+                              save
+                              );
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::Wall1_Poro<distype>::RefPorosityTimeDeriv()
+{
+  return structmat_->RefPorosityTimeDeriv();
+}
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;

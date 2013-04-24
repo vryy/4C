@@ -1,0 +1,304 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file so3_poro_p1.H
+
+ \brief
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *----------------------------------------------------------------------*/
+
+
+#ifndef SO3_PORO_P1_H_
+#define SO3_PORO_P1_H_
+
+#include "so3_poro.H"
+
+namespace DRT
+{
+class Discretization;
+
+namespace ELEMENTS
+{
+/*!
+\brief A C++ version of a 3 dimensional solid element with modifications for porous media
+
+A structural 3 dimensional solid displacement element for large deformations
+and (near)-incompressibility.
+
+*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+class So3_Poro_P1 : public So3_Poro<so3_ele,distype>
+{
+  //! @name Friends
+  friend class So_hex8PoroP1Type;
+
+  typedef So3_Poro<so3_ele,distype> my;
+
+public:
+
+  //@}
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id : A unique global id
+  \param owner : elements owner
+  */
+  So3_Poro_P1(int id, int owner);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  So3_Poro_P1(const So3_Poro_P1& old);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~So3_Poro_P1(){};
+
+  //@}
+
+  //! number of dofs per node
+  static const int noddof_ = my::numdim_+1;
+
+  //! total dofs per element
+  static const int numdof_ = noddof_ * my::numnod_;
+
+  //! @name Acess methods
+
+  /*!
+  \brief Deep copy this instance of Solid3 and return pointer to the copy
+
+  The Clone() method is used from the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+
+  */
+  DRT::Element* Clone() const ;
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const;
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Unpack(const std::vector<char>& data);
+
+  //! @name Access methods
+
+  /*!
+  \brief Get number of degrees of freedom of a certain node in case of multiple
+         dofsets (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    /* here we assume the dofset numbers to be assigned as follows
+     *     structure = dofset 0
+     *     fluid     = dofset 1
+     *     scatra    = dofset 2
+     * this is kind of implicit. One might think of a better solution ...
+    */
+
+    if (nds==0)
+      // structure, 3D: 3 + 1 Dofs per node
+      return 4;
+    else if (nds==1)
+      // in case of porous media: nds=1 (second discretization) fluid: 4Dof/Node
+      return 4;
+    else if (nds==2)
+      // in case of scalar transport in porous media: nds=2 (third discretization) scatra: 1Dof/Node
+      return 1;
+    dserror("invalid number of dof sets");
+    return -1;
+  };
+
+  /*!
+  \brief Print this element
+  */
+  void Print(ostream& os) const  ;
+
+  virtual DRT::ElementType & ElementType() const;
+
+  //! @name Evaluation
+
+  /*!
+  \brief Evaluate an element
+
+  Evaluate So_tet4fbar element stiffness, mass, internal forces, etc.
+
+  If NULL on input, the controlling method does not expect the element
+  to fill these matrices or vectors.
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate
+  (
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
+    DRT::Element::LocationArray& la, ///< location array for de-assembly
+    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
+    Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+    Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
+    Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
+    Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
+  );
+
+  //@}
+
+  //! initialize the inverse of the jacobian and its determinant in the material configuration
+  virtual void InitElement();
+
+  /*
+  virtual void ComputePorosity( Teuchos::ParameterList& params,
+                             double press,
+                             double J,
+                             int gp,
+                             double& porosity,
+                             double* dphi_dp,
+                             double* dphi_dJ,
+                             double* dphi_dJdp,
+                             double* dphi_dJJ,
+                             double* dphi_dpp,
+                             bool save);
+  */
+  virtual int NumDof(){return 4;};
+
+  virtual bool HasExtraDof(){return true;}
+
+protected:
+
+  //! don't want = operator
+  So3_Poro_P1& operator = (const So3_Poro_P1& old);
+
+  /*!
+  \brief Evaluate an element
+
+  Evaluate So3_poro element stiffness, mass, internal forces, etc.
+  Templated evaluate routine of element matrixes
+
+  If NULL on input, the controlling method does not expect the element
+  to fill these matrices or vectors.
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int MyEvaluate
+  (
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
+    DRT::Element::LocationArray& la, ///< location array for de-assembly
+    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
+    Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+    Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
+    Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
+    Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
+  );
+
+  //! Calculate nonlinear stiffness and internal force for poroelasticity problems
+  void nlnstiff_poroelast(
+      std::vector<int>& lm, ///< location matrix
+      LINALG::Matrix<my::numdim_, my::numnod_>&               disp,         // current displacements
+      LINALG::Matrix<my::numdim_, my::numnod_>&               vel,          // current velocities
+      LINALG::Matrix<my::numnod_, 1>*               porosity,
+      //    std::vector<double>&      residual,       ///< current residual displ
+      LINALG::Matrix<my::numdim_,my::numnod_> & evelnp, //< fluid velocity of element
+      LINALG::Matrix<my::numnod_,1> & epreaf, //< fluid pressure of element
+      LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
+      LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
+      LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
+      Teuchos::ParameterList& params ///< algorithmic parameters e.g. time
+      );
+
+  //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
+  void coupling_poroelast(
+      std::vector<int>& lm, ///< location matrix
+      LINALG::Matrix<my::numdim_, my::numnod_>&               disp,         // current displacements
+      LINALG::Matrix<my::numdim_, my::numnod_>&               vel,          // current velocities
+      LINALG::Matrix<my::numnod_, 1>*               porosity,
+      LINALG::Matrix<my::numdim_, my::numnod_> & evelnp, //< fluid velocity of element
+      LINALG::Matrix<my::numnod_,1> & epreaf, //< fluid pressure of element
+      LINALG::Matrix<numdof_,(my::numdim_+1)*my::numnod_>* stiffmatrix, ///< element stiffness matrix
+      LINALG::Matrix<numdof_,(my::numdim_+1)*my::numnod_>* reamatrix, //< element reactive matrix
+      LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
+      Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
+
+  //compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
+  virtual void ComputePorosityAndLinearization(Teuchos::ParameterList&                params,
+                                               const double&                          press,
+                                               const double&                          J,
+                                               const int&                             gp,
+                                               const LINALG::Matrix<my::numnod_,1>&   shapfct,
+                                               const LINALG::Matrix<my::numnod_,1>*   myporosity,
+                                               const LINALG::Matrix<1,my::numdof_>&   dJ_dus,
+                                               double &                               porosity,
+                                               LINALG::Matrix<1,my::numdof_>&         dphi_dus);
+
+  //compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
+  virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList&              params,
+                                               const double&                          press,
+                                               const double&                          J,
+                                               const int&                             gp,
+                                               const LINALG::Matrix<my::numnod_,1>&    shapfct,
+                                               const LINALG::Matrix<my::numnod_,1>*    myporosity,
+                                               double &                               porosity,
+                                               double &                               dphi_dp);
+
+  void GaussPointLoopP1(   Teuchos::ParameterList& params,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& xrefe,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& xcurr,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& nodaldisp,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& nodalvel,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_> & evelnp,
+                                      const LINALG::Matrix<my::numnod_,1> & epreaf,
+                                      const LINALG::Matrix<my::numnod_, 1>*  porosity_dof,
+                                      LINALG::Matrix<my::numdof_,my::numnod_>& ecoupl_p1,
+                                      LINALG::Matrix<my::numnod_,numdof_>& estiff_p1,
+                                      LINALG::Matrix<my::numnod_,1>& ecoupl_force_p1
+                                          );
+
+  void GaussPointLoopP1OD(   Teuchos::ParameterList& params,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& xrefe,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& xcurr,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& nodaldisp,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_>& nodalvel,
+                                      const LINALG::Matrix<my::numdim_,my::numnod_> & evelnp,
+                                      const LINALG::Matrix<my::numnod_,1> & epreaf,
+                                      const LINALG::Matrix<my::numnod_, 1>*  porosity_dof,
+                                      LINALG::Matrix<my::numnod_,my::numnod_>& estiff_p1
+                                          );
+
+};//class So3_Poro_P1
+
+
+}//ELEMENTS
+}//DRT
+#endif /* SO3_PORO_P1_H_ */

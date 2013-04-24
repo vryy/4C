@@ -22,6 +22,7 @@
 
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/structporo_reaction.H"
+#include "../drt_mat/fluidporo.H"
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
@@ -194,6 +195,61 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(const std::string& eletype,
   poromat->PoroSetup(numgpt_, linedef);
 
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
+{
+  // get global id of the structure element
+  int id = Id();
+  //access fluid discretization
+  RCP<DRT::Discretization> fluiddis = Teuchos::null;
+  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  //get corresponding fluid element
+  DRT::Element* fluidele = fluiddis->gElement(id);
+  if (fluidele == NULL)
+    dserror("Fluid element %i not on local processor", id);
+
+  //get fluid material
+  fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
+  if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
+    dserror("invalid fluid material for poroelasticity");
+
+  //get structure material
+  structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+  if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+     structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+    dserror("invalid structure material for poroelasticity");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Return names of visualization data (public)               |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string,int>& names)
+{
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->VisNames(names);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Return visualization data (public)                         |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const string& name, std::vector<double>& data)
+{
+  // Put the owner of this element into the file (use base class method for this)
+  if (DRT::Element::VisData(name,data))
+    return true;
+
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  return so3mat->VisData(name, data, numgpt_);
 }
 
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;

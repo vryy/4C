@@ -197,6 +197,14 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
 
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    if(nds==0)
+      return NumDofPerNode(node);
+    else
+      return 0;
+  };
+
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)

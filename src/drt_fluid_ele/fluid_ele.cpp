@@ -19,6 +19,8 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_inpar/inpar_fluid.H"
+
 
 DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
@@ -595,7 +597,22 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
       case prb_poroelast:
       case prb_poroscatra:
       {
-        return DRT::Problem::Instance()->NDim();
+        const Teuchos::ParameterList& params= DRT::Problem::Instance()->FluidDynamicParams();
+        INPAR::FLUID::PhysicalType physicaltype =
+              DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(params,"PHYSICAL_TYPE");
+        switch(physicaltype)
+        {
+        case INPAR::FLUID::poro:
+          return DRT::Problem::Instance()->NDim();
+          break;
+        case INPAR::FLUID::poro_p1:
+          return DRT::Problem::Instance()->NDim()+1;
+          break;
+        default:
+          dserror("invalid fluid physical type for porous media");
+          return -1;
+          break;
+        }
         break;
       }
       default: // scalar transport

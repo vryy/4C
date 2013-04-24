@@ -12,6 +12,7 @@
 *----------------------------------------------------------------------*/
 
 #include "so3_poro.H"
+#include "so3_poro_eletypes.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -91,24 +92,17 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
   else
   {
     /*
-    const double time = params.get("total time",0.0);
-  // find out whether we will use a time curve and get the factor
-    int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
-    std::vector<double> xrefe; xrefe.resize(3);
+    Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
     DRT::Node** nodes = Nodes();
-    // get displacements of this element
-  //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-   for (int i=0; i<numnod_; ++i){
-      const double* x = nodes[i]->X();
-      xrefe [0] +=  x[0]/numnod_;
-      xrefe [1] +=  x[1]/numnod_;
-      xrefe [2] +=  x[2]/numnod_;
+    for (int i=0; i<numnod_; ++i){
+        const double* x = nodes[i]->X();
+        (*xrefe)[0] +=  x[0]/numnod_;
+        (*xrefe)[1] +=  x[1]/numnod_;
+        (*xrefe)[2] +=  x[2]/numnod_;
 
-    }
-    const double* coordgpref = &xrefe[0];
-    double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
-    params.set<double>("scalar",functfac);
-    */
+     }
+     params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
+     */
     //do nothing
   }//if(scatracoupling_)
   return;
@@ -189,7 +183,7 @@ int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList&
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                                       |
+ |  evaluate the element (protected)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
@@ -229,23 +223,18 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     LINALG::Matrix<numdof_,numdof_> elemat2(elemat2_epetra.A(),true);
     // internal force vector
     LINALG::Matrix<numdof_,1> elevec1(elevec1_epetra.A(),true);
-    LINALG::Matrix<numdof_,1> elevec2(elevec2_epetra.A(),true);
+    //LINALG::Matrix<numdof_,1> elevec2(elevec2_epetra.A(),true);
     // elemat2,elevec2+3 are not used anyway
 
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
-
-    if (disp==Teuchos::null )
-      dserror("calc_struct_nlnstiff: Cannot get state vector 'displacement' ");
-    // build the location vector only for the structure field
     std::vector<int> lm = la[0].lm_;
 
-    std::vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
+    //std::vector<double> mydisp((lm).size());
+    //DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
+    LINALG::Matrix<numdim_,numnod_> mydisp(true);
+    ExtractValuesFromGlobalVector(discretization,0,lm, &mydisp, NULL,"displacement");
 
-    std::vector<double> myres((lm).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+    //std::vector<double> myres((lm).size());
+    //DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
@@ -258,53 +247,23 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     // call the fluid discretization: fluid equates 2nd dofset
     // disassemble velocities and pressures
 
-    std::vector<double> myvel((lm).size(),0.0);
+    LINALG::Matrix<numdim_,numnod_> myvel(true);
 
     LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
     LINALG::Matrix<numnod_,1> myepreaf(true);
 
     if(la.Size()>1)
     {
-      //  dofs per node of second dofset
-      const int numdofpernode = NumDofPerNode(1,*(so3_ele::Nodes()[0]));
-
-     // if (la[1].Size() != numnod_*numdofpernode)
-     //   dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
 
       if (discretization.HasState(0,"velocity"))
-      {
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-        if (vel==Teuchos::null )
-          dserror("calc_struct_nlnstiff: Cannot get state vector 'velocity' ");
-        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-      }
+        ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
 
       if (discretization.HasState(1,"fluidvel"))
-      {
-        // check if you can get the velocity state
-        Teuchos::RCP<const Epetra_Vector> velnp
-          = discretization.GetState(1,"fluidvel");
-        //if there are no velocities or pressures
-        if (velnp==Teuchos::null)
-          dserror("calc_struct_nlnstiff: Cannot get state vector 'fluidvel' ");
-
         // extract local values of the global vectors
-        std::vector<double> mymatrix(la[1].lm_.size());
-        DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
-
-        for (int inode=0; inode<numnod_; ++inode) // number of nodes
-        {
-          for(int idim=0; idim<numdim_; ++idim) // number of dimensions
-          {
-            (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
-          } // end for(idim)
-
-          (myepreaf)(inode,0) = mymatrix[numdim_+(inode*numdofpernode)];
-        }
-      }
+        ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
       //calculate tangent stiffness matrix
-      nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,matptr2,&elevec1,//NULL,
+      nlnstiff_poroelast(lm,mydisp,myvel,NULL,myfluidvel,myepreaf,matptr,matptr2,&elevec1,//NULL,
           //NULL,NULL,
           params);
     }
@@ -319,27 +278,17 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     // stiffness
     LINALG::Matrix<numdof_,numdof_> elemat1(elemat1_epetra.A(),true);
     // mass
-    LINALG::Matrix<numdof_,numdof_> elemat2(elemat2_epetra.A(),true);
+    //LINALG::Matrix<numdof_,numdof_> elemat2(elemat2_epetra.A(),true);
     // internal force vector
     LINALG::Matrix<numdof_,1> elevec1(elevec1_epetra.A(),true);
-    LINALG::Matrix<numdof_,1> elevec2(elevec2_epetra.A(),true);
+    //LINALG::Matrix<numdof_,1> elevec2(elevec2_epetra.A(),true);
     // elemat2,elevec2+3 are not used anyway
-
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
-
-    if (disp==Teuchos::null )
-      dserror("calc_struct_nlnstiffmass: Cannot get state vector 'displacement' ");
 
     // build the location vector only for the structure field
     std::vector<int> lm = la[0].lm_;
 
-    std::vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
-
-    std::vector<double> myres((lm).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+    LINALG::Matrix<numdim_,numnod_> mydisp(true);
+    ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &mydisp, NULL,"displacement");
 
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
@@ -348,58 +297,21 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     // call the fluid discretization: fluid equates 2nd dofset
     // disassemble velocities and pressures
 
-    //  dof per node of other dofset
-    const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]));
-
-    std::vector<double> myvel((lm).size(),0.0);
-
-    LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-    LINALG::Matrix<numnod_,1> myepreaf(true);
-
     if(la.Size()>1)
     {
-   //   if (la[1].Size() != numnod_*numdofpernode)
-   //     dserror("calc_struct_nlnstiffmass: Location vector length for velocities does not match!");
+      LINALG::Matrix<numdim_,numnod_> myvel(true);
+      LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+      LINALG::Matrix<numnod_,1> myepreaf(true);
 
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-      if (vel==Teuchos::null )
-        dserror("calc_struct_nlnstiffmass: Cannot get state vector 'velocity' ");
-      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      if (discretization.HasState(0,"velocity"))
+        ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
 
-      // check if you can get the velocity state
-      Teuchos::RCP<const Epetra_Vector> velnp
-        = discretization.GetState(1,"fluidvel");
-      //if there are no velocities or pressures, set them to zero
-      if (velnp==Teuchos::null)
-      {
-        //dserror("calc_struct_nlnstiffmass: Cannot get state vector 'fluidvel' ");
-        //cout<<"WARNING: No fluid velocity found. Set to zero"<<endl;
-        for (int inode=0; inode<numnod_; ++inode) // number of nodes
-        {
-          for(int idim=0; idim<numdim_; ++idim) // number of dimensions
-          {
-            (myfluidvel)(idim,inode) = 0.0;
-          } // end for(idim)
-        }
-      }
-      else
-      {
+      if (discretization.HasState(1,"fluidvel"))
         // extract local values of the global vectors
-        std::vector<double> mymatrix(la[1].lm_.size());
-        DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
+        ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
-        for (int inode=0; inode<numnod_; ++inode) // number of nodes
-        {
-          for(int idim=0; idim<numdim_; ++idim) // number of dimensions
-          {
-            (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
-          } // end for(idim)
-
-          (myepreaf)(inode,0) = mymatrix[numdim_+(inode*numdofpernode)];
-        }
-      }
-
-      nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,NULL,&elevec1,//NULL,
+      //calculate tangent stiffness matrix
+      nlnstiff_poroelast(lm,mydisp,myvel,NULL,myfluidvel,myepreaf,matptr,NULL,&elevec1,//NULL,
           //NULL,NULL,
           params);
     }
@@ -421,17 +333,8 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
     // elemat2,elevec2+3 are not used anyway
 
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-
-    if (disp==Teuchos::null )
-      dserror("calc_struct_multidofsetcoupling: Cannot get state vector 'displacement' ");
-
     // build the location vector only for the structure field
     std::vector<int> lm = la[0].lm_;
-
-    std::vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
     LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
@@ -441,39 +344,21 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     // disassemble velocities and pressures
     if (discretization.HasState(1,"fluidvel"))
     {
-      //  dof per node of fluid field
-      const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
-
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-      if (vel==Teuchos::null )
-        dserror("calc_struct_multidofsetcoupling: Cannot get state vector 'velocity' ");
-      std::vector<double> myvel((lm).size());
-      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-
-      LINALG::Matrix<numdim_,numnod_> myvelnp(true);
+      LINALG::Matrix<numdim_,numnod_> myvel(true);
+      LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
       LINALG::Matrix<numnod_,1> myepreaf(true);
 
-      // check if you can get the velocity state
-      Teuchos::RCP<const Epetra_Vector> velnp
-        = discretization.GetState(1,"fluidvel");
-      if (velnp==Teuchos::null)
-        dserror("Cannot get state vector 'fluidvel'");
+      LINALG::Matrix<numdim_,numnod_> mydisp(true);
+      ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &mydisp, NULL,"displacement");
 
-      // extract the current velocitites and pressures of the global vectors
-      std::vector<double> mymatrix(la[1].lm_.size());
-      DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
+      if (discretization.HasState(0,"velocity"))
+        ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
 
-      for (int inode=0; inode<numnod_; ++inode) // number of nodes
-      {
-        for(int idim=0; idim<numdim_; ++idim) // number of dimensions
-        {
-          (myvelnp)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-        } // end for(idim)
+      if (discretization.HasState(1,"fluidvel"))
+        // extract local values of the global vectors
+        ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
-        (myepreaf)(inode,0) = mymatrix[numdim_+(inode*numdofpernode_)];
-      }
-
-      coupling_poroelast(lm,mydisp,myvel,myvelnp,myepreaf,matptr,//NULL,
+      coupling_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,//NULL,
           NULL,NULL,params);
     }
 
@@ -492,64 +377,30 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     LINALG::Matrix<numdof_,1> elevec2(elevec2_epetra.A(),true);
     // elemat2,elevec2+3 are not used anyway
 
-    // need current displacement, velocities and residual forces
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
-
-    if (disp==Teuchos::null )
-      dserror("Cannot get state vector 'displacement' ");
-
     // build the location vector only for the structure field
     std::vector<int> lm = la[0].lm_;
 
-    std::vector<double> mydisp((lm).size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
+    LINALG::Matrix<numdim_,numnod_> mydisp(true);
+    ExtractValuesFromGlobalVector(discretization,0,lm, &mydisp, NULL,"displacement");
 
-    std::vector<double> myres((lm).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+
+    LINALG::Matrix<numdim_,numnod_> myvel(true);
+
+    LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+    LINALG::Matrix<numnod_,1> myepreaf(true);
 
     // need current fluid state,
     // call the fluid discretization: fluid equates 2nd dofset
     // disassemble velocities and pressures
     if (discretization.HasState(1,"fluidvel"))
     {
-      //  dof per node of second dofset
-      const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
+      // extract local values of the global vectors
+      ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-      if (vel==Teuchos::null )
-        dserror("Cannot get state vector 'velocity' ");
-      std::vector<double> myvel((lm).size());
-      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
 
-      LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-      LINALG::Matrix<numnod_,1> myepreaf(true);
-
-      // check if you can get the velocity state
-      Teuchos::RCP<const Epetra_Vector> velnp
-        = discretization.GetState(1,"fluidvel");
-
-      if (velnp==Teuchos::null)
-      {
-        dserror("Cannot get state vector 'fluidvel' ");
-      }
-      else
-      {
-        // extract local values of the global vectors
-        std::vector<double> mymatrix(la[1].lm_.size());
-        DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
-        for (int inode=0; inode<numnod_; ++inode) // number of nodes
-        {
-          for(int idim=0; idim<numdim_; ++idim) // number of dimensions
-          {
-            (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-          } // end for(idim)
-
-          (myepreaf)(inode,0) = mymatrix[numdim_+(inode*numdofpernode_)];
-        }
-      }
-
-      nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,NULL,NULL,&elevec1,//NULL,
+      //calculate tangent stiffness matrix
+      nlnstiff_poroelast(lm,mydisp,myvel,NULL,myfluidvel,myepreaf,NULL,NULL,&elevec1,//NULL,
           //NULL,NULL,
           params);
     }
@@ -662,8 +513,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     std::vector<int>&                  lm,           // location matrix
-    std::vector<double>&               disp,         // current displacements
-    std::vector<double>&               vel,          // current velocities
+    LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
+    LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
+    LINALG::Matrix<numnod_, 1>*               porosity_dof,          // current velocities
     LINALG::Matrix<numdim_, numnod_> & evelnp,       // current fluid velocities
     LINALG::Matrix<numnod_, 1> &       epreaf,       // current fluid pressure
     LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,  // element stiffness matrix
@@ -675,28 +527,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
  //   const INPAR::STR::StressType       iostress     // stress output option
     )
 {
-  // get global id of the structure element
-  int id = Id();
-  //access fluid discretization
-  RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  //get corresponding fluid element (it has the same global ID as the structure element)
-  DRT::Element* fluidele = fluiddis->gElement(id);
-  if (fluidele == NULL)
-    dserror("Fluid element %i not on local processor", id);
-
-  //get fluid material
-  Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
-    dserror("invalid fluid material for poroelasticity");
-
-  //get structure material
-  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
-    dserror("invalid structure material for poroelasticity");
-
-  double reacoeff = fluidmat->ComputeReactionCoeff();
-  double dt = params.get<double>("delta time");
+  GetMaterials();
 
   // update element geometry
   LINALG::Matrix<numdim_,numnod_> xrefe; // material coord. of element
@@ -709,18 +540,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     for(int j=0; j<numdim_;j++)
     {
       xrefe(j,i) = x[j];
-      xcurr(j,i) = xrefe(j,i) + disp[i*noddof_+j];
+      xcurr(j,i) = xrefe(j,i) + disp(j,i);
     }
-  }
-
-  //rewrite nodal displacements/velocities as LINALG::Matrix
-  LINALG::Matrix<numdof_,1> nodaldisp;
-  LINALG::Matrix<numdof_,1> nodalvel;
-
-  for (int i=0; i<numdof_; ++i)
-  {
-    nodaldisp(i,0) = disp[i];
-    nodalvel(i,0) = vel[i];
   }
 
   //******************* FAD ************************
@@ -767,14 +588,122 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
 */
   //******************** FAD ***********************
 
-  std::vector<LINALG::Matrix<1,numdim_> > gradJ_gp (numgpt_);
-  for(int i = 0 ; i < numgpt_ ; i++)
-    for(int j=0; j<numdim_;j++)
-      gradJ_gp.at(i)(j) = 0.0;
+  //initialize element matrizes and vectors
+  LINALG::Matrix<numdof_,numdof_> estiff_stat(true);
+  LINALG::Matrix<numdof_,numdof_> erea_u(true);
+  LINALG::Matrix<numdof_,numdof_> erea_v(true);
+  LINALG::Matrix<numdof_,numdof_> estiff_stress(true);
+  LINALG::Matrix<numdof_,1> erea_force(true);
+  LINALG::Matrix<numdof_,1> ecoupl_force_p(true);
+  LINALG::Matrix<numdof_,1> ecoupl_force_v(true);
+  LINALG::Matrix<numdof_,1> ecoupl_force_stress(true);
+  LINALG::Matrix<numstr_,1> fstress(true);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
+  GaussPointLoop(  params,
+                        xrefe,
+                        xcurr,
+                        disp,
+                        vel,
+                        evelnp,
+                        epreaf,
+                        porosity_dof,
+                        estiff_stat,
+                        erea_u,
+                        erea_v,
+                        estiff_stress,
+                        erea_force,
+                        ecoupl_force_p,
+                        ecoupl_force_v,
+                        ecoupl_force_stress,
+                        fstress);
+
+  // update stiffness matrix
+  if (stiffmatrix != NULL)
+  {
+    if ( reamatrix != NULL )
+    {
+      /* additional "reactive darcy-term"
+       detJ * w(gp) * ( J * reacoeff * phi^2  ) * D(v_s)
+       */
+      reamatrix->Update(1.0,erea_v,1.0);
+    }
+    else
+    {
+      const double dt = params.get<double>("delta time");
+      //if the reaction part is not supposed to be computed separately, we add it to the stiffness
+      //(this is not the best way to do it, but it only happens once during initialization)
+      stiffmatrix->Update(1.0/dt,erea_v,1.0);
+    }
+
+    /* additional "pressure gradient term" + "darcy-term"
+     -  detJ * w(gp) * p *( J * F^-T * d(grad(phi))/d(us) + dJ/d(us) * F^-T * grad(phi) + J * d(F^-T)/d(us) *grad(phi) ) * D(us)
+     + detJ * w(gp) * ( 2 * reacoeff * phi * d(phi)/d(us) * J * v^f ) * D(us)
+     */
+    stiffmatrix->Update(1.0,estiff_stat,1.0);
+
+    /* additional "reactive darcy-term"
+     detJ * w(gp) * (  dJ/d(us) * vs * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
+     */
+    stiffmatrix->Update(1.0,erea_u,1.0);
+
+    // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
+    // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
+    stiffmatrix->Update(1.0,estiff_stress,1.0);
+  }
+
+  // update internal force vector
+  if (force != NULL )
+  {
+    // additional fluid stress- stiffness term RHS -(B^T .  C^-1  * J * p^f * detJ * w(gp))
+    // and Brinkman stress term (if neededf)
+    force->Update(1.0,ecoupl_force_stress,1.0);
+
+    //stationary pressure coupling part of RHS
+
+    // "pressure gradient terms": detJ * w(gp) * J *  F^-T * Grad(p) * phi
+    force->Update(1.0,ecoupl_force_p,1.0);
+
+    //stationary velocity coupling part of RHS
+    //additional "reactive darcy-term":  - detJ * w(gp) * reacoeff * J *  phi^2 *  v^f
+    force->Update(1.0,ecoupl_force_v,1.0);
+
+    //additional "reactive term" RHS  detJ * w(gp) * ( J * reacoeff * phi^2 * v_s)
+    force->Update(1.0,erea_force,1.0);
+
+  }  // if (force != NULL )
+
+  return;
+}  // nlnstiff_poroelast()
+
+/*----------------------------------------------------------------------*
+ |  evaluate only the poroelasticity fraction for the element (protected) |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
+                                    Teuchos::ParameterList& params,
+                                    const LINALG::Matrix<numdim_,numnod_>& xrefe,
+                                    const LINALG::Matrix<numdim_,numnod_>& xcurr,
+                                    const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
+                                    const LINALG::Matrix<numdim_,numnod_>& nodalvel,
+                                    const LINALG::Matrix<numdim_,numnod_> & evelnp,
+                                    const LINALG::Matrix<numnod_,1> & epreaf,
+                                    const LINALG::Matrix<numnod_, 1>*  porosity_dof,
+                                    LINALG::Matrix<numdof_,numdof_>& estiff_stat,
+                                    LINALG::Matrix<numdof_,numdof_>& erea_u,
+                                    LINALG::Matrix<numdof_,numdof_>& erea_v,
+                                    LINALG::Matrix<numdof_,numdof_>& estiff_stress,
+                                    LINALG::Matrix<numdof_,1>&       erea_force,
+                                    LINALG::Matrix<numdof_,1>&       ecoupl_force_p,
+                                    LINALG::Matrix<numdof_,1>&       ecoupl_force_v,
+                                    LINALG::Matrix<numdof_,1>&       ecoupl_force_stress,
+                                    LINALG::Matrix<numstr_,1>&       fstress
+                                        )
+{
+  double reacoeff = fluidmat_->ComputeReactionCoeff();
+
   LINALG::Matrix<numdim_,numnod_> N_XYZ;
   LINALG::Matrix<numderiv2_,numnod_> N_XYZ2;
   // build deformation gradient wrt to material configuration
@@ -852,8 +781,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     for(int i=0; i<numnod_; i++)
       for(int j=0; j<numdim_; j++)
       {
-        dispint(j) += nodaldisp(i*numdim_+j) * shapefct(i);
-        velint(j) += nodalvel(i*numdim_+j) * shapefct(i);
+        dispint(j) += nodaldisp(j,i) * shapefct(i);
+        velint(j) += nodalvel(j,i) * shapefct(i);
       }
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
@@ -968,17 +897,17 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
       for(int n=0; n<numnod_; n++)
       {
         // second derivatives w.r.t. XYZ are orderd as followed: deriv2(N,XX ; N,YY ; N,ZZ ; N,XY ; N,XZ ; N,YZ)
-        F_X(i*numdim_+0, 0) += N_XYZ2(0,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+1, 0) += N_XYZ2(3,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+2, 0) += N_XYZ2(4,n)*nodaldisp(n*numdim_+i);
+        F_X(i*numdim_+0, 0) += N_XYZ2(0,n)*nodaldisp(i,n);
+        F_X(i*numdim_+1, 0) += N_XYZ2(3,n)*nodaldisp(i,n);
+        F_X(i*numdim_+2, 0) += N_XYZ2(4,n)*nodaldisp(i,n);
 
-        F_X(i*numdim_+0, 1) += N_XYZ2(3,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+1, 1) += N_XYZ2(1,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+2, 1) += N_XYZ2(5,n)*nodaldisp(n*numdim_+i);
+        F_X(i*numdim_+0, 1) += N_XYZ2(3,n)*nodaldisp(i,n);
+        F_X(i*numdim_+1, 1) += N_XYZ2(1,n)*nodaldisp(i,n);
+        F_X(i*numdim_+2, 1) += N_XYZ2(5,n)*nodaldisp(i,n);
 
-        F_X(i*numdim_+0, 2) += N_XYZ2(4,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+1, 2) += N_XYZ2(5,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+2, 2) += N_XYZ2(2,n)*nodaldisp(n*numdim_+i);
+        F_X(i*numdim_+0, 2) += N_XYZ2(4,n)*nodaldisp(i,n);
+        F_X(i*numdim_+1, 2) += N_XYZ2(5,n)*nodaldisp(i,n);
+        F_X(i*numdim_+2, 2) += N_XYZ2(2,n)*nodaldisp(i,n);
 
       }
     }
@@ -991,8 +920,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     //--------------spatial gradient of jacobi determinant J:gradJ = F^-T*GradJ
     LINALG::Matrix<1,numdim_> gradJ;
     gradJ.Multiply(GradJ,defgrd_inv);
-
-    gradJ_gp.at(gp) = gradJ;
 
     //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
     LINALG::Matrix<1,numdof_> dJ_dus;
@@ -1065,7 +992,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     LINALG::Matrix<1,numdof_> dphi_dus;
     double porosity=0.0;
 
-    ComputePorosityAndLinearization(params,press,J,gp,structmat,dJ_dus,porosity,dphi_dus);
+    ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
 
     /*
     //material porosity gradient Grad(phi) = dphi/dp * Grad(p) + dphi/dJ * Grad(J)
@@ -1367,14 +1294,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
     double detJ_w = detJ*intpoints_.Weight(gp);//gpweights[gp];
-    LINALG::Matrix<numdof_,numdof_> estiff_stat(true);
-    LINALG::Matrix<numdof_,numdof_> erea_u(true);
-    LINALG::Matrix<numdof_,numdof_> erea_v(true);
-    LINALG::Matrix<numdof_,1> erea_force(true);
-    LINALG::Matrix<numdof_,1> ecoupl_force_p(true);
-    LINALG::Matrix<numdof_,1> ecoupl_force_v(true);
 
-    if (force != NULL or stiffmatrix != NULL or reamatrix != NULL )
+    //if (force != NULL or stiffmatrix != NULL or reamatrix != NULL )
     {
       for (int k=0; k<numnod_; k++)
       {
@@ -1435,169 +1356,23 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
           }
         }
       }
-    }
 
-    LINALG::Matrix<numstr_,1> fstress(true);
-    if(fluidmat->Type() == "Darcy-Brinkman")
-    {
-      double visc = fluidmat->Viscosity();
-      LINALG::Matrix<numdim_,numdim_> CinvFvel;
-      LINALG::Matrix<numdim_,numdim_> tmp;
-      CinvFvel.Multiply(C_inv,fvelder);
-      tmp.MultiplyNT(CinvFvel,defgrd_inv);
-      LINALG::Matrix<numdim_,numdim_> tmp2(tmp);
-      tmp.UpdateT(1.0,tmp2,1.0);
+      const double fac1 = -detJ_w * press;
+      const double fac2= fac1 * J;
 
-      fstress(0) = tmp(0,0);
-      fstress(1) = tmp(1,1);
-      fstress(2) = tmp(2,2);
-      fstress(3) = tmp(0,1);
-      fstress(4) = tmp(1,2);
-      fstress(5) = tmp(2,0);
+      ecoupl_force_stress.Update(fac2,cinvb,1.0);
 
-      fstress.Scale(detJ_w * visc * J * porosity);
-
-      //B^T . C^-1
-      LINALG::Matrix<numdof_,1> fstressb(true);
-      fstressb.MultiplyTN(bop,fstress);
-
-      if (force != NULL )
-        force->Update(1.0,fstressb,1.0);
-
-      //evaluate viscous terms (for darcy-brinkman flow only)
-      if (stiffmatrix != NULL)
-      {
-        LINALG::Matrix<numdim_,numdim_> tmp4;
-        tmp4.MultiplyNT(fvelder,defgrd_inv);
-
-        double fac = detJ_w * visc;
-
-        LINALG::Matrix<numstr_,numdof_> fstress_dus (true);
-        for (int n=0; n<numnod_; ++n)
-          for (int k=0; k<numdim_; ++k)
-          {
-            const int gid = n*numdim_+k;
-
-            fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp4(0,0) + dCinv_dus(3,gid)*tmp4(1,0) + dCinv_dus(5,gid)*tmp4(2,0) );
-            fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp4(0,1) + dCinv_dus(1,gid)*tmp4(1,1) + dCinv_dus(4,gid)*tmp4(2,1) );
-            fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp4(0,2) + dCinv_dus(4,gid)*tmp4(1,2) + dCinv_dus(2,gid)*tmp4(2,2) );
-            /* ~~~ */
-            fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp4(0,1) + dCinv_dus(3,gid)*tmp4(1,1) + dCinv_dus(5,gid)*tmp4(2,1)
-                                  + dCinv_dus(3,gid)*tmp4(0,0) + dCinv_dus(1,gid)*tmp4(1,0) + dCinv_dus(4,gid)*tmp4(2,0);
-            fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp4(0,2) + dCinv_dus(1,gid)*tmp4(1,2) + dCinv_dus(4,gid)*tmp4(2,2)
-                                  + dCinv_dus(5,gid)*tmp4(0,1) + dCinv_dus(4,gid)*tmp4(1,1) + dCinv_dus(2,gid)*tmp4(2,1);
-            fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp4(0,0) + dCinv_dus(4,gid)*tmp4(1,0) + dCinv_dus(2,gid)*tmp4(2,0)
-                                  + dCinv_dus(0,gid)*tmp4(0,2) + dCinv_dus(3,gid)*tmp4(1,2) + dCinv_dus(5,gid)*tmp4(2,2);
-
-            for(int j=0; j<numdim_; j++)
-            {
-              fstress_dus(0,gid) += 2*CinvFvel(0,j) * dFinvTdus(j*numdim_  ,gid);
-              fstress_dus(1,gid) += 2*CinvFvel(1,j) * dFinvTdus(j*numdim_+1,gid);
-              fstress_dus(2,gid) += 2*CinvFvel(2,j) * dFinvTdus(j*numdim_+2,gid);
-              /* ~~~ */
-              fstress_dus(3,gid) += + CinvFvel(0,j) * dFinvTdus(j*numdim_+1,gid)
-                                    + CinvFvel(1,j) * dFinvTdus(j*numdim_  ,gid);
-              fstress_dus(4,gid) += + CinvFvel(1,j) * dFinvTdus(j*numdim_+2,gid)
-                                    + CinvFvel(2,j) * dFinvTdus(j*numdim_+1,gid);
-              fstress_dus(5,gid) += + CinvFvel(2,j) * dFinvTdus(j*numdim_  ,gid)
-                                    + CinvFvel(0,j) * dFinvTdus(j*numdim_+2,gid);
-            }
-          }
-
-        /*
-        for (int i=0; i<numdof_; i++)
-        for (int j=0; j<6; j++)
-        {
-        if( abs(fstress_dus(j,i)-fad_fstress(j).dx(i)) > 1e-15)
-        {
-        cout<<"fstress_dus("<<j<<", "<<i<<"): "<<fstress_dus(j,i)<<endl;
-        cout<<"fstress.dx("<<j<<", "<<i<<"): "<<fad_fstress(j).dx(i)<<endl;
-        cout<<"fstress_dus:"<<endl<<fstress_dus<<endl;
-        cout<<"fad_fstress:"<<endl<<fad_fstress<<endl;
-        cout<<"dFinvdus:"<<endl<<dFinvTdus<<endl;
-        cout<<"CinvFvel:"<<endl<<CinvFvel<<endl;
-        cout<<"fad_CinvFvel:"<<endl<<fad_CinvFvel<<endl;
-        dserror("check fstress failed!");
-        }
-        }
-        cout<<"fstress check done and ok"<<endl;
-        */
-
-        LINALG::Matrix<numdof_,numdof_> tmp1;
-        LINALG::Matrix<numdof_,numdof_> tmp2;
-        LINALG::Matrix<numdof_,numdof_> tmp3;
-
-        tmp1.Multiply(fac*porosity,fstressb,dJ_dus);
-        tmp2.Multiply(fac*J,fstressb,dphi_dus);
-        tmp3.MultiplyTN(detJ_w * visc * J * porosity,bop,fstress_dus);
-
-        // additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ * w(gp))
-        stiffmatrix->Update(1.0,tmp1,1.0);
-
-        // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
-        stiffmatrix->Update(1.0,tmp2,1.0);
-
-        // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
-        stiffmatrix->Update(1.0,tmp3,1.0);
-      }
-    }//Darcy_Brinkman
-
-    double fac1 = -detJ_w * press;
-    double fac2= fac1 * J;
-
-    // update internal force vector
-    if (force != NULL )
-    {
-      // additional fluid stress- stiffness term RHS -(B^T .  (1-phi) . C^-1  * J * p^f * detJ * w(gp))
-      force->Update(fac2,cinvb,1.0);
-
-      //stationary pressure coupling part of RHS
-
-      // "pressure gradient terms": detJ * w(gp) * J *  F^-T * Grad(p) * phi
-      force->Update(1.0,ecoupl_force_p,1.0);
-
-      //stationary velocity coupling part of RHS
-      //additional "reactive darcy-term":  - detJ * w(gp) * reacoeff * J *  phi^2 *  v^f
-      force->Update(1.0,ecoupl_force_v,1.0);
-
-      //additional "reactive term" RHS  detJ * w(gp) * ( J * reacoeff * phi^2 * v_s)
-      force->Update(1.0,erea_force,1.0);
-
-    }  // if (force != NULL )
-
-    if ( reamatrix != NULL )
-    {
-      /* additional "reactive darcy-term"
-       detJ * w(gp) * ( J * reacoeff * phi^2  ) * D(v_s)
-       */
-      reamatrix->Update(1.0,erea_v,1.0);
-    }
-
-    // update stiffness matrix
-    if (stiffmatrix != NULL)
-    {
       LINALG::Matrix<numdof_,numdof_> tmp1;
       LINALG::Matrix<numdof_,numdof_> tmp2;
 
       tmp1.Multiply(fac1,cinvb,dJ_dus);
       tmp2.MultiplyTN(fac2,bop,dCinv_dus);
 
-      // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * (1-\phi) * p^f * detJ * w(gp))
-      stiffmatrix->Update(1.0,tmp1,1.0);
+      // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
+      estiff_stress.Update(1.0,tmp1,1.0);
 
-      // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * (1-\phi) * p^f * detJ * w(gp))
-      stiffmatrix->Update(1.0,tmp2,1.0);
-
-      /* additional "pressure gradient term" + "darcy-term"
-       -  detJ * w(gp) * p *( J * F^-T * d(grad(phi))/d(us) + dJ/d(us) * F^-T * grad(phi) + J * d(F^-T)/d(us) *grad(phi) ) * D(us)
-       + detJ * w(gp) * ( 2 * reacoeff * phi * d(phi)/d(us) * J * v^f ) * D(us)
-       */
-      stiffmatrix->Update(1.0,estiff_stat,1.0);
-
-      /* additional "reactive darcy-term"
-       detJ * w(gp) * (  dJ/d(us) * vs * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
-       */
-      stiffmatrix->Update(1.0,erea_u,1.0);
+      // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
+      estiff_stress.Update(1.0,tmp2,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       LINALG::Matrix<numstr_,1> sfac(C_inv_vec); // auxiliary integrated stress
@@ -1620,26 +1395,120 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
           double bopstrbop = 0.0; // intermediate value
           for (int idim=0; idim<numdim_; ++idim)
             bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-          (*stiffmatrix)(numdim_*inod+0,numdim_*jnod+0) += bopstrbop;
-          (*stiffmatrix)(numdim_*inod+1,numdim_*jnod+1) += bopstrbop;
-          (*stiffmatrix)(numdim_*inod+2,numdim_*jnod+2) += bopstrbop;
+          (estiff_stress)(numdim_*inod+0,numdim_*jnod+0) += bopstrbop;
+          (estiff_stress)(numdim_*inod+1,numdim_*jnod+1) += bopstrbop;
+          (estiff_stress)(numdim_*inod+2,numdim_*jnod+2) += bopstrbop;
         }
       } // end of integrate `geometric' stiffness******************************
 
-      //if the reaction part is not supposed to be computed separately, we add it to the stiffness
-      //(this is not the best way to do it, but it only happens once during initialization)
-      if ( reamatrix == NULL )
-        stiffmatrix->Update(1.0/dt,erea_v,1.0)
-        ;
-    }
+      if(fluidmat_->Type() == "Darcy-Brinkman")
+      {
+        double visc = fluidmat_->Viscosity();
+        LINALG::Matrix<numdim_,numdim_> CinvFvel;
+        LINALG::Matrix<numdim_,numdim_> visctress1;
+        CinvFvel.Multiply(C_inv,fvelder);
+        visctress1.MultiplyNT(CinvFvel,defgrd_inv);
+        LINALG::Matrix<numdim_,numdim_> visctress2(visctress1);
+        visctress1.UpdateT(1.0,visctress2,1.0);
 
+        fstress(0) = visctress1(0,0);
+        fstress(1) = visctress1(1,1);
+        fstress(2) = visctress1(2,2);
+        fstress(3) = visctress1(0,1);
+        fstress(4) = visctress1(1,2);
+        fstress(5) = visctress1(2,0);
+
+        fstress.Scale(detJ_w * visc * J * porosity);
+
+        //B^T . C^-1
+        LINALG::Matrix<numdof_,1> fstressb(true);
+        fstressb.MultiplyTN(bop,fstress);
+
+        //if (force != NULL )
+          ecoupl_force_stress.Update(1.0,fstressb,1.0);
+
+        //evaluate viscous terms (for darcy-brinkman flow only)
+        //if (stiffmatrix != NULL)
+        {
+          LINALG::Matrix<numdim_,numdim_> tmp4;
+          tmp4.MultiplyNT(fvelder,defgrd_inv);
+
+          double fac = detJ_w * visc;
+
+          LINALG::Matrix<numstr_,numdof_> fstress_dus (true);
+          for (int n=0; n<numnod_; ++n)
+            for (int k=0; k<numdim_; ++k)
+            {
+              const int gid = n*numdim_+k;
+
+              fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp4(0,0) + dCinv_dus(3,gid)*tmp4(1,0) + dCinv_dus(5,gid)*tmp4(2,0) );
+              fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp4(0,1) + dCinv_dus(1,gid)*tmp4(1,1) + dCinv_dus(4,gid)*tmp4(2,1) );
+              fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp4(0,2) + dCinv_dus(4,gid)*tmp4(1,2) + dCinv_dus(2,gid)*tmp4(2,2) );
+              /* ~~~ */
+              fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp4(0,1) + dCinv_dus(3,gid)*tmp4(1,1) + dCinv_dus(5,gid)*tmp4(2,1)
+                                    + dCinv_dus(3,gid)*tmp4(0,0) + dCinv_dus(1,gid)*tmp4(1,0) + dCinv_dus(4,gid)*tmp4(2,0);
+              fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp4(0,2) + dCinv_dus(1,gid)*tmp4(1,2) + dCinv_dus(4,gid)*tmp4(2,2)
+                                    + dCinv_dus(5,gid)*tmp4(0,1) + dCinv_dus(4,gid)*tmp4(1,1) + dCinv_dus(2,gid)*tmp4(2,1);
+              fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp4(0,0) + dCinv_dus(4,gid)*tmp4(1,0) + dCinv_dus(2,gid)*tmp4(2,0)
+                                    + dCinv_dus(0,gid)*tmp4(0,2) + dCinv_dus(3,gid)*tmp4(1,2) + dCinv_dus(5,gid)*tmp4(2,2);
+
+              for(int j=0; j<numdim_; j++)
+              {
+                fstress_dus(0,gid) += 2*CinvFvel(0,j) * dFinvTdus(j*numdim_  ,gid);
+                fstress_dus(1,gid) += 2*CinvFvel(1,j) * dFinvTdus(j*numdim_+1,gid);
+                fstress_dus(2,gid) += 2*CinvFvel(2,j) * dFinvTdus(j*numdim_+2,gid);
+                /* ~~~ */
+                fstress_dus(3,gid) += + CinvFvel(0,j) * dFinvTdus(j*numdim_+1,gid)
+                                      + CinvFvel(1,j) * dFinvTdus(j*numdim_  ,gid);
+                fstress_dus(4,gid) += + CinvFvel(1,j) * dFinvTdus(j*numdim_+2,gid)
+                                      + CinvFvel(2,j) * dFinvTdus(j*numdim_+1,gid);
+                fstress_dus(5,gid) += + CinvFvel(2,j) * dFinvTdus(j*numdim_  ,gid)
+                                      + CinvFvel(0,j) * dFinvTdus(j*numdim_+2,gid);
+              }
+            }
+
+          /*
+          for (int i=0; i<numdof_; i++)
+          for (int j=0; j<6; j++)
+          {
+          if( abs(fstress_dus(j,i)-fad_fstress(j).dx(i)) > 1e-15)
+          {
+          cout<<"fstress_dus("<<j<<", "<<i<<"): "<<fstress_dus(j,i)<<endl;
+          cout<<"fstress.dx("<<j<<", "<<i<<"): "<<fad_fstress(j).dx(i)<<endl;
+          cout<<"fstress_dus:"<<endl<<fstress_dus<<endl;
+          cout<<"fad_fstress:"<<endl<<fad_fstress<<endl;
+          cout<<"dFinvdus:"<<endl<<dFinvTdus<<endl;
+          cout<<"CinvFvel:"<<endl<<CinvFvel<<endl;
+          cout<<"fad_CinvFvel:"<<endl<<fad_CinvFvel<<endl;
+          dserror("check fstress failed!");
+          }
+          }
+          cout<<"fstress check done and ok"<<endl;
+          */
+
+          LINALG::Matrix<numdof_,numdof_> fluidstress1;
+          LINALG::Matrix<numdof_,numdof_> fluidstress2;
+          LINALG::Matrix<numdof_,numdof_> fluidstress3;
+
+          fluidstress1.Multiply(fac*porosity,fstressb,dJ_dus);
+          fluidstress2.Multiply(fac*J,fstressb,dphi_dus);
+          fluidstress3.MultiplyTN(detJ_w * visc * J * porosity,bop,fstress_dus);
+
+          // additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ * w(gp))
+          estiff_stress.Update(1.0,fluidstress1,1.0);
+
+          // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
+          estiff_stress.Update(1.0,fluidstress2,1.0);
+
+          // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
+          estiff_stress.Update(1.0,fluidstress3,1.0);
+        }
+      }//Darcy_Brinkman
+    }
     /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
   /* =========================================================================*/
-
-  return;
-}  // nlnstiff_poroelast()
-
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate only the poroelasticity fraction for the element (protected) |
@@ -1647,8 +1516,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     std::vector<int>& lm,                                                 // location matrix
-    std::vector<double>& disp,                                            // current displacements
-    std::vector<double>& vel,                                             // current velocities
+    LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
+    LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
     LINALG::Matrix<numdim_, numnod_> & evelnp,                       //current fluid velocity
     LINALG::Matrix<numnod_, 1> & epreaf,                             //current fluid pressure
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix,   // element stiffness matrix
@@ -1657,28 +1526,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     Teuchos::ParameterList& params)                                           // algorithmic parameters e.g. time
 {
   //=============================get parameters
-  // get global id of the structure element
-  int id = Id();
-  //access fluid discretization
-  RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  //get corresponding fluid element
-  DRT::Element* fluidele = fluiddis->gElement(id);
-  if (fluidele == NULL)
-    dserror("Fluid element %i not on local processor", id);
 
-  //get fluid material
-  Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
-    dserror("invalid fluid material for poroelasticity");
-
-  //get structure material
-  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
-    dserror("invalid structure material for poroelasticity");
-
-  const double reacoeff = fluidmat->ComputeReactionCoeff();
-  double theta = params.get<double>("theta");
+  GetMaterials();
 
   //=======================================================================
 
@@ -1693,28 +1542,105 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     for(int j=0; j<numdim_;j++)
     {
       xrefe(j,i) = x[j];
-      xcurr(j,i) = xrefe(j,i) + disp[i*noddof_+j];
+      xcurr(j,i) = xrefe(j,i) + disp(j,i);
     }
   }
-
-  //rewrite nodal displacements/velocities as LINALG::Matrix
-  LINALG::Matrix<numdof_,1> nodaldisp;
-  LINALG::Matrix<numdof_,1> nodalvel;
-  for (int i=0; i<numdof_; ++i)
-  {
-    nodaldisp(i,0) = disp[i];
-    nodalvel(i,0) = vel[i];
-  }
-
   //initialize element matrizes
   LINALG::Matrix<numdof_,(numdim_+1)*numnod_> ecoupl(true);
   LINALG::Matrix<numdof_,numnod_> ecoupl_p(true);
   LINALG::Matrix<numdof_,numdof_> ecoupl_v(true);
 
-
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
+
+  GaussPointLoopOD( params,
+                         xrefe,
+                         xcurr,
+                         disp,
+                         vel,
+                         evelnp,
+                         epreaf,
+                         NULL,
+                         ecoupl_p,
+                         ecoupl_v  );
+
+  //if (force != NULL )
+  //{
+    //all rhs terms are added in nlnstiff_poroelast
+  //}
+
+  if (stiffmatrix != NULL)
+  {
+    // add structure displacement - fluid velocity part to matrix
+    for (int ui=0; ui<numnod_; ++ui)
+    {
+      const int dim_ui = numdim_*ui;
+
+      for (int jdim=0; jdim < numdim_;++jdim)
+      {
+        const int dim_ui_jdim = dim_ui+jdim;
+
+        for (int vi=0; vi<numnod_; ++vi)
+        {
+          const int numdof_vi = (numdim_+1)*vi;
+          const int dim_vi = numdim_*vi;
+
+          for (int idim=0; idim <numdim_; ++idim)
+          {
+            ecoupl(dim_ui_jdim , numdof_vi+idim) += ecoupl_v(dim_ui_jdim , dim_vi+idim);
+          }
+        }
+      }
+    }
+
+    // add structure displacement - fluid pressure part to matrix
+    for (int ui=0; ui<numnod_; ++ui)
+    {
+      const int dim_ui = numdim_*ui;
+
+      for (int jdim=0; jdim < numdim_;++jdim)
+      {
+        const int dim_ui_jdim = dim_ui+jdim;
+
+        for (int vi=0; vi<numnod_; ++vi)
+        {
+          ecoupl( dim_ui_jdim , (numdim_+1)*vi+numdim_ ) += ecoupl_p( dim_ui_jdim , vi);
+        }
+      }
+    }
+
+    //TODO
+    // build tangent coupling matrix : effective dynamic stiffness coupling matrix
+    //    K_{Teffdyn} = 1/dt C
+    //                + theta K_{T}
+    const double theta = params.get<double>("theta");
+    stiffmatrix->Update(theta,ecoupl,1.0);
+  }
+
+  return;
+
+}  // coupling_poroelast()
+
+/*----------------------------------------------------------------------*
+ |  evaluate only the poroelasticity fraction for the element (protected) |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
+                                    Teuchos::ParameterList& params,
+                                    const LINALG::Matrix<numdim_,numnod_>& xrefe,
+                                    const LINALG::Matrix<numdim_,numnod_>& xcurr,
+                                    const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
+                                    const LINALG::Matrix<numdim_,numnod_>& nodalvel,
+                                    const LINALG::Matrix<numdim_,numnod_> & evelnp,
+                                    const LINALG::Matrix<numnod_,1> & epreaf,
+                                    const LINALG::Matrix<numnod_, 1>*  porosity_dof,
+                                    LINALG::Matrix<numdof_,numnod_>& ecoupl_p,
+                                    LINALG::Matrix<numdof_,numdof_>& ecoupl_v
+                                        )
+{
+  const double reacoeff = fluidmat_->ComputeReactionCoeff();
+
   LINALG::Matrix<numdim_,numnod_> N_XYZ;       //  first derivatives at gausspoint w.r.t. X, Y,Z
   LINALG::Matrix<numderiv2_,numnod_> N_XYZ2;             //  second derivatives at gausspoint w.r.t. X, Y,Z
   // build deformation gradient wrt to material configuration
@@ -1850,8 +1776,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     for(int i=0; i<numnod_; i++)
       for(int j=0; j<numdim_; j++)
       {
-        dispint(j) += nodaldisp(i*numdim_+j) * shapefct(i);
-        velint(j) += nodalvel(i*numdim_+j) * shapefct(i);
+        dispint(j) += nodaldisp(j,i) * shapefct(i);
+        velint(j) += nodalvel(j,i) * shapefct(i);
       }
 
     // inverse deformation gradient F^-1
@@ -1875,17 +1801,17 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     {
       for(int n=0; n<numnod_; n++)
       {
-        F_X(i*numdim_+0, 0) += N_XYZ2(0,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+1, 0) += N_XYZ2(3,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+2, 0) += N_XYZ2(4,n)*nodaldisp(n*numdim_+i);
+        F_X(i*numdim_+0, 0) += N_XYZ2(0,n)*nodaldisp(i,n);
+        F_X(i*numdim_+1, 0) += N_XYZ2(3,n)*nodaldisp(i,n);
+        F_X(i*numdim_+2, 0) += N_XYZ2(4,n)*nodaldisp(i,n);
 
-        F_X(i*numdim_+0, 1) += N_XYZ2(3,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+1, 1) += N_XYZ2(1,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+2, 1) += N_XYZ2(5,n)*nodaldisp(n*numdim_+i);
+        F_X(i*numdim_+0, 1) += N_XYZ2(3,n)*nodaldisp(i,n);
+        F_X(i*numdim_+1, 1) += N_XYZ2(1,n)*nodaldisp(i,n);
+        F_X(i*numdim_+2, 1) += N_XYZ2(5,n)*nodaldisp(i,n);
 
-        F_X(i*numdim_+0, 2) += N_XYZ2(4,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+1, 2) += N_XYZ2(5,n)*nodaldisp(n*numdim_+i);
-        F_X(i*numdim_+2, 2) += N_XYZ2(2,n)*nodaldisp(n*numdim_+i);
+        F_X(i*numdim_+0, 2) += N_XYZ2(4,n)*nodaldisp(i,n);
+        F_X(i*numdim_+1, 2) += N_XYZ2(5,n)*nodaldisp(i,n);
+        F_X(i*numdim_+2, 2) += N_XYZ2(2,n)*nodaldisp(i,n);
       }
     }
 
@@ -1897,17 +1823,14 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     double dphi_dp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity( params,
-                                press,
-                                J,
-                                gp,
-                                porosity,
-                                &dphi_dp,
-                                NULL,       //dphi_dJ not needed
-                                NULL,       //dphi_dJdp not needed
-                                NULL,       //dphi_dJJ not needed
-                                NULL        //dphi_dpp not needed
-                                );
+    ComputePorosityAndLinearizationOD(params,
+                                      press,
+                                      J,
+                                      gp,
+                                      shapefct,
+                                      porosity_dof,
+                                      porosity,
+                                      dphi_dp);
 
     /*
     //-----------material porosity gradient
@@ -2023,7 +1946,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     LINALG::Matrix<numdim_,numnod_> FinvNXYZ;
     FinvNXYZ.MultiplyTN(defgrd_inv, N_XYZ);
 
-    if ( stiffmatrix != NULL or reamatrix != NULL)
+    //if ( stiffmatrix != NULL or reamatrix != NULL)
     {
       for (int i=0; i<numnod_; i++)
       {
@@ -2061,11 +1984,11 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
           }
         }
       }
-      if(fluidmat->Type() == "Darcy-Brinkman")
+      if(fluidmat_->Type() == "Darcy-Brinkman")
       {
         LINALG::Matrix<numstr_,1> fstress;
 
-        double visc = fluidmat->Viscosity();
+        double visc = fluidmat_->Viscosity();
         LINALG::Matrix<numdim_,numdim_> CinvFvel;
         LINALG::Matrix<numdim_,numdim_> tmp;
         CinvFvel.Multiply(C_inv,fvelder);
@@ -2137,64 +2060,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
   /* =========================================================================*/
-
-  //if (force != NULL )
-  //{
-    //all rhs terms are added in nlnstiff_poroelast
-  //}
-
-  if (stiffmatrix != NULL or reamatrix != NULL)
-  {
-    // add structure displacement - fluid velocity part to matrix
-    for (int ui=0; ui<numnod_; ++ui)
-    {
-      const int dim_ui = numdim_*ui;
-
-      for (int jdim=0; jdim < numdim_;++jdim)
-      {
-        const int dim_ui_jdim = dim_ui+jdim;
-
-        for (int vi=0; vi<numnod_; ++vi)
-        {
-          const int numdof_vi = (numdim_+1)*vi;
-          const int dim_vi = numdim_*vi;
-
-          for (int idim=0; idim <numdim_; ++idim)
-          {
-            ecoupl(dim_ui_jdim , numdof_vi+idim) += ecoupl_v(dim_ui_jdim , dim_vi+idim);
-          }
-        }
-      }
-    }
-
-    // add structure displacement - fluid pressure part to matrix
-    for (int ui=0; ui<numnod_; ++ui)
-    {
-      const int dim_ui = numdim_*ui;
-
-      for (int jdim=0; jdim < numdim_;++jdim)
-      {
-        const int dim_ui_jdim = dim_ui+jdim;
-
-        for (int vi=0; vi<numnod_; ++vi)
-        {
-          ecoupl( dim_ui_jdim , (numdim_+1)*vi+numdim_ ) += ecoupl_p( dim_ui_jdim , vi);
-        }
-      }
-    }
-  }
-
-  if (stiffmatrix != NULL)
-  {
-    // build tangent coupling matrix : effective dynamic stiffness coupling matrix
-    //    K_{Teffdyn} = 1/dt C
-    //                + theta K_{T}
-    stiffmatrix->Update(theta,ecoupl,1.0);
-  }
-
-  return;
-
-}  // coupling_poroelast()
+}
 
 
 /*----------------------------------------------------------------------*
@@ -2329,8 +2195,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
 }//couplstress_poroelast
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
@@ -2485,14 +2349,15 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearization
     const double& press,
     const double& J,
     const int& gp,
-    Teuchos::RCP< MAT::StructPoro >  structmat,
+    const LINALG::Matrix<numnod_,1>&       shapfct,
+    const LINALG::Matrix<numnod_,1>*           myporosity,
     const LINALG::Matrix<1,numdof_>& dJ_dus,
     double &                         porosity,
     LINALG::Matrix<1,numdof_>&       dphi_dus)
 {
   double dphi_dJ=0.0;
 
-  structmat->ComputePorosity( params,
+  structmat_->ComputePorosity( params,
                               press,
                               J,
                               gp,
@@ -2508,6 +2373,173 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearization
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearizationOD
+(   Teuchos::ParameterList&          params,
+    const double&                    press,
+    const double&                    J,
+    const int&                       gp,
+    const LINALG::Matrix<numnod_,1>&       shapfct,
+    const LINALG::Matrix<numnod_,1>*       myporosity,
+    double &                         porosity,
+    double &                         dphi_dp)
+{
+  structmat_->ComputePorosity( params,
+                              press,
+                              J,
+                              gp,
+                              porosity,
+                              &dphi_dp,
+                              NULL,       //dphi_dJ not needed
+                              NULL,       //dphi_dJdp not needed
+                              NULL,       //dphi_dJJ not needed
+                              NULL        //dphi_dpp not needed
+                              );
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
+                                    const DRT::Discretization&   discretization, ///< discretization
+                                    const int&                   dofset,
+                                    const std::vector<int>&      lm,             ///<
+                                    LINALG::Matrix<numdim_,numnod_> *  matrixtofill,   ///< vector field
+                                    LINALG::Matrix<numnod_,1> *     vectortofill,   ///< scalar field
+                                    const std::string            state          ///< state of the global vector
+)
+{
+  // get state of the global vector
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(dofset,state);
+  if(matrix_state == Teuchos::null)
+    dserror("Cannot get state vector %s", state.c_str());
+
+  const int numdofpernode = NumDofPerNode(dofset,*(Nodes()[0]));
+
+  // extract local values of the global vectors
+  std::vector<double> mymatrix(lm.size());
+  DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+  for (int inode=0; inode<numnod_; ++inode)  // number of nodes
+  {
+    // fill a vector field via a pointer
+    if (matrixtofill != NULL)
+    {
+      for(int idim=0; idim<numdim_; ++idim) // number of dimensions
+      {
+        (*matrixtofill)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
+      }  // end for(idim)
+    }
+    // fill a scalar field via a pointer
+    if (vectortofill != NULL)
+      (*vectortofill)(inode,0) = mymatrix[numdim_+(inode*numdofpernode)];
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GetMaterials( )
+{
+  // get global id of the structure element
+  int id = Id();
+  //access fluid discretization
+  RCP<DRT::Discretization> fluiddis = Teuchos::null;
+  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  //get corresponding fluid element
+  DRT::Element* fluidele = fluiddis->gElement(id);
+  if (fluidele == NULL)
+    dserror("Fluid element %i not on local processor", id);
+
+  //get fluid material
+  fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
+  if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
+    dserror("invalid fluid material for poroelasticity");
+
+  //get structure material
+  structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+  if(structmat_->MaterialType() != INPAR::MAT::m_structporo)
+    dserror("invalid structure material for poroelasticity");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosity
+(   Teuchos::ParameterList& params,
+    double press,
+    double J,
+    int gp,
+    double& porosity,
+    double* dphi_dp,
+    double* dphi_dJ,
+    double* dphi_dJdp,
+    double* dphi_dJJ,
+    double* dphi_dpp,
+    bool save)
+{
+  structmat_->ComputePorosity( params,
+                              press,
+                              J,
+                              gp,
+                              porosity,
+                              dphi_dp,
+                              dphi_dJ,
+                              dphi_dJdp,
+                              dphi_dJJ,
+                              dphi_dpp,
+                              save
+                              );
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSurfPorosity( Teuchos::ParameterList& params,
+                       double press,
+                       double J,
+                       int surfnum,
+                       int gp,
+                       double& porosity,
+                       double* dphi_dp,
+                       double* dphi_dJ,
+                       double* dphi_dJdp,
+                       double* dphi_dJJ,
+                       double* dphi_dpp,
+                       bool save)
+{
+  structmat_->ComputeSurfPorosity( params,
+                              press,
+                              J,
+                              surfnum,
+                              gp,
+                              porosity,
+                              dphi_dp,
+                              dphi_dJ,
+                              dphi_dJdp,
+                              dphi_dJJ,
+                              dphi_dpp,
+                              save
+                              );
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::RefPorosityTimeDeriv()
+{
+  return structmat_->RefPorosityTimeDeriv();
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 

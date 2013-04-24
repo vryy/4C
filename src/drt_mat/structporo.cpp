@@ -168,13 +168,6 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
   }
   */
 
-  /*
-  if (params_ != NULL) // materials are not accessible in postprocessing mode
-  {
-    mat_->Pack(data);
-  }
-  */
-
   // Pack data of underlying material
   if (mat_!=Teuchos::null)
     mat_->Pack(data);
@@ -266,28 +259,6 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   }
   */
 
-  // unpack the sub-material
-  /*
-  {
-    // we create the sub-material using the factory, because this way we can use the known matid.
-    // This way however the material is fully setup according to the dat-file and in order to
-    // get a correct material the called unpack method must overwrite all sub-material members.
-
-    if (params_ != NULL)// materials are not accessible in postprocessing mode
-    {
-      mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->matid_));
-      if (mat_ == Teuchos::null) dserror("MAT::StructPoro: underlying material should be of type MAT::So3Material");
-
-      std::vector<char> basedata(0);
-      ExtractfromPack(position,data,basedata);
-      mat_->Unpack(basedata);
-
-      if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-    }
-  }
-  */
-
   // Unpack data of sub material (these lines are copied from drt_element.cpp)
   std::vector<char> datamat;
   ExtractfromPack(position,data,datamat);
@@ -325,8 +296,11 @@ void MAT::StructPoro::ComputePorosity( const double& initporosity,
 
   const double a = (bulkmodulus / (1 - initporosity) + press - penalty / initporosity) * J;
   const double b = -a + bulkmodulus + penalty;
-  const double c = (b / a) * (b / a) + 4.0 * penalty / a;
-  double d = sqrt(c) * a;
+  const double c = b * b  + 4.0 * penalty * a;
+  double d = sqrt(c);
+
+ // const double c = (b / a) * (b / a) + 4.0 * penalty / a;
+ // double d = sqrt(c) * a;
 
   double test = 1 / (2.0 * a) * (-b + d);
   double sign = 1.0;
@@ -392,7 +366,7 @@ void MAT::StructPoro::ComputePorosity( const double& initporosity,
   {
     const double dadphiref = J*(bulkmodulus / ((1 - initporosity)*(1 - initporosity)) + penalty / (initporosity*initporosity));
     const double tmp = 2*dadphiref/a * (-b*(a+b)/a - 2*penalty);
-    const double dddphiref = sign*(dadphiref * sqrt(c) + tmp);
+    const double dddphiref = sign*(dadphiref * sqrt(c)/a + tmp);
 
     *dphi_dphiref = ( a * (dadphiref+dddphiref) - dadphiref * (-b + d) )/(2*a*a);
   }
@@ -763,6 +737,35 @@ void MAT::StructPoro::GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int
   return;
 }
 */
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
+                                              double     press,
+                                              double     J,
+                                              double     porosity,
+                                              double*    dW_dp,
+                                              double*    dW_dphi,
+                                              double*    dW_dJ,
+                                              double*    W)
+{
+  if(porosity == 0.0)
+    dserror("porosity equals zero!!");
+  const double & bulkmodulus  = params_->bulkmodulus_;
+  const double & penalty      = params_->penaltyparameter_;
+  const double & initporosity = params_->initporosity_;
+
+  //some intermediate values
+  const double a = bulkmodulus / (1 - initporosity) + press - penalty / initporosity;
+  const double b = -1.0*J*a+bulkmodulus+penalty;
+
+  if(W)       *W       = J*a*porosity*porosity + porosity* b - penalty;
+  if(dW_dp)   *dW_dp   = -1.0*J*porosity *(1.0-porosity);
+  if(dW_dphi) *dW_dphi = 2.0*J*a*porosity + b;
+  if(dW_dJ)   *dW_dJ   = a*porosity*porosity - porosity*a;
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

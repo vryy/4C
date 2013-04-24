@@ -316,9 +316,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
   if ( (probtype == prb_poroelast or probtype == prb_poroscatra ) and
-      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
-      != INPAR::FLUID::poro)
-    dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Poro' for poro-elasticity!");
+      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")!= INPAR::FLUID::poro and
+      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")!= INPAR::FLUID::poro_p1 )
+    dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Poro' or 'Poro_P1' for poro-elasticity!");
 
   // now, set general parameters required for all problems
   SetGeneralParameters(fluidtimeparams,prbdyn,fdyn);

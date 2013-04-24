@@ -2429,6 +2429,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Loma",
                                  "Boussinesq",
                                  "Poro",
+                                 "Poro_P1",
                                  "Topology_optimization"
                                  ),
                                tuple<int>(
@@ -2437,6 +2438,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::loma,
                                      INPAR::FLUID::boussinesq,
                                      INPAR::FLUID::poro,
+                                     INPAR::FLUID::poro_p1,
                                      INPAR::FLUID::topopt),
                                &fdyn);
 

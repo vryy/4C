@@ -285,6 +285,15 @@ namespace MAT
                         LINALG::Matrix<3,1>& couplstress      ///< (o) coupling stress in gauss point
                         ) const;
 
+      void ConsitutiveDerivatives(Teuchos::ParameterList& params,
+                                                    double     press,
+                                                    double     J,
+                                                    double     porosity,
+                                                    double*    dW_dp,
+                                                    double*    dW_dphi,
+                                                    double*    dW_dJ,
+                                                    double*    W);
+
       /// Return quick accessible material parameter data
       virtual MAT::PAR::Parameter* Parameter() const
       {

@@ -41,7 +41,12 @@
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_so3/so3_poro.H"
+#include "../drt_so3/so3_poro_eletypes.H"
+#include "../drt_so3/so3_poro_p1.H"
+#include "../drt_so3/so3_poro_p1_eletypes.H"
 #include "../drt_w1/wall1_poro.H"
+
+#include "../drt_fluid/fluid_utils.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -143,7 +148,7 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool POROELAST::UTILS::PoroelastCloneStrategy::CheckPoro(
+bool POROELAST::UTILS::CheckPoro(
     DRT::Element* actele)
 {
   //all poro elements need to be listed here
@@ -152,6 +157,12 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::CheckPoro(
   DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* poroelehex8 =
       dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(actele);
   if (poroelehex8!=NULL)
+    return true;
+
+  //check for hex8 p1
+  DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* poroelehex8p1 =
+      dynamic_cast<DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(actele);
+  if (poroelehex8p1!=NULL)
     return true;
 
   //check for tet4
@@ -321,6 +332,36 @@ Teuchos::RCP<POROELAST::PORO_SCATRA_Base> POROELAST::UTILS::CreatePoroScatraAlgo
   }
 
   return algo;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis)
+{
+  Teuchos::RCP<LINALG::MapExtractor> porositysplitter = Teuchos::null;
+
+  int locporop1 = 0;
+  // Loop through all elements on processor
+  for (int i=0; i<dis->NumMyColElements(); ++i)
+  {
+    // get the actual element
+
+    if (dis->lColElement(i)->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance())
+      locporop1 += 1;
+
+  }
+  // Was at least one SoSh8P8 found on one processor?
+  int glonumporop1 = 0;
+  dis->Comm().MaxAll(&locporop1, &glonumporop1, 1);
+  // Yes, it was. Go ahead for all processors (even if they do not carry any SoSh8P8 elements)
+  if (glonumporop1 > 0)
+  {
+    porositysplitter = Teuchos::rcp(new LINALG::MapExtractor());
+    const int ndim = DRT::Problem::Instance()->NDim();
+    FLD::UTILS::SetupFluidSplit(*dis, ndim, *porositysplitter);
+  }
+
+  return porositysplitter;
 }
 
 /*----------------------------------------------------------------------*

@@ -27,6 +27,12 @@
 namespace DRT
 {
   class Element;
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class MapExtractor;
 }
 
 /*----------------------------------------------------------------------*
@@ -73,14 +79,15 @@ namespace POROELAST
       /// check for correct material
       void CheckMaterialType(const int matid);
 
-    private:
-      ///check if element is a poro-element
-      bool CheckPoro(DRT::Element* actele);
-
     }; // class PoroelastCloneStrategy
 
     /// setup poro discretization,i.e. clone the structural discretization
     void SetupPoro();
+
+    ///check if element is a poro-element
+    bool CheckPoro(DRT::Element* actele);
+
+    Teuchos::RCP<LINALG::MapExtractor> BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis);
 
     /// create solution algorithm depending on input file
     Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(

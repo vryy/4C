@@ -31,6 +31,7 @@ namespace INPAR
       varying_density,
       loma,
       poro,
+      poro_p1,
       topopt
     };
 

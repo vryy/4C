@@ -60,6 +60,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_so3/so_sh8p8.H"
+#include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_io/io_pstream.H"
 
@@ -361,6 +362,8 @@ STR::TimInt::TimInt
     }
   }
 
+  porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(discret_);
+
   // stay with us
   return;
 }
@@ -382,6 +385,12 @@ void STR::TimInt::SetInitialFields()
   localdofs.push_back(1);
   localdofs.push_back(2);
   discret_->EvaluateInitialField(field,(*vel_)(0),localdofs);
+
+  // set initial porosity field if existing
+  const std::string porosityfield = "Porosity";
+  std::vector<int> porositylocaldofs;
+  porositylocaldofs.push_back(3);
+  discret_->EvaluateInitialField(porosityfield,(*dis_)(0),porositylocaldofs);
 
   return;
 }
@@ -747,6 +756,11 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
     mass->ApplyDirichlet(*(pressure_->CondMap()));
   }
+  else if (porositysplitter_ != Teuchos::null)
+  {
+    mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
+    mass->ApplyDirichlet(*(porositysplitter_->CondMap()));
+  }
   else
   {
     mass = mass_;
@@ -768,6 +782,8 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
     if (pressure_ != Teuchos::null)
       pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
+    if (porositysplitter_ != Teuchos::null)
+      porositysplitter_->InsertCondVector(porositysplitter_->ExtractCondVector(zeros_), rhs);
     solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, true, true);
   }
 
@@ -1240,6 +1256,11 @@ void STR::TimInt::OutputState
   if (HaveContactMeshtying())
     cmtman_->PostprocessTractions(*output_);
 
+  if(porositysplitter_!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> porosity = porositysplitter_->ExtractCondVector((*dis_)(0));
+    output_->WriteVector("porosity_p1", porosity);
+  }
   // leave for good
   return;
 }

@@ -43,6 +43,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/structporo.H"
 #include "../drt_poroelast/poroelast_utils.H"
 
+#include "../drt_so3/so_poro_interface.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(const DRT::Element* ele)
@@ -4479,6 +4481,22 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
 
+  const int peleid = pele->Id();
+  //access structure discretization
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  structdis = DRT::Problem::Instance()->GetDis("structure");
+  //get corresponding structure element (it has the same global ID as the scatra element)
+  DRT::Element* structele = structdis->gElement(peleid);
+  if (structele == NULL)
+    dserror("Structure element %i not on local processor", peleid);
+
+  DRT::ELEMENTS::So_Poro_Interface* so_interface = dynamic_cast<DRT::ELEMENTS::So_Poro_Interface*>(structele);
+  if(so_interface == NULL)
+    dserror("cast to so_interface failed!");
+
+  //ask if the structure element has a porosity dof
+  const bool porositydof = so_interface->HasExtraDof();
+
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
@@ -4545,6 +4563,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   LINALG::Matrix<nsd_,bdrynen_> edispnp(true);
   LINALG::Matrix<nsd_,bdrynen_> egridvel(true);
   LINALG::Matrix<bdrynen_,1> escaaf(true);
+  LINALG::Matrix<bdrynen_,1> eporosity(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode=0;inode<bdrynen_;inode++)
@@ -4559,19 +4578,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     escaaf(inode) = myscaaf[nsd_+(inode*numdofpernode_)];
   }
 
-  const int peleid = pele->Id();
-  //access structure discretization
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
-  //get corresponding structure element (it has the same global ID as the scatra element)
-  DRT::Element* structele = structdis->gElement(peleid);
-  if (structele == NULL)
-    dserror("Structure element %i not on local processor", peleid);
-
-  const Teuchos::RCP<MAT::StructPoro>& structmat
-            = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
-  if(structmat == Teuchos::null)
-    dserror("invalid structure material for poroelasticity");
+  if(porositydof)
+  {
+    for (int inode=0;inode<bdrynen_;inode++)
+      eporosity(inode) = mydispnp[nsd_+(inode*numdofpernode_)];
+  }
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
   Epetra_SerialDenseMatrix pqxg(intpoints.IP().nquad,nsd_);
@@ -4637,25 +4648,30 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 
     double dphi_dp=0.0;
     double dphi_dJ=0.0;
-    //double dphi_dJdp=0.0;
-    //double dphi_dJJ=0.0;
-    //double dphi_dpp=0.0;
     double porosity_gp=0.0;
 
     params.set<double>("scalar",scalar);
 
-    structmat->ComputeSurfPorosity(params,
-                                   press,
-                                   J,
-                                   ele->SurfaceNumber(),
-                                   gpid,
-                                   porosity_gp,
-                                   &dphi_dp,
-                                   &dphi_dJ,
-                                   NULL,                  //dphi_dJdp not needed
-                                   NULL,                  //dphi_dJJ not needed
-                                   NULL                   //dphi_dpp not needed
-                                   );
+    if(porositydof)
+    {
+      porosity_gp = eporosity.Dot(funct_);
+    }
+    else
+    {
+      so_interface->ComputeSurfPorosity(params,
+                                     press,
+                                     J,
+                                     ele->SurfaceNumber(),
+                                     gpid,
+                                     porosity_gp,
+                                     &dphi_dp,
+                                     &dphi_dJ,
+                                     NULL,                  //dphi_dJdp not needed
+                                     NULL,                  //dphi_dJJ not needed
+                                     NULL,                   //dphi_dpp not needed
+                                     true
+                                     );
+    }
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
@@ -4724,23 +4740,36 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 
       if(not offdiag)
         elevec1(inode*numdofpernode_+nsd_) -=  rhsfac * pfunct(inode) * porosity_gp * normal_convel;
-      for (int nnod=0;nnod<nenparent;nnod++)
-      {
-        for (int idof2=0;idof2<nsd_;idof2++)
-        {
-          if(not offdiag)
-            elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
-                timefacfacpre * pfunct(inode) * porosity_gp * unitnormal_(idof2) * pfunct(nnod)
-              + timefacfacpre * pfunct(inode) * dphi_dp* normal_convel * unitnormal_(idof2) * pfunct(nnod)
-              ;
-          else
+
+      if(not offdiag)
+        for (int nnod=0;nnod<nenparent;nnod++)
+          for (int idof2=0;idof2<nsd_;idof2++)
+              elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
+                  timefacfacpre * pfunct(inode) * porosity_gp * unitnormal_(idof2) * pfunct(nnod)
+                + timefacfacpre * pfunct(inode) * dphi_dp* normal_convel * unitnormal_(idof2) * pfunct(nnod)
+                ;
+
+      else if(not porositydof)
+        for (int nnod=0;nnod<nenparent;nnod++)
+          for (int idof2=0;idof2<nsd_;idof2++)
             elemat1(inode*numdofpernode_+nsd_,nnod*nsd_+idof2) +=
                     + tmp(0,nnod*nsd_+idof2) * porosity_gp* pfunct(inode) * timefacpre * fac
                     - pfunct(inode) * porosity_gp * unitnormal_(idof2) * timescale * pfunct(nnod) * timefacfacpre
                     + pfunct(inode) * dphi_dJ * dJ_dus(nnod*nsd_+idof2) * normal_convel * timefacfacpre
                     ;
+
+      else // offdiagonal and porositydof
+        for (int nnod=0;nnod<nenparent;nnod++)
+        {
+          for (int idof2=0;idof2<nsd_;idof2++)
+            elemat1(inode*numdofpernode_+nsd_,nnod*(nsd_+1)+idof2) +=
+                    + tmp(0,nnod*nsd_+idof2) * porosity_gp* pfunct(inode) * timefacpre * fac
+                    - pfunct(inode) * porosity_gp * unitnormal_(idof2) * timescale * pfunct(nnod) * timefacfacpre
+                    + pfunct(inode) * dphi_dJ * dJ_dus(nnod*nsd_+idof2) * normal_convel * timefacfacpre
+                    ;
+          elemat1(inode*numdofpernode_+nsd_,nnod*(nsd_+1)+nsd_) +=
+                    pfunct(inode) * pfunct(nnod) * normal_convel * timefacfacpre;
         }
-      }
     }
   } /* end of loop over integration points gpid */
   return;

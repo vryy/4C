@@ -167,6 +167,21 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             elevec3 );
         break;
       }
+      case INPAR::FLUID::poro_p1:
+      {
+        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p1")->Evaluate(
+            this,
+            discretization,
+            lm,
+            params,
+            mat,
+            elemat1,
+            elemat2,
+            elevec1,
+            elevec2,
+            elevec3 );
+        break;
+      }
       default:
         return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->Evaluate(
             this,
@@ -191,7 +206,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     /***********************************************/
     case FLD::calc_porousflow_fluid_coupling:
     {
-      if( mat->MaterialType() == INPAR::MAT::m_fluidporo)
+      switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+      {
+      case INPAR::FLUID::poro:
       {
         return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro")->Evaluate(
             this,
@@ -205,9 +222,28 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             elevec2,
             elevec3,
             true);
+        break;
       }
-      else
-        dserror("Unknown material type for poroelasticity\n");
+      case INPAR::FLUID::poro_p1:
+      {
+        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p1")->Evaluate(
+            this,
+            discretization,
+            lm,
+            params,
+            mat,
+            elemat1,
+            elemat2,
+            elevec1,
+            elevec2,
+            elevec3,
+            true);
+        break;
+      }
+      default:
+        dserror("Unknown physical type for poroelasticity\n");
+      break;
+      }
     }
     break;
     //-----------------------------------------------------------------------

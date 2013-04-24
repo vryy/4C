@@ -224,7 +224,7 @@ void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
 Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
-  if(submeshes_)
+  if(submeshes_ )
     return coupfs_->MasterToSlave(psiextractor_->ExtractCondVector(iv));
   else
     return coupfs_->MasterToSlave(iv);
@@ -321,34 +321,45 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
   // add dof set of structure/fluid discretization to fluid/structure discretization
   AddDofSets();
 
-  // the fluid-ale coupling not always matches
+  const int ndim = DRT::Problem::Instance()->NDim();
+  const int numglobalstructdofs = structdis->DofColMap()->NumGlobalElements();
+  if(numglobalstructdofs == numglobalstructnodes * ndim)
+    porositydof_ = false;
+  else
+    porositydof_ = true;
+
+  // the fluid-structure coupling not always matches
   const Epetra_Map* fluidnoderowmap = fluiddis->NodeRowMap();
   const Epetra_Map* structurenoderowmap= structdis->NodeRowMap();
 
   coupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
-  const int ndim = DRT::Problem::Instance()->NDim();
+  int ndof = ndim;
+
+  if(porositydof_) ndof++;
 
   if(submeshes_)
     //for submeshes we only couple a part of the structure disc. with the fluid disc.
-    // we use the fact, that we have matching grids and matiching gids
+    // we use the fact, that we have matching grids and matching gids
     coupfs_->SetupCoupling(*structdis,
                            *fluiddis,
                            *fluidnoderowmap,
                            *fluidnoderowmap,
-                            ndim,
+                           ndof,
                             not submeshes_);
   else
     coupfs_->SetupCoupling(*structdis,
                            *fluiddis,
                            *structurenoderowmap,
                            *fluidnoderowmap,
-                            ndim,
+                           ndof,
                             not submeshes_);
 
   if(submeshes_)
     psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
 
   FluidField()->SetMeshMap(coupfs_->SlaveDofMap());
+
+  //p1splitter_ = Teuchos::rcp(new LINALG::MapExtractor( *StructureField()->DofRowMap(),coupfs_->MasterDofMap() ));
 }
 
 
@@ -393,9 +404,7 @@ void POROELAST::PoroBase::AddDofSets(bool replace)
   else
   {
     fluiddis->ReplaceDofSet(1,structdofset);
-    //fluiddis->FillComplete(true,false,false);
     structdis->ReplaceDofSet(1,fluiddofset);
-    //structdis->FillComplete(true,false,false);
   }
 }
 

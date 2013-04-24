@@ -828,7 +828,10 @@ protected:
   /// grid velocity (set from the adapter!)
   Teuchos::RCP<Epetra_Vector>    gridv_;
 
-  /// initial porosity (poroelasticity)
+  /// grid velocity at time step n (set from the adapter!)
+  Teuchos::RCP<Epetra_Vector>    gridvn_;
+  
+    /// initial porosity (poroelasticity)
   Teuchos::RCP<Epetra_Vector>    initporosityfield_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)

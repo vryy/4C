@@ -15,12 +15,13 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
-#include "so3_poro_eletypes.H"
+#include "so_poro_interface.H"
 
   // forward declaration
 namespace MAT
 {
   class StructPoro;
+  class FluidPoro;
 }
 
 namespace DRT
@@ -38,7 +39,8 @@ and (near)-incompressibility.
 
 */
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-class So3_Poro : public so3_ele
+class So3_Poro : public so3_ele,
+                 public So_Poro_Interface
 {
 
   //! @name Friends
@@ -177,26 +179,9 @@ public:
   */
   void Print(ostream& os) const  ;
 
-  //virtual DRT::ElementType & ElementType() const = 0 ;
-  virtual DRT::ElementType & ElementType() const
-  {
-    switch(distype)
-    {
-    case DRT::Element::tet4:
-      return So_tet4PoroType::Instance();
-    case DRT::Element::tet10:
-      return So_tet10PoroType::Instance();
-    case DRT::Element::hex8:
-      return So_hex8PoroType::Instance();
-    case DRT::Element::hex27:
-      return So_hex27PoroType::Instance();
-    default: dserror("unknown element type!");
-      break;
-    }
-    return So_hex8PoroType::Instance();
-  };
-
   //@}
+
+  virtual DRT::ElementType & ElementType() const;
 
   //! @name Evaluation
 
@@ -210,7 +195,7 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  int Evaluate
+  virtual int Evaluate
   (
     Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
@@ -231,7 +216,7 @@ public:
 
 
   //! initialize the inverse of the jacobian and its determinant in the material configuration
-  void InitElement();
+  virtual void InitElement();
 
   //@}
 
@@ -288,6 +273,38 @@ public:
 
   //@}
 
+
+  virtual void ComputePorosity( Teuchos::ParameterList& params,
+                             double press,
+                             double J,
+                             int gp,
+                             double& porosity,
+                             double* dphi_dp,
+                             double* dphi_dJ,
+                             double* dphi_dJdp,
+                             double* dphi_dJJ,
+                             double* dphi_dpp,
+                             bool save);
+
+  virtual void ComputeSurfPorosity( Teuchos::ParameterList& params,
+                         double press,
+                         double J,
+                         int surfnum,
+                         int gp,
+                         double& porosity,
+                         double* dphi_dp,
+                         double* dphi_dJ,
+                         double* dphi_dJdp,
+                         double* dphi_dJJ,
+                         double* dphi_dpp,
+                         bool save) ;
+
+  virtual double RefPorosityTimeDeriv();
+
+  virtual int NumDof(){return 3;};
+
+  virtual bool HasExtraDof(){return false;}
+
 protected:
 
   //! don't want = operator
@@ -304,7 +321,7 @@ protected:
 
   \return 0 if successful, negative otherwise
   */
-  int MyEvaluate
+  virtual int MyEvaluate
   (
     Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
@@ -317,14 +334,25 @@ protected:
   );
 
   //compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
-  virtual void ComputePorosityAndLinearization(Teuchos::ParameterList&                     params,
-                                               const double& press,
-                                               const double& J,
-                                               const int& gp,
-                                               Teuchos::RCP< MAT::StructPoro >  structmat,
-                                               const LINALG::Matrix<1,numdof_>& dJ_dus,
+  virtual void ComputePorosityAndLinearization(Teuchos::ParameterList&                params,
+                                               const double&                          press,
+                                               const double&                          J,
+                                               const int&                             gp,
+                                               const LINALG::Matrix<numnod_,1>&       shapfct,
+                                               const LINALG::Matrix<numnod_,1>*       myporosity,
+                                               const LINALG::Matrix<1,numdof_>&       dJ_dus,
+                                               double &                               porosity,
+                                               LINALG::Matrix<1,numdof_>&             dphi_dus);
+
+  //compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
+  virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList&        params,
+                                               const double&                    press,
+                                               const double&                    J,
+                                               const int&                       gp,
+                                               const LINALG::Matrix<numnod_,1>&       shapfct,
+                                               const LINALG::Matrix<numnod_,1>*       myporosity,
                                                double &                         porosity,
-                                               LINALG::Matrix<1,numdof_>&       dphi_dus);
+                                               double &                         dphi_dp);
 
   //! action parameters recognized by so_hex8
   enum ActionType
@@ -348,10 +376,11 @@ protected:
   std::vector<LINALG::Matrix<numdim_,1> > xsi_;
 
   //! Calculate nonlinear stiffness and internal force for poroelasticity problems
-  virtual void nlnstiff_poroelast(
+  void nlnstiff_poroelast(
       std::vector<int>& lm, ///< location matrix
-      std::vector<double>& disp, ///< current displacements
-      std::vector<double>& vel, ///< current velocities
+      LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
+      LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
+      LINALG::Matrix<numnod_, 1>*               porosity,
       //    std::vector<double>&      residual,       ///< current residual displ
       LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
       LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
@@ -362,10 +391,10 @@ protected:
       );
 
   //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
-  virtual void coupling_poroelast(
+  void coupling_poroelast(
       std::vector<int>& lm, ///< location matrix
-      std::vector<double>& disp, ///< current displacements
-      std::vector<double>& vel, ///< current velocities
+      LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
+      LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
       LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
       LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
@@ -384,7 +413,47 @@ protected:
       const INPAR::STR::StressType iostress ///< stress output option
       );
 
-private:
+  void GaussPointLoop(   Teuchos::ParameterList& params,
+                                      const LINALG::Matrix<numdim_,numnod_>& xrefe,
+                                      const LINALG::Matrix<numdim_,numnod_>& xcurr,
+                                      const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
+                                      const LINALG::Matrix<numdim_,numnod_>& nodalvel,
+                                      const LINALG::Matrix<numdim_,numnod_> & evelnp,
+                                      const LINALG::Matrix<numnod_,1> & epreaf,
+                                      const LINALG::Matrix<numnod_, 1>*  porosity_dof,
+                                      LINALG::Matrix<numdof_,numdof_>& estiff_stat,
+                                      LINALG::Matrix<numdof_,numdof_>& erea_u,
+                                      LINALG::Matrix<numdof_,numdof_>& erea_v,
+                                      LINALG::Matrix<numdof_,numdof_>& estiff_stress,
+                                      LINALG::Matrix<numdof_,1>&       erea_force,
+                                      LINALG::Matrix<numdof_,1>&       ecoupl_force_p,
+                                      LINALG::Matrix<numdof_,1>&       ecoupl_force_v,
+                                      LINALG::Matrix<numdof_,1>&       ecoupl_force_stress,
+                                      LINALG::Matrix<numstr_,1>&       fstress
+                                          );
+
+  void GaussPointLoopOD(   Teuchos::ParameterList& params,
+                                      const LINALG::Matrix<numdim_,numnod_>& xrefe,
+                                      const LINALG::Matrix<numdim_,numnod_>& xcurr,
+                                      const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
+                                      const LINALG::Matrix<numdim_,numnod_>& nodalvel,
+                                      const LINALG::Matrix<numdim_,numnod_> & evelnp,
+                                      const LINALG::Matrix<numnod_,1> & epreaf,
+                                      const LINALG::Matrix<numnod_, 1>*  porosity_dof,
+                                      LINALG::Matrix<numdof_,numnod_>& ecoupl_p,
+                                      LINALG::Matrix<numdof_,numdof_>& ecoupl_v
+                                          );
+
+  void ExtractValuesFromGlobalVector(
+                                      const DRT::Discretization&   discretization, ///< discretization
+                                      const int&                   dofset,
+                                      const std::vector<int>&      lm,             ///<
+                                      LINALG::Matrix<numdim_,numnod_> *  matrixtofill,   ///< vector field
+                                      LINALG::Matrix<numnod_,1> *     vectortofill,   ///< scalar field
+                                      const std::string            state         ///< state of the global vector
+                                      );
+
+//private:
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
   void stress_expol(Epetra_SerialDenseMatrix& stresses,
@@ -397,6 +466,8 @@ private:
     LINALG::Matrix<numdim_,numdim_>& cauchystress
     );
 
+  void GetMaterials();
+
   //!Gauss integration rule
   DRT::UTILS::GaussIntegration intpoints_;
 
@@ -408,6 +479,12 @@ private:
 
   //! flag for scatra coupling
   bool scatracoupling_;
+
+  //!corresponding fluid material
+  Teuchos::RCP< MAT::FluidPoro > fluidmat_;
+
+  //!own poro structure material
+  Teuchos::RCP< MAT::StructPoro > structmat_;
 
   //! get nodes of element
   DRT::Node** Nodes();

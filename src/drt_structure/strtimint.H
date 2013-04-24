@@ -1046,6 +1046,8 @@ namespace STR
     //@{
     Teuchos::RCP<Epetra_Vector> strgrdisp_;
     //@}
+
+    Teuchos::RCP<LINALG::MapExtractor>      porositysplitter_;
   };
 
 }  // namespace STR

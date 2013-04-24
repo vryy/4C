@@ -12,9 +12,12 @@
 *----------------------------------------------------------------------*/
 
 #include "so3_poro.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+
+#include "so3_poro_eletypes.H"
 
 //for ReadElement()
 #include "../drt_mat/structporo.H"
@@ -30,7 +33,9 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele,distype>::So3_Poro(int id, int owner):
 so3_ele(id,owner),
 data_(),
-intpoints_(distype)
+intpoints_(distype),
+fluidmat_(Teuchos::null),
+structmat_(Teuchos::null)
 {
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
@@ -59,7 +64,9 @@ xsi_(old.xsi_),
 intpoints_(distype),
 ishigherorder_(old.ishigherorder_),
 init_(old.init_),
-scatracoupling_(old.scatracoupling_)
+scatracoupling_(old.scatracoupling_),
+fluidmat_(old.fluidmat_),
+structmat_(old.structmat_)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -90,6 +97,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   so3_ele::AddtoPack(data,type);
+
   // data_
   so3_ele::AddtoPack(data,data_);
 
@@ -236,6 +244,27 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::UniqueParObjectId() const
   }
   return -1;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+DRT::ElementType & DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ElementType() const
+{
+  switch(distype)
+  {
+  case DRT::Element::tet4:
+    return So_tet4PoroType::Instance();
+  case DRT::Element::tet10:
+    return So_tet10PoroType::Instance();
+  case DRT::Element::hex8:
+    return So_hex8PoroType::Instance();
+  case DRT::Element::hex27:
+    return So_hex27PoroType::Instance();
+  default: dserror("unknown element type!");
+    break;
+  }
+  return So_hex8PoroType::Instance();
+};
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

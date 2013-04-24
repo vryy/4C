@@ -1,0 +1,63 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file so3_poro_p1_eletypes.H
+
+ \brief
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *----------------------------------------------------------------------*/
+
+
+#ifndef SO3_PORO_P1_ELETYPES_H_
+#define SO3_PORO_P1_ELETYPES_H_
+
+#include "so3_poro_eletypes.H"
+
+namespace DRT
+{
+// forward declarations
+class Discretization;
+
+namespace ELEMENTS
+{
+/*----------------------------------------------------------------------*
+ |  HEX 8 Element                                       |
+ *----------------------------------------------------------------------*/
+class So_hex8PoroP1Type : public So_hex8PoroType
+{
+public:
+
+  std::string Name() const { return "So_hex8PoroP1Type"; }
+
+  static So_hex8PoroP1Type & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_hex8PoroP1Type instance_;
+};
+
+}
+}
+
+
+#endif /* SO3_PORO_P1_ELETYPES_H_ */

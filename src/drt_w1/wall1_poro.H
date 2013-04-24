@@ -20,9 +20,15 @@
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
 #include "wall1.H"
-
 #include "wall1_poro_eletypes.H"
 
+#include "../drt_so3/so_poro_interface.H"
+
+namespace MAT
+{
+  class StructPoro;
+  class FluidPoro;
+}
 
 namespace DRT
 {
@@ -37,7 +43,7 @@ namespace ELEMENTS
 
   */
   template<DRT::Element::DiscretizationType distype>
-  class Wall1_Poro : public Wall1
+  class Wall1_Poro : public Wall1, public So_Poro_Interface
   {
 
   public:
@@ -238,6 +244,79 @@ namespace ELEMENTS
 
     //@}
 
+    virtual void ComputePorosity( Teuchos::ParameterList& params,
+                               double press,
+                               double J,
+                               int gp,
+                               double& porosity,
+                               double* dphi_dp,
+                               double* dphi_dJ,
+                               double* dphi_dJdp,
+                               double* dphi_dJJ,
+                               double* dphi_dpp,
+                               bool save);
+
+    virtual void ComputeSurfPorosity( Teuchos::ParameterList& params,
+                           double press,
+                           double J,
+                           int surfnum,
+                           int gp,
+                           double& porosity,
+                           double* dphi_dp,
+                           double* dphi_dJ,
+                           double* dphi_dJdp,
+                           double* dphi_dJJ,
+                           double* dphi_dpp,
+                           bool save) ;
+
+    virtual double RefPorosityTimeDeriv();
+
+    virtual int NumDof(){return 2;};
+
+    virtual bool HasExtraDof(){return false;};
+
+    /*!
+    \brief Read input for this element
+    */
+    /*!
+    \brief Query names of element data to be visualized using BINIO
+
+    The element fills the provided map with key names of
+    visualization data the element wants to visualize AT THE CENTER
+    of the element geometry. The values is supposed to be dimension of the
+    data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+    or 9 (nonsym. tensor)
+
+    Example:
+    \code
+      // Name of data is 'Owner', dimension is 1 (scalar value)
+      names.insert(std::pair<string,int>("Owner",1));
+      // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+      names.insert(std::pair<string,int>("StressesXYZ",6));
+    \endcode
+
+    \param names (out): On return, the derived class has filled names with
+                        key names of data it wants to visualize and with int dimensions
+                        of that data.
+    */
+    virtual void VisNames(std::map<string,int>& names);
+
+    /*!
+    \brief Query data to be visualized using BINIO of a given name
+
+    The method is supposed to call this base method to visualize the owner of
+    the element.
+    If the derived method recognizes a supported data name, it shall fill it
+    with corresponding data.
+    If it does NOT recognizes the name, it shall do nothing.
+
+    \warning The method must not change size of data
+
+    \param name (in):   Name of data that is currently processed for visualization
+    \param data (out):  data to be filled by element if element recognizes the name
+    */
+    virtual bool VisData(const string& name, std::vector<double>& data);
+
   protected:
 
     //! don't want = operator
@@ -333,6 +412,8 @@ namespace ELEMENTS
       LINALG::Matrix<numdim_,numdim_>& cauchystress
       );
 
+    void GetMaterials();
+
     //!Gauss integration rule
     DRT::UTILS::GaussIntegration intpoints_;
 
@@ -344,6 +425,12 @@ namespace ELEMENTS
 
     //! flag for scatra coupling
     bool scatracoupling_;
+
+    //!corresponding fluid material
+    Teuchos::RCP< MAT::FluidPoro > fluidmat_;
+
+    //!own poro structure material
+    Teuchos::RCP< MAT::StructPoro > structmat_;
 
   }; // class So3_Poro
 
