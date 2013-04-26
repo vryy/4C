@@ -1697,13 +1697,13 @@ set(baciname baci-${BUILD_TYPE})
 # the baci executable
 add_executable (${baciname} ${OBJS_BACI_MAIN})
 
-add_executable (post_drt_gid     ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
-add_executable (post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
-add_executable (post_drt_generic ${OBJS_POST_DRT_GENERIC})
-add_executable (post_drt_monitor ${OBJS_POST_DRT_MONITOR})
-add_executable (post_drt_s8convert ${OBJS_POST_DRT_S8CONVERT})
-add_executable (pre_exodus ${OBJS_PRE_EXODUS})
-add_executable (pre_curve ${OBJS_PRE_CURVE})
+add_executable (post_drt_gid     EXCLUDE_FROM_ALL ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
+add_executable (post_drt_ensight EXCLUDE_FROM_ALL ${OBJS_POST_DRT_ENSIGHT})
+add_executable (post_drt_generic EXCLUDE_FROM_ALL ${OBJS_POST_DRT_GENERIC})
+add_executable (post_drt_monitor EXCLUDE_FROM_ALL ${OBJS_POST_DRT_MONITOR})
+add_executable (post_drt_s8convert EXCLUDE_FROM_ALL ${OBJS_POST_DRT_S8CONVERT})
+add_executable (pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
+add_executable (pre_curve EXCLUDE_FROM_ALL ${OBJS_PRE_CURVE})
 
 target_link_libraries (${baciname} 
   ${MULTIFIELD_LIBRARIES} 
@@ -1744,6 +1744,11 @@ target_link_libraries (pre_curve ${FILTER_LIBRARIES})
 target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 
 
+ADD_CUSTOM_TARGET(baci DEPENDS ${baciname}) 
+ADD_CUSTOM_TARGET(post DEPENDS post_drt_ensight post_drt_monitor) 
+ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post) 
+ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_drt_gid pre_exodus post_drt_ensight post_drt_generic post_drt_monitor post_drt_s8convert pre_exodus pre_curve cut_test) 
+
 ###------------------------------------------------------------------ Tests
 
 ENABLE_TESTING()
@@ -1754,7 +1759,7 @@ include(CTest)
 if(NOT TRILINOS_DEV)
 message("Trilinos_DEV not set ")
   if (NOT ACML_FOUND )  ## cut_test not available on kaiser
-    add_executable(cut_test ${OBJS_CUT_TEST})
+    add_executable(cut_test  EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
     target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES}
     drt_lib_io
     ${LIBRARIES}
@@ -1764,7 +1769,7 @@ message("Trilinos_DEV not set ")
 else()
 # linker command for Q3/2012 Trilinos or newer
   if (NOT ACML_FOUND )  ## cut_test not available on kaiser
-    add_executable(cut_test ${OBJS_CUT_TEST})
+    add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
     target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchoscore ${LAPACK_LIBRARIES}
     drt_lib_io
     ${LIBRARIES}
