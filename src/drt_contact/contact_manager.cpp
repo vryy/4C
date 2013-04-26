@@ -635,7 +635,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   // warnings
   // *********************************************************************
-  if (mortar.get<double>("SEARCH_PARAM") == 0.0)
+  if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
 
   // *********************************************************************
@@ -643,7 +643,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   if (dim==2)
   {
-    if (mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    if (mortar.get<int>("NUMGP_PER_DIM") <= 0 && Comm().MyPID()==0)
     {
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
       {
@@ -659,7 +659,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   }
   else if (dim==3)
   {
-    if (mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    if (mortar.get<int>("NUMGP_PER_DIM") <= 0 && Comm().MyPID()==0)
     {
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
       {
