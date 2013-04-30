@@ -1386,6 +1386,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(ALEfluidcoupling);
 
   /*--------------------------------------------------------------------*/
+  // crack
+
+  std::vector<Teuchos::RCP<ConditionComponent> > crackdef;
+  Teuchos::RCP<ConditionDefinition> crmaster =
+      Teuchos::rcp(new ConditionDefinition("DESIGN CRACK MASTER SURFACE",
+                                           "masterCrackSurface",
+                                           "master crack surface",
+                                           DRT::Condition::CrackMastersurface,
+                                           true,
+                                           DRT::Condition::Surface));
+
+  Teuchos::RCP<ConditionDefinition> crslave =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CRACK SLAVE SURFACE",
+                                             "slaveCrackSurface",
+                                             "slave crack surface",
+                                             DRT::Condition::CrackSlavesurface,
+                                             true,
+                                             DRT::Condition::Surface));
+
+  for (unsigned i=0; i<crackdef.size(); ++i)
+  {
+    crmaster->AddComponent(crackdef[i]);
+    crslave->AddComponent(crackdef[i]);
+  }
+
+  condlist.push_back(crmaster);
+  condlist.push_back(crslave);
+
+  /*--------------------------------------------------------------------*/
+
+  /*--------------------------------------------------------------------*/
   // surface tension
 
   Teuchos::RCP<ConditionDefinition> surftension =

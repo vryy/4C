@@ -34,6 +34,7 @@ Maintainer: Georg Hammerl
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_meshfree.H"
+#include "../drt_inpar/inpar_crack.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -45,6 +46,8 @@ Maintainer: Georg Hammerl
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_io/io_pstream.H"
+
+#include "../drt_crack/InsertCohesiveElements.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::Structure::~Structure()
@@ -121,21 +124,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // set degrees of freedom in the discretization
   if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
 
-  // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output
-    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  // for multilevel monte carlo we do not need to write mesh in every run
-  Teuchos::RCP<Teuchos::ParameterList> mlmcp
-      = Teuchos::rcp(new Teuchos::ParameterList (problem->MultiLevelMonteCarloParams()));
-  bool perform_mlmc = Teuchos::getIntegralValue<int>((*mlmcp),"MLMC");
-  Teuchos::RCP<Teuchos::ParameterList> meshfreep
-      = Teuchos::rcp(new Teuchos::ParameterList (problem->MeshfreeParams()));
-  INPAR::MESHFREE::meshfreetype meshfreetype
-      = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(*meshfreep,"TYPE");
-  if (perform_mlmc!=true and meshfreetype!=INPAR::MESHFREE::particle)
-  {
-    output->WriteMesh(0, 0.0);
-  }
   // get input parameter lists and copy them, because a few parameters are overwritten
   //const Teuchos::ParameterList& probtype
   //  = problem->ProblemTypeParams();
@@ -157,6 +145,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
   // Parameter to determine if MLMC is on/off
+  Teuchos::RCP<Teuchos::ParameterList> mlmcp
+      = Teuchos::rcp(new Teuchos::ParameterList (problem->MultiLevelMonteCarloParams()));
   // Needed for reduced restart output
   xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
 
@@ -302,6 +292,34 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
         break;
       }
     }
+  }
+
+  // Add cohesive elements in case of crack propagation simulations
+  {
+    const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
+    if (DRT::INPUT::IntegralValue<INPAR::CRACK::CrackModel>(crackparam,"CRACK_MODEL")
+          != INPAR::CRACK::crack_none)
+    {
+      if( not DRT::Problem::Instance()->Restart() )
+      {
+        Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+        DRT::CRACK::InsertCohesiveElements isp( structdis );
+      }
+    }
+  }
+
+  // context for output and restart
+  Teuchos::RCP<IO::DiscretizationWriter> output
+    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  // for multilevel monte carlo we do not need to write mesh in every run
+  bool perform_mlmc = Teuchos::getIntegralValue<int>((*mlmcp),"MLMC");
+  Teuchos::RCP<Teuchos::ParameterList> meshfreep
+      = Teuchos::rcp(new Teuchos::ParameterList (problem->MeshfreeParams()));
+  INPAR::MESHFREE::meshfreetype meshfreetype
+      = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(*meshfreep,"TYPE");
+  if (perform_mlmc!=true and meshfreetype!=INPAR::MESHFREE::particle)
+  {
+    output->WriteMesh(0, 0.0);
   }
 
   // create marching time integrator

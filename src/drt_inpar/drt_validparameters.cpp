@@ -48,6 +48,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_poroscatra.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_inpar/inpar_crack.H"
 
 #include <AztecOO.h>
 
@@ -5159,6 +5160,52 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                               &cavitationdyn);
 
+  /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& crackdyn = list->sublist("COHESIVE CRACK",false,"");
+
+    // type of crack propagation modeling
+    setStringToIntegralParameter<int>("CRACK_MODEL","none",
+                                    "type of crack propagation modeling",
+                                    tuple<std::string>(
+                                      "none",
+                                      "dczm",
+                                      "ddzm"),
+                                    tuple<int>(
+                                      INPAR::CRACK::crack_none,
+                                      INPAR::CRACK::crack_dczm,
+                                      INPAR::CRACK::crack_ddzm),
+                                    &crackdyn);
+
+    setStringToIntegralParameter<int>("TRACTION_SEPARATION_LAW","exponential",
+                                      "type of traction-separation law used for cohesive elements",
+                                      tuple<std::string>(
+                                        "linear",
+                                        "trapezoidal",
+                                        "exponential",
+                                        "sinusoidal",
+                                        "ppr"),
+                                      tuple<int>(
+                                        INPAR::CRACK::linear,
+                                        INPAR::CRACK::trapezoidal,
+                                        INPAR::CRACK::exponential,
+                                        INPAR::CRACK::sinusoidal,
+                                        INPAR::CRACK::ppr),
+                                      &crackdyn);
+
+    // are we modeling cracks with known propagation direction?
+    setStringToIntegralParameter<int>("IS_CRACK_PREDEFINED","No","Have you already predefined the crack path?",
+                                 yesnotuple,yesnovalue,&crackdyn);
+
+    DoubleParameter("NORMAL_COHESIVE_STRENGTH",50000.0,"Cohesive strength for normal separation",&crackdyn);
+    DoubleParameter("SHEAR_COHESIVE_STRENGTH",500000000.0,"Cohesive strength for shear separation",&crackdyn);
+    DoubleParameter("G_I",1.0,"Model I fracture energy (normal separation)",&crackdyn);
+    DoubleParameter("G_II",1.0,"Model II fracture energy (shear separation)",&crackdyn);
+
+    DoubleParameter("ALFA_PPR",3.0,"Constant alpha in PPR model",&crackdyn);
+    DoubleParameter("BETA_PPR",3.0,"Constant beta in PPR model",&crackdyn);
+
+    DoubleParameter("SLOPE_NORMAL",0.02,"Initial slope indicator in normal direction for PPR model",&crackdyn);
+    DoubleParameter("SLOPE_SHEAR",0.02,"Initial slope indicator in normal direction for PPR model",&crackdyn);
 
   /*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks

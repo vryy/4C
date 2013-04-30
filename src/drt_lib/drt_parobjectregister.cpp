@@ -109,6 +109,7 @@
 #include "../drt_art_net/artery.H"
 #include "../drt_red_airways/red_airway.H"
 #include "../drt_opti/topopt_optimizer_ele.H"
+#include "../drt_crack/dcohesive.H"
 
 
 std::string DRT::ParObjectList()
@@ -225,6 +226,7 @@ std::string DRT::ParObjectList()
     << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
     << DRT::ELEMENTS::TopOptType::Instance().Name() << " "
     << DRT::ELEMENTS::ThermoType::Instance().Name() << " "
+    << DRT::ELEMENTS::DcohesiveType::Instance().Name() << " "
     << MAT::PlasticNeoHookeType::Instance().Name() << " "
     << MAT::PlasticLinElastType::Instance().Name() << " "
     << MAT::RobinsonType::Instance().Name() << " "
@@ -233,6 +235,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::RedAcinusType::Instance().Name() << " "
     << DRT::ELEMENTS::RedInterAcinarDepType::Instance().Name() << " "
     << MAT::TopOptDensType::Instance().Name() << " "
+
     ;
   return s.str();
 }

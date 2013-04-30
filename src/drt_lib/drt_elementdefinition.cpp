@@ -110,6 +110,9 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"RED_AIRWAY");
   PrintElementLines(stream,"RED_ACINUS");
   PrintElementLines(stream,"RED_ACINAR_INTER_DEP");
+
+  PrintElementLines(stream,"DCOHESIVE");
+
 }
 
 
