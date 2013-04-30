@@ -198,10 +198,50 @@ namespace ELEMENTS
       return So_hex8ThermoType::Instance();
     };
 
+    //@}
+
+    //! @name Input and Creation
+
+    //! Query names of element data to be visualized using BINIO
+    //!
+    //! The element fills the provided map with key names of
+    //! visualization data the element wants to visualize AT THE CENTER
+    //! of the element geometry. The values is supposed to be dimension of the
+    //! data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+    //! or 9 (nonsym. tensor)
+    //!
+    //! Example:
+    //! \code
+    //!   // Name of data is 'Owner', dimension is 1 (scalar value)
+    //!   names.insert(std::pair<string,int>("Owner",1));
+    //!   // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+    //!   names.insert(std::pair<string,int>("StressesXYZ",6));
+    //! \endcode
+    //!
+    //!  names (out): On return, the derived class has filled names with key
+    //!               names of data it wants to visualize and with int dimensions
+    //!               of that data.
+    virtual void VisNames(std::map<string,int>& names);
+
+    //!  Query data to be visualized using BINIO of a given name
+    //!
+    //! The method is supposed to call this base method to visualize the owner of
+    //! the element.
+    //! If the derived method recognizes a supported data name, it shall fill it
+    //! with corresponding data.
+    //! If it does NOT recognizes the name, it shall do nothing.
+    //!
+    //! warning: the method must not change size of data
+    //!
+    //!  name (in):   Name of data that is currently processed for visualization
+    //! \param data (out):  data to be filled by element if element recognizes the name
+    virtual bool VisData(const string& name, std::vector<double>& data);
+
+    //! read input for this element
     bool ReadElement(
-      const std::string& eletype,
-      const std::string& eledistype,
-      DRT::INPUT::LineDefinition* linedef
+      const std::string& eletype,  //!< so3thermo
+      const std::string& eledistype,  //!< hex8,tet4,...
+      DRT::INPUT::LineDefinition* linedef  //!< what parameters have to be read
       );
 
     //@}
@@ -251,8 +291,6 @@ namespace ELEMENTS
     enum ActionType
     {
       none,
-      // TODO 2012-08-16 check if actions "linstiff/linstiffmass" are required!!
-
       calc_struct_linstiff,  //!< geometrical linear analysis: stiffness matrix
       calc_struct_nlnstiff,  //!< stiffness matrix
       calc_struct_internalforce,  //!< internal force

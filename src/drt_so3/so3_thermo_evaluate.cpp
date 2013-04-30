@@ -84,6 +84,11 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
   Epetra_SerialDenseVector& elevec3_epetra
   )
 {
+  // what actions are available
+  // (action == "calc_struct_stifftemp")
+  // (action == "calc_struct_stress")
+  // (action == default)
+
   // start with "none"
   typename So3_Thermo::ActionType act = So3_Thermo::none;
 
@@ -193,7 +198,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
   else if (action=="calc_struct_nlnstifflmass")  act = calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stifftemp")      act = calc_struct_stifftemp;
   else if (action=="calc_struct_stress")         act = calc_struct_stress;
-  else if (action=="calc_struct_reset_istep")    act = calc_struct_reset_istep;
   else if (action=="calc_struct_update_istep")   act = calc_struct_update_istep;
   else dserror("Unknown type of action for So3_Thermo: %s",action.c_str());
 
@@ -597,24 +601,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
   break;
 
   //============================================================================
-  // required for predictor TangDis --> can be helpful in compressible case!
-  case calc_struct_reset_istep:
-  {
-    // Reset of history (if needed)
-    Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat);
-    so3mat->ResetStep();
-  }
-  break;
-
-  //============================================================================
   case calc_struct_update_istep:
   {
-    // TODO 2012-10-31 check if Update has to be called here again
-    Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
+    // do nothing, actual implementation is in so3_ele
 
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Update();
   }  // calc_struct_update_istep
   break;
 

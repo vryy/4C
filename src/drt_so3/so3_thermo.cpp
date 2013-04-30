@@ -170,17 +170,6 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
 {
   so3_ele::ReadElement(eletype,eledistype,linedef);
 
-  Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
-
-  // read thermo-materials
-  switch (mat->MaterialType())
-  {
-  // TODO 2012-10-30 plastic materials are already set in so_hex8_input.cpp(L181): ReadElement
-  // materials without history need no separate Setup()
-  default :
-  break;
-  }
-
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
 
@@ -227,6 +216,29 @@ inline int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Id() const
 {
   return so3_ele::Id();
 }
+
+
+/*----------------------------------------------------------------------*
+ | return names of visualization data (public)               dano 04/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::VisNames(std::map<std::string,int>& names)
+{
+  so3_ele::VisNames(names);
+
+  return;
+}  // VisNames()
+
+/*----------------------------------------------------------------------*
+ | return visualization data (public)                        dano 04/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::VisData(const string& name, std::vector<double>& data)
+{
+  return so3_ele::VisData(name, data);
+
+}  // VisData()
+
 
 
 /*----------------------------------------------------------------------*/
