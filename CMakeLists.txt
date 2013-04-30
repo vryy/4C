@@ -1333,6 +1333,11 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
 )
+set(OBJS_DRT_CRACK
+	src/drt_crack/InsertCohesiveElements.cpp
+	src/drt_crack/dcohesive.cpp
+	src/drt_crack/dcohesive_evaluate.cpp
+)
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
   src/drt_cut/cut_boundarycell.cpp
@@ -1662,6 +1667,7 @@ add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 add_library(drt_lib_cut ${OBJS_DRT_CUT})
+add_library(drt_lib_crack ${OBJS_DRT_CRACK})
 
 set(SUPPORT_LIBRARIES
   drt_lib
@@ -1675,6 +1681,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_potential
   drt_lib_intersection
   drt_lib_cut
+  drt_lib_crack
   drt_lib_inpar
   drt_lib_io
   drt_lib_nurbs 
