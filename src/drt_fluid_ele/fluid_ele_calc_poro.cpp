@@ -3694,17 +3694,17 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
         ecoupl_u(vi*2 + 0, ui*2 + 1) += -1.0 * derinvJ1/porosity*visres0_poro;
         ecoupl_u(vi*2 + 1, ui*2 + 1) += -1.0 * derinvJ1/porosity*visres1_poro;
 
-        double v0_poro =   +     my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                                                                               * (   gradphi(0) * my::deriv_(1,ui)
-                                                                                   + gradphi(1) * my::deriv_(0,ui)
-                                                                                 );
-        double v1_poro =         my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                                                                               * (   gradphi(0) * my::deriv_(1,ui)
-                                                                                   + gradphi(1) * my::deriv_(0,ui)
-                                                                                 );
-
-        ecoupl_u(vi * 2 + 2, ui * 2 + 0) += -1.0 * v/porosity * v0_poro;
-        ecoupl_u(vi * 2 + 2, ui * 2 + 1) += -1.0 * v/porosity * v1_poro;
+//        double v0_poro =   +     my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
+//                                                                               * (   gradphi(0) * my::deriv_(1,ui)
+//                                                                                   + gradphi(1) * my::deriv_(0,ui)
+//                                                                                 );
+//        double v1_poro =         my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
+//                                                                               * (   gradphi(0) * my::deriv_(1,ui)
+//                                                                                   + gradphi(1) * my::deriv_(0,ui)
+//                                                                                 );
+//
+//        ecoupl_u(vi * 2 + 2, ui * 2 + 0) += -1.0 * v/porosity * v0_poro;
+//        ecoupl_u(vi * 2 + 2, ui * 2 + 1) += -1.0 * v/porosity * v1_poro;
       }
     }
 
