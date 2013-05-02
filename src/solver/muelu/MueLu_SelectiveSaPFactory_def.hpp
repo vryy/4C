@@ -180,7 +180,8 @@ namespace MueLu {
         // fix product DinvAP
         // remove basis function smoothing for problematic rows
         Teuchos::RCP<Matrix> APtemp = FixAPproduct(fineLevel, coarseLevel, A, AP);
-        AP = APtemp;
+        if(APtemp != Teuchos::null) // TODO check this.
+          AP = APtemp;
       }
 
       {
