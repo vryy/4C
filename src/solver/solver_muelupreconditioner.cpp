@@ -49,6 +49,7 @@ Maintainer: Tobias Wiesner
 #include <MueLu_SmootherFactory.hpp>
 
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
+#include <MueLu_ParameterListInterpreter.hpp> // TODO: move into MueLu.hpp
 
 #include <MueLu_AggregationExportFactory.hpp>
 //#include "muelu_ContactInfoFactory_decl.hpp"
@@ -170,20 +171,60 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
     // append user-given factories (for export of aggregates, debug info etc...)
     //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",/*UCAggFact.get()*/ NULL, /*dropFact.get()*/ NULL));
-    //Teuchos::RCP<MueLu::ContactInfoFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > contactInfoFact = Teuchos::rcp(new MueLu::ContactInfoFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("info_level%LEVELID_proc%PROCID.vtk",Teuchos::null,Teuchos::null/*nspFact*/));
     //std::vector<Teuchos::RCP<FactoryBase> > vec;
     //vec.push_back(aggExpFact);
 
-    // Setup MueLu Hierarchy
-    MLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
-    Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
-    H->GetLevel(0)->Set("A", mueluOp);
-    mueLuFactory.SetupHierarchy(*H);
+    if(mllist_.isParameter("xml file") && mllist_.get<std::string>("xml file") != "none"){
+      // use parameters from user-provided XML file
 
-    // set preconditioner
-    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+      // use xml file for generating hierarchy
+      std::string xmlFileName = mllist_.get<std::string>("xml file");
+      std::cout << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
 
-    //std::cout << mllist_ << std::endl;
+
+      // prepare nullspace vector for MueLu
+      int numdf = mllist_.get<int>("PDE equations",-1);
+      int dimns = mllist_.get<int>("null space: dimension",-1);
+      if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
+      Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
+
+      Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+      Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
+
+      for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+          Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
+          const size_t myLength = nspVector->getLocalLength();
+          for(size_t j=0; j<myLength; j++) {
+                  nspVectori[j] = (*nsdata)[i*myLength+j];
+          }
+      }
+
+      ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
+
+      Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+
+      H->SetDefaultVerbLevel(MueLu::Extreme);
+
+      H->GetLevel(0)->Set("A", mueluOp);
+      H->GetLevel(0)->Set("Nullspace", nspVector);
+
+      mueLuFactory.SetupHierarchy(*H);
+
+      // set preconditioner
+      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+
+    } else {
+      // Standard case: use ML parameters from dat file
+
+      // Setup MueLu Hierarchy
+      MLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
+      Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+      H->GetLevel(0)->Set("A", mueluOp);
+      mueLuFactory.SetupHierarchy(*H);
+
+      // set preconditioner
+      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+    }
 
   }
 }

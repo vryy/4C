@@ -76,6 +76,7 @@
 #include "muelu/muelu_ContactSPAggregationFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 #include "muelu/MueLu_MeshtyingSPAmalgamationFactory_decl.hpp"
+#include "muelu/MueLu_SelectiveSaPFactory_decl.hpp"
 
 #include "solver_muelucontactsppreconditioner.H"
 
@@ -118,11 +119,15 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     int minPerAgg = 9;       // optimal for 2d
     int maxNbrAlreadySelected = 0;
     std::string agg_type = "Uncoupled";
+    double agg_damping = 0.0;
     if(mllist_.isParameter("max levels")) maxLevels = mllist_.get<int>("max levels");
     if(mllist_.isParameter("ML output"))  verbosityLevel = mllist_.get<int>("ML output");
     if(mllist_.isParameter("coarse: max size")) maxCoarseSize = mllist_.get<int>("coarse: max size");
     if(mllist_.isParameter("aggregation: type"))               agg_type            = mllist_.get<std::string> ("aggregation: type");
     if(mllist_.isParameter("aggregation: nodes per aggregate"))minPerAgg           = mllist_.get<int>("aggregation: nodes per aggregate");
+
+    if(mllist_.isParameter("aggregation: damping factor"))     agg_damping          = mllist_.get<double>("aggregation: damping factor");
+    std::cout << "agg_damping=" << agg_damping << std::endl;
 
     // translate verbosity parameter
     Teuchos::EVerbosityLevel eVerbLevel = Teuchos::VERB_NONE;
@@ -164,10 +169,10 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       epSlaveDofMap =  linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact slaveDofMap");
       epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
       epInnerDofMap  = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact innerDofMap");
-      if(linSystemProps.isParameter("non diagonal-dominant row map"))
+      /*if(linSystemProps.isParameter("non diagonal-dominant row map"))
         xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
       if(linSystemProps.isParameter("near-zero diagonal row map"))
-        xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
+        xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");*/
       if(linSystemProps.isParameter("ProblemType") && linSystemProps.get<std::string>("ProblemType") == "meshtying")
         bIsMeshtying = true;
     }
@@ -272,11 +277,61 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
 
     Teuchos::RCP<TentativePFactory> Ptent11Fact = Teuchos::rcp(new TentativePFactory());
+#if 1
+    Teuchos::RCP<PFactory> P11Fact;
+    Teuchos::RCP<TwoLevelFactoryBase> R11Fact;
+
+    if (agg_damping == 0.0) {
+      // tentative prolongation operator (PA-AMG)
+      P11Fact = Ptent11Fact;
+      R11Fact = Teuchos::rcp( new TransPFactory() );
+    } else if (agg_damping > 0.0) {
+      // smoothed aggregation (SA-AMG)
+      P11Fact  = Teuchos::rcp( new MueLu::SelectiveSaPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>() );
+      //P11Fact  = Teuchos::rcp( new SaPFactory() );
+      P11Fact->SetParameter("Damping factor", Teuchos::ParameterEntry(agg_damping));
+      P11Fact->SetParameter("Damping strategy", Teuchos::ParameterEntry(std::string("User")));
+
+      // feed SelectiveSAPFactory with information
+      P11Fact->SetFactory("P",Ptent11Fact);
+      P11Fact->SetFactory("A",A11Fact);
+      /*
+      // use user-given damping parameter
+      P11Fact->SetParameter("Damping factor", Teuchos::ParameterEntry(agg_damping));
+      P11Fact->SetParameter("Damping strategy", Teuchos::ParameterEntry(std::string("User")));
+      // only prolongator smoothing for transfer operator basis functions which
+      // correspond to non-slave rows in (permuted) matrix A
+      // We use the tentative prolongator to detect the corresponding prolongator basis functions for given row gids.
+      // Note: this ignores the permutations in A. In case, the matrix A has been permuted it can happen
+      //       that problematic columns in Ptent are not corresponding to columns that belong to the
+      //       with nonzero entries in slave rows. // TODO think more about this -> aggregation
+      P11Fact->SetParameter("NonSmoothRowMapName", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+      //PFact->SetParameter("NonSmoothRowMapName", Teuchos::ParameterEntry(std::string("")));
+      P11Fact->SetFactory("NonSmoothRowMapFactory", MueLu::NoFactory::getRCP());
+
+      // provide diagnostics of diagonal entries of current matrix A
+      // if the solver object detects some significantly small entries on diagonal the contact
+      // preconditioner can decide to skip transfer operator smoothing to increase robustness
+      P11Fact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("NearZeroDiagMap")));
+      //PFact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("")));
+      P11Fact->SetFactory("NearZeroDiagMapFactory", MueLu::NoFactory::getRCP());
+      */
+      R11Fact  = Teuchos::rcp( new GenericRFactory() );
+    } else {
+      // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
+      P11Fact  = Teuchos::rcp( new PgPFactory() );
+      P11Fact->SetFactory("P",Ptent11Fact);
+      //PFact->SetFactory("A",singleNodeAFact);
+      //PFact->SetFactory("A",slaveTransferAFactory);  // produces nans
+      R11Fact  = Teuchos::rcp( new GenericRFactory() );
+    }
+#else
     Teuchos::RCP<TentativePFactory> P11Fact = Ptent11Fact;
     Teuchos::RCP<TransPFactory> R11Fact = Teuchos::rcp(new TransPFactory());
     R11Fact->SetFactory("P",P11Fact);
+#endif
     Teuchos::RCP<NullspaceFactory> nspFact11 = Teuchos::rcp(new NullspaceFactory("Nullspace1"));
-    nspFact11->SetFactory("Nullspace1", P11Fact);
+    nspFact11->SetFactory("Nullspace1", Ptent11Fact /*P11Fact*/);
     Teuchos::RCP<CoarseMapFactory> coarseMapFact11 = Teuchos::rcp(new CoarseMapFactory());
     coarseMapFact11->setStridingData(stridingInfo1);
 

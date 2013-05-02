@@ -719,14 +719,25 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   case INPAR::SOLVER::azprec_MueLuAMG_contact3: // MueLu operator (contact)
   case INPAR::SOLVER::azprec_MueLuAMG_contactSP: // MueLu operator (contact)
   case INPAR::SOLVER::azprec_MueLuAMG_contactPen: // MueLu operator (contact)
+  {
+    std::string xmlfile = inparams.get<std::string>("STRATIMIKOS_XMLFILE"); // TODO change this to XML_FILE input parameter!
+    if (xmlfile != "none")
+      mllist.set("xml file",xmlfile);
     mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
-    break;
+  }
+  break;
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
+  {
+    std::string xmlfile = inparams.get<std::string>("STRATIMIKOS_XMLFILE"); // TODO change this to XML_FILE input parameter!
+    if (xmlfile != "none")
+      mllist.set("xml file",xmlfile);
+
     mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
     mllist.set("energy minimization: enable",true);
     mllist.set("energy minimization: type",3); // TODO: different energy minimization modes not available for MueLu, yet
     mllist.set("aggregation: block scaling",false);
-    break;
+  }
+  break;
   case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restriction
     mllist.set("aggregation: use tentative restriction",true);
     break;
