@@ -224,7 +224,7 @@ namespace ELEMENTS
 
     //! Calculate element vectors (internal/external) and a few matrices
     //! considering current displacement solution
-    void CalculateCouplFintCondCapa(
+    void CalculateCouplFintCond(
       DRT::Element* ele,  //!< the element whose matrix is calculated
       const double& time,  //!< current time
       std::vector<double>& disp,  //!< current displacements
@@ -237,26 +237,41 @@ namespace ELEMENTS
       LINALG::Matrix<nquad_,nsd_>* etempgrad,  //!< temperature gradients at Gauss points
       Teuchos::ParameterList& params
       );
-
-    //! calculate internal dissipation arising when a thermo-elasto-plastic
-    //! material is used
-    //! Clausius-Duhem inequality is no longer = 0, but > 0:
-    //! mechanical energy dissipates as heat
-    void CalculateInternalDissipation(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      std::vector<double>& vel,  //!< current velocities
-      const double& stepsize,  //!< step size Delta t
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  //!< conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
-      Teuchos::ParameterList& params
-      );
-
+      
     //! calculate thermal-mechanical system matrix term needed in monolithic TSI
     void CalculateCouplCond(
       DRT::Element* ele,  //!< the element whose matrix is calculated
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  //!< k_Tu matrix
+      Teuchos::ParameterList& params
+      );
+      
+    //@}
+
+    //! @name thermoplasticity solved with TSI
+    
+    //! calculate internal dissipation arising when a thermo-elasto-plastic
+    //! material is used
+    //! Clausius-Duhem inequality is no longer = 0, but > 0:
+    //! mechanical energy dissipates as heat
+    void CalculateCouplDissipation(
+      DRT::Element* ele,  //!< the element whose matrix is calculated
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  //!< current velocities
+      const double& stepsize,  //!< step size Delta t
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
+      Teuchos::ParameterList& params
+      );
+
+    //! calculate terms of dissipation for thermo-mechanical
+    //! system matrix k_Td used in case of plastic material
+    void CalculateCouplDissipationCond(
+      DRT::Element* ele,  // the element whose matrix is calculated
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  // current velocities
+      const double& stepsize,  // time step size
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
       Teuchos::ParameterList& params
       );
 
@@ -319,12 +334,8 @@ namespace ELEMENTS
       );
 
     //! get corresponding structural material
-    void GetStrMaterial(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      LINALG::Matrix<6,1>* ctemp,  //!< (io) temperature-dependent material tangent
-      double* thetainit,  //!< (io) constant initial temperature
-      Teuchos::RCP<MAT::Material> structmat,  //!< temperature-dependent solid material
-      Teuchos::ParameterList& params  //!< parameter list
+    Teuchos::RCP<MAT::Material> GetSTRMaterial(
+      DRT::Element* ele  //!< the element whose matrix is calculated
       );
 
     //! calculate reactive term
@@ -332,6 +343,7 @@ namespace ELEMENTS
       LINALG::Matrix<6,1>* ctemp,  //!< temperature-dependent material tangent
       LINALG::Matrix<6,1>* strainvel  //!< strain rate
       );
+
     //@}
 
     //! actual values of temperatures

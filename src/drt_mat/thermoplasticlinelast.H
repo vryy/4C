@@ -3,22 +3,33 @@
 \file thermoplasticlinelast.H
 \brief Contains the functions to establish local material law /
        stress-strain law for isotropic material for a 3D hex element
-       following ideal von Mises plasticity and a linear thermo-elastic material
-       law (Thermo St.Venant Kirchhoff).
+       following an associative von Mises plasticity and a linear thermoelastic
+       material law (Thermo St.Venant Kirchhoff).
 
        Combination of the two material model
        - PlastiLinElastic
        - ThermoStVenantKirchhoff
 
-       plastic materail with kinematic hardening
-        - independent yield stress level of degree of plastification
-        - constant uniaxial yield stress sigma_y = const.
+       Thermoelastoplastic material with mixed hardening
+        - so far:
+          - linear isotropic hardening with constant hardening modulus Hiso
+            - yield stress sigma_y = sigma_y0 + Hiso . strainplbar
+          - linear kinematic hardening with constant hardening modulus Hkin
+            - 'linear Armstrong-Frederick kinematic hardening'
+            - describing the Bauschinger effect via \f Hkin \,=\, const.\f
 
-       geometric linear, for small strains including temperature dependency
+       small strains including temperature dependency
+
+       strain-energy potential
+       \f \rho \psi \,=\,\rho (\psi^e \,+\, \psi^p)
+          \,=\, mu strain^e : strain^e + 1/2 . lambda (strain^e : I)^2 +
+                + m (T - T_0) strain^e : I - rho C_V (T ln T/T_o - (T - T_0))
+                + 1/2 strain^p : strain^p . (2/3 Hkin)
+                + 1/2 strainbar^p : strainbar^p . Hiso \f
 
        example input line:
        MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
-             THEXPANS 1.72e-5 INITTEMP 293.15 YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
+         THEXPANS 1.72e-5 INITTEMP 293.15 YIELD 0.45 ISOHARD 0.0 KINHARD 2.0 TOL 1.0e-6
 
 <pre>
 Maintainer: Caroline Danowski
@@ -236,15 +247,25 @@ private:
     //! return density
     virtual double Density() const { return params_->density_; }
 
-    //! Return accumulated strain at Gauss points
-    //! use the old vector (last_) for postprocessing
-    //! Output is called after(!!) Update, so that newest values are included in
-    //! the old history vectors last_, while the current history vectors curr_
-    //! are reset
+    //! return scalar-valued accumulated strain at Gauss points
+    //! use method to return values at END of time step
     LINALG::Matrix<1,1> AccumulatedStrain(
-      int gp
+      int gp  //!< current Gauss point
       )
-    const { return ( strainbarpllast_->at(gp) ); }
+    const
+    {
+      //! use the old vector (last_) for postprocessing
+      //! Output is called after(!!) Update, so that newest values are included in
+      //! the old history vectors last_
+      //! in contrast: the current history vectors curr_are reset to zero
+      return ( strainbarpllast_->at(gp) );
+    }
+
+    // return current scalar-valued accumulated strain
+    LINALG::Matrix<1,1> AccumulatedStrainCurr(
+      int gp  //!< current Gauss point
+      )
+    const { return ( strainbarplcurr_->at(gp) ); }
 
     //! check if history variables are already initialized
     bool Initialized() const
@@ -276,62 +297,78 @@ private:
     double STModulus();
 
     //! initial temperature
-    double InitTemp() const
-    {
-      return params_->thetainit_;
-    }
+    double InitTemp() const { return params_->thetainit_; }
 
     //@}
 
     //! @name specific methods for TSI and plastic material
     //@{
 
-    //! additive split into elastic and plastic strain rates needed for TSI
-    //! elastic strain rate ( B d^e' = B d - Dgama N)
+    //! calculate elastic strain rate, using additive split of strains
+    //! (o) save strain^e' in strainelrate_
     void StrainRateSplit(
       int gp,  //!< (i): current Gauss point
       const double stepsize,  //!< (i): stepsize
-      LINALG::Matrix<NUM_STRESS_3D,1>& strainlinrate  //!< (i): total strain rate ( B d')
+      LINALG::Matrix<NUM_STRESS_3D,1>& strainrate  //!< (i): total strain rate ( B d')
       );
 
-    //! return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
+    //! return current plastic strain vector
+    //! \f${\boldsymbol \varepsilon}^p_{n+1}\f$
     LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrain(int gp) const
     {
       return strainplcurr_->at(gp);
     }
 
-    //! return current plastic strain vector \f$\dot{\varepsilon}^p_{n+1}\f$
+    //! return current plastic strain vector
+    //! \f$\dot{\boldsymbol \varepsilon}^p_{n+1}\f$
     LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrainRate(int gp) const
     {
       return strainplrate_->at(gp);
     }
 
-    //! return current elastic strain rate vector \f$\dot{\varepsilon}^e_{n+1}\f$
+    //! return current elastic strain rate vector
+    //! \f$\dot{\boldsymbol \varepsilon}^e_{n+1}\f$
     LINALG::Matrix<NUM_STRESS_3D,1> ElasticStrainRate(int gp) const
     {
       return strainelrate_->at(gp);
     }
 
-    //! return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
-    LINALG::Matrix<NUM_STRESS_3D,1> RelativeStress() const { return eta_; }
+    //! compute internal dissipation terms
+    void Dissipation(
+      int gp,  // current Gauss point
+      double sigma_yiso,  // isotropic work hardening von Mises stress
+      double Dgamma,  // plastic multiplier/increment
+      LINALG::Matrix<NUM_STRESS_3D,1> N,  // flow vector
+      LINALG::Matrix<NUM_STRESS_3D,1> stress  // total mechanical stress
+      );
 
-    //! return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
-    LINALG::Matrix<NUM_STRESS_3D,1> ThermalStress() const { return stresstemp_; }
+    //! compute linearisation of internal dissipation for k_Td
+    void DissipationCouplCond(
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  // elasto-plastic tangent modulus (out)
+      int gp, // current Gauss point
+      double G,  // shear modulus
+      double Hiso,  // isotropic hardening modulus
+      double Hkin,  // kinematic hardening modulus
+      double heaviside,  // Heaviside function
+      double etanorm,  // norm of eta^{trial}_{n+1}
+      double Dgamma,  // plastic multiplier
+      LINALG::Matrix<NUM_STRESS_3D,1>& N,  // flow vector
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress  // flow vector
+      );
 
-    //! return plastic power
-    double PlasticPower(int gp) const
+    //! return mechanical dissipation term due to kinematic hardening
+    //! \f$ D_{\rm mech,kin}\f$
+    double MechanicalKinematicDissipation(int gp) const
     {
-      return plasticpower_->at(gp)(0,0);
+      return Dmech_->at(gp)(0,0);
     }
 
-    //! return thermal stress dependent plastic power
-    double PlasticTempPower(int gp) const
+    //! return linearisation of mechanical dissipation w.r.t. displacements
+    //! \f$ k_Td += \dfrac{\partial D_{\rm mech}}{\partial d_{n+1}}\f$
+    LINALG::Matrix<NUM_STRESS_3D,1> DissipationLinearisedForCouplCond(int gp) const
     {
-      return plastictemppower_->at(gp)(0,0);
+      return Dmech_d_->at(gp);
     }
-
-    //! return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
-    LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrainDiff(int gp);
 
     //@}
 
@@ -352,31 +389,26 @@ private:
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current plastic strain at t_n+1
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
-    // old accumulated plastic strain at t_n
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
-    // current accumulated plastic strain at t_n+1
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     // old back stress at t_n
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
     // current back stress at t_n+1
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
+    // old accumulated plastic strain at t_n
+    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    // current accumulated plastic strain at t_n+1
+    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
 
     //! @name specific methods for the combination TSI and plastic material
     //@{
 
-    //! save stresstemp sigma^{theta} = m . Delta T . I
-    LINALG::Matrix<NUM_STRESS_3D,1> stresstemp_;
-
-    //! mechanical plastic power at t_n+1
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > plasticpower_;
-    //! temperature dependent plastic power at t_n+1
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > plastictemppower_;
+    //! mechanical dissipation term due to kinematic and isotropic hardening at t_n+1
+    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > Dmech_;
+    //! linearisation of mechanical dissipation term w.r.t. to d_{n+1}
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > Dmech_d_;
     //! save current strain rates
-    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplincr_;
+    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > Incstrainpl_;
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplrate_;
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainelrate_;
-    //! save current relative stress eta
-    LINALG::Matrix<NUM_STRESS_3D,1> eta_;
 
     //@}
 
