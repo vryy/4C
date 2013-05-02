@@ -176,7 +176,6 @@ ML_SMOTIMES                     1 1 1 1 1
 NAME                            STRUCTURAL_SOLVER
 SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
-STRATIMIKOS_XMLFILE             none
 VERBOSITY                       0
 -----------------------------------------------------------SOLVER 2
 AMGBS_BS_DAMPING                1.3 1.3 1.3
@@ -224,7 +223,6 @@ ML_SMOTIMES                     1 1 1 1 1
 NAME                            THERMAL_SOLVER
 SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
-STRATIMIKOS_XMLFILE             none
 VERBOSITY                       0
 -----------------------------------------------------------SOLVER 3
 AMGBS_BS_DAMPING                1.3 1.3 1.3

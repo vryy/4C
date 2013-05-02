@@ -96,7 +96,6 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 SOLVER                          Amesos_KLU_nonsym
-STRATIMIKOS_XMLFILE             none
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

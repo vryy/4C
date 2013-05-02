@@ -100,7 +100,6 @@ ML_SMOOTHERMED                  SGS
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
-STRATIMIKOS_XMLFILE             none
 VERBOSITY                       0
 PERMUTE_SYSTEM                  none
 ----------------------------------------------------------SOLVER 2
@@ -144,7 +143,6 @@ MueLu_INITSMOO_SWEEPS           3
 MueLu_INITSMOO_DAMPING          1.0
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
-STRATIMIKOS_XMLFILE             none
 VERBOSITY                       5
 PERMUTE_SYSTEM                  algebraic
 ---------------------------------------------------------MATERIALS

@@ -87,7 +87,6 @@ ML_SMOOTHERMED                  Chebychev
 ML_SMOTIMES 			6 6 6 6 1
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
-STRATIMIKOS_XMLFILE             None
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1

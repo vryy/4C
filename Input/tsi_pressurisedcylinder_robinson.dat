@@ -220,7 +220,6 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
-STRATIMIKOS_XMLFILE             none
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI Monolithic Solver
 AMGBS_BS_DAMPING                1.3 1.3 1.3
