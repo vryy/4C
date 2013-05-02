@@ -49,7 +49,9 @@ Maintainer: Tobias Wiesner
 #include <MueLu_SmootherFactory.hpp>
 
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
+#ifdef HAVE_Trilinos_Q1_2013
 #include <MueLu_ParameterListInterpreter.hpp> // TODO: move into MueLu.hpp
+#endif
 
 #include <MueLu_AggregationExportFactory.hpp>
 //#include "muelu_ContactInfoFactory_decl.hpp"
@@ -174,6 +176,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     //std::vector<Teuchos::RCP<FactoryBase> > vec;
     //vec.push_back(aggExpFact);
 
+#ifdef HAVE_Trilinos_Q1_2013
     if(mllist_.isParameter("xml file") && mllist_.get<std::string>("xml file") != "none"){
       // use parameters from user-provided XML file
 
@@ -214,6 +217,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
     } else {
+#endif
       // Standard case: use ML parameters from dat file
 
       // Setup MueLu Hierarchy
@@ -224,7 +228,9 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
       // set preconditioner
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+#ifdef HAVE_Trilinos_Q1_2013
     }
+#endif
 
   }
 }
