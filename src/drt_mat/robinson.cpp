@@ -358,21 +358,13 @@ void MAT::Robinson::Update()
  | stress and material tangent                                          |
  | CCARAT: so3_mat_robinson_be_sel() and so3_mat_robinson_be_stress     |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                             const LINALG::Matrix<6,1>* strain,
-                             Teuchos::ParameterList& params,
-                             LINALG::Matrix<6,1>* stress,
-                             LINALG::Matrix<6,6>* cmat)
-//   void MAT::Robinson::Evaluate(
-//   const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& strain,  // total strain vector
-//   LINALG::Matrix<MAT::NUM_STRESS_3D,1>& plstrain,  // plastic strain vector
-//   const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& straininc,  // total strain increment
-//   const double& scalartemp,
-//   const int gp, // current Gauss point
-//   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
-//   LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& cmat, // material stiffness matrix
-//   LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress // 2nd PK-stress
-//   )
+void MAT::Robinson::Evaluate(
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<6,1>* strain,
+  Teuchos::ParameterList& params,
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat
+  )
 {
   // extract from parameter list
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* straininc = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("straininc",NULL);

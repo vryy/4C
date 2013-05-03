@@ -102,10 +102,12 @@ MAT::ThermoPlasticLinElast::ThermoPlasticLinElast()
 
 
 /*----------------------------------------------------------------------*
- | copy-constructor (public)                                      08/11 |
+ | constructor (public)                                      dano 08/11 |
+ | called in ReadMaterials --> CreateMaterial                           |
  *----------------------------------------------------------------------*/
 MAT::ThermoPlasticLinElast::ThermoPlasticLinElast(MAT::PAR::ThermoPlasticLinElast* params)
-: params_(params)
+: params_(params),
+  plastic_step_(false)
 {
 }
 
@@ -153,11 +155,9 @@ void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,Dmech_d_->at(var));
 
     AddtoPack(data,Incstrainpl_->at(var));
-    AddtoPack(data,strainplrate_->at(var));
     AddtoPack(data,strainelrate_->at(var));
-
   }
-
+  
   AddtoPack(data,plastic_step_);
 
   return;
@@ -208,28 +208,25 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
   backstresslast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
   backstresscurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
 
-  strainbarpllast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<1,1> > );
-  strainbarplcurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<1,1> > );
+  strainbarpllast_ = Teuchos::rcp( new std::vector<double> );
+  strainbarplcurr_ = Teuchos::rcp( new std::vector<double> );
 
   // unpack dissipation stuff
-  Dmech_ = Teuchos::rcp( new std::vector< LINALG::Matrix<1,1>  > );
+  Dmech_ = Teuchos::rcp( new std::vector<double> );
   Dmech_d_ = Teuchos::rcp( new std::vector< LINALG::Matrix<NUM_STRESS_3D,1>  > );
 
   Incstrainpl_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
-  strainplrate_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
   strainelrate_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
 
   for (int var=0; var<histsize; ++var)
   {
     LINALG::Matrix<NUM_STRESS_3D,1> tmp_vect(true);
-    LINALG::Matrix<1,1> tmp_scalar(true);
-
+    double tmp_scalar = 0.0;
     // vectors of last converged state are unpacked
     ExtractfromPack(position,data,tmp_vect);
     strainpllast_->push_back(tmp_vect);
     ExtractfromPack(position,data,tmp_vect);
     backstresslast_->push_back(tmp_vect);
-
     // scalar-valued vector of last converged state are unpacked
     ExtractfromPack(position,data,tmp_scalar);
     strainbarpllast_->push_back(tmp_scalar);
@@ -239,8 +236,6 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
     Dmech_d_->push_back(tmp_vect);
     ExtractfromPack(position,data,tmp_vect);
     Incstrainpl_->push_back(tmp_vect);
-    ExtractfromPack(position,data,tmp_vect);
-    strainplrate_->push_back(tmp_vect);
     ExtractfromPack(position,data,tmp_vect);
     strainelrate_->push_back(tmp_vect);
 
@@ -254,7 +249,7 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
   int plastic_step;
   ExtractfromPack(position,data,plastic_step);
 
-  // if it was already plastic before,
+  // if it was already plastic before
   if (plastic_step != 0) plastic_step_ = true;
 
   if (position != data.size())
@@ -277,14 +272,13 @@ void MAT::ThermoPlasticLinElast::Setup(int numgp, DRT::INPUT::LineDefinition* li
   backstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  strainbarpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
-  strainbarplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  strainbarpllast_ = Teuchos::rcp(new std::vector<double>);
+  strainbarplcurr_ = Teuchos::rcp(new std::vector<double>);
 
-  Dmech_ = Teuchos::rcp(new std::vector< LINALG::Matrix<1,1>  >);
+  Dmech_ = Teuchos::rcp(new std::vector<double>);
   Dmech_d_ = Teuchos::rcp(new std::vector< LINALG::Matrix<NUM_STRESS_3D,1>  >);
 
   Incstrainpl_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  strainplrate_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   strainelrate_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
   LINALG::Matrix<NUM_STRESS_3D,1> emptymat_vect(true);
@@ -294,7 +288,6 @@ void MAT::ThermoPlasticLinElast::Setup(int numgp, DRT::INPUT::LineDefinition* li
   backstresslast_->resize(numgp);
   backstresscurr_->resize(numgp);
 
-  LINALG::Matrix<1,1> emptymat_scalar(true);
   strainbarpllast_->resize(numgp);
   strainbarplcurr_->resize(numgp);
 
@@ -302,7 +295,6 @@ void MAT::ThermoPlasticLinElast::Setup(int numgp, DRT::INPUT::LineDefinition* li
   Dmech_d_->resize(numgp);
 
   Incstrainpl_->resize(numgp);
-  strainplrate_->resize(numgp);
   strainelrate_->resize(numgp);
 
   for (int i=0; i<numgp; i++)
@@ -313,14 +305,13 @@ void MAT::ThermoPlasticLinElast::Setup(int numgp, DRT::INPUT::LineDefinition* li
     backstresslast_->at(i) = emptymat_vect;
     backstresscurr_->at(i) = emptymat_vect;
 
-    strainbarpllast_->at(i) = emptymat_scalar;
-    strainbarplcurr_->at(i) = emptymat_scalar;
+    strainbarpllast_->at(i) = 0.0;
+    strainbarplcurr_->at(i) = 0.0;
 
-    Dmech_->at(i) = emptymat_scalar;
+    Dmech_->at(i) = 0.0;
     Dmech_d_->at(i) = emptymat_vect;
 
     Incstrainpl_->at(i) = emptymat_vect;
-    strainplrate_->at(i) = emptymat_vect;
     strainelrate_->at(i) = emptymat_vect;
   }
 
@@ -346,7 +337,7 @@ void MAT::ThermoPlasticLinElast::Update()
   strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  strainbarplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  strainbarplcurr_ = Teuchos::rcp(new std::vector<double>);
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -357,13 +348,12 @@ void MAT::ThermoPlasticLinElast::Update()
   strainbarplcurr_->resize(histsize);
 
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
-  const LINALG::Matrix<1,1> emptyvec1(true);
   for (int i=0; i<histsize; i++)
   {
     strainplcurr_->at(i) = emptyvec;
     backstresscurr_->at(i) = emptyvec;
 
-    strainbarplcurr_->at(i) = emptyvec1;
+    strainbarplcurr_->at(i) = 0.0;
   }
 
   return;
@@ -385,6 +375,8 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> plstrain(true);
+  const int eleID = params.get<int>("eleID",-1);
+  if (eleID == -1) dserror("no element provided in material");
 
   // get material parameters
   // Young's modulus
@@ -432,8 +424,8 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   double strainbar_p = 0.0;
   // accumulated or equivalent plastic strain (scalar-valued)
   // strainbar^p,trial}_{n+1} = strainbar^p_n
-  strainbar_p = (strainbarpllast_->at(gp))(0,0);
-  if ( ( (strainbarpllast_->at(gp))(0,0) )<0.0 )
+  strainbar_p = (strainbarpllast_->at(gp));
+  if (strainbarpllast_->at(gp) < 0.0)
     dserror("accumulated plastic strain has to be equal to or greater than 0!");
 
   // ------------------------------------------------ old back stress
@@ -564,8 +556,11 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
     if (plastic_step_ == false)
     {
-      if (gp == 0)
-        cout << "first plastic step: plastic strains unequal zero!" << endl;
+      plastic_eleID_ = eleID;
+
+      if ( (plastic_step_ == false) && (eleID == plastic_eleID_) && (gp == 0) )
+        std::cout << "plasticity starts in element = " << plastic_eleID_ << std::endl;
+
       plastic_step_ = true;
     }
 
@@ -641,7 +636,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
       // astrain^p_{n+1} = astrain^p_n + Dgamma
       // astrain^p_{n+1} = SUM{Dgamma_n} from all time steps n
       // Kuhn-Tucker: Dgamma >= 0.0 --> astrain^p_{n+1} >= 0.0
-      strainbar_p = (strainbarpllast_->at(gp))(0,0) + Dgamma;
+      strainbar_p = strainbarpllast_->at(gp) + Dgamma;
       if (strainbar_p < 0.0)
         dserror("accumulated plastic strain has to be equal or greater than zero");
 
@@ -852,7 +847,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   //                     = Dgamma . N = Dgamma . sqrt{3/2} eta_{n+1} / || eta_{n+1}||
   for (int i=0; i<6; i++)
     Incstrainpl_->at(gp)(i,0) = Dgamma * N(i,0);
-  // --> strain rate: strainplrate_ = strain^p_{n+1}' = Incstrainpl_/dt
+  // --> plastic strain rate: strain^p_{n+1}' = Incstrainpl_/dt
   // scale with dt in StrainRateSplit()
 
   // ------------------------------------------------ dissipation for r_T
@@ -1099,16 +1094,14 @@ void MAT::ThermoPlasticLinElast::StrainRateSplit(
   LINALG::Matrix<NUM_STRESS_3D,1>& strainrate  // total strain rate, i.e. B d'
   )
 {
-  // build the temporal rate of the plastic strains using implicit Euler scheme
-  // strain^p' = Inc_strain^p / dt
-  (strainplrate_->at(gp)).Update((1.0/stepsize), Incstrainpl_->at(gp), 0.0);
-
   // elastic strain rate strain^e'
   // strain^e' = strain' - strain^p'
   for (int i=0; i<NUM_STRESS_3D; i++)
   {
     // strain^e' = strain' - strain^p'
-    strainelrate_->at(gp)(i) = strainrate(i,0) - strainplrate_->at(gp)(i);
+
+    // with strain^p' = Inc_strain^p / dt: use implicit Euler scheme
+    strainelrate_->at(gp)(i) = strainrate(i,0) - (1.0/stepsize) * Incstrainpl_->at(gp)(i);
   }
 
   return;
@@ -1155,7 +1148,7 @@ void MAT::ThermoPlasticLinElast::Dissipation(
   double isotropicdis = sigma_yiso * Dgamma;
 
   // return mechanical disspiation term due to mixed hardening hardening
-  Dmech_->at(gp)(0,0) = -stressIncstrainpl + isotropicdis;
+  Dmech_->at(gp) = -stressIncstrainpl + isotropicdis;
   // time step not yet considered, i.e., Dmech_ is an energy, not a power
   // accumulated plastic strain
 
@@ -1300,8 +1293,8 @@ void MAT::ThermoPlasticLinElast::DissipationCouplCond(
   //   + Hiso . strainbar^p_{n+1}) N_{n+1}
   // = 2G/(3G + Hkin + Hiso) . 1/Dt . (strainbar^p_{n+1} (1+Hiso) - strainbar^p_n) N_{n+1}
   double fac_liniso = 0.0;
-  fac_liniso = fac_lin_3 * ( (1 + Hiso) * strainbarplcurr_->at(gp)(0,0) -
-               - strainbarpllast_->at(gp)(0,0) );
+  fac_liniso = fac_lin_3 * ( (1 + Hiso) * strainbarplcurr_->at(gp) -
+               - strainbarpllast_->at(gp) );
 
   // ------------------------------------------------------ term for k_Td
   // add the linearisation term to D_mech_d
@@ -1445,12 +1438,10 @@ bool MAT::ThermoPlasticLinElast::VisData(const string& name, std::vector<double>
   if (name == "accumulatedstrain")
   {
     if ((int)data.size()!=1) dserror("size mismatch");
-    LINALG::Matrix<1,1> temp(true);
+    double temp = 0.0;
     for (int iter=0; iter<numgp; iter++)
-    {
-      temp.Update(1.0,AccumulatedStrain(iter),1.0);
-    }
-    data[0] = temp(0)/numgp;
+      temp += AccumulatedStrain(iter);
+    data[0] = temp/numgp;
   }
   return true;
 }  // VisData()

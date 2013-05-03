@@ -238,7 +238,7 @@ private:
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    LINALG::Matrix<1,1> AccumulatedStrain(
+    double AccumulatedStrain(
       int gp
       )
     const { return ( strainbarpllast_->at(gp) ); }
@@ -284,9 +284,9 @@ private:
     // current plastic strain at t_n+1
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     // old accumulated plastic strain at t_n
-    Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    Teuchos::RCP<std::vector<double> > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current accumulated plastic strain at t_n+1
-    Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    Teuchos::RCP<std::vector<double> > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     // old back stress at t_n
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
     // current back stress at t_n+1

@@ -249,7 +249,7 @@ private:
 
     //! return scalar-valued accumulated strain at Gauss points
     //! use method to return values at END of time step
-    LINALG::Matrix<1,1> AccumulatedStrain(
+    double AccumulatedStrain(
       int gp  //!< current Gauss point
       )
     const
@@ -262,7 +262,7 @@ private:
     }
 
     // return current scalar-valued accumulated strain
-    LINALG::Matrix<1,1> AccumulatedStrainCurr(
+    double AccumulatedStrainCurr(
       int gp  //!< current Gauss point
       )
     const { return ( strainbarplcurr_->at(gp) ); }
@@ -319,13 +319,6 @@ private:
       return strainplcurr_->at(gp);
     }
 
-    //! return current plastic strain vector
-    //! \f$\dot{\boldsymbol \varepsilon}^p_{n+1}\f$
-    LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrainRate(int gp) const
-    {
-      return strainplrate_->at(gp);
-    }
-
     //! return current elastic strain rate vector
     //! \f$\dot{\boldsymbol \varepsilon}^e_{n+1}\f$
     LINALG::Matrix<NUM_STRESS_3D,1> ElasticStrainRate(int gp) const
@@ -360,7 +353,7 @@ private:
     //! \f$ D_{\rm mech,kin}\f$
     double MechanicalKinematicDissipation(int gp) const
     {
-      return Dmech_->at(gp)(0,0);
+      return Dmech_->at(gp);
     }
 
     //! return linearisation of mechanical dissipation w.r.t. displacements
@@ -394,20 +387,21 @@ private:
     // current back stress at t_n+1
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
     // old accumulated plastic strain at t_n
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    Teuchos::RCP<std::vector<double> > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current accumulated plastic strain at t_n+1
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    Teuchos::RCP<std::vector<double> > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
 
     //! @name specific methods for the combination TSI and plastic material
     //@{
 
     //! mechanical dissipation term due to kinematic and isotropic hardening at t_n+1
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > Dmech_;
+    Teuchos::RCP<std::vector<double> > Dmech_;
     //! linearisation of mechanical dissipation term w.r.t. to d_{n+1}
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > Dmech_d_;
-    //! save current strain rates
+    //! save plastic strain increment: Incstrainpl = strain^p_{n+1} - strain^p_n
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > Incstrainpl_;
-    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplrate_;
+    //! elastic strain rate required for thermoelastic heating term
+    //! use additive split: strain^e' = strain' - strain^p'
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainelrate_;
 
     //@}
@@ -416,6 +410,8 @@ private:
     bool isinit_;
     //! indicator if material has started to be plastic
     bool plastic_step_;
+    //! element ID, in which first plasticity occurs
+    int plastic_eleID_;
 
   };  // class ThermoThermoPlasticLinElast : public Material
 }  // namespace MAT
