@@ -229,7 +229,6 @@ namespace ELEMENTS
       const double& time,  //!< current time
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
-      const double& stepsize,  //!< time step size
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
       LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
       LINALG::Matrix<nen_*numdofpernode_,1>* efext,  //!< external force
@@ -257,9 +256,6 @@ namespace ELEMENTS
     //! mechanical energy dissipates as heat
     void CalculateCouplDissipation(
       DRT::Element* ele,  //!< the element whose matrix is calculated
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  //!< current velocities
-      const double& stepsize,  //!< step size Delta t
       LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
       Teuchos::ParameterList& params
       );
@@ -268,9 +264,6 @@ namespace ELEMENTS
     //! system matrix k_Td used in case of plastic material
     void CalculateCouplDissipationCond(
       DRT::Element* ele,  // the element whose matrix is calculated
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  // current velocities
-      const double& stepsize,  // time step size
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
       Teuchos::ParameterList& params
       );
@@ -289,7 +282,6 @@ namespace ELEMENTS
       const double& time,  //!< current time
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
-      const double& stepsize,  //!< time step size
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  //!< capacity matrix
       LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
