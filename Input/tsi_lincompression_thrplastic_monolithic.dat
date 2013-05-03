@@ -10,17 +10,29 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus on the 21th of June 2010
-geometric linear case: dynamic compression of a body movable only
-in x-direction
-one-way coupling TSI (COUPVARIABLE=Displacement)
-mechanical problem: dynamic (OST), geometric linear
-dynamic thermal problem (OST)
+Simple test case for monolithic TSI: heating due to nodal velocities. 
+Compression of the body due to a traction force that increases with t
+
+In contrast to corresponding partitioned TSI test cases, here we use a
+dynamic time integration scheme for both fields
+dynamic, geometrically linear analysis with THETA=1.0 (implicit Euler)
+>>> stationary time integrator for THR not reasonable because heating can only
+  be conducted via the heat capacity (i.e. CAPA T'), NOT via heat conduction
+  (i.e. div q)
+
+In addition we use a thermoelastoplastic material with mixed hardening, i.e. 
+linear isotropic and linear kinematic hardening.
+>>> evolution equation of internal variables use an implicit Euler as well
+
+Due to coarse discretisation, resolution of heat fluxes is quite poor, but it
+is accepted here for simple nightly test case.
+
+material parameters of steel
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2
 NODES                           12
 DIM                             3
-MATERIALS                       3
+MATERIALS                       4
 NUMDF                           6
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
@@ -36,11 +48,12 @@ OUTPUT_GID                      No
 OUTPUT_OUT                      No
 STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
 STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_PLASTIC_STRAIN           GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Initial //Current  // None,No,NO,no,Current,Initial
+THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Initial //Current  // None,No,NO,no,Current,Initial
+THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        2  // thr+str
 PROBLEMTYP                      Thermo_Structure_Interaction
@@ -51,13 +64,12 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
 DIVERCONT                       No  // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
-DYNAMICTYP                      Statics  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DYNAMICTYP                      OneStepTheta  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
 ITERNORM                        L2
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   3
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-M_DAMP                          0.5
 NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
@@ -67,20 +79,21 @@ PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangD
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-TIMESTEP                        0.01
-TOLDISP                         1e-10
-TOLRES                          2e-08
+TIMESTEP                        1
+TOLDISP                         1e-08
+TOLRES                          1e-03//5
+YOUNG_IS_TEMP_DEPENDENT         No
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
+THETA                           1.0
 -------------------------------------------------------------THERMAL DYNAMIC
-LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    field_by_function
 ITERNORM                        L2
+LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
@@ -93,22 +106,29 @@ PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,Tang
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.01
-TOLRES                          1e-08
-TOLTEMP                         1e-10
+TOLRES                          3e-04 // 1e-05
+TOLTEMP                         1e-07
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
+THETA                           1.0
 -----------------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
-COUPALGO                        tsi_oneway  // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
+TOLINC                          1e-07
+COUPALGO                        tsi_monolithic  // tsi_{iterstagg{,_aitken,_aitkenirons,_fixedrelax},sequstagg,oneway}
 COUPVARIABLE                    Displacement  // Displacement,Temperature
-ITEMAX                          1
-MAXTIME                         3
-NUMSTEP                         200
+ITEMAX                          10  // 100
+ITEMIN                          1
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
+LINEAR_SOLVER                   1
+MAXTIME                         1.0
+NUMSTEP                         2000
+NORMCOMBI_RESFINC               Coupl_And_Singl  // Or,Coupl_Or_Singl,Coupl_And_Singl,And_Singl,Or_Singl
+NORM_INC                        Abs  // Rel,Mix
+NORM_RESF                       Rel  // Rel,Mix
 RESTARTEVRY                     1
 TIMESTEP                        0.1
 UPRES                           1
 --------------------------------------------------------------------SOLVER 1
-NAME                            Thermal_Solver
+NAME                            TSI_MONOLITHIC_SOLVER
 AMGBS_BS_DAMPING                1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
 AMGBS_BS_PCDAMPING              1.0 1.0 1.0
@@ -125,14 +145,15 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          ILU
+AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
+AZSCAL                          none  // none,sym,infnorm
+AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
 AZTOL                           1e-08
 DWINDTAU                        1.5
-IFPACKCOMBINE                   Add
+BGS2X2_FLIPORDER                block1_block0_order
+IFPACKCOMBINE                   Add  // Add,Insert,Zero
 IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
@@ -141,7 +162,7 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
+ML_MAXCOARSESIZE                1000
 ML_MAXLEVEL                     5
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
@@ -150,9 +171,9 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
+NAME                            THERMAL SOLVER
 AMGBS_BS_DAMPING                1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
 AMGBS_BS_PCDAMPING              1.0 1.0 1.0
@@ -169,7 +190,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          ILU
+AZPREC                          MLFLUID2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -185,8 +206,52 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
+ML_MAXCOARSESIZE                1  // 5000
+ML_MAXLEVEL                     3  //5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+--------------------------------------------------------------------SOLVER 3
+NAME                            STRUCTURAL SOLVER
+AMGBS_BS_DAMPING                1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG  // PA-AMG,SA-AMG,PG-AMG,PG2-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG  // PA-AMG,SA-AMG,PG-AMG,PG2-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          MLFLUID2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                1  // 5000
+ML_MAXLEVEL                     3  // 5
 ML_PRINT                        0
 ML_PROLONG_SMO                  0
 ML_PROLONG_THRES                0
@@ -196,27 +261,28 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.0e11 NUE 0.0 DENS 1.0 THEXPANS 1.0e-05 CAPA 420 CONDUCT 52.0 INITTEMP 293.0
-MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52.0
+//parameters for steel [N,m,s,K]
+MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e11 NUE 0.0 DENS 7850 THEXPANS 1.2e-05 INITTEMP 300 YIELD 2.1e4 ISOHARD 0.2 KINHARD 2.1e2 TOL 1.0e-4
+// CAPA = C_V* rho = 420*7850 = 3297000
+MAT 2 THERM_FourierIso CAPA 3297000.0 CONDUCT 52.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 0.0
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 1.0 FACTOR 0.0 -4.0e7
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1.0 3.0 FACTOR -4.0e7 -4.0e7
+// time curve of the structural Neumann load
+CURVE1 on EXPR FUNC (-4.0e10*t) t1 0.0 t2 1.0
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.0
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 300.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          5
-NDVOL                           0
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          4
+NDVOL                           1
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -232,41 +298,24 @@ DPOINT                          0
 ---------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
 DLINE                           0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF                           0
+DSURF                           2
+// right THR NEUMANN q(x=4)
+E 2 - none 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+// left THR NEUMANN q(x=0)
+E 3 - none 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          4
-// vertex fixed xyz (0,0,-1)
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// vertex fixed xyz (0,2,-1)
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// vertex fixed xyz (0,0,1)
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// vertex fixed xyz (0,2,1)
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           4
-// line movable only in x
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// line movable z (x=4,y=0)
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// line movable y (x=0,z=0)
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// line movable z (x=0,y=0)
-E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           4
-// normal y+ fixed y
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// normal y- fixed y
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// normal z+ fixed z
-E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// normal z- fixed z
-E 5 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+DSURF                           1
+// left surface fixed
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
+DVOL                            1
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------DESIGN POINT THERMO DIRICH CONDITIONS
 DPOINT                          0
 ----------------------------------------DESIGN LINE THERMO DIRICH CONDITIONS
@@ -275,54 +324,36 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
----------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 1 DNODE 1
-NODE 4 DNODE 2
-NODE 5 DNODE 3
-NODE 8 DNODE 4
----------------------------------------------------------DLINE-NODE TOPOLOGY
-NODE 7 DLINE 1
-NODE 8 DLINE 1
-NODE 12 DLINE 1
-NODE 3 DLINE 2
-NODE 4 DLINE 2
-NODE 10 DLINE 2
-NODE 1 DLINE 3
-NODE 2 DLINE 3
-NODE 9 DLINE 3
-NODE 5 DLINE 4
-NODE 6 DLINE 4
-NODE 11 DLINE 4
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 9 DSURFACE 1
 NODE 10 DSURFACE 1
 NODE 11 DSURFACE 1
 NODE 12 DSURFACE 1
-NODE 3 DSURFACE 2
-NODE 4 DSURFACE 2
-NODE 7 DSURFACE 2
-NODE 8 DSURFACE 2
+NODE 9 DSURFACE 2
 NODE 10 DSURFACE 2
+NODE 11 DSURFACE 2
 NODE 12 DSURFACE 2
 NODE 1 DSURFACE 3
-NODE 2 DSURFACE 3
+NODE 4 DSURFACE 3
 NODE 5 DSURFACE 3
-NODE 6 DSURFACE 3
-NODE 9 DSURFACE 3
-NODE 11 DSURFACE 3
+NODE 8 DSURFACE 3
+NODE 1 DSURFACE 4
+NODE 4 DSURFACE 4
 NODE 5 DSURFACE 4
-NODE 6 DSURFACE 4
-NODE 7 DSURFACE 4
 NODE 8 DSURFACE 4
-NODE 11 DSURFACE 4
-NODE 12 DSURFACE 4
-NODE 1 DSURFACE 5
-NODE 2 DSURFACE 5
-NODE 3 DSURFACE 5
-NODE 4 DSURFACE 5
-NODE 9 DSURFACE 5
-NODE 10 DSURFACE 5
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
+NODE 9 DVOL 1
+NODE 10 DVOL 1
+NODE 11 DVOL 1
+NODE 12 DVOL 1
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 -1.00000000e+00
 NODE 2 COORD 2.00000000e+00 0.00000000e+00 -1.00000000e+00
@@ -340,10 +371,13 @@ NODE 12 COORD 4.00000000e+00 2.00000000e+00 1.00000000e+00
 1 SOLIDH8THERMO HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM linear EAS none
 2 SOLIDH8THERMO HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM linear EAS none
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -1.6e-03 TOLERANCE 1e-9
-THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 760.09526869528452 TOLERANCE 1.0e-6
-THERMAL DIS thermo NODE 2 QUANTITY temp VALUE 760.09526869528474 TOLERANCE 1.0e-6
-THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 760.09526869528452 TOLERANCE 1.0e-6
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0 TOLERANCE 1e-9 NAME ux(x=0) 
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0 TOLERANCE 1e-9 NAME uy(x=0) 
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0 TOLERANCE 1e-9 NAME uz(x=0)
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -1.13085789780416390e+00 TOLERANCE 1e-9 NAME ux(x=2) 
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -2.26171579286676172e+00 TOLERANCE 1e-9 NAME ux(x=4) 
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 466.650675 TOLERANCE 1.0e-6 NAME T(x=0) 
+THERMAL DIS thermo NODE 2 QUANTITY temp VALUE 466.650675 TOLERANCE 1.0e-6 NAME T(x=2) 
+THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 466.650675 TOLERANCE 1.0e-6 NAME T(x=4) 
 -------------------------------------------------------------------------END
 //  END
