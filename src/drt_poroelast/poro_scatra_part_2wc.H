@@ -56,6 +56,9 @@ namespace POROELAST
     //! convergence check of outer loop
     bool ConvergenceCheck(int itnum);
 
+    //!setup up of dofsets for two way coupling
+    void AddDofSets(bool replace = false);
+
     //! scalar increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnp_;
     //! structure increment of the outer loop

@@ -336,9 +336,14 @@ int DRT::ELEMENTS::So_hex8::NumDofPerNode(const unsigned nds,const DRT::Node& no
     break;
     }
   }
-  // structure, 3D: 3 Dofs per node
-  //    return 3;
-  return NumDofPerNode(node);
+  else if(nds==0)
+    // structure, 3D: 3 Dofs per node
+    //    return 3;
+    return NumDofPerNode(node);
+  else
+    return 0;
+
+  return -1;
 };
 
 

@@ -203,7 +203,7 @@ public:
 
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
   {
-    if (nds==1)
+    if (nds!=0)
       return 0;
     return NumDofPerNode(node);
   };

@@ -146,6 +146,22 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
   return false;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool POROELAST::UTILS::PoroScatraCloneStrategy::DetermineEleType(
+    DRT::Element* actele, const bool ismyele, std::vector<string>& eletype)
+{
+  //clone the element only if it is a poro element (we support submeshes here)
+  if (CheckPoro(actele))
+  {
+    // we only support transport elements here
+    eletype.push_back("TRANSP");
+    return true;
+  }
+
+  return false;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::CheckPoro(

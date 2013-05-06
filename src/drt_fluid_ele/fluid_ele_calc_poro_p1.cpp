@@ -498,27 +498,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
   // evaluate shape functions and derivatives at element center
   //my::EvalShapeFuncAndDerivsAtEleCenter();
 
-//  cout<<"eporositynp"<<endl;
-//  cout<<*eporositynp<<endl;
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
-  my::GaussPointLoopOD(  params,
-                     evelaf,
-                     evelnp,
-                     epreaf,
-                     eprenp,
-                     epressnp_timederiv,
-                     edispnp,
-                     egridv,
-                     escaaf,
-                     eporositynp,
-                     eforce,
-                     ecoupl_u,
-                     ecoupl_p,
-                     material,
-                     intpoints);
-
   GaussPointLoopP1OD(  params,
                        evelaf,
                        evelnp,
@@ -530,6 +512,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
                        escaaf,
                        eporositynp,
                        eforce,
+                       ecoupl_u,
+                       ecoupl_p,
                        ecouplp1_u,
                        ecouplp1_p,
                        material,
@@ -631,6 +615,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         const LINALG::Matrix<my::nen_,1>&                               escaaf,
                         const LINALG::Matrix<my::nen_,1>*                               eporositynp,
                         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
+                        LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&       ecoupl_u,
+                        LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&                  ecoupl_p,
                         LINALG::Matrix<my::nen_ * my::nsd_, my::nen_>&                  ecouplp1_u,
                         LINALG::Matrix<my::nen_, my::nen_>&                             ecouplp1_p,
                         Teuchos::RCP<const MAT::Material>                               material,
@@ -675,6 +661,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
         press = my::funct_.Dot(eprenp);
       else
         press = my::funct_.Dot(epreaf);
+
+      // get pressure time my::derivative at integration point
+      // (value at n+1 )
+      double press_dot = my::funct_.Dot(epressnp_timederiv);
 
       // get pressure gradient at integration point
       // (value at n+alpha_F for generalized-alpha scheme,
@@ -780,7 +770,55 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         NULL, //dphi_dpp not needed
                         false);
 
-      //double refporositydot = my::so_interface_->RefPorosityTimeDeriv();
+      double refporositydot = my::so_interface_->RefPorosityTimeDeriv();
+
+      //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx at gausspoint
+      LINALG::Matrix<my::nsd_,1> gradJ(true);
+      // spatial porosity gradient
+      LINALG::Matrix<my::nsd_,1>             grad_porosity(true);
+      //--------------------- linearization of porosity w.r.t. structure displacements
+      LINALG::Matrix<1,my::nsd_*my::nen_> dphi_dus(true);
+
+      //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
+      LINALG::Matrix<1,my::nsd_*my::nen_> dJ_dus(true);
+      //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) + d\phi/(dp*du_s) * dp/dx
+      LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(true);
+
+      {
+        // dF/dx
+        LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_x(true);
+
+        // dF/dX
+        LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_X(true);
+
+        ComputeFDerivative( edispnp,
+                            defgrd_inv,
+                            F_x,
+                            F_X);
+
+        //compute gradients if needed
+        ComputeGradients(J,
+                         dphi_dp,
+                         dphi_dJ,
+                         defgrd_IT_vec,
+                         F_x,
+                         eporositynp,
+                         gradJ,
+                         grad_porosity);
+
+        ComputeLinearizationOD( J,
+                                dphi_dJ,
+                                dphi_dJJ,
+                                dphi_dJdp,
+                                defgrd_inv,
+                                defgrd_IT_vec,
+                                F_x,
+                                F_X,
+                                gradJ,
+                                dJ_dus,
+                                dphi_dus,
+                                dgradphi_dus);
+      }
 
       //----------------------------------------------------------------------
       // potential evaluation of material parameters and/or stabilization
@@ -806,6 +844,77 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       //----------------------------------------------------------------------
       const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
       const double timefacfacpre = my::fldpara_->TimeFacPre() * my::fac_;
+
+      //***********************************************************************************************
+      // 1) coupling terms in momentum balance
+
+      my::FillMatrixMomentumOD(  timefacfac,
+                             porosity,
+                             gridvelint,
+                             grad_porosity,
+                             dgradphi_dus,
+                             dphi_dus,
+                             ecoupl_u);
+
+      //*************************************************************************************************************
+      // 2) coupling terms in continuity equation
+
+      my::FillMatrixContiOD(  timefacfacpre,
+                             porosity,
+                             J,
+                             dphi_dJ,
+                             dphi_dJJ,
+                             dphi_dJdp,
+                             press_dot,
+                             gridvdiv,
+                             gridvelint,
+                             grad_porosity,
+                             dgradphi_dus,
+                             dphi_dus,
+                             dJ_dus,
+                             ecoupl_p);
+
+      //*************************************************************************************************************
+      // 3) shape derivatives
+      LINALG::Matrix<my::nsd_,1> grad_porosity_ref(true);
+      grad_porosity_ref.Multiply(my::xjm_,grad_porosity);
+
+      if (my::nsd_ == 3)
+        LinMeshMotion_3D_OD(
+            ecoupl_u,
+            ecoupl_p,
+            evelaf,
+            egridv,
+            epreaf,
+            press,
+            press_dot,
+            porosity,
+            grad_porosity_ref,
+            dphi_dp,
+            dphi_dJ,
+            J,
+            refporositydot,
+            my::fldpara_->TimeFac(),
+            timefacfac);
+      else if(my::nsd_ == 2)
+        LinMeshMotion_2D_OD(
+            ecoupl_u,
+            ecoupl_p,
+            evelaf,
+            egridv,
+            epreaf,
+            press,
+            press_dot,
+            porosity,
+            grad_porosity_ref,
+            dphi_dp,
+            dphi_dJ,
+            J,
+            refporositydot,
+            my::fldpara_->TimeFac(),
+            timefacfac);
+      else
+        dserror("Linearization of the mesh motion is only available in 3D");
 
       for (int ui=0; ui<my::nen_; ++ui)
       {

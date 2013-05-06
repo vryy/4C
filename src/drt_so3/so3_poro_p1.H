@@ -280,6 +280,9 @@ protected:
                                       const LINALG::Matrix<my::numdim_,my::numnod_> & evelnp,
                                       const LINALG::Matrix<my::numnod_,1> & epreaf,
                                       const LINALG::Matrix<my::numnod_, 1>*  porosity_dof,
+                                      LINALG::Matrix<my::numdof_,my::numdof_>& erea_v,
+                                      LINALG::Matrix<my::numdof_,my::numdof_>* sub_stiff,
+                                      LINALG::Matrix<my::numdof_,1>*       sub_force,
                                       LINALG::Matrix<my::numdof_,my::numnod_>& ecoupl_p1,
                                       LINALG::Matrix<my::numnod_,numdof_>& estiff_p1,
                                       LINALG::Matrix<my::numnod_,1>& ecoupl_force_p1
@@ -293,7 +296,8 @@ protected:
                                       const LINALG::Matrix<my::numdim_,my::numnod_> & evelnp,
                                       const LINALG::Matrix<my::numnod_,1> & epreaf,
                                       const LINALG::Matrix<my::numnod_, 1>*  porosity_dof,
-                                      LINALG::Matrix<my::numnod_,my::numnod_>& estiff_p1
+                                      LINALG::Matrix<my::numnod_,my::numnod_>& estiff_p1,
+                                      LINALG::Matrix<my::numdof_, (my::numdim_ + 1) * my::numnod_>* sub_stiff
                                           );
 
 };//class So3_Poro_P1

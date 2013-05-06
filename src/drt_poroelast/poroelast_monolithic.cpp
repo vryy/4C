@@ -127,14 +127,14 @@ void POROELAST::Monolithic::Solve()
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_);
     //cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
-    timer.ResetStartTime();
+    //timer.ResetStartTime();
 
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
     // create the systemmatrix
     SetupSystemMatrix();
     //cout << "  time for Evaluate offdiagonal blocks: " << timer.ElapsedTime() << "\n";
-    timer.ResetStartTime();
+    //timer.ResetStartTime();
 
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled())
@@ -145,15 +145,13 @@ void POROELAST::Monolithic::Solve()
     // create full monolithic rhs vector
     SetupRHS(iter_==1);
     //cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
-    timer.ResetStartTime();
+    //timer.ResetStartTime();
 
-    //PoroFDCheck();
-    //dserror("done");
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
     //cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
-    timer.ResetStartTime();
+    //timer.ResetStartTime();
 
     // reset solver tolerance
     solver_->ResetTolerance();
@@ -1158,18 +1156,13 @@ void POROELAST::Monolithic::PoroFDCheck()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
 
-  //Teuchos::RCP<Epetra_Vector> rhs_old= Teuchos::null;
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
       true));
   rhs_old->Update(1.0, *rhs_, 0.0);
   Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
       true));
-  //rhs_old = Teuchos::rcp(new Epetra_Vector(*rhs_));
-  //cout<<"rhs_"<<endl<<*rhs_<<endl;
-  //cout<<"rhs_old"<<endl<<*rhs_old<<endl;
 
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-  //cout<<"DBCMap:"<<endl<<*CombinedDBCMap();
   Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(
       new LINALG::SparseMatrix(*(sparse->EpetraMatrix())));
 
@@ -1197,8 +1190,6 @@ void POROELAST::Monolithic::PoroFDCheck()
     if (i == spaltenr)
       cout << "\n******************" << spaltenr + 1
           << ". Spalte!!***************" << endl;
-
-    // cout<<"iterinc anfang: "<<endl<< *iterinc<<endl;
 
     Evaluate(iterinc);
     SetupRHS();
@@ -1251,8 +1242,6 @@ void POROELAST::Monolithic::PoroFDCheck()
       }
     }
 
-    //  cout<<"stiff_approx, column "<< i<<endl<<*stiff_approx<<endl;
-
     if (not CombinedDBCMap()->MyGID(i))
       iterinc->ReplaceGlobalValue(i, 0, -delta);
 
@@ -1267,17 +1256,10 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   }
 
-  //cout<<"iterinc ende"<<endl<<*iterinc<<endl;
   Evaluate(iterinc);
   SetupRHS();
 
-  //cout<<"vel ende"<<endl<<*(FluidField()->Velnp());
-
   stiff_approx->FillComplete();
-
-  //    cout<<"stiff_approx"<<endl<<*stiff_approx;
-  //    cout<<"systemmatrix_"<<endl<<*systemmatrix_;
-  //    cout<<"sparse"<<endl<<*sparse;
 
   Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
   stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_approx));
@@ -1291,11 +1273,6 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   error_crs->FillComplete();
   sparse_crs->FillComplete();
-
-  //  cout<<"stiff_approx"<<endl<<*stiff_approx;
-  //  cout<<"error_crs"<<endl<<*error_crs;
-  // cout<<"sparse_crs"<<endl<<*sparse_crs;
- // cout << "DBCMap:" << endl << *CombinedDBCMap();
 
   bool success = true;
   double error_max = 0.0;
@@ -1335,7 +1312,6 @@ void POROELAST::Monolithic::PoroFDCheck()
         }
       }
     }
-    // else cout<<"GID "<<i<<" mit DBC"<<endl;
   }
 
   if(success)

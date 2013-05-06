@@ -750,7 +750,7 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
                                               double*    W)
 {
   if(porosity == 0.0)
-    dserror("porosity equals zero!!");
+    dserror("porosity equals zero!! Wrong initial porosity?");
   const double & bulkmodulus  = params_->bulkmodulus_;
   const double & penalty      = params_->penaltyparameter_;
   const double & initporosity = params_->initporosity_;

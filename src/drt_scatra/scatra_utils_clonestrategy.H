@@ -43,7 +43,7 @@ public:
 protected:
 
   /// determine element type string and whether element is copied or not
-  bool DetermineEleType(DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+  virtual bool DetermineEleType(DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
   /// set element-specific data (material etc.)
   void SetElementData(

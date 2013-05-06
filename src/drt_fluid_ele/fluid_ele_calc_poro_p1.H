@@ -155,6 +155,8 @@ protected:
                             const LINALG::Matrix<my::nen_,1>&                               escaaf,
                             const LINALG::Matrix<my::nen_,1>*                               eporositynp,
                             LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
+                            LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&       ecoupl_u,
+                            LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&                  ecoupl_p,
                             LINALG::Matrix<my::nen_ * my::nsd_, my::nen_>&                  ecouplp1_u,
                             LINALG::Matrix<my::nen_, my::nen_>&                             ecouplp1_p,
                             Teuchos::RCP<const MAT::Material>                               material,

@@ -228,13 +228,8 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
     std::vector<int> lm = la[0].lm_;
 
-    //std::vector<double> mydisp((lm).size());
-    //DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
     LINALG::Matrix<numdim_,numnod_> mydisp(true);
     ExtractValuesFromGlobalVector(discretization,0,lm, &mydisp, NULL,"displacement");
-
-    //std::vector<double> myres((lm).size());
-    //DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
@@ -243,17 +238,14 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     LINALG::Matrix<numdof_,numdof_>* matptr2 = NULL;
     if (elemat2.IsInitialized() and (damping==INPAR::STR::damp_material) ) matptr2 = &elemat2;
 
-    // need current fluid state,
-    // call the fluid discretization: fluid equates 2nd dofset
-    // disassemble velocities and pressures
-
-    LINALG::Matrix<numdim_,numnod_> myvel(true);
-
-    LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-    LINALG::Matrix<numnod_,1> myepreaf(true);
-
     if(la.Size()>1)
     {
+      // need current fluid state,
+      // call the fluid discretization: fluid equates 2nd dofset
+      // disassemble velocities and pressures
+      LINALG::Matrix<numdim_,numnod_> myvel(true);
+      LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+      LINALG::Matrix<numnod_,1> myepreaf(true);
 
       if (discretization.HasState(0,"velocity"))
         ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
@@ -263,7 +255,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
         ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
       //calculate tangent stiffness matrix
-      nlnstiff_poroelast(lm,mydisp,myvel,NULL,myfluidvel,myepreaf,matptr,matptr2,&elevec1,//NULL,
+      nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,matptr2,&elevec1,//NULL,
           //NULL,NULL,
           params);
     }
@@ -311,7 +303,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
         ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
       //calculate tangent stiffness matrix
-      nlnstiff_poroelast(lm,mydisp,myvel,NULL,myfluidvel,myepreaf,matptr,NULL,&elevec1,//NULL,
+      nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,matptr,NULL,&elevec1,//NULL,
           //NULL,NULL,
           params);
     }
@@ -383,24 +375,21 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     LINALG::Matrix<numdim_,numnod_> mydisp(true);
     ExtractValuesFromGlobalVector(discretization,0,lm, &mydisp, NULL,"displacement");
 
-
-    LINALG::Matrix<numdim_,numnod_> myvel(true);
-
-    LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
-    LINALG::Matrix<numnod_,1> myepreaf(true);
-
     // need current fluid state,
     // call the fluid discretization: fluid equates 2nd dofset
     // disassemble velocities and pressures
     if (discretization.HasState(1,"fluidvel"))
     {
       // extract local values of the global vectors
+      LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
+      LINALG::Matrix<numnod_,1> myepreaf(true);
       ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
+      LINALG::Matrix<numdim_,numnod_> myvel(true);
       ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, &myvel, NULL,"velocity");
 
       //calculate tangent stiffness matrix
-      nlnstiff_poroelast(lm,mydisp,myvel,NULL,myfluidvel,myepreaf,NULL,NULL,&elevec1,//NULL,
+      nlnstiff_poroelast(lm,mydisp,myvel,myfluidvel,myepreaf,NULL,NULL,&elevec1,//NULL,
           //NULL,NULL,
           params);
     }
@@ -414,20 +403,11 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     // nothing to do for ghost elements
     if (discretization.Comm().MyPID()==so3_ele::Owner())
     {
-      Teuchos::RCP<const Epetra_Vector> disp
-        = discretization.GetState(0,"displacement");
-      Teuchos::RCP<const Epetra_Vector> res
-        = discretization.GetState(0,"residual displacement");
-      if (disp==Teuchos::null || res==Teuchos::null)
-        dserror("Cannot get state vectors 'displacement'");
-
       // get the location vector only for the structure field
       std::vector<int> lm = la[0].lm_;
 
-      std::vector<double> mydisp((lm).size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      std::vector<double> myres((lm).size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      LINALG::Matrix<numdim_,numnod_> mydisp(true);
+      ExtractValuesFromGlobalVector(discretization,0,lm, &mydisp, NULL,"displacement");
 
       Teuchos::RCP<std::vector<char> > couplstressdata
         = params.get<Teuchos::RCP<std::vector<char> > >("couplstress", Teuchos::null);
@@ -446,35 +426,10 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
       // disassemble velocities and pressures
       if (discretization.HasState(1,"fluidvel"))
       {
-        //  dof per node of second dofset
-        const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
-
+        // extract local values of the global vectors
         LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
         LINALG::Matrix<numnod_,1> myepreaf(true);
-
-        // check if you can get the velocity state
-        Teuchos::RCP<const Epetra_Vector> velnp
-          = discretization.GetState(1,"fluidvel");
-
-        if (velnp==Teuchos::null)
-        {
-          dserror("Cannot get state vector 'fluidvel' ");
-        }
-        else
-        {
-          // extract local values of the global vectors
-          std::vector<double> mymatrix(la[1].lm_.size());
-          DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
-          for (int inode=0; inode<numnod_; ++inode) // number of nodes
-          {
-            for(int idim=0; idim<numdim_; ++idim) // number of dimensions
-            {
-              (myfluidvel)(idim,inode) = mymatrix[idim+(inode*numdofpernode_)];
-            } // end for(idim)
-
-            (myepreaf)(inode,0) = mymatrix[numdim_+(inode*numdofpernode_)];
-          }
-        }
+        ExtractValuesFromGlobalVector(discretization,1,la[1].lm_, &myfluidvel, &myepreaf,"fluidvel");
 
         couplstress_poroelast(mydisp,
                               myfluidvel,
@@ -515,7 +470,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     std::vector<int>&                  lm,           // location matrix
     LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
     LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
-    LINALG::Matrix<numnod_, 1>*               porosity_dof,          // current velocities
     LINALG::Matrix<numdim_, numnod_> & evelnp,       // current fluid velocities
     LINALG::Matrix<numnod_, 1> &       epreaf,       // current fluid pressure
     LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,  // element stiffness matrix
@@ -544,60 +498,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     }
   }
 
-  //******************* FAD ************************
-
-/*
-   // sacado data type replaces "double"
-   typedef Sacado::Fad::DFad<double> FAD;  // for first derivs
-   // sacado data type replaces "double" (for first+second derivs)
-   typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD;
-
-   std::vector<FAD> fad_disp(numdof_);
-   for (int i=0; i<numdof_; ++i)
-   {
-   fad_disp[i] = disp[i];
-   fad_disp[i].diff(i,numdof_);   // variables to differentiate for
-   }
-
-   LINALG::TMatrix<FAD,numdim_,numnod_>  fad_xrefe(false);
-   LINALG::TMatrix<FAD,numdim_,numnod_> fad_xcurr(false);
-
-   for (int i=0; i<numnod_; ++i)
-   {
-   const double* x = nodes[i]->X();
-
-   fad_xrefe(0,i) = x[0];
-   fad_xrefe(1,i) = x[1];
-   fad_xrefe(2,i) = x[2];
-
-   fad_xcurr(0,i) = fad_xrefe(0,i) + fad_disp[i*noddof_+0];
-   fad_xcurr(1,i) = fad_xrefe(1,i) + fad_disp[i*noddof_+1];
-   fad_xcurr(2,i) = fad_xrefe(2,i) + fad_disp[i*noddof_+2];
-   }
-
-   LINALG::TMatrix<FAD,numdof_,1> fad_nodaldisp(false);
-   LINALG::TMatrix<FAD,numnod_,1> fad_epreaf(false);
-   for(int i=0; i<numnod_ ; i++)
-   {
-   fad_epreaf(i) = epreaf(i);
-   // fad_epreaf(i).diff(numdof_+i,numdof_+numnod_);
-   }
-
-   for (int i=0; i<numdof_; ++i)
-   fad_nodaldisp(i,0) = fad_disp[i];
-*/
-  //******************** FAD ***********************
-
   //initialize element matrizes and vectors
-  LINALG::Matrix<numdof_,numdof_> estiff_stat(true);
-  LINALG::Matrix<numdof_,numdof_> erea_u(true);
   LINALG::Matrix<numdof_,numdof_> erea_v(true);
-  LINALG::Matrix<numdof_,numdof_> estiff_stress(true);
-  LINALG::Matrix<numdof_,1> erea_force(true);
-  LINALG::Matrix<numdof_,1> ecoupl_force_p(true);
-  LINALG::Matrix<numdof_,1> ecoupl_force_v(true);
-  LINALG::Matrix<numdof_,1> ecoupl_force_stress(true);
-  LINALG::Matrix<numstr_,1> fstress(true);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -609,16 +511,10 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
                         vel,
                         evelnp,
                         epreaf,
-                        porosity_dof,
-                        estiff_stat,
-                        erea_u,
+                        NULL,
                         erea_v,
-                        estiff_stress,
-                        erea_force,
-                        ecoupl_force_p,
-                        ecoupl_force_v,
-                        ecoupl_force_stress,
-                        fstress);
+                        stiffmatrix,
+                        force);
 
   // update stiffness matrix
   if (stiffmatrix != NULL)
@@ -637,43 +533,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
       //(this is not the best way to do it, but it only happens once during initialization)
       stiffmatrix->Update(1.0/dt,erea_v,1.0);
     }
-
-    /* additional "pressure gradient term" + "darcy-term"
-     -  detJ * w(gp) * p *( J * F^-T * d(grad(phi))/d(us) + dJ/d(us) * F^-T * grad(phi) + J * d(F^-T)/d(us) *grad(phi) ) * D(us)
-     + detJ * w(gp) * ( 2 * reacoeff * phi * d(phi)/d(us) * J * v^f ) * D(us)
-     */
-    stiffmatrix->Update(1.0,estiff_stat,1.0);
-
-    /* additional "reactive darcy-term"
-     detJ * w(gp) * (  dJ/d(us) * vs * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
-     */
-    stiffmatrix->Update(1.0,erea_u,1.0);
-
-    // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
-    // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
-    stiffmatrix->Update(1.0,estiff_stress,1.0);
   }
-
-  // update internal force vector
-  if (force != NULL )
-  {
-    // additional fluid stress- stiffness term RHS -(B^T .  C^-1  * J * p^f * detJ * w(gp))
-    // and Brinkman stress term (if neededf)
-    force->Update(1.0,ecoupl_force_stress,1.0);
-
-    //stationary pressure coupling part of RHS
-
-    // "pressure gradient terms": detJ * w(gp) * J *  F^-T * Grad(p) * phi
-    force->Update(1.0,ecoupl_force_p,1.0);
-
-    //stationary velocity coupling part of RHS
-    //additional "reactive darcy-term":  - detJ * w(gp) * reacoeff * J *  phi^2 *  v^f
-    force->Update(1.0,ecoupl_force_v,1.0);
-
-    //additional "reactive term" RHS  detJ * w(gp) * ( J * reacoeff * phi^2 * v_s)
-    force->Update(1.0,erea_force,1.0);
-
-  }  // if (force != NULL )
 
   return;
 }  // nlnstiff_poroelast()
@@ -691,80 +551,40 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
                                     const LINALG::Matrix<numdim_,numnod_> & evelnp,
                                     const LINALG::Matrix<numnod_,1> & epreaf,
                                     const LINALG::Matrix<numnod_, 1>*  porosity_dof,
-                                    LINALG::Matrix<numdof_,numdof_>& estiff_stat,
-                                    LINALG::Matrix<numdof_,numdof_>& erea_u,
                                     LINALG::Matrix<numdof_,numdof_>& erea_v,
-                                    LINALG::Matrix<numdof_,numdof_>& estiff_stress,
-                                    LINALG::Matrix<numdof_,1>&       erea_force,
-                                    LINALG::Matrix<numdof_,1>&       ecoupl_force_p,
-                                    LINALG::Matrix<numdof_,1>&       ecoupl_force_v,
-                                    LINALG::Matrix<numdof_,1>&       ecoupl_force_stress,
-                                    LINALG::Matrix<numstr_,1>&       fstress
+                                    LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,
+                                    LINALG::Matrix<numdof_,1>*              force
                                         )
 {
-  double reacoeff = fluidmat_->ComputeReactionCoeff();
 
   LINALG::Matrix<numdim_,numnod_> N_XYZ;
-  LINALG::Matrix<numderiv2_,numnod_> N_XYZ2;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
   LINALG::Matrix<numdim_,numdim_> defgrd(true);
   LINALG::Matrix<numnod_,1> shapefct;
   LINALG::Matrix<numdim_,numnod_> deriv ;
-  LINALG::Matrix<numderiv2_,numnod_> deriv2;
+
+  LINALG::Matrix<numstr_,1> fstress(true);
 
   for (int gp=0; gp<numgpt_; ++gp)
   {
-    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    //evaluate shape functions and derivatives at integration point
+    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    /* get the inverse of the Jacobian matrix which looks like:
-     **            [ X_,r  Y_,r  Z_,r ]^-1
-     **     J^-1 = [ X_,s  Y_,s  Z_,s ]
-     **            [ X_,t  Y_,t  Z_,t ]
-     */
-
-    // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
-    double detJ = detJ_[gp]; // (6.22)
-
-    if( ishigherorder_ )
-    {
-      // transposed jacobian "dX/ds"
-      LINALG::Matrix<numdim_,numdim_> xjm0;
-      xjm0.MultiplyNT(deriv,xrefe);
-
-      // get the second derivatives of standard element at current GP w.r.t. rst
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_[gp],deriv2);
-      // get the second derivatives of standard element at current GP w.r.t. XYZ
-      DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
-    }
-    else
-    {
-      deriv2.Clear();
-      N_XYZ2.Clear();
-    }
-
-    // get Jacobian matrix and determinant w.r.t. spatial configuration
-    //! transposed jacobian "dx/ds"
-    LINALG::Matrix<numdim_,numdim_> xjm;
-    //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<numdim_,numdim_> xji;
-    xjm.MultiplyNT(deriv,xcurr);
-    const double det = xji.Invert(xjm);
-
-    // determinant of deformationgradient: det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-    const double J = det/detJ;
+    //jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     //----------------------------------------------------
     // pressure at integration point
     double press = shapefct.Dot(epreaf);
 
-    // pressure gradient at integration point
-    LINALG::Matrix<numdim_,1> Gradp;
-    Gradp.Multiply(N_XYZ,epreaf);
+    // structure displacement and velocity at integration point
+    LINALG::Matrix<numdim_,1> velint(true);
+
+    for(int i=0; i<numnod_; i++)
+      for(int j=0; j<numdim_; j++)
+        velint(j) += nodalvel(j,i) * shapefct(i);
 
     // fluid velocity at integration point
     LINALG::Matrix<numdim_,1> fvelint;
@@ -774,63 +594,15 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     LINALG::Matrix<numdim_,numdim_>              fvelder;
     fvelder.MultiplyNT(evelnp,N_XYZ);
 
-    // structure displacement and velocity at integration point
-    LINALG::Matrix<numdim_,1> dispint(true);
-    LINALG::Matrix<numdim_,1> velint(true);
-
-    for(int i=0; i<numnod_; i++)
-      for(int j=0; j<numdim_; j++)
-      {
-        dispint(j) += nodaldisp(j,i) * shapefct(i);
-        velint(j) += nodalvel(j,i) * shapefct(i);
-      }
+    // pressure gradient at integration point
+    LINALG::Matrix<numdim_,1> Gradp;
+    Gradp.Multiply(N_XYZ,epreaf);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
-    /* non-linear B-operator (may so be called, meaning
-     ** of B-operator is not so sharp in the non-linear realm) *
-     ** B = F . Bl *
-     **
-     **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-     **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-     **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-     ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-     **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-     **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-     **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-     **      [                                                         ]
-     **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-     **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-     **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-     **      [                                                         ]
-     **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-     */
-    LINALG::Matrix<numstr_,numdof_> bop;
-    for (int i=0; i<numnod_; ++i)
-    {
-      bop(0,noddof_*i+0) = defgrd(0,0)*N_XYZ(0,i);
-      bop(0,noddof_*i+1) = defgrd(1,0)*N_XYZ(0,i);
-      bop(0,noddof_*i+2) = defgrd(2,0)*N_XYZ(0,i);
-      bop(1,noddof_*i+0) = defgrd(0,1)*N_XYZ(1,i);
-      bop(1,noddof_*i+1) = defgrd(1,1)*N_XYZ(1,i);
-      bop(1,noddof_*i+2) = defgrd(2,1)*N_XYZ(1,i);
-      bop(2,noddof_*i+0) = defgrd(0,2)*N_XYZ(2,i);
-      bop(2,noddof_*i+1) = defgrd(1,2)*N_XYZ(2,i);
-      bop(2,noddof_*i+2) = defgrd(2,2)*N_XYZ(2,i);
-      /* ~~~ */
-      bop(3,noddof_*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
-      bop(3,noddof_*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
-      bop(3,noddof_*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
-      bop(4,noddof_*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
-      bop(4,noddof_*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
-      bop(4,noddof_*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
-      bop(5,noddof_*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
-      bop(5,noddof_*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
-      bop(5,noddof_*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
-    }
+    // non-linear B-operator
+    LINALG::Matrix<numstr_,numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<numdim_,numdim_> cauchygreen;
@@ -840,153 +612,24 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     LINALG::Matrix<numdim_,numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
 
-    //inverse Right Cauchy-Green tensor as vector
-    LINALG::Matrix<numstr_,1> C_inv_vec;
-    for(int i =0, k=0;i<numdim_; i++)
-      for(int j =0;j<numdim_-i; j++,k++)
-        C_inv_vec(k)=C_inv(i+j,j);
-
     // inverse deformation gradient F^-1
     LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
-    //------------------------------------ build F^-1 as vector 9x1
-    LINALG::Matrix<numdim_*numdim_,1> defgrd_inv_vec;
-    defgrd_inv_vec(0)=defgrd_inv(0,0);
-    defgrd_inv_vec(1)=defgrd_inv(0,1);
-    defgrd_inv_vec(2)=defgrd_inv(0,2);
-    defgrd_inv_vec(3)=defgrd_inv(1,0);
-    defgrd_inv_vec(4)=defgrd_inv(1,1);
-    defgrd_inv_vec(5)=defgrd_inv(1,2);
-    defgrd_inv_vec(6)=defgrd_inv(2,0);
-    defgrd_inv_vec(7)=defgrd_inv(2,1);
-    defgrd_inv_vec(8)=defgrd_inv(2,2);
-
-    //------------------------------------ build F^-T as vector 9x1
-    LINALG::Matrix<9,1> defgrd_IT_vec;
-    defgrd_IT_vec(0)=defgrd_inv(0,0);
-    defgrd_IT_vec(1)=defgrd_inv(1,0);
-    defgrd_IT_vec(2)=defgrd_inv(2,0);
-    defgrd_IT_vec(3)=defgrd_inv(0,1);
-    defgrd_IT_vec(4)=defgrd_inv(1,1);
-    defgrd_IT_vec(5)=defgrd_inv(2,1);
-    defgrd_IT_vec(6)=defgrd_inv(0,2);
-    defgrd_IT_vec(7)=defgrd_inv(1,2);
-    defgrd_IT_vec(8)=defgrd_inv(2,2);
-
-    //--------------------------- build N_X operator (wrt material config)
-    LINALG::Matrix<9,numdof_> N_X(true); // set to zero
-    for (int i=0; i<numnod_; ++i)
-    {
-      N_X(0,3*i+0) = N_XYZ(0,i);
-      N_X(1,3*i+1) = N_XYZ(0,i);
-      N_X(2,3*i+2) = N_XYZ(0,i);
-
-      N_X(3,3*i+0) = N_XYZ(1,i);
-      N_X(4,3*i+1) = N_XYZ(1,i);
-      N_X(5,3*i+2) = N_XYZ(1,i);
-
-      N_X(6,3*i+0) = N_XYZ(2,i);
-      N_X(7,3*i+1) = N_XYZ(2,i);
-      N_X(8,3*i+2) = N_XYZ(2,i);
-    }
-
-    LINALG::Matrix<numdim_*numdim_,numdim_> F_X(true);
-    for(int i=0; i<numdim_; i++)
-    {
-      for(int n=0; n<numnod_; n++)
-      {
-        // second derivatives w.r.t. XYZ are orderd as followed: deriv2(N,XX ; N,YY ; N,ZZ ; N,XY ; N,XZ ; N,YZ)
-        F_X(i*numdim_+0, 0) += N_XYZ2(0,n)*nodaldisp(i,n);
-        F_X(i*numdim_+1, 0) += N_XYZ2(3,n)*nodaldisp(i,n);
-        F_X(i*numdim_+2, 0) += N_XYZ2(4,n)*nodaldisp(i,n);
-
-        F_X(i*numdim_+0, 1) += N_XYZ2(3,n)*nodaldisp(i,n);
-        F_X(i*numdim_+1, 1) += N_XYZ2(1,n)*nodaldisp(i,n);
-        F_X(i*numdim_+2, 1) += N_XYZ2(5,n)*nodaldisp(i,n);
-
-        F_X(i*numdim_+0, 2) += N_XYZ2(4,n)*nodaldisp(i,n);
-        F_X(i*numdim_+1, 2) += N_XYZ2(5,n)*nodaldisp(i,n);
-        F_X(i*numdim_+2, 2) += N_XYZ2(2,n)*nodaldisp(i,n);
-
-      }
-    }
-
-    //--------------------------- compute dJ/dX = dJ/dF : dF/dX = JF^-T : dF/dX at gausspoint
-    //--------------material gradient of jacobi determinant J: GradJ = dJ/dX= dJ/dF : dF/dX = J * F^-T : dF/dX
-    LINALG::Matrix<1,numdim_> GradJ;
-    GradJ.MultiplyTN(J, defgrd_IT_vec, F_X);
-
-    //--------------spatial gradient of jacobi determinant J:gradJ = F^-T*GradJ
-    LINALG::Matrix<1,numdim_> gradJ;
-    gradJ.Multiply(GradJ,defgrd_inv);
-
     //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-    LINALG::Matrix<1,numdof_> dJ_dus;
-    dJ_dus.MultiplyTN(J,defgrd_inv_vec,N_X);
+    LINALG::Matrix<1,numdof_> dJ_dus = ComputeLinearizationOfJacobian(J,N_XYZ,defgrd_inv);
 
-    //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture displacement d(GradJ)/d(us)
-    //---------------------d(GradJ)/dus =  dJ/dus * F^-T . : dF/dX + J * dF^-T/dus : dF/dX + J * F^-T : N_X_X
-
+    // compute some auxiliary matrixes for computation of linearization
     //dF^-T/dus
     LINALG::Matrix<numdim_*numdim_,numdof_> dFinvTdus(true);
-    for (int i=0; i<numdim_; i++)
-      for (int n =0; n<numnod_; n++)
-        for(int j=0; j<numdim_; j++)
-        {
-          const int gid = numdim_ * n +j;
-          for (int k=0; k<numdim_; k++)
-            for(int l=0; l<numdim_; l++)
-              dFinvTdus(i*numdim_+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
-        }
+    //F^-T * Grad p
+    LINALG::Matrix<numdim_,1> Finvgradp;
+    //dF^-T/dus * Grad p
+    LINALG::Matrix<numdim_,numdof_> dFinvdus_gradp(true);
+    //dC^-1/dus * Grad p
+    LINALG::Matrix<numstr_,numdof_> dCinv_dus (true);
 
-    //dF^-T/dus : dF/dX = - (F^-1 . dN/dX . u_s . F^-1)^T : dF/dX
-    LINALG::Matrix<numdim_,numdof_> dFinvdus_dFdX(true);
-    for (int i=0; i<numdim_; i++)
-      for (int n =0; n<numnod_; n++)
-        for(int j=0; j<numdim_; j++)
-        {
-          const int gid = numdim_ * n +j;
-          for(int l=0; l<numdim_; l++)
-            for(int p=0; p<numdim_; p++)
-            {
-              dFinvdus_dFdX(p, gid) += dFinvTdus(i*numdim_+l, gid) * F_X(i*numdim_+l,p);
-            }
-        }
-
-    //F^-T : N_X_X
-    LINALG::Matrix<numdim_,numdof_> Finv_N_XYZ2(true);
-
-    for (int n =0; n<numnod_; n++)
-    {
-      //! second derivatives  are ordered as followed: (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-      int n_dim = n*numdim_;
-      Finv_N_XYZ2(0, n_dim + 0) += defgrd_inv(0,0) * N_XYZ2(0,n) + defgrd_inv(1,0) * N_XYZ2(3,n)+ defgrd_inv(2,0) * N_XYZ2(4,n);
-      Finv_N_XYZ2(0, n_dim + 1) += defgrd_inv(0,1) * N_XYZ2(0,n) + defgrd_inv(1,1) * N_XYZ2(3,n)+ defgrd_inv(2,1) * N_XYZ2(4,n);
-      Finv_N_XYZ2(0, n_dim + 2) += defgrd_inv(0,2) * N_XYZ2(0,n) + defgrd_inv(1,2) * N_XYZ2(3,n)+ defgrd_inv(2,2) * N_XYZ2(4,n);
-
-      Finv_N_XYZ2(1, n_dim + 0) += defgrd_inv(0,0) * N_XYZ2(3,n) + defgrd_inv(1,0) * N_XYZ2(1,n)+ defgrd_inv(2,0) * N_XYZ2(5,n);
-      Finv_N_XYZ2(1, n_dim + 1) += defgrd_inv(0,1) * N_XYZ2(3,n) + defgrd_inv(1,1) * N_XYZ2(1,n)+ defgrd_inv(2,1) * N_XYZ2(5,n);
-      Finv_N_XYZ2(1, n_dim + 2) += defgrd_inv(0,2) * N_XYZ2(3,n) + defgrd_inv(1,2) * N_XYZ2(1,n)+ defgrd_inv(2,2) * N_XYZ2(5,n);
-
-      Finv_N_XYZ2(2, n_dim + 0) += defgrd_inv(0,0) * N_XYZ2(4,n) + defgrd_inv(1,0) * N_XYZ2(5,n)+ defgrd_inv(2,0) * N_XYZ2(2,n);
-      Finv_N_XYZ2(2, n_dim + 1) += defgrd_inv(0,1) * N_XYZ2(4,n) + defgrd_inv(1,1) * N_XYZ2(5,n)+ defgrd_inv(2,1) * N_XYZ2(2,n);
-      Finv_N_XYZ2(2, n_dim + 2) += defgrd_inv(0,2) * N_XYZ2(4,n) + defgrd_inv(1,2) * N_XYZ2(5,n)+ defgrd_inv(2,2) * N_XYZ2(2,n);
-    }
-
-    LINALG::Matrix<1,numdim_> temp2;
-    temp2.MultiplyTN( defgrd_IT_vec, F_X);
-
-    //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture displacement d(GradJ)/d(us)
-    //---------------------d(GradJ)/dus =  dJ/dus * F^-T . : dF/dX + J * dF^-T/dus : dF/dX + J * F^-T : N_X_X
-    LINALG::Matrix<numdim_,numdof_> dgradJ_dus(true);
-    dgradJ_dus.MultiplyTN(temp2,dJ_dus);
-
-    dgradJ_dus.Update(J,dFinvdus_dFdX,1.0);
-
-    dgradJ_dus.Update(J,Finv_N_XYZ2,1.0);
-
-    //--------------------------------------------------------------------
+    ComputeAuxiliaryValues(N_XYZ,defgrd_inv,C_inv,Gradp,dFinvTdus,Finvgradp,dFinvdus_gradp,dCinv_dus);
 
     //linearization of porosity w.r.t structure displacement d\phi/d(us) = d\phi/dJ*dJ/d(us)
     LINALG::Matrix<1,numdof_> dphi_dus;
@@ -994,517 +637,48 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
 
     ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
 
-    /*
-    //material porosity gradient Grad(phi) = dphi/dp * Grad(p) + dphi/dJ * Grad(J)
-    LINALG::Matrix<numdim_,1> grad_porosity;
-    for (int idim=0; idim<numdim_; ++idim)
-      grad_porosity(idim)=dphi_dp*Gradp(idim)+dphi_dJ*GradJ(idim);
-
-    //linearization of material porosity gradient w.r.t structure displacement
-    // d ( Grad(\phi) ) / du_s = d\phi / (dJ du_s) * dJ /dX+ d\phi / dJ * dJ / (dX*du_s) + d\phi / (dp*du_s) * dp /dX
-    LINALG::Matrix<numdim_,numdof_> dgradphi_dus;
-    dgradphi_dus.MultiplyTN(dphi_dJJ, GradJ ,dJ_dus);
-    dgradphi_dus.Update(dphi_dJ, dgradJ_dus, 1.0);
-    dgradphi_dus.Multiply(dphi_dJdp, Gradp, dJ_dus, 1.0);
-    */
-
-    //F^-T * Grad\phi
-    //LINALG::Matrix<numdim_,1> Finvgradphi;
-    //Finvgradphi.MultiplyTN(defgrd_inv, grad_porosity);
-
-    //F^-T * Grad p
-    LINALG::Matrix<numdim_,1> Finvgradp;
-    Finvgradp.MultiplyTN(defgrd_inv, Gradp);
-
-    //F^-T * d(Grad\phi)/d(u_s)
-    //LINALG::Matrix<numdim_,numdof_> Finvdgradphidus;
-    //Finvdgradphidus.MultiplyTN(defgrd_inv, dgradphi_dus);
-
-    //dF^-T/du_s * Grad(\phi) = - (F^-1 . dN/dX . u_s . F^-1)^T * Grad(\phi)
-    /*
-    LINALG::Matrix<numdim_,numdof_> dFinvdus_gradphi(true);
-    for (int i=0; i<numdim_; i++)
-      for (int n =0; n<numnod_; n++)
-        for(int j=0; j<numdim_; j++)
-        {
-          const int gid = numdim_ * n +j;
-          for(int l=0; l<numdim_; l++)
-            dFinvdus_gradphi(i, gid) += dFinvTdus(i*numdim_+l, gid)  * grad_porosity(l);
-        }
-    */
-
-    LINALG::Matrix<numdim_,numdof_> dFinvdus_gradp(true);
-    for (int i=0; i<numdim_; i++)
-      for (int n =0; n<numnod_; n++)
-        for(int j=0; j<numdim_; j++)
-        {
-          const int gid = numdim_ * n +j;
-          for(int l=0; l<numdim_; l++)
-            dFinvdus_gradp(i, gid) += dFinvTdus(i*numdim_+l, gid)  * Gradp(l);
-        }
-
-    LINALG::Matrix<numstr_,numdof_> dCinv_dus (true);
-    for (int n=0; n<numnod_; ++n)
-      for (int k=0; k<numdim_; ++k)
-      {
-        const int gid = n*numdim_+k;
-        for (int i=0; i<numdim_; ++i)
-        {
-          dCinv_dus(0,gid) += -2*C_inv(0,i)*N_XYZ(i,n)*defgrd_inv(0,k);
-          dCinv_dus(1,gid) += -2*C_inv(1,i)*N_XYZ(i,n)*defgrd_inv(1,k);
-          dCinv_dus(2,gid) += -2*C_inv(2,i)*N_XYZ(i,n)*defgrd_inv(2,k);
-          /* ~~~ */
-          dCinv_dus(3,gid) += -C_inv(0,i)*N_XYZ(i,n)*defgrd_inv(1,k)-defgrd_inv(0,k)*N_XYZ(i,n)*C_inv(1,i);
-          dCinv_dus(4,gid) += -C_inv(1,i)*N_XYZ(i,n)*defgrd_inv(2,k)-defgrd_inv(1,k)*N_XYZ(i,n)*C_inv(2,i);
-          dCinv_dus(5,gid) += -C_inv(2,i)*N_XYZ(i,n)*defgrd_inv(0,k)-defgrd_inv(2,k)*N_XYZ(i,n)*C_inv(0,i);
-        }
-      }
-
-    //******************* FAD ************************
-
-    /*
-     LINALG::TMatrix<FAD,numnod_,1>  fad_shapefct;
-     LINALG::TMatrix<FAD,numdim_,numnod_> fad_N_XYZ;
-     LINALG::TMatrix<FAD,6,numnod_> fad_N_XYZ2;
-     for (int j=0; j<numnod_; ++j)
-     {
-     fad_shapefct(j)=shapefct(j);
-     for (int i=0; i<numdim_; ++i)
-     fad_N_XYZ(i,j) = N_XYZ(i,j);
-     for (int i=0; i<6 ; i++)
-     fad_N_XYZ2(i,j) = N_XYZ2(i,j);
-     }
-
-     FAD fad_press = fad_shapefct.Dot(fad_epreaf);
-     LINALG::TMatrix<FAD,numdim_,1> fad_Gradp;
-     fad_Gradp.Multiply(fad_N_XYZ,fad_epreaf);
-
-     LINALG::TMatrix<FAD,numdim_,numdim_>  fad_fvelder;
-     for (int i=0; i<numdim_; ++i)
-       for (int j=0; j<numdim_; ++j)
-         fad_fvelder(i,j) = fvelder(i,j);
-
-     // compute F
-     LINALG::TMatrix<FAD,numdim_,numdim_> fad_defgrd;
-     fad_defgrd.MultiplyNT(fad_xcurr,fad_N_XYZ);
-     FAD fad_J = Determinant3x3(fad_defgrd);
-
-     LINALG::TMatrix<FAD,numdim_,numdim_>    fad_defgrd_inv;
-     fad_defgrd_inv = fad_defgrd;
-     Inverse3x3(fad_defgrd_inv);
-
-     LINALG::TMatrix<FAD,numdim_,numdim_>    fad_defgrd_inv2;
-     for (int i=0; i<numdim_; ++i)
-       for (int j=0; j<numdim_; ++j)
-         fad_defgrd_inv2(i,j) = defgrd_inv(i,j);
-
-     LINALG::TMatrix<FAD,numdim_,numdim_> fad_cauchygreen;
-     fad_cauchygreen.MultiplyTN(fad_defgrd,fad_defgrd);
-
-     LINALG::TMatrix<FAD,numdim_,numdim_>    fad_C_inv;
-     fad_C_inv = fad_cauchygreen;
-     Inverse3x3(fad_C_inv);
-
-     LINALG::TMatrix<FAD,6,1> fad_C_inv_vec(false);
-     fad_C_inv_vec(0) = fad_C_inv(0,0);
-     fad_C_inv_vec(1) = fad_C_inv(1,1);
-     fad_C_inv_vec(2) = fad_C_inv(2,2);
-     fad_C_inv_vec(3) = fad_C_inv(0,1);
-     fad_C_inv_vec(4) = fad_C_inv(1,2);
-     fad_C_inv_vec(5) = fad_C_inv(2,0);
-
-     LINALG::TMatrix<FAD,numdim_,numdim_>    fad_C_inv2;
-     for (int i=0; i<numdim_; ++i)
-       for (int j=0; j<numdim_; ++j)
-         fad_C_inv2(i,j) = C_inv(i,j);
-
-
-     LINALG::TMatrix<FAD,9,1> fad_defgrd_IT_vec;
-     fad_defgrd_IT_vec(0)=fad_defgrd_inv(0,0);
-     fad_defgrd_IT_vec(1)=fad_defgrd_inv(1,0);
-     fad_defgrd_IT_vec(2)=fad_defgrd_inv(2,0);
-     fad_defgrd_IT_vec(3)=fad_defgrd_inv(0,1);
-     fad_defgrd_IT_vec(4)=fad_defgrd_inv(1,1);
-     fad_defgrd_IT_vec(5)=fad_defgrd_inv(2,1);
-     fad_defgrd_IT_vec(6)=fad_defgrd_inv(0,2);
-     fad_defgrd_IT_vec(7)=fad_defgrd_inv(1,2);
-     fad_defgrd_IT_vec(8)=fad_defgrd_inv(2,2);
-
-     LINALG::TMatrix<FAD,numdim_*numdim_,numdim_> fad_F_X(true);
-     for(int i=0; i<numdim_; i++)
-     {
-     for(int n=0; n<numnod_; n++)
-     {
-     fad_F_X(i*numdim_+0, 0) +=   fad_N_XYZ2(0,n)*fad_nodaldisp(n*numdim_+i);
-     fad_F_X(i*numdim_+1, 0) +=   fad_N_XYZ2(3,n)*fad_nodaldisp(n*numdim_+i);
-     fad_F_X(i*numdim_+2, 0) +=   fad_N_XYZ2(4,n)*fad_nodaldisp(n*numdim_+i);
-
-     fad_F_X(i*numdim_+0, 1) +=   fad_N_XYZ2(3,n)*fad_nodaldisp(n*numdim_+i) ;
-     fad_F_X(i*numdim_+1, 1) +=   fad_N_XYZ2(1,n)*fad_nodaldisp(n*numdim_+i) ;
-     fad_F_X(i*numdim_+2, 1) +=   fad_N_XYZ2(5,n)*fad_nodaldisp(n*numdim_+i) ;
-
-     fad_F_X(i*numdim_+0, 2) +=   fad_N_XYZ2(4,n)*fad_nodaldisp(n*numdim_+i) ;
-     fad_F_X(i*numdim_+1, 2) +=   fad_N_XYZ2(5,n)*fad_nodaldisp(n*numdim_+i) ;
-     fad_F_X(i*numdim_+2, 2) +=   fad_N_XYZ2(2,n)*fad_nodaldisp(n*numdim_+i) ;
-     }
-     }
-
-     LINALG::TMatrix<FAD,1,numdim_> fad_GradJ;
-     fad_GradJ.MultiplyTN(fad_J, fad_defgrd_IT_vec, fad_F_X);
-
-     double initporosity  = structmat->Initporosity();
-     double bulkmodulus = structmat->Bulkmodulus();
-     double penalty = structmat->Penaltyparameter();
-
-     FAD fad_a     = ( bulkmodulus/(1-initporosity) + fad_press - penalty/initporosity ) * fad_J;
-     FAD fad_b     = -fad_a + bulkmodulus + penalty;
-     FAD fad_c   = (fad_b/fad_a) * (fad_b/fad_a) + 4*penalty/fad_a;
-     FAD fad_d     = sqrt(fad_c)*fad_a;
-
-     FAD fad_sign = 1.0;
-
-     FAD fad_test = 1 / (2 * fad_a) * (-fad_b + fad_d);
-     if (fad_test >= 1.0 or fad_test < 0.0)
-     {
-       fad_sign = -1.0;
-       fad_d = fad_sign * fad_d;
-     }
-
-     FAD fad_porosity = 1/(2*fad_a)*(-fad_b+fad_d);
-
-     FAD fad_d_p   =  fad_J * (-fad_b+2*penalty)/fad_d;
-     FAD fad_d_J   =  fad_a/fad_J * ( -fad_b + 2*penalty ) / fad_d;
-
-     FAD fad_dphi_dp=  - fad_J * fad_porosity/fad_a + (fad_J+fad_d_p)/(2*fad_a);
-     FAD fad_dphi_dJ=  -fad_porosity/fad_J+ 1/(2*fad_J) + fad_d_J / (2*fad_a);
-
-     LINALG::TMatrix<FAD,1,numdim_>             fad_grad_porosity;
-     //      fad_grad_porosity.Update(fad_dphi_dp,fad_Gradp,fad_dphi_dJ,fad_GradJ);
-     for (int idim=0; idim<numdim_; ++idim)
-     {
-     fad_grad_porosity(idim)=fad_dphi_dp*fad_Gradp(idim)+fad_dphi_dJ*fad_GradJ(idim);
-     }
-
-     //double visc = fluidmat->Viscosity();
-     LINALG::TMatrix<FAD,numdim_,numdim_> fad_CinvFvel;
-     LINALG::TMatrix<FAD,numdim_,numdim_> fad_tmp;
-     LINALG::TMatrix<FAD,numstr_,1> fad_fstress;
-     fad_CinvFvel.Multiply(fad_C_inv,fad_fvelder);
-     fad_tmp.MultiplyNT(fad_CinvFvel,fad_defgrd_inv);
-     LINALG::TMatrix<FAD,numdim_,numdim_> fad_tmp2(fad_tmp);
-     fad_tmp.UpdateT(1.0,fad_tmp2,1.0);
-
-     fad_fstress(0) = fad_tmp(0,0);
-     fad_fstress(1) = fad_tmp(1,1);
-     fad_fstress(2) = fad_tmp(2,2);
-     fad_fstress(3) = fad_tmp(0,1);
-     fad_fstress(4) = fad_tmp(1,2);
-     fad_fstress(5) = fad_tmp(2,0);
-
-     for (int i=0; i<numdof_; i++)
-     {
-     if( abs(dJ_dus(i)-fad_J.dx(i)) > 1e-15)
-     {
-     cout<<"dJdus("<<i<<"): "<<dJ_dus(i)<<endl;
-     cout<<"fad_J.dx("<<i<<"): "<<fad_J.dx(i)<<endl;
-     cout<<"error: "<<abs(dJ_dus(i)-fad_J.dx(i))<<endl;
-     dserror("check dJdus failed!");
-     }
-     }
-     cout<<"dJdus check done and ok"<<endl;
-
-     for (int i=0; i<numdof_; i++)
-     for (int j=0; j<numdim_*numdim_; j++)
-     {
-     if( abs(dFinvTdus(j,i)-fad_defgrd_IT_vec(j).dx(i)) > 1e-15)
-     {
-     cout<<"dFinvTdus("<<i<<"): "<<dFinvTdus(j,i)<<endl;
-     cout<<"fad_defgrd_IT_vec.dx("<<i<<"): "<<fad_defgrd_IT_vec(j).dx(i)<<endl;
-     cout<<"error: "<<abs(dFinvTdus(j,i)-fad_defgrd_IT_vec(j).dx(i))<<endl;
-     dserror("check dFinvTdus failed!, ");
-     }
-     }
-     cout<<"dFinvdus check done and ok"<<endl;
-
-     for (int i=0; i<numdof_; i++)
-     for (int j=0; j<numdim_; j++)
-     {
-     if( abs(dgradJ_dus(j,i)-fad_GradJ(j).dx(i)) > 1e-15)
-     {
-     cout<<"dgradJ_dus("<<i<<"): "<<dgradJ_dus(j,i)<<endl;
-     cout<<"fad_GradJ.dx("<<i<<"): "<<fad_GradJ(j).dx(i)<<endl;
-     cout<<"GradJ:"<<endl<<GradJ<<endl;
-     cout<<"fad_GradJ:"<<endl<<fad_GradJ<<endl;
-     cout<<"error: "<<abs(dgradJ_dus(j,i)-fad_GradJ(j).dx(i))<<endl;
-     dserror("check dgradJ_dus failed!");
-     }
-     }
-     cout<<"dgradJ_dus check done and ok"<<endl;
-
-     for (int i=0; i<numdof_; i++)
-     if( abs(dphi_dus(i)-fad_porosity.dx(i)) > 1e-15)
-     {
-     cout<<"dphi_dus("<<i<<"): "<<dphi_dus(i)<<endl;
-     cout<<"fad_porosity.dx("<<i<<"): "<<fad_porosity.dx(i)<<endl;
-     cout<<"dphi_dus:"<<endl<<dphi_dus<<endl;
-     cout<<"fad_porosity:"<<endl<<fad_porosity<<endl;
-     cout<<"error: "<<abs(dphi_dus(i)-fad_porosity.dx(i))<<endl;
-     dserror("check dphi_dus failed!");
-     }
-     cout<<"dphi_dus check done and ok"<<endl;
-
-     for (int i=0; i<numdof_; i++)
-     for (int j=0; j<numdim_; j++)
-     {
-     if( abs(dgradphi_dus(j,i)-fad_grad_porosity(j).dx(i)) > 1e-15)
-     {
-     cout<<"dgradphi_dus("<<i<<"): "<<dgradphi_dus(j,i)<<endl;
-     cout<<"fad_grad_porosity.dx("<<i<<"): "<<fad_grad_porosity(j).dx(i)<<endl;
-     cout<<"dgradphi_dus:"<<endl<<dgradphi_dus<<endl;
-     cout<<"fad_grad_porosity:"<<endl<<fad_grad_porosity<<endl;
-     cout<<"error: "<<abs(dgradphi_dus(j,i)-fad_grad_porosity(j).dx(i))<<endl;
-     dserror("check dgradphi_dus failed!");
-     }
-     }
-     cout<<"dgradphi_dus check done and ok"<<endl;
-
-     for (int i=0; i<numdof_; i++)
-     for (int j=0; j<6; j++)
-     {
-     if( abs(dCinv_dus(j,i)-fad_C_inv_vec(j).dx(i)) > 1e-15)
-     {
-     cout<<"dCinv_dus("<<i<<"): "<<dCinv_dus(j,i)<<endl;
-     cout<<"fad_C_inv.dx("<<i<<"): "<<fad_C_inv_vec(j).dx(i)<<endl;
-     cout<<"dCinv_dus:"<<endl<<dCinv_dus<<endl;
-     cout<<"fad_C_inv:"<<endl<<fad_C_inv_vec<<endl;
-     cout<<"error: "<<abs(dCinv_dus(j,i)-fad_C_inv_vec(j).dx(i))<<endl;
-     dserror("check dCinv_dus failed!");
-     }
-     }
-     cout<<"dCinv_dus check done and ok"<<endl;
-     */
-
-    //******************* FAD ************************
-
-    //B^T . C^-1
-    LINALG::Matrix<numdof_,1> cinvb(true);
-    cinvb.MultiplyTN(bop,C_inv_vec);
-
-    //--------------------------------------------------------
-
-    // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    double detJ_w = detJ*intpoints_.Weight(gp);//gpweights[gp];
-
-    //if (force != NULL or stiffmatrix != NULL or reamatrix != NULL )
+    // **********************fill stiffness matrix and force vector+++++++++++++++++++++++++
+    if(fluidmat_->Type() == "Darcy-Brinkman")
     {
-      for (int k=0; k<numnod_; k++)
-      {
-        const int fk = numdim_*k;
-        const double fac = detJ_w* shapefct(k);
-        const double v = fac * reacoeff * porosity * porosity* J;
-
-        for(int j=0; j<numdim_; j++)
-        {
-
-          /*-------structure- fluid velocity coupling:  RHS
-           "dracy-terms"
-           - reacoeff * J *  phi^2 *  v^f
-           */
-          ecoupl_force_v(fk+j) += -v * fvelint(j);
-
-          /* "reactive dracy-terms"
-           reacoeff * J *  phi^2 *  v^s
-           */
-          erea_force(fk+j) += v * velint(j);
-
-          /*-------structure- fluid pressure coupling: RHS
-           *                        "pressure gradient terms"
-           - J *  F^-T * Grad(p) * phi
-           */
-          ecoupl_force_p(fk+j) += fac * J * Finvgradp(j) * ( - porosity);
-
-          for(int i=0; i<numnod_; i++)
-          {
-            const int fi = numdim_*i;
-
-            /* additional "reactive darcy-term"
-             detJ * w(gp) * ( J * reacoeff * phi^2  ) * D(v_s)
-             */
-            erea_v(fk+j,fi+j) += v * shapefct(i);
-
-            for (int l=0; l<numdim_; l++)
-            {
-              /* additional "pressure gradient term" + "darcy-term"
-               -  detJ * w(gp) * phi *  ( dJ/d(us) * F^-T * Grad(p) - J * d(F^-T)/d(us) *Grad(p) ) * D(us)
-               - detJ * w(gp) * d(phi)/d(us) * J * F^-T * Grad(p) * D(us)
-               - detJ * w(gp) * (  dJ/d(us) * v^f * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
-               */
-              estiff_stat(fk+j,fi+l) += fac * (
-                                                - porosity * dJ_dus(fi+l) * Finvgradp(j)
-                                                - porosity * J * dFinvdus_gradp(j, fi+l)
-                                                - dphi_dus(fi+l) * J * Finvgradp(j)
-                                                - reacoeff * porosity * ( porosity * dJ_dus(fi+l) + 2 * J * dphi_dus(fi+l) ) * fvelint(j)
-                                              )
-              ;
-
-
-              /* additional "reactive darcy-term"
-               detJ * w(gp) * (  dJ/d(us) * vs * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
-               */
-              erea_u(fk+j,fi+l) += fac * reacoeff * porosity * velint(j) * ( porosity * dJ_dus(fi+l) + 2 * J * dphi_dus(fi+l) );
-            }
-          }
-        }
-      }
-
-      const double fac1 = -detJ_w * press;
-      const double fac2= fac1 * J;
-
-      ecoupl_force_stress.Update(fac2,cinvb,1.0);
-
-      LINALG::Matrix<numdof_,numdof_> tmp1;
-      LINALG::Matrix<numdof_,numdof_> tmp2;
-
-      tmp1.Multiply(fac1,cinvb,dJ_dus);
-      tmp2.MultiplyTN(fac2,bop,dCinv_dus);
-
-      // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
-      estiff_stress.Update(1.0,tmp1,1.0);
-
-      // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
-      estiff_stress.Update(1.0,tmp2,1.0);
-
-      // integrate `geometric' stiffness matrix and add to keu *****************
-      LINALG::Matrix<numstr_,1> sfac(C_inv_vec); // auxiliary integrated stress
-
-      //scale and add viscous stress
-      sfac.Update(detJ_w,fstress,fac2); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-
-      std::vector<double> SmB_L(3); // intermediate Sm.B_L
-      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-      for (int inod=0; inod<numnod_; ++inod)
-      {
-        SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
-        + sfac(5) * N_XYZ(2, inod);
-        SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
-        + sfac(4) * N_XYZ(2, inod);
-        SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
-        + sfac(2) * N_XYZ(2, inod);
-        for (int jnod=0; jnod<numnod_; ++jnod)
-        {
-          double bopstrbop = 0.0; // intermediate value
-          for (int idim=0; idim<numdim_; ++idim)
-            bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
-          (estiff_stress)(numdim_*inod+0,numdim_*jnod+0) += bopstrbop;
-          (estiff_stress)(numdim_*inod+1,numdim_*jnod+1) += bopstrbop;
-          (estiff_stress)(numdim_*inod+2,numdim_*jnod+2) += bopstrbop;
-        }
-      } // end of integrate `geometric' stiffness******************************
-
-      if(fluidmat_->Type() == "Darcy-Brinkman")
-      {
-        double visc = fluidmat_->Viscosity();
-        LINALG::Matrix<numdim_,numdim_> CinvFvel;
-        LINALG::Matrix<numdim_,numdim_> visctress1;
-        CinvFvel.Multiply(C_inv,fvelder);
-        visctress1.MultiplyNT(CinvFvel,defgrd_inv);
-        LINALG::Matrix<numdim_,numdim_> visctress2(visctress1);
-        visctress1.UpdateT(1.0,visctress2,1.0);
-
-        fstress(0) = visctress1(0,0);
-        fstress(1) = visctress1(1,1);
-        fstress(2) = visctress1(2,2);
-        fstress(3) = visctress1(0,1);
-        fstress(4) = visctress1(1,2);
-        fstress(5) = visctress1(2,0);
-
-        fstress.Scale(detJ_w * visc * J * porosity);
-
-        //B^T . C^-1
-        LINALG::Matrix<numdof_,1> fstressb(true);
-        fstressb.MultiplyTN(bop,fstress);
-
-        //if (force != NULL )
-          ecoupl_force_stress.Update(1.0,fstressb,1.0);
-
-        //evaluate viscous terms (for darcy-brinkman flow only)
-        //if (stiffmatrix != NULL)
-        {
-          LINALG::Matrix<numdim_,numdim_> tmp4;
-          tmp4.MultiplyNT(fvelder,defgrd_inv);
-
-          double fac = detJ_w * visc;
-
-          LINALG::Matrix<numstr_,numdof_> fstress_dus (true);
-          for (int n=0; n<numnod_; ++n)
-            for (int k=0; k<numdim_; ++k)
-            {
-              const int gid = n*numdim_+k;
-
-              fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp4(0,0) + dCinv_dus(3,gid)*tmp4(1,0) + dCinv_dus(5,gid)*tmp4(2,0) );
-              fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp4(0,1) + dCinv_dus(1,gid)*tmp4(1,1) + dCinv_dus(4,gid)*tmp4(2,1) );
-              fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp4(0,2) + dCinv_dus(4,gid)*tmp4(1,2) + dCinv_dus(2,gid)*tmp4(2,2) );
-              /* ~~~ */
-              fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp4(0,1) + dCinv_dus(3,gid)*tmp4(1,1) + dCinv_dus(5,gid)*tmp4(2,1)
-                                    + dCinv_dus(3,gid)*tmp4(0,0) + dCinv_dus(1,gid)*tmp4(1,0) + dCinv_dus(4,gid)*tmp4(2,0);
-              fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp4(0,2) + dCinv_dus(1,gid)*tmp4(1,2) + dCinv_dus(4,gid)*tmp4(2,2)
-                                    + dCinv_dus(5,gid)*tmp4(0,1) + dCinv_dus(4,gid)*tmp4(1,1) + dCinv_dus(2,gid)*tmp4(2,1);
-              fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp4(0,0) + dCinv_dus(4,gid)*tmp4(1,0) + dCinv_dus(2,gid)*tmp4(2,0)
-                                    + dCinv_dus(0,gid)*tmp4(0,2) + dCinv_dus(3,gid)*tmp4(1,2) + dCinv_dus(5,gid)*tmp4(2,2);
-
-              for(int j=0; j<numdim_; j++)
-              {
-                fstress_dus(0,gid) += 2*CinvFvel(0,j) * dFinvTdus(j*numdim_  ,gid);
-                fstress_dus(1,gid) += 2*CinvFvel(1,j) * dFinvTdus(j*numdim_+1,gid);
-                fstress_dus(2,gid) += 2*CinvFvel(2,j) * dFinvTdus(j*numdim_+2,gid);
-                /* ~~~ */
-                fstress_dus(3,gid) += + CinvFvel(0,j) * dFinvTdus(j*numdim_+1,gid)
-                                      + CinvFvel(1,j) * dFinvTdus(j*numdim_  ,gid);
-                fstress_dus(4,gid) += + CinvFvel(1,j) * dFinvTdus(j*numdim_+2,gid)
-                                      + CinvFvel(2,j) * dFinvTdus(j*numdim_+1,gid);
-                fstress_dus(5,gid) += + CinvFvel(2,j) * dFinvTdus(j*numdim_  ,gid)
-                                      + CinvFvel(0,j) * dFinvTdus(j*numdim_+2,gid);
-              }
-            }
-
-          /*
-          for (int i=0; i<numdof_; i++)
-          for (int j=0; j<6; j++)
-          {
-          if( abs(fstress_dus(j,i)-fad_fstress(j).dx(i)) > 1e-15)
-          {
-          cout<<"fstress_dus("<<j<<", "<<i<<"): "<<fstress_dus(j,i)<<endl;
-          cout<<"fstress.dx("<<j<<", "<<i<<"): "<<fad_fstress(j).dx(i)<<endl;
-          cout<<"fstress_dus:"<<endl<<fstress_dus<<endl;
-          cout<<"fad_fstress:"<<endl<<fad_fstress<<endl;
-          cout<<"dFinvdus:"<<endl<<dFinvTdus<<endl;
-          cout<<"CinvFvel:"<<endl<<CinvFvel<<endl;
-          cout<<"fad_CinvFvel:"<<endl<<fad_CinvFvel<<endl;
-          dserror("check fstress failed!");
-          }
-          }
-          cout<<"fstress check done and ok"<<endl;
-          */
-
-          LINALG::Matrix<numdof_,numdof_> fluidstress1;
-          LINALG::Matrix<numdof_,numdof_> fluidstress2;
-          LINALG::Matrix<numdof_,numdof_> fluidstress3;
-
-          fluidstress1.Multiply(fac*porosity,fstressb,dJ_dus);
-          fluidstress2.Multiply(fac*J,fstressb,dphi_dus);
-          fluidstress3.MultiplyTN(detJ_w * visc * J * porosity,bop,fstress_dus);
-
-          // additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ * w(gp))
-          estiff_stress.Update(1.0,fluidstress1,1.0);
-
-          // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
-          estiff_stress.Update(1.0,fluidstress2,1.0);
-
-          // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
-          estiff_stress.Update(1.0,fluidstress3,1.0);
-        }
-      }//Darcy_Brinkman
+      FillMatrixAndVectorsBrinkman(
+                                    gp,
+                                    J,
+                                    porosity,
+                                    fvelder,
+                                    defgrd_inv,
+                                    bop,
+                                    C_inv,
+                                    dphi_dus,
+                                    dJ_dus,
+                                    dCinv_dus,
+                                    dFinvTdus,
+                                    stiffmatrix,
+                                    force,
+                                    fstress);
     }
+
+    FillMatrixAndVectors(   gp,
+                            shapefct,
+                            N_XYZ,
+                            J,
+                            press,
+                            porosity,
+                            velint,
+                            fvelint,
+                            fvelder,
+                            defgrd_inv,
+                            bop,
+                            C_inv,
+                            Finvgradp,
+                            dphi_dus,
+                            dJ_dus,
+                            dCinv_dus,
+                            dFinvdus_gradp,
+                            erea_v,
+                            stiffmatrix,
+                            force,
+                            fstress);
+
     /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
   /* =========================================================================*/
@@ -1546,7 +720,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     }
   }
   //initialize element matrizes
-  LINALG::Matrix<numdof_,(numdim_+1)*numnod_> ecoupl(true);
   LINALG::Matrix<numdof_,numnod_> ecoupl_p(true);
   LINALG::Matrix<numdof_,numdof_> ecoupl_v(true);
 
@@ -1561,61 +734,17 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
                          vel,
                          evelnp,
                          epreaf,
-                         NULL,
-                         ecoupl_p,
-                         ecoupl_v  );
-
-  //if (force != NULL )
-  //{
-    //all rhs terms are added in nlnstiff_poroelast
-  //}
+                         stiffmatrix );
 
   if (stiffmatrix != NULL)
   {
-    // add structure displacement - fluid velocity part to matrix
-    for (int ui=0; ui<numnod_; ++ui)
-    {
-      const int dim_ui = numdim_*ui;
-
-      for (int jdim=0; jdim < numdim_;++jdim)
-      {
-        const int dim_ui_jdim = dim_ui+jdim;
-
-        for (int vi=0; vi<numnod_; ++vi)
-        {
-          const int numdof_vi = (numdim_+1)*vi;
-          const int dim_vi = numdim_*vi;
-
-          for (int idim=0; idim <numdim_; ++idim)
-          {
-            ecoupl(dim_ui_jdim , numdof_vi+idim) += ecoupl_v(dim_ui_jdim , dim_vi+idim);
-          }
-        }
-      }
-    }
-
-    // add structure displacement - fluid pressure part to matrix
-    for (int ui=0; ui<numnod_; ++ui)
-    {
-      const int dim_ui = numdim_*ui;
-
-      for (int jdim=0; jdim < numdim_;++jdim)
-      {
-        const int dim_ui_jdim = dim_ui+jdim;
-
-        for (int vi=0; vi<numnod_; ++vi)
-        {
-          ecoupl( dim_ui_jdim , (numdim_+1)*vi+numdim_ ) += ecoupl_p( dim_ui_jdim , vi);
-        }
-      }
-    }
-
     //TODO
     // build tangent coupling matrix : effective dynamic stiffness coupling matrix
     //    K_{Teffdyn} = 1/dt C
     //                + theta K_{T}
     const double theta = params.get<double>("theta");
-    stiffmatrix->Update(theta,ecoupl,1.0);
+
+    stiffmatrix->Scale(theta);
   }
 
   return;
@@ -1627,119 +756,39 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
-                                    Teuchos::ParameterList& params,
-                                    const LINALG::Matrix<numdim_,numnod_>& xrefe,
-                                    const LINALG::Matrix<numdim_,numnod_>& xcurr,
-                                    const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
-                                    const LINALG::Matrix<numdim_,numnod_>& nodalvel,
-                                    const LINALG::Matrix<numdim_,numnod_> & evelnp,
-                                    const LINALG::Matrix<numnod_,1> & epreaf,
-                                    const LINALG::Matrix<numnod_, 1>*  porosity_dof,
-                                    LINALG::Matrix<numdof_,numnod_>& ecoupl_p,
-                                    LINALG::Matrix<numdof_,numdof_>& ecoupl_v
+                                    Teuchos::ParameterList&                 params,
+                                    const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+                                    const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+                                    const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+                                    const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
+                                    const LINALG::Matrix<numdim_,numnod_>&  evelnp,
+                                    const LINALG::Matrix<numnod_,1> &       epreaf,
+                                    LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix
                                         )
 {
-  const double reacoeff = fluidmat_->ComputeReactionCoeff();
 
   LINALG::Matrix<numdim_,numnod_> N_XYZ;       //  first derivatives at gausspoint w.r.t. X, Y,Z
-  LINALG::Matrix<numderiv2_,numnod_> N_XYZ2;             //  second derivatives at gausspoint w.r.t. X, Y,Z
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
   LINALG::Matrix<numdim_,numdim_> defgrd(true); //  deformation gradiant evaluated at gauss point
   LINALG::Matrix<numnod_,1> shapefct;           //  shape functions evalulated at gauss point
   LINALG::Matrix<numdim_,numnod_> deriv(true);  //  first derivatives at gausspoint w.r.t. r,s,t
-  LINALG::Matrix<numderiv2_,numnod_> deriv2;             //  second derivatives at gausspoint w.r.t. r,s,t
 
   for (int gp=0; gp<numgpt_; ++gp)
   {
-    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    //evaluate shape functions and derivatives at integration point
+    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
+    //evaluate second derivatives of shape functions at integration point
+    //ComputeSecondDerivativesOfShapeFunctions(gp,xrefe,deriv,deriv2,N_XYZ,N_XYZ2);
 
-    /* get the inverse of the Jacobian matrix which looks like:
-     **            [ X_,r  Y_,r  Z_,r ]^-1
-     **     J^-1 = [ X_,s  Y_,s  Z_,s ]
-     **            [ X_,t  Y_,t  Z_,t ]
-     */
-    // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
-    double detJ = detJ_[gp]; // (6.22)
-
-    if( ishigherorder_ )
-    {
-      // transposed jacobian "dX/ds"
-      LINALG::Matrix<numdim_,numdim_> xjm0;
-      xjm0.MultiplyNT(deriv,xrefe);
-
-      // get the second derivatives of standard element at current GP w.r.t. rst
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_[gp],deriv2);
-      // get the second derivatives of standard element at current GP w.r.t. xyz
-      DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
-    }
-    else
-    {
-      deriv2.Clear();
-      N_XYZ2.Clear();
-    }
-
-    // get Jacobian matrix and determinant w.r.t. spatial configuration
-    //! transposed jacobian "dx/ds"
-    LINALG::Matrix<numdim_,numdim_> xjm;
-    //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<numdim_,numdim_> xji;
-    xjm.MultiplyNT(deriv,xcurr);
-    const double det = xji.Invert(xjm);
-
-    // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-    const double J = det/detJ;
+    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
-    /* non-linear B-operator (may so be called, meaning
-     ** of B-operator is not so sharp in the non-linear realm) *
-     ** B = F . Bl *
-     **
-     **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-     **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-     **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-     ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-     **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-     **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-     **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-     **      [                                                         ]
-     **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-     **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-     **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-     **      [                                                         ]
-     **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-     */
-    LINALG::Matrix<numstr_,numdof_> bop;
-    for (int i=0; i<numnod_; ++i)
-    {
-      bop(0,noddof_*i+0) = defgrd(0,0)*N_XYZ(0,i);
-      bop(0,noddof_*i+1) = defgrd(1,0)*N_XYZ(0,i);
-      bop(0,noddof_*i+2) = defgrd(2,0)*N_XYZ(0,i);
-      bop(1,noddof_*i+0) = defgrd(0,1)*N_XYZ(1,i);
-      bop(1,noddof_*i+1) = defgrd(1,1)*N_XYZ(1,i);
-      bop(1,noddof_*i+2) = defgrd(2,1)*N_XYZ(1,i);
-      bop(2,noddof_*i+0) = defgrd(0,2)*N_XYZ(2,i);
-      bop(2,noddof_*i+1) = defgrd(1,2)*N_XYZ(2,i);
-      bop(2,noddof_*i+2) = defgrd(2,2)*N_XYZ(2,i);
-      /* ~~~ */
-      bop(3,noddof_*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
-      bop(3,noddof_*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
-      bop(3,noddof_*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
-      bop(4,noddof_*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
-      bop(4,noddof_*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
-      bop(4,noddof_*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
-      bop(5,noddof_*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
-      bop(5,noddof_*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
-      bop(5,noddof_*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
-    }
+    // non-linear B-operator
+    LINALG::Matrix<numstr_,numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<numdim_,numdim_> cauchygreen;
@@ -1748,12 +797,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
     //------------------ inverse Right Cauchy-Green tensor
     LINALG::Matrix<numdim_,numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
-
-    //-----------inverse Right Cauchy-Green tensor as vector in voigt notation
-    LINALG::Matrix<numstr_,1> C_inv_vec(true);
-    for(int i =0, k=0;i<numdim_; i++)
-      for(int j =0;j<numdim_-i; j++,k++)
-        C_inv_vec(k)=C_inv(i+j,j);
 
     //---------------- get pressure at integration point
     double press = shapefct.Dot(epreaf);
@@ -1770,54 +813,15 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
     LINALG::Matrix<numdim_,numdim_>              fvelder;
     fvelder.MultiplyNT(evelnp,N_XYZ);
 
-    //! ----------------structure displacement and velocity at integration point
-    LINALG::Matrix<numdim_,1> dispint(true);
+    //! ----------------structure velocity at integration point
     LINALG::Matrix<numdim_,1> velint(true);
     for(int i=0; i<numnod_; i++)
       for(int j=0; j<numdim_; j++)
-      {
-        dispint(j) += nodaldisp(j,i) * shapefct(i);
         velint(j) += nodalvel(j,i) * shapefct(i);
-      }
 
     // inverse deformation gradient F^-1
     LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
-
-    //------------------------------------ build F^-1 as vector 9x1
-    LINALG::Matrix<numdim_*numdim_,1> defgrd_inv_vec;
-    for(int i=0; i<numdim_; i++)
-      for(int j=0; j<numdim_; j++)
-        defgrd_inv_vec(i*numdim_+j) = defgrd_inv(i,j);
-
-    //------------------------------------ build F^-T as vector 9x1
-    LINALG::Matrix<numdim_*numdim_,1> defgrd_IT_vec;
-    for(int i=0; i<numdim_; i++)
-      for(int j=0; j<numdim_; j++)
-        defgrd_IT_vec(i*numdim_+j) = defgrd_inv(j,i);
-
-    LINALG::Matrix<numdim_*numdim_,numdim_> F_X(true);
-    for(int i=0; i<numdim_; i++)
-    {
-      for(int n=0; n<numnod_; n++)
-      {
-        F_X(i*numdim_+0, 0) += N_XYZ2(0,n)*nodaldisp(i,n);
-        F_X(i*numdim_+1, 0) += N_XYZ2(3,n)*nodaldisp(i,n);
-        F_X(i*numdim_+2, 0) += N_XYZ2(4,n)*nodaldisp(i,n);
-
-        F_X(i*numdim_+0, 1) += N_XYZ2(3,n)*nodaldisp(i,n);
-        F_X(i*numdim_+1, 1) += N_XYZ2(1,n)*nodaldisp(i,n);
-        F_X(i*numdim_+2, 1) += N_XYZ2(5,n)*nodaldisp(i,n);
-
-        F_X(i*numdim_+0, 2) += N_XYZ2(4,n)*nodaldisp(i,n);
-        F_X(i*numdim_+1, 2) += N_XYZ2(5,n)*nodaldisp(i,n);
-        F_X(i*numdim_+2, 2) += N_XYZ2(2,n)*nodaldisp(i,n);
-      }
-    }
-
-    //--------------material gradient of jacobi determinant J: GradJ = dJ/dX= dJ/dF : dF/dX = J * F^-T : dF/dX
-    LINALG::Matrix<1,numdim_> GradJ;
-    GradJ.MultiplyTN(J, defgrd_IT_vec, F_X);
 
     //**************************************************+auxilary variables for computing the porosity and linearization
     double dphi_dp=0.0;
@@ -1828,235 +832,42 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
                                       J,
                                       gp,
                                       shapefct,
-                                      porosity_dof,
+                                      NULL,
                                       porosity,
                                       dphi_dp);
 
-    /*
-    //-----------material porosity gradient
-    LINALG::Matrix<1,numdim_> grad_porosity;
-    for (int idim=0; idim<numdim_; ++idim)
-      grad_porosity(idim)=dphi_dp*Gradp(idim)+dphi_dJ*GradJ(idim);
-
-    //----------------linearization of material porosity gradient w.r.t fluid pressure
-    // d(Grad(phi))/dp = d^2(phi)/(dJ*dp) * GradJ * N + d^2(phi)/(dp)^2 * Gradp * N + d(phi)/dp * N,X
-    LINALG::Matrix<numdim_,numnod_> dgradphi_dp;
-    dgradphi_dp.MultiplyTT(dphi_dJdp,GradJ,shapefct);
-    dgradphi_dp.MultiplyNT(dphi_dpp,Gradp,shapefct,1.0);
-    dgradphi_dp.Update(dphi_dp,N_XYZ,1.0);
-    */
-
-    //******************* FAD ************************
-    /*
-     // sacado data type replaces "double"
-     typedef Sacado::Fad::DFad<double> FAD;  // for first derivs
-     // sacado data type replaces "double" (for first+second derivs)
-     typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD;
-
-
-     LINALG::TMatrix<FAD,numnod_,1>  fad_shapefct;
-     LINALG::TMatrix<FAD,numdim_,numnod_> fad_N_XYZ(false);
-     LINALG::TMatrix<FAD,6,numnod_> fad_N_XYZ2(false);
-     for (int j=0; j<numnod_; ++j)
-     {
-     fad_shapefct(j)=shapefct(j);
-     for (int i=0; i<numdim_; ++i)
-     fad_N_XYZ(i,j) = N_XYZ(i,j);
-     for (int i=0; i<6 ; i++)
-     fad_N_XYZ2(i,j) = N_XYZ2(i,j);
-     }
-
-     LINALG::TMatrix<FAD,numdof_,1> fad_nodaldisp(false);
-     LINALG::TMatrix<FAD,numnod_,1> fad_epreaf(false);
-     for(int i=0; i<numnod_ ; i++)
-     {
-     fad_epreaf(i) = epreaf(i);
-     fad_epreaf(i).diff(i,numnod_);
-     }
-
-     FAD fad_press = fad_shapefct.Dot(fad_epreaf);
-     LINALG::TMatrix<FAD,numdim_,1> fad_Gradp;
-     fad_Gradp.Multiply(fad_N_XYZ,fad_epreaf);
-
-     LINALG::TMatrix<FAD,1,numdim_> fad_GradJ;
-     for(int i=0; i<numdim_; i++)
-     fad_GradJ(i)=GradJ(i);
-
-     double initporosity  = structmat->Initporosity();
-     double bulkmodulus = structmat->Bulkmodulus();
-     double penalty = structmat->Penaltyparameter();
-
-     FAD fad_a     = ( bulkmodulus/(1-initporosity) + fad_press - penalty/initporosity ) * J;
-     FAD fad_b     = -fad_a + bulkmodulus + penalty;
-     FAD fad_c   = (fad_b/fad_a) * (fad_b/fad_a) + 4*penalty/fad_a;
-     FAD fad_d     = sqrt(fad_c)*fad_a;
-
-     FAD fad_sign = 1.0;
-
-     FAD fad_test = 1 / (2 * fad_a) * (-fad_b + fad_d);
-     if (fad_test >= 1.0 or fad_test < 0.0)
-     {
-       fad_sign = -1.0;
-       fad_d = fad_sign * fad_d;
-     }
-
-     FAD fad_porosity = 1/(2*fad_a)*(-fad_b+fad_d);
-
-     FAD fad_d_p   =  J * (-fad_b+2*penalty)/fad_d;
-     FAD fad_d_J   =  fad_a/J * ( -fad_b + 2*penalty ) / fad_d;
-
-     FAD fad_dphi_dp=  - J * fad_porosity/fad_a + (J+fad_d_p)/(2*fad_a);
-     FAD fad_dphi_dJ=  -fad_porosity/J+ 1/(2*J) + fad_d_J / (2*fad_a);
-
-     LINALG::TMatrix<FAD,1,numdim_>             fad_grad_porosity;
-     for (int idim=0; idim<numdim_; ++idim)
-     {
-     fad_grad_porosity(idim)=fad_dphi_dp*fad_Gradp(idim)+fad_dphi_dJ*fad_GradJ(idim);
-     }
-
-
-     for (int i=0; i<numnod_; i++)
-     for (int j=0; j<numdim_; j++)
-     {
-     if( (dgradphi_dp(j,i)-fad_grad_porosity(j).dx(i)) > 1e-15)
-     {
-     cout<<"dgradphi_dp("<<i<<"): "<<dgradphi_dp(j,i)<<endl;
-     cout<<"fad_grad_porosity.dx("<<i<<"): "<<fad_grad_porosity(j).dx(i)<<endl;
-     cout<<"dgradphi_dp:"<<endl<<dgradphi_dp<<endl;
-     cout<<"fad_grad_porosity:"<<endl<<fad_grad_porosity<<endl;
-     dserror("check dgradphi_dus failed!");
-     }
-     }
-     cout<<"dgradphi_dp check done and ok"<<endl;
-     */
-    //******************* FAD ************************
-
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    double detJ_w = detJ*intpoints_.Weight(gp);//gpweights[gp];
 
-    //B^T . C^-1
-    LINALG::Matrix<numdof_,1> cinvb(true);
-    cinvb.MultiplyTN(bop,C_inv_vec);
+    FillMatrixAndVectorsOD(
+                              gp,
+                              shapefct,
+                              N_XYZ,
+                              J,
+                              porosity,
+                              dphi_dp,
+                              velint,
+                              fvelint,
+                              defgrd_inv,
+                              Gradp,
+                              bop,
+                              C_inv,
+                              stiffmatrix);
 
-    //F^-T * grad p
-    LINALG::Matrix<numdim_,1> Finvgradp;
-    Finvgradp.MultiplyTN(defgrd_inv, Gradp);
-
-    //F^-T * N_XYZ
-    LINALG::Matrix<numdim_,numnod_> FinvNXYZ;
-    FinvNXYZ.MultiplyTN(defgrd_inv, N_XYZ);
-
-    //if ( stiffmatrix != NULL or reamatrix != NULL)
+    if(fluidmat_->Type() == "Darcy-Brinkman")
     {
-      for (int i=0; i<numnod_; i++)
-      {
-        const int fi = numdim_*i;
-        const double fac = detJ_w* shapefct(i);
-
-        for(int j=0; j<numdim_; j++)
-        {
-          for(int k=0; k<numnod_; k++)
-          {
-            const int fk = numdim_*k;
-
-            /*-------structure- fluid pressure coupling: "stress terms" + "pressure gradient terms"
-             -B^T . ( -1*J*C^-1 ) * Dp
-             - J * F^-T * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
-             */
-            ecoupl_p(fi+j, k) +=  detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k)
-                                - fac * J * (   Finvgradp(j) * dphi_dp * shapefct(k)
-                                              + porosity * FinvNXYZ(j,k) )
-                                              ;
-
-            /*-------structure- fluid pressure coupling:  "dracy-terms" + "reactive darcy-terms"
-             - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
-             + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
-             */
-            const double tmp = fac * reacoeff * J * 2 * porosity * dphi_dp * shapefct(k);
-            ecoupl_p(fi+j, k) += -tmp * fvelint(j);
-
-            ecoupl_p(fi+j, k) += tmp * velint(j);
-
-            /*-------structure- fluid velocity coupling:  "darcy-terms"
-             -reacoeff * J *  phi^2 *  Dv^f
-             */
-            ecoupl_v(fi+j, fk+j) += -fac * reacoeff * J * porosity * porosity * shapefct(k);
-          }
-        }
-      }
-      if(fluidmat_->Type() == "Darcy-Brinkman")
-      {
-        LINALG::Matrix<numstr_,1> fstress;
-
-        double visc = fluidmat_->Viscosity();
-        LINALG::Matrix<numdim_,numdim_> CinvFvel;
-        LINALG::Matrix<numdim_,numdim_> tmp;
-        CinvFvel.Multiply(C_inv,fvelder);
-        tmp.MultiplyNT(CinvFvel,defgrd_inv);
-        LINALG::Matrix<numdim_,numdim_> tmp2(tmp);
-        tmp.UpdateT(1.0,tmp2,1.0);
-
-        fstress(0) = tmp(0,0);
-        fstress(1) = tmp(1,1);
-        fstress(2) = tmp(2,2);
-        fstress(3) = tmp(0,1);
-        fstress(4) = tmp(1,2);
-        fstress(5) = tmp(2,0);
-
-        //B^T . \sigma
-        LINALG::Matrix<numdof_,1> fstressb;
-        fstressb.MultiplyTN(bop,fstress);
-        LINALG::Matrix<numdim_,numnod_> N_XYZ_Finv;
-        N_XYZ_Finv.Multiply(defgrd_inv,N_XYZ);
-
-        //dfstress/dv^f
-        LINALG::Matrix<numstr_,numdof_> dfstressb_dv;
-        for (int i=0; i<numnod_; i++)
-        {
-          const int fi = numdim_*i;
-          for(int j=0; j<numdim_; j++)
-          {
-            int k = fi+j;
-            dfstressb_dv(0,k) = 2 * N_XYZ_Finv(0,i) * C_inv(0,j);
-            dfstressb_dv(1,k) = 2 * N_XYZ_Finv(1,i) * C_inv(1,j);
-            dfstressb_dv(2,k) = 2 * N_XYZ_Finv(2,i) * C_inv(2,j);
-            //**********************************
-            dfstressb_dv(3,k) = N_XYZ_Finv(0,i) * C_inv(1,j) + N_XYZ_Finv(1,i) * C_inv(0,j);
-            dfstressb_dv(4,k) = N_XYZ_Finv(1,i) * C_inv(2,j) + N_XYZ_Finv(2,i) * C_inv(1,j);
-            dfstressb_dv(5,k) = N_XYZ_Finv(2,i) * C_inv(0,j) + N_XYZ_Finv(0,i) * C_inv(2,j);
-          }
-        }
-
-        //B^T . dfstress/dv^f
-        LINALG::Matrix<numdof_,numdof_> dfstressb_dv_bop(true);
-        dfstressb_dv_bop.MultiplyTN(bop,dfstressb_dv);
-
-        for (int i=0; i<numnod_; i++)
-        {
-          const int fi = numdim_*i;
-
-          for(int j=0; j<numdim_; j++)
-          {
-            for(int k=0; k<numnod_; k++)
-            {
-              const int fk = numdim_*k;
-
-              /*-------structure- fluid pressure coupling: "darcy-brinkman stress terms"
-               B^T . ( \mu*J - d(phi)/(dp) * fstress ) * Dp
-               */
-              ecoupl_p(fi+j, k) += detJ_w * fstressb(fi+j) * dphi_dp * visc * J * shapefct(k);
-              for(int l=0; l<numdim_; l++)
-              {
-                /*-------structure- fluid velocity coupling: "darcy-brinkman stress terms"
-                 B^T . ( \mu*J - phi * dfstress/dv^f ) * Dp
-                 */
-                ecoupl_v(fi+j, fk+l) += detJ_w * visc * J * porosity * dfstressb_dv_bop(fi+j, fk+l);
-              }
-            }
-          }
-        }
-      }//darcy-brinkman
-    }
+      FillMatrixAndVectorsBrinkmanOD(
+                                      gp,
+                                      shapefct,
+                                      N_XYZ,
+                                      J,
+                                      porosity,
+                                      dphi_dp,
+                                      fvelder,
+                                      defgrd_inv,
+                                      bop,
+                                      C_inv,
+                                      stiffmatrix);
+    }//darcy-brinkman
     /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
   /* =========================================================================*/
@@ -2068,7 +879,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
-    std::vector<double>&               disp,         // current displacements
+    LINALG::Matrix<numdim_, numnod_>&   disp,         // current displacements
     LINALG::Matrix<numdim_, numnod_> & evelnp,       // current fluid velocities
     LINALG::Matrix<numnod_, 1> &       epreaf,       // current fluid pressure
     Epetra_SerialDenseMatrix*          elestress,    // stresses at GP
@@ -2089,7 +900,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
     for(int j=0; j<numdim_;j++)
     {
       xrefe(j,i) = x[j];
-      xcurr(j,i) = xrefe(j,i) + disp[i*noddof_+j];
+      xcurr(j,i) = xrefe(j,i) + disp(j,i);
     }
   }
 
@@ -2140,7 +951,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ,deriv); // (6.21)
-    //N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
@@ -2346,14 +1156,14 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::stress_expol
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearization
 (   Teuchos::ParameterList&                     params,
-    const double& press,
-    const double& J,
-    const int& gp,
-    const LINALG::Matrix<numnod_,1>&       shapfct,
-    const LINALG::Matrix<numnod_,1>*           myporosity,
-    const LINALG::Matrix<1,numdof_>& dJ_dus,
-    double &                         porosity,
-    LINALG::Matrix<1,numdof_>&       dphi_dus)
+    const double&                               press,
+    const double&                               J,
+    const int&                                  gp,
+    const LINALG::Matrix<numnod_,1>&            shapfct,
+    const LINALG::Matrix<numnod_,1>*            myporosity,
+    const LINALG::Matrix<1,numdof_>&            dJ_dus,
+    double &                                    porosity,
+    LINALG::Matrix<1,numdof_>&                  dphi_dus)
 {
   double dphi_dJ=0.0;
 
@@ -2538,6 +1348,658 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::RefPorosityTimeDeriv()
 {
   return structmat_->RefPorosityTimeDeriv();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivatives(
+    const int & gp,
+    LINALG::Matrix<numnod_,1>& shapefct,
+    LINALG::Matrix<numdim_,numnod_>& deriv ,
+    LINALG::Matrix<numdim_,numnod_>& N_XYZ)
+{
+  DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+  /* get the inverse of the Jacobian matrix which looks like:
+   **            [ X_,r  Y_,r  Z_,r ]^-1
+   **     J^-1 = [ X_,s  Y_,s  Z_,s ]
+   **            [ X_,t  Y_,t  Z_,t ]
+   */
+
+  // compute derivatives N_XYZ at gp w.r.t. material coordinates
+  // by N_XYZ = J^-1 * N_rst
+  N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSecondDerivativesOfShapeFunctions(
+    const int & gp,
+    const LINALG::Matrix<numdim_,numnod_>& xrefe,
+    LINALG::Matrix<numdim_,numnod_>& deriv ,
+    LINALG::Matrix<numderiv2_,numnod_>& deriv2,
+    LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+    LINALG::Matrix<numderiv2_,numnod_>& N_XYZ2)
+{
+
+  if( ishigherorder_ )
+  {
+    // transposed jacobian "dX/ds"
+    LINALG::Matrix<numdim_,numdim_> xjm0;
+    xjm0.MultiplyNT(deriv,xrefe);
+
+    // get the second derivatives of standard element at current GP w.r.t. rst
+    DRT::UTILS::shape_function_deriv2<distype>(xsi_[gp],deriv2);
+    // get the second derivatives of standard element at current GP w.r.t. XYZ
+    DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
+  }
+  else
+  {
+    deriv2.Clear();
+    N_XYZ2.Clear();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminant(
+                                         const int & gp,
+                                         const LINALG::Matrix<numdim_,numnod_>& xcurr,
+                                         const   LINALG::Matrix<numdim_,numnod_>& deriv )
+{
+  // get Jacobian matrix and determinant w.r.t. spatial configuration
+  //! transposed jacobian "dx/ds"
+  LINALG::Matrix<numdim_,numdim_> xjm;
+  //! inverse of transposed jacobian "ds/dx"
+  LINALG::Matrix<numdim_,numdim_> xji;
+  xjm.MultiplyNT(deriv,xcurr);
+  const double det = xji.Invert(xjm);
+
+  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+  return det/detJ_[gp];
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>:: ComputeAuxiliaryValues(const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd_inv,
+    const LINALG::Matrix<numdim_,numdim_>& C_inv,
+    const LINALG::Matrix<numdim_,1>&  Gradp,
+    LINALG::Matrix<numdim_*numdim_,numdof_>& dFinvTdus,
+    LINALG::Matrix<numdim_,1>& Finvgradp,
+    LINALG::Matrix<numdim_,numdof_>& dFinvdus_gradp,
+    LINALG::Matrix<numstr_,numdof_>& dCinv_dus)
+{
+  //dF^-T/dus
+  for (int i=0; i<numdim_; i++)
+    for (int n =0; n<numnod_; n++)
+      for(int j=0; j<numdim_; j++)
+      {
+        const int gid = numdim_ * n +j;
+        for (int k=0; k<numdim_; k++)
+          for(int l=0; l<numdim_; l++)
+            dFinvTdus(i*numdim_+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
+      }
+
+  //F^-T * Grad p
+  Finvgradp.MultiplyTN(defgrd_inv, Gradp);
+
+  for (int i=0; i<numdim_; i++)
+    for (int n =0; n<numnod_; n++)
+      for(int j=0; j<numdim_; j++)
+      {
+        const int gid = numdim_ * n +j;
+        for(int l=0; l<numdim_; l++)
+          dFinvdus_gradp(i, gid) += dFinvTdus(i*numdim_+l, gid)  * Gradp(l);
+      }
+
+  for (int n=0; n<numnod_; ++n)
+    for (int k=0; k<numdim_; ++k)
+    {
+      const int gid = n*numdim_+k;
+      for (int i=0; i<numdim_; ++i)
+      {
+        dCinv_dus(0,gid) += -2*C_inv(0,i)*N_XYZ(i,n)*defgrd_inv(0,k);
+        dCinv_dus(1,gid) += -2*C_inv(1,i)*N_XYZ(i,n)*defgrd_inv(1,k);
+        dCinv_dus(2,gid) += -2*C_inv(2,i)*N_XYZ(i,n)*defgrd_inv(2,k);
+        /* ~~~ */
+        dCinv_dus(3,gid) += -C_inv(0,i)*N_XYZ(i,n)*defgrd_inv(1,k)-defgrd_inv(0,k)*N_XYZ(i,n)*C_inv(1,i);
+        dCinv_dus(4,gid) += -C_inv(1,i)*N_XYZ(i,n)*defgrd_inv(2,k)-defgrd_inv(1,k)*N_XYZ(i,n)*C_inv(2,i);
+        dCinv_dus(5,gid) += -C_inv(2,i)*N_XYZ(i,n)*defgrd_inv(0,k)-defgrd_inv(2,k)*N_XYZ(i,n)*C_inv(0,i);
+      }
+    }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+inline LINALG::Matrix<DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numstr_,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
+DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeBOperator(
+                                                        const LINALG::Matrix<numdim_,numdim_>& defgrd,
+                                                        const LINALG::Matrix<numdim_,numnod_>& N_XYZ)
+{
+  LINALG::Matrix<numstr_,numdof_> bop;
+
+  /* non-linear B-operator (may so be called, meaning
+   ** of B-operator is not so sharp in the non-linear realm) *
+   ** B = F . Bl *
+   **
+   **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+   **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+   **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+   ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+   **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+   **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+   **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+   **      [                                                         ]
+   **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+   **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+   **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+   **      [                                                         ]
+   **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+   **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+   **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+   */
+  for (int i=0; i<numnod_; ++i)
+  {
+    bop(0,noddof_*i+0) = defgrd(0,0)*N_XYZ(0,i);
+    bop(0,noddof_*i+1) = defgrd(1,0)*N_XYZ(0,i);
+    bop(0,noddof_*i+2) = defgrd(2,0)*N_XYZ(0,i);
+    bop(1,noddof_*i+0) = defgrd(0,1)*N_XYZ(1,i);
+    bop(1,noddof_*i+1) = defgrd(1,1)*N_XYZ(1,i);
+    bop(1,noddof_*i+2) = defgrd(2,1)*N_XYZ(1,i);
+    bop(2,noddof_*i+0) = defgrd(0,2)*N_XYZ(2,i);
+    bop(2,noddof_*i+1) = defgrd(1,2)*N_XYZ(2,i);
+    bop(2,noddof_*i+2) = defgrd(2,2)*N_XYZ(2,i);
+    /* ~~~ */
+    bop(3,noddof_*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
+    bop(3,noddof_*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
+    bop(3,noddof_*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
+    bop(4,noddof_*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
+    bop(4,noddof_*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
+    bop(4,noddof_*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
+    bop(5,noddof_*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
+    bop(5,noddof_*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
+    bop(5,noddof_*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
+  }
+
+  return bop;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+inline   LINALG::Matrix<1,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
+DRT::ELEMENTS::So3_Poro<so3_ele,distype>::  ComputeLinearizationOfJacobian(
+    const double& J,
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd_inv)
+{
+  //------------------------------------ build F^-1 as vector 9x1
+  LINALG::Matrix<numdim_*numdim_,1> defgrd_inv_vec;
+  defgrd_inv_vec(0)=defgrd_inv(0,0);
+  defgrd_inv_vec(1)=defgrd_inv(0,1);
+  defgrd_inv_vec(2)=defgrd_inv(0,2);
+  defgrd_inv_vec(3)=defgrd_inv(1,0);
+  defgrd_inv_vec(4)=defgrd_inv(1,1);
+  defgrd_inv_vec(5)=defgrd_inv(1,2);
+  defgrd_inv_vec(6)=defgrd_inv(2,0);
+  defgrd_inv_vec(7)=defgrd_inv(2,1);
+  defgrd_inv_vec(8)=defgrd_inv(2,2);
+
+  //--------------------------- build N_X operator (wrt material config)
+  LINALG::Matrix<9,numdof_> N_X(true); // set to zero
+  for (int i=0; i<numnod_; ++i)
+  {
+    N_X(0,3*i+0) = N_XYZ(0,i);
+    N_X(1,3*i+1) = N_XYZ(0,i);
+    N_X(2,3*i+2) = N_XYZ(0,i);
+
+    N_X(3,3*i+0) = N_XYZ(1,i);
+    N_X(4,3*i+1) = N_XYZ(1,i);
+    N_X(5,3*i+2) = N_XYZ(1,i);
+
+    N_X(6,3*i+0) = N_XYZ(2,i);
+    N_X(7,3*i+1) = N_XYZ(2,i);
+    N_X(8,3*i+2) = N_XYZ(2,i);
+  }
+
+  //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
+  LINALG::Matrix<1,numdof_> dJ_dus;
+  dJ_dus.MultiplyTN(J,defgrd_inv_vec,N_X);
+
+  return dJ_dus;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
+    const int &                               gp,
+    const LINALG::Matrix<numnod_,1>&          shapefct,
+    const LINALG::Matrix<numdim_,numnod_>&    N_XYZ,
+    const double&                             J,
+    const double&                             press,
+    const double&                             porosity,
+    const LINALG::Matrix<numdim_,1>&          velint,
+    const LINALG::Matrix<numdim_,1>&          fvelint,
+    const LINALG::Matrix<numdim_,numdim_>&    fvelder,
+    const LINALG::Matrix<numdim_,numdim_>&    defgrd_inv,
+    const LINALG::Matrix<numstr_,numdof_>&    bop,
+    const LINALG::Matrix<numdim_,numdim_>&    C_inv,
+    const LINALG::Matrix<numdim_,1>&          Finvgradp,
+    const LINALG::Matrix<1,numdof_>&          dphi_dus,
+    const LINALG::Matrix<1,numdof_>&          dJ_dus,
+    const LINALG::Matrix<numstr_,numdof_>&    dCinv_dus,
+    const LINALG::Matrix<numdim_,numdof_>&    dFinvdus_gradp,
+    LINALG::Matrix<numdof_,numdof_>&          erea_v,
+    LINALG::Matrix<numdof_, numdof_>*         stiffmatrix,
+    LINALG::Matrix<numdof_,1>*                force,
+    LINALG::Matrix<numstr_,1>&                fstress)
+{
+  double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
+
+  //if (force != NULL or stiffmatrix != NULL or reamatrix != NULL )
+  {
+    const double reacoeff = fluidmat_->ComputeReactionCoeff();
+
+    for (int k=0; k<numnod_; k++)
+    {
+      const int fk = numdim_*k;
+      const double fac = detJ_w* shapefct(k);
+      const double v = fac * reacoeff * porosity * porosity* J;
+
+      for(int j=0; j<numdim_; j++)
+      {
+
+        /*-------structure- fluid velocity coupling:  RHS
+         "dracy-terms"
+         - reacoeff * J *  phi^2 *  v^f
+         */
+        (*force)(fk+j) += -v * fvelint(j);
+
+        /* "reactive dracy-terms"
+         reacoeff * J *  phi^2 *  v^s
+         */
+        (*force)(fk+j) += v * velint(j);
+
+        /*-------structure- fluid pressure coupling: RHS
+         *                        "pressure gradient terms"
+         - J *  F^-T * Grad(p) * phi
+         */
+        (*force)(fk+j) += fac * J * Finvgradp(j) * ( - porosity);
+
+        for(int i=0; i<numnod_; i++)
+        {
+          const int fi = numdim_*i;
+
+          /* additional "reactive darcy-term"
+           detJ * w(gp) * ( J * reacoeff * phi^2  ) * D(v_s)
+           */
+          erea_v(fk+j,fi+j) += v * shapefct(i);
+
+          for (int l=0; l<numdim_; l++)
+          {
+            /* additional "pressure gradient term" + "darcy-term"
+             -  detJ * w(gp) * phi *  ( dJ/d(us) * F^-T * Grad(p) - J * d(F^-T)/d(us) *Grad(p) ) * D(us)
+             - detJ * w(gp) * d(phi)/d(us) * J * F^-T * Grad(p) * D(us)
+             - detJ * w(gp) * (  dJ/d(us) * v^f * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
+             */
+            (*stiffmatrix)(fk+j,fi+l) += fac * (
+                                              - porosity * dJ_dus(fi+l) * Finvgradp(j)
+                                              - porosity * J * dFinvdus_gradp(j, fi+l)
+                                              - dphi_dus(fi+l) * J * Finvgradp(j)
+                                              - reacoeff * porosity * ( porosity * dJ_dus(fi+l) + 2 * J * dphi_dus(fi+l) ) * fvelint(j)
+                                            )
+            ;
+
+
+            /* additional "reactive darcy-term"
+             detJ * w(gp) * (  dJ/d(us) * vs * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
+             */
+            (*stiffmatrix)(fk+j,fi+l) += fac * reacoeff * porosity * velint(j) * ( porosity * dJ_dus(fi+l) + 2 * J * dphi_dus(fi+l) );
+          }
+        }
+      }
+    }
+
+    //inverse Right Cauchy-Green tensor as vector
+    LINALG::Matrix<numstr_,1> C_inv_vec;
+    for(int i =0, k=0;i<numdim_; i++)
+      for(int j =0;j<numdim_-i; j++,k++)
+        C_inv_vec(k)=C_inv(i+j,j);
+
+    //B^T . C^-1
+    LINALG::Matrix<numdof_,1> cinvb(true);
+    cinvb.MultiplyTN(bop,C_inv_vec);
+
+    const double fac1 = -detJ_w * press;
+    const double fac2= fac1 * J;
+
+    force->Update(fac2,cinvb,1.0);
+
+    LINALG::Matrix<numdof_,numdof_> tmp1;
+    LINALG::Matrix<numdof_,numdof_> tmp2;
+
+    tmp1.Multiply(fac1,cinvb,dJ_dus);
+    tmp2.MultiplyTN(fac2,bop,dCinv_dus);
+
+    // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
+    stiffmatrix->Update(1.0,tmp1,1.0);
+
+    // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
+    stiffmatrix->Update(1.0,tmp2,1.0);
+
+    // integrate `geometric' stiffness matrix and add to keu *****************
+    LINALG::Matrix<numstr_,1> sfac(C_inv_vec); // auxiliary integrated stress
+
+    //scale and add viscous stress
+    sfac.Update(detJ_w,fstress,fac2); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+
+    std::vector<double> SmB_L(3); // intermediate Sm.B_L
+    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+    for (int inod=0; inod<numnod_; ++inod)
+    {
+      SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
+      + sfac(5) * N_XYZ(2, inod);
+      SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
+      + sfac(4) * N_XYZ(2, inod);
+      SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
+      + sfac(2) * N_XYZ(2, inod);
+      for (int jnod=0; jnod<numnod_; ++jnod)
+      {
+        double bopstrbop = 0.0; // intermediate value
+        for (int idim=0; idim<numdim_; ++idim)
+          bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
+        (*stiffmatrix)(numdim_*inod+0,numdim_*jnod+0) += bopstrbop;
+        (*stiffmatrix)(numdim_*inod+1,numdim_*jnod+1) += bopstrbop;
+        (*stiffmatrix)(numdim_*inod+2,numdim_*jnod+2) += bopstrbop;
+      }
+    } // end of integrate `geometric' stiffness******************************
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkman(
+    const int &                                     gp,
+    const double&                                   J,
+    const double&                                   porosity,
+    const LINALG::Matrix<numdim_,numdim_>&          fvelder,
+    const LINALG::Matrix<numdim_,numdim_>&          defgrd_inv,
+    const LINALG::Matrix<numstr_,numdof_>&          bop,
+    const LINALG::Matrix<numdim_,numdim_>&          C_inv,
+    const LINALG::Matrix<1,numdof_>&                dphi_dus,
+    const LINALG::Matrix<1,numdof_>&                dJ_dus,
+    const LINALG::Matrix<numstr_,numdof_>&          dCinv_dus,
+    const LINALG::Matrix<numdim_*numdim_,numdof_>&  dFinvTdus,
+    LINALG::Matrix<numdof_, numdof_>*               stiffmatrix,
+    LINALG::Matrix<numdof_,1>*                      force,
+    LINALG::Matrix<numstr_,1>&                      fstress)
+{
+    double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
+
+    double visc = fluidmat_->Viscosity();
+    LINALG::Matrix<numdim_,numdim_> CinvFvel;
+    LINALG::Matrix<numdim_,numdim_> visctress1;
+    CinvFvel.Multiply(C_inv,fvelder);
+    visctress1.MultiplyNT(CinvFvel,defgrd_inv);
+    LINALG::Matrix<numdim_,numdim_> visctress2(visctress1);
+    visctress1.UpdateT(1.0,visctress2,1.0);
+
+    fstress(0) = visctress1(0,0);
+    fstress(1) = visctress1(1,1);
+    fstress(2) = visctress1(2,2);
+    fstress(3) = visctress1(0,1);
+    fstress(4) = visctress1(1,2);
+    fstress(5) = visctress1(2,0);
+
+    fstress.Scale(detJ_w * visc * J * porosity);
+
+    //B^T . C^-1
+    LINALG::Matrix<numdof_,1> fstressb(true);
+    fstressb.MultiplyTN(bop,fstress);
+
+    //if (force != NULL )
+    force->Update(1.0,fstressb,1.0);
+
+    //evaluate viscous terms (for darcy-brinkman flow only)
+    //if (stiffmatrix != NULL)
+    {
+      LINALG::Matrix<numdim_,numdim_> tmp4;
+      tmp4.MultiplyNT(fvelder,defgrd_inv);
+
+      double fac = detJ_w * visc;
+
+      LINALG::Matrix<numstr_,numdof_> fstress_dus (true);
+      for (int n=0; n<numnod_; ++n)
+        for (int k=0; k<numdim_; ++k)
+        {
+          const int gid = n*numdim_+k;
+
+          fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp4(0,0) + dCinv_dus(3,gid)*tmp4(1,0) + dCinv_dus(5,gid)*tmp4(2,0) );
+          fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp4(0,1) + dCinv_dus(1,gid)*tmp4(1,1) + dCinv_dus(4,gid)*tmp4(2,1) );
+          fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp4(0,2) + dCinv_dus(4,gid)*tmp4(1,2) + dCinv_dus(2,gid)*tmp4(2,2) );
+          /* ~~~ */
+          fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp4(0,1) + dCinv_dus(3,gid)*tmp4(1,1) + dCinv_dus(5,gid)*tmp4(2,1)
+                                + dCinv_dus(3,gid)*tmp4(0,0) + dCinv_dus(1,gid)*tmp4(1,0) + dCinv_dus(4,gid)*tmp4(2,0);
+          fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp4(0,2) + dCinv_dus(1,gid)*tmp4(1,2) + dCinv_dus(4,gid)*tmp4(2,2)
+                                + dCinv_dus(5,gid)*tmp4(0,1) + dCinv_dus(4,gid)*tmp4(1,1) + dCinv_dus(2,gid)*tmp4(2,1);
+          fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp4(0,0) + dCinv_dus(4,gid)*tmp4(1,0) + dCinv_dus(2,gid)*tmp4(2,0)
+                                + dCinv_dus(0,gid)*tmp4(0,2) + dCinv_dus(3,gid)*tmp4(1,2) + dCinv_dus(5,gid)*tmp4(2,2);
+
+          for(int j=0; j<numdim_; j++)
+          {
+            fstress_dus(0,gid) += 2*CinvFvel(0,j) * dFinvTdus(j*numdim_  ,gid);
+            fstress_dus(1,gid) += 2*CinvFvel(1,j) * dFinvTdus(j*numdim_+1,gid);
+            fstress_dus(2,gid) += 2*CinvFvel(2,j) * dFinvTdus(j*numdim_+2,gid);
+            /* ~~~ */
+            fstress_dus(3,gid) += + CinvFvel(0,j) * dFinvTdus(j*numdim_+1,gid)
+                                  + CinvFvel(1,j) * dFinvTdus(j*numdim_  ,gid);
+            fstress_dus(4,gid) += + CinvFvel(1,j) * dFinvTdus(j*numdim_+2,gid)
+                                  + CinvFvel(2,j) * dFinvTdus(j*numdim_+1,gid);
+            fstress_dus(5,gid) += + CinvFvel(2,j) * dFinvTdus(j*numdim_  ,gid)
+                                  + CinvFvel(0,j) * dFinvTdus(j*numdim_+2,gid);
+          }
+        }
+
+      LINALG::Matrix<numdof_,numdof_> fluidstress_part;
+
+      // additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ * w(gp))
+      fluidstress_part.Multiply(fac*porosity,fstressb,dJ_dus);
+      stiffmatrix->Update(1.0,fluidstress_part,1.0);
+
+      // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
+      fluidstress_part.Multiply(fac*J,fstressb,dphi_dus);
+      stiffmatrix->Update(1.0,fluidstress_part,1.0);
+
+      // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
+      fluidstress_part.MultiplyTN(detJ_w * visc * J * porosity,bop,fstress_dus);
+      stiffmatrix->Update(1.0,fluidstress_part,1.0);
+    }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
+    const int &                             gp,
+    const LINALG::Matrix<numnod_,1>&        shapefct,
+    const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+    const double&                           J,
+    const double&                           porosity,
+    const double&                           dphi_dp,
+    const LINALG::Matrix<numdim_,1>&        velint,
+    const LINALG::Matrix<numdim_,1>&        fvelint,
+    const LINALG::Matrix<numdim_,numdim_>&  defgrd_inv,
+    const LINALG::Matrix<numdim_,1>&        Gradp,
+    const LINALG::Matrix<numstr_,numdof_>&  bop,
+    const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+//        LINALG::Matrix<numdof_,numnod_>&        ecoupl_p,
+//        LINALG::Matrix<numdof_,numdof_>&        ecoupl_v)
+    LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix)
+{
+  double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
+
+  const double reacoeff = fluidmat_->ComputeReactionCoeff();
+
+  //-----------inverse Right Cauchy-Green tensor as vector in voigt notation
+  LINALG::Matrix<numstr_,1> C_inv_vec(true);
+  for(int i =0, k=0;i<numdim_; i++)
+    for(int j =0;j<numdim_-i; j++,k++)
+      C_inv_vec(k)=C_inv(i+j,j);
+
+  //B^T . C^-1
+  LINALG::Matrix<numdof_,1> cinvb(true);
+  cinvb.MultiplyTN(bop,C_inv_vec);
+
+  //F^-T * grad p
+  LINALG::Matrix<numdim_,1> Finvgradp;
+  Finvgradp.MultiplyTN(defgrd_inv, Gradp);
+
+  //F^-T * N_XYZ
+  LINALG::Matrix<numdim_,numnod_> FinvNXYZ;
+  FinvNXYZ.MultiplyTN(defgrd_inv, N_XYZ);
+
+  for (int i=0; i<numnod_; i++)
+  {
+    const int fi = numdim_*i;
+    const double fac = detJ_w* shapefct(i);
+
+    for(int j=0; j<numdim_; j++)
+    {
+      for(int k=0; k<numnod_; k++)
+      {
+        const int fkp1 = (numdim_ + 1)*k;
+
+        /*-------structure- fluid pressure coupling: "stress terms" + "pressure gradient terms"
+         -B^T . ( -1*J*C^-1 ) * Dp
+         - J * F^-T * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
+         */
+        (*stiffmatrix)(fi+j, fkp1+numdim_ ) +=  detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k)
+                            - fac * J * (   Finvgradp(j) * dphi_dp * shapefct(k)
+                                          + porosity * FinvNXYZ(j,k) )
+                                          ;
+
+        /*-------structure- fluid pressure coupling:  "dracy-terms" + "reactive darcy-terms"
+         - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
+         + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
+         */
+        const double tmp = fac * reacoeff * J * 2 * porosity * dphi_dp * shapefct(k);
+        (*stiffmatrix)(fi+j, fkp1+numdim_ ) += -tmp * fvelint(j);
+
+        (*stiffmatrix)(fi+j, fkp1+numdim_ ) += tmp * velint(j);
+
+        /*-------structure- fluid velocity coupling:  "darcy-terms"
+         -reacoeff * J *  phi^2 *  Dv^f
+         */
+        (*stiffmatrix)(fi+j, fkp1+j) += -fac * reacoeff * J * porosity * porosity * shapefct(k);
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
+    const int &                             gp,
+    const LINALG::Matrix<numnod_,1>&        shapefct,
+    const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+    const double&                           J,
+    const double&                           porosity,
+    const double&                           dphi_dp,
+    const LINALG::Matrix<numdim_,numdim_>&  fvelder,
+    const LINALG::Matrix<numdim_,numdim_>&  defgrd_inv,
+    const LINALG::Matrix<numstr_,numdof_>&  bop,
+    const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+    LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix)
+//    LINALG::Matrix<numdof_,numnod_>&        ecoupl_p,
+//    LINALG::Matrix<numdof_,numdof_>&        ecoupl_v)
+{
+
+  double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
+
+  LINALG::Matrix<numstr_,1> fstress;
+
+  double visc = fluidmat_->Viscosity();
+  LINALG::Matrix<numdim_,numdim_> CinvFvel;
+  LINALG::Matrix<numdim_,numdim_> tmp;
+  CinvFvel.Multiply(C_inv,fvelder);
+  tmp.MultiplyNT(CinvFvel,defgrd_inv);
+  LINALG::Matrix<numdim_,numdim_> tmp2(tmp);
+  tmp.UpdateT(1.0,tmp2,1.0);
+
+  fstress(0) = tmp(0,0);
+  fstress(1) = tmp(1,1);
+  fstress(2) = tmp(2,2);
+  fstress(3) = tmp(0,1);
+  fstress(4) = tmp(1,2);
+  fstress(5) = tmp(2,0);
+
+  //B^T . \sigma
+  LINALG::Matrix<numdof_,1> fstressb;
+  fstressb.MultiplyTN(bop,fstress);
+  LINALG::Matrix<numdim_,numnod_> N_XYZ_Finv;
+  N_XYZ_Finv.Multiply(defgrd_inv,N_XYZ);
+
+  //dfstress/dv^f
+  LINALG::Matrix<numstr_,numdof_> dfstressb_dv;
+  for (int i=0; i<numnod_; i++)
+  {
+    const int fi = numdim_*i;
+    for(int j=0; j<numdim_; j++)
+    {
+      int k = fi+j;
+      dfstressb_dv(0,k) = 2 * N_XYZ_Finv(0,i) * C_inv(0,j);
+      dfstressb_dv(1,k) = 2 * N_XYZ_Finv(1,i) * C_inv(1,j);
+      dfstressb_dv(2,k) = 2 * N_XYZ_Finv(2,i) * C_inv(2,j);
+      //**********************************
+      dfstressb_dv(3,k) = N_XYZ_Finv(0,i) * C_inv(1,j) + N_XYZ_Finv(1,i) * C_inv(0,j);
+      dfstressb_dv(4,k) = N_XYZ_Finv(1,i) * C_inv(2,j) + N_XYZ_Finv(2,i) * C_inv(1,j);
+      dfstressb_dv(5,k) = N_XYZ_Finv(2,i) * C_inv(0,j) + N_XYZ_Finv(0,i) * C_inv(2,j);
+    }
+  }
+
+  //B^T . dfstress/dv^f
+  LINALG::Matrix<numdof_,numdof_> dfstressb_dv_bop(true);
+  dfstressb_dv_bop.MultiplyTN(bop,dfstressb_dv);
+
+  for (int i=0; i<numnod_; i++)
+  {
+    const int fi = noddof_*i;
+
+    for(int j=0; j<numdim_; j++)
+    {
+      for(int k=0; k<numnod_; k++)
+      {
+        const int fk = noddof_*k;
+        const int fkp1 = (numdim_ + 1)*k;
+
+        /*-------structure- fluid pressure coupling: "darcy-brinkman stress terms"
+         B^T . ( \mu*J - d(phi)/(dp) * fstress ) * Dp
+         */
+        (*stiffmatrix)(fi+j, fkp1+numdim_ ) += detJ_w * fstressb(fi+j) * dphi_dp * visc * J * shapefct(k);
+        for(int l=0; l<noddof_; l++)
+        {
+          /*-------structure- fluid velocity coupling: "darcy-brinkman stress terms"
+           B^T . ( \mu*J - phi * dfstress/dv^f ) * Dp
+           */
+          (*stiffmatrix)(fi+j, fkp1+l) += detJ_w * visc * J * porosity * dfstressb_dv_bop(fi+j, fk+l);
+        }
+      }
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*

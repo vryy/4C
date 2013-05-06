@@ -212,14 +212,15 @@ protected:
       LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
+      const LINALG::Matrix<my::nen_, 1>&                                epreaf,
       const double &                                                    press,
       const double &                                                    press_dot,
       const double &                                                    porosity,
+      const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
       const double &                                                    dphi_dp,
       const double &                                                    dphi_dJ,
       const double &                                                    J,
       const double &                                                    refporositydot,
-      LINALG::Matrix<my::nsd_, 1>&                                      gradJ,
       const double & timefac, const double &                            timefacfac
       );
 
@@ -229,14 +230,15 @@ protected:
       LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
+      const LINALG::Matrix<my::nen_, 1>&                                epreaf,
       const double &                                                    press,
       const double &                                                    press_dot,
       const double &                                                    porosity,
+      const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
       const double &                                                    dphi_dp,
       const double &                                                    dphi_dJ,
       const double &                                                    J,
       const double &                                                    refporositydot,
-      LINALG::Matrix<my::nsd_, 1>&                                      gradJ,
       const double & timefac, const double &                            timefacfac
       );
 
@@ -287,7 +289,7 @@ protected:
                               const double&                                      dphi_dpp,
                               const double&                                      dphi_dJp,
                               const LINALG::Matrix<my::nsd_,1>&                  gradJ,
-                              LINALG::Matrix<my::nsd_,my::nen_>&               dgradphi_dp);
+                              LINALG::Matrix<my::nsd_,my::nen_>&                 dgradphi_dp);
 
   void ComputeLinearizationOD(const double&                                      J,
                               const double&                                      dphi_dJ,
@@ -302,19 +304,19 @@ protected:
                               LINALG::Matrix<1,my::nsd_*my::nen_>&               dphi_dus,
                               LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&        dgradphi_dus);
 
-  virtual void ComputePorosity( Teuchos::ParameterList& params,
-                             const double& press,
-                             const double& J,
-                             const int& gp,
-                             const LINALG::Matrix<my::nen_,1>&       shapfct,
-                             const LINALG::Matrix<my::nen_,1>*           myporosity,
-                             double& porosity,
-                             double* dphi_dp,
-                             double* dphi_dJ,
-                             double* dphi_dJdp,
-                             double* dphi_dJJ,
-                             double* dphi_dpp,
-                             bool save);
+  virtual void ComputePorosity( Teuchos::ParameterList&             params,
+                             const double&                          press,
+                             const double&                          J,
+                             const int&                             gp,
+                             const LINALG::Matrix<my::nen_,1>&      shapfct,
+                             const LINALG::Matrix<my::nen_,1>*      myporosity,
+                             double&                                porosity,
+                             double*                                dphi_dp,
+                             double*                                dphi_dJ,
+                             double*                                dphi_dJdp,
+                             double*                                dphi_dJJ,
+                             double*                                dphi_dpp,
+                             bool                                   save);
 
   void GaussPointLoopOD(
                           Teuchos::ParameterList&                                         params,
@@ -332,6 +334,31 @@ protected:
                           LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&                  ecoupl_p,
                           Teuchos::RCP<const MAT::Material>                               material,
                           const DRT::UTILS::GaussIntegration &                            intpoints);
+
+  void FillMatrixMomentumOD(
+      const double&                                               timefacfac,
+      const double&                                               porosity,
+      const LINALG::Matrix<my::nsd_,1>&                           gridvelint,
+      const LINALG::Matrix<my::nsd_,1>&                           grad_porosity,
+      const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
+      const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
+      LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&   ecoupl_u);
+
+  void FillMatrixContiOD(
+      const double&                                               timefacfacpre,
+      const double&                                               porosity,
+      const double&                                               J,
+      const double&                                               dphi_dJ,
+      const double&                                               dphi_dJJ,
+      const double&                                               dphi_dJdp,
+      const double&                                               press_dot,
+      const double&                                               gridvdiv,
+      const LINALG::Matrix<my::nsd_,1>&                           gridvelint,
+      const LINALG::Matrix<my::nsd_,1>&                           grad_porosity,
+      const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
+      const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
+      const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
+      LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p);
 
 
   void PreEvaluate

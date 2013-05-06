@@ -411,15 +411,9 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::nlnstiff_poroelast(
   }
 
   //initialize element matrizes and vectors
-  LINALG::Matrix<my::numdof_,my::numdof_> estiff_stat(true);
-  LINALG::Matrix<my::numdof_,my::numdof_> erea_u(true);
   LINALG::Matrix<my::numdof_,my::numdof_> erea_v(true);
-  LINALG::Matrix<my::numdof_,my::numdof_> estiff_stress(true);
-  LINALG::Matrix<my::numdof_,1> erea_force(true);
-  LINALG::Matrix<my::numdof_,1> ecoupl_force_p(true);
-  LINALG::Matrix<my::numdof_,1> ecoupl_force_v(true);
-  LINALG::Matrix<my::numdof_,1> ecoupl_force_stress(true);
-  LINALG::Matrix<my::numstr_,1> fstress(true);
+  LINALG::Matrix<my::numdof_,my::numdof_> sub_stiff(true);
+  LINALG::Matrix<my::numdof_,1> sub_force(true);
 
   LINALG::Matrix<my::numdof_,my::numnod_> ecoupl_p1(true);
   LINALG::Matrix<my::numnod_,numdof_> estiff_p1(true);
@@ -428,24 +422,6 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::nlnstiff_poroelast(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  my::GaussPointLoop(  params,
-                        xrefe,
-                        xcurr,
-                        disp,
-                        vel,
-                        evelnp,
-                        epreaf,
-                        porosity_dof,
-                        estiff_stat,
-                        erea_u,
-                        erea_v,
-                        estiff_stress,
-                        erea_force,
-                        ecoupl_force_p,
-                        ecoupl_force_v,
-                        ecoupl_force_stress,
-                        fstress);
-
   GaussPointLoopP1(  params,
                           xrefe,
                           xcurr,
@@ -454,6 +430,9 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::nlnstiff_poroelast(
                           evelnp,
                           epreaf,
                           porosity_dof,
+                          erea_v,
+                          &sub_stiff,
+                          &sub_force,
                           ecoupl_p1,
                           estiff_p1,
                           ecoupl_force_p1
@@ -491,9 +470,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::nlnstiff_poroelast(
         for (int i=0; i<my::numnod_; i++)
         {
           for(int j=0; j<my::numdim_; j++)
-            (*stiffmatrix)(i*noddof_+j,k*noddof_+l) +=   estiff_stat(i*my::numdim_+j,k*my::numdim_+l)
-                                                       + erea_u(i*my::numdim_+j,k*my::numdim_+l)
-                                                       + estiff_stress(i*my::numdim_+j,k*my::numdim_+l);
+            (*stiffmatrix)(i*noddof_+j,k*noddof_+l) +=   sub_stiff(i*my::numdim_+j,k*my::numdim_+l);
         }
       for (int i=0; i<my::numnod_; i++)
         for(int j=0; j<my::numdim_; j++)
@@ -512,10 +489,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::nlnstiff_poroelast(
     for (int i=0; i<my::numnod_; i++)
     {
       for(int j=0; j<my::numdim_; j++)
-        (*force)(i*noddof_+j) +=    ecoupl_force_stress(i*my::numdim_+j)
-                                  + ecoupl_force_p(i*my::numdim_+j)
-                                  + ecoupl_force_v(i*my::numdim_+j)
-                                  + erea_force(i*my::numdim_+j);
+        (*force)(i*noddof_+j) +=    sub_force(i*my::numdim_+j);
 
       (*force)(i*noddof_+my::numdim_) += ecoupl_force_p1(i);
     }
@@ -537,74 +511,42 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
                                     const LINALG::Matrix<my::numdim_,my::numnod_> & evelnp,
                                     const LINALG::Matrix<my::numnod_,1> & epreaf,
                                     const LINALG::Matrix<my::numnod_, 1>*  porosity_dof,
+                                    LINALG::Matrix<my::numdof_,my::numdof_>& erea_v,
+                                    LINALG::Matrix<my::numdof_,my::numdof_>* sub_stiff,
+                                    LINALG::Matrix<my::numdof_,1>*       sub_force,
                                     LINALG::Matrix<my::numdof_,my::numnod_>& ecoupl_p1,
                                     LINALG::Matrix<my::numnod_,numdof_>& estiff_p1,
                                     LINALG::Matrix<my::numnod_,1>& ecoupl_force_p1
                                         )
 {
-  double reacoeff = my::fluidmat_->ComputeReactionCoeff();
-
   LINALG::Matrix<my::numdim_,my::numnod_> N_XYZ;
-  LINALG::Matrix<my::numderiv2_,my::numnod_> N_XYZ2;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
   LINALG::Matrix<my::numdim_,my::numdim_> defgrd(true);
   LINALG::Matrix<my::numnod_,1> shapefct;
   LINALG::Matrix<my::numdim_,my::numnod_> deriv ;
-  LINALG::Matrix<my::numderiv2_,my::numnod_> deriv2;
+
+  LINALG::Matrix<my::numstr_,1> fstress(true);
 
   for (int gp=0; gp<my::numgpt_; ++gp)
   {
-    DRT::UTILS::shape_function<distype>(my::xsi_[gp],shapefct);
-    DRT::UTILS::shape_function_deriv1<distype>(my::xsi_[gp],deriv);
+    //evaluate shape functions and derivatives at integration point
+    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    /* get the inverse of the Jacobian matrix which looks like:
-     **            [ X_,r  Y_,r  Z_,r ]^-1
-     **     J^-1 = [ X_,s  Y_,s  Z_,s ]
-     **            [ X_,t  Y_,t  Z_,t ]
-     */
-
-    // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(my::invJ_[gp],deriv); // (6.21)
-    double detJ = my::detJ_[gp]; // (6.22)
-
-    if( my::ishigherorder_ )
-    {
-      // transposed jacobian "dX/ds"
-      LINALG::Matrix<my::numdim_,my::numdim_> xjm0;
-      xjm0.MultiplyNT(deriv,xrefe);
-
-      // get the second derivatives of standard element at current GP w.r.t. rst
-      DRT::UTILS::shape_function_deriv2<distype>(my::xsi_[gp],deriv2);
-      // get the second derivatives of standard element at current GP w.r.t. XYZ
-      DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
-    }
-    else
-    {
-      deriv2.Clear();
-      N_XYZ2.Clear();
-    }
-
-    // get Jacobian matrix and determinant w.r.t. spatial configuration
-    //! transposed jacobian "dx/ds"
-    LINALG::Matrix<my::numdim_,my::numdim_> xjm;
-    //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<my::numdim_,my::numdim_> xji;
-    xjm.MultiplyNT(deriv,xcurr);
-    const double det = xji.Invert(xjm);
-
-    // determinant of deformationgradient: det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-    const double J = det/detJ;
+    //jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     //----------------------------------------------------
     // pressure at integration point
     double press = shapefct.Dot(epreaf);
 
-    // pressure gradient at integration point
-    LINALG::Matrix<my::numdim_,1> Gradp;
-    Gradp.Multiply(N_XYZ,epreaf);
+    // structure velocity at integration point
+    LINALG::Matrix<my::numdim_,1> velint(true);
+
+    for(int i=0; i<my::numnod_; i++)
+      for(int j=0; j<my::numdim_; j++)
+        velint(j) += nodalvel(j,i) * shapefct(i);
 
     // fluid velocity at integration point
     LINALG::Matrix<my::numdim_,1> fvelint;
@@ -614,77 +556,50 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     LINALG::Matrix<my::numdim_,my::numdim_>              fvelder;
     fvelder.MultiplyNT(evelnp,N_XYZ);
 
-    // structure displacement and velocity at integration point
-    LINALG::Matrix<my::numdim_,1> dispint(true);
-    LINALG::Matrix<my::numdim_,1> velint(true);
-
-    for(int i=0; i<my::numnod_; i++)
-      for(int j=0; j<my::numdim_; j++)
-      {
-        dispint(j) += nodaldisp(j,i) * shapefct(i);
-        velint(j) += nodalvel(j,i) * shapefct(i);
-      }
+    // pressure gradient at integration point
+    LINALG::Matrix<my::numdim_,1> Gradp;
+    Gradp.Multiply(N_XYZ,epreaf);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+
+    // non-linear B-operator
+    LINALG::Matrix<my::numstr_,my::numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
+
+    // Right Cauchy-Green tensor = F^T * F
+    LINALG::Matrix<my::numdim_,my::numdim_> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // inverse Right Cauchy-Green tensor
+    LINALG::Matrix<my::numdim_,my::numdim_> C_inv(false);
+    C_inv.Invert(cauchygreen);
 
     // inverse deformation gradient F^-1
     LINALG::Matrix<my::numdim_,my::numdim_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
-    //------------------------------------ build F^-1 as vector 9x1
-    LINALG::Matrix<my::numdim_*my::numdim_,1> defgrd_inv_vec;
-    defgrd_inv_vec(0)=defgrd_inv(0,0);
-    defgrd_inv_vec(1)=defgrd_inv(0,1);
-    defgrd_inv_vec(2)=defgrd_inv(0,2);
-    defgrd_inv_vec(3)=defgrd_inv(1,0);
-    defgrd_inv_vec(4)=defgrd_inv(1,1);
-    defgrd_inv_vec(5)=defgrd_inv(1,2);
-    defgrd_inv_vec(6)=defgrd_inv(2,0);
-    defgrd_inv_vec(7)=defgrd_inv(2,1);
-    defgrd_inv_vec(8)=defgrd_inv(2,2);
-
-//    //------------------------------------ build F^-T as vector 9x1
-//    LINALG::Matrix<9,1> defgrd_IT_vec;
-//    defgrd_IT_vec(0)=defgrd_inv(0,0);
-//    defgrd_IT_vec(1)=defgrd_inv(1,0);
-//    defgrd_IT_vec(2)=defgrd_inv(2,0);
-//    defgrd_IT_vec(3)=defgrd_inv(0,1);
-//    defgrd_IT_vec(4)=defgrd_inv(1,1);
-//    defgrd_IT_vec(5)=defgrd_inv(2,1);
-//    defgrd_IT_vec(6)=defgrd_inv(0,2);
-//    defgrd_IT_vec(7)=defgrd_inv(1,2);
-//    defgrd_IT_vec(8)=defgrd_inv(2,2);
-
-    //--------------------------- build N_X operator (wrt material config)
-    LINALG::Matrix<9,my::numdof_> N_X(true); // set to zero
-    for (int i=0; i<my::numnod_; ++i)
-    {
-      N_X(0,3*i+0) = N_XYZ(0,i);
-      N_X(1,3*i+1) = N_XYZ(0,i);
-      N_X(2,3*i+2) = N_XYZ(0,i);
-
-      N_X(3,3*i+0) = N_XYZ(1,i);
-      N_X(4,3*i+1) = N_XYZ(1,i);
-      N_X(5,3*i+2) = N_XYZ(1,i);
-
-      N_X(6,3*i+0) = N_XYZ(2,i);
-      N_X(7,3*i+1) = N_XYZ(2,i);
-      N_X(8,3*i+2) = N_XYZ(2,i);
-    }
-
     //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-    LINALG::Matrix<1,my::numdof_> dJ_dus;
-    dJ_dus.MultiplyTN(J,defgrd_inv_vec,N_X);
+    LINALG::Matrix<1,my::numdof_> dJ_dus = ComputeLinearizationOfJacobian(J,N_XYZ,defgrd_inv);
 
+    //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture displacement d(GradJ)/d(us)
+    //---------------------d(GradJ)/dus =  dJ/dus * F^-T . : dF/dX + J * dF^-T/dus : dF/dX + J * F^-T : N_X_X
+
+    // compute some auxiliary matrixes for computation of linearization
+    //dF^-T/dus
+    LINALG::Matrix<my::numdim_*my::numdim_,my::numdof_>  dFinvTdus(true);
     //F^-T * Grad p
     LINALG::Matrix<my::numdim_,1> Finvgradp;
-    Finvgradp.MultiplyTN(defgrd_inv, Gradp);
+    //dF^-T/dus * Grad p
+    LINALG::Matrix<my::numdim_,my::numdof_> dFinvdus_gradp(true);
+    //dC^-1/dus * Grad p
+    LINALG::Matrix<my::numstr_,my::numdof_> dCinv_dus (true);
+
+    ComputeAuxiliaryValues(N_XYZ,defgrd_inv,C_inv,Gradp,dFinvTdus,Finvgradp,dFinvdus_gradp,dCinv_dus);
 
     //--------------------------------------------------------------------
 
     //linearization of porosity w.r.t structure displacement d\phi/d(us) = d\phi/dJ*dJ/d(us)
-    LINALG::Matrix<1,my::numdof_> dphi_dus(true);
+    LINALG::Matrix<1,my::numdof_> dphi_dus;
     double porosity=0.0;
 
     ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
@@ -704,17 +619,58 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     //--------------------------------------------------------
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    double detJ_w = detJ*my::intpoints_.Weight(gp);//gpweights[gp];
+    if(my::fluidmat_->Type() == "Darcy-Brinkman")
+    {
+      FillMatrixAndVectorsBrinkman(
+                                    gp,
+                                    J,
+                                    porosity,
+                                    fvelder,
+                                    defgrd_inv,
+                                    bop,
+                                    C_inv,
+                                    dphi_dus,
+                                    dJ_dus,
+                                    dCinv_dus,
+                                    dFinvTdus,
+                                    sub_stiff,
+                                    sub_force,
+                                    fstress);
+    }
 
+    FillMatrixAndVectors(   gp,
+                            shapefct,
+                            N_XYZ,
+                            J,
+                            press,
+                            porosity,
+                            velint,
+                            fvelint,
+                            fvelder,
+                            defgrd_inv,
+                            bop,
+                            C_inv,
+                            Finvgradp,
+                            dphi_dus,
+                            dJ_dus,
+                            dCinv_dus,
+                            dFinvdus_gradp,
+                            erea_v,
+                            sub_stiff,
+                            sub_force,
+                            fstress);
+
+    // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
+    double detJ_w = my::detJ_[gp]*my::intpoints_.Weight(gp);//gpweights[gp];
+
+    const double reacoeff = my::fluidmat_->ComputeReactionCoeff();
     //if (force != NULL or stiffmatrix != NULL or reamatrix != NULL )
     {
       for (int k=0; k<my::numnod_; k++)
       {
-        //const int fk = my::numdim_*k;
         const double fac = detJ_w* shapefct(k);
-        //const double v = fac * reacoeff * porosity * porosity* J;
 
-        ecoupl_force_p1(k) += fac*W;//fac*(dW_dp*press+dW_dphi*porosity+dW_dJ*J);//fac*W;
+        ecoupl_force_p1(k) += fac*W;
 
         for (int i=0; i<my::numnod_; i++)
         {
@@ -729,7 +685,38 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
           estiff_p1(k,i*noddof_+my::numdim_) += fac * dW_dphi * shapefct(i);
         }
       }
+    }
 
+    if(my::fluidmat_->Type() == "Darcy-Brinkman")
+    {
+      double visc = my::fluidmat_->Viscosity();
+      LINALG::Matrix<my::numdim_,my::numdim_> CinvFvel;
+      LINALG::Matrix<my::numdim_,my::numdim_> visctress1;
+      CinvFvel.Multiply(C_inv,fvelder);
+      visctress1.MultiplyNT(CinvFvel,defgrd_inv);
+      LINALG::Matrix<my::numdim_,my::numdim_> visctress2(visctress1);
+      visctress1.UpdateT(1.0,visctress2,1.0);
+
+      fstress(0) = visctress1(0,0);
+      fstress(1) = visctress1(1,1);
+      fstress(2) = visctress1(2,2);
+      fstress(3) = visctress1(0,1);
+      fstress(4) = visctress1(1,2);
+      fstress(5) = visctress1(2,0);
+
+      fstress.Scale(detJ_w * visc * J);
+
+      //B^T . C^-1
+      LINALG::Matrix<my::numdof_,1> fstressb(true);
+      fstressb.MultiplyTN(bop,fstress);
+
+      for (int k=0; k<my::numnod_; k++)
+      {
+        const double fac = detJ_w* shapefct(k);
+        for (int i=0; i<my::numnod_; i++)
+          for(int j=0; j<my::numdim_; j++)
+            ecoupl_p1(i*my::numdim_+j,k) += fac * fstressb(i*my::numdim_+j) * shapefct(i);
+      }
     }
     /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
@@ -774,26 +761,12 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::coupling_poroelast(
   }
   //initialize element matrizes
   LINALG::Matrix<my::numdof_,(my::numdim_+1)*my::numnod_> ecoupl(true);
-  LINALG::Matrix<my::numdof_,my::numnod_> ecoupl_p(true);
-  LINALG::Matrix<my::numdof_,my::numdof_> ecoupl_v(true);
 
   LINALG::Matrix<my::numnod_,my::numnod_> ecoupl_p1_p(true);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-
-  my::GaussPointLoopOD( params,
-                         xrefe,
-                         xcurr,
-                         disp,
-                         vel,
-                         evelnp,
-                         epreaf,
-                         porosity,
-                         ecoupl_p,
-                         ecoupl_v  );
-
   GaussPointLoopP1OD( params,
                       xrefe,
                       xcurr,
@@ -802,7 +775,8 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::coupling_poroelast(
                       evelnp,
                       epreaf,
                       porosity,
-                      ecoupl_p1_p);
+                      ecoupl_p1_p,
+                      &ecoupl);
 
   //if (force != NULL )
   //{
@@ -811,41 +785,6 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::coupling_poroelast(
 
   if (stiffmatrix != NULL )
   {
-
-    // add structure displacement - fluid velocity part to matrix
-    for (int ui=0; ui<my::numnod_; ++ui)
-    {
-      const int dim_ui = my::numdim_*ui;
-
-      for (int jdim=0; jdim < my::numdim_;++jdim)
-      {
-        const int dim_ui_jdim = dim_ui+jdim;
-
-        for (int vi=0; vi<my::numnod_; ++vi)
-        {
-          const int numdof_vi = (my::numdim_+1)*vi;
-          const int dim_vi = my::numdim_*vi;
-
-          for (int idim=0; idim <my::numdim_; ++idim)
-            ecoupl(dim_ui_jdim , numdof_vi+idim) += ecoupl_v(dim_ui_jdim , dim_vi+idim);
-        }
-      }
-    }
-
-    // add structure displacement - fluid pressure part to matrix
-    for (int ui=0; ui<my::numnod_; ++ui)
-    {
-      const int dim_ui = my::numdim_*ui;
-
-      for (int jdim=0; jdim < my::numdim_;++jdim)
-      {
-        const int dim_ui_jdim = dim_ui+jdim;
-
-        for (int vi=0; vi<my::numnod_; ++vi)
-          ecoupl( dim_ui_jdim , (my::numdim_+1)*vi+my::numdim_ ) += ecoupl_p( dim_ui_jdim , vi);
-      }
-    }
-
     //TODO theta should be on time integrator level
     // build tangent coupling matrix : effective dynamic stiffness coupling matrix
     //    K_{Teffdyn} = 1/dt C
@@ -863,7 +802,6 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::coupling_poroelast(
         (*stiffmatrix)( noddof_*ui+my::numdim_ , (my::numdim_+1)*ni+my::numdim_ ) += theta * ecoupl_p1_p( ui , ni);
   }
 
-  //cout<<"ecoupl_p1_p"<<endl<<ecoupl_p1_p<<endl;
   return;
 
 }  // coupling_poroelast()
@@ -881,50 +819,112 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
                                     const LINALG::Matrix<my::numdim_,my::numnod_> & evelnp,
                                     const LINALG::Matrix<my::numnod_,1> & epreaf,
                                     const LINALG::Matrix<my::numnod_, 1>*  porosity_dof,
-                                    LINALG::Matrix<my::numnod_,my::numnod_>& ecoupl_p1
+                                    LINALG::Matrix<my::numnod_,my::numnod_>& ecoupl_p1,
+                                    LINALG::Matrix<my::numdof_, (my::numdim_ + 1) * my::numnod_>* sub_stiff
                                         )
 {
 
-  LINALG::Matrix<my::numnod_,1> shapefct;
-  LINALG::Matrix<my::numdim_,my::numnod_> deriv ;
+  LINALG::Matrix<my::numdim_,my::numnod_> N_XYZ;       //  first derivatives at gausspoint w.r.t. X, Y,Z
+  // build deformation gradient wrt to material configuration
+  // in case of prestressing, build defgrd wrt to last stored configuration
+  // CAUTION: defgrd(true): filled with zeros!
+  LINALG::Matrix<my::numdim_,my::numdim_> defgrd(true); //  deformation gradiant evaluated at gauss point
+  LINALG::Matrix<my::numnod_,1> shapefct;           //  shape functions evalulated at gauss point
+  LINALG::Matrix<my::numdim_,my::numnod_> deriv(true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
   for (int gp=0; gp<my::numgpt_; ++gp)
   {
-    DRT::UTILS::shape_function<distype>(my::xsi_[gp],shapefct);
-    DRT::UTILS::shape_function_deriv1<distype>(my::xsi_[gp],deriv);
+    //evaluate shape functions and derivatives at integration point
+    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
+    //evaluate second derivatives of shape functions at integration point
+    //ComputeSecondDerivativesOfShapeFunctions(gp,xrefe,deriv,deriv2,N_XYZ,N_XYZ2);
 
-    /* get the inverse of the Jacobian matrix which looks like:
-     **            [ X_,r  Y_,r  Z_,r ]^-1
-     **     J^-1 = [ X_,s  Y_,s  Z_,s ]
-     **            [ X_,t  Y_,t  Z_,t ]
-     */
+    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
-    double detJ = my::detJ_[gp]; // (6.22)
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
-    // get Jacobian matrix and determinant w.r.t. spatial configuration
-    //! transposed jacobian "dx/ds"
-    LINALG::Matrix<my::numdim_,my::numdim_> xjm;
-    //! inverse of transposed jacobian "ds/dx"
-    LINALG::Matrix<my::numdim_,my::numdim_> xji;
-    xjm.MultiplyNT(deriv,xcurr);
-    const double det = xji.Invert(xjm);
+    // non-linear B-operator
+    LINALG::Matrix<my::numstr_,my::numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
 
-    // determinant of deformationgradient: det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-    const double J = det/detJ;
+    // -----------------Right Cauchy-Green tensor = F^T * F
+    LINALG::Matrix<my::numdim_,my::numdim_> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
 
-    //----------------------------------------------------
-    // pressure at integration point
+    //------------------ inverse Right Cauchy-Green tensor
+    LINALG::Matrix<my::numdim_,my::numdim_> C_inv(false);
+    C_inv.Invert(cauchygreen);
+
+    //---------------- get pressure at integration point
     double press = shapefct.Dot(epreaf);
 
-    //--------------------------------------------------------------------
+    //------------------ get material pressure gradient at integration point
+    LINALG::Matrix<my::numdim_,1> Gradp;
+    Gradp.Multiply(N_XYZ,epreaf);
 
-    //linearization of porosity w.r.t structure displacement d\phi/d(us) = d\phi/dJ*dJ/d(us)
-    LINALG::Matrix<1,my::numdof_> dphi_dus(true);
+    //--------------------- get fluid velocity at integration point
+    LINALG::Matrix<my::numdim_,1> fvelint;
+    fvelint.Multiply(evelnp,shapefct);
+
+    // material fluid velocity gradient at integration point
+    LINALG::Matrix<my::numdim_,my::numdim_>              fvelder;
+    fvelder.MultiplyNT(evelnp,N_XYZ);
+
+    //! ----------------structure velocity at integration point
+    LINALG::Matrix<my::numdim_,1> velint(true);
+    for(int i=0; i<my::numnod_; i++)
+      for(int j=0; j<my::numdim_; j++)
+        velint(j) += nodalvel(j,i) * shapefct(i);
+
+    // inverse deformation gradient F^-1
+    LINALG::Matrix<my::numdim_,my::numdim_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
+    //**************************************************+auxilary variables for computing the porosity and linearization
+    double dphi_dp=0.0;
     double porosity=0.0;
-    //dummy
-    LINALG::Matrix<1,my::numdof_>    dJ_dus(true);
 
-    ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
+    ComputePorosityAndLinearizationOD(params,
+                                      press,
+                                      J,
+                                      gp,
+                                      shapefct,
+                                      porosity_dof,
+                                      porosity,
+                                      dphi_dp);
+
+    // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
+
+    FillMatrixAndVectorsOD(
+                              gp,
+                              shapefct,
+                              N_XYZ,
+                              J,
+                              porosity,
+                              dphi_dp,
+                              velint,
+                              fvelint,
+                              defgrd_inv,
+                              Gradp,
+                              bop,
+                              C_inv,
+                              sub_stiff);
+
+    if(my::fluidmat_->Type() == "Darcy-Brinkman")
+    {
+      FillMatrixAndVectorsBrinkmanOD(
+                                      gp,
+                                      shapefct,
+                                      N_XYZ,
+                                      J,
+                                      porosity,
+                                      dphi_dp,
+                                      fvelder,
+                                      defgrd_inv,
+                                      bop,
+                                      C_inv,
+                                      sub_stiff);
+    }//darcy-brinkman
 
     double    dW_dp   = 0.0;
     my::structmat_->ConsitutiveDerivatives(params,
@@ -939,7 +939,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
     //--------------------------------------------------------
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    double detJ_w = detJ*my::intpoints_.Weight(gp);//gpweights[gp];
+    double detJ_w = my::detJ_[gp]*my::intpoints_.Weight(gp);//gpweights[gp];
 
     for (int k=0; k<my::numnod_; k++)
     {

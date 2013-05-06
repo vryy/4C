@@ -31,23 +31,55 @@ POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
     structincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_->StructureField()()->Dispnp())))),
     fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_->FluidField()()->Velnp()))))
 {
-    // build a proxy of the structure discretization for the scatra field
-    Teuchos::RCP<DRT::DofSet> structdofset
-      = poro_->StructureField()->Discretization()->GetDofSetProxy();
-    // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> scatradofset
-      = scatra_->ScaTraField().Discretization()->GetDofSetProxy();
+  // the problem is two way coupled, thus each discretization must know the other discretization
+  AddDofSets();
 
-    // check if scatra field has 2 discretizations, so that coupling is poPOROELASTble
-    if (scatra_->ScaTraField().Discretization()->AddDofSet(structdofset)!=1)
-      dserror("unexpected dof sets in scatra field");
-    if (poro_->StructureField()->Discretization()->AddDofSet(scatradofset)!=2)
+  const Teuchos::ParameterList& params = DRT::Problem::Instance()->PoroScatraControlParams();
+  // Get the parameters for the ConvergenceCheck
+  itmax_ = params.get<int>("ITEMAX"); // default: =10
+  ittol_ = params.get<double>("CONVTOL"); // default: =1e-6
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_2WC::AddDofSets(bool replace)
+{
+  // the problem is two way coupled, thus each discretization must know the other discretization
+  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
+  Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
+
+  //get discretizations
+  Teuchos::RCP<DRT::Discretization> structdis = poro_->StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> scatradis = scatra_->ScaTraField().Discretization();
+
+  if(poro_->HasSubmeshes())
+  {
+    // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
+    structdofset = structdis->GetDofSetProxy(structdis->NodeColMap(),structdis->ElementColMap());
+    // build a proxy of the fluid discretization for the structure field
+    scatradofset = scatradis->GetDofSetProxy(scatradis->NodeColMap(),scatradis->ElementColMap());
+  }
+  else
+  {
+    // build a proxy of the structure discretization for the fluid field
+    structdofset = structdis->GetDofSetProxy();
+    // build a proxy of the fluid discretization for the structure field
+    scatradofset = scatradis->GetDofSetProxy();
+  }
+
+  if(not replace)
+  {
+    // check if ScatraField has 2 discretizations, so that coupling is possible
+    if (scatradis->AddDofSet(structdofset) != 1)
+      dserror("unexpected dof sets in fluid field");
+    if (structdis->AddDofSet(scatradofset)!=2)
       dserror("unexpected dof sets in structure field");
-
-    const Teuchos::ParameterList& params = DRT::Problem::Instance()->PoroScatraControlParams();
-    // Get the parameters for the ConvergenceCheck
-    itmax_ = params.get<int>("ITEMAX"); // default: =10
-    ittol_ = params.get<double>("CONVTOL"); // default: =1e-6
+  }
+  else
+  {
+    scatradis->ReplaceDofSet(1,structdofset);
+    structdis->ReplaceDofSet(2,scatradofset);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -75,14 +107,27 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
   // (Note that dofmaps might have changed in a redistribution call!)
   if (restart)
   {
-    scatra_->ScaTraField().ReadRestart(restart);
     SetScatraSolution();
+    SetPoroSolution();
+
     poro_->ReadRestart(restart);
+    scatra_->ScaTraField().ReadRestart(restart);
+
+    //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
+    if(poro_->HasSubmeshes())
+      AddDofSets(true);
+
+    // the variables need to be set on other field
+    SetScatraSolution();
+    SetPoroSolution();
 
     //second restart needed due to two way coupling.
-    // the poro variables need to be set on scatra
-    SetPoroSolution();
     scatra_->ScaTraField().ReadRestart(restart);
+    poro_->ReadRestart(restart);
+
+    //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
+    if(poro_->HasSubmeshes())
+      AddDofSets(true);
 
     SetTimeStep(poro_->Time(), restart);
   }

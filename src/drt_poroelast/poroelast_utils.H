@@ -21,6 +21,8 @@
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
 
+#include "../drt_scatra/scatra_utils_clonestrategy.H"
+
 /*----------------------------------------------------------------------*
  |  forward declaration                                                 |
  *----------------------------------------------------------------------*/
@@ -79,6 +81,23 @@ namespace POROELAST
       /// check for correct material
       void CheckMaterialType(const int matid);
 
+    }; // class PoroelastCloneStrategy
+
+    //! \brief implementation of special clone strategy for automatic generation
+    //!        of scatra discretization from a given structure discretization for porous media
+    class PoroScatraCloneStrategy: public SCATRA::ScatraFluidCloneStrategy {
+    public:
+
+      /// constructor
+      explicit PoroScatraCloneStrategy() {}
+      /// destructor
+      virtual ~PoroScatraCloneStrategy() {}
+
+    protected:
+
+      /// determine element type string and whether element is copied or not
+      virtual bool DetermineEleType(DRT::Element* actele, const bool ismyele,
+          std::vector<std::string>& eletype);
     }; // class PoroelastCloneStrategy
 
     /// setup poro discretization,i.e. clone the structural discretization

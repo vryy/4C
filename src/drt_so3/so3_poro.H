@@ -378,79 +378,138 @@ protected:
   //! Calculate nonlinear stiffness and internal force for poroelasticity problems
   void nlnstiff_poroelast(
       std::vector<int>& lm, ///< location matrix
-      LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
-      LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
-      LINALG::Matrix<numnod_, 1>*               porosity,
-      //    std::vector<double>&      residual,       ///< current residual displ
-      LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
-      LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
-      LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
-      LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
-      LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      Teuchos::ParameterList& params ///< algorithmic parameters e.g. time
+      LINALG::Matrix<numdim_, numnod_>&       disp,         //< current displacements
+      LINALG::Matrix<numdim_, numnod_>&       vel,          //< current velocities
+      LINALG::Matrix<numdim_,numnod_> &       evelnp,       //< fluid velocity of element
+      LINALG::Matrix<numnod_,1> &             epreaf,       //< fluid pressure of element
+      LINALG::Matrix<numdof_,numdof_>*        stiffmatrix,  //< element stiffness matrix
+      LINALG::Matrix<numdof_,numdof_>*        reamatrix,    //< element reactive matrix
+      LINALG::Matrix<numdof_,1>*              force,        //< element internal force vector
+      Teuchos::ParameterList&                 params        //< algorithmic parameters e.g. time
       );
 
   //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
   void coupling_poroelast(
       std::vector<int>& lm, ///< location matrix
-      LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
-      LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
-      LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
-      LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
-      LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
-      LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* reamatrix, //< element reactive matrix
-      LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
+      LINALG::Matrix<numdim_, numnod_>&               disp,         //< current displacements
+      LINALG::Matrix<numdim_, numnod_>&               vel,          //< current velocities
+      LINALG::Matrix<numdim_,numnod_> &               evelnp,       //< fluid velocity of element
+      LINALG::Matrix<numnod_,1> &                     epreaf,       //< fluid pressure of element
+      LINALG::Matrix<numdof_,(numdim_+1)*numnod_>*    stiffmatrix,  //< element stiffness matrix
+      LINALG::Matrix<numdof_,(numdim_+1)*numnod_>*    reamatrix,    //< element reactive matrix
+      LINALG::Matrix<numdof_,1>*                      force,        //< element internal force vector
+      Teuchos::ParameterList&                         params        //< algorithmic parameters e.g. time
+      );
 
   //! Calculate coupling stress for poroelasticity problems
   virtual void couplstress_poroelast(
-      std::vector<double>& disp, ///< current displacements
-      LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
-      LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
-      Epetra_SerialDenseMatrix* elestress, ///< stresses at GP
-      Epetra_SerialDenseMatrix* elestrain, ///< strains at GP
-      Teuchos::ParameterList& params, ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType iostress ///< stress output option
+      LINALG::Matrix<numdim_, numnod_>&   disp,        //< current displacements
+      LINALG::Matrix<numdim_,numnod_> &   evelnp,     //< fluid velocity of element
+      LINALG::Matrix<numnod_,1> &         epreaf,     //< fluid pressure of element
+      Epetra_SerialDenseMatrix*           elestress,  //< stresses at GP
+      Epetra_SerialDenseMatrix*           elestrain,  //< strains at GP
+      Teuchos::ParameterList&             params,     //< algorithmic parameters e.g. time
+      const INPAR::STR::StressType        iostress    //< stress output option
       );
 
   void GaussPointLoop(   Teuchos::ParameterList& params,
-                                      const LINALG::Matrix<numdim_,numnod_>& xrefe,
-                                      const LINALG::Matrix<numdim_,numnod_>& xcurr,
-                                      const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
-                                      const LINALG::Matrix<numdim_,numnod_>& nodalvel,
+                                      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+                                      const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+                                      const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+                                      const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
                                       const LINALG::Matrix<numdim_,numnod_> & evelnp,
-                                      const LINALG::Matrix<numnod_,1> & epreaf,
-                                      const LINALG::Matrix<numnod_, 1>*  porosity_dof,
-                                      LINALG::Matrix<numdof_,numdof_>& estiff_stat,
-                                      LINALG::Matrix<numdof_,numdof_>& erea_u,
-                                      LINALG::Matrix<numdof_,numdof_>& erea_v,
-                                      LINALG::Matrix<numdof_,numdof_>& estiff_stress,
-                                      LINALG::Matrix<numdof_,1>&       erea_force,
-                                      LINALG::Matrix<numdof_,1>&       ecoupl_force_p,
-                                      LINALG::Matrix<numdof_,1>&       ecoupl_force_v,
-                                      LINALG::Matrix<numdof_,1>&       ecoupl_force_stress,
-                                      LINALG::Matrix<numstr_,1>&       fstress
+                                      const LINALG::Matrix<numnod_,1> &       epreaf,
+                                      const LINALG::Matrix<numnod_, 1>*       porosity_dof,
+                                      LINALG::Matrix<numdof_,numdof_>&        erea_v,
+                                      LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,
+                                      LINALG::Matrix<numdof_,1>*              force
                                           );
 
-  void GaussPointLoopOD(   Teuchos::ParameterList& params,
-                                      const LINALG::Matrix<numdim_,numnod_>& xrefe,
-                                      const LINALG::Matrix<numdim_,numnod_>& xcurr,
-                                      const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
-                                      const LINALG::Matrix<numdim_,numnod_>& nodalvel,
-                                      const LINALG::Matrix<numdim_,numnod_> & evelnp,
-                                      const LINALG::Matrix<numnod_,1> & epreaf,
-                                      const LINALG::Matrix<numnod_, 1>*  porosity_dof,
-                                      LINALG::Matrix<numdof_,numnod_>& ecoupl_p,
-                                      LINALG::Matrix<numdof_,numdof_>& ecoupl_v
+  void FillMatrixAndVectors(
+      const int &                               gp,
+      const LINALG::Matrix<numnod_,1>&          shapefct,
+      const LINALG::Matrix<numdim_,numnod_>&    N_XYZ,
+      const double&                             J,
+      const double&                             press,
+      const double&                             porosity,
+      const LINALG::Matrix<numdim_,1>&          velint,
+      const LINALG::Matrix<numdim_,1>&          fvelint,
+      const LINALG::Matrix<numdim_,numdim_>&    fvelder,
+      const LINALG::Matrix<numdim_,numdim_>&    defgrd_inv,
+      const LINALG::Matrix<numstr_,numdof_>&    bop,
+      const LINALG::Matrix<numdim_,numdim_>&    C_inv,
+      const LINALG::Matrix<numdim_,1>&          Finvgradp,
+      const LINALG::Matrix<1,numdof_>&          dphi_dus,
+      const LINALG::Matrix<1,numdof_>&          dJ_dus,
+      const LINALG::Matrix<numstr_,numdof_>&    dCinv_dus,
+      const LINALG::Matrix<numdim_,numdof_>&    dFinvdus_gradp,
+      LINALG::Matrix<numdof_,numdof_>&          erea_v,
+      LINALG::Matrix<numdof_, numdof_>*         stiffmatrix,
+      LINALG::Matrix<numdof_,1>*                force,
+      LINALG::Matrix<numstr_,1>&                fstress);
+
+  void FillMatrixAndVectorsBrinkman(
+      const int &                                     gp,
+      const double&                                   J,
+      const double&                                   porosity,
+      const LINALG::Matrix<numdim_,numdim_>&          fvelder,
+      const LINALG::Matrix<numdim_,numdim_>&          defgrd_inv,
+      const LINALG::Matrix<numstr_,numdof_>&          bop,
+      const LINALG::Matrix<numdim_,numdim_>&          C_inv,
+      const LINALG::Matrix<1,numdof_>&                dphi_dus,
+      const LINALG::Matrix<1,numdof_>&                dJ_dus,
+      const LINALG::Matrix<numstr_,numdof_>&          dCinv_dus,
+      const LINALG::Matrix<numdim_*numdim_,numdof_>&  dFinvTdus,
+      LINALG::Matrix<numdof_, numdof_>*               stiffmatrix,
+      LINALG::Matrix<numdof_,1>*                      force,
+      LINALG::Matrix<numstr_,1>&                      fstress);
+
+  void FillMatrixAndVectorsOD(
+      const int &                             gp,
+      const LINALG::Matrix<numnod_,1>&        shapefct,
+      const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+      const double&                           J,
+      const double&                           porosity,
+      const double&                           dphi_dp,
+      const LINALG::Matrix<numdim_,1>&        velint,
+      const LINALG::Matrix<numdim_,1>&        fvelint,
+      const LINALG::Matrix<numdim_,numdim_>&  defgrd_inv,
+      const LINALG::Matrix<numdim_,1>&        Gradp,
+      const LINALG::Matrix<numstr_,numdof_>&  bop,
+      const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+      LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix);
+
+  void FillMatrixAndVectorsBrinkmanOD(
+      const int &                             gp,
+      const LINALG::Matrix<numnod_,1>&        shapefct,
+      const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+      const double&                           J,
+      const double&                           porosity,
+      const double&                           dphi_dp,
+      const LINALG::Matrix<numdim_,numdim_>&  fvelder,
+      const LINALG::Matrix<numdim_,numdim_>&  defgrd_inv,
+      const LINALG::Matrix<numstr_,numdof_>&  bop,
+      const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+      LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix);
+
+  void GaussPointLoopOD(
+      Teuchos::ParameterList&                 params,
+      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+      const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+      const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+      const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
+      const LINALG::Matrix<numdim_,numnod_>&  evelnp,
+      const LINALG::Matrix<numnod_,1> &       epreaf,
+      LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix
                                           );
 
   void ExtractValuesFromGlobalVector(
-                                      const DRT::Discretization&   discretization, ///< discretization
-                                      const int&                   dofset,
-                                      const std::vector<int>&      lm,             ///<
-                                      LINALG::Matrix<numdim_,numnod_> *  matrixtofill,   ///< vector field
-                                      LINALG::Matrix<numnod_,1> *     vectortofill,   ///< scalar field
-                                      const std::string            state         ///< state of the global vector
+                                      const DRT::Discretization&          discretization, ///< discretization
+                                      const int&                          dofset,         ///< number of dofset
+                                      const std::vector<int>&             lm,             ///< location vector
+                                      LINALG::Matrix<numdim_,numnod_> *   matrixtofill,   ///< vector field
+                                      LINALG::Matrix<numnod_,1> *         vectortofill,   ///< scalar field
+                                      const std::string                   state           ///< state of the global vector
                                       );
 
 //private:
@@ -461,12 +520,56 @@ protected:
 
   //! push forward of material stresses to the current, spatial configuration
   void PK2toCauchy(
-    LINALG::Matrix<numstr_,1>& stress,
-    LINALG::Matrix<numdim_,numdim_>& defgrd,
-    LINALG::Matrix<numdim_,numdim_>& cauchystress
+    LINALG::Matrix<numstr_,1>&        stress,
+    LINALG::Matrix<numdim_,numdim_>&  defgrd,
+    LINALG::Matrix<numdim_,numdim_>&  cauchystress
     );
 
   void GetMaterials();
+
+  void ComputeShapeFunctionsAndDerivatives(
+      const int &                       gp,
+      LINALG::Matrix<numnod_,1>&        shapefct,
+      LINALG::Matrix<numdim_,numnod_>&  deriv ,
+      LINALG::Matrix<numdim_,numnod_>&  N_XYZ
+      );
+
+  void ComputeSecondDerivativesOfShapeFunctions(
+      const int &                             gp,
+      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+      LINALG::Matrix<numdim_,numnod_>&        deriv ,
+      LINALG::Matrix<numderiv2_,numnod_>&     deriv2,
+      LINALG::Matrix<numdim_,numnod_>&        N_XYZ,
+      LINALG::Matrix<numderiv2_,numnod_>&     N_XYZ2);
+
+  double ComputeJacobianDeterminant(
+     const int & gp,
+     const LINALG::Matrix<numdim_,numnod_>&   xcurr,
+     const   LINALG::Matrix<numdim_,numnod_>& deriv
+     );
+
+  LINALG::Matrix<1,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
+  ComputeLinearizationOfJacobian(
+     const double& J,
+     const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+     const LINALG::Matrix<numdim_,numdim_>& defgrd_inv
+     );
+
+  void ComputeAuxiliaryValues(
+      const LINALG::Matrix<numdim_,numnod_>&    N_XYZ,
+      const LINALG::Matrix<numdim_,numdim_>&    defgrd_inv,
+      const LINALG::Matrix<numdim_,numdim_>&    C_inv,
+      const LINALG::Matrix<numdim_,1>&          Gradp,
+      LINALG::Matrix<numdim_*numdim_,numdof_>&  dFinvTdus,
+      LINALG::Matrix<numdim_,1>&                Finvgradp,
+      LINALG::Matrix<numdim_,numdof_>&          dFinvdus_gradp,
+      LINALG::Matrix<numstr_,numdof_>&          dCinv_dus);
+
+  LINALG::Matrix<DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numstr_,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
+  ComputeBOperator(
+      const LINALG::Matrix<numdim_,numdim_>& defgrd,
+      const LINALG::Matrix<numdim_,numnod_>& N_XYZ
+      );
 
   //!Gauss integration rule
   DRT::UTILS::GaussIntegration intpoints_;

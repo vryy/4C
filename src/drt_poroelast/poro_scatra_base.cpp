@@ -19,7 +19,6 @@
 #include "../drt_inpar/inpar_scatra.H"
 #include "poroelast_utils.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -114,7 +113,7 @@ void POROELAST::PORO_SCATRA_Base::SetupDiscretizations(const Epetra_Comm& comm)
   if (scatradis->NumGlobalNodes()==0)
   {
     // create the fluid scatra discretization
-    DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
+    DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,scatradis);
   }
   else
   dserror("Structure AND ScaTra discretization present. This is not supported.");

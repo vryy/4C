@@ -111,6 +111,9 @@ namespace POROELAST
 
       //@}
 
+      //! return whether the poro discretization contains submeshes (i.e. it is coupled with a pure solid)
+      bool HasSubmeshes(){return submeshes_;};
+
       //! Evaluate porosity at surface
       void CalculateSurfPoro(const string& condstring);
 
