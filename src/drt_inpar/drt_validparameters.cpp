@@ -5392,7 +5392,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 //     &list
 //     );
   IntParameter(
-    "AZSUB", 300,
+    "AZSUB", 50,
     "The maximum size of the Krylov subspace used with \"GMRES\" before\n"
     "a restart is performed.",
     &list
@@ -5630,7 +5630,7 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   DoubleParameter("STEPSIZEMIN", 0.0, "Limit minimally allowed time step size (>0)", &list);
   DoubleParameter("SIZERATIOMAX", 0.0, "Limit maximally permitted change of time step size compared to previous size, important for multi-step schemes (>0)", &list);
   DoubleParameter("SIZERATIOMIN", 0.0, "Limit minimally permitted change of time step size compared to previous size, important for multi-step schemes (>0)", &list);
-  DoubleParameter("SIZERATIOSCALE", 0.9, "This is a safety factor to scale theretical optimal step size, should be lower than 1 and must be larger than 0", &list);
+  DoubleParameter("SIZERATIOSCALE", 0.9, "This is a safety factor to scale theoretical optimal step size, should be lower than 1 and must be larger than 0", &list);
 
   setStringToIntegralParameter<int>(
     "LOCERRNORM", "Vague", "Vector norm to treat error vector with",
