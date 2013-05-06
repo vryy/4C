@@ -659,6 +659,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            Teuchos::RCP<Epetra_MultiVector> vec,
                                            IO::DiscretizationWriter::VectorType vt)
 {
+
   if(binio_)
   {
 

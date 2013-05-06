@@ -323,6 +323,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
+  // Activation time at time n+1
+  activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
 
   if(reinitswitch_)
   {
@@ -3046,6 +3048,14 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 {
   // solution
   output_->WriteVector("phinp", phinp_);
+
+  // Compute and write activation time
+  for(int k=0;k<phinp_->MyLength();k++){
+   if( (*phinp_)[k] >= 0.98 && (*activation_time_np_)[k] <= dta_*0.9)
+     (*activation_time_np_)[k] =  time_;
+  }
+  output_->WriteVector("activation_time_np", activation_time_np_);
+
 
   // convective velocity (not written in case of coupled simulations)
 //  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)

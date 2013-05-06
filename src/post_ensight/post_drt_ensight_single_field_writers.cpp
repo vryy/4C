@@ -244,6 +244,8 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   //compute number of dofs per node (ask the first node)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
+  EnsightWriter::WriteResult("activation_time_np","activation_time",dofbased,1);
+
   // write results for each transported scalar
   if (numdofpernode == 1)
   {

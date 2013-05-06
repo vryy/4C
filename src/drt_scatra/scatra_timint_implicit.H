@@ -934,6 +934,9 @@ protected:
   //! phi at times n+1
   Teuchos::RCP<Epetra_Vector> phinp_;
 
+  //! activation_time at times n+1
+    Teuchos::RCP<Epetra_Vector> activation_time_np_;
+
   //! time derivative of phi at times n
   Teuchos::RCP<Epetra_Vector> phidtn_;
   //! time derivative of phi at times n+1
