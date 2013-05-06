@@ -1427,7 +1427,7 @@ Allright, here's what you need to do:\\
 \begin{enumerate}
   \item clone the repository Baci\_stud: \\
   \texttt{git clone -$\,$-bare -b <student\_name> $\backslash$ \\
-    \phantom{aaaa} ssh://<myname>@<mycomputer>.lnm.mw.tum.de/$\sim$/<myDirectory>/Baci\_stud Baci\_bare}
+    \phantom{aaaa} ssh://<myname>@<mycomputer>.lnm.mw.tum.de/\~{}/<myDirectory>/Baci\_stud Baci\_bare}
   \item delete master branch (if there is one): \\
   \texttt{git branch $\rightarrow $ } list all branches in the current clone \\
   \texttt{git branch -d master} \\
@@ -1443,7 +1443,7 @@ Allright, here's what you need to do:\\
   \item Note: do not change into the workspace
 \end{itemize}
   \item clone baci\_bare to this folder (it will be your future workspace): \\
-  \texttt{git clone -b <student\_name> $\sim$/Baci\_bare baci}
+  \texttt{git clone -b <student\_name> \~{}/Baci\_bare baci}
   \item start eclipse, select the proper workspace (\texttt{/scratch/<student\_name>/workspace}) and create an empty C++ project
   \item Import \texttt{/scratch/<student\_name>/baci} into the new project, which will create a copy in the workspace
   \item delete the original baci:\\
@@ -1480,7 +1480,7 @@ home directory. This way they can access their code from another machine next ti
    \item switch to student branch:\\
    \texttt{git checkout <student\_name>}
    \item get the BACI version of your student:\\
-   \texttt{git pull ssh://<student\_name>@redxx.stud/$\sim$/Baci\_bare/}\\\\
+   \texttt{git pull ssh://<student\_name>@redxx.stud/\~{}/Baci\_bare/}\\\\
    In order to update the student's code you have to update the svn and the git instances of BACI on your machine:\\
     \item make sure, that you are on branch master:\\
     \texttt{git checkout master}
@@ -1508,7 +1508,7 @@ home directory. This way they can access their code from another machine next ti
     \item make sure, you are on branch student:\\
     \texttt{git checkout <student\_name>}
     \item push the new version to your student's home:\\
-    \texttt{git push ssh://<student\_name>@redxx.stud/$\sim$/Baci\_bare/}
+    \texttt{git push ssh://<student\_name>@redxx.stud/\~{}/Baci\_bare/}
     \end{enumerate}
 \subparagraph{In student's home directory (scratch/student\_name/workspace/baci)\\}
     The last step is to update the local version of your student
