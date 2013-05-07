@@ -139,6 +139,6 @@ DRT::ElementType & DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::ElementType() co
     break;
   }
   return So_hex8PoroP1Type::Instance();
-};
+}
 
 #include "so3_poro_p1_fwd.hpp"

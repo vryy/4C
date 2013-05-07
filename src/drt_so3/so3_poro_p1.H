@@ -69,7 +69,7 @@ public:
   //@}
 
   //! number of dofs per node
-  static const int noddof_ = my::numdim_+1;
+  static const int noddof_ = my::noddof_+1;
 
   //! total dofs per element
   static const int numdof_ = noddof_ * my::numnod_;
@@ -112,6 +112,17 @@ public:
   //! @name Access methods
 
   /*!
+  \brief Get number of degrees of freedom of a certain node
+         (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const DRT::Node& node) const {return 4;}
+
+  /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
          dofsets (implements pure virtual DRT::Element)
 
@@ -131,7 +142,7 @@ public:
 
     if (nds==0)
       // structure, 3D: 3 + 1 Dofs per node
-      return 4;
+      return NumDofPerNode(node);
     else if (nds==1)
       // in case of porous media: nds=1 (second discretization) fluid: 4Dof/Node
       return 4;

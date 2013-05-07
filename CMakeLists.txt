@@ -1316,6 +1316,9 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_poro.cpp
   src/drt_w1/wall1_poro_eletypes.cpp
   src/drt_w1/wall1_poro_evaluate.cpp
+  src/drt_w1/wall1_poro_p1.cpp
+  src/drt_w1/wall1_poro_p1_eletypes.cpp
+  src/drt_w1/wall1_poro_p1_evaluate.cpp
 )
 set(OBJS_DRT_CONTACT
   src/drt_contact/contact_abstract_strategy.cpp

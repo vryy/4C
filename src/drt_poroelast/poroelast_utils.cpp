@@ -40,11 +40,10 @@
 #include <Epetra_MpiComm.h>
 
 #include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_so3/so3_poro.H"
 #include "../drt_so3/so3_poro_eletypes.H"
-#include "../drt_so3/so3_poro_p1.H"
 #include "../drt_so3/so3_poro_p1_eletypes.H"
-#include "../drt_w1/wall1_poro.H"
+#include "../drt_w1/wall1_poro_eletypes.H"
+#include "../drt_w1/wall1_poro_p1_eletypes.H"
 
 #include "../drt_fluid/fluid_utils.H"
 
@@ -168,47 +167,30 @@ bool POROELAST::UTILS::CheckPoro(
     DRT::Element* actele)
 {
   //all poro elements need to be listed here
-
-  //check for hex8
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* poroelehex8 =
-      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(actele);
-  if (poroelehex8!=NULL)
+  if( actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance()    or
+      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance()    or
+      actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance()   or
+      actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance()   or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance()  or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance()  or
+      CheckPoroP1(actele)
+     )
     return true;
 
-  //check for hex8 p1
-  DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* poroelehex8p1 =
-      dynamic_cast<DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(actele);
-  if (poroelehex8p1!=NULL)
-    return true;
+  return false;
+}
 
-  //check for tet4
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* poroeletet4 =
-      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(actele);
-  if (poroeletet4!=NULL)
-    return true;
-
-  //check for tet10
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* poroeletet10 =
-      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(actele);
-  if (poroeletet10!=NULL)
-    return true;
-
-  //check for hex27
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* poroelehex27 =
-      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(actele);
-  if (poroelehex27!=NULL)
-    return true;
-
-  //check for Wall Q4
-  DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>* poroelewallq4 =
-      dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>*>(actele);
-  if (poroelewallq4!=NULL)
-    return true;
-
-  //check for Wall Q9
-  DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>* poroelewallq9 =
-      dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>*>(actele);
-  if (poroelewallq9!=NULL)
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool POROELAST::UTILS::CheckPoroP1(
+    DRT::Element* actele)
+{
+  //all poro-p1 elements need to be listed here
+  if(
+      actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance()  or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance()
+     )
     return true;
 
   return false;
@@ -362,9 +344,8 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(Teuchos::
   {
     // get the actual element
 
-    if (dis->lColElement(i)->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance())
+    if ( CheckPoroP1(dis->lColElement(i)) )
       locporop1 += 1;
-
   }
   // Was at least one SoSh8P8 found on one processor?
   int glonumporop1 = 0;

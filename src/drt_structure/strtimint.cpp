@@ -389,7 +389,7 @@ void STR::TimInt::SetInitialFields()
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
-  porositylocaldofs.push_back(3);
+  porositylocaldofs.push_back(DRT::Problem::Instance()->NDim());
   discret_->EvaluateInitialField(porosityfield,(*dis_)(0),porositylocaldofs);
 
   return;

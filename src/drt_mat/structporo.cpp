@@ -299,9 +299,6 @@ void MAT::StructPoro::ComputePorosity( const double& initporosity,
   const double c = b * b  + 4.0 * penalty * a;
   double d = sqrt(c);
 
- // const double c = (b / a) * (b / a) + 4.0 * penalty / a;
- // double d = sqrt(c) * a;
-
   double test = 1 / (2.0 * a) * (-b + d);
   double sign = 1.0;
   if (test >= 1.0 or test < 0.0)
@@ -759,10 +756,11 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
   const double a = bulkmodulus / (1 - initporosity) + press - penalty / initporosity;
   const double b = -1.0*J*a+bulkmodulus+penalty;
 
-  if(W)       *W       = J*a*porosity*porosity + porosity* b - penalty;
-  if(dW_dp)   *dW_dp   = -1.0*J*porosity *(1.0-porosity);
-  if(dW_dphi) *dW_dphi = 2.0*J*a*porosity + b;
-  if(dW_dJ)   *dW_dJ   = a*porosity*porosity - porosity*a;
+  //scale everything with 1/bulkmodulus (I hope this will help the solver...)
+  if(W)       *W       = (J*a*porosity*porosity + porosity* b - penalty)/bulkmodulus;
+  if(dW_dp)   *dW_dp   = (-1.0*J*porosity *(1.0-porosity))/bulkmodulus;
+  if(dW_dphi) *dW_dphi = (2.0*J*a*porosity + b)/bulkmodulus;
+  if(dW_dJ)   *dW_dJ   = (a*porosity*porosity - porosity*a)/bulkmodulus;
 
   return;
 }

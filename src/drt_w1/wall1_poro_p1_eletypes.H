@@ -1,0 +1,91 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file wall1_poro_p1_eletypes.H
+
+ \brief
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *----------------------------------------------------------------------*/
+
+
+#ifndef WALL1_PORO_P1_ELETYPES_H_
+#define WALL1_PORO_P1_ELETYPES_H_
+
+#include "wall1_poro_eletypes.H"
+
+namespace DRT
+{
+// forward declarations
+class Discretization;
+
+namespace ELEMENTS
+{
+
+  /*----------------------------------------------------------------------*
+   |  QUAD 4 Element                                       |
+   *----------------------------------------------------------------------*/
+  class WallQuad4PoroP1Type : public DRT::ELEMENTS::WallQuad4PoroType
+  {
+  public:
+
+    std::string Name() const { return "WallQuad4PoroP1Type"; }
+
+    static WallQuad4PoroP1Type & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                               const std::string eledistype,
+                                               const int id,
+                                               const int owner );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+  private:
+
+    static WallQuad4PoroP1Type instance_;
+  };
+
+  /*----------------------------------------------------------------------*
+   |  QUAD 4 Element                                       |
+   *----------------------------------------------------------------------*/
+  class WallQuad9PoroP1Type : public DRT::ELEMENTS::WallQuad9PoroType
+  {
+  public:
+
+    std::string Name() const { return "WallQuad9PoroP1Type"; }
+
+    static WallQuad9PoroP1Type & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                               const std::string eledistype,
+                                               const int id,
+                                               const int owner );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+  private:
+
+    static WallQuad9PoroP1Type instance_;
+  };
+
+}//ELEMENTS
+}//DRT
+
+
+#endif /* WALL1_PORO_P1_ELETYPES_H_ */

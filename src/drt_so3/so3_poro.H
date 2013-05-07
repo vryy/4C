@@ -163,7 +163,7 @@ public:
 
     if (nds==0)
       // structure, 3D: 3 Dofs per node
-      return 3;
+      return so3_ele::NumDofPerNode(node);
     else if (nds==1)
       // in case of porous media: nds=1 (second discretization) fluid: 4Dof/Node
       return 4;

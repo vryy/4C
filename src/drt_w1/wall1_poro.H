@@ -161,7 +161,7 @@ namespace ELEMENTS
       */
       if (nds==0)
         // structure, 2D: 2 Dofs per node
-        return 2;
+        return Wall1::NumDofPerNode(node);
       else if (nds==1)
         // in case of porous media: nds=1 (second discretization) fluid: 3Dof/Node
         return 3;
@@ -229,7 +229,7 @@ namespace ELEMENTS
 
 
     //! initialize the inverse of the jacobian and its determinant in the material configuration
-    virtual void InitJacobianMapping();
+    virtual void InitElement();
 
     //@}
 
@@ -409,6 +409,7 @@ namespace ELEMENTS
                                         const LINALG::Matrix<numdim_,numnod_> & evelnp,
                                         const LINALG::Matrix<numnod_,1> &       epreaf,
                                         const LINALG::Matrix<numnod_, 1>*       porosity_dof,
+                                        LINALG::Matrix<numdof_,numdof_>& erea_v,
                                         LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,
                                         LINALG::Matrix<numdof_,numdof_>* reamatrix,
                                         LINALG::Matrix<numdof_,1>*              force
@@ -446,7 +447,75 @@ namespace ELEMENTS
                                                  double &                         porosity,
                                                  double &                         dphi_dp);
 
-    LINALG::Matrix<DRT::ELEMENTS::Wall1_Poro<distype>::numstr_,DRT::ELEMENTS::Wall1_Poro<distype>::numdof_> ComputeBOperator(
+    void FillMatrixAndVectors(
+        const int &                               gp,
+        const LINALG::Matrix<numnod_,1>&          shapefct,
+        const LINALG::Matrix<numdim_,numnod_>&    N_XYZ,
+        const double&                             J,
+        const double&                             press,
+        const double&                             porosity,
+        const LINALG::Matrix<numdim_,1>&          velint,
+        const LINALG::Matrix<numdim_,1>&          fvelint,
+        const LINALG::Matrix<numdim_,numdim_>&    fvelder,
+        const LINALG::Matrix<numdim_,numdim_>&    defgrd_inv,
+        const LINALG::Matrix<numstr_,numdof_>&    bop,
+        const LINALG::Matrix<numdim_,numdim_>&    C_inv,
+        const LINALG::Matrix<numdim_,1>&          Finvgradp,
+        const LINALG::Matrix<1,numdof_>&          dphi_dus,
+        const LINALG::Matrix<1,numdof_>&          dJ_dus,
+        const LINALG::Matrix<numstr_,numdof_>&    dCinv_dus,
+        const LINALG::Matrix<numdim_,numdof_>&    dFinvdus_gradp,
+        LINALG::Matrix<numdof_,numdof_>&          erea_v,
+        LINALG::Matrix<numdof_, numdof_>*         stiffmatrix,
+        LINALG::Matrix<numdof_,1>*                force,
+        LINALG::Matrix<numstr_,1>&                fstress);
+
+    void FillMatrixAndVectorsBrinkman(
+        const int &                                     gp,
+        const double&                                   J,
+        const double&                                   porosity,
+        const LINALG::Matrix<numdim_,numdim_>&          fvelder,
+        const LINALG::Matrix<numdim_,numdim_>&          defgrd_inv,
+        const LINALG::Matrix<numstr_,numdof_>&          bop,
+        const LINALG::Matrix<numdim_,numdim_>&          C_inv,
+        const LINALG::Matrix<1,numdof_>&                dphi_dus,
+        const LINALG::Matrix<1,numdof_>&                dJ_dus,
+        const LINALG::Matrix<numstr_,numdof_>&          dCinv_dus,
+        const LINALG::Matrix<numdim_*numdim_,numdof_>&  dFinvTdus,
+        LINALG::Matrix<numdof_, numdof_>*               stiffmatrix,
+        LINALG::Matrix<numdof_,1>*                      force,
+        LINALG::Matrix<numstr_,1>&                      fstress);
+
+    void FillMatrixAndVectorsOD(
+        const int &                             gp,
+        const LINALG::Matrix<numnod_,1>&        shapefct,
+        const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+        const double&                           J,
+        const double&                           porosity,
+        const double&                           dphi_dp,
+        const LINALG::Matrix<numdim_,1>&        velint,
+        const LINALG::Matrix<numdim_,1>&        fvelint,
+        const LINALG::Matrix<numdim_,numdim_>&  defgrd_inv,
+        const LINALG::Matrix<numdim_,1>&        Gradp,
+        const LINALG::Matrix<numstr_,numdof_>&  bop,
+        const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+        LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
+
+    void FillMatrixAndVectorsBrinkmanOD(
+        const int &                             gp,
+        const LINALG::Matrix<numnod_,1>&        shapefct,
+        const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+        const double&                           J,
+        const double&                           porosity,
+        const double&                           dphi_dp,
+        const LINALG::Matrix<numdim_,numdim_>&  fvelder,
+        const LINALG::Matrix<numdim_,numdim_>&  defgrd_inv,
+        const LINALG::Matrix<numstr_,numdof_>&  bop,
+        const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+        LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
+
+    LINALG::Matrix<DRT::ELEMENTS::Wall1_Poro<distype>::numstr_,DRT::ELEMENTS::Wall1_Poro<distype>::numdof_>
+    ComputeBOperator(
         const LINALG::Matrix<numdim_,numdim_>& defgrd,
         const LINALG::Matrix<numdim_,numnod_>& N_XYZ);
 

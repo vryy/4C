@@ -1606,7 +1606,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
     LINALG::Matrix<numdof_,1>*                force,
     LINALG::Matrix<numstr_,1>&                fstress)
 {
-  double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
+  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
 
   //if (force != NULL or stiffmatrix != NULL or reamatrix != NULL )
   {
@@ -1747,86 +1747,86 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkman(
     LINALG::Matrix<numdof_,1>*                      force,
     LINALG::Matrix<numstr_,1>&                      fstress)
 {
-    double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
+  double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
 
-    double visc = fluidmat_->Viscosity();
-    LINALG::Matrix<numdim_,numdim_> CinvFvel;
-    LINALG::Matrix<numdim_,numdim_> visctress1;
-    CinvFvel.Multiply(C_inv,fvelder);
-    visctress1.MultiplyNT(CinvFvel,defgrd_inv);
-    LINALG::Matrix<numdim_,numdim_> visctress2(visctress1);
-    visctress1.UpdateT(1.0,visctress2,1.0);
+  double visc = fluidmat_->Viscosity();
+  LINALG::Matrix<numdim_,numdim_> CinvFvel;
+  LINALG::Matrix<numdim_,numdim_> visctress1;
+  CinvFvel.Multiply(C_inv,fvelder);
+  visctress1.MultiplyNT(CinvFvel,defgrd_inv);
+  LINALG::Matrix<numdim_,numdim_> visctress2(visctress1);
+  visctress1.UpdateT(1.0,visctress2,1.0);
 
-    fstress(0) = visctress1(0,0);
-    fstress(1) = visctress1(1,1);
-    fstress(2) = visctress1(2,2);
-    fstress(3) = visctress1(0,1);
-    fstress(4) = visctress1(1,2);
-    fstress(5) = visctress1(2,0);
+  fstress(0) = visctress1(0,0);
+  fstress(1) = visctress1(1,1);
+  fstress(2) = visctress1(2,2);
+  fstress(3) = visctress1(0,1);
+  fstress(4) = visctress1(1,2);
+  fstress(5) = visctress1(2,0);
 
-    fstress.Scale(detJ_w * visc * J * porosity);
+  fstress.Scale(detJ_w * visc * J * porosity);
 
-    //B^T . C^-1
-    LINALG::Matrix<numdof_,1> fstressb(true);
-    fstressb.MultiplyTN(bop,fstress);
+  //B^T . C^-1
+  LINALG::Matrix<numdof_,1> fstressb(true);
+  fstressb.MultiplyTN(bop,fstress);
 
-    //if (force != NULL )
-    force->Update(1.0,fstressb,1.0);
+  //if (force != NULL )
+  force->Update(1.0,fstressb,1.0);
 
-    //evaluate viscous terms (for darcy-brinkman flow only)
-    //if (stiffmatrix != NULL)
-    {
-      LINALG::Matrix<numdim_,numdim_> tmp4;
-      tmp4.MultiplyNT(fvelder,defgrd_inv);
+  //evaluate viscous terms (for darcy-brinkman flow only)
+  //if (stiffmatrix != NULL)
+  {
+    LINALG::Matrix<numdim_,numdim_> tmp4;
+    tmp4.MultiplyNT(fvelder,defgrd_inv);
 
-      double fac = detJ_w * visc;
+    double fac = detJ_w * visc;
 
-      LINALG::Matrix<numstr_,numdof_> fstress_dus (true);
-      for (int n=0; n<numnod_; ++n)
-        for (int k=0; k<numdim_; ++k)
+    LINALG::Matrix<numstr_,numdof_> fstress_dus (true);
+    for (int n=0; n<numnod_; ++n)
+      for (int k=0; k<numdim_; ++k)
+      {
+        const int gid = n*numdim_+k;
+
+        fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp4(0,0) + dCinv_dus(3,gid)*tmp4(1,0) + dCinv_dus(5,gid)*tmp4(2,0) );
+        fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp4(0,1) + dCinv_dus(1,gid)*tmp4(1,1) + dCinv_dus(4,gid)*tmp4(2,1) );
+        fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp4(0,2) + dCinv_dus(4,gid)*tmp4(1,2) + dCinv_dus(2,gid)*tmp4(2,2) );
+        /* ~~~ */
+        fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp4(0,1) + dCinv_dus(3,gid)*tmp4(1,1) + dCinv_dus(5,gid)*tmp4(2,1)
+                              + dCinv_dus(3,gid)*tmp4(0,0) + dCinv_dus(1,gid)*tmp4(1,0) + dCinv_dus(4,gid)*tmp4(2,0);
+        fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp4(0,2) + dCinv_dus(1,gid)*tmp4(1,2) + dCinv_dus(4,gid)*tmp4(2,2)
+                              + dCinv_dus(5,gid)*tmp4(0,1) + dCinv_dus(4,gid)*tmp4(1,1) + dCinv_dus(2,gid)*tmp4(2,1);
+        fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp4(0,0) + dCinv_dus(4,gid)*tmp4(1,0) + dCinv_dus(2,gid)*tmp4(2,0)
+                              + dCinv_dus(0,gid)*tmp4(0,2) + dCinv_dus(3,gid)*tmp4(1,2) + dCinv_dus(5,gid)*tmp4(2,2);
+
+        for(int j=0; j<numdim_; j++)
         {
-          const int gid = n*numdim_+k;
-
-          fstress_dus(0,gid) += 2*( dCinv_dus(0,gid)*tmp4(0,0) + dCinv_dus(3,gid)*tmp4(1,0) + dCinv_dus(5,gid)*tmp4(2,0) );
-          fstress_dus(1,gid) += 2*( dCinv_dus(3,gid)*tmp4(0,1) + dCinv_dus(1,gid)*tmp4(1,1) + dCinv_dus(4,gid)*tmp4(2,1) );
-          fstress_dus(2,gid) += 2*( dCinv_dus(5,gid)*tmp4(0,2) + dCinv_dus(4,gid)*tmp4(1,2) + dCinv_dus(2,gid)*tmp4(2,2) );
+          fstress_dus(0,gid) += 2*CinvFvel(0,j) * dFinvTdus(j*numdim_  ,gid);
+          fstress_dus(1,gid) += 2*CinvFvel(1,j) * dFinvTdus(j*numdim_+1,gid);
+          fstress_dus(2,gid) += 2*CinvFvel(2,j) * dFinvTdus(j*numdim_+2,gid);
           /* ~~~ */
-          fstress_dus(3,gid) += + dCinv_dus(0,gid)*tmp4(0,1) + dCinv_dus(3,gid)*tmp4(1,1) + dCinv_dus(5,gid)*tmp4(2,1)
-                                + dCinv_dus(3,gid)*tmp4(0,0) + dCinv_dus(1,gid)*tmp4(1,0) + dCinv_dus(4,gid)*tmp4(2,0);
-          fstress_dus(4,gid) += + dCinv_dus(3,gid)*tmp4(0,2) + dCinv_dus(1,gid)*tmp4(1,2) + dCinv_dus(4,gid)*tmp4(2,2)
-                                + dCinv_dus(5,gid)*tmp4(0,1) + dCinv_dus(4,gid)*tmp4(1,1) + dCinv_dus(2,gid)*tmp4(2,1);
-          fstress_dus(5,gid) += + dCinv_dus(5,gid)*tmp4(0,0) + dCinv_dus(4,gid)*tmp4(1,0) + dCinv_dus(2,gid)*tmp4(2,0)
-                                + dCinv_dus(0,gid)*tmp4(0,2) + dCinv_dus(3,gid)*tmp4(1,2) + dCinv_dus(5,gid)*tmp4(2,2);
-
-          for(int j=0; j<numdim_; j++)
-          {
-            fstress_dus(0,gid) += 2*CinvFvel(0,j) * dFinvTdus(j*numdim_  ,gid);
-            fstress_dus(1,gid) += 2*CinvFvel(1,j) * dFinvTdus(j*numdim_+1,gid);
-            fstress_dus(2,gid) += 2*CinvFvel(2,j) * dFinvTdus(j*numdim_+2,gid);
-            /* ~~~ */
-            fstress_dus(3,gid) += + CinvFvel(0,j) * dFinvTdus(j*numdim_+1,gid)
-                                  + CinvFvel(1,j) * dFinvTdus(j*numdim_  ,gid);
-            fstress_dus(4,gid) += + CinvFvel(1,j) * dFinvTdus(j*numdim_+2,gid)
-                                  + CinvFvel(2,j) * dFinvTdus(j*numdim_+1,gid);
-            fstress_dus(5,gid) += + CinvFvel(2,j) * dFinvTdus(j*numdim_  ,gid)
-                                  + CinvFvel(0,j) * dFinvTdus(j*numdim_+2,gid);
-          }
+          fstress_dus(3,gid) += + CinvFvel(0,j) * dFinvTdus(j*numdim_+1,gid)
+                                + CinvFvel(1,j) * dFinvTdus(j*numdim_  ,gid);
+          fstress_dus(4,gid) += + CinvFvel(1,j) * dFinvTdus(j*numdim_+2,gid)
+                                + CinvFvel(2,j) * dFinvTdus(j*numdim_+1,gid);
+          fstress_dus(5,gid) += + CinvFvel(2,j) * dFinvTdus(j*numdim_  ,gid)
+                                + CinvFvel(0,j) * dFinvTdus(j*numdim_+2,gid);
         }
+      }
 
-      LINALG::Matrix<numdof_,numdof_> fluidstress_part;
+    LINALG::Matrix<numdof_,numdof_> fluidstress_part;
 
-      // additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ * w(gp))
-      fluidstress_part.Multiply(fac*porosity,fstressb,dJ_dus);
-      stiffmatrix->Update(1.0,fluidstress_part,1.0);
+    // additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ * w(gp))
+    fluidstress_part.Multiply(fac*porosity,fstressb,dJ_dus);
+    stiffmatrix->Update(1.0,fluidstress_part,1.0);
 
-      // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
-      fluidstress_part.Multiply(fac*J,fstressb,dphi_dus);
-      stiffmatrix->Update(1.0,fluidstress_part,1.0);
+    // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
+    fluidstress_part.Multiply(fac*J,fstressb,dphi_dus);
+    stiffmatrix->Update(1.0,fluidstress_part,1.0);
 
-      // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
-      fluidstress_part.MultiplyTN(detJ_w * visc * J * porosity,bop,fstress_dus);
-      stiffmatrix->Update(1.0,fluidstress_part,1.0);
-    }
+    // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
+    fluidstress_part.MultiplyTN(detJ_w * visc * J * porosity,bop,fstress_dus);
+    stiffmatrix->Update(1.0,fluidstress_part,1.0);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1845,11 +1845,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
     const LINALG::Matrix<numdim_,1>&        Gradp,
     const LINALG::Matrix<numstr_,numdof_>&  bop,
     const LINALG::Matrix<numdim_,numdim_>&  C_inv,
-//        LINALG::Matrix<numdof_,numnod_>&        ecoupl_p,
-//        LINALG::Matrix<numdof_,numdof_>&        ecoupl_v)
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix)
 {
-  double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
+  double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
 
   const double reacoeff = fluidmat_->ComputeReactionCoeff();
 
@@ -1924,8 +1922,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
     const LINALG::Matrix<numstr_,numdof_>&  bop,
     const LINALG::Matrix<numdim_,numdim_>&  C_inv,
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix)
-//    LINALG::Matrix<numdof_,numnod_>&        ecoupl_p,
-//    LINALG::Matrix<numdof_,numdof_>&        ecoupl_v)
 {
 
   double detJ_w = detJ_[gp]*intpoints_.Weight(gp);//gpweights[gp];
