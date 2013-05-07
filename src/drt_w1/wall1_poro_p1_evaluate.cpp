@@ -567,7 +567,8 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
     // non-linear B-operator
-    LINALG::Matrix<my::numstr_,my::numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
+    LINALG::Matrix<my::numstr_,my::numdof_> bop;
+    ComputeBOperator(bop,defgrd,N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<my::numdim_,my::numdim_> cauchygreen;
@@ -582,7 +583,8 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     defgrd_inv.Invert(defgrd);
 
     //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-    LINALG::Matrix<1,my::numdof_> dJ_dus = ComputeLinearizationOfJacobian(J,N_XYZ,defgrd_inv);
+    LINALG::Matrix<1,my::numdof_> dJ_dus;
+    ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
 
     //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture displacement d(GradJ)/d(us)
     //---------------------d(GradJ)/dus =  dJ/dus * F^-T . : dF/dX + J * dF^-T/dus : dF/dX + J * F^-T : N_X_X
@@ -849,7 +851,8 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
     // non-linear B-operator
-    LINALG::Matrix<my::numstr_,my::numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
+    LINALG::Matrix<my::numstr_,my::numdof_> bop;
+    ComputeBOperator(bop,defgrd,N_XYZ);
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<my::numdim_,my::numdim_> cauchygreen;

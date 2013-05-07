@@ -514,8 +514,8 @@ namespace ELEMENTS
         const LINALG::Matrix<numdim_,numdim_>&  C_inv,
         LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
 
-    LINALG::Matrix<DRT::ELEMENTS::Wall1_Poro<distype>::numstr_,DRT::ELEMENTS::Wall1_Poro<distype>::numdof_>
-    ComputeBOperator(
+    void ComputeBOperator(
+        LINALG::Matrix<numstr_,numdof_>& bop,
         const LINALG::Matrix<numdim_,numdim_>& defgrd,
         const LINALG::Matrix<numdim_,numnod_>& N_XYZ);
 
@@ -532,8 +532,8 @@ namespace ELEMENTS
        const   LINALG::Matrix<numdim_,numnod_>& deriv
        );
 
-    LINALG::Matrix<1,DRT::ELEMENTS::Wall1_Poro<distype>::numdof_>
-    ComputeLinearizationOfJacobian(
+    void ComputeLinearizationOfJacobian(
+       LINALG::Matrix<1,numdof_>& dJ_dus,
        const double& J,
        const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
        const LINALG::Matrix<numdim_,numdim_>& defgrd_inv

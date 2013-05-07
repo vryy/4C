@@ -548,8 +548,8 @@ protected:
      const   LINALG::Matrix<numdim_,numnod_>& deriv
      );
 
-  LINALG::Matrix<1,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
-  ComputeLinearizationOfJacobian(
+  void ComputeLinearizationOfJacobian(
+     LINALG::Matrix<1,numdof_>& dJ_dus,
      const double& J,
      const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
      const LINALG::Matrix<numdim_,numdim_>& defgrd_inv
@@ -565,8 +565,8 @@ protected:
       LINALG::Matrix<numdim_,numdof_>&          dFinvdus_gradp,
       LINALG::Matrix<numstr_,numdof_>&          dCinv_dus);
 
-  LINALG::Matrix<DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numstr_,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
-  ComputeBOperator(
+  void ComputeBOperator(
+      LINALG::Matrix<numstr_,numdof_>& bop,
       const LINALG::Matrix<numdim_,numdim_>& defgrd,
       const LINALG::Matrix<numdim_,numnod_>& N_XYZ
       );

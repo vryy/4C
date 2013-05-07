@@ -602,7 +602,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
     // non-linear B-operator
-    LINALG::Matrix<numstr_,numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
+    LINALG::Matrix<numstr_,numdof_> bop;
+    ComputeBOperator(bop,defgrd,N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<numdim_,numdim_> cauchygreen;
@@ -617,7 +618,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     defgrd_inv.Invert(defgrd);
 
     //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-    LINALG::Matrix<1,numdof_> dJ_dus = ComputeLinearizationOfJacobian(J,N_XYZ,defgrd_inv);
+    LINALG::Matrix<1,numdof_> dJ_dus ;
+    ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
 
     // compute some auxiliary matrixes for computation of linearization
     //dF^-T/dus
@@ -788,7 +790,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
     // non-linear B-operator
-    LINALG::Matrix<numstr_,numdof_> bop = ComputeBOperator(defgrd,N_XYZ);
+    LINALG::Matrix<numstr_,numdof_> bop;
+    ComputeBOperator(bop,defgrd,N_XYZ);
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<numdim_,numdim_> cauchygreen;
@@ -1482,12 +1485,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>:: ComputeAuxiliaryValues(const LIN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-inline LINALG::Matrix<DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numstr_,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
+inline void
 DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeBOperator(
+                                                        LINALG::Matrix<numstr_,numdof_>& bop,
                                                         const LINALG::Matrix<numdim_,numdim_>& defgrd,
                                                         const LINALG::Matrix<numdim_,numnod_>& N_XYZ)
 {
-  LINALG::Matrix<numstr_,numdof_> bop;
 
   /* non-linear B-operator (may so be called, meaning
    ** of B-operator is not so sharp in the non-linear realm) *
@@ -1532,14 +1535,14 @@ DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeBOperator(
     bop(5,noddof_*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
   }
 
-  return bop;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-inline   LINALG::Matrix<1,DRT::ELEMENTS::So3_Poro<so3_ele,distype>::numdof_>
+inline void
 DRT::ELEMENTS::So3_Poro<so3_ele,distype>::  ComputeLinearizationOfJacobian(
+    LINALG::Matrix<1,numdof_>& dJ_dus,
     const double& J,
     const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
     const LINALG::Matrix<numdim_,numdim_>& defgrd_inv)
@@ -1574,10 +1577,8 @@ DRT::ELEMENTS::So3_Poro<so3_ele,distype>::  ComputeLinearizationOfJacobian(
   }
 
   //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-  LINALG::Matrix<1,numdof_> dJ_dus;
   dJ_dus.MultiplyTN(J,defgrd_inv_vec,N_X);
 
-  return dJ_dus;
 }
 
 /*----------------------------------------------------------------------*
