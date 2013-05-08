@@ -14,6 +14,7 @@ src/code_commentation/code_commentation.tex
 src/cppforbacists/cppforbacists.tex
 src/conventions/conventions.tex
 src/binary_io/binary_io.tex
+src/introduction_solvers/introduction_solvers.tex
 src/fsi/fsi.tex
 src/free_surface_flow/free_surface_flow.tex
 src/struct_dynamics/struct_dynamics.tex
