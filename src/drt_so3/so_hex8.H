@@ -341,77 +341,6 @@ public:
                        Epetra_SerialDenseVector& elevec3);
 
   /*!
-  \brief Evaluate an element
-
-  Evaluate so_hex8 element stiffness, mass, internal forces, etc.
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param discretization : pointer to discretization for de-assembly
-  \param la (in)        : location array for de-assembly
-  \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-
-  virtual int Evaluate(Teuchos::ParameterList& params,
-                       DRT::Discretization& discretization,
-                       DRT::Element::LocationArray& la,
-                       Epetra_SerialDenseMatrix& elemat1,
-                       Epetra_SerialDenseMatrix& elemat2,
-                       Epetra_SerialDenseVector& elevec1,
-                       Epetra_SerialDenseVector& elevec2,
-                       Epetra_SerialDenseVector& elevec3);
-
-  /*!
-  \brief Evaluate an element
-
-  Evaluate so_hex8 element LINEAR stiffness, mass, internal forces, etc.
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param discretization : pointer to discretization for de-assembly
-  \param la (in)        : location array for de-assembly
-  \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int LinEvaluate(Teuchos::ParameterList& params,
-                  DRT::Discretization& discretization,
-                  DRT::Element::LocationArray& la,
-                  Epetra_SerialDenseMatrix& elemat1,
-                  Epetra_SerialDenseMatrix& elemat2,
-                  Epetra_SerialDenseVector& elevec1,
-                  Epetra_SerialDenseVector& elevec2,
-                  Epetra_SerialDenseVector& elevec3);
-
-  /*!
   \brief Evaluate a Neumann boundary condition
 
   this method evaluates a surface Neumann condition on the solid3 element
@@ -628,58 +557,6 @@ protected:
     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* defgrd,
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* euler_almansi
-    );
-
-  //! @name TSI related stuff
-
-  //! Calculate temperature coupling term for the internal force (geometric linear)
-  virtual void soh8_finttemp(
-    DRT::Element::LocationArray& la,  //!< location array
-    std::vector<double>& disp,  //!< current displacements
-    std::vector<double>& residual,  //!< current residual displ
-    std::vector<double>& temp, //!< current temperature
-    LINALG::Matrix<NUMDOF_SOH8,1>* force,  //!< element internal force vector
-    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  //!< stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  //!< strains at GP
-    Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  //!< stress output option
-    const INPAR::STR::StrainType iostrain  //!< strain output option
-    );
-
-  //! \brief Calculate mechanical thermal stiffness term needed for monolithic TSI
-  virtual void soh8_stifftemp(
-    DRT::Element::LocationArray& la,
-    std::vector<double>& disp,  //!< (i): current displacement
-    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl,  //!< (o): mechanical thermal stiffness term at current gp
-    Teuchos::ParameterList params  //!< parameter list
-    );
-
-  //! \brief Interface to the temperature dependent material law working with soh8.
-  //!
-  //! Here the interface to the first solid material with temperature takes place.
-  //! Stress and material tangent must be retrieved whereas all necessary data
-  //! is passed.
-  //! Add whatever your material needs, but make sure that exchange is not
-  //! overdone performance-wise.
-  //!
-  void soh8_mat_temp(
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* ctemp,  //!< (o): temperature dependent tangent matrix at current gp
-    LINALG::Matrix<1,1>* Ntemp,  // temperature of element: (shapefcts . element temperature) at current gp
-    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,  //!< (o): material tangent matrix at current gp
-    LINALG::Matrix<3,3>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,  //!< (o): total strain
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* straininc,  //!< (i): total strain increment
-    const double& scalartemp,  //!< scalar-valued temperature of the element
-    double* density,  //!< density of material
-    const int gp,  //!< current Gauss point
-    Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
-    );
-
-  //! calculate the constant temperature tangent for stresstemp
-  void Ctemp(
-    LINALG::Matrix<6,1>* ctemp,  //!< temperature dependent material tangent
-    Teuchos::ParameterList& params  //!< parameter list
     );
 
   //@}

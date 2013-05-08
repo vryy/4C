@@ -132,8 +132,10 @@ namespace ELEMENTS
       {
       case DRT::Element::tet4:
         return So_tet4ThermoType::Instance().UniqueParObjectId();
+        break;
       case DRT::Element::hex8:
         return So_hex8ThermoType::Instance().UniqueParObjectId();
+        break;
       default:
         dserror("unknown element type!");
         break;
@@ -186,10 +188,10 @@ namespace ELEMENTS
       {
       case DRT::Element::tet4:
         return So_tet4ThermoType::Instance();
-
+        break;
       case DRT::Element::hex8:
         return So_hex8ThermoType::Instance();
-
+        break;
       default:
         dserror("unknown element type!");
         break;

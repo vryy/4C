@@ -367,8 +367,7 @@ void MAT::Robinson::Evaluate(
   )
 {
   // extract from parameter list
-  LINALG::Matrix<MAT::NUM_STRESS_3D,1>* straininc = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("straininc",NULL);
-  if (straininc == NULL) dserror("No strain increment available in Robinson material");
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> straininc = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc");
   const double scalartemp = params.get<double>("scalartemp",-1.0);
   if (scalartemp < 0.0) dserror("No temperature available in Robinson material");
   const int gp = params.get<int>("gp",-1);
@@ -378,7 +377,7 @@ void MAT::Robinson::Evaluate(
   // iterative update of the current history vectors at current Gauss point gp
   IterativeUpdateOfInternalVariables(
     gp,
-    *straininc
+    straininc
     );
 
   // name:                 BACI            --> CCARAT:

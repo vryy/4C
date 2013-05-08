@@ -118,8 +118,8 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
         elevec3_epetra
         );
     }
+    break;
   }
-  break;
 
   //==================================================================================
   default:
@@ -160,9 +160,8 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
         elevec3_epetra
         );
     }
-
+    break;
   }  // default
-  break;
 
   }  // action
 
@@ -661,12 +660,13 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       // calculate the mechanical-thermal sub matrix k_dT of K_TSI
       lin_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
     }  // kintype_==geo_linear
+    break;
   }  // calc_struct_stifftemp
-  break;
 
   //============================================================================
   default:
     dserror("Unknown type of action for So3_Thermo");
+    break;
   } // action
 
   return 0;
@@ -795,8 +795,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
       if (elestress==NULL) dserror("stress data not available");
       for (int i=0; i<numstr_; ++i)
         (*elestress)(gp,i) = couplstress(i);
+      break;
     }
-    break;
     case INPAR::STR::stress_cauchy:
     {
       if (elestress==NULL) dserror("stress data not available");
@@ -811,13 +811,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
       (*elestress)(gp,3) = cauchycouplstress(0,1);
       (*elestress)(gp,4) = cauchycouplstress(1,2);
       (*elestress)(gp,5) = cauchycouplstress(0,2);
+      break;
     }
-    break;
     case INPAR::STR::stress_none:
       break;
-
     default:
       dserror("requested stress type not available");
+      break;
     }
 
     // integrate internal force vector r_d
@@ -1076,8 +1076,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
       if (elestress == NULL) dserror("stress data not available");
       for (int i=0; i<numstr_; ++i)
         (*elestress)(gp,i) = couplstress(i);
+      break;
     }
-    break;
     case INPAR::STR::stress_cauchy:
     {
       if (elestress == NULL) dserror("stress data not available");
@@ -1093,13 +1093,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
       (*elestress)(gp,3) = cauchycouplstress(0,1);
       (*elestress)(gp,4) = cauchycouplstress(1,2);
       (*elestress)(gp,5) = cauchycouplstress(0,2);
+      break;
     }
-    break;
     case INPAR::STR::stress_none:
       break;
-
     default:
       dserror("requested stress type not available");
+      break;
     }
 
     // integrate internal force vector r_d
@@ -1290,41 +1290,41 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    // st.venant-kirchhoff-material with temperature
-    case INPAR::MAT::m_thermostvenant:
-    {
-      MAT::ThermoStVenantKirchhoff* thrstvk
-        = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
-      thrstvk->Evaluate(*Ntemp,*ctemp,*couplstress,params);
-      *density = thrstvk->Density();
-      return;
-      break;
-    }
-    // small strain von Mises thermoelastoplastic material
-    case INPAR::MAT::m_thermopllinelast:
-    {
-      MAT::ThermoPlasticLinElast* thrpllinelast
-        = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
-      thrpllinelast->Evaluate(*Ntemp,*ctemp,*couplstress);
-      *density = thrpllinelast->Density();
-      return;
-      break;
-    }
-    case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
-    {
-      MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("straininc", straininc);
-      params.set<double>("scalartemp",scalartemp);
-      params.set<int>("gp",gp);
-      //robinson->Evaluate(*glstrain,*plglstrain,straininc,scalartemp,gp,params,*cmat,*couplstress);
-      robinson->Evaluate(defgrd,glstrain,params,couplstress,cmat);
-      *density = robinson->Density();
-      return;
-      break;
-    }
-    default:
-      dserror("Unknown type of temperature dependent material");
+  // st.venant-kirchhoff-material with temperature
+  case INPAR::MAT::m_thermostvenant:
+  {
+    MAT::ThermoStVenantKirchhoff* thrstvk
+      = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
+    thrstvk->Evaluate(*Ntemp,*ctemp,*couplstress,params);
+    *density = thrstvk->Density();
+    return;
     break;
+  }
+  // small strain von Mises thermoelastoplastic material
+  case INPAR::MAT::m_thermopllinelast:
+  {
+    MAT::ThermoPlasticLinElast* thrpllinelast
+      = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+    thrpllinelast->Evaluate(*Ntemp,*ctemp,*couplstress);
+    *density = thrpllinelast->Density();
+    return;
+    break;
+  }
+  case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
+  {
+    MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
+    params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("straininc", straininc);
+    params.set<double>("scalartemp",scalartemp);
+    params.set<int>("gp",gp);
+    //robinson->Evaluate(*glstrain,*plglstrain,straininc,scalartemp,gp,params,*cmat,*couplstress);
+    robinson->Evaluate(defgrd,glstrain,params,couplstress,cmat);
+    *density = robinson->Density();
+    return;
+    break;
+  }
+  default:
+    dserror("Unknown type of temperature dependent material");
+  break;
   } // switch (mat->MaterialType())
 
   return;
@@ -1343,33 +1343,33 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    // thermo st.venant-kirchhoff-material
-    case INPAR::MAT::m_thermostvenant:
-    {
-      MAT::ThermoStVenantKirchhoff* thrstvk
-        = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
-       return thrstvk->SetupCthermo(*ctemp,params);
-       break;
-    }
-    // small strain von Mises thermoelastoplastic material
-    case INPAR::MAT::m_thermopllinelast:
-    {
-      MAT::ThermoPlasticLinElast* thrpllinelast
-        = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
-      return thrpllinelast->SetupCthermo(*ctemp);
-      break;
-    }
-    // visco-plastic Robinson's material
-    case INPAR::MAT::m_vp_robinson:
-    {
-      // so far: do nothing, because the displacement-dependent coupling term
-      // is neglected
-      return;
-      break;
-    }
-    default:
-      dserror("Cannot ask material for the temperature-dependent material tangent");
-      break;
+  // thermo st.venant-kirchhoff-material
+  case INPAR::MAT::m_thermostvenant:
+  {
+    MAT::ThermoStVenantKirchhoff* thrstvk
+      = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
+     return thrstvk->SetupCthermo(*ctemp,params);
+     break;
+  }
+  // small strain von Mises thermoelastoplastic material
+  case INPAR::MAT::m_thermopllinelast:
+  {
+    MAT::ThermoPlasticLinElast* thrpllinelast
+      = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+    return thrpllinelast->SetupCthermo(*ctemp);
+    break;
+  }
+  // visco-plastic Robinson's material
+  case INPAR::MAT::m_vp_robinson:
+  {
+    // so far: do nothing, because the displacement-dependent coupling term
+    // is neglected
+    return;
+    break;
+  }
+  default:
+    dserror("Cannot ask material for the temperature-dependent material tangent");
+    break;
   } // switch (mat->MaterialType())
 
 }  // Ctemp()
