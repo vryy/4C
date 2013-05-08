@@ -2131,8 +2131,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
       {
         for (int jdim = 0; jdim <my::nsd_; ++jdim)
         {
-          ecoupl_u(fvi+idim,fui+jdim) += my::funct_(vi)*fac_reac* my::velint_(idim)*dphi_dus(fui+jdim)
-          - my::funct_(vi) * fac_densaf * my::vderxy_(idim, jdim) * my::funct_(ui)
+          ecoupl_u(fvi+idim,fui+jdim) +=   my::funct_(vi)*fac_reac* my::velint_(idim)*dphi_dus(fui+jdim)
+                                         - my::funct_(vi) * fac_densaf * my::vderxy_(idim, jdim) * my::funct_(ui)
           ;
         }
       } // end for (idim)
@@ -2175,7 +2175,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
   if(visceff_)
   {
     LINALG::Matrix<my::nsd_,my::nsd_> viscstress(true);
-    //const double v = visceff_;
 
     for (int jdim = 0; jdim < my::nsd_; ++jdim)
     {
@@ -2201,10 +2200,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
         for (int idim = 0; idim <my::nsd_; ++idim)
         {
           for (int jdim =0; jdim<my::nsd_; ++jdim)
-            ecoupl_u(fvi + idim,fui+jdim) += v * 1/(porosity) * ( 1/porosity*viscstress_gradphi(idim)*
-                                                                dphi_dus(fui+jdim)
-                                                            - viscstress_dgradphidus(idim,fui+jdim)
-                                                           )
+            ecoupl_u(fvi + idim,fui+jdim) += v * 1/(porosity) * (   1/porosity*viscstress_gradphi(idim)*
+                                                                    dphi_dus(fui+jdim)
+                                                                  - viscstress_dgradphidus(idim,fui+jdim)
+                                                                )
                                         ;
         }
       }
@@ -2256,8 +2255,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
         const int fui = my::nsd_*ui;
         for(int idim = 0; idim <my::nsd_; ++idim)
         {
-          ecoupl_p(vi,fui+idim)+= v * dphi_dus(fui+idim) * my::vdiv_
-          + v * grad_porosity_us_velint(fui+idim)
+          ecoupl_p(vi,fui+idim)+=   v * dphi_dus(fui+idim) * my::vdiv_
+                                  + v * grad_porosity_us_velint(fui+idim)
           ;
         }
       } // ui
@@ -2304,12 +2303,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
           const int fui = my::nsd_*ui;
           for(int idim = 0; idim <my::nsd_; ++idim)
           {
-            ecoupl_p(vi,fui+idim)+= v * ( dphi_dJ * J * my::derxy_(idim,ui) )
-            + w * ( + gridvdiv * ( dphi_dJJ * J + dphi_dJ ) * dJ_dus(fui+idim)
-                    - grad_porosity_us_gridvelint(fui+idim)
-                  )
-            - v * grad_porosity(idim) * my::funct_(ui)
-            + w * dphi_dJdp * press_dot * dJ_dus(fui+idim)
+            ecoupl_p(vi,fui+idim)+=   v * ( dphi_dJ * J * my::derxy_(idim,ui) )
+                                    + w * (
+                                            + gridvdiv * ( dphi_dJJ * J + dphi_dJ ) * dJ_dus(fui+idim)
+                                            - grad_porosity_us_gridvelint(fui+idim)
+                                          )
+                                    - v * grad_porosity(idim) * my::funct_(ui)
+                                    + w * dphi_dJdp * press_dot * dJ_dus(fui+idim)
             ;
           }
         }
@@ -3205,7 +3205,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
   for (int vi = 0; vi < my::nen_; ++vi)
   {
     double v = my::fac_ * my::funct_(vi, 0) * (   dphi_dp * press
-                                                  - my::rhscon_* my::fldpara_->Dt() * my::fldpara_->Theta())
+                                                  - my::rhscon_* my::fldpara_->Dt() * my::fldpara_->Theta()
+                                              )
               + timefacfac * my::funct_(vi, 0) * refporositydot;
     for (int ui = 0; ui < my::nen_; ++ui)
     {

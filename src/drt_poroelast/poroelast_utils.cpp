@@ -347,10 +347,10 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(Teuchos::
     if ( CheckPoroP1(dis->lColElement(i)) )
       locporop1 += 1;
   }
-  // Was at least one SoSh8P8 found on one processor?
+  // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
   dis->Comm().MaxAll(&locporop1, &glonumporop1, 1);
-  // Yes, it was. Go ahead for all processors (even if they do not carry any SoSh8P8 elements)
+  // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
     porositysplitter = Teuchos::rcp(new LINALG::MapExtractor());

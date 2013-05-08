@@ -187,21 +187,10 @@ namespace ELEMENTS
     //! initialize the inverse of the jacobian and its determinant in the material configuration
     virtual void InitElement();
 
-    /*
-    virtual void ComputePorosity( Teuchos::ParameterList& params,
-                               double press,
-                               double J,
-                               int gp,
-                               double& porosity,
-                               double* dphi_dp,
-                               double* dphi_dJ,
-                               double* dphi_dJdp,
-                               double* dphi_dJJ,
-                               double* dphi_dpp,
-                               bool save);
-    */
+    //! return number of degrees of freedom
     virtual int NumDof(){return 3;};
 
+    //! return whether this element has more degrees of freedom than standard solid elements
     virtual bool HasExtraDof(){return true;}
 
   protected:
@@ -281,6 +270,7 @@ namespace ELEMENTS
                                                  double &                               porosity,
                                                  double &                               dphi_dp);
 
+    //! evaluate gauss points for diagonal terms
     void GaussPointLoopP1(   Teuchos::ParameterList& params,
                                         const LINALG::Matrix<my::numdim_,my::numnod_>& xrefe,
                                         const LINALG::Matrix<my::numdim_,my::numnod_>& xcurr,
@@ -297,6 +287,7 @@ namespace ELEMENTS
                                         LINALG::Matrix<my::numnod_,1>& ecoupl_force_p1
                                             );
 
+    //! evaluate gauss points for off-diagonal terms
     void GaussPointLoopP1OD(   Teuchos::ParameterList& params,
                                         const LINALG::Matrix<my::numdim_,my::numnod_>& xrefe,
                                         const LINALG::Matrix<my::numdim_,my::numnod_>& xcurr,

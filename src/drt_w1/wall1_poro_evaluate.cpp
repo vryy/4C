@@ -104,6 +104,8 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
   if(not init_)
     dserror("internal element data not initialized!");
 
+  GetMaterials();
+
   // start with "none"
   typename Wall1_Poro<distype>::ActionType act = Wall1_Poro<distype>::none;
 
@@ -467,7 +469,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
  //   const INPAR::STR::StressType       iostress     // stress output option
     )
 {
-  GetMaterials();
 
   // update element geometry
   LINALG::Matrix<numdim_,numnod_> xrefe; // material coord. of element
@@ -931,8 +932,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
     LINALG::Matrix<numdof_, 1>* force,                               // element internal force vector
     Teuchos::ParameterList& params)                                           // algorithmic parameters e.g. time
 {
-  //=============================get parameters
-  GetMaterials();
 
   //=======================================================================
 

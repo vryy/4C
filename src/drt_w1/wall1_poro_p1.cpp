@@ -24,7 +24,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>(id,owner)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        popp 07/10|
+ |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::UniqueParObjectId() const
     return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance().UniqueParObjectId();
     break;
   case DRT::Element::quad9:
-    return DRT::ELEMENTS::WallQuad9PoroType::Instance().UniqueParObjectId();
+    return DRT::ELEMENTS::WallQuad9PoroP1Type::Instance().UniqueParObjectId();
     break;
   default:
     dserror("unknown element type");
@@ -130,7 +130,7 @@ DRT::ElementType & DRT::ELEMENTS::Wall1_PoroP1<distype>::ElementType() const
       return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance();
       break;
     case DRT::Element::quad9:
-      return DRT::ELEMENTS::WallQuad9PoroType::Instance();
+      return DRT::ELEMENTS::WallQuad9PoroP1Type::Instance();
       break;
     default:
       dserror("unknown element type");
