@@ -35,7 +35,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_condition_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
+//#include "../drt_contact/contact_node.H" // for TESTOUTPUT
 /*----------------------------------------------------------------------*
  | entry point for structure ale in DRT                      mgit 04/11 |
  *----------------------------------------------------------------------*/
@@ -74,7 +74,7 @@ void stru_ale_dyn_drt(int restart)
   }
   else
     dserror("Reading an ALE mesh from the input file is not supported for this problem type.");
-  
+
   // structure ale object
   Teuchos::RCP<STRU_ALE::Algorithm> stru_ale = Teuchos::rcp(new STRU_ALE::Algorithm(comm));
 
@@ -85,7 +85,7 @@ void stru_ale_dyn_drt(int restart)
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  DRT::Problem::Instance()->AddFieldTest(stru_ale->StructureField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(stru_ale->StructureField()->CreateFieldTest());
   DRT::Problem::Instance()->TestAll(comm);
 
   return;

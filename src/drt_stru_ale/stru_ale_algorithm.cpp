@@ -36,16 +36,58 @@ Maintainer: Markus Gitterle
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include "Epetra_SerialComm.h"
+#include "../linalg/linalg_utils.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
+
+#include "../drt_adapter/adapter_coupling.H"
 /*----------------------------------------------------------------------*
- | constructor (public)                                      mgit 05/11 |
+ | constructor (public)                                     farah 05/13 |
  *----------------------------------------------------------------------*/
 STRU_ALE::Algorithm::Algorithm(const Epetra_Comm& comm)
- : AlgorithmBase(comm,DRT::Problem::Instance()->StructuralDynamicParams()),
-   StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()), DRT::Problem::Instance()->GetDis("structure")),
-   AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams())
+ : AlgorithmBase(comm,DRT::Problem::Instance()->StructuralDynamicParams())
 {
+  /*--------------------------------------------------------------------*
+   | first create structure then ale --> important for discretization   |
+   | numbering and therefore for the post_drt_ensight.cpp               |
+   *--------------------------------------------------------------------*/
+
+  // create structure
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()), DRT::Problem::Instance()->GetDis("structure")));
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
+
+  // create ale
+  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams()));
+  ale_ = ale->AleFieldrcp();
+
+  if(structure_ == Teuchos::null)
+    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+
   // contact/meshtying manager
-  cmtman_= StructureField().ContactManager();
+  cmtman_= StructureField()->ContactManager();
+
+  const int ndim = DRT::Problem::Instance()->NDim();
+
+  // create ale-struct coupling
+  const Epetra_Map* structdofmap = StructureField()->Discretization()->NodeRowMap();
+  const Epetra_Map* aledofmap   = AleField().Discretization()->NodeRowMap();
+
+  // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an error !!!
+  coupalestru_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupalestru_->SetupCoupling(*AleField().Discretization(),
+                       *StructureField()->Discretization(),
+                       *aledofmap,
+                       *structdofmap,
+                        ndim);
+
+  //create interface coupling
+  coupstrualei_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupstrualei_->SetupConditionCoupling(*StructureField()->Discretization(),
+                                 StructureField()->Interface()->AleWearCondMap(),
+                                 *AleField().Discretization(),
+                                 AleField().Interface()->Map(AleField().Interface()->cond_ale_wear),
+                                 "AleWear",
+                                 ndim);
 }
 
 /*----------------------------------------------------------------------*
@@ -60,7 +102,6 @@ STRU_ALE::Algorithm::~Algorithm()
  *----------------------------------------------------------------------*/
 void STRU_ALE::Algorithm::TimeLoop()
 {
-
   // time loop
   while (NotFinished())
   {
@@ -73,17 +114,17 @@ void STRU_ALE::Algorithm::TimeLoop()
     /* structural lagrange step with contact                            */
     /********************************************************************/
     // predict and solve structural system
-    StructureField().PrepareTimeStep();
-    StructureField().Solve();
+    StructureField()->PrepareTimeStep();
+    StructureField()->Solve();
 
     // calculate stresses, strains, energies
-    StructureField().PrepareOutput();
+    StructureField()->PrepareOutput();
+
+    // update at time step
+    StructureField()->Update();
 
     // write output to screen and files
-    StructureField().Update();
-
-    // write output to screen and files
-    StructureField().Output();
+    StructureField()->Output();
     
     /********************************************************************/
     /* EULERIAN STEP                                                    */  
@@ -99,28 +140,50 @@ void STRU_ALE::Algorithm::TimeLoop()
     // system of equation
     AleField().BuildSystemMatrix();
 
+    // couplig of struct/mortar and ale dofs
+    DispCoupling(idisale);
+
     // application of interface displacements as dirichlet conditions
     AleField().ApplyInterfaceDisplacements(idisale);
     
     // solution
     AleField().Solve();
 
+    // output
+    //FIX: output creates error by writing in resultfile
+    //AleField().Output();
+
     // 2.-----------------------------------------------------------------     
-    // mesh displacement from solution of ALE field in structural dofs
-    // FIXGIT: Has to be done with transformation of vector
-    RCP<Epetra_Vector> idis = Teuchos::rcp(new Epetra_Vector(*(StructureField().Discretization()->DofRowMap()),true));
-    for (int i=0; i<idis->MyLength(); ++i)
-      (*idis)[i]=(*(AleField().ExtractDispnp()))[i];
-    
     // application of mesh displacements to structural field, 
-    // mapping of results
-    ApplyMeshDisplacement(idis);
+    ApplyMeshDisplacement();
 
   }  // time loop
 }  // STRUE_ALE::Algorithm::TimeLoop()
 
+
 /*----------------------------------------------------------------------*
- | Vector of interface displacements in ALE dofs              mgit 07/11 |
+ | Perform Coupling from struct/mortar to ale dofs          farah 05/13 |
+ | This is necessary due to the parallel redistribution                 |
+ | of the contact interface                                             |
+ *----------------------------------------------------------------------*/
+void STRU_ALE::Algorithm::DispCoupling(Teuchos::RCP<Epetra_Vector>& disinterface)
+{
+  //Teuchos::RCP<Epetra_Vector> aledofs = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)),true);
+  Teuchos::RCP<Epetra_Vector> strudofs = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->AleWearCondMap()),true);
+
+  // change the parallel distribution from mortar interface to structure
+  LINALG::Export(*disinterface,*strudofs);
+
+  // perform coupling
+  disinterface.reset();
+  disinterface = coupstrualei_->MasterToSlave(strudofs);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Vector of interface displacements in ALE dofs             farah 05/13|
+ | Currently just for 1 interface                                       |
  *----------------------------------------------------------------------*/
 void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterface)
 {
@@ -131,8 +194,8 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   RCP<Epetra_Vector> realwear = cmtman_->GetStrategy().ContactWear();
   
   // map of slave dofs
-  RCP<Epetra_Map> slavedofs;
-   
+  //RCP<Epetra_Map> slavedofs;
+
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
@@ -144,125 +207,105 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   if (interface.size()>1)
     dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
 
+  // get slave row dofs as map
+  Teuchos::RCP<Epetra_Map> slavedofs = interface[0]->SlaveRowDofs();
+
   // dimension of the problem
-  int dim = strategy.Dim();
+  //int dim = strategy.Dim();
 
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
-    // slave nodes
-    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
-
-    // define local variables
-    int slavecountnodes = 0;
-    std::vector<int> myslavealedofs((slavenodes->NumMyElements())*dim);
-
-    // loop over all slave nodes of the interface
-    for (int i=0;i<slavenodes->NumMyElements();++i)
-    {
-      int gid = slavenodes->GID(i);
-      DRT::Node* node = StructureField().Discretization()->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
-
-      if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
-
-      // ale dofs
-      if (dim == 2)
-      {  
-        myslavealedofs[slavecountnodes*dim] = (AleField().Discretization()->Dof(0,node))[0];
-        myslavealedofs[slavecountnodes*dim+1] = (AleField().Discretization()->Dof(0,node))[1];
-      }
-      else
-        dserror("ERROR: 3D not yet implemented.");
-      
-      ++slavecountnodes;
-    }  
-
-    // resize the temporary vectors
-    myslavealedofs.resize(slavecountnodes*dim);
-
-    // communicate slavecuntnodes
-    int gslavecountnodes;
-    Comm().SumAll(&slavecountnodes,&gslavecountnodes,1);
-
-    // create slave node map and active dof map
-    slavedofs = Teuchos::rcp(new Epetra_Map(gslavecountnodes*dim,slavecountnodes*dim,&myslavealedofs[0],0,Comm()));
+    // do nothing
   }
   
   // additional spatial displacements
   // FIXGIT: check has to be done with nodal normal
   // FIXGIT: transformation of results
+  // FIX: is here the wear vector multiplied with the nodal normal or should it be done?
   disinterface = Teuchos::rcp(new Epetra_Vector(*slavedofs,true));
+
   for (int i=0; i<disinterface->MyLength(); ++i)
   {
     if (i%2 > 0 and (*cstrategy.ContactWear())[i] > 0.0)
       (*disinterface)[i] = 0;
     else
-      (*disinterface)[i] = -(*cstrategy.ContactWear())[i]; 
-   }
-  
+      (*disinterface)[i] = -(*cstrategy.ContactWear())[i];
+  }
+
   return;
 }  // STRU_ALE::Algorithm::InterfaceDisp()
 
 /*----------------------------------------------------------------------*
  | Application of mesh displacement                           mgit 07/11 |
  *----------------------------------------------------------------------*/
-void STRU_ALE::Algorithm::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector>& disale)
+void STRU_ALE::Algorithm::ApplyMeshDisplacement()
 {
+  // mesh displacement from solution of ALE field in structural dofs
+  // first perform transformation from ale to structure dofs
+  RCP<Epetra_Vector> aledisp = AleField().ExtractDispnp();
+  RCP<Epetra_Vector> disale = coupalestru_->MasterToSlave(aledisp);
+
   // vector of current spatial displacements
-  RCP<Epetra_Vector> dispn = StructureField().ExtractDispn();
+  RCP<Epetra_Vector> dispn = StructureField()->ExtractDispn();
 
   // additional spatial displacements
-  RCP<Epetra_Vector> disadditional = Teuchos::rcp(new Epetra_Vector(dispn->Map()),true);
+  //RCP<Epetra_Vector> disadditional = Teuchos::rcp(new Epetra_Vector(dispn->Map()),true);
 
   // material displacements
   RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispn->Map()),true);
   
   // set state
-  (StructureField().Discretization())->SetState(0,"displacement",dispn);
+  (StructureField()->Discretization())->SetState(0,"displacement",dispn);
 
   // set state
-  (StructureField().Discretization())->SetState(0,"material displacement",StructureField().DispMat());
+  (StructureField()->Discretization())->SetState(0,"material displacement",StructureField()->DispMat());
  
   // loop over all row nodes to fill graph
-    for (int k=0;k<StructureField().Discretization()->NumMyRowNodes();++k)
-    {
-      int gid = StructureField().Discretization()->NodeRowMap()->GID(k);
+  for (int k=0;k<StructureField()->Discretization()->NumMyRowNodes();++k)
+  {
+    int gid = StructureField()->Discretization()->NodeRowMap()->GID(k);
+
+    DRT::Node* node = StructureField()->Discretization()->gNode(gid);
+    DRT::Element** ElementPtr = node->Elements();
       
-      DRT::Node* node = StructureField().Discretization()->gNode(gid);
-      DRT::Element** ElementPtr = node->Elements();
-        
-      int numelement = node->NumElement();
-        
-      double XMat[2];
-      double XMesh[2];
+    int numelement = node->NumElement();
       
-      XMat[0] = node->X()[0];
-      XMat[1] = node->X()[1];
-        
-      int locid = (dispn->Map()).LID(2*gid);
-  
-      XMesh[0]=node->X()[0]+(*dispn)[locid]+(*disale)[locid];
-      XMesh[1]=node->X()[1]+(*dispn)[locid+1]+(*disale)[locid+1];
+    double XMat[2];
+    double XMesh[2];
+
+    XMat[0] = node->X()[0];
+    XMat[1] = node->X()[1];
       
-      AdvectionMap(&XMat[0],&XMat[1],&XMesh[0],&XMesh[1],ElementPtr,numelement);
+    int locid = (dispn->Map()).LID(2*gid);
 
-      (*disadditional)[locid]   = (*disale)[locid];
-      (*disadditional)[locid+1] = (*disale)[locid+1];
+    // reference node position + displacement t_n + delta displacement t_n+1
+    XMesh[0]=node->X()[0]+(*dispn)[locid]+(*disale)[locid];
+    XMesh[1]=node->X()[1]+(*dispn)[locid+1]+(*disale)[locid+1];
 
-      (*dismat)[locid] = XMat[0]-node->X()[0];
-      (*dismat)[locid+1] = XMat[1]-node->X()[1];
-    }
+    // create updated  XMat --> via nonlinear interpolation between nodes (like gp projection)
+    AdvectionMap(&XMat[0],&XMat[1],&XMesh[0],&XMesh[1],ElementPtr,numelement);
 
-    // update spatial displacements
-    dispn->Update(1.0,*disadditional,1.0);
+    // copy disale? so we copy just the wear? i think this is nonsense
+    //(*disadditional)[locid]   = (*disale)[locid];
+    //(*disadditional)[locid+1] = (*disale)[locid+1];
 
-    // apply material displacements to structural field
-    StructureField().ApplyDisMat(dismat);
-    
-    return;
+    // create delta displacement in material configuration
+    (*dismat)[locid] = XMat[0]-node->X()[0];
+    (*dismat)[locid+1] = XMat[1]-node->X()[1];
+  }
+
+  // update spatial displacements
+  //dispn->Update(1.0,*disadditional,1.0);
+  dispn->Update(1.0,*disale,1.0);
+
+  //StructureField()->Dispnp() = dispn;
+
+  // apply material displacements to structural field
+  StructureField()->ApplyDisMat(dismat);
+  //cout << "dismat= " << *dismat << endl;
+
+  return;
 
 }  // STRU_ALE::Algorithm::SubtractWear()
 
@@ -289,11 +332,11 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
     // get element location vector
     // FIXGIT: Why this "1"
     DRT::Element::LocationArray la(1);
-    actele->LocationVector(*(StructureField().Discretization()),la,false);
+    actele->LocationVector(*(StructureField()->Discretization()),la,false);
 
     // get state
-    RCP<const Epetra_Vector> disp = (StructureField().Discretization())->GetState("displacement");
-    RCP<const Epetra_Vector> dispmat = (StructureField().Discretization())->GetState("material displacement");
+    RCP<const Epetra_Vector> disp = (StructureField()->Discretization())->GetState("displacement");
+    RCP<const Epetra_Vector> dispmat = (StructureField()->Discretization())->GetState("material displacement");
 
 //#ifdef D_WALL1
     // structure with ale only for wall element so far
@@ -309,13 +352,18 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
 //#endif
     // leave when element is found
     if (found == true)
+    {
+      //cout << "*** particle tracking successfull ***" << endl;
       return;
+    }
   }
 
   // error if element is not found
   if (found == false)
+  {
+    cout << "coords: " << *XMat1 << "   " << *XMat2 << endl;
     cout << "STRU_ALE::Algorithm::AdvectionMap: Particle tracking not successful." << endl;
-
+  }
   // bye
   return;
 
@@ -326,8 +374,8 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
  *----------------------------------------------------------------------*/
 void STRU_ALE::Algorithm::ReadRestart(int step)
 {
-  StructureField().ReadRestart(step);
-  SetTimeStep(StructureField().GetTime(),step);
+  StructureField()->ReadRestart(step);
+  SetTimeStep(StructureField()->GetTime(),step);
 
   return;
 }

@@ -395,6 +395,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       }
     }
     break;
+    case prb_struct_ale:
+    {
+      structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
+    }
+    break;
     default:
     {
       structure_ = tmpstr;

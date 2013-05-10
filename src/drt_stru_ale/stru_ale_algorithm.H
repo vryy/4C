@@ -28,6 +28,7 @@ Maintainer: Markus Gitterle
 //#include <Teuchos_ParameterList.hpp>
 
 #include "../drt_adapter/ad_str_structure.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_ale/ale.H"
@@ -37,7 +38,10 @@ namespace MORTAR
 {
   class ManagerBase;
 }
-
+namespace ADAPTER
+{
+  class Coupling;
+}
 /*----------------------------------------------------------------------*
  |                                                           mgit 04/11 |
  *----------------------------------------------------------------------*/
@@ -51,11 +55,15 @@ namespace STRU_ALE
   //!  is followed by Eulerian step.
   //!  \author gitterle
   //!  \date 04/11
-  class Algorithm : public ADAPTER::AlgorithmBase,
-                    public ADAPTER::StructureBaseAlgorithm,
-                    public ALE::AleBaseAlgorithm
+  class Algorithm : public ADAPTER::AlgorithmBase
   {
   public:
+
+    // access to structure field
+    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+
+    /// access to ale field
+    ALE::Ale& AleField() { return *ale_; }
 
     /// create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
@@ -69,8 +77,11 @@ namespace STRU_ALE
     /// Interface displacements (frictional contact)
     void InterfaceDisp (Teuchos::RCP<Epetra_Vector>& disinterface);
     
+    // Dof Coupling
+    void DispCoupling (Teuchos::RCP<Epetra_Vector>& disinterface);
+
     /// Application of mesh displacements (frictional contact)
-    void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector>& disale);
+    void ApplyMeshDisplacement();
     
     /// material coordinates evaluated from spatial ones
     void AdvectionMap(double* XMat1,
@@ -87,10 +98,16 @@ namespace STRU_ALE
 
   protected:
 
+  Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
+  Teuchos::RCP<ALE::Ale>                           ale_;
+
   private:
     
-  Teuchos::RCP<MORTAR::ManagerBase> cmtman_; // contact manager
- 
+  Teuchos::RCP<MORTAR::ManagerBase>                cmtman_;        // contact manager
+  Teuchos::RCP< ::ADAPTER::Coupling>               coupalestru_; // ale struct cpupling
+  Teuchos::RCP< ::ADAPTER::Coupling>               coupstrualei_;  // ale struct coupling on ale interface
+
+
  };  // Algorithm
 }  // namespace STRU_ALE
 
