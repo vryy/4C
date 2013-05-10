@@ -96,7 +96,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 
   if(DRT::Problem::Instance()->GetNPGroup()->NumGroups() != 1)
     dserror("No nested parallelism for AMG FSI. See comments in FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()!");
-  // Attention: No nested parallelism for AMG FSI due to MLAPI incompability
+  // Attention: No nested parallelism for AMG FSI due to MLAPI incompatibility
   // MLAPI::Space::Reshape constructs an ML_RowMatrix object using a hard coded MPI_COMM_WORLD in MLAPI_Operator.h
   // Fixing this needs major changes in Trilinos/MLAPI which is not desirable
 
