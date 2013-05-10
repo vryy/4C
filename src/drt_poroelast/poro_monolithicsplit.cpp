@@ -223,7 +223,7 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
 /*----------------------------------------------------------------------*
  |  map containing the dofs with Dirichlet BC
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::CombinedDBCMap()
+void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::CombinedDBCMap");
 
@@ -243,13 +243,13 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::CombinedDBCMap()
   {
     int gid = mygids[i];
     int fullmaplid = fullmap_->LID(gid);
-    // if it is not a fsi dof
+    // if a dof of the full system, i.e. it is not condensed
     if (fullmaplid >= 0)
       otherdbcmapvector.push_back(gid);
   }
 
-  Teuchos::RCP<Epetra_Map> otherdbcmap = Teuchos::rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
-  //dsassert(otherdbcmap->UniqueGIDs(),"DBC applied on both master and slave side on inteface!");
+  combinedDBCMap_ = Teuchos::rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
+  //dsassert(combinedDBCMap_->UniqueGIDs(),"DBC applied on both master and slave side on inteface!");
 
-  return otherdbcmap;
+  return;
 }

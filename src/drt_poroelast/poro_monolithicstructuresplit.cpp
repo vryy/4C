@@ -80,6 +80,8 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
   StructureField()->UseBlockMatrix();
 
   SetupCouplingAndMatrixes();
+
+  BuildCombinedDBCMap();
 } // SetupSystem()
 
 /*----------------------------------------------------------------------*/
@@ -181,8 +183,7 @@ void POROELAST::MonolithicStructureSplit::SetupRHS( bool firstcall)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
-    )
+void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::SetupSystemMatrix");
 

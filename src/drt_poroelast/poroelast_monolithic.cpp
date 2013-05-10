@@ -308,6 +308,8 @@ void POROELAST::Monolithic::SetupSystem()
 
   SetDofRowMaps(vecSpaces);
 
+  BuildCombinedDBCMap();
+
   // initialize Poroelasticity-systemmatrix_
   systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
                                       Extractor(),
@@ -1118,16 +1120,14 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
 /*----------------------------------------------------------------------*
  |  map containing the dofs with Dirichlet BC               vuong 01/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> POROELAST::Monolithic::CombinedDBCMap()
+void POROELAST::Monolithic::BuildCombinedDBCMap()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap =
       StructureField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> fcondmap =
       FluidField()->GetDBCMapExtractor()->CondMap();
-  Teuchos::RCP<Epetra_Map> condmap =
-      LINALG::MergeMap(scondmap, fcondmap, false);
-  return condmap;
-} // CombinedDBCMap()
+  combinedDBCMap_= LINALG::MergeMap(scondmap, fcondmap, false);
+} // BuildCombinedDBCMap()
 
 /*----------------------------------------------------------------------*
  |  check tangent stiffness matrix vie finite differences               |

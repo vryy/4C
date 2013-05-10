@@ -203,7 +203,9 @@ namespace POROELAST
 
       //! combined DBC map
       //! unique map of all dofs that should be constrained with DBC
-      virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+      Teuchos::RCP<Epetra_Map> CombinedDBCMap(){return combinedDBCMap_;};
+
+      virtual void BuildCombinedDBCMap();
 
       //! extractor to communicate between full monolithic map and block maps
       const LINALG::MultiMapExtractor& Extractor() const
@@ -248,6 +250,9 @@ namespace POROELAST
 
       //! dof row map splitted in (field) blocks
       LINALG::MultiMapExtractor blockrowdofmap_;
+
+      //! dof row map splitted in (field) blocks
+      Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
       //! return structure fluid coupling sparse matrix
       Teuchos::RCP<LINALG::SparseMatrix> StructFluidCouplingMatrix();

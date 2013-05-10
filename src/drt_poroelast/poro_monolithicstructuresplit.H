@@ -69,8 +69,7 @@ namespace POROELAST
       virtual void SetupRHS(bool firstcall=false);
 
       /// setup composed system matrix from field solvers
-      virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
-          );
+      virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
     private:
       /// build block vector from field vectors

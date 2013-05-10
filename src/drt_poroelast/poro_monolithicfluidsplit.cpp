@@ -85,6 +85,8 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
   FluidField()->UseBlockMatrix(true);
 
   SetupCouplingAndMatrixes();
+
+  BuildCombinedDBCMap();
 } // SetupSystem()
 
 /*----------------------------------------------------------------------*/
@@ -191,8 +193,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
-    )
+void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::SetupSystemMatrix");
 

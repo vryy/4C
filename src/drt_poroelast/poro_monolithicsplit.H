@@ -67,7 +67,7 @@ namespace POROELAST
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+    void BuildCombinedDBCMap();
 
     //! map containing the dofs with Dirichlet BC and FSI Coupling Condition on structure side
     Teuchos::RCP<Epetra_Map> FSIDBCMap();
