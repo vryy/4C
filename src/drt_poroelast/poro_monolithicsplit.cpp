@@ -118,16 +118,18 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::FSIDBCMap");
 
+  //get interface map and DBC map of fluid
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
   fluidmaps.push_back(FluidField()->Interface()->FSICondMap());
   fluidmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
 
-  //vector of dbc and fsi coupling of fluid field
+  //build vector of dbc and fsi coupling of fluid field
   Teuchos::RCP<Epetra_Map> fluidfsibcmap = LINALG::MultiMapExtractor::IntersectMaps(fluidmaps);
 
   if(fluidfsibcmap->NumMyElements())
     dserror("Dirichlet boundary conditions on fluid and FSI interface not supported!!");
 
+  //get interface map and DBC map of structure
   std::vector<Teuchos::RCP<const Epetra_Map> > structmaps;
   structmaps.push_back(StructureField()->Interface()->FSICondMap());
   structmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
@@ -137,6 +139,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 
   Teuchos::RCP<Epetra_Vector> gidmarker_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
 
+  //Todo this is ugly, fix it!
   const int mylength = structfsibcmap->NumMyElements(); //on each processor (lids)
   const int* mygids = structfsibcmap->MyGlobalElements();
 
@@ -159,14 +162,11 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   for (int i=0; i<numgids; ++i)
   {
     double val = mygids_fluid[i];
-    //int gid = map[i];
-    //dsassert(slavemastermap.count(gid),"master gid not found on slave side");
     if(val==1.0)
       structfsidbcvector.push_back(fluidmap[i]);
   }
 
-  Teuchos::RCP<Epetra_Map> structfsidbcmap = Teuchos::null;
-  structfsidbcmap = Teuchos::rcp(new Epetra_Map(-1, structfsidbcvector.size(), &structfsidbcvector[0], 0, Comm()));
+  Teuchos::RCP<Epetra_Map> structfsidbcmap = Teuchos::rcp(new Epetra_Map(-1, structfsidbcvector.size(), &structfsidbcvector[0], 0, Comm()));
   //dsassert(fluidfsidbcmap->UniqueGIDs(),"fsidbcmap is not unique!");
 
   return structfsidbcmap;
@@ -193,7 +193,7 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
     const Teuchos::RCP<ADAPTER::FluidPoro>& fluidfield = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(FluidField());
     fluidfield->AddDirichCond(fsibcmap_);
 
-    fsibcextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField()->Interface()->Map(1), fsibcmap_));
+    fsibcextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField()->Interface()->FSICondMap(), fsibcmap_));
 
     Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->ExtractDispnp());
     ddi_=Teuchos::rcp(new Epetra_Vector(idispnp->Map(),true));
@@ -227,6 +227,7 @@ void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::CombinedDBCMap");
 
+  //first, get DBC-maps from structure and fluid field and merge them to one map
   const Teuchos::RCP<const Epetra_Map > scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map > fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
 
@@ -236,20 +237,13 @@ void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
 
   Teuchos::RCP<Epetra_Map> overallfsidbcmaps = LINALG::MultiMapExtractor::MergeMaps(vectoroverallfsimaps);
 
-  std::vector<int> otherdbcmapvector; //vector of dbc
-  const int mylength = overallfsidbcmaps->NumMyElements(); //on each prossesor (lids)
-  const int* mygids = overallfsidbcmaps->MyGlobalElements();
-  for (int i=0; i<mylength; ++i)
-  {
-    int gid = mygids[i];
-    int fullmaplid = fullmap_->LID(gid);
-    // if a dof of the full system, i.e. it is not condensed
-    if (fullmaplid >= 0)
-      otherdbcmapvector.push_back(gid);
-  }
+  //now we intersect the global dof map with the DBC map to get all dofs with DBS applied, which are in the global
+  // system, i.e. are not condensed
+  std::vector<Teuchos::RCP<const Epetra_Map> > vectordbcmaps;
+  vectordbcmaps.push_back(overallfsidbcmaps);
+  vectordbcmaps.push_back(fullmap_);
 
-  combinedDBCMap_ = Teuchos::rcp(new Epetra_Map(-1, otherdbcmapvector.size(), &otherdbcmapvector[0], 0, Comm()));
-  //dsassert(combinedDBCMap_->UniqueGIDs(),"DBC applied on both master and slave side on inteface!");
+  combinedDBCMap_ = LINALG::MultiMapExtractor::IntersectMaps(vectordbcmaps);
 
   return;
 }

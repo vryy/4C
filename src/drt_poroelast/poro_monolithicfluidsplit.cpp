@@ -43,8 +43,6 @@ POROELAST::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
   : MonolithicSplit(comm,timeparams)
 {
 
-  icoupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
-
   fggtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
   fgitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   figtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);

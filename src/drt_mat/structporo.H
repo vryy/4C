@@ -179,13 +179,6 @@ namespace MAT
       /// return porosity average
       double PorosityAv() const;
 
-      /// return porosity gradient average
-      //void PorosityGradientAv( LINALG::Matrix<3,1>& porosityav) const;
-      //void PorosityGradientAv( LINALG::Matrix<2,1>& porosityav) const;
-
-      /// return porosity time derivative average
-      //double DPorosityDtAv() const;
-
       /// return bulk modulus
       double Bulkmodulus() const
       {
@@ -306,32 +299,6 @@ namespace MAT
         return porosity_->at(gp);
       }
 
-      /*
-      void SetDPoroDtAtGP(std::vector<double> dporodt_gp);
-
-      /// Return derivative of porosity wrt time evaluated at some gauss point.           %urrecha 04/12
-      double GetDPoroDtAtGP(int gp) const
-      {
-        return dporodt_->at(gp);
-      }
-
-      /// Set porosity gradient evaluated at gauss points
-      void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<3,1> > gradporosity_gp);
-      void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<2,1> > gradporosity_gp);
-
-      /// Set gradient of jacobian evaluated at gauss points
-      void   SetGradJAtGP(std::vector< LINALG::Matrix<1,3> > gradporosity_gp);
-      void   SetGradJAtGP(std::vector< LINALG::Matrix<1,2> > gradporosity_gp);
-
-      /// Return porosity gradient evaluated at some gauss point.  %urrecha 04/12
-      void GetGradPorosityAtGP(LINALG::Matrix<3,1>& gradporosity, int gp) const;
-      void GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int gp) const;
-
-      /// Return gradient of jacobian evaluated at some gauss point
-      void GetGradJAtGP(LINALG::Matrix<1,3>& gradJ, int gp) const;
-      void GetGradJAtGP(LINALG::Matrix<1,2>& gradJ, int gp) const;
-      */
-
       //! @name Evaluation methods
 
       /// evaluate material law
@@ -422,15 +389,6 @@ namespace MAT
 
       /// porosity at gauss points of surface element
       Teuchos::RCP<std::map<int, std::vector< double > > > surfporosity_;
-
-      /// porosity time derivative at gauss points
-      //Teuchos::RCP<std::vector<double> > dporodt_;
-
-      /// porosity gradient at gauss points
-     // Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > gradporosity_;
-
-      /// gradient of jacobian at gauss points
-      //Teuchos::RCP<std::vector<LINALG::Matrix<1,3> > > gradJ_;
 
       /// flag indicating initialization of attributes
       bool isinitialized_;
