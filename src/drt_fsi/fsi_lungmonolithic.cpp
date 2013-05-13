@@ -336,6 +336,9 @@ void FSI::LungMonolithic::GeneralSetup()
 
   writerestartevery_ =  fsidyn.get<int>("RESTARTEVRY");
 
+  // ToDo: Setup the monolithic DBC map extractor and use only this to handle DBCs in Matrix and RHS
+  dbcmaps_ = Teuchos::null;
+
   return;
 }
 
@@ -641,6 +644,7 @@ FSI::LungMonolithic::CreateLinearSystem(Teuchos::ParameterList& nlParams,
   case INPAR::FSI::FSIAMG:
   default:
     dserror("unsupported linear block solver strategy: fsiamg");
+    break;
   }
 
   return linSys;

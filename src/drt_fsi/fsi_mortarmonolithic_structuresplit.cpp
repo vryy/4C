@@ -236,6 +236,30 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
 
     aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
+    // ---------------------------------------------------------------------------
+    // Build the global Dirichlet map extractor
+    //
+    // Dirichlet maps for structure and fluid do not intersect with interface map.
+    // ALE Dirichlet map might intersect with interface map, but ALE interface DOFs
+    // are not part of the final system of equations. Hence, we just need the
+    // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
+    std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
+    aleintersectionmaps.push_back(AleField().GetDBCMapExtractor()->CondMap());
+    aleintersectionmaps.push_back(AleField().Interface()->OtherMap());
+    Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+
+    // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
+    std::vector<Teuchos::RCP<const Epetra_Map> > dbcmaps;
+    dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+    dbcmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+    dbcmaps.push_back(aleintersectionmap);
+    Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+
+    // Finally, create the global FSI Dirichlet map extractor
+    dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(),dbcmap,true));
+    if (dbcmaps_ == Teuchos::null) { dserror("Creation of FSI Dirichlet map extractor failed."); }
+    // ---------------------------------------------------------------------------
+
     // get the PCITER from inputfile
     std::vector<int> pciter;
     std::vector<double> pcomega;
@@ -613,26 +637,6 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
       }
     }
 
-    // Apply Dirichlet boundary conditions
-    // structure
-    rhs = Extractor().ExtractVector(f,0);
-    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
-    Extractor().InsertVector(*rhs,0,f);
-
-    // fluid
-    rhs = Extractor().ExtractVector(f,1);
-    zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
-    Extractor().InsertVector(*rhs,1,f);
-
-    // ale
-    rhs = Extractor().ExtractVector(f,2);
-    zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(AleField().GetDBCMapExtractor()->CondMap()));
-    Extractor().InsertVector(*rhs,2,f);
-    // -----------------------------------------------------
-
     // Reset quantities for previous iteration step since they still store values from the last time step
     ddiinc_   = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true);
     disiprev_ = Teuchos::null;
@@ -640,6 +644,12 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
     sgicur_   = Teuchos::null;
     sggcur_   = Teuchos::null;
   }
+
+  // Finally, we take care of Dirichlet boundary conditions
+  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
+  Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(),true));
+  LINALG::ApplyDirichlettoSystem(rhs,zeros,*(dbcmaps_->CondMap()));
+  f.Update(1.0,*rhs,0.0);
 
   // NOX expects the 'positive' residual. The negative sign for the
   // linearized Newton system J*dx=-r is done internally by NOX.
@@ -708,8 +718,6 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   lsig->Add(*sig,false,1./timescale,0.0);
   lsig->Complete(f->DomainMap(),sig->RangeMap());
 
-  lsig->ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),false);
-
   mat.Assign(0,1,View,*lsig);
 
   // ----------Addressing contribution to block (3,1)
@@ -719,15 +727,11 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   lsgi->Add(*sgi,false,(1.-ftiparam)/((1.-stiparam)*scale),0.0);
   lsgi->Complete(sgi->DomainMap(),f->RangeMap());
 
-  lsgi->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
-
   mat.Assign(1,0,View,*lsgi);
 
   // ----------Addressing contribution to block (3,3)
   Teuchos::RCP<LINALG::SparseMatrix> sgg = MLMultiply(s->Matrix(1,1),false,*mortarp,false,false,false,true);
   sgg = MLMultiply(*mortarp,true,*sgg,false,false,false,true);
-
-  sgg->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
 
   f->Add(*sgg,false,(1.-ftiparam)/((1.-stiparam)*scale*timescale),1.0);
   mat.Assign(1,1,View,*f);
@@ -821,6 +825,9 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
   // done. make sure all blocks are filled.
   mat.Complete();
+
+  // Finally, take care of Dirichlet boundary conditions
+  mat.ApplyDirichlet(*(dbcmaps_->CondMap()),true);
   //
   // --------------------------------------------------------------------------
   // END building the global system matrix
@@ -1086,8 +1093,6 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
       modfv->Update((-ftiparam+(stiparam*(1.0-ftiparam))/(1.0-stiparam))/fluidscale, *tmprhsfull, 1.0);
     }
 
-    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modfv->Map(),true));
-    LINALG::ApplyDirichlettoSystem(modfv,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
 
     Extractor().InsertVector(*modfv,1,f);
   }

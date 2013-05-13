@@ -15,6 +15,8 @@
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_structure/stru_aux.H"
 
+#include "../linalg/linalg_utils.H"
+
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 
@@ -240,7 +242,15 @@ void FSI::ConstrMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*rhs,0,f);
   }
 
-  // NOX expects a different sign here.
+  // Finally, we take care of Dirichlet boundary conditions
+  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
+  Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(),true));
+  LINALG::ApplyDirichlettoSystem(rhs,zeros,*(dbcmaps_->CondMap()));
+  f.Update(1.0,*rhs,0.0);
+
+  // NOX expects the 'positive' residual. The negative sign for the
+  // linearized Newton system J*dx=-r is done internally by NOX.
+  // Since we assembled the right hand side, we have to invert the sign here.
   f.Scale(-1.);
 }
 
@@ -295,7 +305,6 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   LINALG::SparseMatrix scon = *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmp));
 
   scon.Complete(*conman_->GetConstraintMap(),s->RangeMap());
-  scon.ApplyDirichlet( *(StructureField()->GetDBCMapExtractor()->CondMap()),false);
 
   mat.Assign(0,3,View,scon);
 
@@ -407,6 +416,9 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
+
+  // Finally, take care of Dirichlet boundary conditions
+  mat.ApplyDirichlet(*(dbcmaps_->CondMap()),true);
 
 
 }

@@ -363,6 +363,17 @@ namespace FSI
     /// flag is true if this is the first Newton iteration, false otherwise
     bool firstcall_;
 
+    //! Dirichlet map extractor for monolithic FSI system
+    //!
+    //!
+    //! The global DBC map extractor consists of the Dirichlet maps of structure,
+    //! fluid and ALE field, where the condensed interface DOFs have been dropped
+    //! during construction.
+    //!
+    //! CondMap()   = Dirichlet DOFs
+    //! OtherMap()  = DOFs without Dirichlet boundary condition
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+
     //! @name Predictor/inhomogeneous Dirichlet related stuff
 
     //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
