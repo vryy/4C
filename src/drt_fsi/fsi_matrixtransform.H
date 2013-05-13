@@ -76,7 +76,7 @@ namespace FSI
 
       \param src       (i) source matrix
       \param scale     (i) scaling factor to be applied
-      \param converter (i) src to dst abstaction on ADAPTER::Coupling
+      \param converter (i) src to dst abstraction on ADAPTER::Coupling
       \param dst     (i/o) destination matrix
       \param addmatrix (i) remove current dst values if false
      */
