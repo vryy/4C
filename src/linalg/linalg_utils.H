@@ -690,9 +690,9 @@ namespace LINALG
   \param x (in/out)         : vector x of Ax=b
   \param b (in/out)         : vector b of Ax=b
   \param dbcval (in)        : vector holding values that are supposed to be prescribed
-  \param dbctoggle (in)     : unique map of all dofs that should be constrained
+  \param dbcmap (in)        : unique map of all dofs that should be constrained
 
-  \pre The map dbctoggle must be subset of the maps of the vectors.
+  \pre The map dbcmap must be subset of the maps of the vectors.
   */
   void ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>       A,
                               RCP<Epetra_Vector>&               x,
@@ -719,9 +719,9 @@ namespace LINALG
   \param trafo (in)         : global matrix holding rotation matrices to convert
                               from global to local co-ordinate systems
   \param dbcval (in)        : vector holding values that are supposed to be prescribed
-  \param dbctoggle (in)     : unique map of all dofs that should be constrained
+  \param dbcmap (in)        : unique map of all dofs that should be constrained
 
-  \pre The map dbctoggle must be subset of the maps of the vectors.
+  \pre The map dbcmap must be subset of the maps of the vectors.
   */
   void ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>     A,
                               RCP<Epetra_Vector>&             x,
@@ -761,7 +761,7 @@ namespace LINALG
   \param dbcval (in)        : vector holding values that are supposed to be prescribed
   \param dbcmap (in)        : unique map of all dofs that should be constrained
 
-  \pre The map dbctoggle must be subset of the maps of the vectors.
+  \pre The map dbcmap must be subset of the maps of the vectors.
   */
   void ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
                               RCP<Epetra_Vector>&      b,
@@ -783,7 +783,7 @@ namespace LINALG
    \param dbcval (in)        : vector holding values that are supposed to be prescribed
    \param dbcmap (in)        : unique map of all dofs that should be constrained
 
-   \pre The map dbctoggle must be subset of the maps of the vectors.
+   \pre The map dbcmap must be subset of the maps of the vectors.
    */
   void ApplyDirichlettoSystem(RCP<Epetra_Vector>&            b,
                               const RCP<const Epetra_Vector> dbcval,
