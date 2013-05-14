@@ -791,13 +791,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
         // dF/dX
         LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_X(true);
 
-        ComputeFDerivative( edispnp,
+        my::ComputeFDerivative( edispnp,
                             defgrd_inv,
                             F_x,
                             F_X);
 
         //compute gradients if needed
-        ComputeGradients(J,
+        my::ComputeGradients(J,
                          dphi_dp,
                          dphi_dJ,
                          defgrd_IT_vec,
@@ -806,7 +806,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                          gradJ,
                          grad_porosity);
 
-        ComputeLinearizationOD( J,
+        my::ComputeLinearizationOD( J,
                                 dphi_dJ,
                                 dphi_dJJ,
                                 dphi_dJdp,
@@ -880,7 +880,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       grad_porosity_ref.Multiply(my::xjm_,grad_porosity);
 
       if (my::nsd_ == 3)
-        LinMeshMotion_3D_OD(
+        my::LinMeshMotion_3D_OD(
             ecoupl_u,
             ecoupl_p,
             evelaf,
@@ -897,7 +897,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
             my::fldpara_->TimeFac(),
             timefacfac);
       else if(my::nsd_ == 2)
-        LinMeshMotion_2D_OD(
+        my::LinMeshMotion_2D_OD(
             ecoupl_u,
             ecoupl_p,
             evelaf,

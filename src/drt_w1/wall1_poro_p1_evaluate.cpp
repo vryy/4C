@@ -535,10 +535,10 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
   for (int gp=0; gp<my::numgpt_; ++gp)
   {
     //evaluate shape functions and derivatives at integration point
-    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
+    my::ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
     //jacobian determinant of transformation between spatial and material space "|dx/dX|"
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
+    const double J = my::ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     //----------------------------------------------------
     // pressure at integration point
@@ -568,7 +568,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
 
     // non-linear B-operator
     LINALG::Matrix<my::numstr_,my::numdof_> bop;
-    ComputeBOperator(bop,defgrd,N_XYZ);
+    my::ComputeBOperator(bop,defgrd,N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<my::numdim_,my::numdim_> cauchygreen;
@@ -584,7 +584,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
 
     //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
     LINALG::Matrix<1,my::numdof_> dJ_dus;
-    ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
+    my::ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
 
     //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture displacement d(GradJ)/d(us)
     //---------------------d(GradJ)/dus =  dJ/dus * F^-T . : dF/dX + J * dF^-T/dus : dF/dX + J * F^-T : N_X_X
@@ -599,7 +599,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     //dC^-1/dus * Grad p
     LINALG::Matrix<my::numstr_,my::numdof_> dCinv_dus (true);
 
-    ComputeAuxiliaryValues(N_XYZ,defgrd_inv,C_inv,Gradp,dFinvTdus,Finvgradp,dFinvdus_gradp,dCinv_dus);
+    my::ComputeAuxiliaryValues(N_XYZ,defgrd_inv,C_inv,Gradp,dFinvTdus,Finvgradp,dFinvdus_gradp,dCinv_dus);
 
     //--------------------------------------------------------------------
 
@@ -627,7 +627,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
     if(my::fluidmat_->Type() == "Darcy-Brinkman")
     {
-      FillMatrixAndVectorsBrinkman(
+      my::FillMatrixAndVectorsBrinkman(
                                     gp,
                                     J,
                                     porosity,
@@ -644,7 +644,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
                                     fstress);
     }
 
-    FillMatrixAndVectors(   gp,
+    my::FillMatrixAndVectors(   gp,
                             shapefct,
                             N_XYZ,
                             J,
@@ -841,18 +841,18 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
   for (int gp=0; gp<my::numgpt_; ++gp)
   {
     //evaluate shape functions and derivatives at integration point
-    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
+    my::ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
     //evaluate second derivatives of shape functions at integration point
     //ComputeSecondDerivativesOfShapeFunctions(gp,xrefe,deriv,deriv2,N_XYZ,N_XYZ2);
 
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
+    const double J = my::ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
     // non-linear B-operator
     LINALG::Matrix<my::numstr_,my::numdof_> bop;
-    ComputeBOperator(bop,defgrd,N_XYZ);
+    my::ComputeBOperator(bop,defgrd,N_XYZ);
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<my::numdim_,my::numdim_> cauchygreen;
@@ -902,7 +902,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
 
-    FillMatrixAndVectorsOD(
+    my::FillMatrixAndVectorsOD(
                               gp,
                               shapefct,
                               N_XYZ,
@@ -919,7 +919,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
 
     if(my::fluidmat_->Type() == "Darcy-Brinkman")
     {
-      FillMatrixAndVectorsBrinkmanOD(
+      my::FillMatrixAndVectorsBrinkmanOD(
                                       gp,
                                       shapefct,
                                       N_XYZ,
