@@ -84,8 +84,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      soh8fbar_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -103,8 +103,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      soh8fbar_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -121,8 +121,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
-      soh8fbar_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -143,8 +143,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8fbar_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
@@ -170,7 +170,14 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> strain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        soh8fbar_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+        // in case of small strain materials calculate plastic strains for post processing
+        Teuchos::RCP<std::vector<char> > plstraindata = params.get<RCP<std::vector<char> > >("plstrain",Teuchos::null);
+        if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
+        LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> plstrain;
+        INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+
+        nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -184,6 +191,13 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, plstrain);
+          data.StartPacking();
+          AddtoPack(data, plstrain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
         }
       }
     }
@@ -507,7 +521,7 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
+void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
       std::vector<int>&         lm,             // location matrix
       std::vector<double>&      disp,           // current displacements
       std::vector<double>&      residual,       // current residual displ
@@ -516,9 +530,11 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOH8,1>* force,                 // element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
       Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  // stress output option
-      const INPAR::STR::StrainType   iostrain)  // strain output option
+      const INPAR::STR::StrainType   iostrain,  // strain output option
+      const INPAR::STR::StrainType   ioplstrain)  // strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -690,9 +706,9 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     case INPAR::STR::strain_gl:
     {
       if (elestrain == NULL) dserror("strain data not available");
-      for (int i = 0; i < 3; ++i)
+      for (int i=0; i<3; ++i)
         (*elestrain)(gp,i) = glstrain_bar(i);
-      for (int i = 3; i < 6; ++i)
+      for (int i=3; i<6; ++i)
         (*elestrain)(gp,i) = 0.5 * glstrain_bar(i);
     }
     break;
@@ -787,13 +803,51 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     so3mat->Evaluate(&defgrd_bar,&glstrain_bar,params,&stress_bar,&cmat);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
+    // print plastic strains
+    // CAUTION: print plastic strains only in case of small strain regime!
+    switch (ioplstrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+     if (eleplstrain == NULL) dserror("plastic strain data not available");
+     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+     for (int i = 0; i < 3; ++i)
+       (*eleplstrain)(gp,i) = plglstrain(i);
+     for (int i = 3; i < 6; ++i)
+       (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+     if (eleplstrain == NULL) dserror("plastic strain data not available");
+     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+
+     // e = F^{T-1} . E . F^{-1}
+     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
+     GLtoEA(&plglstrain,&defgrd,&euler_almansi);
+
+     (*eleplstrain)(gp,0) = euler_almansi(0,0);
+     (*eleplstrain)(gp,1) = euler_almansi(1,1);
+     (*eleplstrain)(gp,2) = euler_almansi(2,2);
+     (*eleplstrain)(gp,3) = euler_almansi(0,1);
+     (*eleplstrain)(gp,4) = euler_almansi(1,2);
+     (*eleplstrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+     break;
+
+    default:
+     dserror("requested plastic strain type not available");
+    }  // switch (ioplstrain)
+
     // return gp stresses
     switch (iostress)
     {
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("stress data not available");
-      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
+      for (int i=0; i<MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = stress_bar(i);
     }
     break;
@@ -832,7 +886,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
       dserror("requested stress type not available");
     }
 
-    double detJ_w = detJ*gpweights[gp];
+    double detJ_w = detJ * gpweights[gp];
 
     // update internal force vector
     if (force != NULL)
@@ -888,10 +942,10 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
      bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0,bop,ccg);
 
      double htensor[NUMDOF_SOH8];
-     for(int n=0;n<NUMDOF_SOH8;n++)
+     for(int n=0; n<NUMDOF_SOH8; n++)
      {
        htensor[n]=0;
-       for(int i=0;i<NUMDIM_SOH8;i++)
+       for(int i=0; i<NUMDIM_SOH8; i++)
        {
          htensor[n] += invdefgrd_0(i,n%3)*N_XYZ_0(i,n/3)-invdefgrd(i,n%3)*N_XYZ(i,n/3);
        }
@@ -899,7 +953,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
 
      LINALG::Matrix<NUMDOF_SOH8,1> bops(false); // auxiliary integrated stress
      bops.MultiplyTN(-detJ_w/f_bar_factor/3.0,bop,stress_bar);
-     for(int i=0;i<NUMDOF_SOH8;i++)
+     for(int i=0; i<NUMDOF_SOH8; i++)
      {
        for (int j=0;j<NUMDOF_SOH8;j++)
        {
@@ -931,7 +985,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
   }/* ==================================================== end of Loop over GP */
 
   return;
-} // DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass
+} // DRT::ELEMENTS::So_hex8fbar::nlnstiffmass
 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |

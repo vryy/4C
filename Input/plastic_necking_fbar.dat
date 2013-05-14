@@ -18,6 +18,11 @@ von Mises material with linear isotropic hardening
 
 nightly test case uses reduced end time MAXTIME = 1.0 
 
+body is given in [mm], used units [mm,ms,kg]
+
+E = 206.9 GPa, nu = 0.29, sigma_0 = 0.45 GPa, Hiso = 0.12924
+be aware: for the given test we use sigma_0 = 4.5 GPa!!
+  
 // original numerical example: MAXTIME = 2.0
 //STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-13 NAME ux_top_in
 //STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_top_in
@@ -88,7 +93,8 @@ GAMMA                           0.5
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 1.0 YIELD 4.5 ISOHARD 0.12924 
+// units are [mm,ms,kg]
+MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 4.5 ISOHARD 0.12924 
 -------------------------------------------------------------CURVE1
 // displacement-driven load
 CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 0.1  FACTOR 0 0.5

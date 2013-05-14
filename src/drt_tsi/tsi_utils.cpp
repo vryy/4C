@@ -90,27 +90,15 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   GenKinematicType kintype = geo_linear;
   // if oldele is a so3_base element
   DRT::ELEMENTS::So3_Base* so3_base = dynamic_cast<DRT::ELEMENTS::So3_Base*>(oldele);
-  if (so3_base!=NULL)
-  {
+  if (so3_base != NULL)
     kintype = so3_base->GetKinematicType();
-  }
   else
-  {
-    // if oldele is a so_hex8 element
-    DRT::ELEMENTS::So_hex8* so_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(oldele);
-    if (so_hex8!=NULL)
-    {
-      // old implementation in structural element only availble for linear case
-      kintype = geo_linear;
-      if (kintype == geo_nonlinear)
-        dserror("not available for geometrically nonlinear analysis");
-    }
-  }
+    dserror("oldele is not a so3_thermo element!");
 
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
   DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
-  if (therm!=NULL)
+  if (therm != NULL)
   {
     therm->SetMaterial(matid);
     therm->SetDisType(oldele->Shape());  // set distype as well!

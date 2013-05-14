@@ -60,6 +60,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SOLIDH8");
   PrintElementLines(stream,"SOLIDH8P1J1");
   PrintElementLines(stream,"SOLIDH8FBAR");
+  PrintElementLines(stream,"SOLIDH8FBARTHERMO");
   PrintElementLines(stream,"SOLIDH8PORO");
   PrintElementLines(stream,"SOLIDH8THERMO");
   PrintElementLines(stream,"SOLIDH8SCATRA");

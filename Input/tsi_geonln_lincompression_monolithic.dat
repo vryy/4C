@@ -26,6 +26,10 @@ therefore to a big thermal residual norm
 thermal residual can hardly be dropped due to a huge norm after 1st solve, i.e.
 ouput at numiter=2 --> criterion "Coupl_and_Singl" is no good choice here
 
+due to extremely coarse mesh, thermal problem cannot be resolved properly
+> temperature is not constant in the body but varies at the 4th position
+after the decimal point
+
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2
 NODES                           12
@@ -371,8 +375,8 @@ STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0 TOLERANCE 1e-9 NAME uy(x=0
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0 TOLERANCE 1e-9 NAME uz(x=0)
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -5.42866737664198240e-01 TOLERANCE 1e-9 NAME ux(x=2) // lin: -3.7981875658503556e-01 
 STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.08573474186727514e+00 TOLERANCE 1e-9 NAME ux(x=4) // lin: -7.5963751317007100e-01 
-THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 358.321887259764765 TOLERANCE 1.0e-4 NAME T(x=0) // lin: 347.23435464012715 
+THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 358.321796072186601 TOLERANCE 1.0e-8 NAME T(x=0) // lin: 347.23435464012715 
 THERMAL DIS thermo NODE 2 QUANTITY temp VALUE 358.321887259764765 TOLERANCE 1.0e-8 NAME T(x=2) // lin: 347.23435464012715 
-THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 358.321887259764765 TOLERANCE 1.0e-4 NAME T(x=4) // lin: 347.23435464012715 
+THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 358.321978466034352 TOLERANCE 1.0e-8 NAME T(x=4) // lin: 347.23435464012715 
 -------------------------------------------------------------------------END
 //  END

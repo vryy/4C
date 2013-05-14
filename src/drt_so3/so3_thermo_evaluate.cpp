@@ -39,7 +39,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
   // if the coupling variables are required before Evaluate() is called the 1st
   // time
   // here for Robinson's material
-  if(la.Size()>1)
+  if (la.Size() > 1)
   {
     // the temperature field has only one dof per node, disregarded by the
     // dimension of the problem
@@ -95,8 +95,8 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
   // get the required action
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_stifftemp")  act = So3_Thermo::calc_struct_stifftemp;
-  else if (action=="calc_struct_stress")     act = So3_Thermo::calc_struct_stress;
+  else if (action == "calc_struct_stifftemp") act = So3_Thermo::calc_struct_stifftemp;
+  else if (action == "calc_struct_stress")    act = So3_Thermo::calc_struct_stress;
 
   // what should the element do
   switch(act)
@@ -105,7 +105,7 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
   // coupling terms K_dT in stiffness matrix K^{TSI} for monolithic TSI
   case So3_Thermo::calc_struct_stifftemp:
   {
-    if (la.Size()>1)
+    if (la.Size() > 1)
     {
       EvaluateCouplWithThr(
         params,
@@ -147,7 +147,7 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
 
     // add the temperature-dependent terms to the structural field, i.e.
     // it's a TSI problem
-    if (la.Size()>1)
+    if (la.Size() > 1)
     {
       EvaluateCouplWithThr(
         params,
@@ -191,13 +191,14 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
   // get the required action for coupling with the thermal field
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_internalforce")  act = calc_struct_internalforce;
-  else if (action=="calc_struct_nlnstiff")       act = calc_struct_nlnstiff;
-  else if (action=="calc_struct_nlnstiffmass")   act = calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass")  act = calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stifftemp")      act = calc_struct_stifftemp;
-  else if (action=="calc_struct_stress")         act = calc_struct_stress;
-  else if (action=="calc_struct_update_istep")   act = calc_struct_update_istep;
+  else if (action == "calc_struct_internalforce") act = calc_struct_internalforce;
+  else if (action == "calc_struct_nlnstiff")      act = calc_struct_nlnstiff;
+  else if (action == "calc_struct_nlnstiffmass")  act = calc_struct_nlnstiffmass;
+  else if (action == "calc_struct_nlnstifflmass") act = calc_struct_nlnstifflmass;
+  else if (action == "calc_struct_stifftemp")     act = calc_struct_stifftemp;
+  else if (action == "calc_struct_stress")        act = calc_struct_stress;
+  else if (action == "calc_struct_reset_istep")   act = calc_struct_reset_istep;
+  else if (action == "calc_struct_update_istep")  act = calc_struct_update_istep;
   else dserror("Unknown type of action for So3_Thermo: %s",action.c_str());
 
   // what should the element do
@@ -217,7 +218,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     Teuchos::RCP<const Epetra_Vector> res
       = discretization.GetState(0,"residual displacement");
 
-    if (disp==Teuchos::null || res==Teuchos::null)
+    if ( (disp == Teuchos::null) or (res==Teuchos::null) )
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
@@ -305,7 +306,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     Teuchos::RCP<const Epetra_Vector> res
       = discretization.GetState(0,"residual displacement");
 
-    if (disp==Teuchos::null || res==Teuchos::null)
+    if ( (disp == Teuchos::null) or (res == Teuchos::null) )
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
@@ -395,7 +396,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     Teuchos::RCP<const Epetra_Vector> res
       = discretization.GetState(0,"residual displacement");
 
-    if (disp==Teuchos::null || res==Teuchos::null)
+    if ( (disp == Teuchos::null) or (res == Teuchos::null) )
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
@@ -477,13 +478,13 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     // elemat1+2,elevec1-3 are not used anyway
 
     // nothing to do for ghost elements
-    if (discretization.Comm().MyPID()==so3_ele::Owner())
+    if (discretization.Comm().MyPID() == so3_ele::Owner())
     {
       Teuchos::RCP<const Epetra_Vector> disp
         = discretization.GetState(0,"displacement");
       Teuchos::RCP<const Epetra_Vector> res
         = discretization.GetState(0,"residual displacement");
-      if (disp==Teuchos::null || res==Teuchos::null)
+      if ( (disp == Teuchos::null) or (res == Teuchos::null) )
         dserror("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
@@ -494,7 +495,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       Teuchos::RCP<std::vector<char> > couplstressdata
         = params.get<Teuchos::RCP<std::vector<char> > >("couplstress", Teuchos::null);
 
-      if (couplstressdata==Teuchos::null) dserror("Cannot get 'couplstress' data");
+      if (couplstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
       // get the temperature dependent stress
       LINALG::Matrix<numgpt_post,numstr_> couplstress(true);
 
@@ -516,7 +517,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         // check if you can get the temperature state
         Teuchos::RCP<const Epetra_Vector> tempnp
           = discretization.GetState(1,"temperature");
-        if (tempnp==Teuchos::null)
+        if (tempnp == Teuchos::null)
           dserror("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
@@ -597,6 +598,14 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       }
     }  // end proc Owner
   }  // calc_struct_stress
+  break;
+
+  //============================================================================
+  // required for predictor TangDis --> can be helpful in compressible case!
+  case calc_struct_reset_istep:
+  {
+    // do nothing, actual implementation is in so3_ele
+  }
   break;
 
   //============================================================================
@@ -761,7 +770,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     // N_T . T
     LINALG::Matrix<1,1> Ntemp(true);
     Ntemp.MultiplyTN(shapefunct,etemp);
-    const double scalartemp  = shapefunct.Dot(etemp);
+    // scalar-valued element temperature
+    const double scalartemp = shapefunct.Dot(etemp);
 
     // calculate iterative strains
     LINALG::Matrix<numstr_,1> straininc(true);
@@ -781,7 +791,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if ( !(Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
+    if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
       Materialize(&couplstress,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,
         &straininc,scalartemp,&density,gp,params);
 
@@ -792,14 +802,14 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     {
     case INPAR::STR::stress_2pk:
     {
-      if (elestress==NULL) dserror("stress data not available");
+      if (elestress == NULL) dserror("stress data not available");
       for (int i=0; i<numstr_; ++i)
         (*elestress)(gp,i) = couplstress(i);
       break;
     }
     case INPAR::STR::stress_cauchy:
     {
-      if (elestress==NULL) dserror("stress data not available");
+      if (elestress == NULL) dserror("stress data not available");
 
       // push forward of material stress to the spatial configuration
       LINALG::Matrix<nsd_,nsd_> cauchycouplstress;
@@ -904,8 +914,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
     */
     // get the thermal material tangent
     LINALG::Matrix<numstr_,1> ctemp(true);
-    bool young_temp = params.get<int>("young_temp")==1;
-    if (young_temp==true)
+    bool young_temp = (params.get<int>("young_temp") == 1);
+    if (young_temp == true)
     {
       // get the temperature vector
       LINALG::Matrix<nen_,1> etemp(false);
@@ -917,6 +927,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
       // identical shapefunctions for the displacements and the temperatures
       LINALG::Matrix<1,1> Ntemp(false);
       Ntemp.MultiplyTN(shapefunct,etemp);  // (1x1)
+      // scalar-valued element temperature
       double scalartemp = Ntemp(0,0);
       // now set the current temperature vector in the parameter list
       params.set<double>("scalartemp",scalartemp);
@@ -1039,8 +1050,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     // described as a matrix (for stress calculation): Ntemp = N_T . T
     LINALG::Matrix<1,1> Ntemp(true);
     Ntemp.MultiplyTN(shapefunct,etemp);
-    // described scalar
-    const double scalartemp  = shapefunct.Dot(etemp);
+    // scalar-valued element temperature
+    const double scalartemp = shapefunct.Dot(etemp);
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
@@ -1058,15 +1069,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
-    if ( !(Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
+    if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
       Materialize(&couplstress,&ctemp,&Ntemp,&cmattemp,&defgrd,&glstrain,
         &straininc,scalartemp,&density,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
-    // TODO 2012-08-06 check if we need plastic strains in the thermal routine?!!
-    // I think we do NOT need, because thermal influence is volumetric ONLY
-    // otherwise, get plglstrains from params
 
     // return gp stresses
     switch (iostress)
@@ -1182,7 +1189,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)
   Teuchos::ParameterList& params
   )
-  {
+{
   // update element geometry (8x3)
   LINALG::Matrix<nen_,nsd_> xrefe;  // X, material coord. of element
   LINALG::Matrix<nen_,nsd_> xcurr;  // x, current  coord. of element
@@ -1316,7 +1323,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
     params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("straininc", straininc);
     params.set<double>("scalartemp",scalartemp);
     params.set<int>("gp",gp);
-    //robinson->Evaluate(*glstrain,*plglstrain,straininc,scalartemp,gp,params,*cmat,*couplstress);
     robinson->Evaluate(defgrd,glstrain,params,couplstress,cmat);
     *density = robinson->Density();
     return;
@@ -1348,8 +1354,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   {
     MAT::ThermoStVenantKirchhoff* thrstvk
       = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
-     return thrstvk->SetupCthermo(*ctemp,params);
-     break;
+    return thrstvk->SetupCthermo(*ctemp,params);
+    break;
   }
   // small strain von Mises thermoelastoplastic material
   case INPAR::MAT::m_thermopllinelast:
@@ -1543,7 +1549,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::GLtoEA(
 
   // inverse of deformation gradient
   LINALG::Matrix<nsd_,nsd_> invdefgrd;
-  invdefgrd.Invert((*defgrd));
+  invdefgrd.Invert(*defgrd);
 
   // (3x3) = (3x3) (3x3) (3x3)
   LINALG::Matrix<nsd_,nsd_> temp;
@@ -1555,7 +1561,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::GLtoEA(
 
 /*----------------------------------------------------------------------*
  | initialise Jacobian                                       dano 08/12 |
- | in called once in Initialize() in so3_thermo_eletypes.cpp            |
+ | is called once in Initialize() in so3_thermo_eletypes.cpp            |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
@@ -1564,7 +1570,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
   LINALG::Matrix<nen_,nsd_> xrefe;
   for (int i=0; i<nen_; ++i)
   {
-    Node** nodes=Nodes();
+    Node** nodes = Nodes();
     if (!nodes) dserror("Nodes() returned null pointer");
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];

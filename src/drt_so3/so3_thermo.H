@@ -72,10 +72,10 @@ namespace ELEMENTS
   class So3_Thermo : public so3_ele,
                      public So3_Base
   {
-
     //! @name Friends
-    friend class So_tet4ThermoType;
     friend class So_hex8ThermoType;
+    friend class So_hex8fbarThermoType;
+    friend class So_tet4ThermoType;
 
   public:
 
@@ -120,36 +120,20 @@ namespace ELEMENTS
     //!
     //! The Clone() method is used from the virtual base class Element in cases
     //! where the type of the derived class is unknown and a copy-ctor is needed
-    DRT::Element* Clone() const ;
+    DRT::Element* Clone() const;
 
     //! Return unique ParObject id
     //!
     //! every class implementing ParObject needs a unique id defined at the top of
     //! this file.
-    virtual int UniqueParObjectId() const
-    {
-      switch(distype)
-      {
-      case DRT::Element::tet4:
-        return So_tet4ThermoType::Instance().UniqueParObjectId();
-        break;
-      case DRT::Element::hex8:
-        return So_hex8ThermoType::Instance().UniqueParObjectId();
-        break;
-      default:
-        dserror("unknown element type!");
-        break;
-      }
-      // Intel compiler needs a return so
-      return -1;
-    };
+    virtual int UniqueParObjectId() const;
 
     //! Pack this class so it can be communicated
     //! Pack and \ref Unpack are used to communicate this element
     virtual void Pack(DRT::PackBuffer& data) const;
 
     //! Unpack data from a char vector into this class
-    //!Pack and \ref Unpack are used to communicate this element
+    //! Pack and \ref Unpack are used to communicate this element
     virtual void Unpack(const std::vector<char>& data);
 
     //! Get number of degrees of freedom of a certain node in case of multiple
@@ -181,24 +165,8 @@ namespace ELEMENTS
     //! Print this element
     void Print(ostream& os) const  ;
 
-    //virtual DRT::ElementType & ElementType() const = 0 ;
-    virtual DRT::ElementType & ElementType() const
-    {
-      switch(distype)
-      {
-      case DRT::Element::tet4:
-        return So_tet4ThermoType::Instance();
-        break;
-      case DRT::Element::hex8:
-        return So_hex8ThermoType::Instance();
-        break;
-      default:
-        dserror("unknown element type!");
-        break;
-      }
-      // Intel compiler needs a return so
-      return So_hex8ThermoType::Instance();
-    };
+    //! return elementtype thermo element
+    virtual DRT::ElementType& ElementType() const;
 
     //@}
 

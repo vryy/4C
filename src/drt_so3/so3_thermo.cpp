@@ -186,6 +186,71 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
 
 }  // ReadElement()
 
+/*----------------------------------------------------------------------*
+ | get the nodes from so3 (public)                           dano 05/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::UniqueParObjectId() const
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+  {
+    // cast the most specialised element
+    // otherwise cast fails, because hex8fbar == hex8
+    const DRT::ELEMENTS::So_hex8fbar* ele
+      = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+    if(ele != NULL)
+      return So_hex8fbarThermoType::Instance().UniqueParObjectId();
+    else
+      return So_hex8ThermoType::Instance().UniqueParObjectId();
+    break;
+  }  // hex8
+  case DRT::Element::tet4:
+    return So_tet4ThermoType::Instance().UniqueParObjectId();
+    break;
+  default:
+    dserror("unknown element type!");
+    break;
+  }
+  // Intel compiler needs a return
+  return -1;
+
+} // UniqueParObjectId()
+
+
+/*----------------------------------------------------------------------*
+ | get the nodes from so3 (public)                           dano 05/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+DRT::ElementType& DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ElementType() const
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+  {
+    // cast the most specialised element
+    // caution: otherwise does not work, because hex8fbar == hex8
+    const DRT::ELEMENTS::So_hex8fbar* ele
+      = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+    if(ele != NULL)
+      return So_hex8fbarThermoType::Instance();
+    else
+      return So_hex8ThermoType::Instance();
+    break;
+  }
+  case DRT::Element::tet4:
+    return So_tet4ThermoType::Instance();
+    break;
+  default:
+    dserror("unknown element type!");
+    break;
+  }
+  // Intel compiler needs a return
+  return So_hex8ThermoType::Instance();
+
+};  // ElementType()
+
 
 /*----------------------------------------------------------------------*
  | get the nodes from so3 (public)                           dano 08/12 |

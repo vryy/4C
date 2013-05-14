@@ -169,8 +169,7 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  int Evaluate
-  (
+  int Evaluate(
     Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
     std::vector<int>&         lm, ///< location matrix for de-assembly
@@ -195,9 +194,8 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann
-  (
-    Teuchos::ParameterList& params,
+  virtual int EvaluateNeumann(
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     std::vector<int>&         lm,
@@ -221,18 +219,20 @@ protected:
                            DRT::ELEMENTS::PreStress& prestress);
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void soh8fbar_nlnstiffmass(
-    std::vector<int>&              lm,             ///< location matrix
-    std::vector<double>&           disp,           ///< current displacements
-    std::vector<double>&           residual,       ///< current residual displ
-		LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
-		LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
-		LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
-                LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
-		LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
-		Teuchos::ParameterList&        params,         ///< algorithmic parameters e.g. time
-		const INPAR::STR::StressType   iostress,  ///< stress output option
-		const INPAR::STR::StrainType   iostrain); ///< strain output option
+  virtual void nlnstiffmass(
+    std::vector<int>& lm,  ///< location matrix
+    std::vector<double>& disp,  ///< current displacements
+    std::vector<double>& residual,  ///< current residual displ
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+    LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+    Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,  ///< stress output option
+    const INPAR::STR::StrainType iostrain,  ///< strain output option
+    const INPAR::STR::StrainType ioplstrain);  ///< strain output option
 
   //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
