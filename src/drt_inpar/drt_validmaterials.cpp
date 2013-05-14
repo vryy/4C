@@ -190,34 +190,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MAIN_DIFFUSIVITY","conductivity in fiber direction");
     AddNamedReal(m,"OFF_DIFFUSIVITY","conductivity perpendicular to fiber direction");
     AddNamedReal(m,"PERTUBATION_DERIV","pertubation for calculation of reaction coefficient derivative");
-    AddNamedReal(m,"U_O","base level potential");
-    AddNamedReal(m,"U_U","maximum exited potential");
-    AddNamedReal(m,"THETA_V","excitation threshold");
-    AddNamedReal(m,"THETA_W","slow current threshold");
-    AddNamedReal(m,"THETA_VM","v gate time constant threshold");
-    AddNamedReal(m,"THETA_O","slow outward current time constant threshold");
-    AddNamedReal(m,"TAU_V1M","v gate time constant");
-    AddNamedReal(m,"TAU_V2M","v gate time constant");
-    AddNamedReal(m,"TAU_VP","v gate time constant");
-    AddNamedReal(m,"TAU_W1M","w gate time constant");
-    AddNamedReal(m,"TAU_W2M","w gate time constant");
-    AddNamedReal(m,"K_WM","w gate proportional factor");
-    AddNamedReal(m,"U_WM","w gate time constant threshold");
-    AddNamedReal(m,"TAU_WP","w gate time constant");
-    AddNamedReal(m,"TAU_FI","fast inward current time constant");
-    AddNamedReal(m,"TAU_O1","slow outward current time constant");
-    AddNamedReal(m,"TAU_O2","slow outward current time constant");
-    AddNamedReal(m,"TAU_SO1","slow outward current time constant");
-    AddNamedReal(m,"TAU_SO2","slow outward current time constant");
-    AddNamedReal(m,"K_SO","slow outward current proportional factor");
-    AddNamedReal(m,"U_SO","slow outward current time constant threshold");
-    AddNamedReal(m,"TAU_S1","s gate time constant");
-    AddNamedReal(m,"TAU_S2","s gate time constant");
-    AddNamedReal(m,"K_S","s gate proportional factor");
-    AddNamedReal(m,"U_S","s gate time constant threshold");
-    AddNamedReal(m,"TAU_SI","slow inward current time constant");
-    AddNamedReal(m,"TAU_WINF","w gate infinity value time constant");
-    AddNamedReal(m,"W_INFS","w gate infinity value");
+    AddNamedString(m,"MODEL","Model type: MV or TNNP", "MV");
+    AddNamedString(m,"TISSUE","Tissue type: M, ENDO or EPI", "M");
 
     AppendMaterialDefinition(matlist,m);
   }
