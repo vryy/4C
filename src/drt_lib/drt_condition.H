@@ -229,7 +229,11 @@ public:
     ParticleInflow,
     ParticleWall,
     CrackMastersurface,
-    CrackSlavesurface
+    CrackSlavesurface,
+    BioPointDirichlet,
+    BioLineDirichlet,
+    BioSurfaceDirichlet,
+    BioVolumeDirichlet
   };
 
   /*!

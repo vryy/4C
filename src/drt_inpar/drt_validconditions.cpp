@@ -538,6 +538,88 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfporodirichlet);
   condlist.push_back(volporodirichlet);
 
+
+  /*--------------------------------------------------------------------*/
+  // Biofilm growth Dirichlet
+
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > biodirichletintsepveccomponents;
+  std::vector<Teuchos::RCP<IntVectorConditionComponent> > biodirichletintveccomponents;
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > biodirichletrealsepveccomponents;
+  std::vector<Teuchos::RCP<RealVectorConditionComponent> > biodirichletrealveccomponents;
+  std::vector<Teuchos::RCP<ConditionComponent> > biodirichletbundcomponents;
+
+  biodirichletintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  biodirichletintveccomponents.push_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
+  biodirichletrealsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  biodirichletrealveccomponents.push_back(
+      Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  biodirichletintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+  biodirichletintveccomponents.push_back(
+      Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
+  biodirichletintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("FUNCT",true)));
+  biodirichletintveccomponents.push_back(
+      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
+
+  biodirichletbundcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  biodirichletbundcomponents.push_back(
+      Teuchos::rcp(
+          new DirichletNeumannBundle(
+              "dirichbund",
+              Teuchos::rcp(new IntConditionComponent("numdof")),
+              biodirichletintsepveccomponents,
+              biodirichletintveccomponents,
+              biodirichletrealsepveccomponents,
+              biodirichletrealveccomponents)));
+
+  // Dirichlet conditions for biofilm growth problems
+  Teuchos::RCP<ConditionDefinition> pointbiofilmdirichlet =
+      Teuchos::rcp(new ConditionDefinition("DESIGN POINT BIOFILM DIRICH CONDITIONS",
+          "BioDirichlet",
+          "Point BioDirichlet",
+          DRT::Condition::PointDirichlet,
+          false,
+          DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linebiofilmdirichlet =
+      Teuchos::rcp(new ConditionDefinition("DESIGN LINE BIOFILM DIRICH CONDITIONS",
+          "BioDirichlet",
+          "Line BioDirichlet",
+          DRT::Condition::LineDirichlet,
+          false,
+          DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfbiofilmdirichlet =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURF BIOFILM DIRICH CONDITIONS",
+          "BioDirichlet",
+          "Surface BioDirichlet",
+          DRT::Condition::SurfaceDirichlet,
+          false,
+          DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volbiofilmdirichlet =
+      Teuchos::rcp(new ConditionDefinition("DESIGN VOL BIOFILM DIRICH CONDITIONS",
+          "BioDirichlet",
+          "Volume BioDirichlet",
+          DRT::Condition::VolumeDirichlet,
+          false,
+          DRT::Condition::Volume));
+  for (unsigned i=0; i<dirichletbundcomponents.size(); ++i)
+  {
+    pointbiofilmdirichlet->AddComponent(biodirichletbundcomponents[i]);
+    linebiofilmdirichlet->AddComponent(biodirichletbundcomponents[i]);
+    surfbiofilmdirichlet->AddComponent(biodirichletbundcomponents[i]);
+    volbiofilmdirichlet->AddComponent(biodirichletbundcomponents[i]);
+  }
+
+
+  condlist.push_back(pointbiofilmdirichlet);
+  condlist.push_back(linebiofilmdirichlet);
+  condlist.push_back(surfbiofilmdirichlet);
+  condlist.push_back(volbiofilmdirichlet);
+
+
   /*--------------------------------------------------------------------*/
   // Initial fields
 

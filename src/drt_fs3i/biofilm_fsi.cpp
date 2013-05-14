@@ -7,7 +7,7 @@ Maintainer: Mirella Coroneo
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | headers                                                              |
@@ -32,8 +32,8 @@ Maintainer: Mirella Coroneo
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
-  :PartFS3I_1WC(comm),
-   comm_(comm)
+:PartFS3I_1WC(comm),
+ comm_(comm)
 {
   //---------------------------------------------------------------------
   // set up struct ale
@@ -181,13 +181,6 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::Timeloop()
 {
-
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-
   const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
   const int biofilmgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"BIOFILMGROWTH");
   const int outputgmsh_ = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"OUTPUT_GMSH");
@@ -213,7 +206,7 @@ void FS3I::BiofilmFSI::Timeloop()
       InnerTimeloop();
 
       //gmsh output only if requested
-      if ( outputgmsh_)
+      if (outputgmsh_)
       {
         StructGmshOutput();
         FluidGmshOutput();
@@ -240,7 +233,8 @@ void FS3I::BiofilmFSI::Timeloop()
 
       // reset step and state vectors
       fsi_->StructureField()->Reset();
-      fsi_->FluidField().Reset(false, false, step_bio);
+      // fluid reset can be bypassed, in this way the next step starts from a solution closer to the final one
+      // fsi_->FluidField().Reset(false, false, step_bio);
       fsi_->AleField().Reset();
 
       fsi_->AleField().BuildSystemMatrix(false);
@@ -274,20 +268,19 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   tangtraction_->PutScalar(0.0);
 
   // output of initial state
-//  ScatraOutput();
+  //  ScatraOutput();
 
   fsi_->PrepareTimeloop();
 
   // select fsi boundaries
   std::vector<std::string> biogrcondnames(1);
-//  condnames[0] = "BioGrCoupling";
   biogrcondnames[0] = "FSICoupling";
 
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
 
-  // Calculation of growth can be based both to values averaged during the innertimeloop
-  // (in this case it takes in account also the initial transient state),
-  // or only to the last values coming from the fsi-scatra simulation
+  // Calculation of growth can be based both on values averaged during the inner timeloop
+  // (in this case for the time being it takes in account also the initial transient state!),
+  // or only on the last values coming from the fsi-scatra simulation
   const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
   const int avgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"AVGROWTH");
   // in case of averaged values we need temporary variables
@@ -312,40 +305,40 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     SetFSISolution();
 
     if (Comm().MyPID()==0)
-      {
-        cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
-      }
+    {
+      cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
+    }
 
-      // first scatra field is associated with fluid, second scatra field is
-      // associated with structure
+    // first scatra field is associated with fluid, second scatra field is
+    // associated with structure
 
-      bool stopnonliniter=false;
-      int itnum = 0;
+    bool stopnonliniter=false;
+    int itnum = 0;
 
-      PrepareTimeStep();
+    PrepareTimeStep();
 
-      while (stopnonliniter==false)
-      {
-        ScatraEvaluateSolveIterUpdate();
-        itnum++;
-        if (ScatraConvergenceCheck(itnum))
-          break;
-      }
+    while (stopnonliniter==false)
+    {
+      ScatraEvaluateSolveIterUpdate();
+      itnum++;
+      if (ScatraConvergenceCheck(itnum))
+        break;
+    }
 
-      // calculation of the flux at the interface based on normal influx values before time shift of results
-      // is performed in Update
-      Teuchos::RCP<Epetra_MultiVector> strufluxn = struscatra->ScaTraField().CalcFluxAtBoundary(biogrcondnames,false,0,1);
+    // calculation of the flux at the interface based on normal influx values before time shift of results
+    // is performed in Update
+    Teuchos::RCP<Epetra_MultiVector> strufluxn = struscatra->ScaTraField().CalcFluxAtBoundary(biogrcondnames,false,0,1);
 
-      UpdateScatraFields();
+    UpdateScatraFields();
 
-      // this is necessary because we want to write all the steps except the last one
-      // the last one will be written only after the calculation of the growth
-      // in this way also the displacement due to growth is written
-      if (step_fsi < nstep_fsi and t+1e-10*dt_fsi < maxtime_fsi)
-      {
+    // this is necessary because we want to write all the steps except the last one
+    // the last one will be written only after the calculation of the growth
+    // in this way also the displacement due to growth is written
+    if (step_fsi < nstep_fsi and t+1e-10*dt_fsi < maxtime_fsi)
+    {
       fsi_->Output();
       ScatraOutput();
-      }
+    }
 
     // access structure discretization
     Teuchos::RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
@@ -474,7 +467,6 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
   struidispnp->PutScalar(0.0);
 
   // select biofilm growth boundaries
-//  std::string biogrcondname = "FSICoupling";
   std::string biogrcondname = "BioGrCoupling";
 
   // set action for elements: compute normal vectors at nodes (for reference configuration)
@@ -520,9 +512,13 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
       if (absval > TOL)
       {
         unitnormal[j] /= absval;
+        // explanation of signs present in the following phenomenological law
+        // influx<0     --> growth  -->  -  fluxcoef_
+        // normforces<0 --> erosion -->  +  normforcecoef_
+        // tangforces>0 --> erosion -->  -  tangforcecoef_
         Values[j] = - fluxcoef_ * influx * unitnormal[j]
                     + normforcecoef_ * normforces * unitnormal[j]
-                    + tangforcecoef_ * tangforces * unitnormal[j];
+                    - tangforcecoef_ * tangforces * unitnormal[j];
       }
     }
 
@@ -536,7 +532,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
   Teuchos::RCP<Epetra_Vector> fluididisp = fsi_->StructToFluid(struidispnp);
   idispnp->Update(1.0, *fluididisp, 0.0);
 
-	return;
+  return;
 }
 
 
@@ -702,7 +698,7 @@ void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<E
       const int lid = gvector.Map().LID(globaldofs[i]);
 
       if (lid<0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),globaldofs[i]);
+        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),globaldofs[i]);
       nvector[i] += gvector[lid];
     }
 
@@ -744,7 +740,7 @@ void FS3I::BiofilmFSI::ScatraChangeConfig(RCP<DRT::Discretization> scatradis,
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid<0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),nodedofs[i]);
+        dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",gvector.Comm().MyPID(),nodedofs[i]);
       nvector[i] += gvector[lid];
     }
 

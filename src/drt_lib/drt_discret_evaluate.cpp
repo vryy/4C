@@ -502,6 +502,105 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  evaluate growth Dirichlet conditions (public)               mc 05/13|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params,
+                                            Teuchos::RCP<Epetra_Vector> systemvector,
+                                            Teuchos::RCP<Epetra_Vector> systemvectord,
+                                            Teuchos::RCP<Epetra_Vector> systemvectordd,
+                                            Teuchos::RCP<Epetra_Vector> toggle,
+                                            Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
+{
+  if (!Filled()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  // get the current time
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // vector of DOF-IDs which are Dirichlet BCs
+  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
+  if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
+
+  std::multimap<std::string,RCP<Condition> >::iterator fool;
+  //--------------------------------------------------------
+  // loop through Dirichlet conditions and evaluate them
+  //--------------------------------------------------------
+  // Note that this method does not sum up but 'sets' values in systemvector.
+  // For this reason, Dirichlet BCs are evaluated hierarchical meaning
+  // in this order:
+  //                VolumeDirichlet
+  //                SurfaceDirichlet
+  //                LineDirichlet
+  //                PointDirichlet
+  // This way, lower entities override higher ones which is
+  // equivalent to inheritance of dirichlet BCs as done in the old
+  // ccarat discretization with design          (mgee 1/07)
+
+  // Do VolumeDirichlet first
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != "BioDirichlet") continue;
+    if (fool->second->Type() != DRT::Condition::BioVolumeDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,
+                         toggle,dbcgids);
+  }
+  // Do SurfaceDirichlet
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != "BioDirichlet") continue;
+    if (fool->second->Type() != DRT::Condition::BioSurfaceDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,
+                         toggle,dbcgids);
+  }
+  // Do LineDirichlet
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {  cout<<"Inside EvaluateGrowthDirichlet begin"<< endl;
+    if (fool->first != "BioDirichlet") continue;
+    cout<<"after if fool first"<< endl;
+    if (fool->second->Type() != DRT::Condition::BioLineDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,
+                         toggle,dbcgids);
+
+    cout<<"Inside LineDirichlet end"<< endl;
+  }
+  // Do PointDirichlet
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != "BioDirichlet") continue;
+    if (fool->second->Type() != DRT::Condition::BioPointDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,
+                         systemvector,systemvectord,systemvectordd,
+                         toggle,dbcgids);
+  }
+
+  // create DBC and free map and build their common extractor
+  if (dbcmapextractor != Teuchos::null)
+  {
+    // build map of Dirichlet DOFs
+    int nummyelements = 0;
+    int* myglobalelements = NULL;
+    std::vector<int> dbcgidsv;
+    if (dbcgids->size() > 0)
+    {
+      dbcgidsv.reserve(dbcgids->size());
+      dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
+      nummyelements = dbcgidsv.size();
+      myglobalelements = &(dbcgidsv[0]);
+    }
+    Teuchos::RCP<Epetra_Map> dbcmap
+      = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, DofRowMap()->IndexBase(), DofRowMap()->Comm()));
+    // build the map extractor of Dirichlet-conditioned and free DOFs
+    *dbcmapextractor = LINALG::MapExtractor(*(DofRowMap()), dbcmap);
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
