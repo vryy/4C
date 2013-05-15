@@ -426,18 +426,57 @@ IO::InputControl::~InputControl()
 /*----------------------------------------------------------------------*/
 IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
                                        const std::string outputname,
+                                       int restart,
                                        int create_errorfiles)
   : filename_(outputname),
     errfile_(NULL)
 {
   // create error file name
   {
+    // standard mode, no restart
     std::ostringstream mypid;
     mypid << comm.MyPID();
     errname_ = filename_ + mypid.str() + ".err";
+
+    if (restart)
+    {
+      // check whether filename_ includes a dash and in case separate the number at the end
+      int number = 0;
+      size_t pos = filename_.rfind('-');
+      if (pos!=string::npos)
+      {
+        number = atoi(filename_.substr(pos+1).c_str());
+        filename_ = filename_.substr(0,pos);
+      }
+
+      // either add or increase the number in the end or just set the new name for the error file
+      for (;;)
+      {
+        // if no number is found and the error file name does not yet exist -> create it
+        if (number == 0)
+        {
+          errname_ = filename_ + mypid.str() + ".err";
+          std::ifstream file(errname_.c_str());
+          if (not file)
+          {
+            break;
+          }
+        }
+        // a number was found or the file does already exist -> set number correctly and add it
+        number += 1;
+        std::stringstream name;
+        name << "-" << number << "_";
+        errname_ = filename_ + name.str() + mypid.str() + ".err";
+        std::ifstream file(errname_ .c_str());
+        if (not file)
+        {
+          break;
+        }
+      }
+    }
   }
 
-   //open error files (one per processor)
+  //open error files (one per processor)
   //int create_errorfiles =0;
   if (create_errorfiles)
   {

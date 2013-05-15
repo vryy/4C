@@ -141,6 +141,7 @@ namespace IO
     ErrorFileControl(
       const Epetra_Comm& comm,  ///< communicator
       const std::string filename, ///< output file name prefix
+      int restart,   ///< restart step
       int create_errorfiles       // do we need to create errorfiles
     );
 

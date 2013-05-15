@@ -754,7 +754,7 @@ void DRT::Problem::OpenErrorFile(const Epetra_Comm& comm, std::string prefix, co
     // what's given in the input file?
     openfile = DRT::INPUT::IntegralValue<int>(IOParams(),"OUTPUT_BIN");
   }
-    errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix,openfile));
+    errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix, Restart(), openfile));
 }
 
 
