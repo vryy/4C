@@ -6132,7 +6132,8 @@ double FLD::FluidImplicitTimeInt::TimIntParam() const
     retval = 0.0;
   break;
   case INPAR::FLUID::timeint_stationary:
-    // this is the interpolation weight for quantities from last time step
+    // no FSI with stationary time integrator
+    dserror("FSI does not allow a stationary time integrator.");
     retval = 0.0;
   break;
   default:
