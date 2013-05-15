@@ -50,9 +50,6 @@ namespace FSI
     */
     virtual void SetupSystem();
 
-    /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false);
-
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
@@ -86,9 +83,16 @@ namespace FSI
                              Teuchos::RCP<const Epetra_Vector> cv,         ///< constraint vector
                              double fluidscale);                           ///< scaling
 
-
   private:
 
+    /// setup RHS contributions based on single field residuals
+    void SetupRHSResidual(Epetra_Vector& f);
+
+    /// setup RHS contributions based on the Lagrange multiplier field
+    void SetupRHSLambda(Epetra_Vector& f);
+
+    /// setup RHS contributions based on terms for first nonlinear iteration
+    void SetupRHSFirstiter(Epetra_Vector& f);
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sconT_;
 

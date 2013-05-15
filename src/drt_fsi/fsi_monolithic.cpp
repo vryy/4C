@@ -29,6 +29,7 @@ Maintainer: Matthias Mayr
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_ale/ale.H"
 
@@ -706,6 +707,64 @@ bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
                                             Teuchos::ParameterList *precParams)
 {
   return true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::SetupRHS");
+
+  firstcall_ = firstcall;
+
+  // We want to add into a zero vector
+  f.PutScalar(0.0);
+
+  // contributions of single field residuals
+  SetupRHSResidual(f);
+
+  // contributions of Lagrange multiplier from last time step
+  SetupRHSLambda(f);
+
+  // contributions of special "first nonlinear iteration" terms
+  if (firstcall)
+    SetupRHSFirstiter(f);
+
+  if (dbcmaps_ != Teuchos::null) // ToDo: Remove this after 'dbcmaps_' has been introduced in lung fsi
+  {
+    // Finally, we take care of Dirichlet boundary conditions
+    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(),true));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(dbcmaps_->CondMap()));
+    f.Update(1.0,*rhs,0.0);
+  }
+
+  // NOX expects the 'positive' residual. The negative sign for the
+  // linearized Newton system J*dx=-r is done internally by NOX.
+  f.Scale(-1.);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
+{
+  CombineFieldVectors(*ig,
+                      StructureField()->InitialGuess(),
+                      FluidField().InitialGuess(),
+                      AleField().InitialGuess(),
+                      true);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::CombineFieldVectors(Epetra_Vector& v,
+                                          Teuchos::RCP<const Epetra_Vector> sv,
+                                          Teuchos::RCP<const Epetra_Vector> fv,
+                                          Teuchos::RCP<const Epetra_Vector> av)
+{
+  Extractor().AddVector(*sv,0,v);
+  Extractor().AddVector(*fv,1,v);
+  Extractor().AddVector(*av,2,v);
 }
 
 /*----------------------------------------------------------------------*/

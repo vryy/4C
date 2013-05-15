@@ -272,23 +272,10 @@ namespace FSI
     virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
                                                                  Teuchos::ParameterList& params) const;
 
-    //! @name Apply current field state to system
-
-    /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false) = 0;
-
-    /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() = 0;
-
-    //@}
-
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
         );
-
-    /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(Epetra_Vector& b) {}
@@ -300,6 +287,28 @@ namespace FSI
     virtual Teuchos::RCP<Epetra_Vector> GetLambda () {dserror ("GetLambda not implemented in the base class"); return Teuchos::null;};
 
   protected:
+
+    //! @name Apply current field state to system
+
+    //! setup composed right hand side from field solvers
+    //!
+    //! The RHS consists of three contributions from:
+    //! 1) the single fields residuals
+    //! 2) the Lagrange multiplier field lambda_
+    //! 3) terms in the first nonlinear iteration
+    //!
+    //! \sa SetupRHSResidual()
+    //! \sa SetupRHSLambda()
+    //! \sa SetupRHSFirstiter()
+    void SetupRHS(
+        Epetra_Vector& f,     ///< empty rhs vector (to be filled)
+        bool firstcall=false  ///< indicates whether this is the first nonlinear iteration or not
+    );
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupSystemMatrix() = 0;
+
+    //@}
 
     /// setup solver for global block system
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem>
@@ -329,6 +338,41 @@ namespace FSI
                                      Teuchos::RCP<const Epetra_Vector>& sx,
                                      Teuchos::RCP<const Epetra_Vector>& fx,
                                      Teuchos::RCP<const Epetra_Vector>& ax) = 0;
+
+    //! Put three field vectors together to a monolithic vector
+    //!
+    //! Slave vectors are only allowed to contain inner DOFs. Only master vector
+    //! is allowed to contain interface DOFs. All vectors are put together.
+    //! As usual, the ordering is: structure --  fluid -- ALE
+    //!
+    //! \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
+    //! \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
+    //! \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
+    //! \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+    void CombineFieldVectors(
+          Epetra_Vector &v,                       ///< composed vector containing all field vectors
+          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
+          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
+          Teuchos::RCP<const Epetra_Vector> av    ///< ale DOFs
+    );
+
+    //! Put three field vectors together to a monolithic vector
+    //!
+    //! Slave vectors are only allowed to contain inner DOFs. Only master vector
+    //! is allowed to contain interface DOFs. All vectors are put together.
+    //! As usual, the ordering is: structure --  fluid -- ALE
+    //!
+    //! \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
+    //! \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
+    //! \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
+    //! \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+    virtual void CombineFieldVectors(
+          Epetra_Vector &v,                       ///< composed vector containing all field vectors
+          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
+          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
+          Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
+          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
+    ) = 0;
 
     //! @name Access methods for subclasses
 
@@ -382,6 +426,28 @@ namespace FSI
     //@}
 
   private:
+
+    /// Extract initial guess from fields
+    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+
+    //! @name Setup of RHS vector
+
+    //! setup RHS contributions based on single field residuals
+    //!
+    //! \sa SetupRHS()
+    virtual void SetupRHSResidual(Epetra_Vector& f) = 0;
+
+    //! setup RHS contributions based on the Lagrange multiplier field
+    //!
+    //! \sa SetupRHS()
+    virtual void SetupRHSLambda(Epetra_Vector& f) = 0;
+
+    //! setup RHS contributions based on terms for first nonlinear iteration
+    //!
+    //! \sa SetupRHS()
+    virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
+
+    //@}
 
     /// dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;
@@ -472,10 +538,37 @@ namespace FSI
 
   protected:
 
+    //! Put three field vectors together to a monolithic vector
+    //!
+    //! Slave vectors are only allowed to contain inner DOFs. Only master vector
+    //! is allowed to contain interface DOFs. All vectors are put together.
+    //! As usual, the ordering is: structure --  fluid -- ALE
+    //!
+    //! \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
+    //! \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
+    //! \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
+    //! \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+    virtual void CombineFieldVectors(
+          Epetra_Vector &v,                       ///< composed vector containing all field vectors
+          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
+          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
+          Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
+          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
+    ){};
+
     /// debug writer to be used inside preconditioner
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
 
   private:
+
+    /// setup RHS contributions based on single field residuals
+    virtual void SetupRHSResidual(Epetra_Vector& f) = 0;
+
+    /// setup RHS contributions based on the Lagrange multiplier field
+    virtual void SetupRHSLambda(Epetra_Vector& f) = 0;
+
+    /// setup RHS contributions based on terms for first nonlinear iteration
+    virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
 
     /// counter to reuse the block matrix preconditioner
     int precondreusecount_;

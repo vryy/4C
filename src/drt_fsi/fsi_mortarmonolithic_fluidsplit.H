@@ -89,9 +89,6 @@ namespace FSI
 
     //! @name Apply current field state to system
 
-    /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false);
-
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
@@ -191,16 +188,26 @@ namespace FSI
 
   private:
 
-    //! Build block vector from field vectors
-    //! Here, all contributions to rhs vector, that are used in every Newton iteration, are assembled.
-    //!  a) residuals from single fields
-    //!  b) Lagrange multiplier \f$\lambda^n\f$ from last time step
-    void SetupVector(
-        Epetra_Vector &f,                       ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector> av,   ///< ale displacements
-        const double fluidscale                 ///< residual scaling for fluid
+    /// setup RHS contributions based on single field residuals
+    void SetupRHSResidual(Epetra_Vector& f);
+
+    /// setup RHS contributions based on the Lagrange multiplier field
+    void SetupRHSLambda(Epetra_Vector& f);
+
+    /// setup RHS contributions based on terms for first nonlinear iteration
+    void SetupRHSFirstiter(Epetra_Vector& f);
+
+    //! Put three field vectors together to a monolithic vector
+    //!
+    //! If all input vectors contain interface DOFs, we first have to extract
+    //! the inner portion of the slave vectors. Then, we just put them together.
+    //! As usual, the ordering is: structure --  fluid -- ALE
+    void CombineFieldVectors(
+          Epetra_Vector &v,                       ///< composed vector containing all field vectors
+          Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
+          Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid DOFs
+          Teuchos::RCP<const Epetra_Vector> av,   ///< ale DOFs
+          bool fullvectors                        ///< all vectors contain all DOFs (true) or slave vectors only inner DOFs (false)
     );
 
     //! block system matrix

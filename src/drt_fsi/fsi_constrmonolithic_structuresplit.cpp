@@ -198,11 +198,9 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
+void FSI::ConstrMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupRHS");
-
-  double scale = FluidField().ResidualScaling();
+  const double scale = FluidField().ResidualScaling();
 
   SetupVector(f,
     StructureField()->RHS(),
@@ -214,105 +212,108 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
   // add additional ale residual
   Extractor().AddVector(*aleresidual_,2,f);
 
-  if (firstcall)
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::ConstrMonolithicStructureSplit::SetupRHSLambda(Epetra_Vector& f)
+{
+  // ToDo: We still need to implement this.
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::ConstrMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
+{
+  // additional rhs term for ALE equations
+  // -dt Aig u(n)
+  //
+  //    1/dt Delta d(n+1) = theta Delta u(n+1) + u(n)
+  //
+  // And we are concerned with the u(n) part here.
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  if (a==Teuchos::null)
+    dserror("expect ale block matrix");
+
+  const LINALG::SparseMatrix& aig = a->Matrix(0,1);
+
+  Teuchos::RCP<const Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+  Teuchos::RCP<const Epetra_Vector> sveln = FluidToStruct(fveln);
+  Teuchos::RCP<const Epetra_Vector> aveln = StructToAle(sveln);
+  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+  aig.Apply(*aveln,*rhs);
+
+  rhs->Scale(-1.*Dt());
+
+  Extractor().AddVector(*rhs,2,f);
+
+  // structure
+  Teuchos::RCP<Epetra_Vector> veln = StructureField()->Interface()->InsertFSICondVector(sveln);
+  rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
+  s->Apply(*veln,*rhs);
+
+  rhs->Scale(-1.*Dt());
+
+  veln = StructureField()->Interface()->ExtractOtherVector(rhs);
+  Extractor().AddVector(*veln,0,f);
+
+  veln = StructureField()->Interface()->ExtractFSICondVector(rhs);
+  veln = FluidField().Interface()->InsertFSICondVector(StructToFluid(veln));
+
+  const double scale     = FluidField().ResidualScaling();
+
+  veln->Scale(1./scale);
+
+  Extractor().AddVector(*veln,1,f);
+
+  // shape derivatives
+  Teuchos::RCP<const LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+  if (mmm!=Teuchos::null)
   {
-    // additional rhs term for ALE equations
-    // -dt Aig u(n)
-    //
-    //    1/dt Delta d(n+1) = theta Delta u(n+1) + u(n)
-    //
-    // And we are concerned with the u(n) part here.
+    const LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+    const LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-    if (a==Teuchos::null)
-      dserror("expect ale block matrix");
+    rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
+    fmig.Apply(*fveln,*rhs);
+    veln = FluidField().Interface()->InsertOtherVector(rhs);
 
-    LINALG::SparseMatrix& aig = a->Matrix(0,1);
+    rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
+    fmgg.Apply(*fveln,*rhs);
+    FluidField().Interface()->InsertFSICondVector(rhs,veln);
 
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
-    Teuchos::RCP<Epetra_Vector> sveln = FluidToStruct(fveln);
-    Teuchos::RCP<Epetra_Vector> aveln = StructToAle(sveln);
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
-    aig.Apply(*aveln,*rhs);
-
-    rhs->Scale(-1.*Dt());
-
-    Extractor().AddVector(*rhs,2,f);
-
-    // structure
-    Teuchos::RCP<Epetra_Vector> veln = StructureField()->Interface()->InsertFSICondVector(sveln);
-    rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
-
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
-    s->Apply(*veln,*rhs);
-
-    rhs->Scale(-1.*Dt());
-
-    veln = StructureField()->Interface()->ExtractOtherVector(rhs);
-    Extractor().AddVector(*veln,0,f);
-
-    veln = StructureField()->Interface()->ExtractFSICondVector(rhs);
-    veln = FluidField().Interface()->InsertFSICondVector(StructToFluid(veln));
-
-    double scale     = FluidField().ResidualScaling();
-
-    veln->Scale(1./scale);
+    veln->Scale(-1.*Dt());
 
     Extractor().AddVector(*veln,1,f);
-
-    // shape derivatives
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
-    if (mmm!=Teuchos::null)
-    {
-      LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-      LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
-
-      rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
-      fmig.Apply(*fveln,*rhs);
-      veln = FluidField().Interface()->InsertOtherVector(rhs);
-
-      rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
-      fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface()->InsertFSICondVector(rhs,veln);
-
-      veln->Scale(-1.*Dt());
-
-      Extractor().AddVector(*veln,1,f);
-    }
-
-    //--------------------------------------------------------------------------------
-    // constraint
-    //--------------------------------------------------------------------------------
-    LINALG::SparseOperator& tmp = *conman_->GetConstrMatrix();
-    LINALG::BlockSparseMatrixBase& scon = dynamic_cast<LINALG::BlockSparseMatrixBase&>(tmp);
-    for (int rowblock=0; rowblock<scon.Rows(); ++rowblock)
-    {
-      for (int colblock=0; colblock<scon.Cols(); ++colblock)
-      {
-        sconT_->Matrix(colblock,rowblock).Add(scon.Matrix(rowblock,colblock),true,1.0,0.0);
-      }
-    }
-    sconT_->Complete();
-
-    LINALG::SparseMatrix& csig = sconT_->Matrix(0,1);
-
-    rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
-    csig.Apply(*sveln,*rhs);
-    rhs->Scale(-1.*Dt());
-    Extractor().AddVector(*rhs,3,f);
-
   }
 
-  // Finally, we take care of Dirichlet boundary conditions
-  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
-  Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(),true));
-  LINALG::ApplyDirichlettoSystem(rhs,zeros,*(dbcmaps_->CondMap()));
-  f.Update(1.0,*rhs,0.0);
+  //--------------------------------------------------------------------------------
+  // constraint
+  //--------------------------------------------------------------------------------
+  LINALG::SparseOperator& tmp = *conman_->GetConstrMatrix();
+  LINALG::BlockSparseMatrixBase& scon = dynamic_cast<LINALG::BlockSparseMatrixBase&>(tmp);
+  for (int rowblock=0; rowblock<scon.Rows(); ++rowblock)
+  {
+    for (int colblock=0; colblock<scon.Cols(); ++colblock)
+    {
+      sconT_->Matrix(colblock,rowblock).Add(scon.Matrix(rowblock,colblock),true,1.0,0.0);
+    }
+  }
+  sconT_->Complete();
 
-  // NOX expects the 'positive' residual. The negative sign for the
-  // linearized Newton system J*dx=-f is done internally by NOX.
-  // Since we assembled the right hand side, we have to invert the sign here.
-  f.Scale(-1.);
+  LINALG::SparseMatrix& csig = sconT_->Matrix(0,1);
+
+  rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
+  csig.Apply(*sveln,*rhs);
+  rhs->Scale(-1.*Dt());
+  Extractor().AddVector(*rhs,3,f);
+
+  return;
 }
 
 

@@ -195,11 +195,9 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
+void FSI::ConstrMonolithicFluidSplit::SetupRHSResidual(Epetra_Vector& f)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupRHS");
-
-  double scale = FluidField().ResidualScaling();
+  const double scale = FluidField().ResidualScaling();
 
   SetupVector(f,
     StructureField()->RHS(),
@@ -211,47 +209,51 @@ void FSI::ConstrMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
   // add additional ale residual
   Extractor().AddVector(*aleresidual_,2,f);
 
-  if (firstcall)
-  {
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
+  return;
+}
 
-    LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
-    LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::ConstrMonolithicFluidSplit::SetupRHSLambda(Epetra_Vector& f)
+{
+  // ToDo: We still need to implement this.
 
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
-    double timescale = FluidField().TimeScaling();
-    double scale     = FluidField().ResidualScaling();
+  return;
+}
 
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::ConstrMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
+{
+  Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
 
-    fig.Apply(*fveln,*rhs);
-    rhs->Scale(timescale*Dt());
+  const LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
+  const LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
+
+  Teuchos::RCP<const Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+  const double timescale = FluidField().TimeScaling();
+  const double scale     = FluidField().ResidualScaling();
+
+  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(fig.RowMap()));
+
+  fig.Apply(*fveln,*rhs);
+  rhs->Scale(timescale*Dt());
 
 #ifdef FLUIDSPLITAMG
-    rhs = FluidField().Interface()->InsertOtherVector(rhs);
+  rhs = FluidField().Interface()->InsertOtherVector(rhs);
 #endif
-    Extractor().AddVector(*rhs,1,f);
+  Extractor().AddVector(*rhs,1,f);
 
-    rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
+  rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
 
-    fgg.Apply(*fveln,*rhs);
-    rhs->Scale(scale*timescale*Dt());
+  fgg.Apply(*fveln,*rhs);
+  rhs->Scale(scale*timescale*Dt());
 
-    rhs = FluidToStruct(rhs);
-    rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
-    Extractor().AddVector(*rhs,0,f);
-  }
+  rhs = FluidToStruct(rhs);
+  rhs = StructureField()->Interface()->InsertFSICondVector(rhs);
+  Extractor().AddVector(*rhs,0,f);
 
-  // Finally, we take care of Dirichlet boundary conditions
-  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
-  Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(),true));
-  LINALG::ApplyDirichlettoSystem(rhs,zeros,*(dbcmaps_->CondMap()));
-  f.Update(1.0,*rhs,0.0);
-
-  // NOX expects the 'positive' residual. The negative sign for the
-  // linearized Newton system J*dx=-f is done internally by NOX.
-  // Since we assembled the right hand side, we have to invert the sign here.
-  f.Scale(-1.);
+  return;
 }
 
 

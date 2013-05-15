@@ -59,9 +59,6 @@ namespace FSI
     /// structure split
     void GeneralSetup();
 
-    /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f, bool firstcall=false) = 0;
-
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
 
@@ -167,6 +164,18 @@ namespace FSI
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+
+
+  private:
+
+    /// setup RHS contributions based on single field residuals
+    virtual void SetupRHSResidual(Epetra_Vector& f) = 0;
+
+    /// setup RHS contributions based on the Lagrange multiplier field
+    virtual void SetupRHSLambda(Epetra_Vector& f) = 0;
+
+    /// setup RHS contributions based on terms for first nonlinear iteration
+    virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
 
   };
 }
