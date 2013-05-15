@@ -29,8 +29,8 @@ namespace DRT
 {
 namespace UTILS
 {
-  class IntegrationPoints1D;
-  class IntegrationPoints2D;
+  struct IntegrationPoints1D;
+  struct IntegrationPoints2D;
 
 /*-----------------------------------------------------------------
 
