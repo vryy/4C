@@ -1368,6 +1368,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_point.cpp
   src/drt_cut/cut_pointgraph.cpp
   src/drt_cut/cut_pointpool.cpp
+  src/drt_cut/cut_selfcut.cpp
   src/drt_cut/cut_side.cpp
   src/drt_cut/cut_sidehandle.cpp
   src/drt_cut/cut_tetmesh.cpp
@@ -1391,6 +1392,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_levelset.cpp
   tests/cut_test/cut_test_loader.cpp
   tests/cut_test/cut_test_main.cpp
+  tests/cut_test/cut_test_selfcut.cpp
   tests/cut_test/cut_test_simple.cpp
   tests/cut_test/cut_test_triangulateFacet.cpp
   tests/cut_test/cut_test_units.cpp

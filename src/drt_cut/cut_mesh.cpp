@@ -512,143 +512,12 @@ GEO::CUT::Pyramid5IntegrationCell* GEO::CUT::Mesh::NewPyramid5Cell( Point::Point
 }
 
 
-/*---------------------------------------------------------------*
- * check whether any one of the cut sides cuts another cut side
- * Our algorithm fails in such cases
- *---------------------------------------------------------------*/
-bool GEO::CUT::Mesh::DetectSelfCut()
-{
-  std::vector<Side*> mysides;
-  mysides.reserve( sides_.size() );
-
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
-        i!=sides_.end();
-        ++i )
-  {
-    Side * side = &*i->second;
-    mysides.push_back( side );
-  }
-
-  std::sort( mysides.begin(), mysides.end() ); // sorting to use std::binary_search
-
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
-        i!=sides_.end();
-        ++i )
-  {
-    Side & side = *i->second;
-    {
-      BoundingBox sidebox( side );
-      plain_side_set sides;
-      pp_->CollectSides( sidebox, sides );  // all sides that fall within BB of considered side
-      sides.erase( &side );
-      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); )
-      {
-        Side * s = *i;
-        if ( not std::binary_search( mysides.begin(), mysides.end(), s ) or
-             side.HaveCommonNode( *s ) )  // if common nodes exist -- these sides are connected (always??)
-        {
-          set_erase( sides, i );
-        }
-        else
-        {
-          ++i;
-        }
-      }
-      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
-      {
-        Side * s = *i;
-        {
-          bool normal_cut  = side.FindCutPoints( *this, NULL, *s, 0 );
-          bool reverse_cut = s->FindCutPoints( *this, NULL, side, 0 );
-          if ( normal_cut or reverse_cut )
-          {
-            //std::cout << side << "\n" << ( *s ) << "\n";
-            return true;
-          }
-        }
-      }
-    }
-  }
-  return false;
-}
-
-#if 0
-void GEO::CUT::Mesh::SelfCut()
-{
-  plain_facet_set facets;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
-        i!=sides_.end();
-        ++i )
-  {
-    Side & side = *i->second;
-    {
-      BoundingBox sidebox( side );
-      plain_side_set sides;
-      pp_->CollectSides( sidebox, sides );
-      sides.erase( &side );
-      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); )
-      {
-        Side * s = *i;
-        if ( side.HaveCommonEdge( *s ) )
-        {
-          sides.erase( i++ );
-        }
-        else
-        {
-          ++i;
-        }
-      }
-      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
-      {
-        Side * s = *i;
-        {
-          side.FindCutPoints( *this, NULL, *s );
-          s->FindCutPoints( *this, NULL, side );
-        }
-      }
-      bool cut = false;
-      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
-      {
-        Side * s = *i;
-        {
-          bool normal_cut  = side.FindCutLines( *this, NULL, *s );
-          bool reverse_cut = s->FindCutLines( *this, NULL, side );
-          if ( normal_cut or reverse_cut )
-            cut = true;
-        }
-      }
-      if ( cut )
-      {
-        for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
-        {
-          Side * s = *i;
-          {
-            SideSideCutFilter filter( &side, s );
-            side.MakeOwnedSideFacets( *this, filter, facets );
-          }
-        }
-        side.MakeSideCutFacets( *this, NULL, facets );
-      }
-    }
-  }
-  for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
-  {
-    Facet * f = *i;
-    f->CreateLinearElements( *this );
-  }
-}
-#endif
-
-
 /*-----------------------------------------------------------------*
  * Cuts the background elements of the mesh with all the cut sides *
  *-----------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int recursion )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh --- CUT (incl. tetmesh-cut)" );
-
-  if ( DetectSelfCut() )
-    throw std::runtime_error( "cut surface with self cut not supported" );
 
   plain_element_set my_elements_done;
 
@@ -758,38 +627,30 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.Cut( *this, side, 0 );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.Cut( *this, side, 0 );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 }
 
@@ -822,38 +683,30 @@ void GEO::CUT::Mesh::MakeCutLines()
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MakeCutLines( *this, creator );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MakeCutLines( *this, creator );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 
   creator.Execute( *this );
@@ -872,38 +725,30 @@ void GEO::CUT::Mesh::MakeFacets()
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MakeFacets( *this );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MakeFacets( *this );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 }
 
@@ -920,38 +765,30 @@ void GEO::CUT::Mesh::MakeVolumeCells()
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MakeVolumeCells( *this );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MakeVolumeCells( *this );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 }
 
@@ -971,38 +808,30 @@ void GEO::CUT::Mesh::FindNodePositions()
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.FindNodePositions();
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.FindNodePositions();
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   // find undecided nodes
   // * for serial simulations all node positions should be set
@@ -1308,38 +1137,30 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.CreateIntegrationCells( *this, count+1, levelset );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.CreateIntegrationCells( *this, count+1, levelset );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 }
 
@@ -1354,38 +1175,30 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, std::string Bcell
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MomentFitGaussWeights( *this, include_inner, Bcellgausstype );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.MomentFitGaussWeights( *this, include_inner, Bcellgausstype );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 }
 
@@ -1400,38 +1213,30 @@ void GEO::CUT::Mesh::DirectDivergenceGaussRule(bool include_inner, std::string B
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.DirectDivergenceGaussRule( *this, include_inner, Bcellgausstype );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.DirectDivergenceGaussRule( *this, include_inner, Bcellgausstype );
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 }
 
@@ -1446,38 +1251,30 @@ void GEO::CUT::Mesh::RemoveEmptyVolumeCells()
         ++i )
   {
     Element & e = *i->second;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.RemoveEmptyVolumeCells();
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-#ifndef DEBUGCUTLIBRARY
     try
     {
-#endif
       e.RemoveEmptyVolumeCells();
-#ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
     {
       e.DebugDump();
       throw;
     }
-#endif
   }
 }
 
@@ -2127,9 +1924,6 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
 {
-//#ifndef DEBUGCUTLIBRARY
-//  return;
-//#endif
 
   std::ofstream file( name.c_str() );
   file << "View \"IntegrationCells\" {\n";
@@ -2990,5 +2784,3 @@ void GEO::CUT::Mesh::TestFacetArea()
     f->TestFacetArea( 1e-7 );
   }
 }
-
-

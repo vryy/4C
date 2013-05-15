@@ -587,3 +587,39 @@ int GEO::CUT::Node::NumDofSets( bool include_inner )
 }
 #endif
 
+/*-----------------------------------------------------------------------------------------*
+ *  Gives this node a selfcutposition and spread the positional information     wirtz 05/13
+ *-----------------------------------------------------------------------------------------*/
+void GEO::CUT::Node::SelfCutPosition( Point::PointPosition pos )
+{
+  if ( selfcutposition_ != pos )
+  {
+
+//#ifdef DEBUGCUTLIBRARY
+    if( (selfcutposition_ == Point::inside and pos == Point::outside) or
+        (selfcutposition_ == Point::outside and pos == Point::inside) )
+    {
+
+      cout << "selfcutnode with changing position inside->outside or vice versa " << nid_ << endl;
+      throw std::runtime_error("Are you sure that you want to change the selfcut-node-position from inside to outside or vice versa?");
+    }
+//#endif
+
+    // do not overwrite oncutsurface nodes
+    if(selfcutposition_ == Point::oncutsurface) return;
+
+    // change position for points just in case of undecided node and do not change oncutsurface nodes
+    if( (selfcutposition_ == Point::undecided) )
+    {
+    	selfcutposition_ = pos;
+      if ( pos==Point::outside or pos==Point::inside )
+      {
+        for ( plain_edge_set::iterator i=edges_.begin(); i!=edges_.end(); ++i )
+        {
+          Edge * e = *i;
+          e->SelfCutPosition( pos );
+        }
+      }
+    }
+  }
+}

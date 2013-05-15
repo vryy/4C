@@ -22,6 +22,10 @@ Maintainer: Benedikt Schott
 #include "cut_boundingbox.H"
 #include "cut_facet.H"
 
+#ifdef DEBUG
+#include "cut_node.H"
+#include "cut_edge.H"
+#endif
 
 
 namespace GEO
@@ -171,9 +175,6 @@ public:
   /*========================================================================*/
   //! @name Basic routines to run the cut, creates a cloud of cut points
   /*========================================================================*/
-
-  /// Returns true if any one of the cut sides cuts another side
-  bool DetectSelfCut();
 
   /// Cuts the background elements of the mesh with all the cut sides
   void Cut( Mesh & mesh, plain_element_set & elements_done, int recursion );
@@ -417,6 +418,32 @@ public:
 
   /// ???
   void TestFacetArea();
+
+
+  /*========================================================================*/
+  //! @name Routines which provides the interface to the selfcut
+  /*========================================================================*/
+
+  /// Returns all sides of the cutmesh
+  const std::map<plain_int_set, Teuchos::RCP<Side> > & Sides() const { return sides_; }
+
+  /// Returns all nodes of the cutmesh
+  const std::map<int, Teuchos::RCP<Node> > & Nodes() const { return nodes_; }
+
+  /// Creates a new node in the cutmesh
+  void GetNode( int nid, Node * node ) { nodes_[nid] = Teuchos::rcp( node ); }
+
+  /// Creates a new edge in the cutmesh
+  void GetEdge( plain_int_set eid, Edge * edge ) { edges_[eid] = Teuchos::rcp( edge ); }
+
+  /// Erases a side of the cutmesh
+  void EraseSide( plain_int_set sid ) { sides_.erase( sid ); }
+
+  /// Erases a edge of the cutmesh
+  void EraseEdge( plain_int_set eid ) { edges_.erase( eid ); }
+
+  /// Erases a node of the cutmesh
+  void EraseNode( int nid ) { nodes_.erase( nid ); }
 
 
 

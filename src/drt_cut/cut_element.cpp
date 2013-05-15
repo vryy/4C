@@ -1321,7 +1321,3 @@ void GEO::CUT::Element::DirectDivergenceGaussRule( Mesh & mesh, bool include_inn
     cell1->DirectDivergenceGaussRule(this, mesh, include_inner, Bcellgausstype);
   }
 }
-
-
-
-

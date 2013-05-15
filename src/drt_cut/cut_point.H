@@ -200,6 +200,13 @@ public:
 
   Edge * CommonCutEdge( Side * side );
 
+  /// Erase the cutside from this point because it is deleted in the selfcut
+  void EraseCutSide( Side * cutside ){ cut_sides_.erase( cutside ); }
+
+/// Erase the cutsideedge from this point because it is deleted in the selfcut
+  void EraseCutSideEdge( Edge * cutsideedge ){ cut_edges_.erase( cutsideedge ); }
+
+
 private:
 
   // find the unique line that matches the filter criteria

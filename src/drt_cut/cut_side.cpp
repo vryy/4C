@@ -431,9 +431,22 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_
 
       // If we have a hole and multiple cuts we have to test which facet the
       // hole belongs to. Not supported now.
+      unsigned int facetid = 0;
       if ( facets_.size()!=1 )
       {
-        throw std::runtime_error( "expect side with one (uncut) facet" );
+        for ( std::vector<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+        {
+          Facet * facet = * i;
+          if ( HoleOfFacet( *facet, hole ) )
+          {
+            break;
+          }
+          facetid++;
+        }
+        if ( facetid == facets_.size() )
+        {
+          throw std::runtime_error( "failed to find the facet of the hole" );
+        }
       }
 
       for ( std::vector<Cycle>::const_iterator i=hole.begin(); i!=hole.end(); ++i )
@@ -441,13 +454,21 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_
         const Cycle & points = *i;
 
         Facet * h = mesh.NewFacet( points(), this, false );
-        facets_[0]->AddHole( h );
+        facets_[facetid]->AddHole( h );
       }
     }
   }
 
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );
 }
+
+
+
+
+
+
+
+
 
 /*-----------------------------------------------------------------------------------------------*
                      create facets on the cut sides of the element
@@ -1015,4 +1036,103 @@ std::ostream & operator<<( std::ostream & stream, GEO::CUT::Side & s )
   }
   stream << "}";
   return stream;
+}
+
+/*-----------------------------------------------------------------------------------------*
+ *  Gets the selfcutposition and spread the positional information              wirtz 05/13
+ *-----------------------------------------------------------------------------------------*/
+void GEO::CUT::Side::GetSelfCutPosition( Point::PointPosition position )
+{
+  if ( selfcutposition_ != position )
+  {
+	selfcutposition_ = position;
+
+    for ( std::vector<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
+    {
+      Edge * e = *i;
+      Point::PointPosition ep = e->SelfCutPosition();
+      if ( ep==Point::undecided )
+      {
+        e->SelfCutPosition( position );
+      }
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *              returns true if the hole is inside the facet                          wirtz 05/13
+ *-----------------------------------------------------------------------------------------------*/
+bool GEO::CUT::Side::HoleOfFacet( Facet & facet, const std::vector<Cycle> & hole )
+{
+
+  int intersectioncount = 0;
+  bool intersectioninpoint = true;
+  std::vector<Point*> facetpoints = facet.Points();
+  int facetsize = facetpoints.size();
+  std::vector<LINALG::Matrix<3,1> > facetpointslocalcoord;
+  facetpointslocalcoord.reserve( facetsize );
+  for ( std::vector<Point*>::iterator i=facetpoints.begin(); i!=facetpoints.end(); ++i )
+  {
+    Point * facetpoint = * i;
+    LINALG::Matrix<3,1> pointcoord;
+    facetpoint->Coordinates( pointcoord.A() );
+    LINALG::Matrix<3,1> pointlocalcoord;
+    LocalCoordinates( pointcoord, pointlocalcoord, false );
+    facetpointslocalcoord.push_back( pointlocalcoord );
+  }
+  LINALG::Matrix<3,1> holepointcoord;
+  LINALG::Matrix<3,1> holepointlocalcoord;
+  hole[0]()[0]->Coordinates( holepointcoord.A() );
+  LocalCoordinates( holepointcoord, holepointlocalcoord, false );
+  int epsilon = 0;
+  while ( intersectioninpoint )
+  {
+    intersectioninpoint = false;
+    for ( std::vector<LINALG::Matrix<3,1> >::iterator i=facetpointslocalcoord.begin(); i!=facetpointslocalcoord.end(); ++i )
+    {
+      LINALG::Matrix<3,1> facetpoint1 = * i;
+      LINALG::Matrix<3,1> facetpoint2;
+      if ( i+1 != facetpointslocalcoord.end() )
+      {
+        facetpoint2 = * (i+1);
+      }
+      else
+      {
+        facetpoint2 = * (i+1-facetsize);
+      }
+      double A = facetpoint1(0) - facetpoint2(0);
+      double B = facetpoint1(1) - facetpoint2(1);
+      double C = facetpoint1(0) + facetpoint2(0) - 2*holepointlocalcoord(0) - 2;
+      double D = facetpoint1(1) + facetpoint2(1) - 2*holepointlocalcoord(1) - epsilon;
+      double N = 2*B - epsilon*A;
+      if ( abs(N) > TOLERANCE )
+      {
+        double eta = ( B*C - A*D )/N;
+        double xsi = ( 2*D - epsilon*C )/N;
+        if ( eta < 1 and eta > -1 and xsi < 1 and xsi > -1)
+        {
+          intersectioncount++;
+          double xlocalcoord = holepointlocalcoord(0) + 1 + eta;
+          double ylocalcoord = (2*holepointlocalcoord(1) + epsilon + epsilon*eta)/2;
+          if ( (abs(xlocalcoord - facetpoint1(0)) < TOLERANCE and abs(ylocalcoord - facetpoint1(1)) < TOLERANCE ) or
+               (abs(xlocalcoord - facetpoint2(0)) < TOLERANCE and abs(ylocalcoord - facetpoint2(1)) < TOLERANCE ) )
+          {
+            intersectioninpoint = true;
+            intersectioncount = 0;
+            epsilon += TOLERANCE;
+            break;
+          }
+        }
+      }
+    }
+  }
+  if ( intersectioncount%2 == 0 )
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+
 }

@@ -37,6 +37,7 @@ public:
       Edge * e = *i;
       e->Register( this );
     }
+    selfcutposition_ = Point::undecided;
   }
 
   virtual ~Side() {}
@@ -215,6 +216,55 @@ public:
 
   const std::vector<Facet*> & Facets() const { return facets_; }
 
+  /// returns true if the hole is inside the facet
+  bool HoleOfFacet( Facet & facet, const std::vector<Cycle> & hole );
+
+  /// Gets a cutting side of this cutside
+  void GetCuttingSide( Side * cuttingside ) { cutting_sides_.insert( cuttingside );}
+
+  /// Gets selfcutpoints of this cutside
+  void GetSelfCutPoints( PointSet & selfcutpoints )
+  {
+    for (PointSet::iterator i=selfcutpoints.begin(); i!=selfcutpoints.end(); ++i )
+    {
+      Point * selfcutpoint = *i;
+      self_cut_points_.insert( selfcutpoint );
+    }
+  }
+
+  /// Gets a selfcutnode of this cutside
+  void GetSelfCutNode( Node * selfcutnode ) { self_cut_nodes_.insert( selfcutnode ); }
+
+  /// Gets a selfcutedge of this cutside
+  void GetSelfCutEdge( Edge * selfcutedge ) { self_cut_edges_.insert(selfcutedge); }
+
+  /// Gets a selfcuttriangle of this cutside
+  void GetSelfCutTriangle( std::vector<GEO::CUT::Point*> selfcuttriangle ) { self_cut_triangles_.push_back( selfcuttriangle ); }
+
+  /// Gets the selfcutposition of this cutside and spread the positional information
+  void GetSelfCutPosition( Point::PointPosition p );
+
+  /// Erase a cuttingside from this cutside because the bounding box found too much 
+  void EraseCuttingSide( Side * nocuttingside ) { cutting_sides_.erase( nocuttingside ); }
+
+  /// Returns all cutting sides of this cutside
+  const plain_side_set & CuttingSides() const {return cutting_sides_;}
+
+  /// Returns all selfcutpoints of this cutside
+  const PointSet & SelfCutPoints() const {return self_cut_points_;}
+
+  /// Returns all selfcutnodes of this cutside
+  const plain_node_set & SelfCutNodes() const {return self_cut_nodes_;}
+
+  /// Returns all selfcutedges of this cutside
+  const plain_edge_set & SelfCutEdges() const {return self_cut_edges_;}
+
+  /// Returns all selfcuttriangles of this cutside
+  const std::vector<std::vector<GEO::CUT::Point*> > & SelfCutTriangles() const {return self_cut_triangles_;}
+
+  /// Returns the selfcutposition of this cutside
+  Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
+
 protected:
 
   bool AllOnNodes( const PointSet & points );
@@ -234,6 +284,25 @@ private:
   PointSet cut_points_;
 
   std::vector<Facet*> facets_;
+
+  /// all sides which are cutting this cutside
+  plain_side_set cutting_sides_;
+
+  /// all selfcutpoints of this cutside
+  PointSet self_cut_points_;
+
+  /// all selfcutnodes of this cutside
+  plain_node_set self_cut_nodes_;
+
+  /// all selfcutedges of this cutside
+  plain_edge_set self_cut_edges_;
+
+  /// all selfcuttriangles of this cutside
+  std::vector<std::vector<GEO::CUT::Point*> > self_cut_triangles_;
+
+  /// the selfcutposition of this cutside shows if it is inside or outside the other structure body
+  Point::PointPosition selfcutposition_;
+
 };
 
 /// tri3 side

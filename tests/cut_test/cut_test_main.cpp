@@ -206,6 +206,51 @@ void test_cut_volumes3();
 void test_fluidfluid();
 void test_fluidfluid2();
 
+void test_hex8quad4selfcut20();
+void test_hex8quad4selfcut21();
+void test_hex8quad4selfcut22();
+void test_hex8quad4selfcut23();
+void test_hex8quad4selfcut24();
+
+void test_hex8quad4selfcut30();
+void test_hex8quad4selfcut31();
+void test_hex8quad4selfcut32();
+void test_hex8quad4selfcut33();
+void test_hex8quad4selfcut34();
+void test_hex8quad4selfcut35();
+void test_hex8quad4selfcut36();
+void test_hex8quad4selfcut37();
+void test_hex8quad4selfcut38();
+void test_hex8quad4selfcut39();
+
+void test_hex8quad4selfcut41();
+void test_hex8quad4selfcut42();
+void test_hex8quad4selfcut43();
+
+void test_hex8quad4selfcut51();
+void test_hex8quad4selfcut52();
+void test_hex8quad4selfcut53();
+
+void test_hex8quad4selfcut61();
+void test_hex8quad4selfcut62();
+void test_hex8quad4selfcut63();
+void test_hex8quad4selfcut64();
+void test_hex8quad4selfcut65();
+void test_hex8quad4selfcut66();
+
+void test_hex8quad4selfcut71();
+void test_hex8quad4selfcut72();
+
+void test_hex8quad4selfcut81();
+void test_hex8quad4selfcut82();
+void test_hex8quad4selfcut83();
+void test_hex8quad4selfcut84();
+void test_hex8quad4selfcut85();
+void test_hex8quad4selfcut86();
+
+void test_hex8quad4selfcut91();
+void test_hex8quad4selfcut92();
+
 typedef void ( *testfunct )();
 
 
@@ -319,6 +364,51 @@ int main( int argc, char ** argv )
   //functable["hex8_quad4_touch7"] = test_hex8_quad4_touch7;
   functable["hex8_quad4_mesh"] = test_hex8_quad4_mesh;
   functable["position2d"] = test_position2d;
+
+  functable["sc20"] = test_hex8quad4selfcut20;
+  functable["sc21"] = test_hex8quad4selfcut21;
+  functable["sc22"] = test_hex8quad4selfcut22;
+  functable["sc23"] = test_hex8quad4selfcut23;
+  functable["sc24"] = test_hex8quad4selfcut24;
+
+  functable["sc30"] = test_hex8quad4selfcut30;
+  functable["sc31"] = test_hex8quad4selfcut31;
+  functable["sc32"] = test_hex8quad4selfcut32;
+  functable["sc33"] = test_hex8quad4selfcut33;
+  functable["sc34"] = test_hex8quad4selfcut34;
+  functable["sc35"] = test_hex8quad4selfcut35;
+  functable["sc36"] = test_hex8quad4selfcut36;
+  functable["sc37"] = test_hex8quad4selfcut37;
+  functable["sc38"] = test_hex8quad4selfcut38;
+  functable["sc39"] = test_hex8quad4selfcut39;
+
+  functable["sc41"] = test_hex8quad4selfcut41;
+  functable["sc42"] = test_hex8quad4selfcut42;
+  functable["sc43"] = test_hex8quad4selfcut43;
+
+  functable["sc51"] = test_hex8quad4selfcut51;
+  functable["sc52"] = test_hex8quad4selfcut52;
+  functable["sc53"] = test_hex8quad4selfcut53;
+
+  functable["sc61"] = test_hex8quad4selfcut61;
+  functable["sc62"] = test_hex8quad4selfcut62;
+  functable["sc63"] = test_hex8quad4selfcut63;
+  functable["sc64"] = test_hex8quad4selfcut64;
+  functable["sc65"] = test_hex8quad4selfcut65;
+  functable["sc66"] = test_hex8quad4selfcut66;
+
+  functable["sc71"] = test_hex8quad4selfcut71;
+  functable["sc72"] = test_hex8quad4selfcut72;
+
+  functable["sc81"] = test_hex8quad4selfcut81;
+  functable["sc82"] = test_hex8quad4selfcut82;
+  functable["sc83"] = test_hex8quad4selfcut83;
+  functable["sc84"] = test_hex8quad4selfcut84;
+  functable["sc85"] = test_hex8quad4selfcut85;
+  functable["sc86"] = test_hex8quad4selfcut86;
+
+  functable["sc91"] = test_hex8quad4selfcut91;
+  functable["sc92"] = test_hex8quad4selfcut92;
 
   functable["quad4_line2"] = test_quad4_line2;
   functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;

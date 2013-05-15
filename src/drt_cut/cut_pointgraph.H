@@ -51,6 +51,9 @@ private:
 
     void PlotPoints( Element * element );
 
+    /// Creates maincycles (outer polygons) and holecycles (inner polygons = holes) of the selfcut graph
+    void FindCycles( Side * side, Cycle & cycle );
+
     void FindCycles( Element * element, Side * side, Cycle & cycle, Location location, Strategy strategy );
 
     /*!
@@ -75,6 +78,9 @@ public:
 
   PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy );
 
+  /// Constructor for the selfcut
+  PointGraph( Side * side );
+
   facet_iterator fbegin() { return graph_.main_cycles_.begin(); }
 
   facet_iterator fend()   { return graph_.main_cycles_.end(); }
@@ -94,6 +100,9 @@ private:
   \brief Graph is filled with all edges that are created due to additional cut points and cut lines
    */
   void FillGraph( Element * element, Side * side, Cycle & cycle, Strategy strategy );
+
+  /// Graph is filled wihl all edges of the selfcut: uncutted edges, selfcutedges and new splitted edges; but no the cutted edges
+  void FillGraph( Side * side, Cycle & cycle );
 
   Element * element_;
   Side * side_;

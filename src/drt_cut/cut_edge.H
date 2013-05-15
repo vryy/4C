@@ -54,6 +54,7 @@ public:
       n->Register( this );
       n->point()->AddEdge( this );
     }
+    selfcutposition_ = Point::undecided;
   }
 
   virtual ~Edge() {}
@@ -207,6 +208,17 @@ public:
   //const std::vector<Point*> & CutPoints() const { return cut_points_; }
 
   void RectifyCutNumerics();
+  
+  /// Returns the selfcutposition of this edge
+  Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
+
+  /// Gives this edge a selfcutposition and spread the positional information
+  void SelfCutPosition( Point::PointPosition p );
+
+  /// Erase the cutside from this edge because it is deleted in the selfcut
+  void EraseCutSide( Side * cutside ){ sides_.erase( cutside ); }
+
+
 
 private:
 
@@ -216,6 +228,10 @@ private:
 
   //! sorted vector contains all points (end points and cut points) on this edge
   PointPositionSet cut_points_;
+
+  //! every cutsideedge knows its selfcutposition
+  Point::PointPosition selfcutposition_;
+
 };
 
 

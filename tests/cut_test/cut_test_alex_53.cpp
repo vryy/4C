@@ -876,9 +876,9 @@ void test_alex53()
       dserror("The volumes calculated by momentFitting and Tessellation are not the same");
   }*/
 
-  if ( not intersection.CutMesh().DetectSelfCut() )
+/*  if ( not intersection.CutMesh().DetectSelfCut() )
   {
     throw std::runtime_error( "self cut expected" );
-  }
+  }*/
 }
 

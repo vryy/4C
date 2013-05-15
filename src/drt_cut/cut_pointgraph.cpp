@@ -20,6 +20,23 @@
 //#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphviz.hpp>
 
+/*-------------------------------------------------------------------------------------*
+ * Constructor for the selfcut                                              wirtz 05/13
+ *-------------------------------------------------------------------------------------*/
+GEO::CUT::IMPL::PointGraph::PointGraph(Side * side )
+  : side_( side )
+{
+
+  Cycle cycle;
+  FillGraph( side, cycle );
+  if ( graph_.HasSinglePoints() ) // if any edge in graph has single point
+  {
+    graph_.FixSinglePoints( cycle ); // delete singe point edges
+  }
+  graph_.FindCycles( side, cycle );
+
+}
+
 GEO::CUT::IMPL::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy )
   : element_( element ),
     side_( side )
@@ -71,6 +88,54 @@ GEO::CUT::IMPL::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * s
 #endif
 
   graph_.FindCycles( element, side, cycle, location, strategy );
+}
+
+/*-------------------------------------------------------------------------------------*
+ * Graph is filled wihl all edges of the selfcut: uncutted edges, selfcutedges
+ * and new splitted edges; but no the cutted edges                          wirtz 05/13
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::IMPL::PointGraph::FillGraph( Side * side, Cycle & cycle )
+{
+
+  const std::vector<Node*> & nodes = side->Nodes();
+  const std::vector<Edge*> & edges = side->Edges();
+  int end_pos = 0;
+
+  // loop over all edges of the parent side
+  for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
+  {
+    Edge * e = *i;
+
+    // get start and end node numbers corresponding to this edge
+    int begin_pos = end_pos;
+    end_pos = ( end_pos + 1 ) % nodes.size();
+    std::vector<Point*> edge_points;
+
+    // get all points on this edge including start and end points
+    // points are already sorted
+    e->CutPoint( nodes[begin_pos], nodes[end_pos], edge_points );
+
+    // when edge of a side has "n" cut points, the edge itself is split into (n+1) edges
+    // store all (n+1) edges to graph
+    for ( unsigned i=1; i<edge_points.size(); ++i ) // no of edges = no of points-1
+    {
+      Point * p1 = edge_points[i-1];
+      Point * p2 = edge_points[i];
+      graph_.AddEdge( p1, p2 );
+    }
+    for ( std::vector<Point*>::iterator i=edge_points.begin()+1; i!=edge_points.end(); ++i )
+    {
+      Point * p = *i;
+      cycle.push_back( p );
+    }
+  }
+  const plain_edge_set & selfcutedges = side->SelfCutEdges();
+  for ( plain_edge_set::const_iterator i=selfcutedges.begin(); i!=selfcutedges.end(); ++i )
+  {
+	  Edge * selfcutedge = *i;
+	  graph_.AddEdge( selfcutedge->BeginNode()->point(), selfcutedge->EndNode()->point() );
+  }
+
 }
 
 /*--------------------------------------------------------------------------------------------------*
@@ -329,6 +394,133 @@ bool FindCycles( graph_t & g, Cycle & cycle, std::map<vertex_t, LINALG::Matrix<3
 
   }
   }
+}
+
+/*-------------------------------------------------------------------------------------*
+ * Creates maincycles (outer polygons) and holecycles (inner polygons = holes)
+ * of the selfcut graph                                                     wirtz 05/13
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Side * side, Cycle & cycle )
+{
+	  graph_t g;
+
+  // create boost graph
+
+  name_map_t name_map = boost::get( boost::vertex_name, g );
+  edge_index_map_t edge_index_map = boost::get( boost::edge_index, g );
+
+  std::map<int, vertex_t> vertex_map;
+
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  {
+    int n = i->first;
+
+    Point * p = GetPoint( n );
+    vertex_t u = add_vertex( g );
+    name_map[u] = p;
+    vertex_map[n] = u;
+  }
+
+  int counter = 0;
+
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  {
+    int u = i->first;
+
+//    Point * p1 = GetPoint( u );
+
+    plain_int_set & row = i->second;
+
+    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+    {
+      int v = *i;
+//      Point * p2 = GetPoint( v );
+
+      if ( u < v )
+      {
+        edge_t e;
+        bool inserted;
+        boost::tie( e, inserted ) = boost::add_edge( vertex_map[u], vertex_map[v], g );
+        if ( inserted )
+        {
+          edge_index_map[e] = counter;
+          counter += 1;
+        }
+      }
+    }
+  }
+
+  // All vertices are connected. If there is no cycle, done.
+  if ( boost::num_vertices( g ) > boost::num_edges( g ) )
+  {
+    return;
+  }
+
+
+  // Use geometry to find the right embedding and find the cycles.
+  // find local coordinates
+
+  std::map<vertex_t, LINALG::Matrix<3,1> > local;
+
+  vertex_iterator vi, vi_end;
+  for ( boost::tie( vi, vi_end )=boost::vertices( g ); vi!=vi_end; ++vi )
+  {
+    // prepare vars
+    Point * p = name_map[*vi];
+    LINALG::Matrix<3,1> xyz( p->X() );
+    LINALG::Matrix<3,1> tmpmat;
+
+    // get coords
+    side->LocalCoordinates( xyz, tmpmat );
+
+    // add to map
+    std::pair<vertex_t, LINALG::Matrix<3,1> > tmppair(*vi,tmpmat);
+    local.insert(tmppair);
+  }
+
+  // find unconnected components (main facet(s) and holes)
+
+  std::vector<int> component( boost::num_vertices( g ) );
+
+  int num_comp = boost::connected_components( g, boost::make_iterator_property_map( component.begin(), boost::get( boost::vertex_index, g ) ) );
+
+  // find cycles on each component
+
+    if ( num_comp == 1 )
+  {
+    GEO::CUT::IMPL::FindCycles( g, cycle, local, main_cycles_ );
+  }
+  else if ( num_comp > 1 )
+  {
+    for ( int i=0; i<num_comp; ++i )
+    {
+      typedef boost::filtered_graph<graph_t,edge_filter> filtered_graph_t;
+      edge_filter filter( g, component, i );
+      filtered_graph_t fg( g, filter );
+
+      std::vector<Cycle> filtered_cycles;
+
+      graph_t cg;
+      boost::copy_graph( fg, cg );
+
+      bool main_cycle = GEO::CUT::IMPL::FindCycles( cg, cycle, local, filtered_cycles );
+
+      if ( main_cycle )
+      {
+        if ( main_cycles_.size()!=0 )
+        {
+          throw std::runtime_error( "one set of main cycles only" );
+        }
+        std::swap( main_cycles_, filtered_cycles );
+      }
+      else
+      {
+        hole_cycles_.push_back( std::vector<Cycle>() );
+        std::swap( hole_cycles_.back(), filtered_cycles );
+      }
+    }
+  }
+
 }
 
 void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * side, Cycle & cycle,

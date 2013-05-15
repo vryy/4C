@@ -149,16 +149,17 @@ namespace GEO
       /*!
       \brief Check whether three points are on the same line
        */
-      bool IsOnLine( Point*& pt1, Point*& pt2, Point*& pt3 );
+      bool IsOnLine( Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts = false );
 
       /*!
       \brief Check whether the polygon defined by the set of points is convex
        */
       std::vector<int> CheckConvexity( const std::vector<Point*>& ptlist,
                                        std::string& geoType,
-                                       bool InSplit = true );
+                                       bool InSplit = true,
+                                       bool DeleteInlinePts = false );
 
-      std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist );
+      std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist, bool DeleteInlinePts = false );
 
       /*!
       \brief Find the equation of plane that contains these non-collinear points
@@ -180,13 +181,22 @@ namespace GEO
       /*!
       \brief Return true if the points of the polygon are ordered clockwise
        */
-      bool IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projType );
+      bool IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projType, bool DeleteInlinePts = false );
 
       /*!
       \brief If more than two points are on a line, all points except the end points are deleted
       */
       void DeleteInlinePts( std::vector<Point*>& poly );
 
+      /*!
+      \brief Returns true if at least 3 points are collinear
+      */
+      bool HaveInlinePts( std::vector<Point*>& poly );
+
+      /*!
+      \brief Finds tree points of the polygon which are not collinear
+      */
+      std::vector<Point*> PreparePoints( std::vector<Point*> & polyPoints );
 
       /// generic Newton algorithm
       template <class Strategy, int maxiter=20>

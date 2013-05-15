@@ -138,7 +138,7 @@ DRT::Element::DiscretizationType GEO::CUT::KERNEL::CalculateShape( const std::ve
   Check whether three points are lying on the same line by checking whether the cross product is zero
                                                                                           Sudhakar 04/12
 *------------------------------------------------------------------------------------------------------*/
-bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3 )
+bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3, bool DeleteInlinePts )
 {
   LINALG::Matrix<3,1> x1,x2,x3;
   LINALG::Matrix<3,1> pt1pt2,pt1pt3,cross;
@@ -153,10 +153,18 @@ bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3 )
   cross(1,0) = pt1pt2(0,0)*pt1pt3(2,0)-pt1pt2(2,0)*pt1pt3(0,0);
   cross(2,0) = pt1pt2(1,0)*pt1pt3(0,0)-pt1pt2(0,0)*pt1pt3(1,0);
 
-  // if the cross product is zero - on the same line
-  // increasing this from 1e-10 to 1e-6 shown error in volume prediction
-  if(cross.NormInf()<TOL_POINTS_ON_LINE)
-    return true;
+  if ( DeleteInlinePts )
+  {
+    // if the cross product is zero - on the same line
+    // increasing this from 1e-10 to 1e-6 shown error in volume prediction
+    if(cross.NormInf()<TOL_POINTS_ON_LINE_FOR_DELETING)
+      return true;
+  }
+  else
+  {
+    if(cross.NormInf()<TOL_POINTS_ON_LINE)
+      return true;
+  }
   return false;
 }
 
@@ -167,41 +175,48 @@ bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3 )
 *----------------------------------------------------------------------------------------------------------*/
 std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& ptlist,
                                                    std::string& geomType,
-                                                   bool InSplit )
+                                                   bool InSplit,
+                                                   bool DeleteInlinePts )
 {
   if( InSplit ) // if this function is called while performing facet splitting
   {
     if( ptlist.size()<4 )
+    {
+      std::cout << "ptlist.size(): " << ptlist.size() << "\n";
       dserror( "The number of points < 4. Is it called for appropriate facet?" );
+    }
   }
 
   std::string projPlane;
 
-  for( unsigned i=0;i<ptlist.size();i++ ) // make sure there are no inline points
+  if ( DeleteInlinePts )
   {
-    Point* pt2 = ptlist[i];
-    Point* pt3 = ptlist[(i+1)%ptlist.size()];
-    unsigned ind = i-1;
-    if( i==0 )
-      ind = ptlist.size()-1;
-    Point* pt1 = ptlist[ind];
-
-    bool isline = IsOnLine( pt1, pt2, pt3 );
-    if( isline )
+    for( unsigned i=0;i<ptlist.size();i++ ) // make sure there are no inline points
     {
-      IO::cout<<"the points are\n";
-      for( unsigned i=0;i<ptlist.size();i++ )
+      Point* pt2 = ptlist[i];
+      Point* pt3 = ptlist[(i+1)%ptlist.size()];
+      unsigned ind = i-1;
+      if( i==0 )
+        ind = ptlist.size()-1;
+      Point* pt1 = ptlist[ind];
+
+      bool isline = IsOnLine( pt1, pt2, pt3 );
+      if( isline )
       {
-        Point* ptx = ptlist[i];
-        double coox[3];
-        ptx->Coordinates(coox);
-        IO::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+        IO::cout<<"the points are\n";
+        for( unsigned i=0;i<ptlist.size();i++ )
+        {
+          Point* ptx = ptlist[i];
+          double coox[3];
+          ptx->Coordinates(coox);
+          IO::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+        }
+        dserror( "Inline checking for facets not done before calling this" );
       }
-      dserror( "Inline checking for facets not done before calling this" );
     }
   }
 
-  bool isClockwise = IsClockwiseOrderedPolygon( ptlist, projPlane );
+  bool isClockwise = IsClockwiseOrderedPolygon( ptlist, projPlane, DeleteInlinePts );
 
   int ind1=0,ind2=0;
   if( projPlane=="x" )
@@ -243,8 +258,21 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
     double res = x3(ind1,0)*xtemp(ind2,0)-x3(ind2,0)*xtemp(ind1,0)+
                  xtemp(ind1,0)*x1(ind2,0)-xtemp(ind2,0)*x1(ind1,0);
 
-    if( fabs(res)<TOL_POINTS_ON_LINE ) //this means small angled lines are just eliminated
+    if( fabs(res)<TOL_POINTS_ON_LINE ) // this means small angled lines are just eliminated
+    {
+      if ( not DeleteInlinePts ) // this means small angled lines are just concave
+      {
+        if( isClockwise )
+        {
+      	  leftind.push_back(i);
+        }
+        else
+        {
+          rightind.push_back(i);
+        }
+      }
       continue;
+    }
 
     if(res<0.0)
     {
@@ -275,7 +303,7 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
             This works only for simple polygons (not doubly connected, not self-intersecting)
                                                                                           Sudhakar 01/13
 *------------------------------------------------------------------------------------------------------*/
-std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist )
+std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist, bool DeleteInlinePts )
 {
   std::vector<double> eqn_plane(4);
   if( ptlist.size() == 3 )
@@ -291,16 +319,24 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>
 
   std::vector<int> concavePts;
   std::string geoType;
-  concavePts = KERNEL::CheckConvexity(  ptlist, geoType, false ); // find concave points of the polygon
+  concavePts = KERNEL::CheckConvexity(  ptlist, geoType, false, DeleteInlinePts ); // find concave points of the polygon
 
   // for finding equation of convex facet, any 3 points can be used
   if( concavePts.size() == 0 )
   {
-    Point*p1 = ptlist[0];
-    Point*p2 = ptlist[1];
-    Point*p3 = ptlist[2];
-
-    eqn_plane = EqnPlane( p1, p2, p3 );
+    if ( DeleteInlinePts )
+    {
+      Point*p1 = ptlist[0];
+      Point*p2 = ptlist[1];
+      Point*p3 = ptlist[2];
+      eqn_plane = EqnPlane( p1, p2, p3 );
+    }
+    else
+    {
+      std::vector<Point*> pttemp = ptlist;
+      std::vector<Point*> preparedPoints = PreparePoints( pttemp );
+      eqn_plane = EqnPlane( preparedPoints[0], preparedPoints[1], preparedPoints[2] );
+    }
     return eqn_plane;
   }
 
@@ -336,6 +372,14 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>
     Point*p1 = ptlist[firstPt];
     Point*p2 = ptlist[secondPt];
     Point*p3 = ptlist[thirdPt];
+
+    if ( not DeleteInlinePts )
+    {
+      if( IsOnLine( p1,p2,p3 ) )
+      {
+        continue;
+      }
+    }
 
     eqn_plane = EqnPlane( p1, p2, p3 );
 
@@ -483,13 +527,22 @@ bool GEO::CUT::KERNEL::PtInsideQuad( std::vector<Point*> quad, Point* check )
            Returns true if the points of the polygon are ordered clockwise                        sudhakar 05/12
    Polygon in 3D space is first projected into 2D plane, and the plane of projection is returned in projType
 *-------------------------------------------------------------------------------------------------------------*/
-bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projPlane )
+bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projPlane, bool DeleteInlinePts )
 {
   if( polyPoints.size()<3 )
     dserror( "polygon with less than 3 corner points" );
 
   std::vector<double> eqn;
-  eqn = EqnPlane( polyPoints[0], polyPoints[1], polyPoints[2] );
+
+  if ( DeleteInlinePts )
+  {
+    eqn = EqnPlane( polyPoints[0], polyPoints[1], polyPoints[2] );
+  }
+  else
+  {
+    std::vector<Point*> preparedPoints = PreparePoints( polyPoints );
+    eqn = EqnPlane( preparedPoints[0], preparedPoints[1], preparedPoints[2] );
+  }
 
   // projection on the plane which has max normal component - reduce round off error
   if( fabs(eqn[0])>fabs(eqn[1]) && fabs(eqn[0])>fabs(eqn[2]) )
@@ -578,7 +631,7 @@ void GEO::CUT::KERNEL::DeleteInlinePts( std::vector<Point*>& poly )
       ind = num-1;
     Point* pt3 = poly[ind];       // previous point
 
-    anyInLine = IsOnLine( pt3, pt1, pt2 );
+    anyInLine = IsOnLine( pt3, pt1, pt2, true );
 
     if( anyInLine )
     {
@@ -589,4 +642,58 @@ void GEO::CUT::KERNEL::DeleteInlinePts( std::vector<Point*>& poly )
   }
   if( anyInLine )   // this makes sure the procedure is repeated until all the inline points of the facet are deleted
     DeleteInlinePts( poly );
+}
+
+/*--------------------------------------------------------------------------------------*
+    Returns true if at least 3 points are collinear                          Wirtz 05/13
+*---------------------------------------------------------------------------------------*/
+bool GEO::CUT::KERNEL::HaveInlinePts( std::vector<Point*>& poly )
+{
+
+  unsigned num = poly.size();
+  for( unsigned i=0;i<num;i++ )
+  {
+    Point* pt1 = poly[i];
+    Point* pt2 = poly[(i+1)%num];  // next point
+    unsigned ind = i-1;
+    if(i==0)
+      ind = num-1;
+    Point* pt3 = poly[ind];       // previous point
+    if ( IsOnLine( pt3, pt1, pt2 ) )
+    {
+      return true;
+    }
+  }
+  return false;
+
+}
+
+/*--------------------------------------------------------------------------------------*
+    Finds tree points of the polygon which are not collinear                 Wirtz 05/13
+*---------------------------------------------------------------------------------------*/
+std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::PreparePoints( std::vector<Point*> & polyPoints )
+{
+
+  std::vector<Point*> preparedPoints;
+  for( unsigned i=0;i<polyPoints.size();i++ )
+  {
+    Point* pt2 = polyPoints[i];
+    Point* pt3 = polyPoints[(i+1)%polyPoints.size()];
+    unsigned ind = i-1;
+    if(i==0)
+      ind = polyPoints.size()-1;
+    Point* pt1 = polyPoints[ind];
+    bool collinear = IsOnLine( pt1,pt2,pt3 );
+    if( collinear )
+    {
+      continue;
+    }
+    preparedPoints.push_back( pt1 );
+    preparedPoints.push_back( pt2 );
+    preparedPoints.push_back( pt3 );
+    return preparedPoints;
+  }
+  dserror( "case with inline points: all points collinear" );
+  return preparedPoints;
+
 }

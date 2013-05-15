@@ -450,3 +450,44 @@ void GEO::CUT::Edge::RectifyCutNumerics()
     }
   }
 }
+
+/*------------------------------------------------------------------------*
+ *  Gives this edge a selfcutposition and spread the positional information
+ *                                                              wirtz 05/13
+ *------------------------------------------------------------------------*/
+void GEO::CUT::Edge::SelfCutPosition( Point::PointPosition pos )
+{
+
+#ifdef DEBUGCUTLIBRARY
+  if( (selfcutposition_ == Point::inside and pos == Point::outside) or
+      (selfcutposition_ == Point::outside and pos == Point::inside) )
+  {
+    dserror("Are you sure that you want to change the edge-position from inside to outside or vice versa?");
+  }
+#endif
+
+  if( selfcutposition_ == Point::undecided)
+  {
+
+    if ( selfcutposition_ != pos )
+    {
+      selfcutposition_ = pos;
+      if ( pos==Point::outside or pos==Point::inside )
+      {
+        for ( std::vector<Node*>::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
+        {
+          Node * n = *i;
+          if ( n->SelfCutPosition()==Point::undecided )
+          {
+            n->SelfCutPosition( pos );
+          }
+        }
+        for ( plain_side_set::iterator i=sides_.begin(); i!=sides_.end(); ++i )
+        {
+          Side * s = *i;
+          s->GetSelfCutPosition( pos );
+        }
+      }
+    }
+  }
+}

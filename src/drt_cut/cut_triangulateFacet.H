@@ -25,6 +25,18 @@ public:
     {
     }
 
+  TriangulateFacet( std::vector<Point*> ptlist, std::vector<std::vector<Point*> > inlists )
+    :ptlist_(ptlist)
+    {
+      for ( std::vector<std::vector<Point*> >::iterator i=inlists.begin(); i!=inlists.end(); ++i)
+      {
+    	  std::vector<Point*> inlist = * i;
+    	  inlists_.push_back( inlist );
+      }
+    }
+
+
+
   /*!
   \brief Destructor
    */
@@ -41,7 +53,16 @@ public:
   to reduce the number of Gaussian points
    */
   void EarClipping( std::vector<int> ptConcavity,
-                    bool triOnly=false  );          //create triangles only?
+                    bool triOnly=false,          //create triangles only?
+                    bool DeleteInlinePts = false ); // how to deal with collinear points?
+
+  /*!
+  \brief Ear Clipping is a triangulation method for simple polygons (convex, concave, with holes).
+  It is simple and robust but not very efficient (O(n^2)).
+  As input parameter the outer polygon (ptlist_) and the inner polygons (inlists_) are required.
+  Triangles will be generated as output, which are all combined in one vector (split_).
+  */
+  void EarClippingWithHoles( Side * parentside );
 
   /*!
   \brief Returns Tri and Quad cells that are created by facet splitting
@@ -71,6 +92,7 @@ private:
   bool HasTwoContinuousConcavePts( std::vector<int> ptConcavity );
 
   std::vector<Point*> ptlist_;
+  std::list<std::vector<Point*> > inlists_;
   std::vector<std::vector<Point*> > split_;
 };
 }

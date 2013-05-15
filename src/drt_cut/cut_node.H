@@ -53,7 +53,7 @@ class Node
 public:
 
   /// constructor
-  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ), first_set_is_std_set_(true) {}
+  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ), first_set_is_std_set_(true) { selfcutposition_ = Point::undecided; }
 
   /// get node's node Id
   int Id() const { return nid_; }
@@ -141,6 +141,15 @@ public:
   int NumDofSets() const { return DofSets().size();}
 #endif
 
+  /// Returns the selfcutposition of this node
+  Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
+
+  /// Gives this node a selfcutposition and spread the positional information
+  void SelfCutPosition( Point::PointPosition p );
+
+  /// Erase the cutsideedge from this node because it is deleted in the selfcut
+  void EraseCutSideEdge( Edge * cutsideedge ){ edges_.erase( cutsideedge ); }
+
 
 
 private:
@@ -181,6 +190,9 @@ private:
          elements without elementhandle assume the first set as std set!
   */
   bool first_set_is_std_set_;
+
+  /// every cutsidenode knows its selfcutposition
+  Point::PointPosition selfcutposition_;
 };
 
 

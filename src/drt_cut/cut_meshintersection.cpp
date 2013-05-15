@@ -19,6 +19,8 @@ Maintainer: Benedikt Schott
 #include "cut_integrationcell.H"
 #include "cut_volumecell.H"
 
+#include "cut_selfcut.H"
+
 #include "cut_meshintersection.H"
 
 #include "../drt_fluid/xfluid_defines.H"
@@ -176,6 +178,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
   {
     MeshHandle & cut_mesh_handle = **i;
     Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
+    SelfCut selfcut( cut_mesh );
     cut_mesh.Cut( m, elements_done, 0 );
   }
 
@@ -272,11 +275,17 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::MomentFitting" );
     m.MomentFitGaussWeights(include_inner, BCellgausstype);
+#ifdef DEBUGCUTLIBRARY
+    m.TestFacetArea();
+#endif
   }
   else if(VCellgausstype=="DirectDivergence")
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::DirectDivergence" );
     m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
+#ifdef DEBUGCUTLIBRARY
+//    m.TestFacetArea();
+#endif
   }
   else
     dserror("Undefined option of volumecell gauss points generation");

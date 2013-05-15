@@ -831,7 +831,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
     TriangulateFacet tf( corners );
     std::vector<int> ptconc;
 
-    tf.EarClipping( ptconc, true );
+    tf.EarClipping( ptconc, true, true );
     split1 = tf.GetSplitCells();
   }
   else
