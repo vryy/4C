@@ -264,28 +264,30 @@ namespace MAT
         DRT::INPUT::LineDefinition* linedef
       );
 
-      //Calculate coupling part of homogenized 2 Piola-Kirchhoff stress
-      //3D
+      //!Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
       void CouplStress( const LINALG::Matrix<3,3>& defgrad,   ///< (i) deformation gradient
                         const LINALG::Matrix<3,1>& fluidvel,  ///< (i) fluid velocity in gausspoint
                         const double& press,                  ///< (i) pressure in gauss point
                         LINALG::Matrix<6,1>& couplstress      ///< (o) coupling stress in gauss point
                         ) const;
-      //2D
+
+      //!Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
       void CouplStress( const LINALG::Matrix<2,2>& defgrad,   ///< (i) deformation gradient
                         const LINALG::Matrix<2,1>& fluidvel,  ///< (i) fluid velocity in gausspoint
                         const double& press,                  ///< (i) pressure in gauss point
                         LINALG::Matrix<3,1>& couplstress      ///< (o) coupling stress in gauss point
                         ) const;
 
-      void ConsitutiveDerivatives(Teuchos::ParameterList& params,
-                                                    double     press,
-                                                    double     J,
-                                                    double     porosity,
-                                                    double*    dW_dp,
-                                                    double*    dW_dphi,
-                                                    double*    dW_dJ,
-                                                    double*    W);
+      //! evaluate constitutive relation for porosity and compute derivatives
+      void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
+                                                    double     press,   ///< (i) fluid pressure at gauss point
+                                                    double     J,       ///< (i) Jacobian determinant at gauss point
+                                                    double     porosity,///< (i) porosity at gauss point
+                                                    double*    dW_dp,   ///< (o) derivative of potential w.r.t. pressure
+                                                    double*    dW_dphi, ///< (o) derivative of potential w.r.t. porosity
+                                                    double*    dW_dJ,   ///< (o) derivative of potential w.r.t. jacobian
+                                                    double*    W        ///< (o) inner potential
+                                                    );
 
       /// Return quick accessible material parameter data
       virtual MAT::PAR::Parameter* Parameter() const
@@ -302,16 +304,17 @@ namespace MAT
       //! @name Evaluation methods
 
       /// evaluate material law
-      virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                            const LINALG::Matrix<6,1>* glstrain,
-                            Teuchos::ParameterList& params,
-                            LINALG::Matrix<6,1>* stress,
-                            LINALG::Matrix<6,6>* cmat)
+      virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,    ///< (i) deformation gradient
+                            const LINALG::Matrix<6,1>* glstrain,  ///< (i) green lagrange strain
+                            Teuchos::ParameterList& params,       ///< (i) parameter list
+                            LINALG::Matrix<6,1>* stress,          ///< (o) second piola kirchhoff stress
+                            LINALG::Matrix<6,6>* cmat)            ///< (o) constitutive matrix
       {mat_->Evaluate(defgrd,glstrain,params,stress,cmat);};
 
       /// Evaluate strain energy function (for hyperelastic materials only)
-      virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                                double& psi)
+      virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,  ///< (i) green lagrange strain
+                                double& psi                           ///< (o) strain energy
+                                )
       {mat_->StrainEnergy(glstrain,psi);};
 
       /// Evaluate material law for GEMM

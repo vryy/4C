@@ -25,7 +25,6 @@ Maintainer: Anh-Tu Vuong
 #include "../drt_geometry/position_array.H"
 
 #include "../drt_mat/fluidporo.H"
-#include "../drt_mat/structporo.H"
 
 #include "../drt_so3/so_poro_interface.H"
 
@@ -250,12 +249,6 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
       NULL, "gridv");
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispn,
       NULL, "dispn");
-
-  //Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("dispnp");
- // cout<<"matrix_state "<<endl<<*matrix_state<<endl;
-  //cout<<eporositynp<<endl;
-  //dserror("done");
-  //ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &initporosity_, "initporosity");
 
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> >(
@@ -3830,7 +3823,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosityGradient(
                         const double&                                      dphidp,
                         const double&                                      dphidJ,
-                        LINALG::Matrix<my::nsd_,1>&                        gradJ,
+                        const LINALG::Matrix<my::nsd_,1>&                  gradJ,
                         const LINALG::Matrix<my::nen_,1>*                  eporositynp,
                         LINALG::Matrix<my::nsd_,1>&                        grad_porosity)
 {

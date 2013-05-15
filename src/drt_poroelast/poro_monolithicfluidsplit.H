@@ -95,13 +95,22 @@ namespace POROELAST
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
       virtual void RecoverLagrangeMultiplier();
 
+      /// @name matrix transformation
+      //! transform object for fluid interface matrix \f$F_{\Gamma \Gamma}\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> fggtransform_;
+      //! transform object for fluid interface matrix \f$F_{\Gamma I}\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> fgitransform_;
+      //! transform object for fluid interface matrix \f$F_{I \Gamma}\f$
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> figtransform_;
+      //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^F\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> cfggtransform_;
+      //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> csggtransform_;
+      //! transform object for fluid coupling matrix \f$C_{\Gamma I}^F\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> cfgitransform_;
+      //! transform object for structure coupling matrix \f$C_{I \Gamma}^S\f$
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> csigtransform_;
+      //@}
 
       //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
       Teuchos::RCP<const LINALG::SparseOperator> fgicur_;

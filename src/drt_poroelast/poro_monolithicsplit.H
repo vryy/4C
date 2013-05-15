@@ -85,6 +85,7 @@ namespace POROELAST
     //! map containing DOFs with both fsi- and DBC conditions
     Teuchos::RCP<Epetra_Map> fsibcmap_;
 
+    //! map extractor DOFs with both fsi- and DBC conditions
     Teuchos::RCP< LINALG::MapExtractor > fsibcextractor_;
 
     /// @name Some quantities to recover the Langrange multiplier at the end of each time step
@@ -125,10 +126,9 @@ namespace POROELAST
 
     //@}
 
+    //! interface increment for dof with dirichlet condition on fsi-interface
     Teuchos::RCP<Epetra_Vector> ddi_;
 
-    //! Extractor used for fsi boundary with dirichlet bc
-    //LINALG::MapExtractor fsibcsplitter_;
   };
 }
 

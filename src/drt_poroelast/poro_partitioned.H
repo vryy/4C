@@ -68,8 +68,6 @@ namespace POROELAST
       //! aitken relaxation
       void AitkenRelax();
 
-      //virtual void SetStructSolution();
-
       //! fluid increment of the outer loop
       Teuchos::RCP<Epetra_Vector> fluidincnp_;
       //! structure increment of the outer loop

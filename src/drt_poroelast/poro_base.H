@@ -78,9 +78,6 @@ namespace POROELAST
       //! perform result tests
       virtual void TestResults(const Epetra_Comm& comm);
 
-      //! return state vector at time step n+1
-      //virtual Teuchos::RCP<Epetra_Vector> State()=0;
-
       //! access to structural field
       const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
@@ -90,9 +87,10 @@ namespace POROELAST
       //! solve time step (depending on algorithm)
       virtual void Solve() = 0;
 
+      //! perform one time step (setup + solve + output)
       virtual void DoTimeStep() = 0;
 
-      /// setup solver (for monolithic only)
+      //! setup solver (for monolithic only)
       virtual bool SetupSolver(){return false;};
 
       //! @name Time loop building blocks
@@ -148,8 +146,6 @@ namespace POROELAST
       //! Extractor used for constraint structure
       Teuchos::RCP< LINALG::MapExtractor > consplitter_;
 
-      //Teuchos::RCP< LINALG::MapExtractor > p1splitter_;
-
       //! Extractor used for poro structure interaction
       Teuchos::RCP< LINALG::MapExtractor > psiextractor_;
 
@@ -162,6 +158,7 @@ namespace POROELAST
       //! flag for pressure coupling condition
       bool presintcond_;
 
+      //! flag for additional porosity degree of freedom
       bool porositydof_;
 
     private:

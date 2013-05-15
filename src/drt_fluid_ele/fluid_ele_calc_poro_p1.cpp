@@ -18,7 +18,6 @@
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_utils.H"
 
-#include "../drt_mat/structporo.H"
 #include "../drt_mat/fluidporo.H"
 
 #include "../drt_so3/so_poro_interface.H"
@@ -251,7 +250,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(
                         const double&                                      dphidp,
                         const double&                                      dphidJ,
-                        LINALG::Matrix<my::nsd_,1>&                        gradJ,
+                        const LINALG::Matrix<my::nsd_,1>&                  gradJ,
                         const LINALG::Matrix<my::nen_,1>*                  eporositynp,
                         LINALG::Matrix<my::nsd_,1>&                        grad_porosity)
 {

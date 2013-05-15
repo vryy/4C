@@ -111,9 +111,10 @@ namespace POROELAST
       //! \author lw  \date 12/07
       bool Converged();
 
-      //! newton iteration
+      //! inner newton iteration
       void Solve();
 
+      //! perform one time step (setup + solve + output)
       void DoTimeStep();
 
       //! @name Output
@@ -201,10 +202,10 @@ namespace POROELAST
       void SetDofRowMaps(
           const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
-      //! combined DBC map
       //! unique map of all dofs that should be constrained with DBC
       Teuchos::RCP<Epetra_Map> CombinedDBCMap(){return combinedDBCMap_;};
 
+      //! build map of global dofs with DBC
       virtual void BuildCombinedDBCMap();
 
       //! extractor to communicate between full monolithic map and block maps
@@ -267,7 +268,9 @@ namespace POROELAST
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidStructCouplingBlockMatrix();
 
       //! @name coupling matrices
+      //! structure-fluid coupling matrix
       Teuchos::RCP<LINALG::SparseOperator> k_sf_;
+      //! fluid-structure coupling matrix
       Teuchos::RCP<LINALG::SparseOperator> k_fs_;
       //@}
 

@@ -94,12 +94,19 @@ namespace POROELAST
       virtual void RecoverLagrangeMultiplier();
 
       /// @name matrix transformation
+      //! transform object for structure interface matrix \f$S_{\Gamma \Gamma}\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> sggtransform_;
+      //! transform object for structure interface matrix \f$S_{\Gamma I}\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> sgitransform_;
+      //! transform object for structure interface matrix \f$S_{I \Gamma}\f$
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> sigtransform_;
+      //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> csggtransform_;
+      //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^G\f$
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> cfggtransform_;
+      //! transform object for structure coupling matrix \f$C_{\Gamma I}^S\f$
       Teuchos::RCP<FSI::UTILS::MatrixRowTransform> csgitransform_;
+      //! transform object for fluid coupling matrix \f$C_{I \Gamma}^F\f$
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> cfigtransform_;
 
       //@}
