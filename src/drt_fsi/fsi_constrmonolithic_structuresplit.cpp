@@ -310,7 +310,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
   f.Update(1.0,*rhs,0.0);
 
   // NOX expects the 'positive' residual. The negative sign for the
-  // linearized Newton system J*dx=-r is done internally by NOX.
+  // linearized Newton system J*dx=-f is done internally by NOX.
   // Since we assembled the right hand side, we have to invert the sign here.
   f.Scale(-1.);
 }
