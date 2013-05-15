@@ -164,6 +164,15 @@ namespace FSI
 
     //@}
 
+    //! @name Predictor/inhomogeneous Dirichlet related stuff
+
+    //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
+    Teuchos::RCP<Epetra_Vector> ddgpred_;
+
+    //@}
+
+    //! @name Coupling objects
+
     ADAPTER::Coupling& StructureFluidCoupling()         { return *coupsf_; }
     ADAPTER::Coupling& StructureAleCoupling()           { return *coupsa_; }
     ADAPTER::Coupling& FluidAleCoupling()               { return *coupfa_; }
@@ -173,6 +182,8 @@ namespace FSI
     const ADAPTER::Coupling& StructureAleCoupling()       const { return *coupsa_; }
     const ADAPTER::Coupling& FluidAleCoupling()           const { return *coupfa_; }
     const ADAPTER::Coupling& InterfaceFluidAleCoupling()  const { return *icoupfa_; }
+
+    //@}
 
   private:
 
@@ -417,13 +428,6 @@ namespace FSI
     //! CondMap()   = Dirichlet DOFs
     //! OtherMap()  = DOFs without Dirichlet boundary condition
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
-
-    //! @name Predictor/inhomogeneous Dirichlet related stuff
-
-    //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
-    Teuchos::RCP<Epetra_Vector> ddgpred_;
-
-    //@}
 
   private:
 

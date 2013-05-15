@@ -203,9 +203,6 @@ namespace FSI
     //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
     //Teuchos::RCP<const LINALG::SparseMatrix> sggpre_;
 
-    //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
-    Teuchos::RCP<Epetra_Vector> ddgpre_;
-
     //! fluid velocity increment of interface DOFs due to predictor or inhomogeneous DBCs
     Teuchos::RCP<Epetra_Vector> dugpre_;
 

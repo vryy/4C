@@ -468,11 +468,6 @@ void FSI::MortarMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   // old interface velocity of fluid field
   const Teuchos::RCP<const Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
 
-  // store structural interface displacement increment due to predictor
-  // or inhomogeneous Dirichlet boundary conditions
-  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
-  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
-
   // get the Mortar projection matrix P = D^{-1} * M
   const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
 

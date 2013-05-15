@@ -112,6 +112,12 @@ void FSI::MonolithicBase::PrepareTimeStep()
   StructureField()->PrepareTimeStep();
   FluidField().     PrepareTimeStep();
   AleField().       PrepareTimeStep();
+
+  // Single field predictors have been applied, so store the structural
+  // interface displacement increment due to predictor or inhomogeneous
+  // Dirichlet boundary conditions
+  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
+  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
 }
 
 
