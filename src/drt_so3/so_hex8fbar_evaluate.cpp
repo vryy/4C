@@ -804,34 +804,34 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // print plastic strains
-    // CAUTION: print plastic strains only in case of small strain regime!
+    // CAUTION: print plastic strains ONLY in case of small strain regime!
     switch (ioplstrain)
     {
     case INPAR::STR::strain_gl:
     {
      if (eleplstrain == NULL) dserror("plastic strain data not available");
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain_bar = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
      for (int i = 0; i < 3; ++i)
-       (*eleplstrain)(gp,i) = plglstrain(i);
+       (*eleplstrain)(gp,i) = plglstrain_bar(i);
      for (int i = 3; i < 6; ++i)
-       (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+       (*eleplstrain)(gp,i) = 0.5 * plglstrain_bar(i);
     }
     break;
     case INPAR::STR::strain_ea:
     {
      if (eleplstrain == NULL) dserror("plastic strain data not available");
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain_bar = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
 
      // e = F^{T-1} . E . F^{-1}
-     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
-     GLtoEA(&plglstrain,&defgrd,&euler_almansi);
+     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi_bar;
+     GLtoEA(&plglstrain_bar,&defgrd_bar,&euler_almansi_bar);
 
-     (*eleplstrain)(gp,0) = euler_almansi(0,0);
-     (*eleplstrain)(gp,1) = euler_almansi(1,1);
-     (*eleplstrain)(gp,2) = euler_almansi(2,2);
-     (*eleplstrain)(gp,3) = euler_almansi(0,1);
-     (*eleplstrain)(gp,4) = euler_almansi(1,2);
-     (*eleplstrain)(gp,5) = euler_almansi(0,2);
+     (*eleplstrain)(gp,0) = euler_almansi_bar(0,0);
+     (*eleplstrain)(gp,1) = euler_almansi_bar(1,1);
+     (*eleplstrain)(gp,2) = euler_almansi_bar(2,2);
+     (*eleplstrain)(gp,3) = euler_almansi_bar(0,1);
+     (*eleplstrain)(gp,4) = euler_almansi_bar(1,2);
+     (*eleplstrain)(gp,5) = euler_almansi_bar(0,2);
     }
     break;
     case INPAR::STR::strain_none:
@@ -927,39 +927,40 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
       } // end of integrate `geometric' stiffness******************************
 
       // integrate additional fbar matrix
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1> cauchygreenvector;
-     cauchygreenvector(0) = cauchygreen(0,0);
-     cauchygreenvector(1) = cauchygreen(1,1);
-     cauchygreenvector(2) = cauchygreen(2,2);
-     cauchygreenvector(3) = 2*cauchygreen(0,1);
-     cauchygreenvector(4) = 2*cauchygreen(1,2);
-     cauchygreenvector(5) = 2*cauchygreen(2,0);
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> cauchygreenvector;
+      cauchygreenvector(0) = cauchygreen(0, 0);
+      cauchygreenvector(1) = cauchygreen(1, 1);
+      cauchygreenvector(2) = cauchygreen(2, 2);
+      cauchygreenvector(3) = 2 * cauchygreen(0, 1);
+      cauchygreenvector(4) = 2 * cauchygreen(1, 2);
+      cauchygreenvector(5) = 2 * cauchygreen(2, 0);
 
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1> ccg;
-     ccg.Multiply(cmat,cauchygreenvector);
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> ccg;
+      ccg.Multiply(cmat, cauchygreenvector);
 
-     LINALG::Matrix<NUMDOF_SOH8,1> bopccg(false); // auxiliary integrated stress
-     bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0,bop,ccg);
+      LINALG::Matrix<NUMDOF_SOH8,1> bopccg(false);  // auxiliary integrated stress
+      bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0, bop, ccg);
 
-     double htensor[NUMDOF_SOH8];
-     for(int n=0; n<NUMDOF_SOH8; n++)
-     {
-       htensor[n]=0;
-       for(int i=0; i<NUMDIM_SOH8; i++)
-       {
-         htensor[n] += invdefgrd_0(i,n%3)*N_XYZ_0(i,n/3)-invdefgrd(i,n%3)*N_XYZ(i,n/3);
-       }
-     }
+      double htensor[NUMDOF_SOH8];
+      for (int n=0; n<NUMDOF_SOH8; n++)
+      {
+        htensor[n] = 0;
+        for (int i=0; i<NUMDIM_SOH8; i++)
+        {
+          htensor[n] += invdefgrd_0(i,n%3) * N_XYZ_0(i,n/3)
+            - invdefgrd(i,n%3) * N_XYZ(i,n/3);
+        }
+      }
 
-     LINALG::Matrix<NUMDOF_SOH8,1> bops(false); // auxiliary integrated stress
-     bops.MultiplyTN(-detJ_w/f_bar_factor/3.0,bop,stress_bar);
-     for(int i=0; i<NUMDOF_SOH8; i++)
-     {
-       for (int j=0;j<NUMDOF_SOH8;j++)
-       {
-         (*stiffmatrix)(i,j) += htensor[j]*(bops(i,0)+bopccg(i,0));
-       }
-     } // end of integrate additional `fbar' stiffness**********************
+      LINALG::Matrix<NUMDOF_SOH8,1> bops(false);  // auxiliary integrated stress
+      bops.MultiplyTN(-detJ_w / f_bar_factor / 3.0, bop, stress_bar);
+      for (int i=0; i<NUMDOF_SOH8; i++)
+      {
+        for (int j=0; j<NUMDOF_SOH8; j++)
+        {
+          (*stiffmatrix)(i,j) += htensor[j] * (bops(i,0) + bopccg(i,0));
+        }
+      }  // end of integrate additional `fbar' stiffness**********************
     }  // if (stiffmatrix != NULL)
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++

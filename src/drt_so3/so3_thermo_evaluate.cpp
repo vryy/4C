@@ -259,19 +259,42 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     {
       LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
 
-      nln_stifffint_tsi(
-        la,  // location array
-        mydisp,  // current displacements
-        myres,  // current residual displ
-        mytempnp, // current temperature
-        NULL, // element stiffness matrix
-        &elevec1,  // element internal force vector
-        NULL,  // stresses at GP
-        params,  // algorithmic parameters e.g. time
-        INPAR::STR::stress_none  // stress output option
-        );
+      // in case we have a finite strain thermoplastic material use hex8fbar element
+      // to cirucumvent volumetric locking
+      DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+        = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
 
-    }  // kintype_==geo_nonlinear
+      // default structural element
+      if (!eleFBAR)
+      {
+        nln_stifffint_tsi(
+          la,  // location array
+          mydisp,  // current displacements
+          myres,  // current residual displ
+          mytempnp, // current temperature
+          NULL, // element stiffness matrix
+          &elevec1,  // element internal force vector
+          NULL,  // stresses at GP
+          params,  // algorithmic parameters e.g. time
+          INPAR::STR::stress_none  // stress output option
+          );
+      }  // so3_ele
+      else  // Hex8Fbar
+      {
+        nln_stifffint_tsi_fbar(
+          la,  // location array
+          mydisp,  // current displacements
+          myres,  // current residual displ
+          mytempnp, // current temperature
+          NULL, // element stiffness matrix
+          &elevec1,  // element internal force vector
+          NULL,  // stresses at GP
+          params,  // algorithmic parameters e.g. time
+          INPAR::STR::stress_none  // stress output option
+          );
+      }  // Hex8Fbar
+    }  // (kintype_ == geo_nonlinear)
+
     // geometric geo_linear
     else if (kintype_ == geo_linear)
     {
@@ -286,10 +309,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         params,
         INPAR::STR::stress_none
         );
-    }  // kintype_==geo_linear
+    }  // (kintype_ == geo_linear)
 
+    break;
   }  // calc_struct_internalforce
-  break;
 
   //============================================================================
   // (non)linear stiffness for TSI
@@ -348,19 +371,42 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         LINALG::Matrix<numdofperelement_,numdofperelement_>* matptr = NULL;
         if (elemat1.IsInitialized()) matptr = &elemat1;
 
-        nln_stifffint_tsi(
-          la,  // location array
-          mydisp,  // current displacements
-          myres,  // current residual displ
-          mytempnp, // current temperature
-          matptr, // element stiffness matrix
-          &elevec1,  // element internal force vector
-          NULL,  // stresses at GP
-          params,  // algorithmic parameters e.g. time
-          INPAR::STR::stress_none  // stress output option
-          );
+        // in case we have a finite strain thermoplastic material use hex8fbar element
+        // to cirucumvent volumetric locking
+        DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+          = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
 
-      }  // kintype_==geo_nonlinear
+        // default structural element
+        if (!eleFBAR)
+        {
+          nln_stifffint_tsi(
+            la,  // location array
+            mydisp,  // current displacements
+            myres,  // current residual displ
+            mytempnp, // current temperature
+            matptr, // element stiffness matrix
+            &elevec1,  // element internal force vector
+            NULL,  // stresses at GP
+            params,  // algorithmic parameters e.g. time
+            INPAR::STR::stress_none  // stress output option
+            );
+        }  // so3_ele
+        else  // Hex8Fbar
+        {
+          nln_stifffint_tsi_fbar(
+            la,  // location array
+            mydisp,  // current displacements
+            myres,  // current residual displ
+            mytempnp, // current temperature
+            matptr, // element stiffness matrix
+            &elevec1,  // element internal force vector
+            NULL,  // stresses at GP
+            params,  // algorithmic parameters e.g. time
+            INPAR::STR::stress_none  // stress output option
+            );
+        }  // Hex8Fbar
+      }  // (kintype_ == geo_nonlinear)
+
       // geometric linear
       else if (kintype_ == geo_linear)
       {
@@ -375,10 +421,11 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           params,
           INPAR::STR::stress_none
           );
-      }  // kintype_==geo_linear
+      }  // (kintype_ == geo_linear)
     }
+
+    break;
   }  // calc_struct_nlnstiff
-  break;
 
   //============================================================================
   // (non)linear stiffness, mass matrix and internal force vector for TSI
@@ -436,19 +483,43 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         // stiffness
         LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
 
-        nln_stifffint_tsi(
-          la,  // location array
-          mydisp,  // current displacements
-          myres,  // current residual displ
-          mytempnp, // current temperature
-          &elemat1, // element stiffness matrix
-          &elevec1,  // element internal force vector
-          NULL,  // stresses at GP
-          params,  // algorithmic parameters e.g. time
-          INPAR::STR::stress_none  // stress output option
-          );
+        // in case we have a finite strain thermoplastic material use hex8fbar element
+        // to cirucumvent volumetric locking
+        DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+          = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
 
-      }  // kintype_==geo_nonlinear
+        // default structural element
+        if (!eleFBAR)
+        {
+          nln_stifffint_tsi(
+            la,  // location array
+            mydisp,  // current displacements
+            myres,  // current residual displ
+            mytempnp, // current temperature
+            &elemat1, // element stiffness matrix
+            &elevec1,  // element internal force vector
+            NULL,  // stresses at GP
+            params,  // algorithmic parameters e.g. time
+            INPAR::STR::stress_none  // stress output option
+            );
+        }  // so3_ele
+        else  // Hex8Fbar
+        {
+          nln_stifffint_tsi_fbar(
+            la,  // location array
+            mydisp,  // current displacements
+            myres,  // current residual displ
+            mytempnp, // current temperature
+            &elemat1, // element stiffness matrix
+            &elevec1,  // element internal force vector
+            NULL,  // stresses at GP
+            params,  // algorithmic parameters e.g. time
+            INPAR::STR::stress_none  // stress output option
+            );
+        }  // Hex8Fbar
+
+      }  // (kintype_ == geo_nonlinear)
+
       // geometric linear
       else if (kintype_ == geo_linear)
       {
@@ -465,11 +536,11 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           params,
           INPAR::STR::stress_none
           );
-      }  // kintype_==geo_linear
+      }  // (kintype_ == geo_linear)
     }
 
+    break;
   }  // calc_struct_nlnstiff(l)mass
-  break;
 
   //==================================================================================
   // evaluate stresses and strains at gauss points
@@ -532,20 +603,43 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (kintype_ == geo_nonlinear)
         {
-          // calculate the thermal stress
-          nln_stifffint_tsi(
-            la,  // location array
-            mydisp,  // current displacements
-            myres,  // current residual displ
-            mytempnp, // current temperature
-            NULL, // element stiffness matrix
-            NULL,  // element internal force vector
-            &couplstress,  // stresses at GP
-            params,  // algorithmic parameters e.g. time
-            iocouplstress  // stress output option
-            );
+          // in case we have a finite strain thermoplastic material use hex8fbar element
+          // to cirucumvent volumetric locking
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+            = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
 
-        }  // kintype_==geo_nonlinear
+          // default structural element
+          if (!eleFBAR)
+          {
+            // calculate the thermal stress
+            nln_stifffint_tsi(
+              la,  // location array
+              mydisp,  // current displacements
+              myres,  // current residual displ
+              mytempnp, // current temperature
+              NULL, // element stiffness matrix
+              NULL,  // element internal force vector
+              &couplstress,  // stresses at GP
+              params,  // algorithmic parameters e.g. time
+              iocouplstress  // stress output option
+              );
+          }  // so3_ele
+          else  // Hex8Fbar
+          {
+            nln_stifffint_tsi_fbar(
+              la,  // location array
+              mydisp,  // current displacements
+              myres,  // current residual displ
+              mytempnp, // current temperature
+              NULL, // element stiffness matrix
+              NULL,  // element internal force vector
+              &couplstress,  // stresses at GP
+              params,  // algorithmic parameters e.g. time
+              INPAR::STR::stress_none  // stress output option
+              );
+          }  // Hex8Fbar
+        }  // (kintype_ == geo_nonlinear)
+
         // geometric linear
         else if (kintype_ == geo_linear)
         {
@@ -563,8 +657,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
             params,
             iocouplstress
             );
-
-        }  // kintype_==geo_linear
+        }  // (kintype_ == geo_linear)
 
 #ifdef TSIASOUTPUT
          std::cout << "thermal stress" << couplstress << std::endl;
@@ -597,24 +690,24 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         std::copy(data().begin(),data().end(),std::back_inserter(*couplstressdata));
       }
     }  // end proc Owner
+
+    break;
   }  // calc_struct_stress
-  break;
 
   //============================================================================
   // required for predictor TangDis --> can be helpful in compressible case!
   case calc_struct_reset_istep:
   {
     // do nothing, actual implementation is in so3_ele
+    break;
   }
-  break;
 
   //============================================================================
   case calc_struct_update_istep:
   {
     // do nothing, actual implementation is in so3_ele
-
+    break;
   }  // calc_struct_update_istep
-  break;
 
   //============================================================================
   // coupling term k_dT of stiffness matrix for monolithic TSI
@@ -660,15 +753,30 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     // default: geometrically non-linear analysis with Total Lagrangean approach
     if (kintype_ == geo_nonlinear)
     {
-      // calculate the mechanical-thermal sub matrix k_dT of K_TSI
-      nln_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
-    }  // kintype_==linear
+      // in case we have a finite strain thermoplastic material use hex8fbar element
+      // to cirucumvent volumetric locking
+      DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+        = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+
+      // default structural element
+      if (!eleFBAR)
+      {
+        // calculate the mechanical-thermal sub matrix k_dT of K_TSI
+        nln_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
+      }  // so3_ele
+      else  // Hex8Fbar
+      {
+        nln_kdT_tsi_fbar(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
+      }  // Hex8Fbar
+    }  // (kintype_ == nonlinear)
+
     // geometric linear
     else if (kintype_ == geo_linear)
     {
       // calculate the mechanical-thermal sub matrix k_dT of K_TSI
       lin_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
-    }  // kintype_==geo_linear
+    }  // (kintype_ == geo_linear)
+
     break;
   }  // calc_struct_stifftemp
 
@@ -776,11 +884,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     // calculate iterative strains
     LINALG::Matrix<numstr_,1> straininc(true);
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     double density = 0.0;
     // calculate the stress part dependent on the temperature in the material
     LINALG::Matrix<numstr_,1> ctemp(true);
@@ -1032,32 +1136,25 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     defgrd.MultiplyTT(xcurr,N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<nsd_,nsd_> cauchygreen;
+    LINALG::Matrix<nsd_,nsd_> cauchygreen(false);
     cauchygreen.MultiplyTN(defgrd,defgrd);
 
-    // TODO 2012-08-23 check if strains have to be calculated again, because
-    // only temperature-dependent stresses are calculated
-
     // calculate linear B-operator
-    LINALG::Matrix<numstr_,numdofperelement_> boplin;
+    LINALG::Matrix<numstr_,numdofperelement_> boplin(false);
     CalculateBoplin(&boplin,&N_XYZ);
 
     // calculate nonlinear B-operator
-    LINALG::Matrix<numstr_,numdofperelement_> bop;
+    LINALG::Matrix<numstr_,numdofperelement_> bop(false);
     CalculateBop(&bop,&defgrd,&N_XYZ);
 
     // temperature
     // described as a matrix (for stress calculation): Ntemp = N_T . T
-    LINALG::Matrix<1,1> Ntemp(true);
+    LINALG::Matrix<1,1> Ntemp(false);
     Ntemp.MultiplyTN(shapefunct,etemp);
     // scalar-valued element temperature
     const double scalartemp = shapefunct.Dot(etemp);
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     double density = 0.0;
     // calculate the stress part dependent on the temperature in the material
     LINALG::Matrix<numstr_,1> ctemp(true);
@@ -1124,9 +1221,9 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     {
       // integrate temperature-dependent `elastic' and `initial-displacement'
       // stiffness matrix
-      // keu = keu + (B^T . Cmat_temp . B) . detJ . w(gp)
-      // Neo-Hookean type: Cmat_temp = m . Delta T . (-1) . ( Cinv boeppel Cinv )_{abcd}
-      // St.Venant Kirchhoff: Cmat_temp == 0
+      // keu = keu + (B^T . Cmat_T . B) . detJ . w(gp)
+      // Neo-Hookean type: Cmat_T = m . Delta T . (-1) . ( Cinv boeppel Cinv )_{abcd}
+      // St.Venant Kirchhoff: Cmat_T == 0
       // with ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
       LINALG::Matrix<numstr_,numdofperelement_> cb;
       cb.Multiply(cmattemp,bop);
@@ -1161,8 +1258,10 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
         {
           double bopstrbop = 0.0; // intermediate value
           for (int idim=0; idim<nsd_; ++idim)
+          {
             // double     (3x8)                 (3x1)
             bopstrbop += N_XYZ(idim, jnod) * StempB_L[idim];
+          }
           // (24x24)
           (*stiffmatrix)(3*inod+0,3*jnod+0) += bopstrbop;
           (*stiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
@@ -1191,8 +1290,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   )
 {
   // update element geometry (8x3)
-  LINALG::Matrix<nen_,nsd_> xrefe;  // X, material coord. of element
-  LINALG::Matrix<nen_,nsd_> xcurr;  // x, current  coord. of element
+  LINALG::Matrix<nen_,nsd_> xrefe(false);  // X, material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr(false);  // x, current  coord. of element
   DRT::Node** nodes = Nodes();
   for (int i=0; i<nen_; ++i)
   {
@@ -1207,11 +1306,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   }
 
   // shape functions and their first derivatives
-  LINALG::Matrix<nen_,1> shapefunct;
-  LINALG::Matrix<nsd_,nen_> deriv;
+  LINALG::Matrix<nen_,1> shapefunct(false);
+  LINALG::Matrix<nsd_,nen_> deriv(false);
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
-  LINALG::Matrix<nsd_,nen_> N_XYZ;
+  LINALG::Matrix<nsd_,nen_> N_XYZ(false);
   // build deformation gradient wrt to material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
 
@@ -1230,27 +1329,25 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
     **            [ x_,t  y_,t  z_,t ]
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
+    // by N_XYZ = J^-1 . N_rst
     N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
     double detJ = detJ_[gp]; // (6.22)
 
     // (material) deformation gradient
-    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
 
     // calculate nonlinear B-operator
-    LINALG::Matrix<numstr_,numdofperelement_> bop;
+    LINALG::Matrix<numstr_,numdofperelement_> bop(false);
     CalculateBop(&bop,&defgrd,&N_XYZ);
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated
-    */
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     // get the thermal material tangent
     LINALG::Matrix<numstr_,1> ctemp(true);
     Ctemp(&ctemp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    double detJ_w = detJ*intpoints_.Weight(gp);
+    double detJ_w = detJ * intpoints_.Weight(gp);
     // update linear coupling matrix K_dT
     if (stiffmatrix_kdT != NULL)
     {
@@ -1258,8 +1355,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
       LINALG::Matrix<numstr_,nen_> cn(true);
       cn.MultiplyNT(ctemp,shapefunct); // (6x8)=(6x1)(1x8)
       // integrate stiffness term
-      // k_dT = k_dT + (B^T . C_temp . N_temp) * detJ * w(gp)
-      stiffmatrix_kdT->MultiplyTN(detJ_w, bop, cn, 1.0);
+      // k_dT = k_dT + (B^T . C_temp . N_temp) . detJ . w(gp)
+      stiffmatrix_kdT->MultiplyTN(detJ_w,bop,cn,1.0);
     }
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
@@ -1267,6 +1364,434 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
 
   return;
 }  // nln_kdT_tsi()
+
+
+/*----------------------------------------------------------------------*
+ | evaluate only the temperature fraction for the element    dano 05/13 |
+ | only in case of hex8fbar element AND geo_nln analysis (protected)    |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
+  DRT::Element::LocationArray& la,  // location array
+  std::vector<double>& disp,  // current displacements
+  std::vector<double>& residual,  // current residual displ
+  std::vector<double>& temp, // current temperature
+  LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+  LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
+  LINALG::Matrix<numgpt_post,numstr_>* elestress,  // stresses at GP
+  Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
+  const INPAR::STR::StressType iostress  // stress output option
+  )
+{
+  // in case we have a finite strain thermoplastic material use hex8fbar element
+  // to cirucumvent volumetric locking
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+    = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+
+  if ( (distype == DRT::Element::hex8) && (eleFBAR) )
+  {
+    // update element geometry hex8, 3D: (8x3)
+    LINALG::Matrix<nen_,nsd_> xrefe;  // X, material coord. of element
+    LINALG::Matrix<nen_,nsd_> xcurr;  // x, current  coord. of element
+    // vector of the current element temperatures
+    LINALG::Matrix<nen_,1> etemp;
+
+    DRT::Node** nodes = Nodes();
+    for (int i=0; i<nen_; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xrefe(i,0) = x[0];
+      xrefe(i,1) = x[1];
+      xrefe(i,2) = x[2];
+
+      xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
+      xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
+      xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+
+      etemp(i,0) = temp[i+0];
+    }
+
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::Matrix<nsd_,nen_> N_XYZ;
+    // build deformation gradient wrt to material configuration
+    LINALG::Matrix<nsd_,nsd_> defgrd(false);
+    // shape functions and their first derivatives
+    LINALG::Matrix<nen_,1> shapefunct;
+    LINALG::Matrix<nsd_,nen_> deriv;
+
+    // ---------------------- deformation gradient at centroid of element
+    double detF_0 = -1.0;
+    LINALG::Matrix<nsd_,nsd_> invdefgrd_0(false);
+    LINALG::Matrix<nsd_,nen_> N_XYZ_0(false);
+    //element coordinate derivatives at centroid
+    LINALG::Matrix<nsd_,nen_> N_rst_0(false);
+    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, DRT::Element::hex8);
+
+    //inverse jacobian matrix at centroid
+    LINALG::Matrix<nsd_,nsd_> invJ_0(false);
+    invJ_0.Multiply(N_rst_0,xrefe);
+    invJ_0.Invert();
+    //material derivatives at centroid
+    N_XYZ_0.Multiply(invJ_0,N_rst_0);
+
+    //deformation gradient and its determinant at centroid
+    LINALG::Matrix<3,3> defgrd_0(false);
+    defgrd_0.MultiplyTT(xcurr,N_XYZ_0);
+    invdefgrd_0.Invert(defgrd_0);
+    detF_0 = defgrd_0.Determinant();
+
+    /* =========================================================================*/
+    /* ================================================= Loop over Gauss Points */
+    /* =========================================================================*/
+    for (int gp=0; gp<numgpt_; ++gp)
+    {
+      // shape functions (shapefunct) and their first derivatives (deriv)
+      DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+      /* get the inverse of the Jacobian matrix which looks like:
+      **            [ x_,r  y_,r  z_,r ]^-1
+      **     J^-1 = [ x_,s  y_,s  z_,s ]
+      **            [ x_,t  y_,t  z_,t ]
+      */
+      // compute derivatives N_XYZ at gp w.r.t. material coordinates
+      // by N_XYZ = J^-1 * N_rst
+      N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
+      double detJ = detJ_[gp]; // (6.22)
+
+      // (material) deformation gradient
+      // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+      double detF = defgrd.Determinant();
+      LINALG::Matrix<nsd_,nsd_> invdefgrd(false);
+      invdefgrd.Invert(defgrd);
+
+      // Right Cauchy-Green tensor = F^T * F
+      LINALG::Matrix<nsd_,nsd_> cauchygreen(false);
+      cauchygreen.MultiplyTN(defgrd,defgrd);
+
+      // -------------------------------------------- F_bar modifications
+      // F_bar deformation gradient = (detF_0 / detF)^1/3 . F
+      LINALG::Matrix<nsd_,nsd_> defgrd_bar(defgrd);
+      double f_bar_factor = pow(detF_0/detF,1.0/3.0);
+      defgrd_bar.Scale(f_bar_factor);
+
+      // Right Cauchy-Green tensor(Fbar) = F_bar^T . F_bar
+      LINALG::Matrix<nsd_,nsd_> cauchygreen_bar(false);
+      cauchygreen_bar.MultiplyTN(defgrd_bar,defgrd_bar);
+
+      // Green-Lagrange strains(F_bar) matrix E = 0.5 . (Cauchygreen(F_bar) - Identity)
+      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+      Epetra_SerialDenseVector glstrain_bar_epetra(numstr_);
+      LINALG::Matrix<numstr_,1> glstrain_bar(glstrain_bar_epetra.A(),true);
+      glstrain_bar(0) = 0.5 * (cauchygreen_bar(0,0) - 1.0);
+      glstrain_bar(1) = 0.5 * (cauchygreen_bar(1,1) - 1.0);
+      glstrain_bar(2) = 0.5 * (cauchygreen_bar(2,2) - 1.0);
+      glstrain_bar(3) = cauchygreen_bar(0,1);
+      glstrain_bar(4) = cauchygreen_bar(1,2);
+      glstrain_bar(5) = cauchygreen_bar(2,0);
+
+      // calculate linear B-operator
+      LINALG::Matrix<numstr_,numdofperelement_> boplin(false);
+      CalculateBoplin(&boplin,&N_XYZ);
+
+      // calculate nonlinear B-operator
+      LINALG::Matrix<numstr_,numdofperelement_> bop(false);
+      CalculateBop(&bop,&defgrd,&N_XYZ);
+
+      // temperature
+      // described as a matrix (for stress calculation): Ntemp = N_T . T
+      LINALG::Matrix<1,1> Ntemp(false);
+      Ntemp.MultiplyTN(shapefunct,etemp);
+      // scalar-valued element temperature
+      const double scalartemp = shapefunct.Dot(etemp);
+
+      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      double density = 0.0;
+      // calculate the stress part dependent on the temperature in the material
+      LINALG::Matrix<numstr_,1> ctemp(true);
+      LINALG::Matrix<numstr_,1> couplstress_bar(true);
+      LINALG::Matrix<numstr_,numstr_> cmattemp(true);
+      LINALG::Matrix<numstr_,1> glstrain(true);
+      LINALG::Matrix<numstr_,1> straininc(true);
+      // take care: current temperature ( N . T ) is passed to the element
+      //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
+      //                             2.) couplstress = C . Delta T
+      // do not call the material for Robinson's material
+      if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
+        Materialize(&couplstress_bar,&ctemp,&Ntemp,&cmattemp,&defgrd_bar,&glstrain_bar,
+          &straininc,scalartemp,&density,gp,params);
+
+      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+      // return gp stresses
+      switch (iostress)
+      {
+      case INPAR::STR::stress_2pk:
+      {
+        if (elestress == NULL) dserror("stress data not available");
+        for (int i=0; i<numstr_; ++i)
+          (*elestress)(gp,i) = couplstress_bar(i);
+        break;
+      }
+      case INPAR::STR::stress_cauchy:
+      {
+        if (elestress == NULL) dserror("stress data not available");
+
+        // push forward of material stress to the spatial configuration
+        // sigma = 1/J . F . S_temp . F^T
+        LINALG::Matrix<nsd_,nsd_> cauchycouplstress_bar;
+        PK2toCauchy(&couplstress_bar,&defgrd_bar,&cauchycouplstress_bar);
+
+        (*elestress)(gp,0) = cauchycouplstress_bar(0,0);
+        (*elestress)(gp,1) = cauchycouplstress_bar(1,1);
+        (*elestress)(gp,2) = cauchycouplstress_bar(2,2);
+        (*elestress)(gp,3) = cauchycouplstress_bar(0,1);
+        (*elestress)(gp,4) = cauchycouplstress_bar(1,2);
+        (*elestress)(gp,5) = cauchycouplstress_bar(0,2);
+        break;
+      }
+      case INPAR::STR::stress_none:
+        break;
+      default:
+        dserror("requested stress type not available");
+        break;
+      }
+
+      // integrate internal force vector r_d
+      // f = f + (B^T . sigma_temp) . detJ_bar . w(gp)
+      // with detJ_bar = detJ/f_bar_factor
+      double detJ_w = detJ * intpoints_.Weight(gp);
+      // update internal force vector
+      if (force != NULL)
+      {
+        // integrate internal force vector f = f + (B^T . sigma) . detJ_bar . w(gp)
+        force->MultiplyTN(detJ_w/f_bar_factor, bop, couplstress_bar, 1.0);
+      }  // (force != NULL)
+
+      // update stiffness matrix k_dd
+      if (stiffmatrix != NULL)
+      {
+        // integrate temperature-dependent `elastic' and `initial-displacement'
+        // stiffness matrix
+        // keu = keu + (detF_0/detF)^(-1/3) .(B^T . Cmat_T . B) . detJ_bar . w(gp)
+        // Neo-Hookean type: Cmat_T = m . Delta T . (-1) . ( Cinv boeppel Cinv )_{abcd}
+        // St.Venant Kirchhoff: Cmat_T == 0
+        // with ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
+        LINALG::Matrix<numstr_,numdofperelement_> cb;
+        cb.Multiply(cmattemp,bop);
+        stiffmatrix->MultiplyTN(detJ_w*f_bar_factor,bop,cb,1.0);
+
+        // integrate `geometric' stiffness matrix and add to keu *****************
+
+        // kgeo += ( B_L^T . B_L . sigma_T) . detJ_bar . w(gp)
+        // (B_L^T . sigma_T . B_L) = (24x6)(6x1)(6x24)
+        // --> size of matrices do not fit --> multiply component-by-component
+        // with linear B-operator B_L = Ni,Xj, see NiliFEM-Skript (6.20)
+
+        LINALG::Matrix<numstr_,1> sfac(couplstress_bar); // auxiliary integrated stress
+        // detJ_bar . w(gp) . [S11,S22,S33,S12=S21,S23=S32,S13=S31]
+        sfac.Scale(detJ_w/f_bar_factor);
+        // intermediate sigma_temp . B_L (6x1).(6x24)
+        std::vector<double> StempB_L(3);
+        for (int inod=0; inod<nen_; ++inod)
+        {
+          // (3x1) = (6x1) (6x24)
+          // S11 * N_XYZ(1,i) + S23 * N_XYZ(2,i) + S12 * N_XYZ(3,i)
+          StempB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
+                          + sfac(5) * N_XYZ(2, inod);
+          // S23 * N_XYZ(1,i) + S22 * N_XYZ(2,i) + S13 * N_XYZ(3,i)
+          StempB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
+                          + sfac(4) * N_XYZ(2, inod);
+          // S12 * N_XYZ(1,i) + S13 * N_XYZ(2,i) + S33 * N_XYZ(3,i)
+          StempB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
+                          + sfac(2) * N_XYZ(2, inod);
+          // (B_L^T . sigma . B_L) = (24x6)(6x24)
+          for (int jnod=0; jnod<nen_; ++jnod)
+          {
+            double bopstrbop = 0.0; // intermediate value
+            for (int idim=0; idim<nsd_; ++idim)
+            {
+              // double     (3x8)                 (3x1)
+              bopstrbop += N_XYZ(idim, jnod) * StempB_L[idim];
+            }
+            // (24x24)
+            (*stiffmatrix)(3*inod+0,3*jnod+0) += bopstrbop;
+            (*stiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
+            (*stiffmatrix)(3*inod+2,3*jnod+2) += bopstrbop;
+          }
+        } // end of integrate `geometric' stiffness*****************************
+
+        // ----------------------- linearisation of f_bar_factor w.r.t. d
+        // k_dd = -1/3 . (detF_0/detF)^{-1/3} . B^T . sigmaT_bar . H^T
+
+        // calculate the auxiliary tensor H (24x1)
+        // with H_i = tr(F_0^{-1} . dF_0/dd_i) - tr (F^{-1} . dF/dd_i)
+        double htensor[numdofperelement_];
+        for(int n=0; n<numdofperelement_; n++)
+        {
+          htensor[n]=0;
+          for(int i=0; i<nsd_; i++)
+          {
+            htensor[n] += invdefgrd_0(i,n%3) * N_XYZ_0(i,n/3)
+                          - invdefgrd(i,n%3) * N_XYZ(i,n/3);
+          }
+        }
+        LINALG::Matrix<numdofperelement_,1> bops(false); // auxiliary integrated stress
+        bops.MultiplyTN(-detJ_w/f_bar_factor/3.0,bop,couplstress_bar);
+        for(int i=0; i<numdofperelement_; i++)
+        {
+          for (int j=0;j<numdofperelement_;j++)
+          {
+            // (24x24)             (24x1)       (1x24)
+            (*stiffmatrix)(i,j) += bops(i,0) * htensor[j];
+          }
+        } // end of integrate additional `fbar' stiffness**********************
+
+        // TODO: in case couplstress depends on the deformation add the linearisation
+        // term to stiffmatrix
+
+      }  // if (stiffmatrix != NULL), fill k_dd
+
+     /* =========================================================================*/
+    }/* ==================================================== end of Loop over GP */
+     /* =========================================================================*/
+
+  }  // end HEX8FBAR
+  else
+    dserror("call method only for HEX8FBAR elements!");
+
+  return;
+
+}  // nln_stiffint_tsi_fbar()
+
+
+/*----------------------------------------------------------------------*
+ | evaluate only the mechanical-thermal stiffness term       dano 05/13 |
+ | for monolithic TSI, contribution to k_dT (protected)                 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
+  DRT::Element::LocationArray& la,
+  std::vector<double>& disp,  // current displacement
+  std::vector<double>& temp, // current temperature
+  LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)
+  Teuchos::ParameterList& params
+  )
+{
+  // in case we have a finite strain thermoplastic material use hex8fbar element
+  // to cirucumvent volumetric locking
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+    = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+
+  if ( (distype == DRT::Element::hex8) && (eleFBAR) )
+  {
+    // update element geometry (8x3)
+    LINALG::Matrix<nen_,nsd_> xrefe(false);  // X, material coord. of element
+    LINALG::Matrix<nen_,nsd_> xcurr(false);  // x, current  coord. of element
+    DRT::Node** nodes = Nodes();
+    for (int i=0; i<nen_; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xrefe(i,0) = x[0];
+      xrefe(i,1) = x[1];
+      xrefe(i,2) = x[2];
+
+      xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
+      xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
+      xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+    }
+
+    // shape functions and their first derivatives
+    LINALG::Matrix<nen_,1> shapefunct(false);
+    LINALG::Matrix<nsd_,nen_> deriv(false);
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::Matrix<nsd_,nen_> N_XYZ(false);
+    // build deformation gradient wrt to material configuration
+    LINALG::Matrix<nsd_,nsd_> defgrd(false);
+
+    // ---------------------- deformation gradient at centroid of element
+    double detF_0 = -1.0;
+    LINALG::Matrix<nsd_,nen_> N_XYZ_0(false);
+    //element coordinate derivatives at centroid
+    LINALG::Matrix<nsd_,nen_> N_rst_0(false);
+    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, DRT::Element::hex8);
+
+    //inverse jacobian matrix at centroid
+    LINALG::Matrix<nsd_,nsd_> invJ_0(false);
+    invJ_0.Multiply(N_rst_0,xrefe);
+    invJ_0.Invert();
+    //material derivatives at centroid
+    N_XYZ_0.Multiply(invJ_0,N_rst_0);
+
+    //deformation gradient and its determinant at centroid
+    LINALG::Matrix<3,3> defgrd_0(false);
+    defgrd_0.MultiplyTT(xcurr,N_XYZ_0);
+    detF_0 = defgrd_0.Determinant();
+
+    /* =========================================================================*/
+    /* ================================================= Loop over Gauss Points */
+    /* =========================================================================*/
+    for (int gp=0; gp<numgpt_; ++gp)
+    {
+      // shape functions (shapefunct) and their first derivatives (deriv)
+      DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+      /* get the inverse of the Jacobian matrix which looks like:
+      **            [ x_,r  y_,r  z_,r ]^-1
+      **     J^-1 = [ x_,s  y_,s  z_,s ]
+      **            [ x_,t  y_,t  z_,t ]
+      */
+      // compute derivatives N_XYZ at gp w.r.t. material coordinates
+      // by N_XYZ = J^-1 . N_rst
+      N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
+      double detJ = detJ_[gp]; // (6.22)
+
+      // (material) deformation gradient
+      // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+      double detF = defgrd.Determinant();
+
+      // -------------------------------------------- F_bar modifications
+      // F_bar deformation gradient =(detF_0/detF)^1/3 . F
+      double f_bar_factor = pow(detF_0/detF,1.0/3.0);
+
+      // calculate nonlinear B-operator
+      LINALG::Matrix<numstr_,numdofperelement_> bop(false);
+      CalculateBop(&bop,&defgrd,&N_XYZ);
+
+      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      // get the thermal material tangent
+      LINALG::Matrix<numstr_,1> ctemp(true);
+      Ctemp(&ctemp,params);
+      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+      double detJ_w = detJ * intpoints_.Weight(gp);
+      // update linear coupling matrix K_dT
+      if (stiffmatrix_kdT != NULL)
+      {
+        // C_temp . N_temp
+        LINALG::Matrix<numstr_,nen_> cn(true);
+        cn.MultiplyNT(ctemp,shapefunct); // (6x8)=(6x1)(1x8)
+        // integrate stiffness term
+        // k_dT = k_dT + (B^T . C_temp . N_temp) . detJ . w(gp)
+        stiffmatrix_kdT->MultiplyTN(detJ_w/f_bar_factor, bop, cn, 1.0);
+      }  // (stiffmatrix_kdT != NULL)
+
+     /* =========================================================================*/
+    }/* ==================================================== end of Loop over GP */
+     /* =========================================================================*/
+
+  }  // end HEX8FBAR
+  else
+    dserror("call method only for HEX8FBAR elements!");
+  return;
+
+}  // nln_kdT_tsi_fbar()
 
 
 /*----------------------------------------------------------------------*
@@ -1300,8 +1825,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   // st.venant-kirchhoff-material with temperature
   case INPAR::MAT::m_thermostvenant:
   {
-    MAT::ThermoStVenantKirchhoff* thrstvk
-      = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
+    Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+      = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
     thrstvk->Evaluate(*Ntemp,*ctemp,*couplstress,params);
     *density = thrstvk->Density();
     return;
@@ -1310,8 +1835,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   // small strain von Mises thermoelastoplastic material
   case INPAR::MAT::m_thermopllinelast:
   {
-    MAT::ThermoPlasticLinElast* thrpllinelast
-      = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+    Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast
+      = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticLinElast>(Material(),true);
     thrpllinelast->Evaluate(*Ntemp,*ctemp,*couplstress);
     *density = thrpllinelast->Density();
     return;
@@ -1319,8 +1844,9 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   }
   case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
   {
-    MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-    params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("straininc", straininc);
+    Teuchos::RCP<MAT::Robinson> robinson
+      = Teuchos::rcp_dynamic_cast <MAT::Robinson>(Material(),true);
+    params.set<LINALG::Matrix<numstr_,1>* >("straininc", straininc);
     params.set<double>("scalartemp",scalartemp);
     params.set<int>("gp",gp);
     robinson->Evaluate(defgrd,glstrain,params,couplstress,cmat);
@@ -1352,8 +1878,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   // thermo st.venant-kirchhoff-material
   case INPAR::MAT::m_thermostvenant:
   {
-    MAT::ThermoStVenantKirchhoff* thrstvk
-      = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
+    Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+      = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
     return thrstvk->SetupCthermo(*ctemp,params);
     break;
   }

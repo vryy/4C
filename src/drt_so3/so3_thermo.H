@@ -356,7 +356,6 @@ namespace ELEMENTS
       Teuchos::ParameterList& params
       );
 
-
     //! \brief Interface to the temperature dependent material law working with soh8.
     //!
     //! Here the interface to the first solid material with temperature takes place.
@@ -384,6 +383,8 @@ namespace ELEMENTS
       Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
 
+    //@}
+
     //! calculate nonlinear B-operator
     void CalculateBop(
       LINALG::Matrix<numstr_,numdofperelement_>* bop,
@@ -410,6 +411,33 @@ namespace ELEMENTS
       LINALG::Matrix<nsd_,nsd_>* defgrd,
       LINALG::Matrix<nsd_,nsd_>* euler_almansi
       );
+
+    //! @name TSI and thermoplasticity related stuff
+
+    //! Calculate nonlinear stiffness and mass matrix with temperature fraction
+    //! implementation for hex8fbar elements differs from standard implementation
+    virtual void nln_stifffint_tsi_fbar(
+      DRT::Element::LocationArray& la,  //!< location array
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& residual,  //!< current residual displ
+      std::vector<double>& temp, //!< current temperature
+      LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+      LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
+      LINALG::Matrix<numgpt_post,numstr_>* elestress,  //!< stresses at GP
+      Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
+      const INPAR::STR::StressType iostress  //!< stress output option
+      );
+
+    //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
+    virtual void nln_kdT_tsi_fbar(
+      DRT::Element::LocationArray& la,
+      std::vector<double>& disp,  //!< (i): current displacement
+      std::vector<double>& temp, //!< current temperature
+      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
+      Teuchos::ParameterList& params
+      );
+
+    //@}
 
   private:
     DRT::Node** Nodes();

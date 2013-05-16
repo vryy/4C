@@ -359,7 +359,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }
+    }  // TSI: (kintype_ == geo_linear)
+
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
     {
@@ -377,8 +378,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,
         params
         );
-        
-    }
+    }  // TSI: (kintype_ == geo_nonlinear)
 #endif // MonTSIwithoutSTR
 
   }  // action == "calc_thermo_fintcond"
@@ -467,7 +467,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }
+    }  // TSI: (kintype_ == geo_linear)
+
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
     {
@@ -485,7 +486,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,  // output option for grad T
         params
         );
-    }
+    }  // TSI: (kintype_ == geo_nonlinear)
 
 #endif // MonTSIwithoutSTR
 
@@ -577,7 +578,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // end geo_lin TSI
+    }  // TSI: (kintype_ == geo_linear)
 
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
@@ -596,7 +597,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,
         params
         );
-    }  // end geo_nln TSI
+    }  // TSI: (kintype_ == geo_nonlinear)
 
     // lumping
     if(params.get<bool>("lump capa matrix"))
@@ -720,7 +721,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // end geo_lin TSI
+    }  // TSI: (kintype_ == geo_linear)
     
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
@@ -739,7 +740,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,  // output option for grad T
         params
         );
-    }  // end geo_nln TSI
+    }  // TSI: (kintype_ == geo_linear)
     
 #endif // MonTSIwithoutSTR
 
@@ -812,7 +813,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         &eheatflux,
         &etempgrad
         );
-    }  // end geo_lin TSI
+    }  // TSI: (kintype_ == geo_linear)
     
     // geometrically nonlinear TSI problem
     if (kintype == 1)
@@ -864,7 +865,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             );
         }  // disp!=0 & vel!=0
       }  // la.Size>1
-    }  // end geo_nln TSI
+    }  // TSI: (kintype_ == geo_linear)
 
     // scale the heatflux with (-1)
     // for the calculation the heatflux enters as positive value, but
@@ -962,12 +963,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //============================================================================
   else if (action == "calc_thermo_update_istep")
   {
-    ;  // do nothing
+    // do nothing
   }
 
   //==================================================================================
   // allowing the predictor TangTemp in .dat --> can be decisive in compressible case!
-  else if (action== "calc_thermo_reset_istep")
+  else if (action == "calc_thermo_reset_istep")
   {
     // do nothing
   }
@@ -1083,8 +1084,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
               );
           // --> be careful: so far only implicit Euler for time integration
           //                 of the evolution equation available!!!
-
-        }  // geo lin TSI
+        }  // TSI: (kintype_ == geo_linear)
 
         // geometrically nonlinear TSI problem
         if (kintype == 1)
@@ -1097,7 +1097,15 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             &etangcoupl
             );
 
-        }  // geo nln TSI
+          // calculate Dmech_d
+          if (plasticmat_)
+            CalculateCouplDissipationCond(
+              ele,
+              &etangcoupl,
+              params
+              );
+
+        }  // TSI: (kintype_ == geo_nonlinear)
       }   // disp!=0 & vel!=0
     }  // la.Size>1
 
@@ -1893,7 +1901,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // scalar product: ctempcdot = -(m * I) : 1/2 C' = -C_temp : 1/2 C'
     double CtempCdot = 0.0;
     for (int i=0; i<6; ++i)
-      CtempCdot += ctemp(i,0)*(1/2.0)*Cratevct(i,0);
+      CtempCdot += ctemp(i,0) * (1/2.0) * Cratevct(i,0);
 
     // scalar-valued current temperature T = N . T
     nt.MultiplyTN(funct_,etemp_);
@@ -1948,8 +1956,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       ecapa->MultiplyNT((fac_*capacoeff_),funct_,funct_,1.0);
     }  // if (ecapa != NULL)
 
-  }  // ---------------------------------- end loop over Gauss Points
-
 #ifdef TSIMONOLITHASOUTPUT
     if (ele->Id() == 0)
     {
@@ -1957,8 +1963,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       std::cout << "ele Id= " << ele->Id() << std::endl;
       std::cout << "ctemp_\n" << ctemp << std::endl;
       std::cout << "Cratevct\n" << Cratevct << std::endl;
-      std::cout << "nccdot\n" << nccdot << std::endl;
-      std::cout << "nctemp\n" << nctemp << std::endl;
       std::cout << "defgrd\n" << defgrd << std::endl;
     }
     std::cout << "heatflux_ CalculateNlnCouplFintCondCapa"<< heatflux_ << std::endl;
@@ -1967,6 +1971,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     if (efint != NULL) std::cout << "element No. = " << ele->Id() << " efint f_Td CalculateNlnCouplFintCondCapa"<< *efint << std::endl;
     if (econd != NULL) std::cout << "element No. = " << ele->Id() << " econd nach CalculateNlnCouplFintCondCapa"<< *econd << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
+
+  }  // ---------------------------------- end loop over Gauss Points
 
 }  // CalculateNlnCouplFintCondCapa()
 
@@ -2351,7 +2357,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
 #ifdef TSIMONOLITHASOUTPUT
       if (ele->Id()==0)
       {
-        std::cout << "CouplFint\n" << std::endl;
+        std::cout << "CouplDissipationFint\n" << std::endl;
         std::cout << "boplin\n" << boplin << std::endl;
         std::cout << "etemp_ Ende InternalDiss\n" << etemp_  << std::endl;
       }
