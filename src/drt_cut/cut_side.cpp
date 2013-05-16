@@ -1084,7 +1084,7 @@ bool GEO::CUT::Side::HoleOfFacet( Facet & facet, const std::vector<Cycle> & hole
   LINALG::Matrix<3,1> holepointlocalcoord;
   hole[0]()[0]->Coordinates( holepointcoord.A() );
   LocalCoordinates( holepointcoord, holepointlocalcoord, false );
-  int epsilon = 0;
+  double epsilon = 0;
   while ( intersectioninpoint )
   {
     intersectioninpoint = false;
