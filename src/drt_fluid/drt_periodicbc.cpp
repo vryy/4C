@@ -494,6 +494,9 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         //                        FOR THIS DIRECTION
         //----------------------------------------------------------------------
 
+        // time measurement --- start TimeMonitor tm1
+        tm1_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidtosid_ ));
+
         // clear map from global masternodeids (on this proc) to global
         // slavenodeids --- it belongs to this master slave pair!!!
         midtosid.clear();
