@@ -585,22 +585,22 @@ namespace STR
     virtual double MethodLinErrCoeffVel() = 0;
 
     //! Return bool indicating if constraints are defined
-    virtual bool HaveConstraint();
+    bool HaveConstraint();
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
+    const RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       return conman_;
     }
 
     //! Get type of thickness scaling for thin shell structures
-    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    INPAR::STR::STC_Scale GetSTCAlgo()
     {
       return stcscale_;
     }
 
     //! Access to scaling matrix for STC
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
     {
       if (!stccompl_)
         ComputeSTCMatrix();
@@ -621,8 +621,8 @@ namespace STR
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-                                Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+                        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
 
 
     //! Set forces due to interface with fluid
@@ -637,7 +637,7 @@ namespace STR
     virtual void EvaluateForceStiffResidualRelax() = 0;
 
     //! Linear structure solve with just an interface load
-    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
+    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
         //! Prepare system for solving with Newton's method
     //!
@@ -683,10 +683,10 @@ namespace STR
 
     //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     //! Called from the previous adapters as InitialGuess()
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() { return disi_; }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() { return disi_; }
 
     //! Prepare time step for coupled problems with monolithic approach
-    virtual void PrepareTimeStep()
+    void PrepareTimeStep()
     {
       // prepare contact for new time step
       PrepareStepContact();
@@ -696,7 +696,7 @@ namespace STR
     }
 
     //! Evaluate routine for coupled problems with monolithic approach
-    virtual void Evaluate(
+    void Evaluate(
       Teuchos::RCP<const Epetra_Vector> disiterinc
     )
     {
@@ -710,7 +710,7 @@ namespace STR
 
 
     //! Update routine for coupled problems with monolithic approach
-    virtual void Update()
+    void Update()
     {
       UpdateStepState();
       UpdateStepTime();
@@ -719,7 +719,7 @@ namespace STR
     }
 
     //! Output routine for coupled problems with monolithic approach
-    virtual void Output()
+    void Output()
     {
       OutputStep();
     }
