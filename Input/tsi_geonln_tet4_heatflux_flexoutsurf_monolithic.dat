@@ -674,10 +674,6 @@ NODE 54  	COORD	8.0000000000000000e+00	1.0000000000000000e+00	5.0000000000000000
    118 SOLIDT4THERMO TET4  13 16 47 45    MAT 1 KINEM nonlinear
    119 SOLIDT4THERMO TET4  40 51 7 54    MAT 1 KINEM nonlinear
    120 SOLIDT4THERMO TET4  1 4 7 6    MAT 1 KINEM nonlinear
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 47 QUANTITY temp VALUE 0.0 TOLERANCE 1.0e-6 NAME temp(0,0,-0.5)
 THERMAL DIS thermo NODE 39 QUANTITY temp VALUE 2539.24295584550828 TOLERANCE 1.0e-6 NAME temp(7,1,-0.5)

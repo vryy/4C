@@ -608,6 +608,11 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
             = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
 
+#ifdef TSIASOUTPUT
+         std::cout << "thermal stress" << couplstress << std::endl;
+         std::cout << "iocouplstress = " << iocouplstress << std::endl;
+#endif
+
           // default structural element
           if (!eleFBAR)
           {
@@ -660,7 +665,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         }  // (kintype_ == geo_linear)
 
 #ifdef TSIASOUTPUT
-         std::cout << "thermal stress" << couplstress << std::endl;
+        std::cout << "thermal stress" << couplstress << std::endl;
 #endif
 
         // total stress is the sum of the mechanical stress and the thermal stress
@@ -907,6 +912,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("stress data not available");
+
       for (int i=0; i<numstr_; ++i)
         (*elestress)(gp,i) = couplstress(i);
       break;
@@ -1539,7 +1545,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       case INPAR::STR::stress_cauchy:
       {
         if (elestress == NULL) dserror("stress data not available");
-
         // push forward of material stress to the spatial configuration
         // sigma = 1/J . F . S_temp . F^T
         LINALG::Matrix<nsd_,nsd_> cauchycouplstress_bar;
