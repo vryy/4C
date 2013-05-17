@@ -66,6 +66,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_update_istep")                    act = So_hex20::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")                     act = So_hex20::calc_struct_reset_istep;
   else if (action=="calc_struct_prestress_update")                act = So_hex20::prestress_update;
+  else if (action=="calc_struct_energy")                          act = So_hex20::calc_struct_energy;
   else if (action=="calc_struct_errornorms")                      act = So_hex20::calc_struct_errornorms;
   else if (action=="postprocess_stress")                          act = So_hex20::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex20::multi_readrestart;
@@ -332,6 +333,91 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
 
     // push-forward invJ for every gaussian point
     UpdateJacobianMapping(mydisp,*prestress_);
+  }
+  break;
+
+  //==================================================================================
+  case calc_struct_energy:
+  {
+    // check length of elevec1
+    if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+    // initialization of internal energy
+    double intenergy = 0.0;
+
+    // shape functions and Gauss weights
+    const static std::vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > derivs = soh20_derivs();
+    const static std::vector<double> weights = soh20_weights();
+
+    // get displacements of this processor
+    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
+
+    // get displacements of this element
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+    // update element geometry
+    LINALG::Matrix<NUMNOD_SOH20,NUMDIM_SOH20> xrefe;  // material coord. of element
+    LINALG::Matrix<NUMNOD_SOH20,NUMDIM_SOH20> xcurr;  // current  coord. of element
+
+    DRT::Node** nodes = Nodes();
+    for (int i=0; i<NUMNOD_SOH20; ++i)
+    {
+      xrefe(i,0) = nodes[i]->X()[0];
+      xrefe(i,1) = nodes[i]->X()[1];
+      xrefe(i,2) = nodes[i]->X()[2];
+
+      xcurr(i,0) = xrefe(i,0) + mydisp[i*NODDOF_SOH20+0];
+      xcurr(i,1) = xrefe(i,1) + mydisp[i*NODDOF_SOH20+1];
+      xcurr(i,2) = xrefe(i,2) + mydisp[i*NODDOF_SOH20+2];
+    }
+
+    // loop over all Gauss points
+    for (int gp=0; gp<NUMGPT_SOH20; gp++)
+    {
+      // Gauss weights and Jacobian determinant
+      double fac = detJ_[gp] * weights[gp];
+
+      /* get the inverse of the Jacobian matrix which looks like:
+      **            [ x_,r  y_,r  z_,r ]^-1
+      **     J^-1 = [ x_,s  y_,s  z_,s ]
+      **            [ x_,t  y_,t  z_,t ]
+      */
+      // compute derivatives N_XYZ at gp w.r.t. material coordinates
+      // by N_XYZ = J^-1 * N_rst
+      LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> N_XYZ(true);
+      N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+      LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> defgrd(true);
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+
+      // right Cauchy-Green tensor = F^T * F
+      LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> cauchygreen;
+      cauchygreen.MultiplyTN(defgrd,defgrd);
+
+      // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain;
+      glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+      glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+      glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+      glstrain(3) = cauchygreen(0,1);
+      glstrain(4) = cauchygreen(1,2);
+      glstrain(5) = cauchygreen(2,0);
+
+      // call material for evaluation of strain energy function
+      double psi = 0.0;
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+      so3mat->StrainEnergy(glstrain,psi);
+
+      // sum up GP contribution to internal energy
+      intenergy += fac*psi;
+    }
+
+    // return result
+    elevec1_epetra(0) = intenergy;
   }
   break;
 
