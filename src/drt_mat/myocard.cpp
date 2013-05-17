@@ -285,32 +285,33 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
     const double w_infs = 0.94;
 
     // calculate voltage dependent time constants ([7] page 545)
-    const double Tau_vm = GatingFunction(Tau_v1m, Tau_v2m, p, phi, Theta_vm);
-    const double Tau_wm = GatingFunction(Tau_w1m, Tau_w2m, k_wm, phi, u_wm);
-    const double Tau_so = GatingFunction(Tau_so1, Tau_so2, k_so, phi, u_so);
-    const double Tau_s = GatingFunction(Tau_s1, Tau_s2, p, phi, Theta_w);
-    const double Tau_o = GatingFunction(Tau_o1, Tau_o2, p, phi, Theta_o);
+    const double Tau_vm = GatingFunction(Tau_v1m, Tau_v2m, p   , phi, Theta_vm);
+    const double Tau_wm = GatingFunction(Tau_w1m, Tau_w2m, k_wm, phi, u_wm    );
+    const double Tau_so = GatingFunction(Tau_so1, Tau_so2, k_so, phi, u_so    );
+    const double Tau_s  = GatingFunction(Tau_s1 , Tau_s2 , p   , phi, Theta_w );
+    const double Tau_o  = GatingFunction(Tau_o1 , Tau_o2 , p   , phi, Theta_o );
 
     // calculate infinity values ([7] page 545)
     const double v_inf = GatingFunction(1.0, 0.0, p, phi, Theta_vm);
     const double w_inf = GatingFunction(1.0 - phi/Tau_winf, w_infs, p, phi, Theta_o);
 
     // calculate gating variables according to [8]
-    double rhs = GatingFunction(v_inf/Tau_vm, 0.0, p, phi, Theta_v);
-    double A = -GatingFunction(1.0/Tau_vm, 1/Tau_vp, p, phi, Theta_v);
-    const double v = 1/(1/dt-A)*(1/dt*v0_ + rhs);
+    const double Tau_v    = GatingFunction(Tau_vm, Tau_vp, p, phi, Theta_v);
+    const double v_inf_GF = GatingFunction(v_inf , 0.0   , p, phi, Theta_v);
+    const double v = GatingVarCalc(dt, v0_, v_inf_GF, Tau_v);
 
-    rhs = GatingFunction(w_inf/Tau_wm, 0.0, p, phi, Theta_w);
-    A = -GatingFunction(1.0/Tau_wm, 1/Tau_wp, p, phi, Theta_w);
-    const double w = 1/(1/dt-A)*(1/dt*w0_ + rhs);
+    const double Tau_w    = GatingFunction(Tau_wm, Tau_wp, p, phi, Theta_w);
+    const double w_inf_GF = GatingFunction(w_inf , 0.0   , p, phi, Theta_w);
+    const double w = GatingVarCalc(dt, w0_, w_inf_GF, Tau_w);
 
-    rhs = GatingFunction(0.0, 1.0/Tau_s, k_s, phi, u_s);
-    A = -1.0/Tau_s;
-    const double s = 1/(1/dt-A)*(1/dt*s0_ + rhs);
+    const double s_inf = GatingFunction(0.0, 1.0, k_s, phi, u_s);
+    const double s = GatingVarCalc(dt, s0_, s_inf, Tau_s);
+
+
 
     // calculate currents J_fi, J_so and J_si ([7] page 545)
     const double J_fi = -GatingFunction(0.0, v*(phi - Theta_v)*(u_u - phi)/Tau_fi, p, phi, Theta_v); // fast inward current
-    const double J_so = GatingFunction((phi - u_o)/Tau_o, 1.0/Tau_so, p, phi, Theta_w);// slow outward current
+    const double J_so =  GatingFunction((phi - u_o)/Tau_o, 1.0/Tau_so, p, phi, Theta_w);// slow outward current
     const double J_si = -GatingFunction(0.0, w*s/Tau_si, p, phi, Theta_w); // slow inward current
 
     reacoeff = (J_fi + J_so + J_si);
@@ -318,38 +319,35 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
   else if (*(params_->model) == "TNNP")
   {
     // Model parameter
-    const double R = 8.3143; //
-    const double T = 310.0; //
-    const double F = 96.4867; //
-    const double C_m = 2.0; //
-    const double K_O = 5.4; //
-    const double Na_O = 140.0; //
-    const double Ca_O = 2.0; //
-    const double G_Na = 14.838; //
-    const double G_K1 = 5.405; //
+    const double R      = 8.3143; //
+    const double T      = 310.0; //
+    const double F      = 96.4867; //
+    const double K_O    = 5.4; //
+    const double Na_O   = 140.0; //
+    const double Ca_O   = 2.0; //
+    const double G_Na   = 14.838; //
+    const double G_K1   = 5.405; //
     double G_to = 0.294;
-    if (*(params_->tissue) == "Endo")
-      { G_to = 0.073; }
+    if (*(params_->tissue) == "Endo") { G_to = 0.073; }
     const double G_Kr = 0.096; //
     double G_Ks = 0.245;
-    if (*(params_->tissue) == "M")
-      { G_Ks = 0.062; } //
-    const double p_KNa = 0.03; //
-    const double G_CaL = 1.75; //
+    if (*(params_->tissue) == "M") { G_Ks = 0.062; } //
+    const double p_KNa  = 0.03; //
+    const double G_CaL  = 0.000175; //
     const double k_NaCa = 1000; //
-    const double Gamma = 0.35; //
-    const double K_mCa = 1.38; //
+    const double Gamma  = 0.35; //
+    const double K_mCa  = 1.38; //
     const double K_mNai = 87.5; //
-    const double k_sat = 0.1; //
-    const double Alpha = 2.5; //
-    const double P_NaK = 1.362; //
-    const double K_mK = 1.0; //
-    const double K_mNa = 40.0; //
-    const double G_pK = 0.0146; //
-    const double G_pCa = 0.025; //
-    const double K_pCa = 0.0005; //
-    const double G_bNa = 0.00029; //
-    const double G_bCa = 0.000592; //
+    const double k_sat  = 0.1; //
+    const double Alpha  = 2.5; //
+    const double P_NaK  = 1.362; //
+    const double K_mK   = 1.0; //
+    const double K_mNa  = 40.0; //
+    const double G_pK   = 0.0146; //
+    const double G_pCa  = 0.025; //
+    const double K_pCa  = 0.0005; //
+    const double G_bNa  = 0.00029; //
+    const double G_bCa  = 0.000592; //
 
     // Calculate reverse potentials
     const double E_Ks = R*T/(F)*log(K_O + p_KNa*Na_O/(K_i_ + p_KNa*Na_i_));
@@ -361,105 +359,106 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
     // ------------------------------
 
     // fast Natrium channel
-    const double a_m   = 1.0/(1.0+exp((-60.0-phi)/5.0));
-    const double b_m   = 0.1/(1.0+exp((35.0+phi)/5.0))+0.1/(1.0+exp((-50.0+phi)/200.0));
-    const double a_h   = GatingFunction(0.057*exp((-80.0-phi)/6.8), 0.0, p, phi, -40.0);
-    const double b_h   = GatingFunction(2.7*exp(0.079*phi)+3.1E5*exp(0.3485*phi), 0.77/(0.13*(1.0+exp(-(10.66+phi)/11.1))), p, phi, -40.0);
-    const double a_j   = GatingFunction(((-2.5428E4)*exp(0.2444*phi)-(6.948E-6)*exp(-0.0439*phi))*(phi + 37.78)/(1 + exp(0.311*(79.23 + phi))), 0.0, p, phi, -40.0);
-    const double b_j   = GatingFunction(0.02424*exp(-0.01052*phi)/(1.0+exp(-0.1378*(40.14+phi))), 0.6*exp(0.057*phi)/(1.0+exp(-0.1*(32.0 + phi))), p, phi, -40.0);
-    const double m_inf    = 1.0/pow(1.0 + exp((-56.86 - phi)/9.03),2);
-    const double h_inf    = 1.0/pow(1.0 + exp((71.55 + phi)/7.43),2);
-    const double j_inf    = 1.0/pow(1.0 + exp((71.55 + phi)/7.43),2);
-    const double tau_m    = a_m*b_m;
-    const double tau_h    = 1/(a_h+b_h);
-    const double tau_j    = 1/(a_j+b_j);
-    const double m    = GatingVarCalc(dt, m_, m_inf, tau_m);
-    const double h    = GatingVarCalc(dt, h_, h_inf, tau_h);
-    const double j    = GatingVarCalc(dt, j_, j_inf, tau_j);
-    const double I_Na   = G_Na*pow(m,3)*h*j*(phi - E_Na);
+    const double a_m   = 1.0/(1.0 + exp( (-60.0 - phi)/5.0 ));
+    const double b_m   = 0.1/(1.0 + exp( ( 35.0 + phi)/5.0 )) + 0.1/(1.0 + exp( (-50.0 + phi)/200.0 ));
+    const double a_h   = GatingFunction( 0.057*exp( (-80.0 - phi)/6.8 ), 0.0, p, phi, -40.0);
+    const double b_h   = GatingFunction( 2.7*exp( 0.079*phi ) + 3.1E5*exp( 0.3485*phi ), 0.77/(0.13*(1.0+exp(-(10.66+phi)/11.1))), p, phi, -40.0);
+    const double a_j   = GatingFunction( ((-2.5428E4)*exp( 0.2444*phi )-(6.948E-6)*exp( -0.0439*phi ))*(phi + 37.78)/(1.0 + exp( 0.311*(79.23 + phi) )), 0.0, p, phi, -40.0);
+    const double b_j   = GatingFunction( 0.02424*exp( -0.01052*phi )/(1.0 + exp( -0.1378*(40.14+phi) )), 0.6*exp( 0.057*phi )/(1.0 + exp( -0.1*(32.0 + phi) )), p, phi, -40.0);
+    const double m_inf = 1.0/pow(1.0 + exp((-56.86 - phi)/9.03),2);
+    const double h_inf = 1.0/pow(1.0 + exp((71.55 + phi)/7.43),2);
+    const double j_inf = 1.0/pow(1.0 + exp((71.55 + phi)/7.43),2);
+    const double tau_m = a_m*b_m;
+    const double tau_h = 1/(a_h+b_h);
+    const double tau_j = 1/(a_j+b_j);
+    const double m     = GatingVarCalc( dt, m_, m_inf, tau_m);
+    const double h     = GatingVarCalc( dt, h_, h_inf, tau_h);
+    const double j     = GatingVarCalc( dt, j_, j_inf, tau_j);
+    const double I_Na  = G_Na*pow( m, 3 )*h*j*(phi - E_Na);
 
     // Inward rectifier K+ current
-    const double a_K1  = 0.1/(1.0+exp(0.06*(-E_K-200.0+phi)/20.0));
-    const double b_K1  = (3.0*exp(0.0002*(-E_K+100.0+phi))+exp(0.1*(-E_K-10.0+phi)))/(1.0+exp(-0.5*(-E_K+phi)));
+    const double a_K1     = 0.1/(1.0+exp( 0.06*(-E_K - 200.0 + phi)/20.0 ));
+    const double b_K1     = (3.0*exp( 0.0002*(-E_K + 100.0 + phi)) + exp( 0.1*(-E_K - 10.0 + phi) ))/(1.0 + exp( -0.5*(-E_K + phi) ));
     const double x_K1_inf = a_K1/(a_K1 + b_K1);
-    const double I_K1   = G_K1*sqrt(K_O/5.4)*x_K1_inf*(phi - E_K);
+    const double I_K1     = G_K1*sqrt(K_O/5.4)*x_K1_inf*(phi - E_K);
 
     // Transient outward current
-    const double r_inf    = 1.0/(1.0 + exp((20.0 - phi)/6.0));
+    const double r_inf = 1.0/(1.0 + exp((20.0 - phi)/6.0));
 
     double s_inf = 0;
     double tau_s = 0;
     if (*(params_->tissue) == "Endo")
       {
-      s_inf = 1.0/(1.0+exp((phi + 28.0)/5.0));
-      tau_s = 1000.0*exp(-pow(phi + 67.0, 2)/1000.0) + 8.0;
+      s_inf = 1.0/(1.0+exp( (phi + 28.0)/5.0) );
+      tau_s = 1000.0*exp( -pow( phi + 67.0, 2 )/1000.0 ) + 8.0;
       }
     else
       {
       s_inf = 1.0/(1.0+exp((phi+20.0)/5.0));
-      tau_s = 85.0*exp(-pow(phi + 45.0, 2)/320.0) + 5.0/(1.0 + exp((phi-20.0)/5.0)) + 3.0;
+      tau_s = 85.0*exp( -pow( phi + 45.0, 2 )/320.0 ) + 5.0/(1.0 + exp( (phi - 20.0)/5.0) ) + 3.0;
       }
-    const double tau_r    = 9.5*exp(-pow(40.0+phi,2)/1800.0)+0.8;
-    const double r    = GatingVarCalc(dt, r_, r_inf, tau_r);
-    const double s    = GatingVarCalc(dt, s_, s_inf, tau_s);
-    const double I_to   = G_to*r*s*(phi - E_K);
+    const double tau_r = 9.5*exp( -pow( 40.0 + phi, 2 )/1800.0 ) + 0.8;
+    const double r     = GatingVarCalc( dt, r_, r_inf, tau_r);
+    const double s     = GatingVarCalc( dt, s_, s_inf, tau_s);
+    const double I_to  = G_to*r*s*(phi - E_K);
 
     // Rapid delayed rectifier current
-    const double a_xr1 = 450.0/(1.0+exp((-45.0-phi)/10.0));
-    const double b_xr1 = 6.0/(1.0+exp((30.0+phi)/11.5));
-    const double a_xr2 = 3.0/(1.0+exp((-60.0-phi)/20.0));
-    const double b_xr2 = 1.12/(1.0+exp((-60.0+phi)/20.0));
-    const double x_r1_inf = 450.0/(1.0+exp((-26.0-phi)/7.0));
-    const double x_r2_inf = 1.0/(1.0+exp((88.0+phi)/24.0));
+    const double a_xr1    = 450.0/(1.0 + exp( (-45.0 - phi)/10.0) );
+    const double b_xr1    =   6.0/(1.0 + exp( ( 30.0 + phi)/11.5) );
+    const double a_xr2    =   3.0/(1.0 + exp( (-60.0 - phi)/20.0) );
+    const double b_xr2    =  1.12/(1.0 + exp( (-60.0 + phi)/20.0) );
+    const double x_r1_inf = 450.0/(1.0 + exp( (-26.0 - phi)/ 7.0) );
+    const double x_r2_inf =   1.0/(1.0 + exp( ( 88.0 + phi)/24.0) );
     const double tau_xr1  = a_xr1*b_xr1;
     const double tau_xr2  = a_xr2*b_xr2;
-    const double x_r1 = GatingVarCalc(dt, x_r1_, x_r1_inf, tau_xr1);
-    const double x_r2 = GatingVarCalc(dt, x_r2_, x_r2_inf, tau_xr2);
-    const double I_Kr   = G_Kr*sqrt(K_O/5.4)*x_r1*x_r2*(phi - E_K);
+    const double x_r1     = GatingVarCalc(dt, x_r1_, x_r1_inf, tau_xr1);
+    const double x_r2     = GatingVarCalc(dt, x_r2_, x_r2_inf, tau_xr2);
+    const double I_Kr     = G_Kr*sqrt( K_O/5.4 )*x_r1*x_r2*(phi - E_K);
 
     // Slow delayed rectifier current
-    const double a_xs  = 1100.0/(1.0+exp((-10.0-phi)/6.0));
-    const double b_xs  = 1.0/(1.0+exp((-60.0+phi)/20.0));
-   const double x_s_inf  = 1.0/(1.0+exp((-5.0-phi)/14.0));
-    const double tau_xs   = a_xs*b_xs;
-    const double x_s  = GatingVarCalc(dt, x_s_, x_s_inf, tau_xs);
-    const double I_Ks   = G_Ks*pow(x_s, 2)*(phi - E_Ks);
+    const double a_xs    = 1100.0/(1.0 + exp( (-10.0 - phi)/ 6.0) );
+    const double b_xs    =    1.0/(1.0 + exp( (-60.0 + phi)/20.0) );
+    const double x_s_inf =    1.0/(1.0 + exp( ( -5.0 - phi)/14.0) );
+    const double tau_xs  = a_xs*b_xs;
+    const double x_s     = GatingVarCalc(dt, x_s_, x_s_inf, tau_xs);
+    const double I_Ks    = G_Ks*pow(x_s, 2)*(phi - E_Ks);
 
     // L-type Ca2+ current
-    const double a_d   = 1.4/(1.0+exp((-35.0-phi)/13.0))+0.25;
-    const double b_d   = 1.4/(1.0+exp((5.0+phi)/5.0));
-    const double g_d   = 1.0/(1.0+exp((50.0-phi)/20.0));
-    const double a_fca = 1.0/(1.0 + pow(Ca_i_/0.000325,8));
-    const double b_fca = 0.1/(1.0 + exp((Ca_i_ - 0.0005)/0.0001));
-    const double g_fca = 0.2/(1.0 + exp((Ca_i_ - 0.00075)/0.0008));
-    const double d_inf    = 1.0/(1.0+exp((-5.0-phi)/7.5));
-    const double f_inf    = 1.0/(1.0+exp((20.0+phi)/7.0));
-    const double f_Ca_inf = (a_fca+b_fca+g_fca+0.23)/1.46;
-    const double tau_d    = a_d*b_d+g_d;
-    const double tau_f    = 1125.0*exp(-pow(27.0+phi,2)/240)+165.0/(1.0+exp((25.0-phi)/10.0)) + 80.0;
+    const double a_d      = 1.4/(1.0 + exp( (-35.0 - phi)/13.0) ) + 0.25;
+    const double b_d      = 1.4/(1.0 + exp( (  5.0 + phi)/ 5.0) );
+    const double g_d      = 1.0/(1.0 + exp( ( 50.0 - phi)/20.0) );
+    const double a_fca    = 1.0/(1.0 + pow(  Ca_i_/0.000325, 8) );
+    const double b_fca    = 0.1/(1.0 + exp( (Ca_i_ - 0.0005)/0.0001) );
+    const double g_fca    = 0.2/(1.0 + exp( (Ca_i_ - 0.00075)/0.0008) );
+    const double d_inf    = 1.0/(1.0 + exp( ( -5.0 - phi)/7.5) );
+    const double f_inf    = 1.0/(1.0 + exp( ( 20.0 + phi)/7.0) );
+    const double f_Ca_inf = (a_fca + b_fca + g_fca + 0.23)/1.46;
+    const double tau_d    = a_d*b_d + g_d;
+    const double tau_f    = 1125.0*exp( -pow( 27.0 + phi, 2 )/240 ) + 165.0/(1.0+exp( (25.0 - phi)/10.0) ) + 80.0;
     const double tau_f_Ca = 2.0; // [ms]
-    const double d    = GatingVarCalc(dt, d_, d_inf, tau_d);
-    const double f    = GatingVarCalc(dt, f_, f_inf, tau_f);
+    const double d        = GatingVarCalc(dt, d_, d_inf, tau_d);
+    const double f        = GatingVarCalc(dt, f_, f_inf, tau_f);
     double f_Ca = f_Ca_;
     if (f_Ca_inf < f_Ca_ || phi < -60.0)
     { f_Ca = GatingVarCalc(dt, f_Ca_, f_Ca_inf, tau_f_Ca); }
-    const double I_CaL  = G_CaL*d*f*f_Ca*4*phi*pow(F, 2)/(R*T)*(Ca_i_*exp(2*phi*F/(R*T)) - 0.341*Ca_O)/(exp(2.0*phi*F/(R*T)) - 1.0);
+    const double I_CaL  = G_CaL*d*f*f_Ca*4*phi*pow(F, 2)/(R*T)*(Ca_i_*exp(2*phi*F/(R*T)) - 0.341*Ca_O)/(exp( 2.0*phi*F/(R*T) ) - 1.0);
 
-    const double I_NaCa = k_NaCa*(exp(Gamma*phi*F/(R*T))*pow(Na_i_, 3)*Ca_O - exp((Gamma - 1)*phi*F/(R*T))*pow(Na_O, 3)*Ca_i_*Alpha)/((pow(K_mNai, 3) + pow(Na_O, 3))*(K_mCa + Ca_O)*(1 + k_sat*exp((Gamma - 1)*phi*F/(R*T))));
+    // Na+/Ca2+ exchanger current
+    const double I_NaCa = k_NaCa*(exp( Gamma*phi*F/(R*T) )*pow( Na_i_, 3 )*Ca_O - exp( (Gamma - 1)*phi*F/(R*T) )*pow( Na_O, 3 )*Ca_i_*Alpha)/((pow( K_mNai, 3 ) + pow( Na_O, 3) )*(K_mCa + Ca_O)*(1 + k_sat*exp( (Gamma - 1)*phi*F/(R*T) )));
 
+    // Na+/K+ pump current
     const double I_NaK  = P_NaK*K_O*Na_i_/((K_O + K_mK)*(Na_i_ + K_mNa)*(1+0.1245*exp(-0.1*phi*F/(R*T)) + 0.0353*exp(-phi*F/(R*T))));
 
+    // Plateau currents
     const double I_pCa  = G_pCa*Ca_i_/(K_pCa + Ca_i_);
-
     const double I_pK   = G_pK*(phi-E_K)/(1 + exp((25.0 - phi)/5.98));
 
+    // Background currents
     const double I_bCa  = G_bCa*(phi - E_Ca);
-
     const double I_bNa  = G_bNa*(phi - E_Na);
-    cout << " I_Na :" << I_Na << " I_K1 :" << I_K1 << " I_to :" << I_to << " I_Kr :" << I_Kr << " I_Ks :" << I_Ks << " I_CaL :" << I_CaL << " I_NaCa :" << I_NaCa << " I_NaK :" << I_NaK << " I_pCa :" << I_pCa << " I_pK :" << I_pK << " I_bCa :" << I_bCa << " I_bNa :" << I_bNa <<endl;
 
     // Compute reaction coefficient as the sum of all ion currents
-    reacoeff = (I_Na + I_K1 + I_to + I_Kr + I_Ks + I_CaL + I_NaCa + I_NaK + I_pCa + I_pK + I_bCa + I_bNa)/C_m;
+    reacoeff = (I_Na + I_K1 + I_to + I_Kr + I_Ks + I_CaL + I_NaCa + I_NaK + I_pCa + I_pK + I_bCa + I_bNa);// /C_m;
   }
   else dserror("Myocard cell model type not found!");
 
@@ -496,7 +495,7 @@ double MAT::Myocard::GatingFunction(const double Gate1, const double Gate2, cons
  *----------------------------------------------------------------------*/
 double MAT::Myocard::GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const
 {
-  double Erg =  1/(1/dt-1/y_tau)*(1/dt*y_0 + y_inf/y_tau);
+  double Erg =  1.0/(1.0/dt + 1.0/y_tau)*(y_0/dt + y_inf/y_tau);
   return Erg;
 
 
@@ -513,8 +512,6 @@ void MAT::Myocard::Update(const double phi, const double dt)
   if (*(params_->model) == "MV")
   {
     // Model parameter
-    //const double u_o = 0.0;
-    //const double u_u = 1.55;//1.58;
     const double Theta_v = 0.3;
     const double Theta_w = 0.13;//0.015;
     const double Theta_vm = 0.006;//0.015;
@@ -527,44 +524,33 @@ void MAT::Myocard::Update(const double phi, const double dt)
     const double k_wm = 65.0;
     const double u_wm = 0.03;
     const double Tau_wp = 200.0;//280.0;
-    //const double Tau_fi = 0.11;
-    //const double Tau_o1 = 400.0;//6.0;
-    //const double Tau_o2 = 6.0;
-    //const double Tau_so1 = 30.0181;//43.0;
-    //const double Tau_so2 = 0.9957;//0.2;
-    //const double k_so = 2.0458;//2.0;
-    //const double u_so = 0.65;
     const double Tau_s1 = 2.7342;
     const double Tau_s2 = 16.0;//3.0;
     const double k_s = 2.0994;
     const double u_s = 0.9087;
-    //const double Tau_si = 1.8875;//2.8723;
     const double Tau_winf = 0.07;
     const double w_infs = 0.94;
 
     // calculate voltage dependent time constants ([7] page 545)
-    const double Tau_vm = GatingFunction(Tau_v1m, Tau_v2m, p, phi, Theta_vm);
-    const double Tau_wm = GatingFunction(Tau_w1m, Tau_w2m, k_wm, phi, u_wm);
-    //const double Tau_so = GatingFunction(Tau_so1, Tau_so2, k_so, phi, u_so);
-    const double Tau_s = GatingFunction(Tau_s1, Tau_s2, p, phi, Theta_w);
-    //const double Tau_o = GatingFunction(Tau_o1, Tau_o2, p, phi, Theta_o);
+    const double Tau_vm = GatingFunction(Tau_v1m, Tau_v2m, p   , phi, Theta_vm);
+    const double Tau_wm = GatingFunction(Tau_w1m, Tau_w2m, k_wm, phi, u_wm    );
+    const double Tau_s  = GatingFunction(Tau_s1 , Tau_s2 , p   , phi, Theta_w);
 
     // calculate infinity values ([7] page 545)
     const double v_inf = GatingFunction(1.0, 0.0, p, phi, Theta_vm);
     const double w_inf = GatingFunction(1.0 - phi/Tau_winf, w_infs, p, phi, Theta_o);
+    const double s_inf = GatingFunction(0.0, 1.0, k_s, phi, u_s);
 
     // calculate gating variables according to [8]
-    double rhs = GatingFunction(v_inf/Tau_vm, 0.0, p, phi, Theta_v);
-    double A = -GatingFunction(1.0/Tau_vm, 1/Tau_vp, p, phi, Theta_v);
-    const double v = 1/(1/dt-A)*(1/dt*v0_ + rhs);
+    const double Tau_v    = GatingFunction(Tau_vm, Tau_vp, p, phi, Theta_v);
+    const double v_inf_GF = GatingFunction(v_inf , 0.0   , p, phi, Theta_v);
+    const double v = GatingVarCalc(dt, v0_, v_inf_GF, Tau_v);
 
-    rhs = GatingFunction(w_inf/Tau_wm, 0.0, p, phi, Theta_w);
-    A = -GatingFunction(1.0/Tau_wm, 1/Tau_wp, p, phi, Theta_w);
-    const double w = 1/(1/dt-A)*(1/dt*w0_ + rhs);
+    const double Tau_w    = GatingFunction(Tau_wm, Tau_wp, p, phi, Theta_w);
+    const double w_inf_GF = GatingFunction(w_inf , 0.0   , p, phi, Theta_w);
+    const double w = GatingVarCalc(dt, w0_, w_inf_GF, Tau_w);
 
-    rhs = GatingFunction(0.0, 1.0/Tau_s, k_s, phi, u_s);
-    A = -1.0/Tau_s;
-    const double s = 1/(1/dt-A)*(1/dt*s0_ + rhs);
+    const double s = GatingVarCalc(dt, s0_, s_inf, Tau_s);
 
     // update initial values for next time step
     v0_ = v;
@@ -576,50 +562,46 @@ void MAT::Myocard::Update(const double phi, const double dt)
   else if (*(params_->model) == "TNNP")
   {
     // Model parameter
-    const double R = 8.3143; //
-    const double T = 310.0; //
-    const double F = 96.4867; //
-    //const double S = 0.2; //
-    //const double rho = 162.0; //
-    const double V_C = 16404.0; //
-    const double V_SR = 1094.0; //
-    const double K_O = 5.4; //
-    const double Na_O = 140.0; //
-    const double Ca_O = 2.0; //
-    const double G_Na = 14.838; //
-    const double G_K1 = 5.405; //
+    const double R       = 8.3143; //
+    const double T       = 310.0; //
+    const double F       = 96.4867; //
+    const double V_C     = 16404.0; //
+    const double V_SR    = 1094.0; //
+    const double K_O     = 5.4; //
+    const double Na_O    = 140.0; //
+    const double Ca_O    = 2.0; //
+    const double G_Na    = 14.838; //
+    const double G_K1    = 5.405; //
     double G_to = 0.294;
-    if (*(params_->tissue) == "Endo")
-      { G_to = 0.073; }
+    if (*(params_->tissue) == "Endo") { G_to = 0.073; }
     const double G_Kr = 0.096; //
     double G_Ks = 0.245;
-    if (*(params_->tissue) == "M")
-      { G_Ks = 0.062; } //
-    const double p_KNa = 0.03; //
-    const double G_CaL = 1.75; //
-    const double k_NaCa = 1000; //
-    const double Gamma = 0.35; //
-    const double K_mCa = 1.38; //
-    const double K_mNai = 87.5; //
-    const double k_sat = 0.1; //
-    const double Alpha = 2.5; //
-    const double P_NaK = 1.362; //
-    const double K_mK = 1.0; //
-    const double K_mNa = 40.0; //
-    const double G_pK = 0.0146; //
-    const double G_pCa = 0.025; //
-    const double K_pCa = 0.0005; //
-    const double G_bNa = 0.00029; //
-    const double G_bCa = 0.000592; //
+    if (*(params_->tissue) == "M") { G_Ks = 0.062; } //
+    const double p_KNa   = 0.03; //
+    const double G_CaL   = 1.75; //
+    const double k_NaCa  = 1000; //
+    const double Gamma   = 0.35; //
+    const double K_mCa   = 1.38; //
+    const double K_mNai  = 87.5; //
+    const double k_sat   = 0.1; //
+    const double Alpha   = 2.5; //
+    const double P_NaK   = 1.362; //
+    const double K_mK    = 1.0; //
+    const double K_mNa   = 40.0; //
+    const double G_pK    = 0.0146; //
+    const double G_pCa   = 0.025; //
+    const double K_pCa   = 0.0005; //
+    const double G_bNa   = 0.00029; //
+    const double G_bCa   = 0.000592; //
     const double V_maxup = 0.000425; //
-    const double K_up = 0.00025; //
-    const double a_rel = 16.464; //
-    const double b_rel = 0.25; //
-    const double c_rel = 8.232; //
-    const double V_leak = 0.00008; //
-    const double Buf_c = 0.15; //
-    const double K_bufc = 0.001; //
-    const double Buf_sr = 10.0; //
+    const double K_up    = 0.00025; //
+    const double a_rel   = 16.464; //
+    const double b_rel   = 0.25; //
+    const double c_rel   = 8.232; //
+    const double V_leak  = 0.00008; //
+    const double Buf_c   = 0.15; //
+    const double K_bufc  = 0.001; //
+    const double Buf_sr  = 10.0; //
     const double K_bufsr = 0.3; //
 
     // Calculate reverse potentials
@@ -629,117 +611,100 @@ void MAT::Myocard::Update(const double phi, const double dt)
     const double E_Ca = R*T/(2*F)*log(Ca_O/Ca_i_) ;
 
     // Calculate ion channel currents
-    const double a_m   = 1.0/(1.0+exp((-60.0-phi)/5.0));
-    const double b_m   = 0.1/(1.0+exp((35.0+phi)/5.0)) + 0.1/(1.0+exp((-50.0+phi)/200.0));
-    const double a_h   = GatingFunction(0.057*exp((-80.0-phi)/6.8), 0.0, p, phi, -40.0);
-    const double b_h   = GatingFunction(2.7*exp(0.079*phi)+3.1E5*exp(0.3485*phi), 0.77/(0.13*(1.0+exp(-(10.66+phi)/11.1))), p, phi, -40.0);
-    const double a_j   = GatingFunction((-2.5428E4*exp(0.2444*phi)-6.948E-6*exp(-0.0439*phi))*(phi + 37.78)/(1 + exp(0.311*(79.23 + phi))), 0.0, p, phi, -40.0);
-    const double b_j   = GatingFunction(0.02424*exp(-0.01052*phi)/(1.0+exp(-0.1378*(40.14+phi))), 0.6*exp(0.057*phi)/(1.0+exp(-0.1*(32.0 + phi))), p, phi, -40.0);
-    const double tau_m    = a_m*b_m;
-    const double tau_h    = 1/(a_h+b_h);
-    const double tau_j    = 1/(a_j+b_j);
-    const double m_inf    = 1.0/pow(1.0+exp((-56.86-phi)/9.03),2);
-    const double h_inf    = 1.0/pow(1.0+exp((71.55+phi)/7.43),2);
-    const double j_inf    = 1.0/pow(1.0+exp((71.55+phi)/7.43),2);
-    m_    = GatingVarCalc(dt, m_, m_inf, tau_m);
-    h_    = GatingVarCalc(dt, h_, h_inf, tau_h);
-    j_    = GatingVarCalc(dt, j_, j_inf, tau_j);
-    const double I_Na   = G_Na*pow(m_,3)*h_*j_*(phi - E_Na);
 
-    const double a_K1  = 0.1/(1.0+exp(0.06*(-E_K-200.0+phi)/20.0));
-    const double b_K1  = (3.0*exp(0.0002*(-E_K+100.0+phi))+exp(0.1*(-E_K-10.0+phi)))/(1.0+exp(-0.5*(-E_K+phi)));
+    // fast Natrium channel
+    const double a_m   = 1.0/(1.0 + exp( (-60.0-phi)/5.0) );
+    const double b_m   = 0.1/(1.0 + exp( ( 35.0+phi)/5.0)) + 0.1/(1.0 + exp( (-50.0 + phi)/200.0) );
+    const double a_h   = GatingFunction( 0.057*exp( (-80.0 - phi)/6.8 ), 0.0, p, phi, -40.0);
+    const double b_h   = GatingFunction( 2.7*exp(0.079*phi) + 3.1E5*exp( 0.3485*phi ), 0.77/(0.13*(1.0 + exp( -(10.66 + phi)/11.1 ))), p, phi, -40.0);
+    const double a_j   = GatingFunction( ((-2.5428E4)*exp( 0.2444*phi ) - (6.948E-6)*exp( -0.0439*phi ))*(phi + 37.78)/(1 + exp( 0.311*(79.23 + phi) )), 0.0, p, phi, -40.0);
+    const double b_j   = GatingFunction( 0.02424*exp( -0.01052*phi )/(1.0 + exp( -0.1378*(40.14+phi) )), 0.6*exp( 0.057*phi )/(1.0 + exp( -0.1*(32.0 + phi) )), p, phi, -40.0);
+    const double m_inf = 1.0/pow( 1.0 + exp((-56.86 - phi)/9.03), 2 );
+    const double h_inf = 1.0/pow( 1.0 + exp(( 71.55 + phi)/7.43), 2 );
+    const double j_inf = 1.0/pow( 1.0 + exp(( 71.55 + phi)/7.43), 2 );
+    const double tau_m = a_m*b_m;
+    const double tau_h = 1/(a_h + b_h);
+    const double tau_j = 1/(a_j + b_j);
+    m_ = GatingVarCalc(dt, m_, m_inf, tau_m);
+    h_ = GatingVarCalc(dt, h_, h_inf, tau_h);
+    j_ = GatingVarCalc(dt, j_, j_inf, tau_j);
+    const double I_Na  = G_Na*pow( m_, 3 )*h_*j_*(phi - E_Na);
+
+    // Inward rectifier K+ current
+    const double a_K1     = 0.1/(1.0 + exp( 0.06*(-E_K - 200.0 + phi)/20.0 ));
+    const double b_K1     = (3.0*exp( 0.0002*(-E_K + 100.0 + phi) ) + exp( 0.1*(-E_K - 10.0 + phi) ))/(1.0 + exp( -0.5*(-E_K + phi) ));
     const double x_K1_inf = a_K1/(a_K1 + b_K1);
-    const double I_K1   = G_K1*sqrt(K_O/5.4)*x_K1_inf*(phi - E_K);
+    const double I_K1     = G_K1*sqrt( K_O/5.4 )*x_K1_inf*(phi - E_K);
 
-    const double tau_r    = 9.5*exp(-pow(40.0+phi,2)/1800.0)+0.8;
-    const double r_inf    = 1.0/(1.0+exp((20.0-phi)/6.0));
-    double s_inf = 0;
-    double tau_s = 0;
-    if (*(params_->tissue) == "Endo")
-      {
-      s_inf = 1.0/(1.0+exp((phi+28.0)/5.0));
-      tau_s = 1000.0*exp(-pow(phi + 67.0, 2)/1000.0) + 8.0;
-      }
-    else
-      {
-      s_inf = 1.0/(1.0+exp((phi+20.0)/5.0));
-      tau_s = 85.0*exp(-pow(phi + 45.0, 2)/320.0) + 5.0/(1.0 + exp((phi-20.0)/5.0))+3;
-      }
-    r_    = GatingVarCalc(dt, r_, r_inf, tau_r);
-    s_    = GatingVarCalc(dt, s_, s_inf, tau_s);
+
+    // Transient outward current
     const double I_to   = G_to*r_*s_*(phi - E_K);
 
-    const double a_xr1 = 450.0/(1.0+exp((-45.0-phi)/10.0));
-    const double b_xr1 = 6.0/(1.0+exp((30.0+phi)/11.5));
-    const double a_xr2 = 3.0/(1.0+exp((-60.0-phi)/20.0));
-    const double b_xr2 = 1.12/(1.0+exp((-60.0+phi)/20.0));
-    const double tau_xr1  = a_xr1*b_xr1;
-    const double tau_xr2  = a_xr2*b_xr2;
-    const double x_r1_inf = 450.0/(1.0+exp((-26.0-phi)/7.0));
-    const double x_r2_inf = 1.0/(1.0+exp((88.0+phi)/24.0));
-    x_r1_ = GatingVarCalc(dt, x_r1_, x_r1_inf, tau_xr1);
-    x_r2_ = GatingVarCalc(dt, x_r2_, x_r2_inf, tau_xr2);
-    const double I_Kr   = G_Kr*sqrt(K_O/5.4)*x_r1_*x_r2_*(phi - E_K);
+    // Rapid delayed rectifier current
+    const double I_Kr     = G_Kr*sqrt( K_O/5.4 )*x_r1_*x_r2_*(phi - E_K);
 
-    const double a_xs  = 1100.0/(1.0+exp((-10.0-phi)/6.0));
-    const double b_xs  = 1.0/(1.0+exp((-60.0+phi)/20.0));
-    const double tau_xs   = a_xs*b_xs;
-    const double x_s_inf  = 1.0/(1.0+exp((-5.0-phi)/14.0));
-    x_s_  = GatingVarCalc(dt, x_s_, x_s_inf, tau_xs);
-    const double I_Ks   = G_Ks*pow(x_s_, 2)*(phi - E_Ks);
+    // Slow delayed rectifier current
+    const double I_Ks   = G_Ks*pow( x_s_, 2 )*(phi - E_Ks);
 
-    const double a_d   = 1.4/(1.0+exp((-35.0-phi)/13.0))+0.25;
-    const double b_d   = 1.4/(1.0+exp((5.0+phi)/5.0));
-    const double g_d   = 1.0/(1.0+exp((50.0-phi)/20.0));
-    const double a_fca = 1.0/(1.0 + pow(Ca_i_/0.000325,8));
-    const double b_fca = 0.1/(1.0 + exp((Ca_i_ - 0.0005)/0.0001));
-    const double g_fca = 0.2/(1.0 + exp((Ca_i_ - 0.00075)/0.0008));
-    const double tau_d    = a_d*b_d+g_d;
-    const double tau_f    = 1125.0*exp(-pow(27.0+phi,2)/240)+165.0/(1.0+exp((25.0-phi)/10.0)) + 80.0;
+    // L-type Ca2+ current
+    const double a_d      = 1.4/(1.0 + exp( (-35.0 - phi)/13.0 ))+0.25;
+    const double b_d      = 1.4/(1.0 + exp( (  5.0 + phi)/ 5.0 ));
+    const double g_d      = 1.0/(1.0 + exp( ( 50.0 - phi)/20.0 ));
+    const double a_fca    = 1.0/(1.0 + pow( Ca_i_/0.000325,8 ));
+    const double b_fca    = 0.1/(1.0 + exp( (Ca_i_ - 0.0005 )/0.0001 ));
+    const double g_fca    = 0.2/(1.0 + exp( (Ca_i_ - 0.00075)/0.0008 ));
+    const double d_inf    = 1.0/(1.0 + exp( (-5.0 - phi)/7.5 ));
+    const double f_inf    = 1.0/(1.0 + exp( (20.0 + phi)/7.0 ));
+    const double f_Ca_inf = (a_fca + b_fca + g_fca + 0.23)/1.46;
+    const double tau_d    = a_d*b_d + g_d;
+    const double tau_f    = 1125.0*exp(-pow( 27.0+phi, 2 )/240) + 165.0/(1.0 + exp( (25.0 - phi)/10.0 )) + 80.0;
     const double tau_f_Ca = 2.0; // [ms]
-    const double d_inf    = 1.0/(1.0+exp((-5.0-phi)/7.5));
-    const double f_inf    = 1.0/(1.0+exp((20.0+phi)/7.0));
-    const double f_Ca_inf = (a_fca+b_fca+g_fca+0.23)/1.46;
-    d_    = GatingVarCalc(dt, d_, d_inf, tau_d);
-    f_    = GatingVarCalc(dt, f_, f_inf, tau_f);
+
+    d_ = GatingVarCalc(dt, d_, d_inf, tau_d);
+    f_ = GatingVarCalc(dt, f_, f_inf, tau_f);
     if (f_Ca_inf < f_Ca_ || phi < -60)
     { f_Ca_ = GatingVarCalc(dt, f_Ca_, f_Ca_inf, tau_f_Ca); }
-    const double I_CaL  = G_CaL*d_*f_*f_Ca_*4*phi*pow(F, 2)/(R*T)*(Ca_i_*exp(2*phi*F/(R*T)) - 0.341*Ca_O)/(exp(2*phi*F/(R*T)) - 1);
 
+    const double I_CaL  = G_CaL*d_*f_*f_Ca_*4*phi*pow( F, 2 )/(R*T)*(Ca_i_*exp( 2*phi*F/(R*T) ) - 0.341*Ca_O)/(exp( 2*phi*F/(R*T) ) - 1);
+
+    // Na+/Ca2+ exchanger current
     const double I_NaCa = k_NaCa*(exp(Gamma*phi*F/(R*T))*pow(Na_i_, 3)*Ca_O - exp((Gamma - 1)*phi*F/(R*T))*pow(Na_O, 3)*Ca_i_*Alpha)/((pow(K_mNai, 3) + pow(Na_O, 3))*(K_mCa + Ca_O)*(1 + k_sat*exp((Gamma - 1)*phi*F/(R*T))));
 
+    // Na+/K+ pump current
     const double I_NaK  = P_NaK*K_O*Na_i_/((K_O + K_mK)*(Na_i_ + K_mNa)*(1+0.1245*exp(-0.1*phi*F/(R*T)) + 0.0353*exp(-phi*F/(R*T))));
 
+    // I_pCa
     const double I_pCa  = G_pCa*Ca_i_/(K_pCa + Ca_i_);
 
+    // I_pK
     const double I_pK   = G_pK*(phi-E_K)/(1 + exp((25.0 - phi)/5.98));
 
+    // Background currents
     const double I_bCa  = G_bCa*(phi - E_Ca);
-
     const double I_bNa  = G_bNa*(phi - E_Na);
 
     // Ionic concentrations
     Na_i_ += -dt*(I_Na + I_bNa + 3*I_NaK + 3*I_NaCa)/(V_C*F);
-    K_i_ += -dt*(I_K1 + I_to + I_Kr + I_Ks - 2*I_NaK + I_pK /*+ I_stim - I_ax*/)/(V_C*F);
+    K_i_  += -dt*(I_K1 + I_to + I_Kr + I_Ks - 2*I_NaK + I_pK /*+ I_stim - I_ax*/)/(V_C*F);
 
     // Calcium dynamics
     const double tau_g    = 2.0; // [ms]
     const double g_inf    = GatingFunction(1/(1+pow(Ca_i_/0.00035,6)), 1/(1+pow(Ca_i_/0.00035,16)), p, Ca_i_, 0.00035);
-    g_    = GatingVarCalc(dt, g_, g_inf, tau_g);
-    const double I_leak = V_leak*(Ca_sr_ - Ca_i_); // Ca2+ leakage current from SR into cytoplasm
-    const double I_up = V_maxup/(1+pow(K_up,2)/pow(Ca_i_,2)); // pump current taking up calcium in the SR
-    const double I_rel = (a_rel*pow(Ca_sr_,2)/(pow(b_rel,2) + pow(Ca_sr_,2)) + c_rel)*d_*g_; // Calcium induced calcium current
+    g_ = GatingVarCalc(dt, g_, g_inf, tau_g);
+    const double I_leak   = V_leak*(Ca_sr_ - Ca_i_); // Ca2+ leakage current from SR into cytoplasm
+    const double I_up     = V_maxup/(1.0 + pow(K_up, 2)/pow(Ca_i_, 2)); // pump current taking up calcium in the SR
+    const double I_rel    = (a_rel*pow(Ca_sr_,2)/(pow(b_rel,2) + pow(Ca_sr_,2)) + c_rel)*d_*g_; // Calcium induced calcium current
 
-    const double Ca_ibufc = Ca_i_*Buf_c/(Ca_i_ + K_bufc); // Buffered calcium in cytoplasm
+    const double Ca_ibufc   = Ca_i_*Buf_c/(Ca_i_ + K_bufc); // Buffered calcium in cytoplasm
     const double dCa_itotal = -dt*(I_CaL + I_bCa + I_pCa - 2*I_NaCa)/(2*V_C*F) + I_leak + I_up + I_rel; // Total calcium in cytoplasm
-    const double bc = Buf_c - Ca_ibufc - dCa_itotal - Ca_i_ + K_bufc;
-    const double cc = K_bufc*(Ca_ibufc + dCa_itotal + Ca_i_);
+    const double bc         = Buf_c - Ca_ibufc - dCa_itotal - Ca_i_ + K_bufc;
+    const double cc         = K_bufc*(Ca_ibufc + dCa_itotal + Ca_i_);
     Ca_i_ = (sqrt(bc*bc+4*cc)-bc)/2; // Free Ca2+ in cytoplasm
 
-    const double Ca_srbufsr = Ca_sr_*Buf_sr/(Ca_sr_ + K_bufsr); // Buffered calcium in SR
+    const double Ca_srbufsr  = Ca_sr_*Buf_sr/(Ca_sr_ + K_bufsr); // Buffered calcium in SR
     const double dCa_srtotal = -dt*V_C*(I_leak - I_up + I_rel)/(V_SR); // Total calcium in SR
-    const double bjsr=Buf_sr - Ca_srbufsr - dCa_srtotal - Ca_sr_ + K_bufsr;
-    const double cjsr=K_bufsr*(Ca_srbufsr + dCa_srtotal + Ca_sr_);
+    const double bjsr        = Buf_sr - Ca_srbufsr - dCa_srtotal - Ca_sr_ + K_bufsr;
+    const double cjsr        = K_bufsr*(Ca_srbufsr + dCa_srtotal + Ca_sr_);
     Ca_sr_ = (sqrt(bjsr*bjsr + 4*cjsr) - bjsr)/2; // Free Ca2+ in SR
   }
   else dserror("Myocard model type not found!");
