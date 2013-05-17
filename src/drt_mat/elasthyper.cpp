@@ -452,6 +452,34 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                   double& psi)
+{
+  LINALG::Matrix<6,1> id2(true) ;
+  LINALG::Matrix<6,1> rcg(true) ;
+  LINALG::Matrix<6,1> scg(true) ;
+  LINALG::Matrix<6,1> icg(true) ;
+  LINALG::Matrix<6,6> id4(true) ;
+  LINALG::Matrix<6,6> id4sharp(true) ;
+
+  LINALG::Matrix<3,1> prinv(true);
+  LINALG::Matrix<3,1> modinv(true);
+  LINALG::Matrix<6,1> pranisoinv(true);
+
+  // evluate kinematic quantities
+  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
+
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->AddStrainEnergy(psi,prinv,modinv);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                const LINALG::Matrix<6,1>* glstrain,
                                Teuchos::ParameterList& params,

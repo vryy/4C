@@ -102,6 +102,14 @@ namespace MAT
       /// Dummy routine for setup update of summand
       virtual void Update() { return; };
 
+      // add strain energy
+      virtual void AddStrainEnergy(
+        double& psi,                      ///< strain energy functions
+        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+      )
+      { dserror("Summand does not support calculation of strain energy"); };
+
       /// add shear modulus equivalent
       virtual void AddShearMod(
         bool& haveshearmod,  ///< non-zero shear modulus was added

@@ -196,6 +196,10 @@ private:
     /// a shear modulus equivalent
     virtual double ShearMod() const;
 
+    /// evaluate strain energy function
+    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain, ///< Green-Lagrange strain
+                              double& psi);                        ///< Strain energy function
+
     /// hyperelastic stress response plus elasticity tensor
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
                           const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain

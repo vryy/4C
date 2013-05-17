@@ -135,6 +135,13 @@ namespace ELASTIC
 
     //@}
 
+    // add strain energy
+    virtual void AddStrainEnergy(
+        double& psi,                      ///< strain energy function
+        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+    );
+
     /// Add principal coeffiencts.
     virtual void AddCoefficientsPrincipal(
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative

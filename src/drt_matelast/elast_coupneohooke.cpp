@@ -62,6 +62,24 @@ MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
+  double& psi,
+  const LINALG::Matrix<3,1>& prinv,
+  const LINALG::Matrix<3,1>& modinv)
+{
+  // material Constants c and beta
+  const double c = params_->c_;
+  const double beta = params_->beta_;
+
+  // strain energy psi = c / beta * (I3^{-beta} - 1) + c * (I1 - 3)
+  double psiadd = (c/beta) * (pow(prinv(2),-beta)-1.) + c*(prinv(0)-3.);
+
+  // add to overall strain energy
+  psi += psiadd;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddCoefficientsPrincipal(
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
