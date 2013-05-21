@@ -2163,24 +2163,28 @@ void STR::TimIntImpl::PrintPredictor()
   // only master processor
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
+    IO::cout << "Structural predictor "
+             << INPAR::STR::PredEnumString(pred_)
+             << " yields ";
+
     // relative check of force residual
     if ( normtypefres_ == INPAR::STR::convnorm_rel )
     {
-      IO::cout << "Predictor scaled res-norm "
+      IO::cout << "scaled res-norm "
                << normfres_/normcharforce_
                << IO::endl;
     }
     // absolute check of force residual
     else if ( normtypefres_ == INPAR::STR::convnorm_abs )
     {
-      IO::cout << "Predictor absolute res-norm "
+      IO::cout << "absolute res-norm "
                << normfres_
                << IO::endl;
     }
     // mixed absolute-relative check of force residual
     else if ( normtypefres_ == INPAR::STR::convnorm_mix )
     {
-      IO::cout << "Predictor mixed res-norm "
+      IO::cout << "mixed res-norm "
                << min(normfres_, normfres_/normcharforce_)
                << IO::endl;
     }
