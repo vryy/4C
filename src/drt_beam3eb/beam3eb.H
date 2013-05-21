@@ -65,6 +65,9 @@ high precission calculation. The following facts have to be considered when doin
 #include "Epetra_Vector.h"
 #include "../drt_lib/drt_elementtype.H"
 
+#include "Sacado.hpp"
+typedef Sacado::Fad::DFad<double> FAD;
+
 //#define PRECISION ;           // Flag to switch on arbitrary precision calculation. To use this functionality two
                                 // slight modification in the do-configure file and in linalg_fixesizematrix.H are
                                 // necessary. Read the text above for more information
@@ -76,10 +79,15 @@ high precission calculation. The following facts have to be considered when doin
 using namespace cln;
 #endif
 
-//#define SIMPLECALC ;             // simplified residuum and stiffness calculation for the small tension case
+//#define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small tension case
 #define ScaleFactorLine 1.0;    // Scale factor for each line of the equation system for better conditioning
 #define ScaleFactorColumn 1.0;  // Scale factor for each column of the stiffness matrix for better conditioning
 #define PreConditioning false;  // Flag to switch preconditioning of element stiffness matrix on or off
+#define NODALDOFS 2             // With this flag it can be switched between third order (2 nodal dofs) and fifth order
+                                // hermitian polynomials (3 nodal dofs). So the valid values of NODALDOFS are 2 and 3
+//#define ANS                     // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
+
+#define mygaussrule intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
@@ -221,7 +229,7 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
-      return 6;
+      return 3*NODALDOFS;
   }
 
   /*!
@@ -380,8 +388,19 @@ private:
   //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
   double jacobi_;
 
+  //! bool recognizing first element call
+  bool firstcall_;
+
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;
+
+#if NODALDOFS == 3
+  //! Matrix holding the derivatives of the tangents at each node in reference configuration
+  std::vector<LINALG::Matrix<3,1> > Kref_;
+#endif
+
+
+
 
   // some quantities nessecary for high precission calculation
   #ifdef PRECISION

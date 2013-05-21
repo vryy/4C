@@ -89,6 +89,7 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
     ;
+
 }
 
 
@@ -102,7 +103,8 @@ crosssec_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
-jacobi_(0)
+jacobi_(0),
+firstcall_(true)
 {
   return;
 }
@@ -258,7 +260,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
           DRT::Element::DiscretizationType distype = Shape();
 
           //Get integrationpoints for exact integration
-          DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
+          DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
 
           Tref_.resize(gausspoints.nquad);
 
@@ -300,11 +302,17 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
           double norm2 = 0.0;
 
           Tref_.resize(nnode);
+          #if NODALDOFS == 3
+          Kref_.resize(gausspoints.nquad);
+          #endif
 
           for(int node = 0; node<nnode ; node++)
           {
 
             Tref_[node].Clear();
+            #if NODALDOFS == 3
+            Kref_[node].Clear();
+            #endif
             for(int dof = 0; dof< 3 ; dof++ )
             {
               Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];

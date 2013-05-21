@@ -31,8 +31,6 @@ Maintainer: Christoph Meier
 #include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;
 
-
-
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 meier 05/12|
  *----------------------------------------------------------------------------------------------------------*/
@@ -180,7 +178,10 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-  for (int i=0; i<12;i++)
+  const int dofpn = 3*NODALDOFS;
+  const int nnodes = 2;
+
+  for (int i=0; i<nnodes*dofpn;i++)
   {
     mydisp[i] = mydisp[i]*ScaleFactorColumn;
   }
@@ -193,10 +194,6 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   */
 
-  // the following line is only valid for elements with constant number of
-  // degrees of freedom per node
-  const int dofpn = 6;
-
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -207,7 +204,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
   int curvenum = -1;
 
-  // number of the load curve related with a specific line Neumann condition called
+  // number of the load curve related with a specific Neumann condition called
   if (curve) curvenum = (*curve)[0];
 
   // amplitude of load curve at current time called
@@ -224,6 +221,10 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
+
+  // funct is related to the 6 "funct" fields after the val field of the Neumann condition
+  // in the input file; funct gives the number of the function defined in the section FUNCT
+  const std::vector<int>* functions = condition.Get<std::vector<int> >("funct");
 
   //find out which node is correct
   const std::vector< int > * nodeids = condition.Nodes();
@@ -354,6 +355,104 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   //if a line neumann condition needs to be linearized
   else if(condition.Type() == DRT::Condition::LineNeumann)
   {
+
+    // gaussian points
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+    LINALG::Matrix<1,NODALDOFS*nnodes> N_i;
+
+    //integration loops
+    for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
+    {
+
+      //cout << "numgp: " << numgp + 1 << endl;
+      //integration points in parameter space and weights
+      const double xi = gausspoints.qxg[numgp][0];
+      const double wgt = gausspoints.qwgt[numgp];
+
+      //Get DiscretizationType of beam element
+      const DRT::Element::DiscretizationType distype = Shape();
+
+      //Clear matrix for shape functions
+      N_i.Clear();
+
+      //evaluation of shape funcitons at Gauss points
+      #if (NODALDOFS == 2)
+      //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
+      DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
+      //end--------------------------------------------------------
+      #elif (NODALDOFS == 3)
+      //specific-for----------------------------------Frenet Serret
+      //Get hermite derivatives N'xi, N''xi and N'''xi
+      DRT::UTILS::shape_function_hermite_1D_order5(N_i,xi,jacobi_*2.0,distype);
+      //end--------------------------------------------------------
+      #else
+      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+      #endif
+
+      //position vector at the gauss point at reference configuration needed for function evaluation
+      std::vector<double> X_ref(3,0.0);
+      //calculate coordinates of corresponding Guass point in reference configuration
+      for (int node=0;node<2;node++)
+      {
+        #if (NODALDOFS == 2)
+        for (int dof=0;dof<3;dof++)
+        {
+          X_ref[dof]+=Nodes()[node]->X()[dof]*N_i(2*node)+Tref_[node](dof)*N_i(2*node + 1);
+        }
+        #elif (NODALDOFS ==3)
+        for (int dof=0;dof<3;dof++)
+        {
+          X_ref[dof]+=Nodes()[node]->X()[dof]*N_i(3*node)+Tref_[node](dof)*N_i(3*node + 1) + Kref_[node](dof)*N_i(3*node + 2);
+        }
+        #else
+        dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+        #endif
+      }
+
+      double fac=0.0;
+      fac = wgt * jacobi_;
+
+      // load vector ar
+      double ar[6];
+
+      // loop the dofs of a node
+      for (int dof=0; dof<6; ++dof)
+        ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac;
+      double functionfac = 1.0;
+      int functnum = -1;
+
+      //Check if also moment line Neumann conditions are implemented accidentally and throw error
+      for (int dof=3; dof<6; ++dof)
+      {
+        if (functions) functnum = (*functions)[dof];
+        else functnum = -1;
+
+        if (functnum>0)
+        {
+          dserror("Line Neumann conditions for distributed moments are not implemented for beam3eb so far! Only the function flag 1, 2 and 3 can be set!");
+        }
+      }
+
+      //sum up load components
+      for (int dof=0; dof<3; ++dof)
+      {
+        if (functions) functnum = (*functions)[dof];
+        else functnum = -1;
+
+        if (functnum>0)
+        {
+          // evaluate function at the position of the current node       --> dof here correct?
+          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
+        }
+        else functionfac = 1.0;
+
+        for (int node=0; node<2*NODALDOFS; ++node)
+        {
+          elevec1[node*3 + dof] += N_i(node) *ar[dof] *functionfac;
+        }
+      }
+    } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
+
   }
 
   //Uncomment the next line if the implementation of the Neumann part of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
@@ -380,7 +479,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 #ifdef SIMPLECALC
 {
   //dimensions of freedom per node
-  const int dofpn = 6;
+  const int dofpn = 3*NODALDOFS;
 
   //number of nodes fixed for these element
   const int nnode = 2;
@@ -410,9 +509,11 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   LINALG::Matrix<dofpn*nnode,dofpn*nnode> NxTrxrxTNx;
 
   //Matrices for N_i,xi and N_i,xixi. 2*nnode due to hermite shapefunctions
-  LINALG::Matrix<1,2*nnode> N_i_x;
-  LINALG::Matrix<1,2*nnode> N_i_xx;
+  LINALG::Matrix<1,NODALDOFS*nnode> N_i;
+  LINALG::Matrix<1,NODALDOFS*nnode> N_i_x;
+  LINALG::Matrix<1,NODALDOFS*nnode> N_i_xx;
 
+  LINALG::Matrix<3,nnode*dofpn> N;
   LINALG::Matrix<3,nnode*dofpn> N_x;
   LINALG::Matrix<3,nnode*dofpn> N_xx;
 
@@ -423,6 +524,22 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   //internal force due to tension and bending
   LINALG::Matrix<nnode*dofpn,1> Res_tension;
   LINALG::Matrix<nnode*dofpn,1> Res_bending;
+
+  //some matrices necessary for ANS approach
+  #ifdef ANS
+    #if (NODALDOFS ==3)
+    dserror("ANS approach so far only defined for third order Hermitian shape functions, set NODALDOFS=2!!!");
+    #endif
+  LINALG::Matrix<1,3> L_i;
+  L_i.Clear();
+  LINALG::Matrix<nnode*dofpn,1> Res_tension_ANS;
+  Res_tension_ANS.Clear();
+  LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_tension_ANS;
+  R_tension_ANS.Clear();
+  double epsilon_ANS = 0.0;
+  LINALG::Matrix<1,nnode*dofpn> lin_epsilon_ANS;
+  lin_epsilon_ANS.Clear();
+  #endif
 
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -448,7 +565,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   //TODO: The integration rule should be set via input parameter and not hard coded as here
   //Get integrationpoints for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
@@ -466,13 +583,91 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         //position of nodes
         disp_totlag[node*dofpn + dof] = (Nodes()[node]->X()[dof] + disp[node*dofpn + dof])*ScaleFactorColumn;
       }
-      else if(dof>=3)
+      else if(dof<6)
       {
         //tangent at nodes
         disp_totlag[node*dofpn + dof] = (Tref_[node](dof-3) + disp[node*dofpn + dof])*ScaleFactorColumn;
       }
+      else if(dof>=6)
+      {
+        #if NODALDOFS ==3
+        //curvatures at nodes
+        disp_totlag[node*dofpn + dof] = (Kref_[node](dof-6) + disp[node*dofpn + dof])*ScaleFactorColumn;
+        #endif
+      }
     }
   } //for (int node = 0 ; node < nnode ; node++)
+
+  //Calculate epsilon at collocation points
+  #ifdef ANS
+  LINALG::Matrix<3,1> epsilon_cp;
+  epsilon_cp.Clear();
+  LINALG::Matrix<3,3> tangent_cp;
+  tangent_cp.Clear();
+  LINALG::Matrix<3,NODALDOFS*6> lin_epsilon_cp;
+  lin_epsilon_cp.Clear();
+
+  N_i_x.Clear();
+  DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,0.0,jacobi_*2.0,distype);
+  for (int i=0;i<2*NODALDOFS;i++)
+  {
+    N_i_x(i)=N_i_x(i)/jacobi_;
+  }
+
+  for (int i=0;i<3;i++)
+  {
+    tangent_cp(i,0)=disp_totlag[i+3];
+    tangent_cp(i,1)=disp_totlag[i+9];
+
+    for (int j=0;j<2*NODALDOFS;j++)
+    {
+      tangent_cp(i,2)+=N_i_x(j)*disp_totlag[3*j+i];
+    }
+  }
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<3;j++)
+    {
+      epsilon_cp(i)+=tangent_cp(j,i)*tangent_cp(j,i);
+    }
+    epsilon_cp(i)=pow(epsilon_cp(i),0.5)-1.0;
+  }
+
+  for (int k=0;k<3;k++)
+  {
+    N_i_x.Clear();
+
+    switch (k)
+    {
+    case 0:
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,-1.0,jacobi_*2.0,distype);
+      break;
+    case 1:
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,1.0,jacobi_*2.0,distype);
+      break;
+    case 2:
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,0.0,jacobi_*2.0,distype);
+      break;
+    default:
+      dserror("Index k should only run from 1 to 3 (three collocation points)!");
+     break;
+    }
+
+    for (int i=0;i<2*NODALDOFS;i++)
+    {
+      N_i_x(i)=N_i_x(i)/jacobi_;
+    }
+    //loop over space dimensions
+    for (int i=0;i<3;i++)
+    { //loop over all shape functions
+      for (int j=0;j<2*NODALDOFS;j++)
+      { //loop over CPs
+          lin_epsilon_cp(k,3*j + i)+=tangent_cp(i,k)*N_i_x(j)/(epsilon_cp(k)+1);
+      }
+    }
+  }
+
+  #endif
 
   //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -501,9 +696,11 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     M2.Clear();
     NxTrxrxTNx.Clear();
 
+    N_i.Clear();
     N_i_x.Clear();
     N_i_xx.Clear();
 
+    N.Clear();
     N_x.Clear();
     N_xx.Clear();
 
@@ -517,22 +714,36 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     const double xi = gausspoints.qxg[numgp][0];
     const double wgt = gausspoints.qwgt[numgp];
 
+#if (NODALDOFS == 2)
     //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
+    DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xx,xi,jacobi_*2.0,distype);
+    //end--------------------------------------------------------
+#elif (NODALDOFS == 3)
+    //specific-for----------------------------------Frenet Serret
+    //Get hermite derivatives N'xi, N''xi and N'''xi
+    DRT::UTILS::shape_function_hermite_1D_order5(N_i,xi,jacobi_*2.0,distype);
+    DRT::UTILS::shape_function_hermite_1D_order5_deriv1(N_i_x,xi,jacobi_*2.0,distype);
+    DRT::UTILS::shape_function_hermite_1D_order5_deriv2(N_i_xx,xi,jacobi_*2.0,distype);
+    //end--------------------------------------------------------
+#else
+    dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+#endif
+
 
     //calculate r' and r''
     for (int i=0 ; i < 3 ; i++)
     {
-      for (int j=0; j<4; j++)
+      for (int j=0; j<2*NODALDOFS; j++)
       {
-        //r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
+        r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
         r_x(i,0)+= N_i_x(j) * disp_totlag[3*j + i];
         r_xx(i,0)+= N_i_xx(j) * disp_totlag[3*j + i];
       }
     }
 
-    for (int i= 0; i<3; i++)
+    for (int i=0; i<3; i++)
     {
       rxxrxx+=r_xx(i)*r_xx(i);
       rxrx+=r_x(i)*r_x(i);
@@ -542,8 +753,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
     for (int i=0; i<3; ++i)
     {
-      for (int j=0; j<4; ++j)
+      for (int j=0; j<2*NODALDOFS; ++j)
       {
+        N(i,i+3*j) += N_i(j);
         N_x(i,i+3*j) += N_i_x(j);
         N_xx(i,i+3*j) += N_i_xx(j);
         NxTrx(i+3*j)+=N_i_x(j)*r_x(i);
@@ -554,24 +766,56 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     NTildex.MultiplyTN(N_x,N_x);
     NTildexx.MultiplyTN(N_xx,N_xx);
 
-    for (int i= 0; i<12; i++)
+    for (int i= 0; i<nnode*dofpn; i++)
     {
-      for (int j= 0; j<12; j++)
+      for (int j= 0; j<nnode*dofpn; j++)
       {
         M2(i,j)+= NxxTrxx(i)*NxTrx(j);
         NxTrxrxTNx(i,j)+= NxTrx(i)*NxTrx(j);
       }
     }
 
+#ifdef ANS
+    DRT::UTILS::shape_function_1D(L_i,xi,line3);
+    epsilon_ANS = 0.0;
+    lin_epsilon_ANS.Clear();
+    for (int i=0;i<3;i++)
+    {
+      epsilon_ANS+=L_i(i)*epsilon_cp(i);
+      for (int j=0;j<nnode*dofpn;j++)
+      {
+        lin_epsilon_ANS(j)+=L_i(i)*lin_epsilon_cp(i,j);
+      }
+    }
+
+    Res_tension_ANS.Clear();
+    R_tension_ANS.Clear();
+
+    for (int i=0;i<nnode*dofpn;i++)
+    {
+      for (int j=0;j<nnode*dofpn;j++)
+      {
+        R_tension_ANS(i,j)+=NxTrx(i)*lin_epsilon_ANS(j)/jacobi_;
+      }
+    }
+#endif
+
     //assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
     if (stiffmatrix != NULL)
     {
+
       //assemble parts from tension
+      #ifndef ANS
       R_tension = NTildex;
       R_tension.Scale(tension);
       R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
-
       R_tension.Scale(ym * crosssec_ * wgt);
+      #else
+      //attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are allready considered,
+      //all the other jacobi factors due to differentiation and integration cancel out!!!
+      R_tension_ANS.Update(epsilon_ANS/jacobi_,NTildex,1.0);
+      R_tension_ANS.Scale(ym * crosssec_ * wgt);
+      #endif
 
       //assemble parts from bending
       R_bending.Update(-rxxrxx/pow(jacobi_,2.0) ,NTildex,1.0);
@@ -585,8 +829,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for(int j = 0; j < dofpn*nnode; j++)
         {
-          (*stiffmatrix)(i,j) += R_tension(i,j) ;
-          (*stiffmatrix)(i,j) += R_bending(i,j) ;
+          #ifndef ANS
+          (*stiffmatrix)(i,j) += R_tension(i,j);
+          #else
+          (*stiffmatrix)(i,j) += R_tension_ANS(i,j);
+          #endif
+          (*stiffmatrix)(i,j) += R_bending(i,j);
         }
       } //for(int i = 0; i < dofpn*nnode; i++)
     }//if (stiffmatrix != NULL)
@@ -603,20 +851,29 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       for (int i=0;i<3;i++)
       {
-        for (int j=0;j<4;j++)
+        for (int j=0;j<2*NODALDOFS;j++)
         {
           Res_bending(j*3 + i)+= N_i_x(j)*f1(i)/pow(jacobi_,5) + N_i_xx(j)*f2(i)/pow(jacobi_,3);
+          #ifndef ANS
           Res_tension(j*3 + i)+= N_i_x(j)*n1(i);
+          #endif
         }
       }
+      #ifdef ANS
+      Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / jacobi_,NxTrx,1.0);
+      #endif
       Res_bending.Scale(ym * Izz_ * wgt);
       Res_tension.Scale(ym * crosssec_ * wgt);
 
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
       {
-          (*force)(i) += Res_tension(i) ;
-          (*force)(i) += Res_bending(i) ;
+        #ifndef ANS
+        (*force)(i) += Res_tension(i);
+        #else
+        (*force)(i) += Res_tension_ANS(i);
+        #endif
+        (*force)(i) += Res_bending(i) ;
       }
     } //if (force != NULL)
 
@@ -638,6 +895,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   bool precond = PreConditioning;
   if (precond)
   {
+    #if NODALDOFS ==3
+      dserror("Preconditioning only implemented for NODALDOFS ==2!!!");
+    #endif
     double length = jacobi_*2.0;
     double radius = std::pow(crosssec_/M_PI,0.5);
     for (int zeile=0; zeile <2; zeile++)
@@ -663,9 +923,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   double Factor = ScaleFactorLine;
   Factor = Factor * ScaleFactorColumn;
 
-  for (int zeile=0; zeile <12; zeile++)
+  for (int zeile=0; zeile <nnode*dofpn; zeile++)
   {
-    for (int spalte=0; spalte<12; spalte++)
+    for (int spalte=0; spalte<nnode*dofpn; spalte++)
     {
       (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
     }
@@ -674,15 +934,15 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 }
 #else
 {
-
    //dimensions of freedom per node
-  const int dofpn = 6;
+  const int dofpn = 3*NODALDOFS;
 
   //number of nodes fixed for these element
   const int nnode = 2;
 
   //matrix for current positions and tangents
   std::vector<double> disp_totlag(nnode*dofpn);
+  std::vector<FAD> disp_totlag_fad(nnode*dofpn, 0.0);
 
   LINALG::Matrix<3,1> r_;
   LINALG::Matrix<3,1> r_x;
@@ -696,6 +956,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   double rxxrxx;
   double rxrx;
   double tension;
+
+  LINALG::TMatrix<FAD,3,1> rx_fad;
+  FAD rxrx_fad;
 
   LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde;
   LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTildex;
@@ -712,9 +975,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   LINALG::Matrix<dofpn*nnode,dofpn*nnode> NxTrxrxTNx;
 
   //Matrices for N_i,xi and N_i,xixi. 2*nnode due to hermite shapefunctions
-  LINALG::Matrix<1,2*nnode> N_i;
-  LINALG::Matrix<1,2*nnode> N_i_x;
-  LINALG::Matrix<1,2*nnode> N_i_xx;
+  LINALG::Matrix<1,NODALDOFS*nnode> N_i;
+  LINALG::Matrix<1,NODALDOFS*nnode> N_i_x;
+  LINALG::Matrix<1,NODALDOFS*nnode> N_i_xx;
 
   LINALG::Matrix<3,nnode*dofpn> N_x;
   LINALG::Matrix<3,nnode*dofpn> N_xx;
@@ -726,6 +989,28 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   //internal force due to tension and bending
   LINALG::Matrix<nnode*dofpn,1> Res_tension;
   LINALG::Matrix<nnode*dofpn,1> Res_bending;
+
+  //some matrices necessary for ANS approach
+  #ifdef ANS
+    #if (NODALDOFS ==3)
+    dserror("ANS approach so far only defined for third order Hermitian shape functions, set NODALDOFS=2!!!");
+    #endif
+  LINALG::Matrix<1,3> L_i;
+  L_i.Clear();
+  LINALG::Matrix<nnode*dofpn,1> Res_tension_ANS;
+  Res_tension_ANS.Clear();
+  LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_tension_ANS;
+  R_tension_ANS.Clear();
+  double epsilon_ANS = 0.0;
+  LINALG::Matrix<1,nnode*dofpn> lin_epsilon_ANS;
+  lin_epsilon_ANS.Clear();
+
+  LINALG::TMatrix<FAD,nnode*dofpn,1> Res_tension_ANS_fad;
+  Res_tension_ANS_fad.Clear();
+  LINALG::TMatrix<FAD,nnode*dofpn,nnode*dofpn> R_tension_ANS_fad;
+  R_tension_ANS_fad.Clear();
+  FAD epsilon_ANS_fad = 0.0;
+  #endif
 
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -751,7 +1036,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   //TODO: The integration rule should be set via input parameter and not hard coded as here (standard: 3)
   //Get integrationpoints for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
@@ -769,13 +1054,106 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         //position of nodes
         disp_totlag[node*dofpn + dof] = (Nodes()[node]->X()[dof] + disp[node*dofpn + dof])*ScaleFactorColumn;
       }
-      else if(dof>=3)
+      else if(dof<6)
       {
         //tangent at nodes
         disp_totlag[node*dofpn + dof] = (Tref_[node](dof-3) + disp[node*dofpn + dof])*ScaleFactorColumn;
       }
+      else if(dof>=6)
+      {
+        #if NODALDOFS ==3
+        //curvatures at nodes
+        disp_totlag[node*dofpn + dof] = (Kref_[node](dof-6) + disp[node*dofpn + dof])*ScaleFactorColumn;
+        #endif
+      }
     }
   } //for (int node = 0 ; node < nnode ; node++)
+  for (int dof=0;dof<nnode*dofpn;dof++)
+  {
+    disp_totlag_fad[dof]=disp_totlag[dof];
+    disp_totlag_fad[dof].diff(dof,nnode*dofpn);
+  }
+
+  //Calculate epsilon at collocation points
+  #ifdef ANS
+  LINALG::Matrix<3,1> epsilon_cp;
+  epsilon_cp.Clear();
+  LINALG::Matrix<3,3> tangent_cp;
+  tangent_cp.Clear();
+  LINALG::Matrix<3,NODALDOFS*6> lin_epsilon_cp;
+  lin_epsilon_cp.Clear();
+
+  LINALG::TMatrix<FAD,3,1> epsilon_cp_fad;
+  epsilon_cp_fad.Clear();
+  LINALG::TMatrix<FAD,3,3> tangent_cp_fad;
+  tangent_cp_fad.Clear();
+
+  N_i_x.Clear();
+  DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,0.0,jacobi_*2.0,distype);
+  for (int i=0;i<2*NODALDOFS;i++)
+  {
+    N_i_x(i)=N_i_x(i)/jacobi_;
+  }
+
+  for (int i=0;i<3;i++)
+  {
+    tangent_cp(i,0)=disp_totlag[i+3];
+    tangent_cp(i,1)=disp_totlag[i+9];
+
+    tangent_cp_fad(i,0)=disp_totlag_fad[i+3];
+    tangent_cp_fad(i,1)=disp_totlag_fad[i+9];
+    for (int j=0;j<2*NODALDOFS;j++)
+    {
+      tangent_cp(i,2)+=N_i_x(j)*disp_totlag[3*j+i];
+      tangent_cp_fad(i,2)+=N_i_x(j)*disp_totlag_fad[3*j+i];
+    }
+  }
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<3;j++)
+    {
+      epsilon_cp(i)+=tangent_cp(j,i)*tangent_cp(j,i);
+      epsilon_cp_fad(i)+=tangent_cp_fad(j,i)*tangent_cp_fad(j,i);
+    }
+    epsilon_cp(i)=pow(epsilon_cp(i),0.5)-1.0;
+    epsilon_cp_fad(i)=pow(epsilon_cp_fad(i),0.5)-1.0;
+  }
+
+  for (int k=0;k<3;k++)
+  {
+    N_i_x.Clear();
+
+    switch (k)
+    {
+    case 0:
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,-1.0,jacobi_*2.0,distype);
+      break;
+    case 1:
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,1.0,jacobi_*2.0,distype);
+      break;
+    case 2:
+      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,0.0,jacobi_*2.0,distype);
+      break;
+    default:
+      dserror("Index k should only run from 1 to 3 (three collocation points)!");
+     break;
+    }
+
+    for (int i=0;i<2*NODALDOFS;i++)
+    {
+      N_i_x(i)=N_i_x(i)/jacobi_;
+    }
+    //loop over space dimensions
+    for (int i=0;i<3;i++)
+    { //loop over all shape functions
+      for (int j=0;j<2*NODALDOFS;j++)
+      { //loop over CPs
+          lin_epsilon_cp(k,3*j + i)+=tangent_cp(i,k)*N_i_x(j)/(epsilon_cp(k)+1);
+      }
+    }
+  }
+
+  #endif
 
   //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -795,6 +1173,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     rxxrxx=0;
     rxrx=0;
     tension=0;
+
+    rx_fad.Clear();
+    rxrx_fad=0.0;
 
     NTilde.Clear();
     NTildex.Clear();
@@ -827,18 +1208,29 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     const double xi = gausspoints.qxg[numgp][0];
     const double wgt = gausspoints.qwgt[numgp];
 
+#if (NODALDOFS == 2)
     //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-    //DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xx,xi,jacobi_*2.0,distype);
+    //end--------------------------------------------------------
+#elif (NODALDOFS == 3)
+    //specific-for----------------------------------Frenet Serret
+    //Get hermite derivatives N'xi, N''xi and N'''xi
+    DRT::UTILS::shape_function_hermite_1D_order5_deriv1(N_i_x,xi,jacobi_*2.0,distype);
+    DRT::UTILS::shape_function_hermite_1D_order5_deriv2(N_i_xx,xi,jacobi_*2.0,distype);
+    //end--------------------------------------------------------
+#else
+    dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+#endif
 
     //calculate r' and r''
     for (int i=0 ; i < 3 ; i++)
     {
-      for (int j=0; j<4; j++)
+      for (int j=0; j<nnode*NODALDOFS; j++)
       {
         //r_(i,0)+= N_i(j)*disp_totlag[3*j + i];
         r_x(i,0)+= N_i_x(j) * disp_totlag[3*j + i];
+        rx_fad(i,0)+= N_i_x(j) * disp_totlag_fad[3*j + i];
         r_xx(i,0)+= N_i_xx(j) * disp_totlag[3*j + i];
       }
     }
@@ -848,13 +1240,14 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       rxrxx+=r_x(i)*r_xx(i);
       rxxrxx+=r_xx(i)*r_xx(i);
       rxrx+=r_x(i)*r_x(i);
+      rxrx_fad+=rx_fad(i)*rx_fad(i);
     }
 
     tension = 1/jacobi_ - 1/pow(rxrx,0.5);
 
     for (int i=0; i<3; ++i)
     {
-      for (int j=0; j<4; ++j)
+      for (int j=0; j<nnode*NODALDOFS; ++j)
       {
         N_x(i,i+3*j) += N_i_x(j);
         N_xx(i,i+3*j) += N_i_xx(j);
@@ -869,9 +1262,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     NTildex.MultiplyTN(N_x,N_x);
     NTildexx.MultiplyTN(N_xx,N_xx);
 
-    for (int i= 0; i<12; i++)
+    for (int i= 0; i<nnode*dofpn; i++)
     {
-      for (int j= 0; j<12; j++)
+      for (int j= 0; j<nnode*dofpn; j++)
       {
         M1(i,j)+= NxTrx(i)*(NxxTrx(j)+NxTrxx(j));
         M2(i,j)+= NxxTrxx(i)*NxTrx(j);
@@ -880,15 +1273,67 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       }
     }
 
+    //calculate quantities necessary for ANS approach
+    #ifdef ANS
+    DRT::UTILS::shape_function_1D(L_i,xi,line3);
+    epsilon_ANS = 0.0;
+    epsilon_ANS_fad = 0.0;
+    lin_epsilon_ANS.Clear();
+    for (int i=0;i<3;i++)
+    {
+      epsilon_ANS+=L_i(i)*epsilon_cp(i);
+      epsilon_ANS_fad+=L_i(i)*epsilon_cp_fad(i);
+      for (int j=0;j<nnode*dofpn;j++)
+      {
+        lin_epsilon_ANS(j)+=L_i(i)*lin_epsilon_cp(i,j);
+      }
+    }
+
+    Res_tension_ANS.Clear();
+    R_tension_ANS.Clear();
+
+    Res_tension_ANS_fad.Clear();
+    R_tension_ANS_fad.Clear();
+    for (int i=0;i<nnode*dofpn;i++)
+    {
+      for (int j=0;j<nnode*dofpn;j++)
+      {
+        R_tension_ANS(i,j)+=NxTrx(i)*lin_epsilon_ANS(j)/pow(rxrx,0.5);
+      }
+      for (int k=0;k<3;k++)
+      {
+        Res_tension_ANS_fad(i)+=N_x(k,i)*rx_fad(k)/pow(rxrx_fad,0.5)*ym * crosssec_ * wgt*epsilon_ANS_fad;
+      }
+    }
+    for (int i=0;i<nnode*dofpn;i++)
+    {
+      for (int j=0;j<nnode*dofpn;j++)
+      {
+        R_tension_ANS_fad(i,j)=Res_tension_ANS_fad(i).dx(j);
+      }
+    }
+
+    LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_tension_ANS_test;
+    R_tension_ANS_test.Clear();
+    #endif
+
     //assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
     if (stiffmatrix != NULL)
     {
       //assemble parts from tension
+      #ifndef ANS
       R_tension = NTildex;
       R_tension.Scale(tension);
       R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
-
       R_tension.Scale(ym * crosssec_ * wgt);
+      #else
+      //attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are allready considered,
+      //all the other jacobi factors due to differentiation and integration cancel out!!!
+
+      R_tension_ANS.Update(-epsilon_ANS / pow(rxrx,1.5),NxTrxrxTNx,1.0);
+      R_tension_ANS.Update(epsilon_ANS / pow(rxrx,0.5),NTildex,1.0);
+      R_tension_ANS.Scale(ym * crosssec_ * wgt);
+      #endif
 
       //assemble parts from bending
       R_bending = NTildex;
@@ -912,8 +1357,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for(int j = 0; j < dofpn*nnode; j++)
         {
-          (*stiffmatrix)(i,j) += R_tension(i,j) ;
-          (*stiffmatrix)(i,j) += R_bending(i,j) ;
+          #ifndef ANS
+          (*stiffmatrix)(i,j) += R_tension(i,j);
+          #else
+          (*stiffmatrix)(i,j) += R_tension_ANS(i,j);
+          #endif
+          (*stiffmatrix)(i,j) += R_bending(i,j);
         }
       } //for(int i = 0; i < dofpn*nnode; i++)
     }//if (stiffmatrix != NULL)
@@ -924,25 +1373,33 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       f2(i)=r_xx(i)/rxrx-r_x(i)*rxrxx/pow(rxrx,2.0);
       n1(i)=r_x(i)*tension;
     }
-
     //assemble internal force vector f_internal / Res in thesis Meier
     if (force != NULL)
     {
       for (int i=0;i<3;i++)
       {
-        for (int j=0;j<4;j++)
+        for (int j=0;j<nnode*NODALDOFS;j++)
         {
           Res_bending(j*3 + i)+= N_i_x(j)*f1(i) + N_i_xx(j)*f2(i);
+          #ifndef ANS
           Res_tension(j*3 + i)+= N_i_x(j)*n1(i);
+          #endif
         }
       }
+      #ifdef ANS
+      Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / pow(rxrx,0.5),NxTrx,1.0);
+      #endif
       Res_bending.Scale(ym * Izz_ * wgt / jacobi_);
       Res_tension.Scale(ym * crosssec_ * wgt);
 
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
       {
-          (*force)(i) += Res_tension(i) ;
+          #ifndef ANS
+          (*force)(i) += Res_tension(i);
+          #else
+          (*force)(i) += Res_tension_ANS(i);
+          #endif
           (*force)(i) += Res_bending(i) ;
       }
     } //if (force != NULL)
@@ -965,6 +1422,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   bool precond = PreConditioning;
   if (precond)
   {
+#if NODALDOFS == 3
+    dserror("Preconditioning is not implemented for the case NODALDOFS = 3!");
+#endif
     double length = jacobi_*2.0;
     double radius = std::pow(crosssec_/M_PI,0.5);
     for (int zeile=0; zeile <2; zeile++)
@@ -990,9 +1450,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   double Factor = ScaleFactorLine;
   Factor = Factor * ScaleFactorColumn;
 
-  for (int zeile=0; zeile <12; zeile++)
+  for (int zeile=0; zeile <nnode*dofpn; zeile++)
   {
-    for (int spalte=0; spalte<12; spalte++)
+    for (int spalte=0; spalte<nnode*dofpn; spalte++)
     {
       (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
     }
@@ -1023,7 +1483,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
                                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                                  Epetra_SerialDenseVector* force)
 {
-
+#if NODALDOFS == 3
+    dserror("FADCheck are not implemented for the case NODALDOFS = 3!!!");
+#endif
   #ifdef SIMPLECALC
   {
     //see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
@@ -1106,7 +1568,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
 
     //TODO: The integration rule should be set via input parameter and not hard coded as here
     //Get integrationpoints for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
 
     //Get DiscretizationType of beam element
     const DRT::Element::DiscretizationType distype = Shape();
@@ -1408,7 +1870,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
 
     //TODO: The integration rule should be set via input parameter and not hard coded as here
     //Get integrationpoints for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
 
     //Get DiscretizationType of beam element
     const DRT::Element::DiscretizationType distype = Shape();
@@ -1653,6 +2115,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
                                              Epetra_SerialDenseVector& elevec1,
                                              Epetra_SerialDenseMatrix* elemat1)
 {
+#if NODALDOFS == 3
+    dserror("FADChecks are not implemented for the case NODALDOFS = 3!!!");
+#endif
   //FAD calculated stiff matrix for validation purposes
   Epetra_SerialDenseMatrix stiffmatrix_check;
 
@@ -1863,7 +2328,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
 
 
 
-
+#if NODALDOFS == 3
+    dserror("High precision calculation is not implemented for the case NODALDOFS = 3!!!");
+#endif
 
         std::vector<double> forcetest2(12);
         for (int i=0; i<12;i++)
@@ -2169,7 +2636,9 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
 
   void DRT::ELEMENTS::Beam3eb::HighPrecissionCalc()
   {
-
+#if NODALDOFS == 3
+    dserror("High precision calculation is not implemented for the case NODALDOFS = 3!!!");
+#endif
     //Uncomment the following line to avoid floating point underflow --> small numbers are then rounded to zero
     //cl_inhibit_floating_point_underflow = true;
 
@@ -2614,6 +3083,10 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
                                                     LINALG::TMatrix<cl_F,3,1>* fextm,
                                                     LINALG::TMatrix<cl_F,3,3>* stiffextm)
   {
+
+#if NODALDOFS == 3
+    dserror("High precision calculation is not implemented for the case NODALDOFS = 3!!!");
+#endif
 
     LINALG::TMatrix<cl_F,3,1> tangent;
     LINALG::TMatrix<cl_F,3,1> crossproduct;
