@@ -34,8 +34,8 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebtorType::Create( const std::vector<char> &
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create(const std::string eletype,
-																 															const std::string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create(const string eletype,
+																 															const string eledistype,
 																 															const int id,
 																 															const int owner )
 {
@@ -255,7 +255,7 @@ void DRT::ELEMENTS::Beam3ebtor::SetUpReferenceGeometry(const std::vector<double>
 	  DRT::Element::DiscretizationType distype = Shape();
 
 	  //Get integrationpoints for exact integration
-	  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
+	  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
 
 	  Tref_.resize(gausspoints.nquad);
 

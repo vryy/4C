@@ -41,6 +41,10 @@ be set to 0, otherwise the axial tension at the boundary would be prescribed. Th
 #define ScaleFactorLinetor 1;
 #define ScaleFactorColumntor 1;
 
+//#define ANS // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
+
+#define mygaussrule intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
+
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {
@@ -304,6 +308,7 @@ private:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
+    calc_struct_update_imrlike,
     calc_struct_reset_istep,
     calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
     calc_struct_energy
