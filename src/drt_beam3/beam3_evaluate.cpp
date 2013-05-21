@@ -71,7 +71,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
    	  		case 3:EvaluatePTC<3>(params, elemat1); break;
    	  		case 4:EvaluatePTC<4>(params, elemat1); break;
    	  		case 5:EvaluatePTC<5>(params, elemat1); break;
-   	  		default:dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+   	  		case 6:EvaluatePTC<6>(params, elemat1); break;
+   	  		default:dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
    	  }
     }
     break;
@@ -117,8 +118,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
           b3_energy<5>(params,mydisp,&elevec1);
           break;
         }
+        case 6:
+         {
+           b3_energy<6>(params,mydisp,&elevec1);
+           break;
+         }
         default:
-          dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+          dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
       }
     }
     break;
@@ -177,8 +183,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
   	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  			break;
   	  		}
+          case 6:
+          {
+            b3_nlnstiffmass<6>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+            break;
+          }
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  			dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
     	  }
       }
       else if (act == Beam3::calc_struct_nlnstifflmass)
@@ -209,8 +220,14 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
   	  			lumpmass<5>(&elemat2);
   	  			break;
   	  		}
+          case 6:
+          {
+            b3_nlnstiffmass<6>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+            lumpmass<6>(&elemat2);
+            break;
+          }
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  			dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
     	  }
       }
       else if (act == Beam3::calc_struct_nlnstiff)
@@ -237,8 +254,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
   	  			b3_nlnstiffmass<5>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
   	  			break;
   	  		}
+          case 6:
+          {
+            b3_nlnstiffmass<6>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+            break;
+          }
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  			dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
     	  }
       }
 
@@ -266,8 +288,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
   	  			b3_nlnstiffmass<5>(params,myvel,mydisp,NULL,NULL,&elevec1);
   	  			break;
   	  		}
+          case 6:
+          {
+            b3_nlnstiffmass<6>(params,myvel,mydisp,NULL,NULL,&elevec1);
+            break;
+          }
   	  		default:
-  	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+  	  			dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
     	  }
       }
 
@@ -339,8 +366,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
         	  			b3_nlnstiffmass<5>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
         	  			break;
         	  		}
+        	  		case 6:
+                {
+                  b3_nlnstiffmass<6>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+                  break;
+                }
         	  		default:
-        	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+        	  			dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
         	  }
 
         	//computing derivative d(fint)/du numerically by finite difference
@@ -420,7 +452,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Integrate a Surface Neumann boundary condition (public)                                       cyron 03/08|
+ |  Integrate a Line Neumann boundary condition (public)                                       cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
 int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
@@ -435,6 +467,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
   RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
@@ -477,6 +510,9 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
+  // funct is related to the 6 "funct" fields after the val field of the Neumann condition
+  // in the input file; funct gives the number of the function defined in the section FUNCT
+  const std::vector<int>* functions = condition.Get<std::vector<int> >("funct");
 
   //integration loops
   for (int numgp=0; numgp<intpoints.nquad; ++numgp)
@@ -484,9 +520,19 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
     //integration points in parameter space and weights
     const double xi = intpoints.qxg[numgp][0];
     const double wgt = intpoints.qwgt[numgp];
-
     //evaluation of shape funcitons at Gauss points
     DRT::UTILS::shape_function_1D(funct,xi,distype);
+
+    //position vector at the gauss point at reference configuration needed for function evaluation
+    std::vector<double> X_ref(3,0.0);
+    //calculate coordinates of corresponding Guass point in reference configuration
+    for (int node=0;node<NumNode();node++)
+    {
+      for (int dof=0;dof<3;dof++)
+      {
+        X_ref[dof]+=funct[node]*Nodes()[node]->X()[dof];
+      }
+    }
 
     double fac=0;
     fac = wgt * jacobi_[numgp];
@@ -497,15 +543,28 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
     // loop the dofs of a node
     for (int dof=0; dof<numdf; ++dof)
       ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac;
-
+    double functionfac = 1.0;
+    int functnum = -1;
 
     //sum up load components
-    for (int node=0; node<NumNode(); ++node)
-      for (int dof=0; dof<numdf; ++dof)
-        elevec1[node*numdf+dof] += funct[node] *ar[dof];
+    for (int dof=0; dof<6; ++dof)
+    {
+      if (functions) functnum = (*functions)[dof];
+      else functnum = -1;
 
+      if (functnum>0)
+      {
+        // evaluate function at the position of the current node       --> dof here correct?
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
+      }
+      else functionfac = 1.0;
+
+      for (int node=0; node<NumNode(); ++node)
+      {
+        elevec1[node*numdf+dof] += funct[node] *ar[dof] *functionfac;
+      }
+    }
   } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
-
   return 0;
 }
 
@@ -982,7 +1041,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
     dserror("unknown or improper type of material law");
   }
 
-
   //"new" variables have to be adopted to current discplacement
 
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
@@ -1002,6 +1060,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
+
   	//Get location and weight of GP in parameter space
   	const double xi = gausspoints.qxg[numgp][0];
   	const double wgt = gausspoints.qwgt[numgp];
@@ -1089,6 +1148,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
 		//turning bending strain epsilonm into bending stress stressm
 		epsilonm = curvnew_[numgp];
+
 		epsilonm(0) *= sm*Irr_;
 		epsilonm(1) *= ym*Iyy_;
 		epsilonm(2) *= ym*Izz_;

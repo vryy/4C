@@ -2039,6 +2039,21 @@ namespace UTILS
            *nodenumbering   1   3   4   5   2
           */
       }
+      case DRT::Element::line6:
+      {
+          funct(0)= -625.0/768.0* (pow(r,5) -pow(r,4)         -2.0/5.0*pow(r,3)       +2.0/5.0*pow(r,2)    +9.0/625.0*r -9.0/625.0);
+          funct(1)= 625.0/768.0*  (pow(r,5) +pow(r,4)         -2.0/5.0*pow(r,3)       -2.0/5.0*pow(r,2)    +9.0/625.0*r +9.0/625.0);
+          funct(2)= 3125.0/768.0* (pow(r,5) -3.0/5.0*pow(r,4) -26.0/25.0*pow(r,3) +78.0/125.0*pow(r,2) +1.0/25.0*r  -3.0/125.0);
+          funct(3)= -3125.0/384.0*(pow(r,5) -1.0/5.0*pow(r,4) -34.0/25.0*pow(r,3) +34.0/125.0*pow(r,2) +9.0/25.0*r  -9.0/125.0);
+          funct(4)= 3125.0/384.0* (pow(r,5) +1.0/5.0*pow(r,4) -34.0/25.0*pow(r,3) -34.0/125.0*pow(r,2) +9.0/25.0*r  +9.0/125.0);
+          funct(5)= -3125.0/768.0*(pow(r,5) +3.0/5.0*pow(r,4) -26.0/25.0*pow(r,3) -78.0/125.0*pow(r,2) +1.0/25.0*r  +3.0/125.0);
+          break;
+          /*
+           *nodegeometry    x-------x-------x-------x-------x-------x-----> xi
+           *
+           *nodenumbering   1   3   4   5   6   2
+          */
+      }
       default:
           dserror("distype unknown\n");
       }
@@ -2103,6 +2118,21 @@ namespace UTILS
            *nodegeometry    x-------x-------x-------x-------x-----> xi
            *
            *nodenumbering   1   3   4   5   2
+          */
+      }
+      case DRT::Element::line6:
+      {
+          deriv1(dr, 0)= -625.0/768.0* (5.0*pow(r,4) -4.0*pow(r,3)      -6.0/5.0*pow(r,2)    +4.0/5.0*r     +9.0/625.0);
+          deriv1(dr, 1)=  625.0/768.0* (5.0*pow(r,4) +4.0*pow(r,3)      -6.0/5.0*pow(r,2)    -4.0/5.0*r     +9.0/625.0);
+          deriv1(dr, 2)=  3125.0/768.0*(5.0*pow(r,4) -12.0/5.0*pow(r,3) -78.0/25.0*pow(r,2)  +156.0/125.0*r +1.0/25.0);
+          deriv1(dr, 3)= -3125.0/384.0*(5.0*pow(r,4) -4.0/5.0*pow(r,3)  -102.0/25.0*pow(r,2) +68.0/125.0*r  +9.0/25.0);
+          deriv1(dr, 4)=  3125.0/384.0*(5.0*pow(r,4) +4.0/5.0*pow(r,3)  -102.0/25.0*pow(r,2) -68.0/125.0*r  +9.0/25.0);
+          deriv1(dr, 5)= -3125.0/768.0*(5.0*pow(r,4) +12.0/5.0*pow(r,3) -78.0/25.0*pow(r,2)  -156.0/125.0*r +1.0/25.0);
+          break;
+          /*
+           *nodegeometry    x-------x-------x-------x-------x-------x-----> xi
+           *
+           *nodenumbering   1   3   4   5   6   2
           */
       }
       default:
@@ -2196,10 +2226,10 @@ namespace UTILS
       {
       case DRT::Element::line2:
       {
-          deriv1(0)= 0.25*(- 3.0 + 3.0 * pow(r,2.0));
-          deriv1(1)= l / 8.0 * (- 1.0 - 2.0 * r + 3.0 * pow(r,2.0));
-          deriv1(2)= 0.25*(3.0 - 3.0 * pow(r,2.0));
-          deriv1(3)= l / 8.0 * (- 1.0 + 2.0 * r + 3.0 * pow(r,2.0));
+          deriv1(0,0)= 0.25*(- 3.0 + 3.0 * pow(r,2.0));
+          deriv1(0,1)= l / 8.0 * (- 1.0 - 2.0 * r + 3.0 * pow(r,2.0));
+          deriv1(0,2)= 0.25*(3.0 - 3.0 * pow(r,2.0));
+          deriv1(0,3)= l / 8.0 * (- 1.0 + 2.0 * r + 3.0 * pow(r,2.0));
           break;
       }
       default:
@@ -2225,10 +2255,10 @@ namespace UTILS
       {
       case DRT::Element::line2:
       {
-          deriv2(0)= 1.5 * r;
-          deriv2(1)= l / 8.0 * (- 2.0 + 6.0 * r);
-          deriv2(2)= - 1.5 * r;
-          deriv2(3)= l / 8.0 * (2.0 + 6.0 * r);
+          deriv2(0,0)= 1.5 * r;
+          deriv2(0,1)= l / 8.0 * (- 2.0 + 6.0 * r);
+          deriv2(0,2)= - 1.5 * r;
+          deriv2(0,3)= l / 8.0 * (2.0 + 6.0 * r);
           break;
       }
       default:
@@ -2237,6 +2267,153 @@ namespace UTILS
 
       return;
 
+  }
+
+
+  /*!
+    \brief Fill a matrix of type M with 1D hermite shape function derivatives
+    */
+    template <class M>
+    void shape_function_hermite_1D_deriv3(
+      M&                                       deriv3,  ///< to be filled with hermite shape function second derivative values
+      const double&                            r,       ///< r coordinate
+      const double&              l,     ///< length of element
+      const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+      )
+    {
+        switch (distype)
+        {
+        case DRT::Element::line2:
+        {
+            deriv3(0)= 1.5;
+            deriv3(1)= l / 8.0*6.0;
+            deriv3(2)= - 1.5;
+            deriv3(3)= l / 8.0*6.0;
+            break;
+        }
+        default:
+            dserror("distype unknown\n");
+        }
+
+        return;
+
+    }
+
+
+  /*!
+  \brief Fill a matrix of type M with 1D hermite shape functions of order five
+   */
+  template <class M>
+  void shape_function_hermite_1D_order5(
+	M&											funct, 		///< to be filled with the values hermite shape functions of order five
+	const double&								r,			///< r coordinate
+	const double& 								l,	  		///< length of element
+	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
+	)
+  {
+	  switch(distype)
+	  {
+		  case DRT::Element::line2:
+		  {
+			  funct(0)=0.0625*(8-15*r+10*pow(r,3)-3*pow(r,5));
+			  funct(1)=0.03125*l*(5-7*r-6*pow(r,2)+10*pow(r,3)+1*pow(r,4)-3*pow(r,5));
+			  funct(2)=0.015625*pow(l,2)*(1-1*r-2*pow(r,2)+2*pow(r,3)+1*pow(r,4)-1*pow(r,5));
+			  funct(3)=0.0625*(8+15*r-10*pow(r,3)+3*pow(r,5));
+			  funct(4)=0.03125*l*(-5-7*r+6*pow(r,2)+10*pow(r,3)-1*pow(r,4)-3*pow(r,5));
+			  funct(5)=0.015625*pow(l,2)*(1+1*r-2*pow(r,2)-2*pow(r,3)+1*pow(r,4)+1*pow(r,5));
+			  break;
+		  }
+		  default:
+			  dserror("distype unknown\n");
+	  }
+	  return;
+  }
+
+  /*!
+  \brief Fill a matrix of type M with the first derivative of 1D hermite shape functions of order five
+   */
+  template <class M>
+  void shape_function_hermite_1D_order5_deriv1(
+	M&											funct, 		///< to be filled with the values hermite shape functions of order five
+	const double&								r,			///< r coordinate
+	const double& 								l,	  		///< length of element
+	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
+	)
+  {
+	  switch(distype)
+	  {
+		  case DRT::Element::line2:
+		  {
+			  funct(0)=0.0625*(-15+30*pow(r,2)-15*pow(r,4));
+			  funct(1)=0.03125*l*(-7-12*r+30*pow(r,2)+4*pow(r,3)-15*pow(r,4));
+			  funct(2)=0.015625*pow(l,2)*(-1-4*r+6*pow(r,2)+4*pow(r,3)-5*pow(r,4));
+			  funct(3)=0.0625*(15-30*pow(r,2)+15*pow(r,4));
+			  funct(4)=0.03125*l*(-7+12*r+30*pow(r,2)-4*pow(r,3)-15*pow(r,4));
+			  funct(5)=0.015625*pow(l,2)*(1-4*r-6*pow(r,2)+4*pow(r,3)+5*pow(r,4));
+			  break;
+		  }
+		  default:
+			  dserror("distype unknown\n");
+	  }
+	  return;
+  }
+
+  /*!
+  \brief Fill a matrix of type M with the second derivative of 1D hermite shape functions of order five
+   */
+  template <class M>
+  void shape_function_hermite_1D_order5_deriv2(
+	M&											funct, 		///< to be filled with the values hermite shape functions of order five
+	const double&								r,			///< r coordinate
+	const double& 								l,	  		///< length of element
+	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
+	)
+  {
+	  switch(distype)
+	  {
+		  case DRT::Element::line2:
+		  {
+			  funct(0)=0.0625*(60*r-60*pow(r,3));
+			  funct(1)=0.03125*l*(-12+60*r+12*pow(r,2)-60*pow(r,3));
+			  funct(2)=0.015625*pow(l,2)*(-4+12*r+12*pow(r,2)-20*pow(r,3));
+			  funct(3)=0.0625*(-60*r+60*pow(r,3));
+			  funct(4)=0.03125*l*(12+60*r-12*pow(r,2)-60*pow(r,3));
+			  funct(5)=0.015625*pow(l,2)*(-4-12*r+12*pow(r,2)+20*pow(r,3));
+			  break;
+		  }
+		  default:
+			  dserror("distype unknown\n");
+	  }
+	  return;
+  }
+
+  /*!
+  \brief Fill a matrix of type M with the third derivative of 1D hermite shape functions of order five
+   */
+  template <class M>
+  void shape_function_hermite_1D_order5_deriv3(
+	M&											funct, 		///< to be filled with the values hermite shape functions of order five
+	const double&								r,			///< r coordinate
+	const double& 								l,	  		///< length of element
+	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
+	)
+  {
+	  switch(distype)
+	  {
+		  case DRT::Element::line2:
+		  {
+			  funct(0)=0.0625*(60-180*pow(r,2));
+			  funct(1)=0.03125*l*(60+24*r-180*pow(r,2));
+			  funct(2)=0.015625*pow(l,2)*(12+24*r-60*pow(r,2));
+			  funct(3)=0.0625*(-60+180*pow(r,2));
+			  funct(4)=0.03125*l*(60-24*r-180*pow(r,2));
+			  funct(5)=0.015625*pow(l,2)*(-12+24*r+60*pow(r,2));
+			  break;
+		  }
+		  default:
+			  dserror("distype unknown\n");
+	  }
+	  return;
   }
 
   /*!

@@ -148,6 +148,26 @@ void DRT::ELEMENTS::Beam3Type::SetupElementDefinition( std::map<std::string,std:
     //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
     ;
+
+  defs["LINE6"]
+    .AddIntVector("LINE6",6)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN6"]
+    .AddIntVector("LIN6",6)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("SHEARCORR")
+    .AddNamedDouble("MOMIN")
+    //.AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
 }
 
 
@@ -248,8 +268,11 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3::Shape() const
   	case 5:
   		return line5;
   		break;
+    case 6:
+      return line6;
+      break;
   	default:
-			dserror("Only Line2, Line3 and Line4 elements are implemented.");
+			dserror("Only Line2, Line3, Line4, Line5 and Line6 elements are implemented.");
 			break;
   }
 
@@ -449,6 +472,25 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3::MyGaussRule(int nnode, Integration
       }
       break;
     }
+    case 6:
+        {
+          switch(integrationtype)
+          {
+            case gaussexactintegration:
+            {
+              gaussrule = DRT::UTILS::intrule_line_6point;
+              break;
+            }
+            case gaussunderintegration:
+            {
+              gaussrule =  DRT::UTILS::intrule_line_5point;
+              break;
+            }
+            default:
+              dserror("unknown type of integration");
+          }
+          break;
+        }
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
   }
@@ -519,8 +561,13 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 	  			currele->SetUpReferenceGeometry<5>(xrefe,rotrefe);
 	  			break;
 	  		}
+        case 6:
+        {
+          currele->SetUpReferenceGeometry<6>(xrefe,rotrefe);
+          break;
+        }
 	  		default:
-	  			dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+	  			dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
 	  	}
 
 	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)

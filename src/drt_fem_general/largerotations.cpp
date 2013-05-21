@@ -43,7 +43,7 @@ void LARGEROTATIONS::quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG:
  *----------------------------------------------------------------------*/
 void LARGEROTATIONS::quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta)
 {
-  /*the following function computes from a quaternion q an angle theta within [-PI; PI]; such an interval is
+  /*the following function computes from a quaternion q an angle theta within ]-PI; PI]; such an interval is
    * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
    * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
    * they are not 2*PI-invariant !!! */

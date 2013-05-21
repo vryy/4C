@@ -73,6 +73,7 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::line3:        return 3;    break;
     case DRT::Element::line4:        return 4;    break;
     case DRT::Element::line5:        return 5;    break;
+    case DRT::Element::line6:        return 6;    break;
     case DRT::Element::tri3:         return 3;    break;
     case DRT::Element::tri6:         return 6;    break;
     case DRT::Element::quad4:        return 4;    break;
