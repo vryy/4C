@@ -252,6 +252,12 @@ namespace INPAR
       case pred_constdis :
         return "ConstDis";
         break;
+      case pred_constvel :
+        return "ConstVel";
+        break;
+      case pred_constacc :
+        return "ConstAcc";
+        break;
       case pred_constdisvelacc :
         return "ConstDisVelAcc";
         break;
