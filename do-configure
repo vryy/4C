@@ -16,7 +16,7 @@ ADDITIONAL_TESTS_PATH=""
 # activate debug version: ./do-configure --debug 
 # or choose do-configure-debug which does the same
 
-OPTIONS=`getopt -o hc:dae -l help,config:,additionaltests:,debug,useACML,experimental -- "$@"`
+OPTIONS=`getopt -o hc:dae -l help,config:,additionaltests:,debug,trilinos-debug,useACML,experimental -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
@@ -25,7 +25,7 @@ eval set -- $OPTIONS
 while true; do
   case "$1" in
     -h|--help) 
-      echo "usage: do-configure-2 [--debug] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+      echo "usage: do-configure [--debug] [--trilinos-debug] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
       exit 1
       ;;
     -c|--config) 
@@ -38,6 +38,8 @@ while true; do
       ;;
     -d|--debug) 
       BUILD_TYPE="DEBUG"
+      ;;
+    --trilinos-debug)
       TRILINOS_BUILD_TYPE="dbg"
       ;;
     -e|--experimental)
