@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0  K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
+  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0  K1COMP 0.0 K2COMP 1.0 [INIT 1] [ADAPT_ANGLE No]
 
 <pre>
 Maintainer: Susanna Tinkl
@@ -13,7 +13,6 @@ Maintainer: Susanna Tinkl
             089/289 15265
 </pre>
 */
-
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -125,6 +124,35 @@ void MAT::ELASTIC::CoupAnisoExpo::Setup(DRT::INPUT::LineDefinition* linedef)
         locsys(i,0) = rad[i]/radnorm;
         locsys(i,1) = axi[i]/axinorm;
         locsys(i,2) = cir[i]/cirnorm;
+      }
+
+      LINALG::Matrix<3,3> Id(true);
+      for (int i=0; i<3; i++)
+        Id(i,i) = 1.0;
+      SetFiberVecs(0.0,locsys,Id);
+    }
+    // read given first fiber family
+    else if ( linedef->HaveNamed("FIBER1") )
+    {
+    	std::vector<double> fiber1;
+      LINALG::Matrix<3,3> locsys(true);
+      linedef->ExtractDoubleVector("FIBER1",fiber1);
+      double f1norm=0.;
+
+      //normalization
+      for (int i = 0; i < 3; ++i)
+      {
+      	f1norm += fiber1[i]*fiber1[i];
+      }
+      f1norm = sqrt(f1norm);
+
+      // we set locsys(:,2) = fiber1, since in function SetFiberVecs
+      // the fiber orientation will be calculated via
+      // ca = cos(gamma)*locsys(:,2) + sin(gamma)*locsys(:,1)
+      //    = locsys(:,2) for gamma=0.0
+      for (int i=0; i<3; ++i)
+      {
+        locsys(i,2) = fiber1[i]/f1norm;
       }
 
       LINALG::Matrix<3,3> Id(true);
