@@ -243,6 +243,13 @@ namespace INPAR
       zero
     };
 
+    /// type of method for improving consistency of stabilized methods
+    enum Fluxeval
+    {
+      fluxeval_standard,
+      fluxeval_alldof
+    };
+
     // faraday constant (general definition)
     const double faraday_const = 96485.3399;
 

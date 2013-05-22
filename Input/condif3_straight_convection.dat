@@ -241,8 +241,8 @@ DLINE                           0
 DSURF                           0
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           2
-E 2 - Best wishes // for flux calculation on these boundaries
-E 4 - Good luck
+E 2 - OUTPUT standard // for flux calculation on these boundaries
+E 4 - OUTPUT standard
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 643 DNODE 1
 NODE 1 DNODE 2

@@ -6,8 +6,8 @@
        reinitialization of level-set methods
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>

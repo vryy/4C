@@ -476,7 +476,7 @@ DVOL                            0
 DSURF                           0
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
-E 2 - default // for flux calculation on this boundary
+E 2 - OUTPUT standard // for flux calculation on this boundary
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

@@ -257,9 +257,9 @@ E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.005 0.0 0.0 0.0 0.0 0.0 CURVE none none n
 //                              DOBJECT
 DSURF                           2
 // wall top
-E 1 -
+E 1 - OUTPUT standard
 // wall bottom
-E 2 -
+E 2 - OUTPUT standard
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

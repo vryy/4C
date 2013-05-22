@@ -5,8 +5,8 @@
 \brief Internal implementation of scalar transport boundary elements
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
@@ -393,8 +393,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             tort_ = actsinglemat->Tortuosity();
             epstort_ =eps_*tort_;
 
-            if(eps_ != 1.0 or tort_!=1.0)
-              dserror("It is not clear what happens with the BV condition in case of homogenization");
+            //if(eps_ != 1.0 or tort_!=1.0)
+            //  dserror("It is not clear what happens with the BV condition in case of homogenization");
           }
         }
       }
@@ -3121,6 +3121,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
   // access boundary area variable with its actual value
   double boundaryint = params.get<double>("boundaryint");
 
+  bool outputall = false;
+  if(params.isParameter("alldof"))
+    outputall = true;
+
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -3136,6 +3140,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
       {
         elevec1[node*numdofpernode_+k] += funct_(node) * fac;
       }
+      if(outputall==true)
+        elevec1[node*numdofpernode_+numdofpernode_-1] += funct_(node) * fac;
     }
 
     if (addarea)

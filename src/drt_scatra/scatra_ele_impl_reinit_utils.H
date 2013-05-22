@@ -2,10 +2,10 @@
 \file scatra_ele_impl_reinit_utils.H
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15241
 </pre>
 */
 /*----------------------------------------------------------------------*/

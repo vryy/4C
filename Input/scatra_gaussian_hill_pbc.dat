@@ -188,7 +188,7 @@ DSURF                           1
 // outflow surface and do your flux calculation there!!!
 // The current setting in this test with periodic b.c.'s required this workaround.
 //
-E 3 - LilaLauneBaer
+E 3 - OUTPUT standard
 ---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
