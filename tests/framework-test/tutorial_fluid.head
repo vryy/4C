@@ -1,20 +1,19 @@
---------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYP
 //
-NUMFIELD                        1
 //
 PROBLEMTYP                      Fluid
 //
 RESTART                         0
 //
 // Defines the function spaces for the spatial approximation
-//     Polynomial,Nurbs
+//                              Polynomial,Nurbs
 SHAPEFCT                        Polynomial
 //
-------------------------------------------------------FLUID DYNAMIC
+---------------------------------------------------------------FLUID DYNAMIC
 //
 //
 // Switch on adaptive control of linear solver tolerance for nonlinear solution
-//     Yes,No,yes,no,YES,NO
+//                              Yes,No,yes,no,YES,NO
 ADAPTCONV                       yes
 //
 // The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit
@@ -27,15 +26,15 @@ ALPHA_F                         1
 ALPHA_M                         1
 //
 // Flag to (de)activate error calculation
-//     no,beltrami_flow,channel2D,gravitation,shear_flow
+//                              no,beltrami_flow,channel2D,gravitation,shear_flow
 CALCERROR                       no
 //
 // norm for convergence check
-//     L_2_norm,L_2_norm_without_residual_at_itemax
+//                              L_2_norm,L_2_norm_without_residual_at_itemax
 CONVCHECK                       L_2_norm
 //
 // form of convective term
-//     convective,conservative
+//                              convective,conservative
 CONVFORM                        convective
 //
 // Tolerance for convergence check
@@ -49,13 +48,13 @@ GAMMA                           1
 GRIDVEL                         1
 //
 // Initial field for fluid problem
-//     zero_field
-//     field_by_function
-//     disturbed_field_from_function
-//     FLAME_VORTEX_INTERACTION
-//     BELTRAMI-FLOW
-//     KIM-MOIN-FLOW
-//     BOCHEV-TEST
+//                              zero_field
+//                              field_by_function
+//                              disturbed_field_from_function
+//                              FLAME_VORTEX_INTERACTION
+//                              BELTRAMI-FLOW
+//                              KIM-MOIN-FLOW
+//                              BOCHEV-TEST
 INITIALFIELD                    zero_field
 //
 // max number of nonlinear iterations for initial stationary solution
@@ -65,60 +64,60 @@ INITSTATITEMAX                  5
 ITEMAX                          10
 //
 // Calculate lift and drag forces along specified boundary
-//     No,no,Yes,yes,Nodeforce,NODEFORCE,nodeforce
+//                              No,no,Yes,yes,Nodeforce,NODEFORCE,nodeforce
 LIFTDRAG                        No
 //
 // Total simulation time
 MAXTIME                         1000
 //
 // Flag to (de)activate mesh tying algorithm
-//     no
-//     Condensed_Smat
-//     Condensed_Bmat
-//     Condensed_Bmat_merged
-//     SaddlePointSystem_coupled
-//     SaddlePointSystem_pc
-//     Coupling_ionTransport_Laplace
+//                              no
+//                              Condensed_Smat
+//                              Condensed_Bmat
+//                              Condensed_Bmat_merged
+//                              SaddlePointSystem_coupled
+//                              SaddlePointSystem_pc
+//                              Coupling_ionTransport_Laplace
 MESHTYING                       no
 //
 // Flag to (de)activate potential Neumann inflow term(s)
-//     no,yes
+//                              no,yes
 NEUMANNINFLOW                   no
 //
 // Nonlinear iteration scheme
-//     fixed_point_like,Newton,minimal
+//                              fixed_point_like,Newton,minimal
 NONLINITER                      fixed_point_like
 //
 // Number of Steps for Starting Scheme
 NUMSTASTEPS                     0
 //
 // Total number of Timesteps
-NUMSTEP                         10 //20
+NUMSTEP 10 //20
 //
 // Physical Type
-//     Incompressible,Varying_density,Loma,Boussinesq
+//                              Incompressible,Varying_density,Loma,Boussinesq
 PHYSICAL_TYPE                   Incompressible
 //
 // Predictor for first guess in nonlinear iteration
-//     steady_state
-//     zero_acceleration
-//     constant_acceleration
-//     constant_increment
-//     explicit_second_order_midpoint
-//     TangVel 
+//                              steady_state
+//                              zero_acceleration
+//                              constant_acceleration
+//                              constant_increment
+//                              explicit_second_order_midpoint
+//                              TangVel
 PREDICTOR                       explicit_second_order_midpoint
 //
 // Increment for writing restart
 RESTARTEVRY                     20
 //
 // Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!
-//     Yes,No,yes,no,YES,NO
+//                              Yes,No,yes,no,YES,NO
 SIMPLER                         no
 //
 // Function for Initial Starting Field
 STARTFUNCNO                     -1
 //
-//     One_Step_Theta
+//                              One_Step_Theta
 STARTINGALGO                    One_Step_Theta
 //
 // Time integration factor for starting scheme
@@ -131,14 +130,14 @@ STEADYSTEP                      -1
 STEADYTOL                       1e-06
 //
 // Flag to (de)activate potential Strong 3D redD coupling
-//     no,yes
+//                              no,yes
 STRONG_REDD_3D_COUPLING_TYPE    no
 //
 // Time integration factor
 THETA                           0.66
 //
 // Time Integration Scheme
-//     Stationary,Np_Gen_Alpha,Gen_Alpha,Af_Gen_Alpha,One_Step_Theta,BDF2
+//                              Stationary,Np_Gen_Alpha,Gen_Alpha,Af_Gen_Alpha,One_Step_Theta,BDF2
 TIMEINTEGR                      One_Step_Theta
 //
 // Time increment dt
@@ -148,29 +147,29 @@ TIMESTEP                        0.01
 UPRES                           1
 //
 LINEAR_SOLVER                   1
-----------------------------------------------------------SOLVER 1
+--------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-----------------------------------------------------------MATERIALS
+-------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1.0
-------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5  t1 0.0 t2 0.1
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
--------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 2911 QUANTITY velx     VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 2911 QUANTITY vely     VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 2911 QUANTITY pressure VALUE  2.31627223559288309e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 4033 QUANTITY velx     VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 4033 QUANTITY vely     VALUE  0.00000000000000000e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 4033 QUANTITY pressure VALUE  1.51100145066712477e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 6666 QUANTITY velx     VALUE  8.14034812543404929e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 6666 QUANTITY vely     VALUE -2.27435812825549748e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 6666 QUANTITY pressure VALUE  2.05813859285411249e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 6997 QUANTITY velx     VALUE  9.70817379651769397e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 6997 QUANTITY vely     VALUE -7.97704543347241440e-16 TOLERANCE 1e-8
-FLUID DIS fluid NODE 6997 QUANTITY pressure VALUE  1.84501413456243579e+00 TOLERANCE 1e-10
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 t1 0.0 t2 0.1
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------FUNCT1
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------RESULT DESCRIPTION
+FLUID DIS fluid NODE 2911 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 2911 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 2911 QUANTITY pressure VALUE 2.31627223559288309e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 4033 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 4033 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 4033 QUANTITY pressure VALUE 1.51100145066712477e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 6666 QUANTITY velx VALUE 8.14034812543404929e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 6666 QUANTITY vely VALUE -2.27435812825549748e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 6666 QUANTITY pressure VALUE 2.05813859285411249e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 6997 QUANTITY velx VALUE 9.70817379651769397e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 6997 QUANTITY vely VALUE -7.97704543347241440e-16 TOLERANCE 1e-8
+FLUID DIS fluid NODE 6997 QUANTITY pressure VALUE 1.84501413456243579e+00 TOLERANCE 1e-10
