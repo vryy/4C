@@ -392,7 +392,7 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 /* incremental iteration update of state */
 void STR::TimIntOneStepTheta::UpdateIterIncrementally()
 {
-  // Auxiliar vector holding new velocities and accelerations
+  // Auxiliary vector holding new velocities and accelerations
   // by extrapolation/scheme on __all__ DOFs. This includes
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the

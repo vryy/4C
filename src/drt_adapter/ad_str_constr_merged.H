@@ -80,7 +80,7 @@ namespace ADAPTER {
     /// unknown displacements at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> Dispnp();
 
-    /// unknown displacements at \f$t_{n}\f$
+    /// known displacements at \f$t_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Dispn();
 
     /// dof map of vector of unknowns

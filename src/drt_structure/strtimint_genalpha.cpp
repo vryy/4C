@@ -429,10 +429,11 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 /* incremental iteration update of state */
 void STR::TimIntGenAlpha::UpdateIterIncrementally()
 {
-  // auxiliar global vectors
+  // auxiliary global vectors
   Teuchos::RCP<Epetra_Vector> aux
     = LINALG::CreateVector(*dofrowmap_, true);
-  // further auxiliar variables
+
+  // further auxiliary variables
   const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$
 
   // new end-point displacements

@@ -593,7 +593,7 @@ namespace STR
     //! Return displacements \f$D_{n}\f$
     Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
 
-    //! unknown displacements at \f$t_{n}\f$
+    //! known displacements at \f$t_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
 
     //! Return displacements \f$D_{n+1}\f$

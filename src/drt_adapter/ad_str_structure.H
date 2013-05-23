@@ -129,10 +129,10 @@ namespace ADAPTER {
     /// rhs of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
-    /// unknown displacements at t(n+1)
+    /// unknown displacements at \f$t_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
 
-    /// unknown displacements at t(n)
+    /// known displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
 
     /// return displacements at all the time steps

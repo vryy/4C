@@ -45,7 +45,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()
     { return structure_->Dispnp(); }
 
-    /// unknown displacements at \f$t_{n}\f$
+    /// known displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispn()
     { return structure_->Dispn(); }
 
@@ -333,6 +333,9 @@ namespace ADAPTER
       : StructureWrapper(structure) {}
 
     virtual void PrepareTimeStep();
+
+    //! Evaluate() routine that can handle NOX step increments by computing the
+    //! last iteration increment needed for structural Evaluate() call
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disstepinc);
 
   private:
