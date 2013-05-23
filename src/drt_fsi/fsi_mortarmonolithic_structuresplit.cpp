@@ -919,19 +919,6 @@ void FSI::MortarMonolithicStructureSplit::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MortarMonolithicStructureSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::InitialGuess");
-
-  CombineFieldVectors(*ig,
-                      StructureField()->InitialGuess(),
-                      FluidField().InitialGuess(),
-                      AleField().InitialGuess(),true);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();

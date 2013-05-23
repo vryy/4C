@@ -429,10 +429,10 @@ namespace FSI
     //! OtherMap()  = DOFs without Dirichlet boundary condition
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
-  private:
-
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+
+  private:
 
     //! @name Setup of RHS vector
 
@@ -494,7 +494,7 @@ namespace FSI
 
     //! @name NOX methods
 
-    /// compute FSI block matrix
+    /// compute FSI block matrix (not for standard FSI)
     bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
 
     /// preconditioner

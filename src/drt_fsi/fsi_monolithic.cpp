@@ -112,14 +112,7 @@ void FSI::MonolithicBase::PrepareTimeStep()
   StructureField()->PrepareTimeStep();
   FluidField().     PrepareTimeStep();
   AleField().       PrepareTimeStep();
-
-  // Single field predictors have been applied, so store the structural
-  // interface displacement increment due to predictor or inhomogeneous
-  // Dirichlet boundary conditions
-  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
-  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -462,20 +455,25 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   if (fdbg_!=Teuchos::null)
     fdbg_->NewTimeStep(Step(),"fluid");
 
+  // Single field predictors have been applied, so store the structural
+  // interface displacement increment due to predictor or inhomogeneous
+  // Dirichlet boundary conditions
+  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
+  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
+
   // start time measurement
   Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
 
-  // calculate initial linear system at current position
-  // (no increment)
+  // calculate initial linear system at current position (no increment)
   // This initializes the field algorithms and creates the first linear
   // systems. And this is the reason we know the initial linear system is
-  // there when we create the NOX::Group.
+  // there when we create the NOX::FSI::Group.
   Evaluate(Teuchos::null);
 
   // Get initial guess.
   // The initial system is there, so we can happily extract the
   // initial guess. (The Dirichlet conditions are already build in!)
-  Teuchos::RCP<Epetra_Vector> initial_guess = Teuchos::rcp(new Epetra_Vector(*DofRowMap()));
+  Teuchos::RCP<Epetra_Vector> initial_guess = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),true));
   InitialGuess(initial_guess);
 
   NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
@@ -505,9 +503,6 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // recover Lagrange multiplier \lambda_{\Gamma} at the interface at the end of each time step
   // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step
   RecoverLagrangeMultiplier();
-
-  // cleanup
-  //mat_->Zero();
 
   // stop time measurement
   timemonitor = Teuchos::null;
@@ -736,7 +731,7 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
   if (firstcall)
     SetupRHSFirstiter(f);
 
-  if (dbcmaps_ != Teuchos::null) // ToDo: Remove this after 'dbcmaps_' has been introduced in lung fsi
+  if (dbcmaps_ != Teuchos::null) // ToDo: Remove if-"Abfrage" after 'dbcmaps_' has been introduced in lung fsi
   {
     // Finally, we take care of Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
@@ -747,6 +742,7 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // NOX expects the 'positive' residual. The negative sign for the
   // linearized Newton system J*dx=-r is done internally by NOX.
+  // Since we assembled the right hand side, we have to invert the sign here.
   f.Scale(-1.);
 }
 
@@ -754,6 +750,8 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::InitialGuess");
+
   CombineFieldVectors(*ig,
                       StructureField()->InitialGuess(),
                       FluidField().InitialGuess(),
@@ -809,7 +807,7 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
     // the perfect place to initialize the block preconditioners.
     SystemMatrix()->SetupPreconditioner();
 
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     precondreusecount_ = fsidyn.get<int>("PRECONDREUSE");
   }
 

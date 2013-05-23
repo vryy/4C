@@ -116,9 +116,6 @@ namespace FSI
 
     //@}
 
-    /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
-
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const;
 

@@ -865,19 +865,6 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::InitialGuess");
-
-  CombineFieldVectors(*ig,
-                      StructureField()->InitialGuess(),
-                      FluidField().InitialGuess(),
-                      AleField().InitialGuess(),true);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
@@ -1473,12 +1460,6 @@ void FSI::MonolithicFluidSplit::PrepareTimeStep()
   StructureField()->PrepareTimeStep();
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
-
-  // Single field predictors have been applied, so store the structural
-  // interface displacement increment due to predictor or inhomogeneous
-  // Dirichlet boundary conditions
-  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
-  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
 }
 
 /*----------------------------------------------------------------------*/

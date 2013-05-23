@@ -30,8 +30,10 @@ namespace NOX
       /// fetch the known Jacobian and RHS from the field solvers
       void CaptureSystemState();
 
+      /// calculate the RHS vector
       virtual NOX::Abstract::Group::ReturnType computeF();
 
+      /// calculate the Jacobian matrix
       virtual NOX::Abstract::Group::ReturnType computeJacobian();
 
       NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
