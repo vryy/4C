@@ -680,7 +680,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &type);
   }
 
-  IntParameter("NUMFIELD",1,"",&type); // unused. to be deleted
   IntParameter("RESTART",0,"",&type);
   setStringToIntegralParameter<int>("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
                                     tuple<std::string>("Polynomial","Nurbs","Meshfree"),
@@ -757,15 +756,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
 
-  // are these needed?
-  setStringToIntegralParameter<int>("OUTPUT_OUT","No","",yesnotuple,yesnovalue,&io);
+  // Parameter OUTPUT_GID currently not used, but will be kept
+  //																										AN 2013_05
   setStringToIntegralParameter<int>("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("OUTPUT_BIN","yes","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("OUTPUT_BIN","yes","Do you want to have binary output?",yesnotuple,yesnovalue,&io);
 
-  setStringToIntegralParameter<int>("STRUCT_DISP","Yes","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("STRUCT_VEL_ACC","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("STRUCT_SE","No","output of strain energy",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("STRUCT_STRESS","No","",
+  // Structural output
+  setStringToIntegralParameter<int>("STRUCT_DISP","Yes","Output of displacements",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("STRUCT_VEL_ACC","No","Output of velocity and acceleration",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("STRUCT_SE","No","Output of strain energy",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("STRUCT_STRESS","No","Output of stress",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
                                                   "Cauchy","cauchy",
@@ -787,7 +787,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STR::stress_cauchy,INPAR::STR::stress_cauchy,
                                             INPAR::STR::stress_2pk,INPAR::STR::stress_2pk),
                                  &io);
-  setStringToIntegralParameter<int>("STRUCT_STRAIN","No","",
+  setStringToIntegralParameter<int>("STRUCT_STRAIN","No","Output of strains",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
                                                   "EA","ea",
@@ -808,12 +808,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
   setStringToIntegralParameter<int>("STRUCT_SURFACTANT","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_WALL_SHEAR_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("ALE_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX","None","",
                                tuple<std::string>("None",
@@ -844,7 +842,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                                INPAR::THR::tempgrad_initial),
                                &io);
 
-  IntParameter("FILESTEPS",1000,"",&io);
+  IntParameter("FILESTEPS",1000,"Amount of timesteps written to a single result file",&io);
   IntParameter("STDOUTEVRY",1,"Print to screen every n step",&io);
 
   BoolParameter("WRITE_TO_SCREEN",  "Yes","Write screen output",                       &io);
@@ -910,13 +908,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("PRESTRESSTIME",0.0,"time to switch from pre to post stressing",&sdyn);
 
-  // a temporary flag
-  setStringToIntegralParameter<int>("ADAPTERDRIVE","No",
-                                    "TEMPORARY FLAG: Switch on time integration driver based on ADAPTER::Structure rather than independent implementation",
-                                    yesnotuple,yesnovalue,&sdyn);
-
   // Output type
-  IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
   IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&sdyn);
   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&sdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
@@ -1080,8 +1072,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "vague",
                                  "fullnewton",
-                                 "lsnewton",
-                                 "oppnewton",
                                  "modnewton",
                                  "ptc",
                                  "newtonlinuzawa",
@@ -1091,8 +1081,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(
                                  INPAR::STR::soltech_vague,
                                  INPAR::STR::soltech_newtonfull,
-                                 INPAR::STR::soltech_newtonls,
-                                 INPAR::STR::soltech_newtonopp,
                                  INPAR::STR::soltech_newtonmod,
                                  INPAR::STR::soltech_ptc,
                                  INPAR::STR::soltech_newtonuzawalin,
@@ -1100,7 +1088,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_noxnewtonlinesearch,
                                  INPAR::STR::soltech_noxgeneral),
                                &sdyn);
-
+  // Currently not used, but structure will be kept if someone wants to reimplement
+  // 																																		AN 2013_05
   setStringToIntegralParameter<int>("CONTROLTYPE","load","load, disp, arc1, arc2 control",
                                tuple<std::string>(
                                  "load",
@@ -1123,7 +1112,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::control_arc2,
                                  INPAR::STR::control_arc2),
                                &sdyn);
-
+  // Currently not used, but structure will be kept if someone wants to reimplement
+  // 																																		AN 2013_05
   setNumericStringParameter("CONTROLNODE","-1 -1 -1",
                             "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]",
                             &sdyn);
@@ -1132,6 +1122,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Use linearization of external follower load in Newton",
                                     yesnotuple,yesnovalue,&sdyn);
 
+// Since predicor "none" would be misleading, the usage of no predictor is called vague.
   setStringToIntegralParameter<int>("PREDICT","ConstDis","Type of predictor",
                                tuple<std::string>(
                                  "Vague",
@@ -1153,11 +1144,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::pred_constdisvelaccpres),
                                &sdyn);
 
-  // time adaptivity (old style)
-  IntParameter("TIMEADAPT",0,"",&sdyn);
-  IntParameter("ITWANT",0,"",&sdyn);
-  DoubleParameter("MAXDT",0.0,"",&sdyn);
-  DoubleParameter("RESULTDT",0.0,"",&sdyn);
   // Uzawa iteration for constraint systems
   DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
   DoubleParameter("UZAWATOL",1.0E-8,"Tolerance for iterative solve with Uzawa algorithm",&sdyn);
