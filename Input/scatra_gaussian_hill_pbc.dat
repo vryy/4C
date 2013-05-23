@@ -24,7 +24,6 @@ MATERIALS                       4
 NUMDF                           2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -32,17 +31,14 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -68,7 +64,7 @@ WRITEFLUX                       totalflux_boundary
 MATID                           4
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -31,7 +30,6 @@ STRUCT_STRESS                   No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc

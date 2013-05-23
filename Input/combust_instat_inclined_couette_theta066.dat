@@ -24,20 +24,16 @@ MATERIALS                       5
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Combustion
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -95,7 +91,7 @@ NUMSTEP                         33
 TIMESTEP                        0.333
 NEUMANNINFLOW                   no
 GMSH_OUTPUT                     no                              // yes
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic
@@ -103,7 +99,7 @@ TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

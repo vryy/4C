@@ -21,7 +21,6 @@ MATERIALS                       1
 NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -29,17 +28,14 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -62,7 +58,7 @@ INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
 WRITEFLUX convectiveflux_boundary// totalflux_boundary
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic

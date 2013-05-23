@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

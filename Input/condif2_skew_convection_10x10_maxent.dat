@@ -14,7 +14,6 @@ created by pre_exodus
 //NODES                         121
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        2
 PROBLEMTYP                      Scalar_Transport
 RESTART                         0
 SHAPEFCT                        Meshfree
@@ -38,7 +37,6 @@ T_VARIANCE                      .01                             // = sigma^2 = g
 T_RANGE_TOL                     1e-6
 T_COMPLIANCE                    linear
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -46,12 +44,10 @@ FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STDOUTEVRY                      1
 STRUCT_DISP                     No
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No

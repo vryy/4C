@@ -18,7 +18,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Top_Opt
-NUMFIELD                        1
 RESTART                         0
 -----------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
 CONV_CHECK_TYPE                 Residuum
@@ -64,9 +63,9 @@ STEADYTOL                       1e-6
 THETA                           0.66
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Topology_optimization
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point

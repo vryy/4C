@@ -18,7 +18,6 @@ MATERIALS                       5
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction_XFEM
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -26,17 +25,14 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -53,7 +49,7 @@ ITEMAX                          100
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
 SECONDORDER                     No
-COUPVARIABLE                    Force              //Displacement
+COUPVARIABLE Force //Displacement
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 TIMEINTEGR                      One_Step_Theta
@@ -78,7 +74,6 @@ SIMPLER                         No
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta
-EIGEN                           0
 TIMESTEP                        0.1
 NUMSTEP                         2
 MAXTIME                         5.0
@@ -97,7 +92,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         100
 LINEAR_SOLVER                   1
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
@@ -105,21 +100,21 @@ TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no//yes
 VSTAB                           no_vstab
-GRAD_DIV                           no //yes //yes
+GRAD_DIV no //yes //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos                         // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos                // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_with_max_diameter
 --------------------------------------------------------------------SOLVER 1
-NAME                            Fluid Solver
+NAME Fluid Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 --------------------------------------------------------------------SOLVER 2
-NAME                            Struct Solver
+NAME Struct Solver
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT_SCREEN           No
@@ -131,7 +126,7 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfsi_moving_boundary //stationary_boundary
+XFLUID_BOUNDARY xfsi_moving_boundary //stationary_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
 VEL_INIT_FUNCT_NO               2
 INTERFACE_VEL                   interface_vel_by_disp
@@ -142,9 +137,9 @@ VISC_STAB_FAC                   35.0                            // in [10;100]
 VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
 CONV_STAB_FAC                   1.0
-CONV_STAB_SCALING               max_abs_normal_vel //abs_normal_vel // inflow // const // none
+CONV_STAB_SCALING max_abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
-GHOST_PENALTY_FAC               0.05                             // in [0.1;0.5]
+GHOST_PENALTY_FAC               0.05                            // in [0.1;0.5]
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.5 DENSITY 5.0 GAMMA 1.0

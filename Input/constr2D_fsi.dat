@@ -17,7 +17,6 @@ MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -25,23 +24,19 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      Yes
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 TIMESTEP                        0.05
@@ -86,7 +81,7 @@ NUMSTASTEPS                     0
 START_THETA                     1.00
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient

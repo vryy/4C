@@ -12,8 +12,8 @@ General Data File BACI
 3d-channel with mixed-hybrid Dirichlet conditions.
 The setup is similar to the examples studied by
 Gamnitzer, Gravemeier, Wall
-A mixed/hybrid Dirichlet formulation for wall-bounded 
-flow problems including turbulent flow, 
+A mixed/hybrid Dirichlet formulation for wall-bounded
+flow problems including turbulent flow,
 Comput. Methods Appl. Mech. Engrg. 245-246 (2012) 22-35
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      13824
@@ -21,7 +21,6 @@ Comput. Methods Appl. Mech. Engrg. 245-246 (2012) 22-35
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -32,11 +31,11 @@ PHYSICAL_TYPE                   Incompressible
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
 TIMEINTEGR                      Np_Gen_Alpha
-NONLINITER                      Newton //fixed_point_like
+NONLINITER Newton //fixed_point_like
 ITEMAX                          4
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-4
-UPRES                           2 
+UPRES                           2
 RESTARTEVRY                     5
 NUMSTEP                         6
 NUMSTASTEPS                     0
@@ -50,7 +49,7 @@ CONVFORM                        convective
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
@@ -59,7 +58,7 @@ TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
@@ -71,14 +70,14 @@ CHAN_AMPL_INIT_DIST             0.3
 HOMDIR                          xz
 SAMPLING_START                  2
 SAMPLING_STOP                   10000
-DUMPING_PERIOD                  0 // statistics a la Peter
+DUMPING_PERIOD                  0                               // statistics a la Peter
 FSSUGRVISC                      No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU //ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC ILU //ML // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         5                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
@@ -136,7 +135,7 @@ DVOL                            1
 //                              volume
 E 1 - none 1 0 0 0 0 0 0.00337204 0.0 0.0 0.0 0.0 0.0 Dead
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0 //2
+DSURF 0 //2
 // wall top
 //E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // wall bottom
@@ -155,8 +154,8 @@ E 6 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 DVOL                            1
 //                              volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
-------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS
-DSURF  2
+----------------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS
+DSURF                           2
 // wall top
 E 1 - 0.0 0.0 0.0 none none none 0 0 0 -0.5 Spalding 4.0 at_wall
 // wall bottom

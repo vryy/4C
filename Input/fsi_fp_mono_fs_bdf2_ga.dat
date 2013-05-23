@@ -6,9 +6,9 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:            iter_monolithicfluidsplit
-Fluid:          BDF2 with zero_acceleration
-Structure:      GenAlpha with TangDis
+FSI:                            iter_monolithicfluidsplit
+Fluid: BDF2 with zero_acceleration
+Structure: GenAlpha with TangDis
 ==> comparison to analytical solution
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
@@ -62,7 +62,6 @@ TOL_VEL_RES_INF                 1e-08
 TOL_VEL_RES_L2                  1e-10
 UPRES                           1
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial

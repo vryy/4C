@@ -17,7 +17,6 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -47,7 +46,7 @@ CONVFORM                        convective
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  // Franca_Barrenechea_Valentin_Frey_Wall
@@ -56,7 +55,7 @@ TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point

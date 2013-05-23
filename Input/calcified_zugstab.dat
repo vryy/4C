@@ -11,24 +11,20 @@ MATERIALS                       4
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMALEDIS                       0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy                          // Cauchy 2PK
 STRUCT_STRAIN                   gl                              // ea gl
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -37,7 +33,6 @@ PATSPEC                         yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-EIGEN                           0
 RESULTSEVRY                     10                              // write results output every xx steps
 RESTARTEVRY                     0                               // write restart file every yy steps
 NLNSOL                          fullnewton                      // ptc fullnewton lsnewton modnewton matfreenewton nlncg

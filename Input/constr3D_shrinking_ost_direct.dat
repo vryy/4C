@@ -16,7 +16,6 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -24,23 +23,19 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      Yes
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     2
 TIMESTEP                        0.005

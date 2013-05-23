@@ -31,25 +31,21 @@ NUMSTRUCDIS                     1
 // Number of meshes in thermal field
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      Yes
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -59,10 +55,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No                              // must be off
 DYNAMICTYP                      Statics
-EIGEN                           0
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         1000.0                          // effectively: max load factor
 M_DAMP                          0.5
@@ -71,8 +64,6 @@ NUMSTEP                         100
 PREDICT                         ConstDis
 RESULTSEVRY                     1000
 RESTARTEVRY                     1000
-RESULTDT                        0
-TIMEADAPT                       0
 TIMESTEP                        1.0                             // effectively: load step
 TOLCONSTR                       1e-08
 TOLDISP                         1.0e-7

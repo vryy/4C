@@ -18,7 +18,6 @@ MATERIALS                       1
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
-NUMFIELD                        1
 RESTART                         0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
@@ -47,7 +46,7 @@ DEFINITION_TAU                  Franca_Valentin
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  integration_point
 ASSUGRDIFF                      yes
-DEFINITION_ASSGD                artificial_linear //Almeida_Silva_97_nonlinear //doCarmo_Galeao_91_nonlinear //Tezduyar_Park_86_nonlinear //Hughes_etal_86_nonlinear //artificial_linear
+DEFINITION_ASSGD artificial_linear //Almeida_Silva_97_nonlinear //doCarmo_Galeao_91_nonlinear //Tezduyar_Park_86_nonlinear //Hughes_etal_86_nonlinear //artificial_linear
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -1087,7 +1086,7 @@ NODE 439 COORD 5.000000000000004e-002 1.000000000000000e+000 0.000000000000000e+
 NODE 440 COORD 0.000000000000000e+000 9.500000000000000e-001 0.000000000000000e+000
 NODE 441 COORD 0.000000000000000e+000 1.000000000000000e+000 0.000000000000000e+000
 ----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------TRANSPORT ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP QUAD4 440 436 439 441 MAT 1
 2 TRANSP QUAD4 437 433 436 440 MAT 1
 3 TRANSP QUAD4 435 429 433 437 MAT 1

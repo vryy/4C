@@ -34,21 +34,17 @@ DIM                             3
 MATERIALS                       5
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        2
 PROBLEMTYP                      Combustion
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -111,7 +107,7 @@ NUMSTEP                         30
 TIMESTEP                        0.01
 NEUMANNINFLOW                   no
 GMSH_OUTPUT                     no                              // yes
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic
@@ -119,7 +115,7 @@ TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -195,45 +191,45 @@ E 1 - none 1 1 1 0 0 0 0.0 -4.0 0.0 0.0 0.0 0.0 Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // top inflow points
-E 1 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 1 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // bottom inflow points
-E 2 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 2 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // top outflow points
-E 3 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 3 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // bottom outflow points
-E 4 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 4 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           9                               // 10
 // line inflow top
-E 1 -  NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 1 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // line inflow front
-E 2 -  NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 2 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // line inflow bottom
-E 3 -  NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 3 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // line inflow back
-E 4 -  NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 4 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // line outflow top
-E 5 -  NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 5 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // line outflow front
-E 6 -  NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 6 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // line outflow bottom
-E 7 -  NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 7 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // line outflow back
-E 8 -  NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 8 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // bottom edges side walls
-E 10 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 10 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           5                               // 6
 // surface bottom
-E 2 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 2 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // surface inflow
-E 3 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 3 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // surface outflow
-E 4 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 4 - NUMDOF 8 ONOFF 1 0 1 0 1 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // surface front
-E 5 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 5 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 // surface back
-E 6 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 
+E 6 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 25 DNODE 1

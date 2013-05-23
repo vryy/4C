@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -55,9 +54,9 @@ UPRES                           4
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    yes_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 yes_reynolds

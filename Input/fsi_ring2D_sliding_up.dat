@@ -70,9 +70,9 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
@@ -120,16 +120,13 @@ UPRES                           1
 SLIDEALEPROJ                    Curr
 ------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
@@ -137,7 +134,6 @@ THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 ----------------------------------------------------------------LOMA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -150,16 +146,12 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 NORM_DISP                       Mix
 NORM_RESF                       Mix
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         500
 M_DAMP                          0.5
@@ -169,8 +161,6 @@ PREDICT                         TangDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
 TIMESTEP                        0.5
 TOLCONSTR                       1e-07
 TOLDISP                         1e-07

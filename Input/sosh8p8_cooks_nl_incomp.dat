@@ -28,35 +28,28 @@ NUMSTRUCDIS                     1
 // Number of meshes in thermal field
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      Yes
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DAMPING                         No
 DYNAMICTYP                      Statics
-EIGEN                           0
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         20
 MAXTIME                         5000.0
 M_DAMP                          0.5
@@ -65,8 +58,6 @@ NUMSTEP                         10
 PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
 TIMESTEP                        50.0
 TOLCONSTR                       1e-08
 TOLDISP                         1e-08
@@ -83,7 +74,6 @@ NORMCOMBI_RESFINCO              And
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
-
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
 --------------------------------------------------------------------SOLVER 1

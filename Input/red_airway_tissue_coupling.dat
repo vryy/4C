@@ -5,17 +5,16 @@
 // 089 - 289-15255
 //
 ==================================================================
-                  General Data File BACI
+General Data File BACI
 ==================================================================
--------------------------------------------------------------TITLE
-created by pre_exodus 
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    3
-//NODES       16
-DIM           3
+-----------------------------------------------------------------------TITLE
+created by pre_exodus
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                      3
+//NODES                         16
+DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      RedAirways_Tissue
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -23,21 +22,17 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha                         // GenAlpha
-EIGEN                           0
+DYNAMICTYP                      GenAlpha                        // GenAlpha
 RESULTSEVRY                     10
 RESTARTEVRY                     100
 NLNSOL                          ptc                             // fullnewton modnewton nlncg ptc
@@ -48,7 +43,7 @@ MAXTIME                         1000
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
-PREDICT                         ConstDis                  // ConstDisVelAcc ConstDis TangDis
+PREDICT                         ConstDis                        // ConstDisVelAcc ConstDis TangDis
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -66,13 +61,13 @@ BETA 0.291 //0.44444444444 //0.308641975
 GAMMA 0.581 //0.83333333333 //0.611111111
 ALPHA_M 0.378 //0.0 //0.333333333
 ALPHA_F 0.459 //0.3333333333333 //0.44444444
-----------------------------------------------------------COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC
-CONVTOL   1e-06
-MAXITER   5
-MAXTIME   1000
-NUMSTEP   50
-TIMESTEP  0.001
------------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC 
+--------------------------------COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC
+CONVTOL                         1e-06
+MAXITER                         5
+MAXTIME                         1000
+NUMSTEP                         50
+TIMESTEP                        0.001
+-----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      CrankNicolson
 NUMSTEP                         50
@@ -84,17 +79,17 @@ MAXITERATIONS                   40
 TOLERANCE                       1E-7
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK              
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Reduced_dimensional_Airways_Solver
-SOLVER                          UMFPACK                        
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 6.75e3 NUE 0.42
-//MAT 1   MAT_ViscoGenMax   NUMMAT 3 MATIDS 2 4 5 DENS 0.001 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 1.0 RELAX_ISOT_MOD_VOL 0.17 BETA_ISOT_MOD_VOL 1.0 RELAX_ISOT_MOD_ISOC 0.17 BETA_ISOT_MOD_ISOC 1.0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 RELAX_ANISOT_MOD_VOL 0 BETA_ANISOT_MOD_VOL 0 RELAX_ANISOT_MOD_ISOC 0 BETA_ANISOT_MOD_ISOC 0 INIT_MODE -1
-//MAT 2	 ELAST_VolOgden   KAPPA 51137 BETA -2.0
-//MAT 4 	 ELAST_IsoNeoHooke MUE 4970
-//MAT 5   ELAST_IsoCub   C 33116
+//MAT 1 MAT_ViscoGenMax NUMMAT 3 MATIDS 2 4 5 DENS 0.001 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 1.0 RELAX_ISOT_MOD_VOL 0.17 BETA_ISOT_MOD_VOL 1.0 RELAX_ISOT_MOD_ISOC 0.17 BETA_ISOT_MOD_ISOC 1.0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 RELAX_ANISOT_MOD_VOL 0 BETA_ANISOT_MOD_VOL 0 RELAX_ANISOT_MOD_ISOC 0 BETA_ANISOT_MOD_ISOC 0 INIT_MODE -1
+//MAT 2 ELAST_VolOgden KAPPA 51137 BETA -2.0
+//MAT 4 ELAST_IsoNeoHooke MUE 4970
+//MAT 5 ELAST_IsoCub C 33116
 MAT 3 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1000*(1-cos(3*pi*t/3)) t1 0.000 t2 3.0
@@ -109,101 +104,101 @@ CURVE1 on EXPR FUNC 1000*(1-cos(3*pi*t/3)) t1 0.000 t2 3.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 3
-NDLINE  0
-NDSURF  3
-NDVOL   2
--------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  1
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         3
+NDLINE                          0
+NDSURF                          3
+NDVOL                           2
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           1
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          1
 E 1 - pressure 1.0 1
-----------------------------------------------DESIGN SURF TISSUE REDAIRWAY CONDITIONS
-DSURF 2
+-------------------------------------DESIGN SURF TISSUE REDAIRWAY CONDITIONS
+DSURF                           2
 E 1 - 3
 E 2 - 4
-----------------------------------------------DESIGN NODE TISSUE REDAIRWAY CONDITIONS
-DPOINT 2
+-------------------------------------DESIGN NODE TISSUE REDAIRWAY CONDITIONS
+DPOINT                          2
 E 2 - 3
 E 3 - 4
 -----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
 DVOL                            2
 E 1 - 3
 E 2 - 4
------------------------------------------------DNODE-NODE TOPOLOGY
+---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 13 DNODE 1
 NODE 15 DNODE 2
 NODE 16 DNODE 3
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
-NODE    1 DSURFACE 1
-NODE    2 DSURFACE 1
-NODE    3 DSURFACE 1
-NODE    4 DSURFACE 1
-NODE    5 DSURFACE 1
-NODE    6 DSURFACE 1
-NODE    7 DSURFACE 1
-NODE    8 DSURFACE 1
-NODE    10 DSURFACE 2
-NODE    11 DSURFACE 2
-NODE    12 DSURFACE 2
-NODE    9 DSURFACE 2
-NODE    3 DSURFACE 2
-NODE    6 DSURFACE 2
-NODE    7 DSURFACE 2
-NODE    2 DSURFACE 2
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+NODE 10 DSURFACE 2
+NODE 11 DSURFACE 2
+NODE 12 DSURFACE 2
+NODE 9 DSURFACE 2
+NODE 3 DSURFACE 2
+NODE 6 DSURFACE 2
+NODE 7 DSURFACE 2
+NODE 2 DSURFACE 2
 NODE 2 DSURFACE 3
 NODE 3 DSURFACE 3
 NODE 6 DSURFACE 3
 NODE 7 DSURFACE 3
-------------------------------------------------DVOL-NODE TOPOLOGY
-NODE    1 DVOL 1
-NODE    2 DVOL 1
-NODE    3 DVOL 1
-NODE    4 DVOL 1
-NODE    5 DVOL 1
-NODE    6 DVOL 1
-NODE    7 DVOL 1
-NODE    8 DVOL 1
-NODE    10 DVOL 2
-NODE    11 DVOL 2
-NODE    12 DVOL 2
-NODE    9 DVOL 2
-NODE    3 DVOL 2
-NODE    6 DVOL 2
-NODE    7 DVOL 2
-NODE    2 DVOL 2
--------------------------------------------------------NODE COORDS
-NODE 1  	COORD	-5.0000000000000000e+00	-5.0000000000000000e+00	1.5000000000000000e+01	
-NODE 2  	COORD	-5.0000000000000000e+00	-5.0000000000000000e+00	5.0000000000000000e+00	
-NODE 3  	COORD	-5.0000000000000000e+00	5.0000000000000000e+00	5.0000000000000000e+00	
-NODE 4  	COORD	-5.0000000000000000e+00	5.0000000000000000e+00	1.5000000000000000e+01	
-NODE 5  	COORD	5.0000000000000000e+00	-5.0000000000000000e+00	1.5000000000000000e+01	
-NODE 6  	COORD	5.0000000000000000e+00	-5.0000000000000000e+00	5.0000000000000000e+00	
-NODE 7  	COORD	5.0000000000000000e+00	5.0000000000000000e+00	5.0000000000000000e+00	
-NODE 8  	COORD	5.0000000000000000e+00	5.0000000000000000e+00	1.5000000000000000e+01
-NODE 9  	COORD	-5.0000000000000000e+00	-5.0000000000000000e+00	-5.0000000000000000e+00	
-NODE 10  	COORD	-5.0000000000000000e+00	5.0000000000000000e+00	-5.0000000000000000e+00	
-NODE 11  	COORD	5.0000000000000000e+00	-5.0000000000000000e+00	-5.0000000000000000e+00	
-NODE 12  	COORD	5.0000000000000000e+00	5.0000000000000000e+00	-5.0000000000000000e+00	
-NODE 13 COORD 	0.0 -15.0  5.0
-NODE 14 COORD 	0.0 -10.0  5.0
-NODE 15 COORD 	0.0  -5.0  0.0
-NODE 16 COORD 	0.0  -5.0 10.0
-------------------------------------------------STRUCTURE ELEMENTS
-   1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none
-   2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 KINEM nonlinear EAS none
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
+NODE 10 DVOL 2
+NODE 11 DVOL 2
+NODE 12 DVOL 2
+NODE 9 DVOL 2
+NODE 3 DVOL 2
+NODE 6 DVOL 2
+NODE 7 DVOL 2
+NODE 2 DVOL 2
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 1.5000000000000000e+01
+NODE 2 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 5.0000000000000000e+00
+NODE 3 COORD -5.0000000000000000e+00 5.0000000000000000e+00 5.0000000000000000e+00
+NODE 4 COORD -5.0000000000000000e+00 5.0000000000000000e+00 1.5000000000000000e+01
+NODE 5 COORD 5.0000000000000000e+00 -5.0000000000000000e+00 1.5000000000000000e+01
+NODE 6 COORD 5.0000000000000000e+00 -5.0000000000000000e+00 5.0000000000000000e+00
+NODE 7 COORD 5.0000000000000000e+00 5.0000000000000000e+00 5.0000000000000000e+00
+NODE 8 COORD 5.0000000000000000e+00 5.0000000000000000e+00 1.5000000000000000e+01
+NODE 9 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 -5.0000000000000000e+00
+NODE 10 COORD -5.0000000000000000e+00 5.0000000000000000e+00 -5.0000000000000000e+00
+NODE 11 COORD 5.0000000000000000e+00 -5.0000000000000000e+00 -5.0000000000000000e+00
+NODE 12 COORD 5.0000000000000000e+00 5.0000000000000000e+00 -5.0000000000000000e+00
+NODE 13 COORD 0.0 -15.0 5.0
+NODE 14 COORD 0.0 -10.0 5.0
+NODE 15 COORD 0.0 -5.0 0.0
+NODE 16 COORD 0.0 -5.0 10.0
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+2 SOLIDH8 HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
 3 RED_AIRWAY LINE2 13 14 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 10.0 Area 2.0 Generation 0
 4 RED_AIRWAY LINE2 14 15 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1
 5 RED_AIRWAY LINE2 14 16 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+-------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 //STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE 10.0 TOLERANCE 1e-12
----------------------------------------------------------------END
-// END
+-------------------------------------------------------------------------END
+//                              END

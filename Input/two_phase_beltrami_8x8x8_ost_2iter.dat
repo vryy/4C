@@ -22,7 +22,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Combustion
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -85,9 +84,9 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           8
 MESHTYING                       no
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds                     // Reynolds stress term not available in combust fluid

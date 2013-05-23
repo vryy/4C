@@ -11,7 +11,6 @@ MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -19,16 +18,13 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No

@@ -12,7 +12,6 @@ created by pre_exodus
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -20,16 +19,13 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
@@ -1318,6 +1314,6 @@ NODE 396 COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS xfluid NODE 378 QUANTITY velx VALUE -3.10596438525702290e-01 TOLERANCE 1e-8
 FLUID DIS xfluid NODE 378 QUANTITY vely VALUE -4.90696456411790327e-01 TOLERANCE 1e-8
-FLUID DIS xfluid NODE 378 QUANTITY velz VALUE  -5.58560511840877183e-01TOLERANCE 1e-8
+FLUID DIS xfluid NODE 378 QUANTITY velz VALUE -5.58560511840877183e-01TOLERANCE 1e-8
 FLUID DIS xfluid NODE 378 QUANTITY pressure VALUE -3.85736461265428543e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END

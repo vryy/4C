@@ -6,9 +6,9 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:            iter_monolithicstructuresplit
-Fluid:          One_Step_Theta with constant_acceleration
-Structure:      GenAlpha with ConstVel
+FSI:                            iter_monolithicstructuresplit
+Fluid: One_Step_Theta with constant_acceleration
+Structure: GenAlpha with ConstVel
 ==> comparison to analytical solution
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
@@ -64,7 +64,6 @@ TOL_VEL_RES_L2                  1e-06
 
 UPRES                           1
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial

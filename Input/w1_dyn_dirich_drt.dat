@@ -26,7 +26,6 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 //ENRONOFF                      no
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
@@ -48,7 +47,6 @@ STRUCT_STRESS                   No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 NLNSOL                          fullnewton
@@ -70,10 +68,6 @@ MAXITER                         50
 //NPP                           1.0E+06
 //TPP                           1.0E+06
 //FR_COEF                       0.4
-TIMEADAPT                       0
-ITWANT                          4
-MAXDT                           0.07
-RESULTDT                        0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

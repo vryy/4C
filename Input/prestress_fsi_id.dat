@@ -16,7 +16,6 @@ MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -24,17 +23,14 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   cauchy
 STRUCT_STRAIN                   ea
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -53,7 +49,6 @@ M_DAMP                          0.5
 K_DAMP                          0.5
 TOLDISP                         1.0E-07
 MAXITER                         50
-TIMEADAPT                       0
 PREDICT                         ConstDis
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3

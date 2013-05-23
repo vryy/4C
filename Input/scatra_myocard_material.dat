@@ -9,7 +9,6 @@ NODES                           11
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -17,17 +16,14 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -91,14 +87,14 @@ NODE 9 COORD 8.00000000e-02 0.00000000e+00 0.00000000e+00
 NODE 10 COORD 9.00000000e-02 0.00000000e+00 0.00000000e+00
 NODE 11 COORD 1.00000000e-01 0.00000000e+00 0.00000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
-1 TRANSP LINE2 1 2 MAT 1  FIBER1 1.0 0.0 0.0
-2 TRANSP LINE2 2 3 MAT 1  FIBER1 1.0 0.0 0.0
-3 TRANSP LINE2 3 4 MAT 1  FIBER1 1.0 0.0 0.0
-4 TRANSP LINE2 4 5 MAT 1  FIBER1 1.0 0.0 0.0
-5 TRANSP LINE2 5 6 MAT 1  FIBER1 1.0 0.0 0.0
-6 TRANSP LINE2 6 7 MAT 1  FIBER1 1.0 0.0 0.0
-7 TRANSP LINE2 7 8 MAT 1  FIBER1 1.0 0.0 0.0
-8 TRANSP LINE2 8 9 MAT 1  FIBER1 1.0 0.0 0.0
+1 TRANSP LINE2 1 2 MAT 1 FIBER1 1.0 0.0 0.0
+2 TRANSP LINE2 2 3 MAT 1 FIBER1 1.0 0.0 0.0
+3 TRANSP LINE2 3 4 MAT 1 FIBER1 1.0 0.0 0.0
+4 TRANSP LINE2 4 5 MAT 1 FIBER1 1.0 0.0 0.0
+5 TRANSP LINE2 5 6 MAT 1 FIBER1 1.0 0.0 0.0
+6 TRANSP LINE2 6 7 MAT 1 FIBER1 1.0 0.0 0.0
+7 TRANSP LINE2 7 8 MAT 1 FIBER1 1.0 0.0 0.0
+8 TRANSP LINE2 8 9 MAT 1 FIBER1 1.0 0.0 0.0
 9 TRANSP LINE2 9 10 MAT 1 FIBER1 1.0 0.0 0.0
 10 TRANSP LINE2 10 11 MAT 1 FIBER1 1.0 0.0 0.0
 -------------------------------------------------------------------------END

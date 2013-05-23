@@ -19,7 +19,6 @@ MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -27,21 +26,17 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
@@ -75,7 +70,7 @@ SEMI_SMOOTH_CN                  1000000.0
 SEMI_SMOOTH_CT                  1000.0
 SYSTEM                          spcoupled
 TOLCONTCONSTR                   1.0E-8
-TOLLAGR                         5.0E-2 //1.0E-8
+TOLLAGR 5.0E-2 //1.0E-8
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        dual
 COUPLING_AUXPLANE               Yes

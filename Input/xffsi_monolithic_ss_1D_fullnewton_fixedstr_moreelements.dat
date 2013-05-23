@@ -14,7 +14,6 @@ created by pre_exodus
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid_FSI
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -22,16 +21,13 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
-ALE_DISP                        No
 FILESTEPS                       1
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
@@ -63,7 +59,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 NEUMANNINFLOW                   no
 LINEAR_SOLVER                   1
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -75,7 +71,6 @@ REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen//Franca_Barrenechea_Valentin_Frey_Wall
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta
-EIGEN                           0
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
@@ -201,7 +196,7 @@ NDVOL                           4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // bgFluid inflow
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 CURVE 1  none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // str dirichlet
@@ -376,16 +371,16 @@ NODE 48 COORD 2.6000000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 8 QUANTITY velx VALUE   2.56000000000018602e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY velx VALUE 2.56000000000018602e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 1.39787076137591573e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY velx VALUE 2.56000000000001060e-01  TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 1.39787076137591431e+01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 15 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 15 QUANTITY pressure VALUE 1.38527076137599163e+01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 1.38527076137599359e+01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 10 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 10 QUANTITY pressure VALUE  1.39787076137591448e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 1.39787076137591448e+01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 2.56000000000001060e-01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 1.37569476137807811e+01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.92000000000006360e-01 TOLERANCE 1e-6

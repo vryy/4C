@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -51,7 +50,7 @@ GAMMA                           0.666666666666667
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                1.0
 SIMPLER                         no
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -92,7 +91,7 @@ ML_SMOOTHERFINE                 SGS                             // SGS Jacobi Ch
 ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               KLU                             // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES 1 1 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                            // damping fine grid
+ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 ----------------------------------------------------------DESIGN DESCRIPTION

@@ -1,13 +1,13 @@
 ==================================================================
-                  General Data File BACI                          
+General Data File BACI
 ==================================================================
--------------------------------------------------------------TITLE
+-----------------------------------------------------------------------TITLE
 created by pre_exodus
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    9216
-//NODES       14430
-DIM           3
------------------------------------------------------DISCRETISATION
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                      9216
+//NODES                         14430
+DIM                             3
+--------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
 NUMARTNETDIS                    1
@@ -19,8 +19,7 @@ STRUCTURE DIS structure NODE 545 QUANTITY dispx VALUE 2.47095224531976104e-01 TO
 STRUCTURE DIS structure NODE 545 QUANTITY dispy VALUE -1.73151016707556449e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1641 QUANTITY dispx VALUE 5.17766878985431167e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1641 QUANTITY dispy VALUE -1.28734335550616807e-01 TOLERANCE 1e-6
------------------------------------------------------------------IO
-ALE_DISP                        No
+--------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -28,29 +27,26 @@ FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   Yes
 STRUCT_STRESS                   Yes
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
---------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
+-----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-------------------------------------------------------SOLVER 1
-AMGBS_BS_DAMPING                1.3 1.3 1.3
+--------------------------------------------------------------------SOLVER 1
+AMGBS_BS_DAMPING 1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_BS_PCSWEEPS 2 2 2
 AMGBS_PSMOOTHER_PRE             PA-AMG
 AMGBS_PSMOOTHER_VEL             PA-AMG
 AZBDIAG                         0
@@ -85,26 +81,22 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
+ML_SMOTIMES 1 1 1 1 1
 SIMPLE_DAMPING                  1
 SOLVER                          Amesos_KLU_nonsym
--------------------------------------------------STRUCTURAL DYNAMIC
+----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
-CONTROLNODE                     -1 -1 -1
+CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
 K_DAMP                          0.5
 LINEAR_SOLVER                   1
 LOADLIN                         no
 LUMPMASS                        No
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         0.2123077
 MINITER                         0
@@ -125,11 +117,9 @@ PTCDT                           0.1
 PRESTRESS                       none
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.07076923
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
@@ -142,14 +132,14 @@ UZAWAPARAM                      1
 UZAWATOL                        1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
-----------------------------------------------------------MATERIALS
-//Law E
-MAT 1   MAT_ViscoGenMax   NUMMAT 3 MATIDS 2 3 4 DENS 0.0002 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 1.0 RELAX_ISOT_MOD_VOL 0.1 BETA_ISOT_MOD_VOL 1.0 RELAX_ISOT_MOD_ISOC 0.1 BETA_ISOT_MOD_ISOC 1.0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 INIT_MODE -1
-MAT 2 ELAST_VolOgden KAPPA 8.198272e+04  BETA -2.0
-MAT 3 ELAST_IsoNeoHooke   MUE 3.939437e+03
-MAT 4 ELAST_IsoCub   C 2.591038e+04
-                                    
---------------------------------------------------------NODE COORDS
+-------------------------------------------------------------------MATERIALS
+//Law                           E
+MAT 1 MAT_ViscoGenMax NUMMAT 3 MATIDS 2 3 4 DENS 0.0002 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 1.0 RELAX_ISOT_MOD_VOL 0.1 BETA_ISOT_MOD_VOL 1.0 RELAX_ISOT_MOD_ISOC 0.1 BETA_ISOT_MOD_ISOC 1.0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 INIT_MODE -1
+MAT 2 ELAST_VolOgden KAPPA 8.198272e+04 BETA -2.0
+MAT 3 ELAST_IsoNeoHooke MUE 3.939437e+03
+MAT 4 ELAST_IsoCub C 2.591038e+04
+
+-----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 4.479155e+00 1.817528e+00 0.000000e+00
 NODE 2 COORD 4.676285e+00 1.814495e+00 0.000000e+00
 NODE 3 COORD 4.873415e+00 1.811463e+00 0.000000e+00
@@ -1806,7 +1796,7 @@ NODE 1653 COORD 6.066302e+00 8.245977e+00 5.100000e-01
 NODE 1654 COORD 6.267475e+00 8.241933e+00 5.100000e-01
 NODE 1655 COORD 6.468648e+00 8.237889e+00 5.100000e-01
 NODE 1656 COORD 6.669822e+00 8.233846e+00 5.100000e-01
--------------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 1 2 14 13 277 278 290 289 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH8 HEX8 2 3 15 14 278 279 291 290 MAT 1 KINEM nonlinear EAS none
 3 SOLIDH8 HEX8 3 4 16 15 279 280 292 291 MAT 1 KINEM nonlinear EAS none
@@ -3017,12 +3007,12 @@ NODE 1656 COORD 6.669822e+00 8.233846e+00 5.100000e-01
 1208 SOLIDH8 HEX8 1365 1366 1378 1377 1641 1642 1654 1653 MAT 1 KINEM nonlinear EAS none
 1209 SOLIDH8 HEX8 1366 1367 1379 1378 1642 1643 1655 1654 MAT 1 KINEM nonlinear EAS none
 1210 SOLIDH8 HEX8 1367 1368 1380 1379 1643 1644 1656 1655 MAT 1 KINEM nonlinear EAS none
--------------------------------------------------DESIGN DESCRIPTION
+----------------------------------------------------------DESIGN DESCRIPTION
 NDLINE                          0
 NDPOINT                         0
 NDSURF                          2
 NDVOL                           0
------------------------------------------------DSURF-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 13 DSURFACE 1
 NODE 25 DSURFACE 1
@@ -3299,15 +3289,15 @@ NODE 1620 DSURFACE 2
 NODE 1632 DSURFACE 2
 NODE 1644 DSURFACE 2
 NODE 1656 DSURFACE 2
-----------------------------------------------------------CURVE1
+----------------------------------------------------------------------CURVE1
 CURVE 1 on Polygonal T 1.0 BYABSTIME Yes 0 0.07076923 FACTOR 0 5390
 CURVE 1 on Polygonal T 1.0 BYABSTIME Yes 0.07076923 0.1415385 FACTOR 5390 7870
 CURVE 1 on Polygonal T 1.0 BYABSTIME Yes 0.1415385 0.2123077 FACTOR 7870 16250
--------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF 1
-E 2 - 1 1 0 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
--------------------------------------DESIGN SURF DIRICH CONDITIONS
+----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF                           1
+E 2 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 2 - NUMDOF 6 ONOFF 0 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------END
+-------------------------------------------------------------------------END

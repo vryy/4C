@@ -10,8 +10,8 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 example taken form Harari 2004
 here: - withou calculation of initial phidt
-      - phi_0 does not match DBC at x=1
-      remark: scilab non-matching DBC without assuming zero acceleration
+- phi_0 does not match DBC at x=1
+remark: scilab non-matching DBC without assuming zero acceleration
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        10
 NODES                           11
@@ -20,7 +20,6 @@ MATERIALS                       4
 NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -29,8 +28,8 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SOLVERTYPE                      linear_full //linear_incremental
-//MASSMAT                       consistent //row_sum //_including_stab
+SOLVERTYPE linear_full //linear_incremental
+//MASSMAT consistent //row_sum //_including_stab
 SKIPINITDER                     yes
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
@@ -50,7 +49,7 @@ STABTYPE                        USFEM
 DEFINITION_TAU                  Franca_Valentin
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK 
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.1
 ----------------------------------------------------------------------CURVE1

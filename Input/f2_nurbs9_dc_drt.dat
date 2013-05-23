@@ -19,7 +19,6 @@ NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
 SHAPEFCT                        Nurbs
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------------------IO
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -39,15 +38,15 @@ CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             time_dependent
-TRANSIENT                       yes_transient 
+TRANSIENT                       yes_transient
 SUPG                            yes
 PSPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  element_center

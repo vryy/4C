@@ -22,7 +22,6 @@ MATERIALS                       1
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -30,16 +29,13 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -63,15 +59,15 @@ START_THETA                     0.67
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
 TDS                             quasistatic                     // quasistatic time_dependent
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt
 TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes                        // no yes
-PSPG                            yes                        // no_pspg yes
+SUPG                            yes                             // no yes
+PSPG                            yes                             // no_pspg yes
 VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                           yes                        // no yes cstab_td
+GRAD_DIV                        yes                             // no yes cstab_td
 CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
 -----------------------------------------------------------------FSI DYNAMIC

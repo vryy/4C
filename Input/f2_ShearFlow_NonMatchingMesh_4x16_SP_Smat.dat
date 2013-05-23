@@ -10,7 +10,6 @@ DIM                             2
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Fluid
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -20,17 +19,14 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -65,9 +61,9 @@ TIMESTEP                        0.1
 UPRES                           1
 MESHTYING                       SaddlePointSystem_coupled
 CALCERROR                       no
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds

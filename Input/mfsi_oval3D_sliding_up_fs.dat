@@ -41,9 +41,9 @@ PREDICTOR                       steady_state
 SIMPLER                         no
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
@@ -92,23 +92,19 @@ TOL_VEL_RES_L2                  1e-06
 PARALLEL_REDIST                 Static
 SHAPEFCN                        Dual
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -116,15 +112,12 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 NORM_DISP                       Mix
 NORM_RESF                       Mix
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         50
 M_DAMP                          0.5
 NLNSOL                          fullnewton
@@ -161,7 +154,7 @@ NDPOINT                         1
 NDLINE                          2
 NDSURF                          8
 NDVOL                           0
------------------------------------------------DESIGN POINT DIRICH CONDITIONS
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
@@ -198,68 +191,68 @@ E 5 - 0 fluid
 DSURF                           1
 E 4 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 425  DNODE 1
-NODE 426  DNODE 1
-NODE 427  DNODE 1
-NODE 428  DNODE 1
-NODE 429  DNODE 1
-NODE 430  DNODE 1
-NODE 431  DNODE 1
-NODE 432  DNODE 1
-NODE 433  DNODE 1
-NODE 434  DNODE 1
-NODE 435  DNODE 1
-NODE 436  DNODE 1
-NODE 441  DNODE 1
-NODE 442  DNODE 1
-NODE 447  DNODE 1
-NODE 448  DNODE 1
-NODE 453  DNODE 1
-NODE 454  DNODE 1
-NODE 459  DNODE 1
-NODE 460  DNODE 1
-NODE 465  DNODE 1
-NODE 466  DNODE 1
-NODE 503  DNODE 1
-NODE 504  DNODE 1
-NODE 505  DNODE 1
-NODE 506  DNODE 1
-NODE 507  DNODE 1
-NODE 508  DNODE 1
-NODE 509  DNODE 1
-NODE 510  DNODE 1
-NODE 511  DNODE 1
-NODE 512  DNODE 1
-NODE 513  DNODE 1
-NODE 514  DNODE 1
-NODE 521  DNODE 1
-NODE 522  DNODE 1
-NODE 529  DNODE 1
-NODE 530  DNODE 1
-NODE 537  DNODE 1
-NODE 538  DNODE 1
-NODE 545  DNODE 1
-NODE 546  DNODE 1
-NODE 937  DNODE 1
-NODE 938  DNODE 1
-NODE 939  DNODE 1
-NODE 940  DNODE 1
-NODE 941  DNODE 1
-NODE 942  DNODE 1
-NODE 943  DNODE 1
-NODE 944  DNODE 1
-NODE 945  DNODE 1
-NODE 946  DNODE 1
-NODE 953  DNODE 1
-NODE 954  DNODE 1
-NODE 961  DNODE 1
-NODE 962  DNODE 1
-NODE 969  DNODE 1
-NODE 970  DNODE 1
-NODE 977  DNODE 1
-NODE 978  DNODE 1
-NODE 985  DNODE 1
-NODE 986  DNODE 1
+NODE 425 DNODE 1
+NODE 426 DNODE 1
+NODE 427 DNODE 1
+NODE 428 DNODE 1
+NODE 429 DNODE 1
+NODE 430 DNODE 1
+NODE 431 DNODE 1
+NODE 432 DNODE 1
+NODE 433 DNODE 1
+NODE 434 DNODE 1
+NODE 435 DNODE 1
+NODE 436 DNODE 1
+NODE 441 DNODE 1
+NODE 442 DNODE 1
+NODE 447 DNODE 1
+NODE 448 DNODE 1
+NODE 453 DNODE 1
+NODE 454 DNODE 1
+NODE 459 DNODE 1
+NODE 460 DNODE 1
+NODE 465 DNODE 1
+NODE 466 DNODE 1
+NODE 503 DNODE 1
+NODE 504 DNODE 1
+NODE 505 DNODE 1
+NODE 506 DNODE 1
+NODE 507 DNODE 1
+NODE 508 DNODE 1
+NODE 509 DNODE 1
+NODE 510 DNODE 1
+NODE 511 DNODE 1
+NODE 512 DNODE 1
+NODE 513 DNODE 1
+NODE 514 DNODE 1
+NODE 521 DNODE 1
+NODE 522 DNODE 1
+NODE 529 DNODE 1
+NODE 530 DNODE 1
+NODE 537 DNODE 1
+NODE 538 DNODE 1
+NODE 545 DNODE 1
+NODE 546 DNODE 1
+NODE 937 DNODE 1
+NODE 938 DNODE 1
+NODE 939 DNODE 1
+NODE 940 DNODE 1
+NODE 941 DNODE 1
+NODE 942 DNODE 1
+NODE 943 DNODE 1
+NODE 944 DNODE 1
+NODE 945 DNODE 1
+NODE 946 DNODE 1
+NODE 953 DNODE 1
+NODE 954 DNODE 1
+NODE 961 DNODE 1
+NODE 962 DNODE 1
+NODE 969 DNODE 1
+NODE 970 DNODE 1
+NODE 977 DNODE 1
+NODE 978 DNODE 1
+NODE 985 DNODE 1
+NODE 986 DNODE 1
 NODE 1727 DNODE 1
 NODE 1728 DNODE 1
 NODE 1729 DNODE 1

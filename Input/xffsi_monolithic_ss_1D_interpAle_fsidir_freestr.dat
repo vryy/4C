@@ -7,17 +7,16 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-monolithic_structure_split: 1D  example
+monolithic_structure_split: 1D example
 The structure is free at the end.
 The velocity fuction is t*t st the fsi nodes
-->linear pressure field 
+->linear pressure field
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      6
 //NODES                         36
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid_FSI
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -25,16 +24,13 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
-ALE_DISP                        No
 FILESTEPS                       1
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
@@ -68,7 +64,6 @@ NEUMANNINFLOW                   no
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta
-EIGEN                           0
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
@@ -139,7 +134,7 @@ NDVOL                           4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              bgFluid_inflow
-E 1 - NUMDOF 6  ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE  1 none none none none none FUNCT  0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              fluid_surfaces_fsi
@@ -286,21 +281,21 @@ NODE 36 COORD 1.9500000000000002e+00 2.9999999999999999e-01 2.9999999999999999e-
 FLUID DIS fluid NODE 8 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 2.81010749268171489e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 9 QUANTITY velx VALUE 3.60000000000009146e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 2.81010749268171622e+00  TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 2.81010749268171622e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 10 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 2.81010749268170823e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 2.87500749268132783e+00  TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 2.87500749268132783e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 17 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 2.87500749268133493e+00  TOLERANCE 1e-6
+FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 2.87500749268133493e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 21 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE 2.21500749268393538e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 1.55500749268651384e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 29 QUANTITY dispx VALUE 9.10000000000045078e-02  TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 29 QUANTITY dispx VALUE 9.10000000000045078e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE 9.10000000000044662e-02 TOLERANCE 1e-6
-FSI NODE 29 QUANTITY lambdax VALUE  1.39950674587873969e-01 TOLERANCE 1e-8
-FSI NODE 29 QUANTITY lambday VALUE 4.66511001436157452e-02  TOLERANCE 1e-8
+FSI NODE 29 QUANTITY lambdax VALUE 1.39950674587873969e-01 TOLERANCE 1e-8
+FSI NODE 29 QUANTITY lambday VALUE 4.66511001436157452e-02 TOLERANCE 1e-8
 FSI NODE 29 QUANTITY lambdaz VALUE -4.66511002970702512e-02 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

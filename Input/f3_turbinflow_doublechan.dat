@@ -23,7 +23,6 @@ NUMDF                           6
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Fluid
 RESTART                         0
 --------------------------------------------------------------------------IO
@@ -56,9 +55,9 @@ START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 UPRES                           1
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center

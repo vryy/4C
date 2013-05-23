@@ -22,20 +22,17 @@ NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------DISCRETISATION
 ---------------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   GL
 STRUCT_STRESS                   Cauchy
 THERM_HEATFLUX                  No
@@ -44,7 +41,6 @@ THERM_TEMPERATURE               No
 PATSPEC                         No
 REMODEL                         Yes
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -52,18 +48,14 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      Statics
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
 K_DAMP                          0.5
 LOADLIN                         no
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         20
 MINITER                         0
@@ -81,8 +73,6 @@ PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
 TIMESTEP                        0.1
 TOLCONSTR                       1e-08
 TOLDISP                         1e-08

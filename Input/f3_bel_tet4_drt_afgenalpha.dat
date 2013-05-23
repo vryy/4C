@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -50,14 +49,14 @@ START_THETA                     0.80
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
 STARTFUNCNO                     8
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
 SUPG                            yes
 PSPG                            yes
 VSTAB                           vstab_usfem
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------FSI DYNAMIC

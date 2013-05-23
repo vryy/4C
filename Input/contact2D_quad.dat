@@ -23,7 +23,6 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -31,21 +30,17 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     10
 NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
@@ -1346,7 +1341,7 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 1.2 1.2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 280 QUANTITY dispx VALUE  5.99621795166637828e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 280 QUANTITY dispx VALUE 5.99621795166637828e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 280 QUANTITY dispy VALUE -1.08501918022983368e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

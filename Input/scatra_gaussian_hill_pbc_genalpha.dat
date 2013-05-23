@@ -24,7 +24,6 @@ MATERIALS                       4
 NUMDF                           2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -32,17 +31,14 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -67,9 +63,9 @@ INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           4
-SKIPINITDER                     no //yes //no
+SKIPINITDER no //yes //no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE    SUPG //SUPG //no_stabilization
+STABTYPE SUPG //SUPG //no_stabilization
 DEFINITION_TAU Franca_Valentin //(for binary electrolyte solution!)
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
@@ -139,7 +135,7 @@ SCATRA DIS scatra NODE 230 QUANTITY phi2 VALUE 4.85765903917763975e-01 TOLERANCE
 SCATRA DIS scatra NODE 246 QUANTITY phi2 VALUE 4.45877565336456727e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 261 QUANTITY phi2 VALUE 3.99876593633862132e-01 TOLERANCE 1e-9
 //
-// values below are identical (minus one) to elch version of this test case 
+// values below are identical (minus one) to elch version of this test case
 // and must be fulfilled!!!
 // if the scatra test case is adapted like that:
 // - stabilization is deactivated

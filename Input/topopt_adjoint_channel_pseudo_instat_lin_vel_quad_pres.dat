@@ -30,20 +30,16 @@ q = 0.5 * (125000*x*x + 175000*y*y + 100000*x*y)
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Top_Opt
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -84,9 +80,9 @@ STEADYSTEP                      -1
 STEADYTOL                       1e-6
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point

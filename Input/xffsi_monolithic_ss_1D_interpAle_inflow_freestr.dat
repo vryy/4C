@@ -7,41 +7,37 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-monolithic_structure_split: 1D  example
+monolithic_structure_split: 1D example
 The structure is free at the end.
 The velocity fuction is t*t
-->linear pressure field 
+->linear pressure field
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      6
 //NODES                         32
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid_FSI
-NUMFIELD                        3
-RESTART                       0 
+RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
-ALE_DISP                        No
 FILESTEPS                       1
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
-WRITE_TO_SCREEN                 yes 
+WRITE_TO_SCREEN                 yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              0
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -51,7 +47,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-07
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD zero_field //field_by_function
 ITEMAX                          5
 LIFTDRAG                        No
 MAXTIME                         50
@@ -71,7 +67,6 @@ NEUMANNINFLOW                   no
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta
-EIGEN                           0
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
@@ -119,7 +114,7 @@ SHAPEDERIVATIVES                No
 PRECONDREUSE                    0
 SECONDORDER                     No
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Superlu//UMFPACK//Aztec_MSR              // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Superlu//UMFPACK//Aztec_MSR     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                        // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
@@ -152,11 +147,11 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_SOL_OUT                   no
-GMSH_EOS_OUT                   no
-GMSH_CUT_OUT                   no
-GMSH_DEBUG_OUT  no
-//GMSH_EOS_OUT                   no
+GMSH_SOL_OUT                    no
+GMSH_EOS_OUT                    no
+GMSH_CUT_OUT                    no
+GMSH_DEBUG_OUT                  no
+//GMSH_EOS_OUT                  no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_FAC                   0.0
@@ -183,7 +178,7 @@ E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none non
 DSURF                           1
 // str dirichlet
 E 4 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//E 4 - 3 1 1 1  0.1 0.0 0.0  none none none 0 0 0 
+//E 4 - 3 1 1 1 0.1 0.0 0.0 none none none 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // bgfluid volume
@@ -313,21 +308,21 @@ NODE 32 COORD 1.9500000000000002e+00 2.9999999999999999e-01 2.9999999999999999e-
 FLUID DIS fluid NODE 8 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 2.81010749143529726e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 9 QUANTITY velx VALUE 3.60000000000009146e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 2.81010749143529903e+00  TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 2.81010749143529903e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 10 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 2.81010749143529592e+00   TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 2.81010749143529592e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 2.87500749143528811e+00  TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 2.87500749143528811e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 17 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 2.87500749143529299e+00  TOLERANCE 1e-6
+FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 2.87500749143529299e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 21 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE 2.21500749143528397e+00 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 1.55500749143533579e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 9.10000000000045078e-02  TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 9.10000000000045078e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 28 QUANTITY dispx VALUE 9.10000000000044662e-02 TOLERANCE 1e-6
 FSI NODE 25 QUANTITY lambdax VALUE 1.39950674487038462e-01 TOLERANCE 1e-8
-FSI NODE 25 QUANTITY lambday VALUE 4.66511001004418432e-02  TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambday VALUE 4.66511001004418432e-02 TOLERANCE 1e-8
 FSI NODE 25 QUANTITY lambdaz VALUE -4.66511000240792603e-02 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

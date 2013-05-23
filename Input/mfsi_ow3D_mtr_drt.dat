@@ -39,9 +39,9 @@ SIMPLER                         no
 STARTFUNCNO                     -1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
@@ -90,23 +90,19 @@ TOL_VEL_RES_L2                  1e-09
 PARALLEL_REDIST                 No
 SHAPEFCN                        Dual
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -114,15 +110,12 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 NORM_DISP                       Mix
 NORM_RESF                       Mix
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         50
 M_DAMP                          0.5
 NLNSOL                          fullnewton
@@ -321,55 +314,55 @@ NODE 966 DNODE 5
 NODE 965 DNODE 6
 NODE 1015 DNODE 7
 NODE 1017 DNODE 8
-NODE 3   DNODE 9
-NODE 4   DNODE 9
-NODE 7   DNODE 9
-NODE 8   DNODE 9
-NODE 11  DNODE 9
-NODE 12  DNODE 9
-NODE 15  DNODE 9
-NODE 16  DNODE 9
-NODE 19  DNODE 9
-NODE 20  DNODE 9
-NODE 23  DNODE 9
-NODE 24  DNODE 9
-NODE 27  DNODE 9
-NODE 28  DNODE 9
-NODE 31  DNODE 9
-NODE 32  DNODE 9
-NODE 35  DNODE 9
-NODE 36  DNODE 9
-NODE 39  DNODE 9
-NODE 40  DNODE 9
-NODE 43  DNODE 9
-NODE 44  DNODE 9
-NODE 47  DNODE 9
-NODE 48  DNODE 9
-NODE 51  DNODE 9
-NODE 52  DNODE 9
-NODE 55  DNODE 9
-NODE 56  DNODE 9
-NODE 59  DNODE 9
-NODE 60  DNODE 9
-NODE 63  DNODE 9
-NODE 64  DNODE 9
-NODE 67  DNODE 9
-NODE 68  DNODE 9
-NODE 71  DNODE 9
-NODE 72  DNODE 9
-NODE 75  DNODE 9
-NODE 76  DNODE 9
-NODE 79  DNODE 9
-NODE 80  DNODE 9
-NODE 83  DNODE 9
-NODE 84  DNODE 9
-NODE 87  DNODE 9
-NODE 88  DNODE 9
-NODE 91  DNODE 9
-NODE 92  DNODE 9
-NODE 95  DNODE 9
-NODE 96  DNODE 9
-NODE 99  DNODE 9
+NODE 3 DNODE 9
+NODE 4 DNODE 9
+NODE 7 DNODE 9
+NODE 8 DNODE 9
+NODE 11 DNODE 9
+NODE 12 DNODE 9
+NODE 15 DNODE 9
+NODE 16 DNODE 9
+NODE 19 DNODE 9
+NODE 20 DNODE 9
+NODE 23 DNODE 9
+NODE 24 DNODE 9
+NODE 27 DNODE 9
+NODE 28 DNODE 9
+NODE 31 DNODE 9
+NODE 32 DNODE 9
+NODE 35 DNODE 9
+NODE 36 DNODE 9
+NODE 39 DNODE 9
+NODE 40 DNODE 9
+NODE 43 DNODE 9
+NODE 44 DNODE 9
+NODE 47 DNODE 9
+NODE 48 DNODE 9
+NODE 51 DNODE 9
+NODE 52 DNODE 9
+NODE 55 DNODE 9
+NODE 56 DNODE 9
+NODE 59 DNODE 9
+NODE 60 DNODE 9
+NODE 63 DNODE 9
+NODE 64 DNODE 9
+NODE 67 DNODE 9
+NODE 68 DNODE 9
+NODE 71 DNODE 9
+NODE 72 DNODE 9
+NODE 75 DNODE 9
+NODE 76 DNODE 9
+NODE 79 DNODE 9
+NODE 80 DNODE 9
+NODE 83 DNODE 9
+NODE 84 DNODE 9
+NODE 87 DNODE 9
+NODE 88 DNODE 9
+NODE 91 DNODE 9
+NODE 92 DNODE 9
+NODE 95 DNODE 9
+NODE 96 DNODE 9
+NODE 99 DNODE 9
 NODE 100 DNODE 9
 NODE 103 DNODE 9
 NODE 104 DNODE 9

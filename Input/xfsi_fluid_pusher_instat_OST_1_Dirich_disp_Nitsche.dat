@@ -16,7 +16,6 @@ MATERIALS                       5
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction_XFEM
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -24,23 +23,19 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta
-EIGEN                           0
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
@@ -71,11 +66,11 @@ RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
-SECONDORDER                     Yes //No
-COUPVARIABLE                    Force //Displacement
+SECONDORDER Yes //No
+COUPVARIABLE Force //Displacement
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD                    field_by_function //zero_field
+INITIALFIELD field_by_function //zero_field
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
@@ -88,7 +83,7 @@ NUMSTEP                         8
 NUMSTASTEPS                     0
 MAXTIME                         0.8
 TIMESTEP                        0.1//0.1
-THETA                           1.0 //0.5 //0.67
+THETA 1.0 //0.5 //0.67
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
@@ -96,15 +91,15 @@ LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes//yes
 VSTAB                           no_vstab
-GRAD_DIV                           yes //yes
+GRAD_DIV yes //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1

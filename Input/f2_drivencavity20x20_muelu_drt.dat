@@ -17,13 +17,11 @@ MATERIALS                       1
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 //!RESTART                      5
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 RESULTSEVRY                     10
 RESTARTEVRY                     20
 TIMESTEP                        0.05
@@ -59,15 +57,15 @@ START_THETA                     0.67
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 SIMPLER                         no
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
 TDS                             quasistatic                     // quasistatic time_dependent
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes                        // no yes
-PSPG                            yes                        // no_pspg yes
+SUPG                            yes                             // no yes
+PSPG                            yes                             // no_pspg yes
 VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                           yes                        // no yes cstab_td
+GRAD_DIV                        yes                             // no yes cstab_td
 CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
 --------------------------------------------------------------------SOLVER 1

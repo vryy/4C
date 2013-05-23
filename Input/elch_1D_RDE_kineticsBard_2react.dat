@@ -25,7 +25,6 @@ ELEMENTS                        100
 NODES                           202
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        2
 PROBLEMTYP                      Electrochemistry
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
@@ -36,17 +35,14 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000

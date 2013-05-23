@@ -11,7 +11,6 @@ MATERIALS                       5
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -19,17 +18,14 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   yes
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -49,7 +45,6 @@ M_DAMP                          0.5
 K_DAMP                          0.5
 MAXITER                         50
 MINITER                         1
-TIMEADAPT                       0
 PREDICT                         ConstDisVelAcc
 TOLCONSTR                       1e-06
 TOLDISP                         1e-06
@@ -105,14 +100,14 @@ COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
 LINEARBLOCKSOLVER               FSIAMG
-ALEPCITER                       1 1 1
-ALEPCOMEGA                      1.0 1.0 1.0
-FLUIDPCITER                     1 1 1
-FLUIDPCOMEGA                    1.0 1.0 1.0
-STRUCTPCITER                    1 1 1
-STRUCTPCOMEGA                   1.0 1.0 1.0
-PCITER                          10 10 10
-PCOMEGA                         0.8 0.8 0.8
+ALEPCITER 1 1 1
+ALEPCOMEGA 1.0 1.0 1.0
+FLUIDPCITER 1 1 1
+FLUIDPCOMEGA 1.0 1.0 1.0
+STRUCTPCITER 1 1 1
+STRUCTPCOMEGA 1.0 1.0 1.0
+PCITER 10 10 10
+PCOMEGA 0.8 0.8 0.8
 SYMMETRICPRECOND                no
 PRECONDREUSE                    0
 INFNORMSCALING                  yes
@@ -166,7 +161,7 @@ AZPOLY                          5                               // polynomial or
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE                   Zero
 AZSCAL                          infnorm                         // none sym infnorm scaling of the system
-ML_PRINT                        10                               // ML print-out level (0-10)
+ML_PRINT                        10                              // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                               // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL                     1                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
@@ -176,7 +171,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // Umfpack KLU Superlu
-ML_SMOTIMES                     0 0 0                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES 0 0 0 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -200,7 +195,7 @@ AZPOLY                          5                               // polynomial or
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE                   Add
 AZSCAL                          none                            // none sym infnorm scaling of the system
-ML_PRINT                        10                               // ML print-out level (0-10)
+ML_PRINT                        10                              // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                               // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL                     1                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
@@ -210,7 +205,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // Umfpack KLU Superlu
-ML_SMOTIMES                     12 12 0                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES 12 12 0 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -234,7 +229,7 @@ AZPOLY                          5                               // polynomial or
 IFPACKOVERLAP                   3
 IFPACKCOMBINE                   Zero
 AZSCAL                          none                            // none sym infnorm scaling of the system
-ML_PRINT                        10                               // ML print-out level (0-10)
+ML_PRINT                        10                              // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
 ML_MAXLEVEL                     1                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
@@ -244,7 +239,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // Umfpack KLU Superlu
-ML_SMOTIMES                     0 0 0                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES 0 0 0 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     1.0                             // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid

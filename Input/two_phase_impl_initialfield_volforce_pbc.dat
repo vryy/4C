@@ -20,7 +20,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -56,14 +55,14 @@ ADAPTCONV_BETTER                1.0
 SIMPLER                         no
 NONLINITER                      Newton
 CONVFORM                        convective
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 SUPG                            yes
 PSPG                            yes
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
@@ -124,7 +123,7 @@ NDLINE                          12
 NDSURF                          6
 NDVOL                           1
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-//DVOL                            1
+//DVOL                          1
 //E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE

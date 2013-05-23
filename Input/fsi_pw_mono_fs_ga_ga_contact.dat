@@ -17,7 +17,6 @@ MATERIALS                       3
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -25,17 +24,14 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   yes
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -56,7 +52,6 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
-TIMEADAPT                       0
 PREDICT                         ConstDisVelAcc
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
@@ -454,22 +449,22 @@ DSURF                           0
 ------------------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 5   DNODE 1
-NODE 6   DNODE 1
-NODE 11  DNODE 1
-NODE 15  DNODE 1
-NODE 19  DNODE 1
-NODE 23  DNODE 1
-NODE 27  DNODE 1
-NODE 31  DNODE 1
-NODE 35  DNODE 1
-NODE 39  DNODE 1
-NODE 43  DNODE 1
-NODE 47  DNODE 1
-NODE 51  DNODE 1
-NODE 55  DNODE 1
-NODE 59  DNODE 1
-NODE 63  DNODE 1
+NODE 5 DNODE 1
+NODE 6 DNODE 1
+NODE 11 DNODE 1
+NODE 15 DNODE 1
+NODE 19 DNODE 1
+NODE 23 DNODE 1
+NODE 27 DNODE 1
+NODE 31 DNODE 1
+NODE 35 DNODE 1
+NODE 39 DNODE 1
+NODE 43 DNODE 1
+NODE 47 DNODE 1
+NODE 51 DNODE 1
+NODE 55 DNODE 1
+NODE 59 DNODE 1
+NODE 63 DNODE 1
 NODE 926 DNODE 1
 NODE 927 DNODE 1
 NODE 930 DNODE 1

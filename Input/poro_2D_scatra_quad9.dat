@@ -7,15 +7,15 @@
 //
 //
 ==================================================================
-                  General Data File BACI
+General Data File BACI
 ==================================================================
--------------------------------------------------------------TITLE
-created by pre_exodus 
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    4
-//NODES       25
-DIM           2
------------------------------------------------------DISCRETISATION
+-----------------------------------------------------------------------TITLE
+created by pre_exodus
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                      4
+//NODES                         25
+DIM                             2
+--------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
 NUMALEDIS                       0
 NUMARTNETDIS                    0
@@ -56,9 +56,9 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   3
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           no
+GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
@@ -71,7 +71,6 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 --------------------------------------------------------------------------IO
-ALE_DISP                        Yes
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -79,10 +78,8 @@ FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
 STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
@@ -90,7 +87,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithicstructuresplit //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
+COUPALGO poro_monolithicstructuresplit //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
 INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
@@ -107,11 +104,10 @@ LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    no
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
--------------------------------------------SCALAR TRANSPORT DYNAMIC
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   4
 SOLVERTYPE                      linear_incremental
 TIMEINTEGR                      One_Step_Theta
@@ -119,7 +115,7 @@ UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         1000
 MAXTIME 4.0 //hill reaches point of departure (x0=2/15)
-TIMESTEP                        0.01                           
+TIMESTEP                        0.01
 THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
@@ -129,7 +125,7 @@ INITFUNCNO                      1
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           5
------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
@@ -146,23 +142,19 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym 
-AZTOL                           1.0E-11                          // tolerance in (un)scaled residual
+SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym
+AZTOL                           1.0E-11                         // tolerance in (un)scaled residual
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         Material
 DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
 K_DAMP                          0.5
 LOADLIN                         no
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         8
 MINITER                         0
@@ -179,11 +171,9 @@ NUMSTEP                         100
 PREDICT                         ConstDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.01
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
@@ -212,31 +202,31 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy-Brinkman
 MAT 5 MAT_scatra DIFFUSIVITY 1.0
-------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0*0.5*(1-cos(t*pi/2.0)) t1 0.0 t2 8.0 
-------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC  4.0*0.5*(1-cos(t*pi/2.0))+1.0    t1 0.0 t2 2.0 
-CURVE2 on EXPR FUNC  5.0                              t1 2.0 t2 8.0 
-------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC  -1.0*0.5*(1-cos(t*pi/2.0))        t1 0.0 t2 2.0 // Tmax=4
-CURVE3 on EXPR FUNC  -1.0                              t1 2.0 t2 8.0 // Tmax=4
-------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC -1.0*0.5*(1-cos(t*pi/2.0)) t1 0.0 t2 8.0
+----------------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC 4.0*0.5*(1-cos(t*pi/2.0))+1.0 t1 0.0 t2 2.0
+CURVE2 on EXPR FUNC 5.0 t1 2.0 t2 8.0
+----------------------------------------------------------------------CURVE3
+CURVE3 on EXPR FUNC -1.0*0.5*(1-cos(t*pi/2.0)) t1 0.0 t2 2.0 // Tmax=4
+CURVE3 on EXPR FUNC -1.0 t1 2.0 t2 8.0 // Tmax=4
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0.0 0 FUNCTION 1.0
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
--------------------------------------------------RESULT DESCRIPTION
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.30892926211659733e+00 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 21 QUANTITY phi VALUE 1.22997135129626733e+00 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 1.22997715342739578e+00 TOLERANCE 1e-8
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  4
-NDSURF  1
-NDVOL   0
--------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT     0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         4
+NDLINE                          4
+NDSURF                          1
+NDVOL                           0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          0
 // Point x+y+
 //E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 // Point x-y+
@@ -245,32 +235,32 @@ DPOINT     0
 //E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Point x+y+
 //E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  1
-// Line_x+
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE                           1
+//                              Line_x+
 E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_x-
+//                              Line_x-
 //E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y+
+//                              Line_y+
 //E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y-
+//                              Line_y-
 //E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
+---------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
 DLINE                           0
-// Line_x+
-//E 1 - 
-// Line_x-
-//E 2 - 
-// Line_y+
-//E 3 - 
-// Line_y-
-//E 4 - 
--------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF   1
-// Surface
+//                              Line_x+
+//E 1 -
+//                              Line_x-
+//E 2 -
+//                              Line_y+
+//E 3 -
+//                              Line_y-
+//E 4 -
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           1
+//                              Surface
 E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
-DPOINT     2
+-----------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
+DPOINT                          2
 // Point x+y+
 E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
 // Point x-y+
@@ -279,113 +269,113 @@ E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none n
 //E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Point x+y+
 E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
-DLINE   3
-// Line_x+
+------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+DLINE                           3
+//                              Line_x+
 E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
-// Line_x-
+//                              Line_x-
 //E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y+
+//                              Line_y+
 E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y-
+//                              Line_y-
 E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
-DSURF   0
-// Surface
+------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
+DSURF                           0
+//                              Surface
 //E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-------------------------------DESIGN SURFACE POROCOUPLING CONDITION
-DSURF   1
-// Surface
-E 1 -  
----------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE 1
+---------------------------------------DESIGN SURFACE POROCOUPLING CONDITION
+DSURF                           1
+//                              Surface
+E 1 -
+-------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+DLINE                           1
 E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 none none none none none FUNCT 0 0 0 0 0 0
------------------------------------------------DNODE-NODE TOPOLOGY
-NODE    1 DNODE 1
-NODE    10 DNODE 2
-NODE    22 DNODE 3
-NODE    17 DNODE 4
------------------------------------------------DLINE-NODE TOPOLOGY
-NODE    1 DLINE 1
-NODE    4 DLINE 1
-NODE    8 DLINE 1
-NODE    17 DLINE 1
-NODE    20 DLINE 1
-NODE    10 DLINE 2
-NODE    11 DLINE 2
-NODE    13 DLINE 2
-NODE    22 DLINE 2
-NODE    23 DLINE 2
-NODE    1 DLINE 3
-NODE    2 DLINE 3
-NODE    5 DLINE 3
-NODE    10 DLINE 3
-NODE    12 DLINE 3
-NODE    16 DLINE 4
-NODE    17 DLINE 4
-NODE    19 DLINE 4
-NODE    22 DLINE 4
-NODE    24 DLINE 4
------------------------------------------------DSURF-NODE TOPOLOGY
-NODE    1 DSURFACE  1
-NODE    2 DSURFACE  1
-NODE    3 DSURFACE  1
-NODE    4 DSURFACE  1
-NODE    5 DSURFACE  1
-NODE    6 DSURFACE  1
-NODE    7 DSURFACE  1
-NODE    8 DSURFACE  1
-NODE    9 DSURFACE  1
-NODE    10 DSURFACE  1
-NODE    11 DSURFACE  1
-NODE    12 DSURFACE  1
-NODE    13 DSURFACE  1
-NODE    14 DSURFACE  1
-NODE    15 DSURFACE  1
-NODE    16 DSURFACE  1
-NODE    17 DSURFACE  1
-NODE    18 DSURFACE  1
-NODE    19 DSURFACE  1
-NODE    20 DSURFACE  1
-NODE    21 DSURFACE  1
-NODE    22 DSURFACE  1
-NODE    23 DSURFACE  1
-NODE    24 DSURFACE  1
-NODE    25 DSURFACE  1
--------------------------------------------------------NODE COORDS
-NODE 1  	COORD	5.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 2  	COORD	0.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 3  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 4  	COORD	5.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 5  	COORD	2.5000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 6  	COORD	0.0000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 7  	COORD	2.5000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 8  	COORD	5.0000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 9  	COORD	2.5000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 10  	COORD	-5.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 11  	COORD	-5.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 12  	COORD	-2.5000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 13  	COORD	-5.0000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 14  	COORD	-2.5000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
-NODE 15  	COORD	-2.5000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 16  	COORD	0.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 17  	COORD	5.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 18  	COORD	0.0000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 19  	COORD	2.5000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 20  	COORD	5.0000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 21  	COORD	2.5000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 22  	COORD	-5.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 23  	COORD	-5.0000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
-NODE 24  	COORD	-2.5000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
-NODE 25  	COORD	-2.5000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
-------------------------------------------------STRUCTURE ELEMENTS
-   1 WALLQ9PORO QUAD9  1 2 3 4 5 6 7 8 9    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
-   2 WALLQ9PORO QUAD9  2 10 11 3 12 13 14 6 15    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
-   3 WALLQ9PORO QUAD9  4 3 16 17 7 18 19 20 21    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
-   4 WALLQ9PORO QUAD9  3 11 22 16 14 23 24 18 25    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------------------END
-// END
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+NODE 10 DNODE 2
+NODE 22 DNODE 3
+NODE 17 DNODE 4
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE 1 DLINE 1
+NODE 4 DLINE 1
+NODE 8 DLINE 1
+NODE 17 DLINE 1
+NODE 20 DLINE 1
+NODE 10 DLINE 2
+NODE 11 DLINE 2
+NODE 13 DLINE 2
+NODE 22 DLINE 2
+NODE 23 DLINE 2
+NODE 1 DLINE 3
+NODE 2 DLINE 3
+NODE 5 DLINE 3
+NODE 10 DLINE 3
+NODE 12 DLINE 3
+NODE 16 DLINE 4
+NODE 17 DLINE 4
+NODE 19 DLINE 4
+NODE 22 DLINE 4
+NODE 24 DLINE 4
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+NODE 9 DSURFACE 1
+NODE 10 DSURFACE 1
+NODE 11 DSURFACE 1
+NODE 12 DSURFACE 1
+NODE 13 DSURFACE 1
+NODE 14 DSURFACE 1
+NODE 15 DSURFACE 1
+NODE 16 DSURFACE 1
+NODE 17 DSURFACE 1
+NODE 18 DSURFACE 1
+NODE 19 DSURFACE 1
+NODE 20 DSURFACE 1
+NODE 21 DSURFACE 1
+NODE 22 DSURFACE 1
+NODE 23 DSURFACE 1
+NODE 24 DSURFACE 1
+NODE 25 DSURFACE 1
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD 5.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 2 COORD 0.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 3 COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 4 COORD 5.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 5 COORD 2.5000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 6 COORD 0.0000000000000000e+00 2.5000000000000000e+00 0.0000000000000000e+00
+NODE 7 COORD 2.5000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 8 COORD 5.0000000000000000e+00 2.5000000000000000e+00 0.0000000000000000e+00
+NODE 9 COORD 2.5000000000000000e+00 2.5000000000000000e+00 0.0000000000000000e+00
+NODE 10 COORD -5.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 11 COORD -5.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 12 COORD -2.5000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 13 COORD -5.0000000000000000e+00 2.5000000000000000e+00 0.0000000000000000e+00
+NODE 14 COORD -2.5000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 15 COORD -2.5000000000000000e+00 2.5000000000000000e+00 0.0000000000000000e+00
+NODE 16 COORD 0.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 17 COORD 5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 18 COORD 0.0000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000e+00
+NODE 19 COORD 2.5000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 20 COORD 5.0000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000e+00
+NODE 21 COORD 2.5000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000e+00
+NODE 22 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 23 COORD -5.0000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000e+00
+NODE 24 COORD -2.5000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 25 COORD -2.5000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 WALLQ9PORO QUAD9 1 2 3 4 5 6 7 8 9 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+2 WALLQ9PORO QUAD9 2 10 11 3 12 13 14 6 15 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+3 WALLQ9PORO QUAD9 4 3 16 17 7 18 19 20 21 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+4 WALLQ9PORO QUAD9 3 11 22 16 14 23 24 18 25 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+-------------------------------------------------------------THERMO ELEMENTS
+-------------------------------------------------------------------------END
+//                              END

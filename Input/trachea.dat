@@ -6,7 +6,6 @@ MATERIALS                       1
 NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ReducedDimensionalAirWays
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------------------IO
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC

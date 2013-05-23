@@ -17,9 +17,9 @@ are transferred to the element routine. It does not check the model
 itself, that is, it ability to deal with turbulent flows.
 here:                           mfs
 note: Due to scale sepation based on lever-transfer operators from
-      plain-aggregation algebraic multigrid methods, the separation
-      matrix depends on the number of procs. To perform a parallel
-      test, a fixed given fine-scale field is set.
+plain-aggregation algebraic multigrid methods, the separation
+matrix depends on the number of procs. To perform a parallel
+test, a fixed given fine-scale field is set.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        320
 NODES                           125
@@ -28,7 +28,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -63,9 +62,9 @@ TIMESTEP                        0.00625
 UPRES                           4
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
@@ -102,7 +101,7 @@ AZDROP                          0.0                             // drop toleranc
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-AZTOL                           1.0E-14                          // tolerance in (un)scaled residual
+AZTOL                           1.0E-14                         // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 AZSUB                           1000                            // size of krylov space for gmres

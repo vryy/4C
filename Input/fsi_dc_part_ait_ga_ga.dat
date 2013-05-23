@@ -17,7 +17,6 @@ MATERIALS                       3
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes

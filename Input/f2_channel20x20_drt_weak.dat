@@ -20,7 +20,6 @@ MATERIALS                       1
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1

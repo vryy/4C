@@ -24,7 +24,6 @@ MATERIALS                       4
 NUMDF                           2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP Electrochemistry //Scalar_Transport
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -32,22 +31,19 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
@@ -84,7 +80,7 @@ SCATRATYPE                      Elch_ENC_PDE_ELIM
 // the binary electrolyte solution
 // -> Check calculation procedure of the method
 //
-STABTYPE    no_stabilization
+STABTYPE                        no_stabilization
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1.0e-7
 ITEMAX                          7
@@ -92,7 +88,7 @@ ABSTOLRES                       5.0e-13
 ----------------------------------------------------------------ELCH CONTROL
 UPRES                           1
 RESTARTEVRY                     2
-NUMSTEP                         10  // shorter run for nightly test case! //100
+NUMSTEP                         10                              // shorter run for nightly test case! //100
 MAXTIME 1.0 //hill reaches point of departure (x0=2/15) for 100 steps
 TIMESTEP                        0.01                            // Cr = 1.5
 -----------------------------------------------------------------FSI DYNAMIC
@@ -101,9 +97,9 @@ TIMESTEP                        0.01                            // Cr = 1.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                            // output every so often, 0 no output
+AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                            // !!!!!!! // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                             // !!!!!!! // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         20                              // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
@@ -136,7 +132,7 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 MAT 1 MAT_ion DIFFUSIVITY 0.0006666666666 VALENCE +0.0 // Pe_e = 5
 MAT 2 MAT_ion DIFFUSIVITY 0.0005 VALENCE +1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.001 ELIM_VALENCE -1.0 // reproduces D_binary=0.0006666666666
 // Krylov space projection works only with one CrsMatrix -> Elch_ENC_PDE_ELIM
-//MAT 3 MAT_ion DIFFUSIVITY 0.001 VALENCE -1.0  // reproduces D_binary=0.0006666666666
+//MAT 3 MAT_ion DIFFUSIVITY 0.001 VALENCE -1.0 // reproduces D_binary=0.0006666666666
 MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2

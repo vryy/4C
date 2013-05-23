@@ -89,9 +89,9 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
@@ -166,7 +166,6 @@ PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
 SECONDORDER                     yes                             // Second order coupling at the interface Yes,No,yes,no,YES,NO
 INFNORMSCALING                  yes
 --------------------------------------------------------------------------IO
-ALE_DISP                        Yes
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -174,11 +173,9 @@ FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   Yes
 STRUCT_STRESS                   2PK
 STRUCT_SURFACTANT               No
@@ -186,7 +183,6 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Gas_Fluid_Structure_Interaction
 RESTART                         0
 //!RESTART                      10
@@ -371,17 +367,13 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
 K_DAMP                          0.5
 LOADLIN                         no
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         2000
 MINITER                         0
@@ -398,8 +390,6 @@ NUMSTEP                         2000
 PREDICT                         ConstDisVelAcc
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
 TIMESTEP                        1.0
 TOLCONSTR                       1e-05
 TOLDISP                         1e-05
@@ -435,7 +425,7 @@ NDPOINT                         1
 NDLINE                          3
 NDSURF                          19
 NDVOL                           1
------------------------------------------------DESIGN POINT DIRICH CONDITIONS
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
@@ -495,26 +485,26 @@ E 1 - COUPID 1 FIELDNUM 2 PERMCOEF 1.0
 // fluid fsi
 E 4 - COUPID 1 FIELDNUM 1 PERMCOEF 1.0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 1   DNODE 1
-NODE 4   DNODE 1
-NODE 5   DNODE 1
-NODE 8   DNODE 1
-NODE 21  DNODE 1
-NODE 24  DNODE 1
-NODE 31  DNODE 1
-NODE 34  DNODE 1
-NODE 41  DNODE 1
-NODE 44  DNODE 1
-NODE 51  DNODE 1
-NODE 54  DNODE 1
-NODE 61  DNODE 1
-NODE 64  DNODE 1
-NODE 71  DNODE 1
-NODE 74  DNODE 1
-NODE 81  DNODE 1
-NODE 84  DNODE 1
-NODE 91  DNODE 1
-NODE 94  DNODE 1
+NODE 1 DNODE 1
+NODE 4 DNODE 1
+NODE 5 DNODE 1
+NODE 8 DNODE 1
+NODE 21 DNODE 1
+NODE 24 DNODE 1
+NODE 31 DNODE 1
+NODE 34 DNODE 1
+NODE 41 DNODE 1
+NODE 44 DNODE 1
+NODE 51 DNODE 1
+NODE 54 DNODE 1
+NODE 61 DNODE 1
+NODE 64 DNODE 1
+NODE 71 DNODE 1
+NODE 74 DNODE 1
+NODE 81 DNODE 1
+NODE 84 DNODE 1
+NODE 91 DNODE 1
+NODE 94 DNODE 1
 NODE 101 DNODE 1
 NODE 104 DNODE 1
 NODE 111 DNODE 1

@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -27,17 +26,14 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   cauchy
 STRUCT_STRAIN                   ea
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -48,7 +44,6 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 PRESTRESS                       id                              // mulf id none
 PRESTRESSTIME                   0.0501
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // fullnewton lsnewton modnewton nlncg ptc

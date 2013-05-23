@@ -16,7 +16,6 @@ MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_XFEM
-NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -24,17 +23,14 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -62,24 +58,24 @@ LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no//yes
 VSTAB                           no_vstab
-GRAD_DIV                           no //yes
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos                         // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos                // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
@@ -97,7 +93,7 @@ VISC_STAB_FAC                   50.0                            // in [10;100]
 VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
 CONV_STAB_FAC                   1.0
-CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel // inflow // const // none
+CONV_STAB_SCALING abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1                             // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
@@ -110,7 +106,7 @@ AZREUSE                         1                               // how often to 
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     3                               // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-013                         // tolerance in unscaled residual
+AZTOL                           1.0E-013                        // tolerance in unscaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 //AZSUB                         150                             // size of krylov space for gmres
@@ -152,7 +148,7 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.91969667977055169e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.60941742661038570e-02 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE   1.60666694260807041e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.60666694260807041e+01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.31609642467520938e+00 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.14737514331598300e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9

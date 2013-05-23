@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -27,24 +26,20 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
@@ -229,7 +224,7 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.28918175114224631e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE  7.49553210742393006e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 7.49553210742393006e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.65304792569279990e+00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

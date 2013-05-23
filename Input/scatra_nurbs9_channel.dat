@@ -19,7 +19,6 @@ NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
 SHAPEFCT                        Nurbs
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -43,7 +42,7 @@ ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             time_dependent
@@ -51,7 +50,7 @@ TRANSIENT                       yes_transient
 SUPG                            yes
 PSPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  element_center
@@ -480,18 +479,18 @@ FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 1.0
 FUNCT2 EXPR 0 0.0 0 FUNCTION 4.0*y*(1.0-y)
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 79 QUANTITY velx  VALUE 9.854030450e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 79 QUANTITY vely  VALUE 7.232560390e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 79 QUANTITY pressure  VALUE 3.489831671e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 79 QUANTITY phi  VALUE 8.829418864e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 123 QUANTITY velx  VALUE 1.941551659e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 123 QUANTITY vely  VALUE 1.980942970e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 123 QUANTITY pressure  VALUE 6.602342237e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 123 QUANTITY phi  VALUE 2.846638345e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 79 QUANTITY velx VALUE 9.854030450e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 79 QUANTITY vely VALUE 7.232560390e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 79 QUANTITY pressure VALUE 3.489831671e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 79 QUANTITY phi VALUE 8.829418864e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 123 QUANTITY velx VALUE 1.941551659e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 123 QUANTITY vely VALUE 1.980942970e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 123 QUANTITY pressure VALUE 6.602342237e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 123 QUANTITY phi VALUE 2.846638345e-01 TOLERANCE 1e-9
 // intermediate changes of normal vectors for NURBS -> test x instead of y-components!!
-SCATRA DIS scatra NODE 144 QUANTITY fluxx  VALUE 1.148342931e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 9 QUANTITY fluxx  VALUE 1.247537276e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1 QUANTITY fluxx  VALUE -2.732052180e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 144 QUANTITY fluxx VALUE 1.148342931e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 9 QUANTITY fluxx VALUE 1.247537276e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE -2.732052180e-01 TOLERANCE 1e-9
 //SCATRA DIS 1 NODE 144 QUANTITY fluxy NAME fluxy VALUE -1.148342931e-01 TOLERANCE 1e-9
 //SCATRA DIS 1 NODE 9 QUANTITY fluxy NAME fluxy VALUE -1.247537276e-01 TOLERANCE 1e-9
 //SCATRA DIS 1 NODE 1 QUANTITY fluxy NAME fluxy VALUE -1.444444444e-01 TOLERANCE 1e-9

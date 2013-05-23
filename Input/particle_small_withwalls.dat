@@ -18,25 +18,21 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
-NUMFIELD                        1
 RESTART                         0
-//RESTART                         6
+//RESTART                       6
 SHAPEFCT                        Meshfree
 --------------------------------------------------------------------------IO
-OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-STRUCT_SM_DISP                  No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
-ALE_DISP                        No
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
-------------------------------------------------------------MESHFREE
+--------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 BUBNOV                          Yes
 PARTITION_OF_UNITY              Yes
@@ -45,13 +41,13 @@ NEWTON_TOL                      1e-6
 NEWTON_MAX                      100
 T_PRIOR                         Gauss
 T_SKEW                          None
-T_VARIANCE                      .01        // = sigma^2 = gamma/h^2
+T_VARIANCE                      .01                             // = sigma^2 = gamma/h^2
 T_RANGE_TOL                     1e-6
 CUTOFF_RADIUS                   1.0
-BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001
+BOUNDINGBOX -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001
 T_COMPLIANCE                    linear
 ----------------------------------------------------------CAVITATION DYNAMIC
-GRAVITY_ACCELERATION            0.0 0.0 -9.81
+GRAVITY_ACCELERATION 0.0 0.0 -9.81
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      ParticleCentrDiff
 RESULTSEVRY                     1
@@ -71,37 +67,37 @@ LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Dummy_Structure_Solver
 SOLVER                          UMFPACK
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  1
-NDVOL   0
-NDPARTICLE 2
-----------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
-DPARTICLE                       1   
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
-----------------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
-DPARTICLE                       1   
-E 2 - Velocity 1 
---------------------------------------DESIGN SURFACE PARTICLE WALL
-DSURF  1
-// walls
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          1
+NDVOL                           0
+NDPARTICLE                      2
+-------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
+DPARTICLE                       1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
+DPARTICLE                       1
+E 2 - Velocity 1
+------------------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF                           1
+//                              walls
 E 1 - 1
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DPARTICLE-NODE TOPOLOGY
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 NODE 8 DPARTICLE 1
 NODE 10 DPARTICLE 2
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
-NODE    1 DSURFACE 1
-NODE    2 DSURFACE 1
-NODE    3 DSURFACE 1
-NODE    4 DSURFACE 1
-NODE    5 DSURFACE 1
-NODE    6 DSURFACE 1
-NODE    7 DSURFACE 1
-NODE    8 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 PARTICLE 1 COORD -1.000000000000000e+00 -1.000000000000000e+00 -1.000000000000000e+00
 PARTICLE 2 COORD 0.000000000000000e+00 -1.000000000000000e+00 -1.000000000000000e+00
@@ -130,16 +126,16 @@ PARTICLE 24 COORD 1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e
 PARTICLE 25 COORD 0.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
 PARTICLE 26 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 PARTICLE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
-NODE 1      COORD -1.1000000000000001e+00 -1.1000000000000001e+00 1.1000000000000001e+00	
-NODE 2      COORD -1.1000000000000001e+00 -1.1000000000000001e+00 -1.1000000000000001e+00	
-NODE 3      COORD -1.1000000000000001e+00 1.1000000000000001e+00 -1.1000000000000001e+00	
-NODE 4      COORD -1.1000000000000001e+00 1.1000000000000001e+00 1.1000000000000001e+00	
-NODE 5      COORD 1.1000000000000001e+00 -1.1000000000000001e+00 1.1000000000000001e+00	
-NODE 6      COORD 1.1000000000000001e+00 -1.1000000000000001e+00 -1.1000000000000001e+00	
-NODE 7      COORD 1.1000000000000001e+00 1.1000000000000001e+00	-1.1000000000000001e+00	
-NODE 8      COORD 1.1000000000000001e+00 1.1000000000000001e+00	1.1000000000000001e+00	
-------------------------------------------------STRUCTURE ELEMENTS
-   1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 3 KINEM nonlinear EAS none
+NODE 1 COORD -1.1000000000000001e+00 -1.1000000000000001e+00 1.1000000000000001e+00
+NODE 2 COORD -1.1000000000000001e+00 -1.1000000000000001e+00 -1.1000000000000001e+00
+NODE 3 COORD -1.1000000000000001e+00 1.1000000000000001e+00 -1.1000000000000001e+00
+NODE 4 COORD -1.1000000000000001e+00 1.1000000000000001e+00 1.1000000000000001e+00
+NODE 5 COORD 1.1000000000000001e+00 -1.1000000000000001e+00 1.1000000000000001e+00
+NODE 6 COORD 1.1000000000000001e+00 -1.1000000000000001e+00 -1.1000000000000001e+00
+NODE 7 COORD 1.1000000000000001e+00 1.1000000000000001e+00 -1.1000000000000001e+00
+NODE 8 COORD 1.1000000000000001e+00 1.1000000000000001e+00 1.1000000000000001e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 3 KINEM nonlinear EAS none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10. NUE 0.2 DENS 1.0
 MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.01
@@ -148,7 +144,7 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 CURVE1 on EXPR FUNC t/1.5 t1 0. t2 1.5
 ----------------------------------------------------------------------FUNCT1
 // initial velocity (x component)
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 6.0 
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 6.0
 // initial velocity (y component)
 FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
 // initial velocity (z component)

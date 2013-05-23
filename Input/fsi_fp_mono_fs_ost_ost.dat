@@ -6,9 +6,9 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:          iter_monolithicfluidsplit
-Fluid:        One_Step_Theta with constant_acceleration
-Structure:    OneStepTheta with ConstVel
+FSI:                            iter_monolithicfluidsplit
+Fluid: One_Step_Theta with constant_acceleration
+Structure: OneStepTheta with ConstVel
 ==> comparison to analytical solution
 ==> loose convergence tolerance to test predictor
 ----------------------------------------------------------------PROBLEM SIZE
@@ -67,7 +67,6 @@ TOL_VEL_INC_L2                  1e-10
 TOL_VEL_RES_INF                 1e-08
 TOL_VEL_RES_L2                  1e-10
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial

@@ -54,9 +54,9 @@ TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   2
 SIMPLER_SOLVER                  3
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
@@ -105,21 +105,18 @@ TOL_VEL_RES_L2                  1e-08
 ALPHA                           0.8
 SIMPLEITER                      2
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction_Lung
 RESTART                         0
-NUMFIELD                        3
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 4
 NAME                            Structure_Solver
@@ -132,9 +129,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
 M_DAMP                          0.5
@@ -143,7 +138,6 @@ NUMSTEP                         200
 PREDICT                         ConstDisVelAcc
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-RESULTDT                        0
 TIMESTEP                        0.05
 TOLDISP                         1e-08
 TOLRES                          1e-06

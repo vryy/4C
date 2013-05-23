@@ -19,7 +19,6 @@ MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -30,7 +29,7 @@ NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      BDF2 // identical results with: Np_Gen_Alpha
+TIMEINTEGR                      BDF2                            // identical results with: Np_Gen_Alpha
 UPRES                           1
 RESTARTEVRY                     2
 MAXTIME                         0.1
@@ -50,14 +49,14 @@ STARTFUNCNO                     8
 ALPHA_F                         1.0
 ALPHA_M                         1.5
 GAMMA                           1.0
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
 SUPG                            yes
 PSPG                            yes
 VSTAB                           vstab_usfem
-GRAD_DIV                           yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------FSI DYNAMIC

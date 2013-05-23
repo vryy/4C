@@ -33,7 +33,6 @@ NUMTHERMDIS                     1
 APPROXIMATION_TYPE              None
 POTENTIAL_TYPE                  Volume
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -47,10 +46,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         16
 M_DAMP                          0.5
@@ -60,8 +56,6 @@ PREDICT                         ConstDis
 RESULTSEVRY                     3
 RESEVRYERGY                     0
 RESTARTEVRY                     1000
-RESULTDT                        0
-TIMEADAPT                       0
 TIMESTEP                        0.1
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10

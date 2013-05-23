@@ -57,15 +57,15 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           10
 PREDICTOR                       explicit_second_order_midpoint
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
 TDS                             quasistatic                     // quasistatic time_dependent
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes                        // no yes
-PSPG                            yes                        // no_pspg yes
+SUPG                            yes                             // no yes
+PSPG                            yes                             // no_pspg yes
 VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                           yes                        // no yes cstab_td
+GRAD_DIV                        yes                             // no yes cstab_td
 CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
@@ -78,22 +78,18 @@ SAMPLING_START                  1
 SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    Yes
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Fluid
 RESTART                         0
 -------------------------------------------------------------CONTACT DYNAMIC
@@ -105,10 +101,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
-ITWANT                          0
 K_DAMP                          0.5
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
 M_DAMP                          0.5
@@ -117,8 +110,6 @@ NUMSTEP                         200
 PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
 TIMESTEP                        0.05
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10

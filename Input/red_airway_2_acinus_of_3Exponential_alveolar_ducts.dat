@@ -6,7 +6,6 @@ MATERIALS                       1
 NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ReducedDimensionalAirWays
-NUMFIELD                        1
 RESTART 0// 599
 --------------------------------------------------------------------------IO
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
@@ -75,10 +74,10 @@ E 1 - flow 1.0 2 0
 2 RED_AIRWAY LINE2 2 3 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.15 Area 1.0 Generation 0
 3 RED_AIRWAY LINE2 2 4 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.12 Area 1.0 Generation 0
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD -5.0  0.0 0.0
-NODE 2 COORD  0.0  0.0 0.0
-NODE 3 COORD  2.5  2.5 0.0
-NODE 4 COORD  2.5 -2.5 0.0
+NODE 1 COORD -5.0 0.0 0.0
+NODE 2 COORD 0.0 0.0 0.0
+NODE 3 COORD 2.5 2.5 0.0
+NODE 4 COORD 2.5 -2.5 0.0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 3 DNODE 2

@@ -1,8 +1,8 @@
 ==================================================================
-                  General Data File BACI
+General Data File BACI
 ==================================================================
--------------------------------------------------------------TITLE
-Contracting Cylinder
+-----------------------------------------------------------------------TITLE
+Contracting                     Cylinder
 Test for SolidScatra Material with Tet10 Elements
 Maintainer: A. Nagler
 ----------------------------------------------------------------PROBLEM SIZE
@@ -15,7 +15,6 @@ NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       5
 FLUID_SOL                       No
 FLUID_STRESS                    No
@@ -23,12 +22,10 @@ FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   GL
 STRUCT_STRESS                   Cauchy
 STRUCT_SURFACTANT               No
@@ -36,7 +33,6 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -60,7 +56,7 @@ AZPOLY                          5
 AZPREC                          ML
 AZREUSE                         5
 AZSCAL                          none
-AZSOLVE                         GMRES	
+AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-04
 BGS2X2_FLIPORDER                block0_block1_order
@@ -82,27 +78,23 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 Chebychev
 ML_SMOOTHERMED                  Chebychev
-ML_SMOTIMES 			6 6 6 6 1
+ML_SMOTIMES 6 6 6 6 1
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
 STRATIMIKOS_XMLFILE             None
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         Rayleigh
 DIVERCONT                       No
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 ITERNORM                        Inf
-ITWANT                          0
 K_DAMP                          0.005
 LINEAR_SOLVER                   1
 LOADLIN                         no
 LUMPMASS                        No
-MAXDT                           0
 MAXITER                         100
 MAXTIME                         0.9
 MINITER                         0
@@ -123,17 +115,15 @@ PRESTRESSTIME                   0
 PTCDT                           0.1
 RESEVRYERGY                     0
 RESTARTEVRY                     50
-RESULTDT                        0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.001
 TOLCONSTR                       1e-03
-TOLDISP                         1e-09 // 10-7 meter
+TOLDISP                         1e-09                           // 10-7 meter
 TOLINCO                         1e-03
 TOLPRE                          1e-03
-TOLRES                          1e-06  // 10-1 newton
+TOLRES                          1e-06                           // 10-1 newton
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -172,10 +162,10 @@ NDLINE                          0
 NDSURF                          3
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-//DSURF                           2
-// up
+//DSURF                         2
+//                              up
 //E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
-// down
+//                              down
 //E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
@@ -12568,10 +12558,10 @@ STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.73156484108639597e-01 T
 STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.27502560552153560e-01 TOLERANCE 1e-6
 // checking xyz displacement of 2 points at the middle
 STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE -1.48300975825216407e-02 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE  2.71343145809999770e-02 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE  8.70610535207257813e-03 TOLERANCE 1e-4
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE  7.62666997852720022e-03 TOLERANCE 1e-4
-STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE  1.42224563251583981e-02 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE  8.63521289910623886e-03 TOLERANCE 1e-4
+STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE 2.71343145809999770e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE 8.70610535207257813e-03 TOLERANCE 1e-4
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 7.62666997852720022e-03 TOLERANCE 1e-4
+STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE 1.42224563251583981e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE 8.63521289910623886e-03 TOLERANCE 1e-4
 -------------------------------------------------------------------------END
-// END
+//                              END

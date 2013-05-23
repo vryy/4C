@@ -34,7 +34,6 @@ NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -42,19 +41,16 @@ FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
 STRUCT_SE                       No
-STRUCT_SM_DISP                  No
-STRUCT_STRAIN                   EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_PLASTIC_STRAIN           EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_STRAIN                   EA                              // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_PLASTIC_STRAIN           EA                              // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   Cauchy                          // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -62,18 +58,14 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
-CONTROLNODE                     -1 -1 -1
+CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       No
-DYNAMICTYP                      Statics  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
-EIGEN                           0
+DYNAMICTYP                      Statics                         // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
 ITERNORM                        L2
-ITWANT                          0
 K_DAMP                          0.5
 LOADLIN                         no
-MAXDT                           0
 MAXITER                         15
 MAXTIME                         5
 MINITER                         0
@@ -90,17 +82,15 @@ NUMSTEP                         20000
 PREDICT                         ConstDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.05
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLINCO                         1e-08
 TOLPRE                          1e-08
-TOLRES                          1e-06  // prescribed in de Souza Neto; default: 1e-08
+TOLRES                          1e-06                           // prescribed in de Souza Neto; default: 1e-08
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -115,12 +105,12 @@ GENAVG                          TrLike
 THETA                           0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-AMGBS_BS_DAMPING                1.3 1.3 1.3
+AMGBS_BS_DAMPING 1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_BS_PCSWEEPS 2 2 2
 AMGBS_PSMOOTHER_PRE             PA-AMG
 AMGBS_PSMOOTHER_VEL             PA-AMG
 AZBDIAG                         0
@@ -155,7 +145,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
+ML_SMOTIMES 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 THEXPANS 0.0 INITTEMP 273.15 YIELD 2.4e5 KINHARD 0.0 TOL 1.0e-6
@@ -904,4 +894,4 @@ STRUCTURE DIS structure NODE 241 QUANTITY dispx VALUE 4.3600352929129410e-01 TOL
 STRUCTURE DIS structure NODE 241 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13
 STRUCTURE DIS structure NODE 241 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13
 -------------------------------------------------------------------------END
-//  END
+//                              END

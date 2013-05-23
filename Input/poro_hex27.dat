@@ -16,7 +16,6 @@ created by pre_exodus
 //NODES                         343
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP Poroelasticity //Poroelastic_scalar_transport Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -62,9 +61,9 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   3
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                           no
+GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
@@ -77,7 +76,6 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 --------------------------------------------------------------------------IO
-ALE_DISP                        Yes
 FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -85,10 +83,8 @@ FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
 STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   Cauchy
 STRUCT_COUPLING_STRESS          Cauchy
@@ -114,26 +110,22 @@ LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK                  
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK                   
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                     
+SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         Material
 DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
 K_DAMP                          0.5
 LOADLIN                         no
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
@@ -150,11 +142,9 @@ NUMSTEP                         200
 PREDICT                         ConstDis
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.05
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
@@ -350,7 +340,7 @@ DSURF                           1
 //E 4 - 1
 // Surface x+
 E 6 - 0
-------------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
+----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

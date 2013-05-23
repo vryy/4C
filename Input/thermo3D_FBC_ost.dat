@@ -29,12 +29,10 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-OUTPUT_OUT                      No
-THERM_HEATFLUX                  Initial  // None, Current
+THERM_HEATFLUX                  Initial                         // None, Current
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial  // None, Current
+THERM_TEMPGRAD                  Initial                         // None, Current
 -----------------------------------------------------------------PROBLEM TYP
-NUMFIELD                        1
 PROBLEMTYP                      Thermo
 RESTART                         0
 SHAPEFCT                        Polynomial
@@ -155,4 +153,4 @@ NODE 16 COORD 0.00000000e+00 0.00000000e+00 -5.00000000e-01
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 6.475813267e-01 TOLERANCE 1.0e-6
 -------------------------------------------------------------------------END
-//  END
+//                              END

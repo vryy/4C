@@ -17,7 +17,6 @@ MATERIALS                       3
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
-NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -25,7 +24,6 @@ LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
-EIGEN                           0
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 TIMESTEP                        0.05
@@ -60,7 +58,7 @@ ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-8
 INITIALFIELD                    zero_field
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
