@@ -248,6 +248,7 @@ void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<3,3>& diffus3) const
 
 double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) const
 {
+
   double reacoeff = 0.0;
   const double p = 1000.0;
 
@@ -350,7 +351,7 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
     const double G_bCa  = 0.000592; //
 
     // Calculate reverse potentials
-    const double E_Ks = R*T/(F)*log(K_O + p_KNa*Na_O/(K_i_ + p_KNa*Na_i_));
+    const double E_Ks = R*T/(F)*log((K_O + p_KNa*Na_O)/(K_i_ + p_KNa*Na_i_));
     const double E_K  = R*T/(F)*log(K_O/K_i_);
     const double E_Na = R*T/(F)*log(Na_O/Na_i_) ;
     const double E_Ca = R*T/(2*F)*log(Ca_O/Ca_i_) ;
@@ -377,7 +378,8 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
     const double I_Na  = G_Na*pow( m, 3 )*h*j*(phi - E_Na);
 
     // Inward rectifier K+ current
-    const double a_K1     = 0.1/(1.0+exp( 0.06*(-E_K - 200.0 + phi)/20.0 ));
+    // const double a_K1     = 0.1/(1.0+exp( 0.06*(-E_K - 200.0 + phi)/20.0 ));
+    const double a_K1     = 0.1/(1.0+exp( 0.06*(-E_K - 200.0 + phi) )); // BUG FOUND BY THOMAS
     const double b_K1     = (3.0*exp( 0.0002*(-E_K + 100.0 + phi)) + exp( 0.1*(-E_K - 10.0 + phi) ))/(1.0 + exp( -0.5*(-E_K + phi) ));
     const double x_K1_inf = a_K1/(a_K1 + b_K1);
     const double I_K1     = G_K1*sqrt(K_O/5.4)*x_K1_inf*(phi - E_K);
@@ -459,6 +461,8 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
 
     // Compute reaction coefficient as the sum of all ion currents
     reacoeff = (I_Na + I_K1 + I_to + I_Kr + I_Ks + I_CaL + I_NaCa + I_NaK + I_pCa + I_pK + I_bCa + I_bNa);// /C_m;
+   // cout << reacoeff << " " << I_Na << "  " << I_K1 << "  " << I_to << "  " <<  I_Kr << "  " <<  I_Ks << "  " <<  I_CaL << "  " <<  I_NaCa << "  " <<  I_NaK << "  " <<  I_pCa << "  " <<  I_pK << "  " << I_bCa << "  " << I_bNa << endl;
+   // dserror("SONO QUI");
   }
   else dserror("Myocard cell model type not found!");
 
@@ -605,7 +609,7 @@ void MAT::Myocard::Update(const double phi, const double dt)
     const double K_bufsr = 0.3; //
 
     // Calculate reverse potentials
-    const double E_Ks = R*T/(F)*log(K_O + p_KNa*Na_O/(K_i_ + p_KNa*Na_i_));
+    const double E_Ks = R*T/(F)*log((K_O + p_KNa*Na_O)/(K_i_ + p_KNa*Na_i_));
     const double E_K  = R*T/(F)*log(K_O/K_i_);
     const double E_Na = R*T/(F)*log(Na_O/Na_i_) ;
     const double E_Ca = R*T/(2*F)*log(Ca_O/Ca_i_) ;
@@ -631,7 +635,8 @@ void MAT::Myocard::Update(const double phi, const double dt)
     const double I_Na  = G_Na*pow( m_, 3 )*h_*j_*(phi - E_Na);
 
     // Inward rectifier K+ current
-    const double a_K1     = 0.1/(1.0 + exp( 0.06*(-E_K - 200.0 + phi)/20.0 ));
+    //    const double a_K1     = 0.1/(1.0 + exp( 0.06*(-E_K - 200.0 + phi)/20.0 ));
+    const double a_K1     = 0.1/(1.0 + exp( 0.06*(-E_K - 200.0 + phi) )); // THOMAS
     const double b_K1     = (3.0*exp( 0.0002*(-E_K + 100.0 + phi) ) + exp( 0.1*(-E_K - 10.0 + phi) ))/(1.0 + exp( -0.5*(-E_K + phi) ));
     const double x_K1_inf = a_K1/(a_K1 + b_K1);
     const double I_K1     = G_K1*sqrt( K_O/5.4 )*x_K1_inf*(phi - E_K);
@@ -696,7 +701,8 @@ void MAT::Myocard::Update(const double phi, const double dt)
     const double I_rel    = (a_rel*pow(Ca_sr_,2)/(pow(b_rel,2) + pow(Ca_sr_,2)) + c_rel)*d_*g_; // Calcium induced calcium current
 
     const double Ca_ibufc   = Ca_i_*Buf_c/(Ca_i_ + K_bufc); // Buffered calcium in cytoplasm
-    const double dCa_itotal = -dt*(I_CaL + I_bCa + I_pCa - 2*I_NaCa)/(2*V_C*F) + I_leak + I_up + I_rel; // Total calcium in cytoplasm
+//    const double dCa_itotal = -dt*(I_CaL + I_bCa + I_pCa - 2*I_NaCa)/(2*V_C*F) + I_leak + I_up + I_rel; // Total calcium in cytoplasm
+    const double dCa_itotal = -dt*(I_CaL + I_bCa + I_pCa - 2*I_NaCa)/(2*V_C*F) + dt*(I_leak - I_up + I_rel); // Total calcium in cytoplasm
     const double bc         = Buf_c - Ca_ibufc - dCa_itotal - Ca_i_ + K_bufc;
     const double cc         = K_bufc*(Ca_ibufc + dCa_itotal + Ca_i_);
     Ca_i_ = (sqrt(bc*bc+4*cc)-bc)/2; // Free Ca2+ in cytoplasm
