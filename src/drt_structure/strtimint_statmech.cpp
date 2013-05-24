@@ -180,12 +180,12 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     }
     else if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
     {
-      //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3eb*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
-
-      //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
-        statmechman_->PeriodicBoundaryBeam3ebInit(discret_->lColElement(i));
+//      //see whether current element needs more random numbers per time step than any other before
+//      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3eb*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+//
+//      //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+//      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
+//        statmechman_->PeriodicBoundaryBeam3ebInit(discret_->lColElement(i));
     }
     else if ( eot == DRT::ELEMENTS::Beam2Type::Instance() )
     {

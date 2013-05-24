@@ -1336,25 +1336,25 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3ebInit(DRT::Element* elemen
 {
   // note: in analogy to PeriodicBoundaryBeam3Init()
 
-  DRT::ELEMENTS::Beam3eb* beam = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element);
-  const int ndim = 3;
-  std::vector<double> xrefe(beam->NumNode()*ndim,0);
-
-  for(int i=0;i<beam->NumNode();i++)
-    for(int dof=0; dof<ndim; dof++)
-      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
-
-  for(int i=1;i<beam->NumNode();i++)
-  {
-    for(int dof=0; dof<ndim; dof++)
-    {
-      if( fabs( (beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
-        xrefe[3*i+dof] += periodlength_->at(dof);
-      if( fabs( (beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
-        xrefe[3*i+dof] -= periodlength_->at(dof);
-    }
-  }
-  beam->SetUpReferenceGeometry(xrefe,true);
+//  DRT::ELEMENTS::Beam3eb* beam = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element);
+//  const int ndim = 3;
+//  std::vector<double> xrefe(beam->NumNode()*ndim,0);
+//
+//  for(int i=0;i<beam->NumNode();i++)
+//    for(int dof=0; dof<ndim; dof++)
+//      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
+//
+//  for(int i=1;i<beam->NumNode();i++)
+//  {
+//    for(int dof=0; dof<ndim; dof++)
+//    {
+//      if( fabs( (beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+//        xrefe[3*i+dof] += periodlength_->at(dof);
+//      if( fabs( (beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+//        xrefe[3*i+dof] -= periodlength_->at(dof);
+//    }
+//  }
+//  beam->SetUpReferenceGeometry(xrefe,true);
 }
 
 /*------------------------------------------------------------------------*
