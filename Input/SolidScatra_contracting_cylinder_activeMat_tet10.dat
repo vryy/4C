@@ -1,6 +1,3 @@
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 Contracting                     Cylinder
 Test for SolidScatra Material with Tet10 Elements
@@ -41,15 +38,15 @@ AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
 AZGRAPH                         0
-AZITER                          2000
+AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        100
 AZPOLY                          5
-AZPREC                          MLFLUID2
+AZPREC                          ML
 AZREUSE                         5
 AZSCAL                          none
 AZSOLVE                         GMRES
-AZSUB                           50
+AZSUB                           30
 AZTOL                           1e-06
 ML_AGG_SIZE                     27
 ML_COARSEN                      UC
@@ -82,7 +79,7 @@ LINEAR_SOLVER                   1
 LOADLIN                         no
 LUMPMASS                        No
 MAXITER                         100
-MAXTIME                         0.9
+MAXTIME                         0.2
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          0.0
@@ -94,22 +91,22 @@ NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         15
+NUMSTEP                         20
 PREDICT                         ConstDisVelAcc
 PRESTRESS                       none
 PRESTRESSTIME                   0
 PTCDT                           0.1
 RESEVRYERGY                     0
-RESTARTEVRY                     50
+RESTARTEVRY                     10
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMESTEP                        0.001
+TIMESTEP                        0.005
 TOLCONSTR                       1e-03
-TOLDISP                         1e-09                      
+TOLDISP                         1e-09
 TOLINCO                         1e-03
 TOLPRE                          1e-03
-TOLRES                          1e-06                           
+TOLRES                          1e-06
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -132,13 +129,13 @@ THETA                           0.5
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 10 11 20 DENS 0.001
 MAT 10 ELAST_IsoMooneyRivlin C1 2.0E4 C2 40
 MAT 11 ELAST_VolPenalty EPSILON 1.0E7 GAMMA 1.0
-MAT 20 ELAST_CoupAnisoNeoHooke_VarProp C 100000 SOURCE_ACTIVATION 1
+MAT 20 ELAST_CoupAnisoNeoHooke_ActiveStress SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t-sqrt(z^2)/100)/0.00001)+0.5)*tanh((t-sqrt(z^2)/300)/0.1)*exp(-(((t-sqrt(z^2)/100)/0.5)^10))
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t-sqrt(z^2)/100)/0.00001)+0.5)*tanh((t-sqrt(z^2)/100)/0.1)*exp(-(((t-sqrt(z^2)/100)/0.5)^10))
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -12538,16 +12535,16 @@ NODE 6434 COORD -1.70002351856 1.04177575203 4.18716651965
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
-STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -1.15808781764480007e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -1.76070342040059002e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.73156484108639597e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.27502560552153560e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -1.33152804837934374e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -1.82948657930401382e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.82602482485314327e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.43129590190052308e-01 TOLERANCE 1e-10
 // checking xyz displacement of 2 points at the middle
-STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE -1.48300975825216407e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE 2.71343145809999770e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE 8.70610535207257813e-03 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 7.62666997852720022e-03 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE 1.42224563251583981e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE 8.63521289910623886e-03 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE  41 QUANTITY dispx VALUE  1.26228746188443135e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE  41 QUANTITY dispy VALUE -3.49596497904007611e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE  41 QUANTITY dispz VALUE  1.28810303161322297e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE  42 QUANTITY dispx VALUE -1.07218958516976035e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE  42 QUANTITY dispy VALUE -1.52981430067934080e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE  42 QUANTITY dispz VALUE  1.44107490290547539e-02 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
