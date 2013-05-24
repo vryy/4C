@@ -1503,10 +1503,13 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   // other parameters that might be needed by the elements
   sparams.set("delta time", Dt());
   sparams.set("total time", Time());
-  sparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
 
   StructureField()->Discretization()->ClearState();
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
+
+  // in case of temperature-dependent material parameters, here E(T), T_{n+1} is required in STR
+  sparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
+  StructureField()->Discretization()->SetState(1,"temperature",ThermoField()->Tempnp());
 
   // build specific assemble strategy for mechanical-thermal system matrix
   // from the point of view of StructureField:
@@ -1522,7 +1525,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
                           );
 
   // evaluate the mechancial-thermal system matrix on the structural element
-  StructureField()->Discretization()->Evaluate( sparams, structuralstrategy );
+  StructureField()->Discretization()->Evaluate(sparams,structuralstrategy);
   StructureField()->Discretization()->ClearState();
 
   // for consistent linearisation scale k_st with time factor

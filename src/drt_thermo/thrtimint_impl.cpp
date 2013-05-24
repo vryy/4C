@@ -434,10 +434,10 @@ bool THR::TimIntImpl::Converged()
   bool conv = false;
   if (combtempifres_ == INPAR::THR::bop_and)
      conv = convtemp and convfres;
-   else if (combtempifres_ == INPAR::THR::bop_or)
-     conv = convtemp or convfres;
-   else
-     dserror("Something went terribly wrong with binary operator!");
+  else if (combtempifres_ == INPAR::THR::bop_or)
+    conv = convtemp or convfres;
+  else
+    dserror("Something went terribly wrong with binary operator!");
 
   // return things
   return conv;

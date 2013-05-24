@@ -5,8 +5,8 @@
        describing heat expansion
 
        example input line:
-       MAT 1   MAT_Struct_ThrStVenantK   YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6
-       THEXPANS 1.72e-5 INITTEMP 293.15
+       MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 2 YOUNG 1.48e8 1.48e5 NUE 0.3 DENS
+         9.130e-6 THEXPANS 1.72e-5 INITTEMP 293.15
 
 <pre>
 Maintainer: Caroline Danowski
@@ -222,15 +222,60 @@ private:
       dserror("return value 'mu' not available due to possibly temperature-dependent Young's modulus");
       return 0.5*(params_->youngs_)[0]/(1.0+params_->poissonratio_);
     }
+    
+    //! Return quick accessible material parameter data
+    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+    //! @name temperature-dependent material parameters E(T)
+    //@{
+
+    //! calculates mechanical stress refering to linearisation of ctemp w.r.t T_{n+1}
+    void GetMechStress_T(
+      const LINALG::Matrix<6,1>* glstrain,  //!< Green-Lagrange strains
+      Teuchos::ParameterList& params,  //!< parameter list
+      LINALG::Matrix<6,1>* stress_T  //!< linearisation of mechanical stress w.r.t T
+      );
+
+    //! calculates thermal stress refering to linearisation of ctemp w.r.t T_{n+1}
+    void GetThermalStress_T(
+      const LINALG::Matrix<1,1>* Ntemp,  //!< element temperature T_{n+1}
+      Teuchos::ParameterList& params,  //!< parameter list
+      LINALG::Matrix<6,1>* stresstemp_T,  //!< linearisation of thermal stress w.r.t T
+      LINALG::Matrix<6,1>* ctemp_T  //!< linearisation of ctemp w.r.t T
+      );
+
+    //! calculates stress-temperature modulus
+    double GetSTModulus_T(
+      Teuchos::ParameterList& params  //!< parameter list
+      ) const;
+
+    //! calculates derivative of Cmat with respect to current temperatures
+    //! only in case of temperature-dependent material parameters
+    void GetCmatAtTempnp_T(
+      LINALG::Matrix<6,6>& derivcmat,  //!< linearisation of mechanical tangent w.r.t T
+      Teuchos::ParameterList params  //!< parameter list
+      );
+
+    //! calculates derivative of Cmat with respect to current temperatures
+    //! only in case of temperature-dependent material parameters
+    void GetCthermoAtTempnp_T(
+      LINALG::Matrix<6,1>& derivctemp,  //!< linearisation of ctemp w.r.t T
+      Teuchos::ParameterList& params  //!< parameter list
+      );
+      
     //! calculate temperature dependent material parameter and return value
     double GetMatParameterAtTempnp(
       const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
       const double& tempnp  // tmpr (i) current temperature
       ) const ;
 
-    //! Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    //! calculate temperature dependent material parameter and return value
+    double GetMatParameterAtTempnp_T(
+      const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+      const double& tempnp  // tmpr (i) current temperature
+      ) const ;
+      
+    //@}
 
   private:
 
