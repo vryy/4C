@@ -1473,6 +1473,43 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     */
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+
+    // in case of temperature-dependent Young's modulus, i.e. E(T), current
+    // element temperature T_{n+1} required for stress and cmat
+    if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+    {
+      bool young_temp = (params.get<int>("young_temp") == 1);
+      if (young_temp == true)
+      {
+        Teuchos::RCP<std::vector<double> > temperature_vector
+          = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
+        double scalartemp = 0.0;
+
+        // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
+        if (temperature_vector == Teuchos::null)
+        {
+          Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+            = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
+          // initialise the temperature field
+          scalartemp = thrstvk->InitTemp();
+        }
+        // current temperature vector is available
+        else  // (temperature_vector!=Teuchos::null)
+        {
+          // get the temperature vector by extraction from parameter list
+          LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
+          for (int i=0; i<NUMNOD_SOH8; ++i)
+          {
+            etemp(i,0) = (*temperature_vector)[i];
+          }
+          // identical shapefunctions for displacements and temperatures
+          scalartemp = (shapefcts[gp]).Dot(etemp);
+        }
+        // insert current element temperature T_{n+1} into parameter list
+        params.set<double>("scalartemp",scalartemp);
+      }  // E = E(T)
+    }  // m_thermostvenant
+
     params.set<int>("gp",gp);
     params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
@@ -1491,8 +1528,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
        (*eleplstrain)(gp,i) = plglstrain(i);
       for (int i = 3; i < 6; ++i)
        (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+      break;
     }
-    break;
     case INPAR::STR::strain_ea:
     {
       if (eleplstrain == NULL) dserror("plastic strain data not available");
@@ -1524,8 +1561,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       (*eleplstrain)(gp,3) = euler_almansi(0,1);
       (*eleplstrain)(gp,4) = euler_almansi(1,2);
       (*eleplstrain)(gp,5) = euler_almansi(0,2);
+      break;
     }
-    break;
     case INPAR::STR::strain_none:
       break;
     default:
@@ -2097,7 +2134,7 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
   LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
   LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
-  LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
+  LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
   Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
   const INPAR::STR::StressType iostress,  // stress output option
   const INPAR::STR::StrainType iostrain,  // strain output option
@@ -2215,8 +2252,8 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
         (*elestrain)(gp,i) = glstrain(i);
       for (int i = 3; i < 6; ++i)
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
+      break;
     }
-    break;
     case INPAR::STR::strain_ea:
     {
       if (elestrain == NULL) dserror("strain data not available");
@@ -2231,13 +2268,12 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
       (*elestrain)(gp,3) = euler_almansi(0,1);
       (*elestrain)(gp,4) = euler_almansi(1,2);
       (*elestrain)(gp,5) = euler_almansi(0,2);
+      break;
     }
-    break;
     case INPAR::STR::strain_none:
       break;
     default:
       dserror("requested strain type not available");
-      break;
     }
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -2246,25 +2282,25 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
     ** every necessary data must be passed.
     */
     double density = 0.0;
-    double scalartemp = 0.0;
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
 
     // default: material call in structural function is purely deformation dependent
     bool young_temp = (params.get<int>("young_temp") == 1);
-    if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant) && (young_temp==true) )
+    if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant) && (young_temp == true) )
     {
       Teuchos::RCP<std::vector<double> > temperature_vector
         = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
 
+      // initialise scalar-valued element temperature
       double scalartemp = 0.0;
       // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-      if (temperature_vector==Teuchos::null)
+      if (temperature_vector == Teuchos::null)
       {
-        MAT::ThermoStVenantKirchhoff* thrstvenant
-          = static_cast <MAT::ThermoStVenantKirchhoff*>(Material().get());
+        Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+          = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
         // initialise the temperature field
-        scalartemp = thrstvenant->InitTemp();
+        scalartemp = thrstvk->InitTemp();
       }
       // temperature vector is available
       else  // (temperature_vector!=Teuchos::null)
@@ -2275,14 +2311,13 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
         {
           etemp(i,0) = (*temperature_vector)[i];
         }
-        // copy structural shape functions needed for the thermo field
-        // identical shapefunctions for the displacements and the temperatures
-        scalartemp  = (shapefcts[gp]).Dot(etemp);
+        // identical shapefunctions for displacements and temperatures
+        scalartemp = (shapefcts[gp]).Dot(etemp);
       }
-
-      // now set the current temperature vector in the parameter list
+      // insert current element temperature T_{n+1} into parameter list
       params.set<double>("scalartemp",scalartemp);
-    }
+    }  // m_thermostvenant && E = E(T)
+    
     // if Robinson's material --> pass the current temperature to the material
     else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
     {
@@ -2290,16 +2325,16 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
       // T = N_T^(e) . T^(e)
       // get the temperature vector by extraction from parameter list
       LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
-      LINALG::Matrix<1,1> Ntemp(false);
       LINALG::Matrix<MAT::NUM_STRESS_3D,1> ctemp(true);
+      double scalartemp = 0.0;
 
       Teuchos::RCP<std::vector<double> > temperature_vector
         = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
       // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-      if (temperature_vector==Teuchos::null)
+      if (temperature_vector == Teuchos::null)
       {
-        MAT::Robinson* robinson
-          = static_cast <MAT::Robinson*>(Material().get());
+        Teuchos::RCP<MAT::Robinson> robinson
+          = Teuchos::rcp_dynamic_cast <MAT::Robinson>(Material(),true);
         // initialise the temperature field
         scalartemp = robinson->InitTemp();
       }
@@ -2314,17 +2349,17 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
         // identical shapefunctions for the displacements and the temperatures
         scalartemp  = (shapefcts[gp]).Dot(etemp);
       }
-      // now set the current temperature vector in the parameter list
+      // insert current element temperature T_{n+1} into parameter list
       params.set<double>("scalartemp",scalartemp);
 
       // robinson material is solved using incremental strains
       // calculate incremental strains: Delta strain = B . Delta disp
       LINALG::Matrix<MAT::NUM_STRESS_3D,1> straininc(true);
       straininc.Multiply(boplin,res_d);
-
+      // insert strain increment into parameter list
       params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
-
     } // end Robinson's material
+
     // default: material call in structural function is purely deformation dependent
     params.set<int>("gp",gp);
     params.set<int>("eleID",Id());
@@ -2339,36 +2374,37 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
     {
     case INPAR::STR::strain_gl:
     {
-     if (eleplstrain == NULL) dserror("plastic strain data not available");
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
-     for (int i = 0; i < 3; ++i)
-       (*eleplstrain)(gp,i) = plglstrain(i);
-     for (int i = 3; i < 6; ++i)
-       (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+      if (eleplstrain == NULL) dserror("plastic strain data not available");
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+      for (int i = 0; i < 3; ++i)
+        (*eleplstrain)(gp,i) = plglstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+      break;
     }
-    break;
     case INPAR::STR::strain_ea:
     {
-     if (eleplstrain == NULL) dserror("plastic strain data not available");
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+      if (eleplstrain == NULL) dserror("plastic strain data not available");
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
 
-     // e = F^{T-1} . E . F^{-1}
-     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
-     GLtoEA(&plglstrain,&defgrd,&euler_almansi);
+      // e = F^{T-1} . E . F^{-1}
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
+      GLtoEA(&plglstrain,&defgrd,&euler_almansi);
 
-     (*eleplstrain)(gp,0) = euler_almansi(0,0);
-     (*eleplstrain)(gp,1) = euler_almansi(1,1);
-     (*eleplstrain)(gp,2) = euler_almansi(2,2);
-     (*eleplstrain)(gp,3) = euler_almansi(0,1);
-     (*eleplstrain)(gp,4) = euler_almansi(1,2);
-     (*eleplstrain)(gp,5) = euler_almansi(0,2);
+      (*eleplstrain)(gp,0) = euler_almansi(0,0);
+      (*eleplstrain)(gp,1) = euler_almansi(1,1);
+      (*eleplstrain)(gp,2) = euler_almansi(2,2);
+      (*eleplstrain)(gp,3) = euler_almansi(0,1);
+      (*eleplstrain)(gp,4) = euler_almansi(1,2);
+      (*eleplstrain)(gp,5) = euler_almansi(0,2);
+      break;
     }
-    break;
+    
     case INPAR::STR::strain_none:
      break;
 
     default:
-     dserror("requested plastic strain type not available");
+      dserror("requested plastic strain type not available");
     }
 
     // return gp stresses
@@ -2379,8 +2415,8 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
       if (elestress == NULL) dserror("stress data not available");
       for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = stress(i);
+      break;
     }
-    break;
     case INPAR::STR::stress_cauchy:
     {
       if (elestress == NULL) dserror("stress data not available");
@@ -2395,15 +2431,15 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
       (*elestress)(gp,3) = cauchystress(0,1);
       (*elestress)(gp,4) = cauchystress(1,2);
       (*elestress)(gp,5) = cauchystress(0,2);
+      break;
     }
-    break;
     case INPAR::STR::stress_none:
       break;
     default:
       dserror("requested stress type not available");
     }
 
-    double detJ_w = detJ*gpweights[gp];
+    double detJ_w = detJ * gpweights[gp];
 
     // update/integrate internal force vector
     if (force != NULL)

@@ -366,14 +366,10 @@ namespace ELEMENTS
     void Materialize(
       LINALG::Matrix<numstr_,1>* stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
       LINALG::Matrix<numstr_,1>* ctemp,  //!< (o): temperature dependent tangent matrix at current gp
-      LINALG::Matrix<1,1>* Ntemp,  // temperature of element: (shapefcts . element temperature) at current gp
+      LINALG::Matrix<1,1>* Ntemp,  // element temperature: (shapefcts . element temperature) at current gp
       LINALG::Matrix<numstr_,numstr_>* cmat,  //!< (o): material tangent matrix at current gp
       LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
       LINALG::Matrix<numstr_,1>* glstrain,  //!< (o): total strain
-      LINALG::Matrix<numstr_,1>* straininc,  //!< (i): total strain increment
-      const double& scalartemp,  //!< scalar-valued temperature of the element
-      double* density,  //!< density of material
-      const int gp,  //!< current Gauss point
       Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
 

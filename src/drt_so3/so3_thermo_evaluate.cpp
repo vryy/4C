@@ -310,7 +310,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         INPAR::STR::stress_none
         );
     }  // (kintype_ == geo_linear)
-
     break;
   }  // calc_struct_internalforce
 
@@ -876,33 +875,35 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     LINALG::Matrix<numstr_,numdofperelement_> boplin;
     CalculateBoplin(&boplin,&N_XYZ);
 
-    // copy structural shape functions needed for the thermo field
-    // identical shapefunctions for the displacements and the temperatures
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     // product of shapefunctions and element temperatures for couplstress
     // N_T . T
-    LINALG::Matrix<1,1> Ntemp(true);
-    Ntemp.MultiplyTN(shapefunct,etemp);
-    // scalar-valued element temperature
-    const double scalartemp = shapefunct.Dot(etemp);
+    LINALG::Matrix<1,1> NT(false);
+    NT.MultiplyTN(shapefunct,etemp);
+    // scalar-valued current element temperature T_{n+1}
+    // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
+    double scalartemp = NT(0,0);
+    // insert T_{n+1} into parameter list
+    params.set<double>("scalartemp",scalartemp);
 
-    // calculate iterative strains
-    LINALG::Matrix<numstr_,1> straininc(true);
-
-    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    double density = 0.0;
     // calculate the stress part dependent on the temperature in the material
     LINALG::Matrix<numstr_,1> ctemp(true);
     LINALG::Matrix<numstr_,1> couplstress(true);
     LINALG::Matrix<numstr_,numstr_> cmat(true);
     LINALG::Matrix<numstr_,1> glstrain(true);
+    params.set<int>("gp",gp);
+    // insert strain increment into parameter list
+    // calculate iterative strains
+    LINALG::Matrix<numstr_,1> straininc(true);
+    params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
+
     // take care: current temperature ( N . T ) is passed to the element
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
     if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-      Materialize(&couplstress,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,
-        &straininc,scalartemp,&density,gp,params);
+      Materialize(&couplstress,&ctemp,&NT,&cmat,&defgrd,&glstrain,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -945,7 +946,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     if (force != NULL)
     {
       // old implementation hex8_thermo double detJ_w = detJ*gpweights[gp];
-      double detJ_w = detJ*intpoints_.Weight(gp);//gpweights[gp];
+      double detJ_w = detJ * intpoints_.Weight(gp);//gpweights[gp];
       force->MultiplyTN(detJ_w, boplin, couplstress, 1.0);
     }  // if (force != NULL)
 
@@ -971,8 +972,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
   )
 {
   // update element geometry (8x3)
-  LINALG::Matrix<nen_,nsd_> xrefe;  // X, material coord. of element
-  LINALG::Matrix<nen_,nsd_> xcurr;  // x, current  coord. of element
+  LINALG::Matrix<nen_,nsd_> xrefe(false);  // X, material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr(false);  // x, current  coord. of element
   DRT::Node** nodes = Nodes();
   for (int i=0; i<nen_; ++i)
   {
@@ -986,12 +987,38 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
     xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
   }
 
+  // get current element displacements in vector notation --> use for elestrain
+  LINALG::Matrix<numdofperelement_,1> edisp(false);
+  for (int i=0; i<numdofperelement_; i++)
+  {
+    edisp(i,0) = disp[i+0];
+  }
+
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
   LINALG::Matrix<nsd_,nen_> N_XYZ;
   // shape functions and their first derivatives
   LINALG::Matrix<nen_,1> shapefunct;
   LINALG::Matrix<nsd_,nen_> deriv;
+
+  // ------------------------------------------------ initialise material
+  // get the thermal material tangent
+  LINALG::Matrix<numstr_,1> ctemp(true);
+
+  // ------------------------------ temperature-dependent Young's modulus
+  // if young's modulus is temperature-dependent, E(T) additional terms arise
+  // for the stiffness matrix k_dT
+  bool young_temp = (params.get<int>("young_temp") == 1);
+  LINALG::Matrix<nen_,1> etemp(false);
+  if (young_temp == true)
+  {
+    // get the temperature vector
+    for (int i=0; i<nen_; ++i)
+      etemp(i,0) = temp[i];
+  }  // (young_temp == true)
+  // initialise matrices required for k_dT
+  LINALG::Matrix<numdofperelement_,1> Bstress_T(true);
+  LINALG::Matrix<numdofperelement_,1> Bcouplstress_T(true);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1016,36 +1043,51 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
     LINALG::Matrix<numstr_,numdofperelement_> boplin;
     CalculateBoplin(&boplin,&N_XYZ);
 
-    // copy structural shape functions needed for the thermo field
-    // identical shapefunctions for the displacements and the temperatures
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated
-    */
-    // get the thermal material tangent
-    LINALG::Matrix<numstr_,1> ctemp(true);
-    bool young_temp = (params.get<int>("young_temp") == 1);
-    if (young_temp == true)
+    // default: material call in structural function is purely deformation dependent
+    if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
-      // get the temperature vector
-      LINALG::Matrix<nen_,1> etemp(false);
-      for (int i=0; i<nen_; ++i)
+      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+        = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
+
+      if (young_temp == true)
       {
-        etemp(i,0) = temp[i];
-      }
-      // copy structural shape functions needed for the thermo field
-      // identical shapefunctions for the displacements and the temperatures
-      LINALG::Matrix<1,1> Ntemp(false);
-      Ntemp.MultiplyTN(shapefunct,etemp);  // (1x1)
-      // scalar-valued element temperature
-      double scalartemp = Ntemp(0,0);
-      // now set the current temperature vector in the parameter list
-      params.set<double>("scalartemp",scalartemp);
-    }
-    Ctemp(&ctemp,params);
+        // copy structural shape functions needed for the thermo field
+        // identical shapefunctions for the displacements and the temperatures
+        LINALG::Matrix<1,1> NT(false);
+        NT.MultiplyTN(shapefunct,etemp);  // (1x1)
+        // scalar-valued current element temperature T_{n+1}
+        // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
+        double scalartemp = NT(0,0);
+        // insert T_{n+1} into parameter list
+        params.set<double>("scalartemp",scalartemp);
+
+        // calculate the nodal strains: strain = B . d
+        LINALG::Matrix<numstr_,1> strain(false);
+        strain.Multiply(boplin,edisp);  // (6x24)(24x1)= (6x1)
+        // k_dT += B_d^T . sigma_T . N_T = B_d^T . dC/dT . strain . N_T   with dC/dT = Cmat_T
+        // (24x8)  (24x6)  (6x1)    (1x8)
+        LINALG::Matrix<numstr_,1> stress_T(true);
+        thrstvk->GetMechStress_T(&strain,params,&stress_T);
+        Bstress_T.MultiplyTN(boplin,stress_T);  // (24x6)(6x1)
+
+        // k_dT += B_d^T . couplstress_T . N_T = B_d^T . dC_T/dT . (Delta T) . N_T
+        // k_dT += B_d^T . C_{T,T}() . (N_T . T - T_0) . N_T
+        //
+        // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT = derivE_fac . d(E(T))/dT . I
+        // insert the negative value of the coupling term (c.f. energy balance)
+        LINALG::Matrix<numstr_,1> couplstress_T(true);
+        thrstvk->GetThermalStress_T(&NT,params,&couplstress_T,&ctemp);
+        Bcouplstress_T.MultiplyTN(boplin,couplstress_T);  // (24x6)(6x1)
+      }  // (young_temp == true)
+      else
+        Ctemp(&ctemp,params);
+    }  // m_thermostvenant
+
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    double detJ_w = detJ*intpoints_.Weight(gp);
+    double detJ_w = detJ * intpoints_.Weight(gp);
     // update linear coupling matrix K_dT
     if (stiffmatrix_kdT != NULL)
     {
@@ -1055,7 +1097,20 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
       // integrate stiffness term
       // k_dT = k_dT + (B^T . C_temp . N_temp) * detJ * w(gp)
       stiffmatrix_kdT->MultiplyTN(detJ_w, boplin, cn, 1.0);
-    }
+
+      // in case of temperature-dependent Young's modulus, additional term for
+      // coupling stiffness matrix k_dT
+      if (young_temp == true)
+      {
+        // k_dT += B_d^T . dC/dT  . B_d . d . N_T
+        stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
+
+        // k_dT += B_d^T . dC_T/dT  . N_T . T . N_T
+        // (24x8)                          (24x1)        (8x1)
+        stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
+      }  // (young_temp == true)
+
+    }  // (stiffmatrix_kdT != NULL)
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
@@ -1155,26 +1210,32 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
 
     // temperature
     // described as a matrix (for stress calculation): Ntemp = N_T . T
-    LINALG::Matrix<1,1> Ntemp(false);
-    Ntemp.MultiplyTN(shapefunct,etemp);
-    // scalar-valued element temperature
-    const double scalartemp = shapefunct.Dot(etemp);
+    LINALG::Matrix<1,1> NT(false);
+    NT.MultiplyTN(shapefunct,etemp);
+    // scalar-valued current element temperature T_{n+1}
+    // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
+    double scalartemp = NT(0,0);
+    // insert T_{n+1} into parameter list
+    params.set<double>("scalartemp",scalartemp);
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    double density = 0.0;
+
     // calculate the stress part dependent on the temperature in the material
     LINALG::Matrix<numstr_,1> ctemp(true);
     LINALG::Matrix<numstr_,1> couplstress(true);
     LINALG::Matrix<numstr_,numstr_> cmattemp(true);
     LINALG::Matrix<numstr_,1> glstrain(true);
+    params.set<int>("gp",gp);
+    // insert strain increment into parameter list
+    // calculate iterative strains
     LINALG::Matrix<numstr_,1> straininc(true);
+    params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
     // take care: current temperature ( N . T ) is passed to the element
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
     if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-      Materialize(&couplstress,&ctemp,&Ntemp,&cmattemp,&defgrd,&glstrain,
-        &straininc,scalartemp,&density,gp,params);
+      Materialize(&couplstress,&ctemp,&NT,&cmattemp,&defgrd,&glstrain,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1214,7 +1275,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
 
     // integrate internal force vector r_d
     // f = f + (B^T . sigma_temp) * detJ * w(gp)
-    double detJ_w = detJ*intpoints_.Weight(gp);
+    double detJ_w = detJ * intpoints_.Weight(gp);
     // update internal force vector
     if (force != NULL)
     {
@@ -1282,6 +1343,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
    return;
 }  // nln_stifffint_tsi()
 
+
 /*----------------------------------------------------------------------*
  | evaluate only the mechanical-thermal stiffness term       dano 11/12 |
  | for monolithic TSI, contribution to k_dT (private)                   |
@@ -1310,6 +1372,31 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
     xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
   }
+  
+  LINALG::Matrix<numdofperelement_,1> edisp(false);  // hex8: (24x1)
+  for (int i=0; i<numdofperelement_; ++i)
+  {
+    edisp(i,0) = disp[i+0];
+  }
+
+  // ------------------------------------------------ initialise material
+  // get the thermal material tangent
+  LINALG::Matrix<numstr_,1> ctemp(true);
+
+  // ------------------------------ temperature-dependent Young's modulus
+  // if young's modulus is temperature-dependent, E(T) additional terms arise
+  // for the stiffness matrix k_dT
+  bool young_temp = (params.get<int>("young_temp") == 1);
+  LINALG::Matrix<nen_,1> etemp(false);
+  if (young_temp == true)
+  {
+    // get the temperature vector
+    for (int i=0; i<nen_; ++i)
+      etemp(i,0) = temp[i];
+  }  // (young_temp == true)
+  // initialise matrices required for k_dT
+  LINALG::Matrix<numdofperelement_,1> Bstress_T(true);
+  LINALG::Matrix<numdofperelement_,1> Bcouplstress_T(true);
 
   // shape functions and their first derivatives
   LINALG::Matrix<nen_,1> shapefunct(false);
@@ -1348,9 +1435,58 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
     CalculateBop(&bop,&defgrd,&N_XYZ);
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    // get the thermal material tangent
-    LINALG::Matrix<numstr_,1> ctemp(true);
-    Ctemp(&ctemp,params);
+
+    // default: material call in structural function is purely deformation dependent
+    if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+    {
+      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+        = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
+
+      if (young_temp == true)
+      {
+        // copy structural shape functions needed for the thermo field
+        // identical shapefunctions for the displacements and the temperatures
+        LINALG::Matrix<1,1> NT(false);
+        NT.MultiplyTN(shapefunct,etemp);  // (1x1)
+        // scalar-valued current element temperature T_{n+1}
+        // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
+        double scalartemp = NT(0,0);
+        // insert T_{n+1} into parameter list
+        params.set<double>("scalartemp",scalartemp);
+
+        // Right Cauchy-Green tensor = F^T . F
+        LINALG::Matrix<3,3> cauchygreen;
+        cauchygreen.MultiplyTN(defgrd,defgrd);
+        // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+        // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+        Epetra_SerialDenseVector glstrain_epetra(numstr_);
+        LINALG::Matrix<numstr_,1> glstrain(glstrain_epetra.A(),true);
+        glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+        glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+        glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+        glstrain(3) = cauchygreen(0,1);
+        glstrain(4) = cauchygreen(1,2);
+        glstrain(5) = cauchygreen(2,0);
+
+        // k_dT += B_d^T . sigma_T . N_T = B_d^T . dC/dT . E . N_T   with dC/dT = Cmat_T
+        // (24x8)  (24x6)  (6x1)    (1x8)
+        LINALG::Matrix<numstr_,1> stress_T(true);
+        thrstvk->GetMechStress_T(&glstrain,params,&stress_T);
+        Bstress_T.MultiplyTN(bop,stress_T);  // (24x6)(6x1)
+
+        // k_dT += B_d^T . couplstress_T . N_T = B_d^T . dC_T/dT . (Delta T) . N_T
+        // k_dT += B_d^T . C_{T,T}() . (N_T . T - T_0) . N_T
+        //
+        // with dC_T/dT = d(m . I)/dT = d (m(T) . I)/dT = derivE_fac . d(E(T))/dT . I
+        // insert the negative value of the coupling term (c.f. energy balance)
+        LINALG::Matrix<numstr_,1> couplstress_T(true);
+        thrstvk->GetThermalStress_T(&NT,params,&couplstress_T,&ctemp);
+        Bcouplstress_T.MultiplyTN(bop,couplstress_T);  // (24x6)(6x1)
+      }  // (young_temp == true)
+      else
+        Ctemp(&ctemp,params);
+    }  // m_thermostvenant
+
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ * intpoints_.Weight(gp);
@@ -1363,6 +1499,19 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
       // integrate stiffness term
       // k_dT = k_dT + (B^T . C_temp . N_temp) . detJ . w(gp)
       stiffmatrix_kdT->MultiplyTN(detJ_w,bop,cn,1.0);
+
+      // in case of temperature-dependent Young's modulus, additional term for
+      // coupling stiffness matrix k_dT
+      if (young_temp == true)
+      {
+        // k_dT += B_d^T . stress_T . N_T
+        stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
+
+        // k_dT += B_d^T . couplstress_T . N_T
+        // (24x8)                          (24x1)        (8x1)
+        stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
+      }  // (young_temp == true)
+
     }
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
@@ -1508,27 +1657,32 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
 
       // temperature
       // described as a matrix (for stress calculation): Ntemp = N_T . T
-      LINALG::Matrix<1,1> Ntemp(false);
-      Ntemp.MultiplyTN(shapefunct,etemp);
-      // scalar-valued element temperature
-      const double scalartemp = shapefunct.Dot(etemp);
+      LINALG::Matrix<1,1> NT(false);
+      NT.MultiplyTN(shapefunct,etemp);
+      // scalar-valued current element temperature T_{n+1}
+      // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
+      const double scalartemp = NT(0,0);
+      // insert T_{n+1} into parameter list
+      params.set<double>("scalartemp",scalartemp);
 
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-      double density = 0.0;
       // calculate the stress part dependent on the temperature in the material
       LINALG::Matrix<numstr_,1> ctemp(true);
       LINALG::Matrix<numstr_,1> couplstress_bar(true);
       LINALG::Matrix<numstr_,numstr_> cmattemp(true);
       LINALG::Matrix<numstr_,1> glstrain(true);
+      params.set<int>("gp",gp);
+      // insert strain increment into parameter list
+      // calculate iterative strains
       LINALG::Matrix<numstr_,1> straininc(true);
+      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
       // take care: current temperature ( N . T ) is passed to the element
       //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
       //                             2.) couplstress = C . Delta T
       // do not call the material for Robinson's material
       if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-        Materialize(&couplstress_bar,&ctemp,&Ntemp,&cmattemp,&defgrd_bar,&glstrain_bar,
-          &straininc,scalartemp,&density,gp,params);
+        Materialize(&couplstress_bar,&ctemp,&NT,&cmattemp,&defgrd_bar,&glstrain_bar,params);
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1808,12 +1962,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   LINALG::Matrix<numstr_,1>* ctemp,
   LINALG::Matrix<1,1>* Ntemp,  // temperature of element
   LINALG::Matrix<numstr_,numstr_>* cmat,
-  LINALG::Matrix<nsd_,nsd_>* defgrd, //
+  LINALG::Matrix<nsd_,nsd_>* defgrd,
   LINALG::Matrix<numstr_,1>* glstrain,
-  LINALG::Matrix<numstr_,1>* straininc,
-  const double& scalartemp,
-  double* density,
-  const int gp,
   Teuchos::ParameterList& params
   )
 {
@@ -1833,7 +1983,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
     Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
       = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
     thrstvk->Evaluate(*Ntemp,*ctemp,*couplstress,params);
-    *density = thrstvk->Density();
     return;
     break;
   }
@@ -1843,25 +1992,19 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
     Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast
       = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticLinElast>(Material(),true);
     thrpllinelast->Evaluate(*Ntemp,*ctemp,*couplstress);
-    *density = thrpllinelast->Density();
     return;
     break;
   }
-  case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
+  // visco-plastic Robinson's material
+  case INPAR::MAT::m_vp_robinson:
   {
-    Teuchos::RCP<MAT::Robinson> robinson
-      = Teuchos::rcp_dynamic_cast <MAT::Robinson>(Material(),true);
-    params.set<LINALG::Matrix<numstr_,1>* >("straininc", straininc);
-    params.set<double>("scalartemp",scalartemp);
-    params.set<int>("gp",gp);
-    robinson->Evaluate(defgrd,glstrain,params,couplstress,cmat);
-    *density = robinson->Density();
+    // no temperature-dependent terms
     return;
     break;
   }
   default:
     dserror("Unknown type of temperature dependent material");
-  break;
+    break;
   } // switch (mat->MaterialType())
 
   return;
@@ -1877,8 +2020,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   Teuchos::ParameterList& params
   )
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
-  switch (mat->MaterialType())
+  switch (Material()->MaterialType())
   {
   // thermo st.venant-kirchhoff-material
   case INPAR::MAT::m_thermostvenant:
@@ -1891,8 +2033,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   // small strain von Mises thermoelastoplastic material
   case INPAR::MAT::m_thermopllinelast:
   {
-    MAT::ThermoPlasticLinElast* thrpllinelast
-      = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+    Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast
+      = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticLinElast>(Material());
     return thrpllinelast->SetupCthermo(*ctemp);
     break;
   }
@@ -1927,7 +2069,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::CalculateBop(
   {
     /* non-linear B-operator (may so be called, meaning of B-operator is not so
     **  sharp in the non-linear realm) *
-    **   B = F . B_L *
+    **   B = F^{i,T} . B_L *
     ** with linear B-operator B_L =  N_XYZ (6x24) = (3x8)
     **
     **   B    =   F  . N_XYZ
