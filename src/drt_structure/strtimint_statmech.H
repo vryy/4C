@@ -119,7 +119,7 @@ namespace STR
     void BuildResidual();
 
     //!\brief do full Newton iteration
-    void FullNewton();
+    void NewtonFull();
 
     //!\brief solve non-linear problem by means of PTC method
     void PTC();

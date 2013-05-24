@@ -20,6 +20,7 @@ Maintainer: Christian Cyron
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_inpar/inpar_statmech.H"
 
 DRT::ELEMENTS::Beam3iiType DRT::ELEMENTS::Beam3iiType::instance_;
 
@@ -175,6 +176,26 @@ jacobi_(0),
 jacobimass_(0),
 jacobinode_(0)
 {
+  // initialize friction model on a local (element) level (in case of StatMech application)
+  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"FRICTION_MODEL");
+
+  switch(frictionmodel)
+  {
+    case INPAR::STATMECH::frictionmodel_none:
+      frictionmodel_ = beam3iifrict_none;
+    break;
+    case INPAR::STATMECH::frictionmodel_isotropicconsistent:
+      frictionmodel_ = beam3iifrict_isotropicconsistent;
+    break;
+    case INPAR::STATMECH::frictionmodel_isotropiclumped:
+      frictionmodel_ = beam3iifrict_isotropiclumped;
+    break;
+    case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
+      frictionmodel_ = beam3iifrict_anisotropicconsistent;
+    break;
+    default:
+      dserror("Unknown friction model %d!", frictionmodel);
+  }
   return;
 }
 /*----------------------------------------------------------------------*
@@ -183,6 +204,7 @@ jacobinode_(0)
 DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
+ frictionmodel_(old.frictionmodel_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),

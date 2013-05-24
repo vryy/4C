@@ -27,6 +27,8 @@ Maintainer: Christian Cyron
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_inpar/inpar_statmech.H"
 
+#include <iostream>
+#include <iomanip>
 
 #include <Teuchos_Time.hpp>
 
@@ -786,6 +788,12 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
   evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
 
+//  LINALG::Matrix<3,1> stressNout(true);
+//  LINALG::Matrix<3,1> stressMout(true);
+//  LINALG::Matrix<3,1> gammaout(true);
+//  LINALG::Matrix<3,1> kappaout(true);
+//  stressNout.PutScalar(-1.0);
+//  stressMout.PutScalar(-1.0);
 
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -803,8 +811,25 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
     computestrain(rprime,Lambda[numgp],gamma,kappa);
 
+    if((params.get<std::string>("internalforces","no")=="yes") && (force != NULL))
+      eps_ = gamma(0);
+
     //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
     strainstress(gamma,kappa,stressN,CN,stressM,CM);
+
+//    for(int i=0; i<(int)stressNout.M(); i++)
+//    {
+//      if(fabs(stressN(i))>stressNout(i))
+//      {
+//        stressNout(i) = stressN(i);
+//        gammaout(i) = gamma(i);
+//      }
+//      if(fabs(stressM(i))>stressMout(i))
+//      {
+//        stressMout(i) = stressM(i);
+//        kappaout(i) = kappa(i);
+//      }
+//    }
 
     /*compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
@@ -923,7 +948,25 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
    CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force,Imass,Itildemass);
-
+   
+   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
+   if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
+     internalforces_ = Teuchos::rcp(new Epetra_SerialDenseVector(*force));
+//  string action = params.get<string>("action","calc_none");
+//  if (action=="calc_struct_nlnstiff")
+//  {
+//    std::ostringstream outputfilename;
+//    outputfilename << "moments.dat";
+//    FILE* fp = fopen(outputfilename.str().c_str(), "a");
+//    std::stringstream filecontent;
+//    filecontent << this->Id()<<"\t";//changed
+//    filecontent << std::scientific << std::setprecision(15) << gammaout(0)<<"\t"<<gammaout(1)<<"\t"<<gammaout(2)<<"\t";
+//    filecontent << std::scientific << std::setprecision(15) << stressNout(0)<<"\t"<<stressNout(1)<<"\t"<<stressNout(2)<<"\t";
+//    filecontent << std::scientific << std::setprecision(15) << kappaout(0)<<"\t"<<kappaout(1)<<"\t"<<kappaout(2)<<"\t";
+//    filecontent << std::scientific << std::setprecision(15) << stressMout(0)<<"\t"<<stressMout(1)<<"\t"<<stressMout(2)<<endl;
+//    fprintf(fp,filecontent.str().c_str());
+//    fclose(fp);
+//  }
   return;
 
 } // DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass
@@ -999,7 +1042,7 @@ void DRT::ELEMENTS::Beam3ii::EvaluatePTC(Teuchos::ParameterList& params,
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -1014,7 +1057,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& p
 
 
   //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropicconsistent || frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ == beam3iifrict_isotropicconsistent || frictionmodel_ == beam3iifrict_isotropiclumped)
     gamma(0) = gamma(1);
 
 
@@ -1121,19 +1164,15 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(Teuchos::ParameterList& 
   LINALG::Matrix<3,3> auxmatrix;
   LINALG::Matrix<3,3> Lambdadamping;
 
-
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   std::vector<double> jacobi(jacobimass_);
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ == beam3iifrict_isotropiclumped)
     jacobi = jacobinode_;
 
 
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
 
   for (int gp=0; gp<gausspointsdamping.nquad; gp++)//loop through Gauss points
@@ -1233,19 +1272,16 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(Teuchos::ParameterLis
   //evaluation point in physical space corresponding to a certain Gauss point in parameter space
   LINALG::Matrix<ndim,1> evaluationpoint;
 
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ ==beam3iifrict_isotropiclumped)
   {
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
@@ -1337,12 +1373,9 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
@@ -1350,7 +1383,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ == beam3iifrict_isotropiclumped)
   {
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
@@ -1367,9 +1400,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-   RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
-
-
+  RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
@@ -1428,17 +1459,14 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(Teuchos::ParameterList& 
   //auxiliary matrix
   LINALG::Matrix<3,3> auxmatrix;
 
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   std::vector<double> jacobi(jacobimass_);
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ == beam3iifrict_isotropiclumped)
     jacobi = jacobinode_;
 
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory

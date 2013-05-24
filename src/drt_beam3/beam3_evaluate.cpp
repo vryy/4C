@@ -26,6 +26,7 @@ Maintainer: Christian Cyron
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
+
 #include "../drt_inpar/inpar_statmech.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1373,7 +1374,8 @@ void DRT::ELEMENTS::Beam3::EvaluatePTC(Teuchos::ParameterList& params,
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Beam3::MyDampingConstants(Teuchos::ParameterList& params,
+                                                     LINALG::Matrix<3,1>&    gamma)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -1387,7 +1389,7 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(Teuchos::ParameterList& par
 
 
   //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropicconsistent || frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ == beam3frict_isotropicconsistent || frictionmodel_ == beam3frict_isotropiclumped)
     gamma(0) = gamma(1);
 
 
@@ -1486,12 +1488,9 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(Teuchos::ParameterList& pa
   //integration points for underintegration
   DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
 
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
 
   //matrix to store basis functions evaluated at a certain Gauss point
@@ -1584,19 +1583,16 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(Teuchos::ParameterList&
   //evaluation point in physical space corresponding to a certain Gauss point in parameter space
   LINALG::Matrix<ndim,1> evaluationpoint;
 
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //damping coefficients for translational and rotatinal degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
   std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ == beam3frict_isotropiclumped)
   {
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
@@ -1681,12 +1677,9 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& par
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
@@ -1694,7 +1687,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& par
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
+  if(frictionmodel_ == beam3frict_isotropiclumped)
   {
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
@@ -1763,13 +1756,9 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(Teuchos::ParameterList& pa
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
-
-  //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
   //damping coefficients for three translational and one rotatinal degree of freedom
   LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+  MyDampingConstants(params,gamma);
 
   //determine type of numerical integration performed (note: underintegration applied as for related points triads already known from elasticity)
   IntegrationType integrationtype = gaussunderintegration;

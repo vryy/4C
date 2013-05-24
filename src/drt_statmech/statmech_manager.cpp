@@ -31,6 +31,7 @@ Maintainer: Kei Müller
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3eb/beam3eb.H"
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_torsion3/torsion3.H"
@@ -444,15 +445,16 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
 
   if(!discret_->Comm().MyPID())
   {
-    cout<<"===StatMech action times==="<<endl;
-    cout<<"t_equilib  = "<<actiontime_->at(0)<<" @ dt = "<<timestepsizes_->at(0)<<endl;
-    cout<<"t_ktswitch = "<<actiontime_->at(1)<<" @ dt = "<<timestepsizes_->at(1)<<endl;
+    cout<<"=======StatMech action times======="<<endl;
+    cout<<"t_equilib  = t(0) = "<<std::setprecision(10)<<actiontime_->at(0)<<" @ dt = "<<timestepsizes_->at(0)<<endl;
+    cout<<"t_ktswitch = t(1) = "<<std::setprecision(10)<<actiontime_->at(1)<<" @ dt = "<<timestepsizes_->at(1)<<endl;
     if(dbctimeindex_>-1)
-      cout<<"t_dcbapp   = "<<actiontime_->at(dbctimeindex_)<<" @ dt = "<<timestepsizes_->at(dbctimeindex_)<<endl;
+      cout<<"t_dbc    = t("<<dbctimeindex_<<") ="<<std::setprecision(10)<<actiontime_->at(dbctimeindex_)<<" @ dt = "<<timestepsizes_->at(dbctimeindex_)<<endl;
+    cout<<"other action times..."<<endl;
     for(int i=0; i<(int)actiontime_->size(); i++)
       if(i>1 && i!=dbctimeindex_)
-        cout<<"t_"<<i<<" = "<<actiontime_->at(i)<<" @ dt = "<<timestepsizes_->at(dbctimeindex_)<<endl;
-    cout<<"==========================="<<endl;
+        cout<<"t("<<i<<")        = "<<std::setprecision(10)<<actiontime_->at(i)<<" @ dt = "<<timestepsizes_->at(i)<<endl;
+    cout<<"==================================="<<endl;
   }
   return;
 }
@@ -595,7 +597,7 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
                                                       double& timeconverged,
                                                       bool    initialset)
 {
-  double eps = 1.0e-9;
+  double eps = 2.0e-11;
   if(initialset)
   {
     Teuchos::ParameterList sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -630,6 +632,8 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
         nexttimethreshold = actiontime_->at(timeintervalstep_);
         if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
         {
+          if(!discret_->Comm().MyPID())
+            std::cout<<"---time step size switched from dt = "<<dt<<" to dt = "<<dtnew<<std::endl;
           dt = dtnew;
           timeintervalstep_++;
         }
@@ -943,12 +947,12 @@ void STATMECH::StatMechManager::GetBindingSpotTriads(const Teuchos::RCP<Epetra_M
 /*----------------------------------------------------------------------*
  | (private) update nodal triads                           mueller 1/11 |
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> bspottriads)
+void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> nodetriads)
 {
   //first get triads at all row nodes
-  Teuchos::RCP<Epetra_MultiVector> bspottriadsrow = Teuchos::rcp(new Epetra_MultiVector(*bspotrowmap_, 4, true));
+  Teuchos::RCP<Epetra_MultiVector> nodetriadsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()), 4, true));
   //update nodaltriads_
-  for (int i=0; i<bspotrowmap_->NumMyElements(); i++)
+  for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); i++)
   {
     //lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
     int lowestid(((discret_->lRowNode(i)->Elements())[0])->Id());
@@ -975,7 +979,7 @@ void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_
 
       //save nodal triad of this node in nodaltriadrow
       for(int j=0; j<4; j++)
-        (*bspottriadsrow)[j][i] = ((filele->Qnew())[nodenumber])(j);
+        (*nodetriadsrow)[j][i] = ((filele->Qnew())[nodenumber])(j);
     }
     else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
     {
@@ -984,16 +988,16 @@ void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_
 
       //approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
       for(int j=0; j<4; j++)
-        (*bspottriadsrow)[j][i] = ((filele->Qnew())[0])(j);
+        (*nodetriadsrow)[j][i] = ((filele->Qnew())[0])(j);
     }
     else
       dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
   }
   // communicate the appropriate vector
-  if(bspottriads->MyLength()==bspotcolmap_->NumMyElements())
-    CommunicateMultiVector(bspottriadsrow, bspottriads, false, true, false);
+  if(nodetriads->MyLength()==discret_->NodeColMap()->NumMyElements())
+    CommunicateMultiVector(nodetriadsrow, nodetriads, false, true, false);
   else
-    bspottriads = Teuchos::rcp(new Epetra_MultiVector(*bspottriadsrow));
+    nodetriads = Teuchos::rcp(new Epetra_MultiVector(*nodetriadsrow));
 }//StatMechManager::GetNodalTriads
 
 /*------------------------------------------------------------------------------------*
@@ -1169,7 +1173,7 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
 {
   DRT::ELEMENTS::Beam3* beam = dynamic_cast<DRT::ELEMENTS::Beam3*> (element);
 
-  //3D beam elements are embeddet into R^3:
+  //3D beam elements are embedded into R^3:
   const int ndim = 3;
 
   /*get reference configuration of beam3 element in proper format for later call of SetUpReferenceGeometry;
@@ -1231,101 +1235,42 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     break;
-    }
+  }
+  return;
 }
 
 /*------------------------------------------------------------------------*
- | This function loops through all the elements of the discretization and |
- | tests whether beamCL are broken by periodic boundary conditions in the |
- | reference configuration; if yes initial values of curvature and jacobi |
- | determinants are adapted in a proper way                   Müller 10/12|
- *-----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::PeriodicBoundaryBeamCLInit(DRT::Element* element)
-{
-  DRT::ELEMENTS::BeamCL* beam = dynamic_cast<DRT::ELEMENTS::BeamCL*>(element);
-  if(beam->NumNode()!= 4)
-    dserror("PeriodicBoundaryBeamCLInit() only implemented for 4-noded BeamCL");
-  //3D beam elements are embedded into R^3:
-  const int ndim = 3;
-
-  /*get reference configuration of beam3ii element in proper format for later call of SetUpReferenceGeometry;
-   * note that rotrefe for beam3ii elements is related to the entry in the global total Lagrange displacement
-   * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
-   * rotrefe is set to zero here*/
-  std::vector<double> xrefe(6,0);
-  std::vector<double> rotrefe(6,0);
-
-  xrefe=beam->XRef();
-  for(int i=0;i<6;i++)
-   rotrefe[i]=0.0;
-  /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
-   * shifted due to periodic boundary conditions if required*/
-    for(int dof=0; dof<ndim; dof++)
-    {
-      /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
-       * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
-       * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
-       * is smaller than half the periodic length*/
-      if( fabs( beam->XRef()[3+dof] + periodlength_->at(dof) - beam->XRef()[dof] ) < fabs( beam->XRef()[3+dof] - beam->XRef()[dof] ) )
-        xrefe[3+dof] += periodlength_->at(dof);
-
-      if( fabs( beam->XRef()[3+dof] - periodlength_->at(dof) - beam->XRef()[dof] ) < fabs( beam->XRef()[3+dof] - beam->XRef()[dof] ) )
-        xrefe[3+dof] -= periodlength_->at(dof);
-    }
-
-  /*SetUpReferenceGeometry is a templated function; note that the third argument "true" is necessary as all beam elements
-   * have already been initialized once upon reading input file*/
-
-      beam->SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
-}
-
-/*------------------------------------------------------------------------*
- | This function loops through all the elements of the discretization and |
- | tests whether beam3 are broken by periodic boundary conditions in the  |
- | reference configuration; if yes initial values of curvature and jacobi |
- | determinants are adapted in a proper way                    cyron 02/10|
+ | Beam3ii initialization when periodic BCs are applied        cyron 02/10|
  *-----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
 {
+  // note: in analogy to PeriodicBoundaryBeam3Init()
+
   DRT::ELEMENTS::Beam3ii* beam = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element);
 
-  //3D beam elements are embeddet into R^3:
   const int ndim = 3;
 
-  /*get reference configuration of beam3ii element in proper format for later call of SetUpReferenceGeometry;
-   * note that rotrefe for beam3ii elements is related to the entry in the global total Lagrange displacement
-   * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
-   * rotrefe is set to zero here*/
   std::vector<double> xrefe(beam->NumNode()*ndim,0);
   std::vector<double> rotrefe(beam->NumNode()*ndim,0);
 
   for(int i=0;i<beam->NumNode();i++)
-  for(int dof=0; dof<ndim; dof++)
-  {
-    xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
-    rotrefe[3*i+dof] = 0.0;
-  }
+    for(int dof=0; dof<ndim; dof++)
+    {
+      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
+      rotrefe[3*i+dof] = 0.0;
+    }
 
-  /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
-   * shifted due to periodic boundary conditions if required*/
   for(int i=1;i<beam->NumNode();i++)
   {
     for(int dof=0; dof<ndim; dof++)
     {
-      /*if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
-       * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
-       * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
-       * is smaller than half the periodic length*/
       if( fabs( (beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
         xrefe[3*i+dof] += periodlength_->at(dof);
-
       if( fabs( (beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
         xrefe[3*i+dof] -= periodlength_->at(dof);
     }
   }
 
-  /*SetUpReferenceGeometry is a templated function; note that the third argument "true" is necessary as all beam elements
-   * have already been initialized once upon reading input file*/
   switch(beam->NumNode())
   {
     case 2:
@@ -1352,6 +1297,64 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* elemen
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
     break;
   }
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | BeamCL initialization when periodic BCs are applied       mueller 10/12|
+ *-----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::PeriodicBoundaryBeamCLInit(DRT::Element* element)
+{
+  // note: in analogy to PeriodicBoundaryBeam3Init()
+
+  DRT::ELEMENTS::BeamCL* beam = dynamic_cast<DRT::ELEMENTS::BeamCL*>(element);
+  if(beam->NumNode()!= 4)
+    dserror("PeriodicBoundaryBeamCLInit() only implemented for 4-noded BeamCL");
+  const int ndim = 3;
+
+  std::vector<double> xrefe(6,0);
+  std::vector<double> rotrefe(6,0);
+
+  xrefe=beam->XRef();
+  for(int i=0;i<6;i++)
+   rotrefe[i]=0.0;
+  for(int dof=0; dof<ndim; dof++)
+  {
+    if( fabs( beam->XRef()[3+dof] + periodlength_->at(dof) - beam->XRef()[dof] ) < fabs( beam->XRef()[3+dof] - beam->XRef()[dof] ) )
+      xrefe[3+dof] += periodlength_->at(dof);
+    if( fabs( beam->XRef()[3+dof] - periodlength_->at(dof) - beam->XRef()[dof] ) < fabs( beam->XRef()[3+dof] - beam->XRef()[dof] ) )
+      xrefe[3+dof] -= periodlength_->at(dof);
+  }
+
+  beam->SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
+}
+
+/*------------------------------------------------------------------------*
+ | Beam3eb initialization when periodic BCs are applied      mueller 03/13|
+ *-----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::PeriodicBoundaryBeam3ebInit(DRT::Element* element)
+{
+  // note: in analogy to PeriodicBoundaryBeam3Init()
+
+  DRT::ELEMENTS::Beam3eb* beam = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element);
+  const int ndim = 3;
+  std::vector<double> xrefe(beam->NumNode()*ndim,0);
+
+  for(int i=0;i<beam->NumNode();i++)
+    for(int dof=0; dof<ndim; dof++)
+      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
+
+  for(int i=1;i<beam->NumNode();i++)
+  {
+    for(int dof=0; dof<ndim; dof++)
+    {
+      if( fabs( (beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] += periodlength_->at(dof);
+      if( fabs( (beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] -= periodlength_->at(dof);
+    }
+  }
+  beam->SetUpReferenceGeometry(xrefe,true);
 }
 
 /*------------------------------------------------------------------------*
@@ -2068,6 +2071,15 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
   CommunicateVector(numbondtrans, numbond_);
   CommunicateVector(addcrosselementtrans, addcrosselement);
 
+  Teuchos::RCP<Epetra_MultiVector> test = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,discret_->Comm().NumProc(),true));
+  Teuchos::RCP<Epetra_MultiVector> testtrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,discret_->Comm().NumProc(),true));
+
+//  for(int i=0; i<test->MyLength(); i++)
+//    (*test)[discret_->Comm().MyPID()][i] = discret_->Comm().MyPID();
+//  CommunicateMultiVector(testtrans, test, true, true, false, true);
+//  cout<<*test<<endl;
+
+
 #ifdef MEASURETIME
   double t3 = Teuchos::Time::wallTime();
 #endif
@@ -2081,11 +2093,16 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 
   if(numsetelementsall>0)
   {
+    // rotations from displacement vector
     Teuchos::RCP<Epetra_MultiVector> nodalrotations = Teuchos::null;
+    // NODAL quaternions from filament elements
+    Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null;
     if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
     {
       nodalrotations = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),3));
       GetNodalBindingSpotPositionsFromDisVec(discol, Teuchos::null, nodalrotations);
+      nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
+      GetElementBindingSpotTriads(nodalquaternions);
     }
 
     // add elements to problem discretization (processor specific)
@@ -2197,11 +2214,11 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
           }
 
         if(hasrownode)
-          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_);
+          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_,nodalquaternions);
 
         // add all new elements to contact discretization on all Procs
         if(beamcmanager!=Teuchos::null)
-          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret());
+          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalquaternions);
 
         // call of FillComplete() necessary after each added crosslinker because different linkers may share the same nodes (only BeamCL)
 //        if(i<addcrosselement.MyLength()-1 && DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
@@ -2252,13 +2269,14 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
  | create a new crosslinker element and add it to your discretization of|
  | choice (public)                                       mueller (11/11)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&                      crossgid,
-                                                         Teuchos::RCP<std::vector<int> > globalnodeids,
-                                                         const std::vector<int>&         bspotgid,
-                                                         const std::vector<double>&      xrefe,
-                                                         const std::vector<double>&      rotrefe,
-                                                         DRT::Discretization&            mydiscret,
-                                                         bool                            addinitlinks)
+void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&                       crossgid,
+                                                         Teuchos::RCP<std::vector<int> >  globalnodeids,
+                                                         const std::vector<int>&          bspotgid,
+                                                         const std::vector<double>&       xrefe,
+                                                         const std::vector<double>&       rotrefe,
+                                                         DRT::Discretization&             mydiscret,
+                                                         Teuchos::RCP<Epetra_MultiVector> nodalquaternions,
+                                                         bool                             addinitlinks)
 {
   int numnodes;
   numnodes = 2;
@@ -2323,6 +2341,17 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
 
         //set up reference configuration of crosslinker
         newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
+
+        // set initial triads/quaternions
+        if(nodalquaternions==Teuchos::null)
+          dserror("nodal quaternions delivered to this method!");
+
+        std::vector<LINALG::Matrix<4,1> > nodequat((int)globalnodeids->size(),LINALG::Matrix<4, 1>(true));
+        for(int i=0; i<(int)nodequat.size(); i++)
+          for(int j=0; j<(int)nodequat[i].M(); j++)
+            (nodequat[i])(j) =(*nodalquaternions)[j][nodalquaternions->Map().LID((*globalnodeids)[i])];
+
+        newcrosslinker->SetInitialQuaternions(nodequat);
 
         //add element to discretization
         if(!addinitlinks)
@@ -2806,6 +2835,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
     punlinktrans->PutScalar(0.0);
     CommunicateMultiVector(punlinktrans,unbindingprobability_, true, true, false, false);
   }
+
   return;
 }// StatMechManager::ForceDependentOffRate
 
@@ -4627,11 +4657,16 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
 
     if(numsetelementsall>0)
     {
+      // rotations from displacement vector
       Teuchos::RCP<Epetra_MultiVector> nodalrotations = Teuchos::null;
+      // NODAL quaternions from filament elements
+      Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null;
       if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
       {
         nodalrotations = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),3));
         GetNodalBindingSpotPositionsFromDisVec(discol, Teuchos::null, nodalrotations);
+        nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
+        GetElementBindingSpotTriads(nodalquaternions);
       }
 
       // add elements to problem discretization (processor specific)
@@ -4742,11 +4777,11 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
             }
 
           if(hasrownode)
-            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_);
+            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_,nodalquaternions);
 
           // add all new elements to contact discretization on all Procs
           if(beamcmanager!=Teuchos::null)
-            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret());
+            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalquaternions);
         }
       }
     }
@@ -4921,13 +4956,14 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
  *----------------------------------------------------------------------*/
 bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
 {
+  double eps = 2.0e-11;
   // get the current time
   double time = params.get<double>("total time", 0.0);
   double starttime = actiontime_->at(dbctimeindex_);
-  double dt = params.get<double>("delta time", 0.01);
+  //double dt = params.get<double>("delta time", 0.01);
   if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The absolute time should be positive!", time);
 
-  if(time < starttime && fabs(starttime-time)>dt/1e4)
+  if(time < starttime && fabs(starttime-time)>eps)
     return false;
   else
     return true;
@@ -5027,18 +5063,6 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
         // determine existence and location of broken element
         if(CheckForBrokenElement(coord,cut))
         {
-          // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
-          // only for Beam3ii case
-          for(int n=0; n<cut.N(); n++)
-            if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && cut(2,n)>0.0)
-            {
-              //cout<<"Element "<<element->Id()<<" now has a reduced cross section"<<endl;
-
-              dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-9);
-              dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-9);
-              break;
-            }
-
           for(int n=0; n<cut.N(); n++)
           {
             int nodelidn = discret_->NodeRowMap()->LID(element->Nodes()[n]->Id());
@@ -5127,8 +5151,6 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
       std::vector<int> dofnode = discret_->Dof(oscnode);
       // oscillating node
       double znode = oscnode->X()[2] + (*dis)[discret_->DofRowMap()->LID(dofnode[2])];
-      double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                           DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
       (*deltadbc)[discret_->DofRowMap()->LID(dofnode[oscdir])] = znode/(*periodlength_)[2]*amp*tcincrement;
     }
     // dofs of fixednodes_ remain untouched since displacement at fixednodes_ dofs are 0.0
@@ -5365,8 +5387,9 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
     }
     dbcnodesets_.push_back(sensornodes);
     dbcnodesets_.push_back(fixednodes);
-    dbcnodesets_.push_back(affineshearnodes);
-
+    // without if-statement, this node set might added again after restart beyond actiontime_->at(2)
+    if(time<=actiontime_->at(2))
+      dbcnodesets_.push_back(affineshearnodes);
     //cout<<"A Proc "<<discret_->Comm().MyPID()<<": sizeosc = "<<dbcnodesets_[0].size()<<endl;
 
     UpdateForceSensors(dbcnodesets_[0], displacementdir);

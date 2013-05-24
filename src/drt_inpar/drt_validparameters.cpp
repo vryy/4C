@@ -1785,16 +1785,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<std::string>("none",
                                                     "std",
                                                     "shearfixed",
+                                                    "shearfixeddel",
                                                     "sheartrans",
                                                     "pinnodes" ,
-                                                    "affineshear"),
+                                                    "affineshear",
+                                                    "affinesheardel"),
                                  //translating input strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::dbctype_none,
                                             INPAR::STATMECH::dbctype_std,
                                             INPAR::STATMECH::dbctype_shearfixed,
+                                            INPAR::STATMECH::dbctype_shearfixeddel,
                                             INPAR::STATMECH::dbctype_sheartrans,
                                             INPAR::STATMECH::dbctype_pinnodes,
-                                            INPAR::STATMECH::dbctype_affineshear),
+                                            INPAR::STATMECH::dbctype_affineshear,
+                                            INPAR::STATMECH::dbctype_affinesheardel),
                                             &statmech);
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);

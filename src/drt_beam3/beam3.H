@@ -24,7 +24,6 @@ Maintainer: Christian Cyron
 #include "Epetra_Vector.h"
 
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_fem_general/largerotations.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -595,8 +594,22 @@ private:
     lobattointegration
   };
 
+
+  //! local enum for friction model
+  enum Beam3FrictionModel
+  {
+    beam3frict_none,
+    beam3frict_isotropicconsistent,
+    beam3frict_isotropiclumped,
+    beam3frict_anisotropicconsistent
+  };
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
+
+  //! friction model on element scope
+  Beam3FrictionModel frictionmodel_;
+
   //! vector storing the internal force vector
   Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
 
@@ -712,7 +725,8 @@ private:
                      Epetra_SerialDenseVector*  force);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
-   void MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
+   void MyDampingConstants(Teuchos::ParameterList& params,
+                           LINALG::Matrix<3,1>&    gamma);
 
    //!computes rotational damping forces and stiffness
    template<int nnode> //number of nodes

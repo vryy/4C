@@ -558,6 +558,7 @@ public:
           LARGEROTATIONS::triadtoquaternion(Tref,Qconv_[0]);
           Qconv_[1] = Qconv_[0];
           Qnew_ = Qconv_;
+
           for(int i=0;i<4;i++)
           {
             rQnew_[i]=Qconv_[0];
@@ -656,6 +657,9 @@ public:
      return;
 
    }//DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
+
+   //!\brief Set initial quaternions rQconv_ depending on nodal quaternions from already existing beam elements
+   void SetInitialQuaternions(std::vector<LINALG::Matrix<4,1> >& initquaternions);
 
 
 private:

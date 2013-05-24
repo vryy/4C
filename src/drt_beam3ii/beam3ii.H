@@ -28,7 +28,6 @@ Maintainer: Christian Cyron
 
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
-#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -150,8 +149,7 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
-  virtual DRT::ElementType & ElementType() const
-  { return Beam3iiType::Instance(); }
+  virtual DRT::ElementType & ElementType() const { return Beam3iiType::Instance(); }
 
   //@}
 
@@ -240,6 +238,12 @@ public:
 
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
   int HowManyRandomNumbersINeed();
+
+  //! \brief internal force vector
+  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+  
+  //! brief epsilonnormal
+  const double& EpsilonSgn() const { return eps_;}
 
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
   template<int nnode>
@@ -553,8 +557,24 @@ private:
     lobattointegration
   };
 
+  //! local enum for friction model
+  enum Beam3iiFrictionModel
+  {
+    beam3iifrict_none,
+    beam3iifrict_isotropicconsistent,
+    beam3iifrict_isotropiclumped,
+    beam3iifrict_anisotropicconsistent
+  };
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
+
+  //! friction model on element scope
+  Beam3iiFrictionModel frictionmodel_;
+  //! vector storing the internal force vector
+  Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
+  //! storing epsilonn(0)
+  double eps_;
 
   //! nodal triads in quaternion form at the end of the preceeding time step
   std::vector<LINALG::Matrix<4,1> > Qconv_;
@@ -1030,7 +1050,8 @@ private:
                      std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildemass);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
-   void MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
+   void MyDampingConstants(Teuchos::ParameterList& params,
+                           LINALG::Matrix<3,1>&    gamma);
 
    //!computes rotational damping forces and stiffness
    template<int nnode> //number of nodes

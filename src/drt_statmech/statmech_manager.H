@@ -192,7 +192,7 @@ public:
                             Teuchos::RCP<Epetra_MultiVector> bspottriads);
 
   //! \brief Retrieve binding spot triads on the basis of column map nodes
-  void GetElementBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> bspottriads);
+  void GetElementBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> nodetriads);
 
   //! \brief get Internodal Binding Spot Triads
   void GetInterpolatedBindingSpotTriads(const Teuchos::RCP<Epetra_MultiVector> bspotrotations,
@@ -245,6 +245,9 @@ public:
   //! \brief Initializes beam3ii elements in case of periodic boundary conditions
   void PeriodicBoundaryBeam3iiInit(DRT::Element* element);
 
+  //! \brief Initializes beam3eb elements in case of periodic boundary conditions
+  void PeriodicBoundaryBeam3ebInit(DRT::Element* element);
+
   //! \brief Initializes beam3CL elements in case of periodic boundary conditions
   void PeriodicBoundaryBeamCLInit(DRT::Element* element);
 
@@ -273,13 +276,14 @@ public:
                               const int&           istep);
 
   //! \brief create a new crosslinker element and add it to the discretization
-  void AddNewCrosslinkerElement(const int&                      crossgid,
-                                Teuchos::RCP<std::vector<int> > globalnodeids,
-                                const std::vector<int>&         bspotgid,
-                                const std::vector<double>&      xrefe,
-                                const std::vector<double>&      rotrefe,
-                                DRT::Discretization&            mydiscret,
-                                bool                            addinitlinks=false);
+  void AddNewCrosslinkerElement(const int&                       crossgid,
+                                Teuchos::RCP<std::vector<int> >  globalnodeids,
+                                const std::vector<int>&          bspotgid,
+                                const std::vector<double>&       xrefe,
+                                const std::vector<double>&       rotrefe,
+                                DRT::Discretization&             mydiscret,
+                                Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null,
+                                bool                             addinitlinks=false);
 
   //! \brief remove crosslinker element from a chosen discretization
   void RemoveCrosslinkerElements(DRT::Discretization&             mydiscret,
@@ -532,6 +536,9 @@ protected:
   //! \brief output of nodal coordinates in a loom setup
   void OutputNodalDisplacements(const Epetra_Vector&      disrow,
                                 const std::ostringstream& filename);
+    
+  //! \brief output of element internal forces
+  void OutputElementInternalForces(const std::ostringstream& filename);
 
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);
@@ -546,6 +553,16 @@ protected:
                              const Epetra_Vector& dis,
                              const Epetra_Vector& fint,
                              std::ostringstream&  filename);
+
+  //! \brief Output of selected node positions
+  void OutputSlidingMotion(const Epetra_Vector& disrow,
+                           std::ostringstream&  filename);
+
+  //! \brief Output of the COG of the structure as well as the tensor of inertia
+  void StructureCOGInertiaTensorOutput(const int&           istep,
+                                       const double&        time,
+                                       const Epetra_Vector& disrow,
+                                       std::ostringstream&  filename);
 
   //! \brief output for density-density-correlation output
   void BellsEquationOutput(const Epetra_Vector&      disrow,
@@ -897,6 +914,8 @@ protected:
 
   //! \brief a vector holding indices used in DensityDensityCorrOutput()
   Teuchos::RCP<std::vector<double> > startindex_;
+
+  Teuchos::RCP<std::vector<std::vector<int> > > linkernodepairs_;
 
   //the following variables are necessary only for repeating a time step with different random numbers after its having failed one time
 

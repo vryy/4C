@@ -437,6 +437,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         fprintf(fp, filecontent.str().c_str());
         fclose(fp);
       }
+      linkernodepairs_ = Teuchos::null;
     }
       break;
     case INPAR::STATMECH::statout_networkcreep:
@@ -840,7 +841,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
       int numstep = sdyn.get<int>("NUMSTEP", -1);
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
-      if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
+      if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-10)
       {
         // name of file into which output is written
         std::ostringstream filename;
@@ -850,11 +851,16 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         // additional Density-Density-Correlation Output
         if((istep-istart_) % (10*statmechparams_.get<int> ("OUTPUTINTERVALS", 1)) == 0)
         {
-          std::ostringstream ddcorrfilename;
-          ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-          DDCorrOutput(dis, ddcorrfilename, istep, dt);
+        //  std::ostringstream ddcorrfilename;
+         // ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          //DDCorrOutput(dis, ddcorrfilename, istep, dt);
         }
+      
+          std::ostringstream nodepairfilename;
+          nodepairfilename << outputrootpath_ << "/StatMechOutput/NodePairPosition_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          OutputSlidingMotion(dis, nodepairfilename);
 
+  
         if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FORCEDEPUNLINKING"))
         {
           std::ostringstream forcedepfilename;
@@ -875,6 +881,10 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         std::ostringstream filename;
         filename << outputrootpath_ << "/StatMechOutput/CreepForces.dat";
         ViscoelasticityOutput(time, dis, fint, filename);
+          
+        std::ostringstream filename2;
+        filename2 << outputrootpath_ << "/StatMechOutput/StructCOGInertia.dat";
+        StructureCOGInertiaTensorOutput(istep, time, dis, filename2);
       }
     }
     break;
@@ -946,6 +956,10 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         std::ostringstream filename2;
         filename2 << outputrootpath_ << "/StatMechOutput/NodeDisp_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
         OutputNodalDisplacements(dis,filename2);
+
+        std::ostringstream filename3;
+        filename3 << outputrootpath_ << "/StatMechOutput/InternalForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        OutputElementInternalForces(filename3);
       }
     }
     break;
@@ -4445,7 +4459,7 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector&    
   return;
 }
 
-/*------------------------------------------------------------------------------*                                                 |
+/*------------------------------------------------------------------------------*
  | output nodal displacements                                      mueller 5/12 |
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&                 disrow,
@@ -4468,6 +4482,61 @@ void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&   
   }
   return;
 }
+
+/*------------------------------------------------------------------------------*
+ | output element internal forces                                  mueller 5/12 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringstream& filename)
+{
+  std::stringstream elementfint;
+
+  for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
+  {
+    if(pid==discret_->Comm().MyPID())
+    {
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "a");
+
+      for(int i=0; i<discret_->ElementRowMap()->NumMyElements(); i++)
+      {
+        DRT::Element* element = discret_->lRowElement(i);
+        // element internal force vector
+        Teuchos::RCP<Epetra_SerialDenseVector> force = Teuchos::null;
+        // normal strain
+        double eps = 0.0;
+        
+        const DRT::ElementType &eot = element->ElementType();
+        if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+        {
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->InternalForces();
+          eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->EpsilonSgn();
+          if(force==Teuchos::null)
+            force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(element->NumNode())));
+        }
+        else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+        {
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->InternalForces();
+          eps = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->EpsilonSgn();
+          if(force==Teuchos::null)
+            force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(element->NumNode())));
+        }
+        // compute element averaged force
+        LINALG::Matrix<3,1> avgforce;
+        for(int j=0; j<(int)avgforce.M(); j++)
+          avgforce(j) = 0.5*((*force)(j)+(*force)(j+3));
+        double fabsolute = avgforce.Norm2();
+        if(eps<0.0)
+          fabsolute *= -1.0;
+        elementfint << fabsolute <<std::endl;
+      }
+
+      fprintf(fp, elementfint.str().c_str());
+      fclose(fp);
+    }
+  }
+  return;
+}
+
 
 /*------------------------------------------------------------------------------*                                                 |
  | output the coverage of crosslinker binding sites (nodes) and the distribution|
@@ -5016,7 +5085,7 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const 
     /*the output to be written consists of internal forces at exactly those degrees of freedom
      * marked in *forcesensor_ by a one entry*/
 
-    filecontent << std::scientific << std::setprecision(10) << time;//changed
+    filecontent << std::scientific << std::setprecision(15) << time;//changed
 
     //Putting time, displacement, meanforce  in Filestream
     filecontent << "   "<< d << "   " << fglob << "   " << discret_->NumGlobalElements() << endl; //changed
@@ -5026,7 +5095,127 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const 
   }
 }
 
-/*------------------------------------------------------------------------------*                                                 |
+/*------------------------------------------------------------------------------*                                                 
+ | Output of relative motion between linker nodes         (public) mueller 05/13|
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputSlidingMotion(const Epetra_Vector& disrow, std::ostringstream& filename)
+{
+  // initialize on first call
+  if(linkernodepairs_==Teuchos::null)
+  {
+    linkernodepairs_ = Teuchos::rcp(new std::vector<std::vector<int> >);
+    for(int i=0; i<numbond_->MyLength(); i++)
+    {
+      if((*numbond_)[i]>1.9)
+      {
+        std::vector<int> pair(2, -1);
+        pair[0] = (int)(*crosslinkerbond_)[0][i];
+        pair[1] = (int)(*crosslinkerbond_)[1][i];
+        linkernodepairs_->push_back(pair);
+      }
+    }
+  }
+  
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
+  LINALG::Export(disrow, discol);
+  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+  std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+  GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
+  
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+    fp = fopen(filename.str().c_str(), "a");
+
+    for(int i=0; i<(int)linkernodepairs_->size(); i++)
+    {
+      int bspotlid0 = bspotcolmap_->LID((*linkernodepairs_)[i][0]);
+      int bspotlid1 = bspotcolmap_->LID((*linkernodepairs_)[i][1]);
+      std::map<int, LINALG::Matrix<3,1> >::const_iterator posbspot0 = currentpositions.find(bspotlid0);
+      std::map<int, LINALG::Matrix<3,1> >::const_iterator posbspot1 = currentpositions.find(bspotlid1);
+      
+      // write binding spot position
+      filecontent<<std::setprecision(8)<<(posbspot0->second)(0)<<" "<<(posbspot0->second)(1)<<" "<<(posbspot0->second)(2)<<" ";
+      filecontent<<std::setprecision(8)<<(posbspot1->second)(0)<<" "<<(posbspot1->second)(1)<<" "<<(posbspot1->second)(2)<<" ";
+      // write binding spot status
+      filecontent<<(*bspotstatus_)[bspotlid0]<<" "<<(*bspotstatus_)[bspotlid1]<<" ";
+      // write linker status of the linker attached to above's binding spots
+      if((*bspotstatus_)[bspotlid0]>-0.9)
+        filecontent<<(*numbond_)[(*bspotstatus_)[bspotlid0]];
+      if((*bspotstatus_)[bspotlid1]>-0.9)
+        filecontent<<" "<<(*numbond_)[(*bspotstatus_)[bspotlid1]];
+      filecontent<<std::endl;
+    }
+    fprintf(fp,filecontent.str().c_str());
+    fclose(fp);
+  }
+  return;
+}
+/*------------------------------------------------------------------------------*                                                 
+ | Structure COG & inertia tensor ouput                   (public) mueller 05/13|
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&           istep,
+                                                                const double&        time,
+                                                                const Epetra_Vector& disrow,
+                                                                std::ostringstream&  filename)
+{
+  // export row displacement to column map format
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
+  LINALG::Export(disrow, discol);
+  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+  std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+  GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
+  
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+    fp = fopen(filename.str().c_str(), "a");
+    
+    filecontent << std::scientific << std::setprecision(15) << istep<<"  "<<time<<"  "<<discret_->NumMyColNodes()<<std::endl;
+    
+    // calculate center of gravity of the structure
+    LINALG::Matrix<3,1> COG(true);
+    for(std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.begin(); it!=currentpositions.end(); it++)
+      COG += it->second;
+    COG.Scale(1.0/(double)discret_->NumMyColNodes());
+    cout<<"COG =\n"<<COG<<endl;   
+    filecontent << std::scientific << std::setprecision(15) << COG(0)<<"  "<<COG(1)<<"  "<<COG(2)<<std::endl;
+    
+    // calculate relative position to COG
+    for(int i=0; i<discret_->NumMyColNodes(); i++)
+    {
+      std::map< int,LINALG::Matrix<3,1> >::iterator posi = currentpositions.find(i);
+      posi->second -= COG;
+    }
+    // calculate inertial tensor
+    LINALG::Matrix<3,3> I_ij(true);
+    LINALG::Matrix<3,3> delta(true);
+    delta(0,0) = 1.0;
+    delta(1,1) = 1.0;
+    delta(2,2) = 1.0;
+    for(std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.begin(); it!=currentpositions.end(); it++)
+      for(int i=0; i<(int)I_ij.M(); i++)
+        for(int j=0; j<(int)I_ij.N(); j++)
+          I_ij(i,j) += (it->second).Dot(it->second)*delta(i,j) - (it->second)(i)*(it->second)(j);
+    // Scale in order to avoid large numbers
+    I_ij.Scale(1.0/double(discret_->NumMyColNodes()));
+
+    for(int i=0; i<(int)I_ij.M(); i++)
+    {
+      for(int j=0; j<(int)I_ij.N(); j++)
+        filecontent << std::scientific << std::setprecision(15) << I_ij(i,j)<<"  ";
+      filecontent<<std::endl;
+    }
+        
+    
+    fprintf(fp,filecontent.str().c_str());
+    fclose(fp);
+  }
+}
+
+/*------------------------------------------------------------------------------*                                                 
 | distribution of spherical coordinates                  (public) mueller 11/12|
 *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      disrow,

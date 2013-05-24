@@ -551,4 +551,16 @@ int DRT::ELEMENTS::BeamCLType::Initialize(DRT::Discretization& dis)
     return 0;
 }
 
+/*----------------------------------------------------------------------*
+ |  Initialize quaternions (public)                        mueller 05/13|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::BeamCL::SetInitialQuaternions(std::vector<LINALG::Matrix<4,1> >& initquaternions)
+{
+  if((int)initquaternions.size()!=(int)rQconv_.size())
+    dserror("Check size=%i of input quaternion vector!",(int)initquaternions.size());
+
+  rQconv_ = initquaternions;
+
+  return;
+}
 
