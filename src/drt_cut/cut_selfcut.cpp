@@ -1,17 +1,16 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_selfcut.cpp
+ \file cut_selfcut.cpp
 
-\brief class that provides all routines to handle cutsides which cut each other
+ \brief class that provides all routines to handle cutsides which cut each other
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+ <pre>
+ Maintainer: Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
 #include "cut_kernel.H"
 #include "cut_point_impl.H"
 #include "cut_pointgraph.H"
@@ -19,13 +18,16 @@ Maintainer: Andy Wirtz
 #include "cut_triangulateFacet.H"
 #include "cut_side.H"
 #include "cut_pointpool.H"
+//#include "cut_output.H"
 #include "cut_selfcut.H"
+
+//#define DEBUG_SELFCUT
 
 /*-------------------------------------------------------------------------------------*
  * constructor                                                              wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::SelfCut::SelfCut( Mesh & cut_mesh )
-  : mesh_( cut_mesh )
+GEO::CUT::SelfCut::SelfCut(Mesh & cut_mesh) :
+    mesh_(cut_mesh)
 {
 
   CollisionDetection();
@@ -35,7 +37,6 @@ GEO::CUT::SelfCut::SelfCut( Mesh & cut_mesh )
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * detects cutsides which cut each other by finding the respective cutpoints
  *                                                                          wirtz 05/13
@@ -43,13 +44,11 @@ GEO::CUT::SelfCut::SelfCut( Mesh & cut_mesh )
 void GEO::CUT::SelfCut::CollisionDetection()
 {
 
-  std::vector<Side*> allsortedcutsides = PrepareDetection();
-  FindCuttingSides( allsortedcutsides );
+  FindCuttingSides();
   FindSelfCutPoints();
   GetSelfCutObjects();
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * replaces cutted sides by creating new nodes, edges and sides             wirtz 05/13
@@ -66,7 +65,6 @@ void GEO::CUT::SelfCut::MeshIntersection()
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * erases nodes, edges and sides which lies inside a structure body by
  * locating there position                                                  wirtz 05/13
@@ -82,7 +80,6 @@ void GEO::CUT::SelfCut::ElementSelection()
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * represents the result by using console or gmsh                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
@@ -91,71 +88,70 @@ void GEO::CUT::SelfCut::StatusInspection()
 
   CuttedSideStatusText();
   CutMeshStatusText();
-  CuttedSideStatusGmsh( "selfcut.pos" );
-  SCmgmGmsh( "SCmgmGmsh.pos" );
+  CuttedSideStatusGmsh("selfcut.pos");
+  SCmgmGmsh("SCmgmGmsh.pos");
 
 }
 
-
-/*-------------------------------------------------------------------------------------*
- * stores all cutsides in a sorted vector to find cutting sides later       wirtz 05/13
- *-------------------------------------------------------------------------------------*/
-std::vector<GEO::CUT::Side*> GEO::CUT::SelfCut::PrepareDetection()
+void GEO::CUT::SelfCut::Debug(const std::string & viewname)
 {
-
+#if 0
   std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
-  std::vector<Side*> allsortedcutsides;
-  allsortedcutsides.reserve( cutsides.size() );
-  for( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=cutsides.begin();
-       i!=cutsides.end();
-       ++i )
+  plain_int_set debugsideids;
+  debugsideids.insert(-375);
+  debugsideids.insert(74752);
+  debugsideids.insert(74766);
+  std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = cutsides.find(
+      debugsideids);
+  if (i != cutsides.end())
   {
-    Side * cutside = &*i->second;
-    allsortedcutsides.push_back( cutside );
+    Side * debugside = &*i->second;
+    Output(*debugside, viewname);
   }
-  std::sort( allsortedcutsides.begin(), allsortedcutsides.end() );
-  return allsortedcutsides;
-
+#endif
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * finds cutsides which possibly cuts the considered side                   wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::FindCuttingSides( std::vector<Side*> & allsortedcutsides )
+void GEO::CUT::SelfCut::FindCuttingSides()
 {
 
-  Teuchos::RCP<PointPool> pointpool = mesh_.Points();
   std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+#ifdef DEBUG_SELFCUT
   {
-	  Side * cutside = &*i->second;
-	  BoundingBox cutsidebox ( *cutside );
-	  plain_side_set possiblecuttingsides;
-    pointpool->CollectSides( cutsidebox, possiblecuttingsides );
-    possiblecuttingsides.erase( cutside );
-    for ( plain_side_set::iterator i=possiblecuttingsides.begin(); i!=possiblecuttingsides.end(); )
+    plain_int_set debugsideids;
+    debugsideids.insert(-1584);
+    debugsideids.insert(77181);
+    debugsideids.insert(77183);
+    std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = cutsides.find(
+        debugsideids);
+    Side * cutside = &*i->second;
+#else
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      cutsides.begin(); i != cutsides.end(); ++i)
+  {
+    Side * cutside = &*i->second;
+#endif
+    BoundingBox cutsidebox(*cutside);
+    for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+        cutsides.begin(); i != cutsides.end(); ++i)
     {
-      Side * possiblecuttingside = *i;
-      if ( not std::binary_search( allsortedcutsides.begin(), allsortedcutsides.end(), possiblecuttingside ) or
-       	   cutside->HaveCommonNode( *possiblecuttingside ) )
+      Side* side = &*i->second;
+      BoundingBox sidebox;
+      sidebox.Assign(*side);
+      if (sidebox.Within(1.0, cutsidebox)
+          and not cutside->HaveCommonNode(*side))
       {
-        set_erase( possiblecuttingsides, i );
+        cutside->GetCuttingSide(side);
       }
-      else
-      {
-        ++i;
-      }
-    }
-    for( plain_side_set::iterator i=possiblecuttingsides.begin(); i!=possiblecuttingsides.end(); ++i )
-    {
-      Side * possiblecuttingside = *i;
-   	  cutside->GetCuttingSide( possiblecuttingside );
     }
   }
+#ifdef DEBUG_SELFCUT
+  Debug("FindCuttingSides");
+#endif
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * finds cutpoints by searching the intersection between the edges
@@ -165,34 +161,37 @@ void GEO::CUT::SelfCut::FindSelfCutPoints()
 {
 
   std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=cutsides.begin();
-	      i!=cutsides.end();
-	      ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      cutsides.begin(); i != cutsides.end(); ++i)
   {
     Side * cutside = &*i->second;
     plain_side_set possiblecuttingsides = cutside->CuttingSides();
     plain_side_set nocuttingsides;
-    for( plain_side_set::iterator i=possiblecuttingsides.begin(); i!=possiblecuttingsides.end(); ++i )
+    for (plain_side_set::iterator i = possiblecuttingsides.begin();
+        i != possiblecuttingsides.end(); ++i)
     {
-      Side * possiblecuttingside = * i;
+      Side * possiblecuttingside = *i;
       PointSet selfcutpoints;
-      PerformSelfCut( *cutside, *possiblecuttingside, selfcutpoints);
-      PerformSelfCut( *possiblecuttingside, *cutside, selfcutpoints);
-      cutside->GetSelfCutPoints( selfcutpoints );
-      if ( selfcutpoints.size() == 0 )
+      PerformSelfCut(*cutside, *possiblecuttingside, selfcutpoints);
+      PerformSelfCut(*possiblecuttingside, *cutside, selfcutpoints);
+      cutside->GetSelfCutPoints(selfcutpoints);
+      if (selfcutpoints.size() == 0)
       {
-        nocuttingsides.insert( possiblecuttingside );
+        nocuttingsides.insert(possiblecuttingside);
       }
     }
-    for( plain_side_set::iterator i=nocuttingsides.begin(); i!=nocuttingsides.end(); ++i )
+    for (plain_side_set::iterator i = nocuttingsides.begin();
+        i != nocuttingsides.end(); ++i)
     {
-      Side * nocuttingside = * i;
-      cutside->EraseCuttingSide( nocuttingside );
+      Side * nocuttingside = *i;
+      cutside->EraseCuttingSide(nocuttingside);
     }
   }
+#ifdef DEBUG_SELFCUT
+  Debug("FindSelfCutPoints");
+#endif
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * gets all cutted sides and there nodes and edges to store them as
@@ -202,42 +201,40 @@ void GEO::CUT::SelfCut::GetSelfCutObjects()
 {
 
   std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=cutsides.begin();
-	      i!=cutsides.end();
-	      ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      cutsides.begin(); i != cutsides.end(); ++i)
   {
-  	Teuchos::RCP<Side> cutside = i->second;
-	  if ( cutside->CuttingSides().size() != 0 )
-	  {
-	    plain_int_set cutsidenodeids = i->first;
+    Teuchos::RCP<Side> cutside = i->second;
+    if (cutside->CuttingSides().size() != 0)
+    {
+      plain_int_set cutsidenodeids = i->first;
       selfcut_sides_[cutsidenodeids] = cutside;
-	  }
+    }
   }
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-	      i!=selfcut_sides_.end();
-	      ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
-    GetSelfCutEdges( *cutside );
+    GetSelfCutEdges(*cutside);
   }
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
     std::vector<Node*> cutsidenodes = cutside->Nodes();
-    for ( std::vector<Node*>::iterator i=cutsidenodes.begin(); i!=cutsidenodes.end(); ++i )
+    for (std::vector<Node*>::iterator i = cutsidenodes.begin();
+        i != cutsidenodes.end(); ++i)
     {
-      Node * cutsidenode = * i;
+      Node * cutsidenode = *i;
       int cutsidenodeid = cutsidenode->Id();
-      std::map<int,Teuchos::RCP<Node> > cutsidenodercp = mesh_.Nodes();
-      std::map<int,Teuchos::RCP<Node> >::iterator nodeiterator = cutsidenodercp.find( cutsidenodeid );
+      std::map<int, Teuchos::RCP<Node> > cutsidenodercp = mesh_.Nodes();
+      std::map<int, Teuchos::RCP<Node> >::iterator nodeiterator =
+          cutsidenodercp.find(cutsidenodeid);
       selfcut_nodes_[cutsidenodeid] = nodeiterator->second;
     }
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * creates a node at every selfcutpoint with respect to the
@@ -247,31 +244,31 @@ void GEO::CUT::SelfCut::CreateSelfCutNodes()
 {
 
   std::vector<Node*> cuttedsidesnodes;
-  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=selfcut_nodes_.begin();
-        i!=selfcut_nodes_.end();
-        ++i )
+  for (std::map<int, Teuchos::RCP<Node> >::iterator i = selfcut_nodes_.begin();
+      i != selfcut_nodes_.end(); ++i)
   {
     Node * cuttedsidesnode = &*i->second;
-    cuttedsidesnodes.push_back( cuttedsidesnode );
+    cuttedsidesnodes.push_back(cuttedsidesnode);
   }
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
     PointSet cutsideselfcutpoints = cutside->SelfCutPoints();
-    for( PointSet::iterator i=cutsideselfcutpoints.begin(); i!=cutsideselfcutpoints.end(); ++i )
+    for (PointSet::iterator i = cutsideselfcutpoints.begin();
+        i != cutsideselfcutpoints.end(); ++i)
     {
-      Point * cutsideselfcutpoint = * i;
-      if ( cutsideselfcutpoint->NodalPoint( cuttedsidesnodes ) )
+      Point * cutsideselfcutpoint = *i;
+      if (cutsideselfcutpoint->NodalPoint(cuttedsidesnodes))
       {
-        for ( std::vector<Node*>::iterator i=cuttedsidesnodes.begin(); i!=cuttedsidesnodes.end(); ++i )
+        for (std::vector<Node*>::iterator i = cuttedsidesnodes.begin();
+            i != cuttedsidesnodes.end(); ++i)
         {
-          Node * cuttedsidesnode = * i;
-          if ( cuttedsidesnode->point() == cutsideselfcutpoint )
+          Node * cuttedsidesnode = *i;
+          if (cuttedsidesnode->point() == cutsideselfcutpoint)
           {
-            cuttedsidesnode->SelfCutPosition( Point::oncutsurface );
-            cutside->GetSelfCutNode( cuttedsidesnode );
+            cuttedsidesnode->SelfCutPosition(Point::oncutsurface);
+            cutside->GetSelfCutNode(cuttedsidesnode);
             break;
           }
         }
@@ -280,20 +277,23 @@ void GEO::CUT::SelfCut::CreateSelfCutNodes()
       {
         std::map<int, Teuchos::RCP<Node> > cutsidenodes = mesh_.Nodes();
         int selfcutnodeid = cutsidenodes.begin()->first - 1;
-        Node * selfcutnode = new Node( selfcutnodeid, cutsideselfcutpoint, 0.0 );
-        selfcutnode->SelfCutPosition( Point::oncutsurface );
-        mesh_.GetNode( selfcutnodeid, selfcutnode );
-        std::map<int,Teuchos::RCP<Node> > selfcutnodercp = mesh_.Nodes();
-        std::map<int,Teuchos::RCP<Node> >::iterator nodeiterator = selfcutnodercp.find( selfcutnodeid );
+        Node * selfcutnode = new Node(selfcutnodeid, cutsideselfcutpoint, 0.0);
+        selfcutnode->SelfCutPosition(Point::oncutsurface);
+        mesh_.GetNode(selfcutnodeid, selfcutnode);
+        std::map<int, Teuchos::RCP<Node> > selfcutnodercp = mesh_.Nodes();
+        std::map<int, Teuchos::RCP<Node> >::iterator nodeiterator =
+            selfcutnodercp.find(selfcutnodeid);
         selfcut_nodes_[selfcutnodeid] = nodeiterator->second;
-        cutside->GetSelfCutNode( selfcutnode );
-        cuttedsidesnodes.push_back( selfcutnode );
+        cutside->GetSelfCutNode(selfcutnode);
+        cuttedsidesnodes.push_back(selfcutnode);
       }
     }
   }
+#ifdef DEBUG_SELFCUT
+  Debug("CreateSelfCutNodes");
+#endif
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * creates a edge between two selfcutnodes with respect to the
@@ -302,55 +302,62 @@ void GEO::CUT::SelfCut::CreateSelfCutNodes()
 void GEO::CUT::SelfCut::CreateSelfCutEdges()
 {
 
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
     plain_side_set cuttingsides = cutside->CuttingSides();
     plain_node_set cutsideselfcutnodes = cutside->SelfCutNodes();
-    for ( plain_side_set::iterator i=cuttingsides.begin(); i!=cuttingsides.end(); ++i )
+    for (plain_side_set::iterator i = cuttingsides.begin();
+        i != cuttingsides.end(); ++i)
     {
-      Side * cuttingside = * i;
-  	  plain_node_set cuttingsideselfcutnodes = cuttingside->SelfCutNodes();
+      Side * cuttingside = *i;
+      plain_node_set cuttingsideselfcutnodes = cuttingside->SelfCutNodes();
       std::vector<Node*> commonselfcutnodes;
       plain_int_set commonselfcutnodeids;
-  	  for (  plain_node_set::iterator i=cutsideselfcutnodes.begin(); i!=cutsideselfcutnodes.end(); ++i )
-  	  {
-  	    Node * cutsideselfcutnode = * i;
-  	    plain_node_set::iterator nodeiterator = cuttingsideselfcutnodes.find( cutsideselfcutnode );
-  	    if ( nodeiterator != cuttingsideselfcutnodes.end() )
-  	    {
-  	      Node * commonselfcutnode = * nodeiterator;
-    		  commonselfcutnodes.push_back( commonselfcutnode );
-    		  commonselfcutnodeids.insert( commonselfcutnode->Id() );
-  	    }
-  	  }
-  	  if ( commonselfcutnodeids.size() == 2  )
-  	  {
-        std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator edgeiterator = selfcut_edges_.find( commonselfcutnodeids );
-        if ( edgeiterator != selfcut_edges_.end() )
+      for (plain_node_set::iterator i = cutsideselfcutnodes.begin();
+          i != cutsideselfcutnodes.end(); ++i)
+      {
+        Node * cutsideselfcutnode = *i;
+        plain_node_set::iterator nodeiterator = cuttingsideselfcutnodes.find(
+            cutsideselfcutnode);
+        if (nodeiterator != cuttingsideselfcutnodes.end())
+        {
+          Node * commonselfcutnode = *nodeiterator;
+          commonselfcutnodes.push_back(commonselfcutnode);
+          commonselfcutnodeids.insert(commonselfcutnode->Id());
+        }
+      }
+      if (commonselfcutnodeids.size() == 2)
+      {
+        std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator edgeiterator =
+            selfcut_edges_.find(commonselfcutnodeids);
+        if (edgeiterator != selfcut_edges_.end())
         {
           Edge * commonedge = &*edgeiterator->second;
-          commonedge->SelfCutPosition( Point::oncutsurface );
-          cutside->GetSelfCutEdge( commonedge );
+          commonedge->SelfCutPosition(Point::oncutsurface);
+          cutside->GetSelfCutEdge(commonedge);
         }
         else
         {
-          Edge * selfcutedge = new Edge( commonselfcutnodes );
-          selfcutedge->SelfCutPosition( Point::oncutsurface );
-          mesh_.GetEdge( commonselfcutnodeids, selfcutedge );
-          std::map<plain_int_set,Teuchos::RCP<Edge> > cutsideedgercp = mesh_.Edges();
-          std::map<plain_int_set,Teuchos::RCP<Edge> >::iterator edgeiterator = cutsideedgercp.find( commonselfcutnodeids );
+          Edge * selfcutedge = new Edge(commonselfcutnodes);
+          selfcutedge->SelfCutPosition(Point::oncutsurface);
+          mesh_.GetEdge(commonselfcutnodeids, selfcutedge);
+          std::map<plain_int_set, Teuchos::RCP<Edge> > cutsideedgercp =
+              mesh_.Edges();
+          std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator edgeiterator =
+              cutsideedgercp.find(commonselfcutnodeids);
           selfcut_edges_[commonselfcutnodeids] = edgeiterator->second;
-          cutside->GetSelfCutEdge( selfcutedge );
+          cutside->GetSelfCutEdge(selfcutedge);
         }
       }
     }
   }
+#ifdef DEBUG_SELFCUT
+  Debug("CreateSelfCutEdges");
+#endif
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * finds triangles with respect to the self cut by using
@@ -359,105 +366,127 @@ void GEO::CUT::SelfCut::CreateSelfCutEdges()
 void GEO::CUT::SelfCut::FindSelfCutTriangulation()
 {
 
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
-  	Side * cutside = &*i->second;
-  	std::vector<Node*> cutsidenodes = cutside->Nodes();
-  	std::vector<Point*> cutsidepoints(3);
-  	cutsidepoints[0] = cutsidenodes[0]->point();
-  	cutsidepoints[1] = cutsidenodes[1]->point();
-  	cutsidepoints[2] = cutsidenodes[2]->point();
-  	std::vector<double> cutsideplane = KERNEL::EqnPlane( cutsidepoints[0], cutsidepoints[1], cutsidepoints[2] );
-  	IMPL::PointGraph pointgraph( cutside );
-  	Cycle * maincycle = &*( pointgraph.fbegin() );
-  	bool mainnormalconservation = CheckNormal( cutsideplane, *maincycle );
-  	std::vector<Cycle*> maincycles;
-    std::vector< Teuchos::RCP<Cycle> > newmaincyclercp;
-  	for ( IMPL::PointGraph::facet_iterator i=pointgraph.fbegin(); i!=pointgraph.fend(); ++i )
-  	{
-  	  Cycle *maincycle = &*i;
-  	  if ( mainnormalconservation )
-  	  {
-  	    maincycles.push_back( maincycle );
-  	  }
-  	  else
-  	  {
-  	    std::vector<Point*> maincyclepoints = (*maincycle)();
-  	    std::reverse( maincyclepoints.begin(), maincyclepoints.end() );
-  	    Cycle * newmaincycle = new Cycle( maincyclepoints );
-  	    newmaincyclercp.push_back( Teuchos::rcp( newmaincycle ) );
-  	    maincycles.push_back( newmaincycle );
-  	  }
-  	}
-  	std::vector<Cycle*> holecycles;
-  	bool holenormalconservation = true;
-  	for ( IMPL::PointGraph::hole_iterator i=pointgraph.hbegin(); i!=pointgraph.hend(); ++i )
-  	{
-      std::vector<Cycle> oldholecycles = * i;
-      Cycle * holecycle = & oldholecycles[0];
-      holenormalconservation = CheckNormal( cutsideplane, *holecycle );
+    Side * cutside = &*i->second;
+    std::vector<Node*> cutsidenodes = cutside->Nodes();
+    std::vector<Point*> cutsidepoints(3);
+    cutsidepoints[0] = cutsidenodes[0]->point();
+    cutsidepoints[1] = cutsidenodes[1]->point();
+    cutsidepoints[2] = cutsidenodes[2]->point();
+    std::vector<double> cutsideplane = KERNEL::EqnPlane(cutsidepoints[0],
+        cutsidepoints[1], cutsidepoints[2]);
+    IMPL::PointGraph pointgraph(cutside);
+    Cycle * maincycle = &*(pointgraph.fbegin());
+    bool mainnormalconservation = CheckNormal(cutsideplane, *maincycle);
+    std::vector<Cycle*> maincycles;
+    std::vector<Teuchos::RCP<Cycle> > newmaincyclercp;
+    for (IMPL::PointGraph::facet_iterator i = pointgraph.fbegin();
+        i != pointgraph.fend(); ++i)
+    {
+      Cycle *maincycle = &*i;
+      if (mainnormalconservation)
+      {
+        maincycles.push_back(maincycle);
+      }
+      else
+      {
+        std::vector<Point*> maincyclepoints = (*maincycle)();
+        std::reverse(maincyclepoints.begin(), maincyclepoints.end());
+        Cycle * newmaincycle = new Cycle(maincyclepoints);
+        newmaincyclercp.push_back(Teuchos::rcp(newmaincycle));
+        maincycles.push_back(newmaincycle);
+      }
+    }
+    std::vector<Cycle*> holecycles;
+    bool holenormalconservation = true;
+    for (IMPL::PointGraph::hole_iterator i = pointgraph.hbegin();
+        i != pointgraph.hend(); ++i)
+    {
+      std::vector<Cycle> oldholecycles = *i;
+      Cycle * holecycle = &oldholecycles[0];
+      holenormalconservation = CheckNormal(cutsideplane, *holecycle);
       break;
-  	}
+    }
     bool firstinnerloop = true;
-    for ( IMPL::PointGraph::hole_iterator i=pointgraph.hbegin(); i!=pointgraph.hend(); ++i )
+    for (IMPL::PointGraph::hole_iterator i = pointgraph.hbegin();
+        i != pointgraph.hend(); ++i)
     {
       std::vector<Cycle> * holecyclesold = &*i;
       firstinnerloop = true;
-      for ( std::vector<Cycle>::iterator i=holecyclesold->begin(); i!=holecyclesold->end(); ++i )
+      for (std::vector<Cycle>::iterator i = holecyclesold->begin();
+          i != holecyclesold->end(); ++i)
       {
-        Cycle * holecycle = &* i;
-        if ( (holenormalconservation and firstinnerloop) or ( not holenormalconservation and not firstinnerloop ) )
+        Cycle * holecycle = &*i;
+        if ((holenormalconservation and firstinnerloop)
+            or (not holenormalconservation and not firstinnerloop))
         {
-          maincycles.push_back( holecycle );
+          maincycles.push_back(holecycle);
         }
-        if ( (holenormalconservation and not firstinnerloop) or ( not holenormalconservation and firstinnerloop ) )
+        if ((holenormalconservation and not firstinnerloop)
+            or (not holenormalconservation and firstinnerloop))
         {
-          holecycles.push_back( holecycle );
+          holecycles.push_back(holecycle);
         }
         firstinnerloop = false;
       }
     }
     std::vector<std::vector<Point*> > mainholecyclepoints;
-    for ( std::vector<Cycle*>::iterator i=holecycles.begin(); i!=holecycles.end(); ++i )
-  	{
-  	  Cycle * holecycle = *i;
-  	  std::vector<Point*> holecyclepoints = (*holecycle)();
-  	  mainholecyclepoints.push_back( holecyclepoints );
-  	}
+    for (std::vector<Cycle*>::iterator i = holecycles.begin();
+        i != holecycles.end(); ++i)
+    {
+      Cycle * holecycle = *i;
+      std::vector<Point*> holecyclepoints = (*holecycle)();
+      mainholecyclepoints.push_back(holecyclepoints);
+    }
     std::vector<std::vector<Point*> > allmaincycletriangles;
-  	for ( std::vector<Cycle*>::iterator i=maincycles.begin(); i!=maincycles.end(); ++i )
-  	{
-  	  Cycle * maincycle = * i;
-  	  std::vector<Point*> maincyclepoints = (*maincycle)();
-  	  TriangulateFacet triangulatefacet( maincyclepoints, mainholecyclepoints );
-  	  triangulatefacet.EarClippingWithHoles( cutside );
-  	  std::vector<std::vector<Point*> > maincycletriangles = triangulatefacet.GetSplitCells();
-  	  for ( std::vector<std::vector<Point*> >::iterator i=maincycletriangles.begin(); i!=maincycletriangles.end(); ++i )
-  	  {
-  	    std::vector<Point*> maincycletriangle = *i;
-  	    if ( KERNEL::IsOnLine( maincycletriangle[0], maincycletriangle[1], maincycletriangle[2] ) )
-  	    {
-          ErrorStatusText( *cutside );
-          ErrorGmsh( "triangle_with_collinear_points.pos", *cutside );
-  	      throw std::runtime_error( "SelfCut: triangulation unsuccessful; triangle with collinear points" );
-  	    }
-  	    if ( maincycletriangle.size() != 3 )
-  	    {
-          throw std::runtime_error( "SelfCut: triangulation unsuccessful; triangle without 3 points" );
-  	    }
-  	    if ( maincycletriangle[0]->Id() == maincycletriangle[1]->Id() or maincycletriangle[0]->Id() == maincycletriangle[2]->Id() or maincycletriangle[1]->Id() == maincycletriangle[2]->Id() )
-  	    {
-          throw std::runtime_error( "SelfCut: triangulation unsuccessful; triangle with two identical points" );
-  	    }
-  	    cutside->GetSelfCutTriangle( maincycletriangle );
-  	  }
-  	}
+    for (std::vector<Cycle*>::iterator i = maincycles.begin();
+        i != maincycles.end(); ++i)
+    {
+      Cycle * maincycle = *i;
+      std::vector<Point*> maincyclepoints = (*maincycle)();
+      TriangulateFacet triangulatefacet(maincyclepoints, mainholecyclepoints);
+      triangulatefacet.EarClippingWithHoles(cutside);
+      std::vector<std::vector<Point*> > maincycletriangles =
+          triangulatefacet.GetSplitCells();
+      for (std::vector<std::vector<Point*> >::iterator i =
+          maincycletriangles.begin(); i != maincycletriangles.end(); ++i)
+      {
+        std::vector<Point*> maincycletriangle = *i;
+        if (KERNEL::IsOnLine(maincycletriangle[0], maincycletriangle[1],
+            maincycletriangle[2]))
+        {
+          Debug("FindSelfCutTriangulation");
+          ErrorStatusText(*cutside);
+          ErrorGmsh("triangle_with_collinear_points.pos", *cutside);
+          //          Output(*cutside, "FindSelfCutTriangulation");
+          std::cout
+              << "WARNING:::selfcut algorithm produced a triangle with all points on a line\n";
+        }
+        if (maincycletriangle.size() != 3)
+        {
+          //          Output(*cutside, "FindSelfCutTriangulation");
+          throw std::runtime_error(
+              "SelfCut: triangulation unsuccessful; triangle without 3 points");
+        }
+        if (maincycletriangle[0]->Id() == maincycletriangle[1]->Id()
+            or maincycletriangle[0]->Id() == maincycletriangle[2]->Id()
+            or maincycletriangle[1]->Id() == maincycletriangle[2]->Id())
+        {
+//          Output(*cutside, "FindSelfCutTriangulation");
+          throw std::runtime_error(
+              "SelfCut: triangulation unsuccessful; triangle with two identical points");
+        }
+        cutside->GetSelfCutTriangle(maincycletriangle);
+      }
+    }
   }
+#ifdef DEBUG_SELFCUT
+  Debug("FindSelfCutTriangulation");
+#endif
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * creates triangular sides out of the self cut triangles                   wirtz 05/13
@@ -465,64 +494,90 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
 void GEO::CUT::SelfCut::CreateSelfCutSides()
 {
 
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
     plain_node_set allcutsidenodes = cutside->SelfCutNodes();
     std::vector<Node*> cutsidenodes = cutside->Nodes();
-    for (std::vector<GEO::CUT::Node*>::iterator i=cutsidenodes.begin();i!=cutsidenodes.end();++i )
+    for (std::vector<GEO::CUT::Node*>::iterator i = cutsidenodes.begin();
+        i != cutsidenodes.end(); ++i)
     {
       Node * cutsidenode = *i;
-      allcutsidenodes.insert( cutsidenode );
+      allcutsidenodes.insert(cutsidenode);
     }
-  	int cutsideid = cutside->Id();
-  	DRT::Element::DiscretizationType distype = DRT::Element::tri3;
-  	std::vector<std::vector<Point*> > selfcuttriangles = cutside->SelfCutTriangles();
-  	for ( std::vector<std::vector<Point*> >::iterator i=selfcuttriangles.begin(); i!=selfcuttriangles.end(); ++i )
-  	{
-  	  std::vector<Point*> selfcuttriangle = *i;
-  	  std::vector<int> selfcutsidenodeids;
-  	  plain_int_set selfcutsidenodeidsset;
-      for ( std::vector<GEO::CUT::Point*>::iterator i=selfcuttriangle.begin(); i!=selfcuttriangle.end(); ++i )
+    int cutsideid = cutside->Id();
+    DRT::Element::DiscretizationType distype = DRT::Element::tri3;
+    std::vector<std::vector<Point*> > selfcuttriangles =
+        cutside->SelfCutTriangles();
+    for (std::vector<std::vector<Point*> >::iterator i =
+        selfcuttriangles.begin(); i != selfcuttriangles.end(); ++i)
+    {
+      std::vector<Point*> selfcuttriangle = *i;
+      std::vector<int> selfcutsidenodeids;
+      plain_int_set selfcutsidenodeidsset;
+      for (std::vector<GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
+          i != selfcuttriangle.end(); ++i)
       {
-      	Point * selfcuttrianglepoint = *i;
-      	for ( plain_node_set::iterator i=allcutsidenodes.begin();i!=allcutsidenodes.end();++i )
-      	{
-      	  Node * allcutsidenode = *i;
-      	  if ( allcutsidenode->point() == selfcuttrianglepoint )
-      	  {
-      	    int allcutsidenodeid = allcutsidenode->Id();
-      	    selfcutsidenodeids.push_back( allcutsidenodeid );
-      	    selfcutsidenodeidsset.insert( allcutsidenodeid );
+        Point * selfcuttrianglepoint = *i;
+        for (plain_node_set::iterator i = allcutsidenodes.begin();
+            i != allcutsidenodes.end(); ++i)
+        {
+          Node * allcutsidenode = *i;
+          if (allcutsidenode->point() == selfcuttrianglepoint)
+          {
+            int allcutsidenodeid = allcutsidenode->Id();
+            selfcutsidenodeids.push_back(allcutsidenodeid);
+            selfcutsidenodeidsset.insert(allcutsidenodeid);
           }
         }
       }
-      if ( selfcutsidenodeidsset.size() != 3 )
+      if (selfcutsidenodeidsset.size() != 3)
       {
-        std::cout << "selfcutsidenodeidsset.size(): " << selfcutsidenodeidsset.size() << "\n";
-        throw std::runtime_error( "SelfCut: creating sides unsuccessful; didn't find 3-id-set" );
+        std::cout << "selfcutsidenodeidsset.size(): "
+            << selfcutsidenodeidsset.size() << "\n";
+        std::vector<Node*> cutsidenodes = cutside->Nodes();
+        for (std::vector<Node*>::iterator i = cutsidenodes.begin();
+            i != cutsidenodes.end(); ++i)
+        {
+          Node * cutsidenode = *i;
+          std::cout << "Ids: " << cutsidenode->Id() << "\n";
+        }
+//        Output(*cutside, "CreateSelfCutSides");
+        throw std::runtime_error(
+            "SelfCut: creating sides unsuccessful; didn't find 3-id-set");
       }
-      if ( selfcutsidenodeids.size() != 3 )
+      if (selfcutsidenodeids.size() != 3)
       {
-        std::cout << "selfcutsidenodeids.size(): " << selfcutsidenodeids.size() << "\n";
-        throw std::runtime_error( "SelfCut: creating sides unsuccessful; didn't find 3 ids" );
+        std::cout << "selfcutsidenodeids.size(): " << selfcutsidenodeids.size()
+            << "\n";
+//        Output(*cutside, "CreateSelfCutSides");
+        throw std::runtime_error(
+            "SelfCut: creating sides unsuccessful; didn't find 3 ids");
       }
-      if ( selfcutsidenodeids[0] == selfcutsidenodeids[1] or selfcutsidenodeids[0] == selfcutsidenodeids[2] or selfcutsidenodeids[1] == selfcutsidenodeids[2] )
+      if (selfcutsidenodeids[0] == selfcutsidenodeids[1]
+          or selfcutsidenodeids[0] == selfcutsidenodeids[2]
+          or selfcutsidenodeids[1] == selfcutsidenodeids[2])
       {
-        throw std::runtime_error( "SelfCut: triangulation unsuccessful; triangle with two identical points" );
+//        Output(*cutside, "CreateSelfCutSides");
+        throw std::runtime_error(
+            "SelfCut: triangulation unsuccessful; triangle with two identical points");
       }
-      Side * selfcutside = mesh_.CreateSide( cutsideid, selfcutsidenodeids, distype );
-      std::map<plain_int_set,Teuchos::RCP<Side> > cutsideedgercp = mesh_.Sides();
-      std::map<plain_int_set,Teuchos::RCP<Side> >::iterator sideiterator = cutsideedgercp.find( selfcutsidenodeidsset );
+      Side * selfcutside = mesh_.CreateSide(cutsideid, selfcutsidenodeids,
+          distype);
+      std::map<plain_int_set, Teuchos::RCP<Side> > cutsideedgercp =
+          mesh_.Sides();
+      std::map<plain_int_set, Teuchos::RCP<Side> >::iterator sideiterator =
+          cutsideedgercp.find(selfcutsidenodeidsset);
       selfcut_sides_[selfcutsidenodeidsset] = sideiterator->second;
-      GetSelfCutEdges( *selfcutside );
-  	}
+      GetSelfCutEdges(*selfcutside);
+    }
   }
+#ifdef DEBUG_SELFCUT
+  Debug("CreateSelfCutSides");
+#endif
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * erases all cutsides which are cut by another side                        wirtz 05/13
@@ -531,21 +586,20 @@ void GEO::CUT::SelfCut::EraseCuttedSides()
 {
 
   std::vector<plain_int_set> cutsideids;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
-    if( cutside->CuttingSides().size() != 0 and cutside->SelfCutTriangles().size() != 1 )
+    if (cutside->CuttingSides().size() != 0
+        and cutside->SelfCutTriangles().size() != 1)
     {
-      cutsideids.push_back( i->first );
-      EraseSidePointer( *cutside );
+      cutsideids.push_back(i->first);
+      EraseSidePointer(*cutside);
     }
   }
-  EraseSide( cutsideids );
+  EraseSide(cutsideids);
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * erases all edges which are cut by a cutside                              wirtz 05/13
@@ -554,21 +608,20 @@ void GEO::CUT::SelfCut::EraseCuttedEdges()
 {
 
   std::vector<plain_int_set> cutsideedgeids;
-  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=selfcut_edges_.begin();
-        i!=selfcut_edges_.end();
-        ++i)
+  for (std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i =
+      selfcut_edges_.begin(); i != selfcut_edges_.end(); ++i)
   {
     Edge * cutsideedge = &*i->second;
-    if ( cutsideedge->CutPoints().size() != 2 or cutsideedge->Sides().size() == 0)
+    if (cutsideedge->CutPoints().size() != 2
+        or cutsideedge->Sides().size() == 0)
     {
-      cutsideedgeids.push_back( i->first );
-      EraseEdgePointer( *cutsideedge );
+      cutsideedgeids.push_back(i->first);
+      EraseEdgePointer(*cutsideedge);
     }
   }
-  EraseEdge( cutsideedgeids );
+  EraseEdge(cutsideedgeids);
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * locates the position of nodes, edges and sides of
@@ -577,92 +630,102 @@ void GEO::CUT::SelfCut::EraseCuttedEdges()
 void GEO::CUT::SelfCut::DetermineSelfCutPosition()
 {
 
-  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=selfcut_edges_.begin();
-        i!=selfcut_edges_.end();
-        ++i)
+  for (std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i =
+      selfcut_edges_.begin(); i != selfcut_edges_.end(); ++i)
   {
     Edge * cutsideedge = &*i->second;
     std::vector<Side*> selfcutsides;
     plain_side_set cutsides;
-    if ( cutsideedge->SelfCutPosition() == Point::oncutsurface )
+    if (cutsideedge->SelfCutPosition() == Point::oncutsurface)
     {
       cutsides = cutsideedge->Sides();
       std::vector<Node*> cutsideedgenodes = cutsideedge->Nodes();
-      for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+      for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end();
+          ++i)
       {
-        Side * cutside = * i;
+        Side * cutside = *i;
         std::vector<Node*> cutsidenodes = cutside->Nodes();
-        for ( std::vector<Node*>::iterator i=cutsidenodes.begin(); i!=cutsidenodes.end();++i )
+        for (std::vector<Node*>::iterator i = cutsidenodes.begin();
+            i != cutsidenodes.end(); ++i)
         {
-          Node * cutsidenode = * i;
-          if ( cutsidenode->SelfCutPosition() == Point::undecided )
+          Node * cutsidenode = *i;
+          if (cutsidenode->SelfCutPosition() == Point::undecided)
           {
-            selfcutsides.push_back( cutside );
+            selfcutsides.push_back(cutside);
             continue;
           }
         }
       }
     }
-    for ( std::vector<Side*>::iterator i=selfcutsides.begin(); i!=selfcutsides.end(); ++i )
+    for (std::vector<Side*>::iterator i = selfcutsides.begin();
+        i != selfcutsides.end(); ++i)
     {
-      Side * selfcutside = * i;
+      Side * selfcutside = *i;
       std::vector<Node*> selfcutsidenodes = selfcutside->Nodes();
       Node * undecidednode = NULL;
       Node * onselfcutedgenode = NULL;
-      for ( std::vector<Node*>::iterator i=selfcutsidenodes.begin(); i!=selfcutsidenodes.end(); ++i )
+      for (std::vector<Node*>::iterator i = selfcutsidenodes.begin();
+          i != selfcutsidenodes.end(); ++i)
       {
-        Node * selfcutsidenode = * i;
-        if ( (selfcutsidenode->SelfCutPosition() == Point::oncutsurface) && (onselfcutedgenode == NULL) )
+        Node * selfcutsidenode = *i;
+        if ((selfcutsidenode->SelfCutPosition() == Point::oncutsurface)
+            && (onselfcutedgenode == NULL))
         {
           onselfcutedgenode = selfcutsidenode;
         }
-        else if( selfcutsidenode->SelfCutPosition() == Point::undecided )
-  	    {
+        else if (selfcutsidenode->SelfCutPosition() == Point::undecided)
+        {
           undecidednode = selfcutsidenode;
-  	    }
+        }
       }
       Side * otherselfcutside = NULL;
-      for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+      for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end();
+          ++i)
       {
-        Side * anotherselfcutside = * i;
-        if( anotherselfcutside->Id() != selfcutside->Id() )
+        Side * anotherselfcutside = *i;
+        if (anotherselfcutside->Id() != selfcutside->Id())
         {
           otherselfcutside = anotherselfcutside;
           break;
         }
       }
-      if ( otherselfcutside == NULL or undecidednode == NULL )
+      if (otherselfcutside == NULL or undecidednode == NULL)
       {
         continue;
       }
-      LINALG::Matrix<3,1> onselfcutedgepointcoordinates;
-      LINALG::Matrix<3,1> onselfcutedgepointlocalcoordinates;
-      LINALG::Matrix<2,1> onselfcutedgepointlocalcoordinates2;
-      LINALG::Matrix<3,1> otherselfcutsidenormal;
-      onselfcutedgenode->point()->Coordinates( onselfcutedgepointcoordinates.A() );
-      otherselfcutside->LocalCoordinates(onselfcutedgepointcoordinates, onselfcutedgepointlocalcoordinates, false);
-      onselfcutedgepointlocalcoordinates2(0)=onselfcutedgepointlocalcoordinates(0);
-      onselfcutedgepointlocalcoordinates2(1)=onselfcutedgepointlocalcoordinates(1);
-      otherselfcutside->Normal(onselfcutedgepointlocalcoordinates2, otherselfcutsidenormal);
-      LINALG::Matrix<3,1> undecidedpointcoordinates;
-      LINALG::Matrix<3,1> differencebetweenpoints;
-      undecidednode->point()->Coordinates( undecidedpointcoordinates.A() );
-      differencebetweenpoints.Update( 1.0, onselfcutedgepointcoordinates, -1.0, undecidedpointcoordinates);
-      LINALG::Matrix<1,1> innerproduct;
-      innerproduct.MultiplyTN( differencebetweenpoints, otherselfcutsidenormal );
-      if ( innerproduct(0) > 0 )
+      LINALG::Matrix<3, 1> onselfcutedgepointcoordinates;
+      LINALG::Matrix<3, 1> onselfcutedgepointlocalcoordinates;
+      LINALG::Matrix<2, 1> onselfcutedgepointlocalcoordinates2;
+      LINALG::Matrix<3, 1> otherselfcutsidenormal;
+      onselfcutedgenode->point()->Coordinates(
+          onselfcutedgepointcoordinates.A());
+      otherselfcutside->LocalCoordinates(onselfcutedgepointcoordinates,
+          onselfcutedgepointlocalcoordinates, false);
+      onselfcutedgepointlocalcoordinates2(0) =
+          onselfcutedgepointlocalcoordinates(0);
+      onselfcutedgepointlocalcoordinates2(1) =
+          onselfcutedgepointlocalcoordinates(1);
+      otherselfcutside->Normal(onselfcutedgepointlocalcoordinates2,
+          otherselfcutsidenormal);
+      LINALG::Matrix<3, 1> undecidedpointcoordinates;
+      LINALG::Matrix<3, 1> differencebetweenpoints;
+      undecidednode->point()->Coordinates(undecidedpointcoordinates.A());
+      differencebetweenpoints.Update(1.0, onselfcutedgepointcoordinates, -1.0,
+          undecidedpointcoordinates);
+      LINALG::Matrix<1, 1> innerproduct;
+      innerproduct.MultiplyTN(differencebetweenpoints, otherselfcutsidenormal);
+      if (innerproduct(0) > 0)
       {
-        undecidednode->SelfCutPosition( Point::inside );
+        undecidednode->SelfCutPosition(Point::inside);
       }
       else
       {
-        undecidednode->SelfCutPosition( Point::outside );
+        undecidednode->SelfCutPosition(Point::outside);
       }
     }
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * creates triangular sides with respect to the corresponding
@@ -672,108 +735,123 @@ void GEO::CUT::SelfCut::PropagateSelfCutPosition()
 {
 
   plain_side_set undecidedsides;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
-    if ( cutside->SelfCutPosition() == Point::undecided )
+    if (cutside->SelfCutPosition() == Point::undecided)
     {
       std::vector<Edge*> cutsideedges = cutside->Edges();
       Point::PointPosition cutsideedgeposition = Point::undecided;
-      for ( std::vector<Edge*>::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i )
+      for (std::vector<Edge*>::iterator i = cutsideedges.begin();
+          i != cutsideedges.end(); ++i)
       {
-        Edge * cutsideedge = * i;
+        Edge * cutsideedge = *i;
         Point::PointPosition cutsideedgepos = cutsideedge->SelfCutPosition();
-        switch ( cutsideedgepos )
+        switch (cutsideedgepos)
         {
         case Point::undecided:
         case Point::oncutsurface:
           break;
         case Point::inside:
         case Point::outside:
-          if ( ( cutsideedgeposition != Point::undecided ) and ( cutsideedgepos != cutsideedgeposition ) )
+          if ((cutsideedgeposition != Point::undecided)
+              and (cutsideedgepos != cutsideedgeposition))
           {
-            throw std::runtime_error( "SelfCut: mixed PointPosition of cutsideedges" );
+            throw std::runtime_error(
+                "SelfCut: mixed PointPosition of cutsideedges");
           }
           cutsideedgeposition = cutsideedgepos;
-  		  break;
+          break;
         }
       }
-      if ( cutsideedgeposition != Point::undecided )
+      if (cutsideedgeposition != Point::undecided)
       {
-        cutside->GetSelfCutPosition( cutsideedgeposition );
+        cutside->GetSelfCutPosition(cutsideedgeposition);
       }
       else
       {
-        undecidedsides.insert( cutside );
+        undecidedsides.insert(cutside);
       }
     }
   }
-  if ( selfcut_sides_.size() == undecidedsides.size() and selfcut_sides_.size() > 0 )
+  if (selfcut_sides_.size() == undecidedsides.size()
+      and selfcut_sides_.size() > 0)
   {
-    throw std::runtime_error( "SelfCut: all cutsides undecided" );
+    throw std::runtime_error("SelfCut: all cutsides undecided");
   }
-  while ( undecidedsides.size() > 0 )
+  while (undecidedsides.size() > 0)
   {
     unsigned undecidedsidesize = undecidedsides.size();
-    for ( plain_side_set::iterator ui=undecidedsides.begin(); ui!=undecidedsides.end(); )
+    for (plain_side_set::iterator ui = undecidedsides.begin();
+        ui != undecidedsides.end();)
     {
-      Side * undecidedside = * ui;
-      if ( undecidedside->SelfCutPosition() == Point::undecided )
+      Side * undecidedside = *ui;
+      if (undecidedside->SelfCutPosition() == Point::undecided)
       {
         bool done = false;
         std::vector<Edge*> undecidedcutsideedges = undecidedside->Edges();
-        for ( std::vector<Edge*>::iterator i=undecidedcutsideedges.begin(); i!=undecidedcutsideedges.end(); ++i )
+        for (std::vector<Edge*>::iterator i = undecidedcutsideedges.begin();
+            i != undecidedcutsideedges.end(); ++i)
         {
-          Edge * undecidedcutsideedge = * i;
-          plain_side_set undecidedcutsideedgesides = undecidedcutsideedge->Sides();
+          Edge * undecidedcutsideedge = *i;
+          plain_side_set undecidedcutsideedgesides =
+              undecidedcutsideedge->Sides();
           Side * siblingside = NULL;
-          for ( plain_side_set::iterator i=undecidedcutsideedgesides.begin(); i!=undecidedcutsideedgesides.end(); ++i )
+          for (plain_side_set::iterator i = undecidedcutsideedgesides.begin();
+              i != undecidedcutsideedgesides.end(); ++i)
           {
-            Side * undecidedcutsideedgeside = * i;
-            if ( undecidedcutsideedgeside->Id() == undecidedside->Id() and undecidedcutsideedgeside->SelfCutPosition() != Point::undecided and undecidedcutsideedgeside!=undecidedside )
+            Side * undecidedcutsideedgeside = *i;
+            if (undecidedcutsideedgeside->Id() == undecidedside->Id()
+                and undecidedcutsideedgeside->SelfCutPosition()
+                    != Point::undecided
+                and undecidedcutsideedgeside != undecidedside)
             {
               siblingside = undecidedcutsideedgeside;
               break;
             }
           }
-          if ( siblingside != NULL )
+          if (siblingside != NULL)
           {
-            Point::PointPosition siblingsideposition = siblingside->SelfCutPosition();
-            switch ( siblingsideposition )
+            Point::PointPosition siblingsideposition =
+                siblingside->SelfCutPosition();
+            switch (siblingsideposition)
             {
             case Point::undecided:
-              if ( undecidedsides.count( siblingside ) )
+              if (undecidedsides.count(siblingside))
               {
-                throw std::runtime_error( "SelfCut: uncomplete set of undecided cutsides" );
+                throw std::runtime_error(
+                    "SelfCut: uncomplete set of undecided cutsides");
               }
               break;
             case Point::oncutsurface:
-              throw std::runtime_error( "SelfCut: illegal side position" );
+              throw std::runtime_error("SelfCut: illegal side position");
               break;
             case Point::inside:
             case Point::outside:
-              if ( undecidedcutsideedge->SelfCutPosition() == Point::oncutsurface )
+              if (undecidedcutsideedge->SelfCutPosition()
+                  == Point::oncutsurface)
               {
-                undecidedside->GetSelfCutPosition( siblingsideposition == Point::inside ? Point::outside : Point::inside );
+                undecidedside->GetSelfCutPosition(
+                    siblingsideposition == Point::inside ?
+                        Point::outside : Point::inside);
               }
               else
               {
-                undecidedside->GetSelfCutPosition( siblingsideposition );
+                undecidedside->GetSelfCutPosition(siblingsideposition);
               }
               done = true;
               break;
             }
-            if ( done )
+            if (done)
             {
               break;
             }
           }
         }
-        if ( done )
+        if (done)
         {
-          set_erase( undecidedsides, ui );
+          set_erase(undecidedsides, ui);
         }
         else
         {
@@ -782,15 +860,14 @@ void GEO::CUT::SelfCut::PropagateSelfCutPosition()
       }
       else
       {
-        set_erase( undecidedsides, ui );
+        set_erase(undecidedsides, ui);
       }
     }
-    if ( undecidedsidesize == undecidedsides.size() )
-      throw std::runtime_error( "SelfCut: no progress in cutside position" );
+    if (undecidedsidesize == undecidedsides.size())
+      throw std::runtime_error("SelfCut: no progress in cutside position");
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * erases sides which lies inside a structure body by locating
@@ -801,19 +878,19 @@ void GEO::CUT::SelfCut::EraseInsideSides()
 
   std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
   std::vector<plain_int_set> cutsideids;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      cutsides.begin(); i != cutsides.end(); ++i)
   {
     Side * cutside = &*i->second;
-    if ( cutside->SelfCutPosition() == Point::inside )
+    if (cutside->SelfCutPosition() == Point::inside)
     {
-      cutsideids.push_back( i->first );
-      EraseSidePointer( *cutside );
+      cutsideids.push_back(i->first);
+      EraseSidePointer(*cutside);
     }
   }
-  EraseSide( cutsideids );
+  EraseSide(cutsideids);
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * erases edges which lies inside a structure body by locating
@@ -824,19 +901,19 @@ void GEO::CUT::SelfCut::EraseInsideEdges()
 
   std::map<plain_int_set, Teuchos::RCP<Edge> > cutsideedges = mesh_.Edges();
   std::vector<plain_int_set> cutsideedgeids;
-  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i =
+      cutsideedges.begin(); i != cutsideedges.end(); ++i)
   {
     Edge * cutsideedge = &*i->second;
-    if ( cutsideedge->SelfCutPosition() == Point::inside )
+    if (cutsideedge->SelfCutPosition() == Point::inside)
     {
-      cutsideedgeids.push_back( i->first );
-      EraseEdgePointer( *cutsideedge );
+      cutsideedgeids.push_back(i->first);
+      EraseEdgePointer(*cutsideedge);
     }
   }
-  EraseEdge( cutsideedgeids );
+  EraseEdge(cutsideedgeids);
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * erases nodes which lies inside a structure body by locating
@@ -847,23 +924,24 @@ void GEO::CUT::SelfCut::EraseInsideNodes()
 
   std::map<int, Teuchos::RCP<Node> > cutsidenodes = mesh_.Nodes();
   std::vector<int> cutsidenodeids;
-  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=cutsidenodes.begin(); i!=cutsidenodes.end(); ++i )
+  for (std::map<int, Teuchos::RCP<Node> >::iterator i = cutsidenodes.begin();
+      i != cutsidenodes.end(); ++i)
   {
     Node * cutsidenode = &*i->second;
-    if ( cutsidenode->SelfCutPosition() == Point::inside )
+    if (cutsidenode->SelfCutPosition() == Point::inside)
     {
-      cutsidenodeids.push_back( i->first );
+      cutsidenodeids.push_back(i->first);
     }
   }
-  for ( std::vector<int>::iterator i=cutsidenodeids.begin(); i!=cutsidenodeids.end(); ++i)
+  for (std::vector<int>::iterator i = cutsidenodeids.begin();
+      i != cutsidenodeids.end(); ++i)
   {
     int cutsidenodeid = *i;
     selfcut_nodes_.erase(cutsidenodeid);
-    mesh_.EraseNode( cutsidenodeid );
+    mesh_.EraseNode(cutsidenodeid);
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * Status of the cutted sides for text viewer                               wirtz 05/13
@@ -873,72 +951,77 @@ void GEO::CUT::SelfCut::CuttedSideStatusText()
 
   int selfcutsidesize = selfcut_sides_.size();
   int j = 1;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
-  	PlotAcross();
-  	std::cout << "\nCutside " << j << "/" << selfcutsidesize << ":\n";
-  	SidePlotHead();
-  	SidePlot( * cutside );
+    PlotAcross();
+    std::cout << "\nCutside " << j << "/" << selfcutsidesize << ":\n";
+    SidePlotHead();
+    SidePlot(*cutside);
 
-  	std::cout << "\nCutting Sides:\n";
-  	SidePlotHead();
-  	plain_side_set cuttingsides = cutside->CuttingSides();
-  	for ( plain_side_set::iterator i=cuttingsides.begin(); i!=cuttingsides.end(); ++i )
-  	{
-  	  Side * cuttingside = * i;
-  	  SidePlot( * cuttingside );
-  	}
+    std::cout << "\nCutting Sides:\n";
+    SidePlotHead();
+    plain_side_set cuttingsides = cutside->CuttingSides();
+    for (plain_side_set::iterator i = cuttingsides.begin();
+        i != cuttingsides.end(); ++i)
+    {
+      Side * cuttingside = *i;
+      SidePlot(*cuttingside);
+    }
 
-  	PointSet selfcutpoints = cutside->SelfCutPoints();
-  	std::cout << "\nSelfcutpoints:\n";
-  	PointPlotHead();
-  	for ( PointSet::iterator i=selfcutpoints.begin(); i!=selfcutpoints.end(); ++i )
-  	{
-  	  Point * selfcutpoint = *i;
-  	  PointPlot ( * selfcutpoint );
-  	  std::cout << "\n";
-  	}
+    PointSet selfcutpoints = cutside->SelfCutPoints();
+    std::cout << "\nSelfcutpoints:\n";
+    PointPlotHead();
+    for (PointSet::iterator i = selfcutpoints.begin(); i != selfcutpoints.end();
+        ++i)
+    {
+      Point * selfcutpoint = *i;
+      PointPlot(*selfcutpoint);
+      std::cout << "\n";
+    }
 
-  	plain_node_set selfcutnodes = cutside->SelfCutNodes();
-  	std::cout << "\nSelfcutnodes:\n";
-  	NodePlotHead();
-  	for ( plain_node_set::iterator i=selfcutnodes.begin(); i!=selfcutnodes.end(); ++i )
-  	{
-  	  Node * selfcutnode = *i;
-  	  NodePlot ( * selfcutnode );
-  	}
+    plain_node_set selfcutnodes = cutside->SelfCutNodes();
+    std::cout << "\nSelfcutnodes:\n";
+    NodePlotHead();
+    for (plain_node_set::iterator i = selfcutnodes.begin();
+        i != selfcutnodes.end(); ++i)
+    {
+      Node * selfcutnode = *i;
+      NodePlot(*selfcutnode);
+    }
 
-  	plain_edge_set selfcutedges = cutside->SelfCutEdges();
-  	std::cout << "\nSelfcutedges:\n";
-  	EdgePlotHead();
-  	for( plain_edge_set::iterator i=selfcutedges.begin(); i!=selfcutedges.end(); ++i )
-  	{
-  	  Edge * selfcutedge = *i;
-  	  EdgePlot ( * selfcutedge );
-  	}
+    plain_edge_set selfcutedges = cutside->SelfCutEdges();
+    std::cout << "\nSelfcutedges:\n";
+    EdgePlotHead();
+    for (plain_edge_set::iterator i = selfcutedges.begin();
+        i != selfcutedges.end(); ++i)
+    {
+      Edge * selfcutedge = *i;
+      EdgePlot(*selfcutedge);
+    }
 
-  	std::vector<std::vector<GEO::CUT::Point*> > selfcuttriangles = cutside->SelfCutTriangles();
-  	std::cout << "\nSelfcuttriangles:\n";
-  	for ( std::vector<std::vector<GEO::CUT::Point*> >::iterator i=selfcuttriangles.begin(); i!=selfcuttriangles.end(); ++i )
-  	{
-  	  std::vector<GEO::CUT::Point*> selfcuttriangle = *i;
-  	  PointPlotHead();
-  	  for ( std::vector<GEO::CUT::Point*>::iterator i=selfcuttriangle.begin(); i!=selfcuttriangle.end(); ++i )
-  	  {
-  	    Point * selfcuttrianglepoint = *i;
-  	    PointPlot ( * selfcuttrianglepoint );
-  	    std::cout << "\n";
-  	  }
-  	}
-  	PlotAcross();
-  	j++;
+    std::vector<std::vector<GEO::CUT::Point*> > selfcuttriangles =
+        cutside->SelfCutTriangles();
+    std::cout << "\nSelfcuttriangles:\n";
+    for (std::vector<std::vector<GEO::CUT::Point*> >::iterator i =
+        selfcuttriangles.begin(); i != selfcuttriangles.end(); ++i)
+    {
+      std::vector<GEO::CUT::Point*> selfcuttriangle = *i;
+      PointPlotHead();
+      for (std::vector<GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
+          i != selfcuttriangle.end(); ++i)
+      {
+        Point * selfcuttrianglepoint = *i;
+        PointPlot(*selfcuttrianglepoint);
+        std::cout << "\n";
+      }
+    }
+    PlotAcross();
+    j++;
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * Status of the cutmesh for text viewer                                    wirtz 05/13
@@ -949,36 +1032,38 @@ void GEO::CUT::SelfCut::CutMeshStatusText()
   PlotAcross();
   std::cout << "\n" << selfcut_nodes_.size() << " Nodes: \n";
   NodePlotHead();
-  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=selfcut_nodes_.begin(); i!=selfcut_nodes_.end(); ++i )
+  for (std::map<int, Teuchos::RCP<Node> >::iterator i = selfcut_nodes_.begin();
+      i != selfcut_nodes_.end(); ++i)
   {
     Node * node = &*i->second;
-  	NodePlot( * node );
+    NodePlot(*node);
   }
   PlotAcross();
   std::cout << "\n" << selfcut_edges_.size() << " Edges: \n";
   EdgePlotHead();
-  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=selfcut_edges_.begin(); i!=selfcut_edges_.end(); ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i =
+      selfcut_edges_.begin(); i != selfcut_edges_.end(); ++i)
   {
     Edge * edge = &*i->second;
-    EdgePlot( * edge );
+    EdgePlot(*edge);
   }
   PlotAcross();
   std::cout << "\n" << selfcut_sides_.size() << " Sides: \n";
   SidePlotHead();
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin(); i!=selfcut_sides_.end(); ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side *side = &*i->second;
-    SidePlot( * side );
+    SidePlot(*side);
   }
   PlotAcross();
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * Status of one problematic side for text viewer                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::ErrorStatusText( Side & cutside )
+void GEO::CUT::SelfCut::ErrorStatusText(Side & cutside)
 {
 
   int selfcutsidesize = 1;
@@ -986,57 +1071,64 @@ void GEO::CUT::SelfCut::ErrorStatusText( Side & cutside )
   PlotAcross();
   std::cout << "\nCutside " << j << "/" << selfcutsidesize << ":\n";
   SidePlotHead();
-  SidePlot( cutside );
-  SideNodePlot( cutside );
+  SidePlot(cutside);
+  SideNodePlot(cutside);
 
   std::cout << "\nCutting Sides:\n";
   SidePlotHead();
   plain_side_set cuttingsides = cutside.CuttingSides();
-  for ( plain_side_set::iterator i=cuttingsides.begin(); i!=cuttingsides.end(); ++i )
+  for (plain_side_set::iterator i = cuttingsides.begin();
+      i != cuttingsides.end(); ++i)
   {
-    Side * cuttingside = * i;
-    SidePlot( * cuttingside );
-    SideNodePlot( * cuttingside );
+    Side * cuttingside = *i;
+    SidePlot(*cuttingside);
+    SideNodePlot(*cuttingside);
   }
 
   PointSet selfcutpoints = cutside.SelfCutPoints();
   std::cout << "\nSelfcutpoints:\n";
   PointPlotHead();
-  for ( PointSet::iterator i=selfcutpoints.begin(); i!=selfcutpoints.end(); ++i )
+  for (PointSet::iterator i = selfcutpoints.begin(); i != selfcutpoints.end();
+      ++i)
   {
     Point * selfcutpoint = *i;
-    PointPlot ( * selfcutpoint );
+    PointPlot(*selfcutpoint);
     std::cout << "\n";
   }
 
   plain_node_set selfcutnodes = cutside.SelfCutNodes();
   std::cout << "\nSelfcutnodes:\n";
   NodePlotHead();
-  for ( plain_node_set::iterator i=selfcutnodes.begin(); i!=selfcutnodes.end(); ++i )
+  for (plain_node_set::iterator i = selfcutnodes.begin();
+      i != selfcutnodes.end(); ++i)
   {
     Node * selfcutnode = *i;
-    NodePlot ( * selfcutnode );
+    NodePlot(*selfcutnode);
   }
 
   plain_edge_set selfcutedges = cutside.SelfCutEdges();
   std::cout << "\nSelfcutedges:\n";
   EdgePlotHead();
-  for( plain_edge_set::iterator i=selfcutedges.begin(); i!=selfcutedges.end(); ++i )
+  for (plain_edge_set::iterator i = selfcutedges.begin();
+      i != selfcutedges.end(); ++i)
   {
     Edge * selfcutedge = *i;
-    EdgePlot ( * selfcutedge );
+    EdgePlot(*selfcutedge);
   }
 
-  std::vector<std::vector<GEO::CUT::Point*> > selfcuttriangles = cutside.SelfCutTriangles();
+  std::vector<std::vector<GEO::CUT::Point*> > selfcuttriangles =
+      cutside.SelfCutTriangles();
   std::cout << "\nSelfcuttriangles:\n";
-  for ( std::vector<std::vector<GEO::CUT::Point*> >::iterator i=selfcuttriangles.begin(); i!=selfcuttriangles.end(); ++i )
+  for (std::vector<std::vector<GEO::CUT::Point*> >::iterator i =
+      selfcuttriangles.begin(); i != selfcuttriangles.end(); ++i)
   {
     std::vector<GEO::CUT::Point*> selfcuttriangle = *i;
     PointPlotHead();
-    for ( std::vector<GEO::CUT::Point*>::iterator i=selfcuttriangle.begin(); i!=selfcuttriangle.end(); ++i )
+    for (std::vector<GEO::CUT::Point*>::iterator i = selfcuttriangle.begin();
+        i != selfcuttriangle.end(); ++i)
     {
       Point * selfcuttrianglepoint = *i;
-      PointPlot ( * selfcuttrianglepoint );
+      PointPlot(*selfcuttrianglepoint);
       std::cout << "\n";
     }
   }
@@ -1045,65 +1137,63 @@ void GEO::CUT::SelfCut::ErrorStatusText( Side & cutside )
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * Status of the cutted sides for gmsh                                      wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::CuttedSideStatusGmsh( const std::string & name )
+void GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string & name)
 {
 
-  std::ofstream file( name.c_str() );
+  std::ofstream file(name.c_str());
   std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      cutsides.begin(); i != cutsides.end(); ++i)
 
   {
     Side * cutside = &*i->second;
-    file.precision( 16 );
+    file.precision(16);
     int cutsidetype = i->first.size();
-    if ( cutsidetype == 3 )
+    if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3,3> cutsidecoordinates;
-      cutside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 3> cutsidecoordinates;
+      cutside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
-    else if ( cutsidetype == 4 )
+    else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3,4> cutsidecoordinates;
-      cutside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 4> cutsidecoordinates;
+      cutside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
     else
     {
-      throw std::runtime_error( "SelfCut: irregular side" );
+      throw std::runtime_error("SelfCut: irregular side");
     }
 
     file << "){";
     Point::PointPosition cutsideselfcutposition = cutside->SelfCutPosition();
-    for ( int i=0; i<cutsidetype; ++i )
+    for (int i = 0; i < cutsidetype; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1116,28 +1206,30 @@ void GEO::CUT::SelfCut::CuttedSideStatusGmsh( const std::string & name )
   std::map<plain_int_set, Teuchos::RCP<Edge> > cutsideedges = mesh_.Edges();
   int cutedgessize = cutsideedges.size();
   file << "View \"" << cutedgessize << " Edges\" {\n";
-  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i =
+      cutsideedges.begin(); i != cutsideedges.end(); ++i)
   {
     Edge * cutsideedge = &*i->second;
-    file.precision( 16 );
+    file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3,2> cutsideedgecoordinates;
-    cutsideedge->Coordinates( cutsideedgecoordinates.A() );
-    for ( int i=0; i<2; ++i )
+    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    for (int i = 0; i < 2; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
-      file << cutsideedgecoordinates( 0, i ) << ","
-           << cutsideedgecoordinates( 1, i ) << ","
-           << cutsideedgecoordinates( 2, i );
+      file << cutsideedgecoordinates(0, i) << ","
+          << cutsideedgecoordinates(1, i) << ","
+          << cutsideedgecoordinates(2, i);
     }
     file << "){";
-    Point::PointPosition cutsideselfcutposition = cutsideedge->SelfCutPosition();
-    for ( int i=0; i<2; ++i )
+    Point::PointPosition cutsideselfcutposition =
+        cutsideedge->SelfCutPosition();
+    for (int i = 0; i < 2; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1150,138 +1242,135 @@ void GEO::CUT::SelfCut::CuttedSideStatusGmsh( const std::string & name )
   std::map<int, Teuchos::RCP<Node> > cutsidenodes = mesh_.Nodes();
   int cutnodessize = cutsidenodes.size();
   file << "View \"" << cutnodessize << " Nodes\" {\n";
-  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=cutsidenodes.begin(); i!=cutsidenodes.end(); ++i )
+  for (std::map<int, Teuchos::RCP<Node> >::iterator i = cutsidenodes.begin();
+      i != cutsidenodes.end(); ++i)
   {
     Node * cutsidenode = &*i->second;
-    file.precision( 16 );
+    file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3,1> cutsidenodecoordinates;
-    cutsidenode->Coordinates( cutsidenodecoordinates.A() );
-    file << cutsidenodecoordinates( 0, 0 ) << ","
-         << cutsidenodecoordinates( 1, 0 ) << ","
-         << cutsidenodecoordinates( 2, 0 );
+    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0)
+        << "," << cutsidenodecoordinates(2, 0);
     file << "){";
-    Point::PointPosition cutsideselfcutposition = cutsidenode->SelfCutPosition();
+    Point::PointPosition cutsideselfcutposition =
+        cutsidenode->SelfCutPosition();
     file << cutsideselfcutposition;
     file << "};\n";
   }
   file << "};\n";
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * Status of the cutmesh in gmsh for my CMGM                                wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::SCmgmGmsh( const std::string & name )
+void GEO::CUT::SelfCut::SCmgmGmsh(const std::string & name)
 {
 
-  std::ofstream file( name.c_str() );
+  std::ofstream file(name.c_str());
 
-/*  BoundingBox elementbox;
-  double x[3];
-  x[0] = 0.52;
-  x[1] = 0.035;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.52;
-  x[1] = 0.035;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.52;
-  x[1] = 0.045;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.52;
-  x[1] = 0.045;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.035;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.035;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.045;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.045;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
+  /*  BoundingBox elementbox;
+   double x[3];
+   x[0] = 0.52;
+   x[1] = 0.035;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.52;
+   x[1] = 0.035;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.52;
+   x[1] = 0.045;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.52;
+   x[1] = 0.045;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.035;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.035;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.045;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.045;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   plain_side_set cutsides;
+   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+   i!=selfcut_sides_.end();
+   ++i )
+   {
+   Side * cutside = &*i->second;
+   BoundingBox sidebox;
+   sidebox.Assign( *cutside );
+   if( sidebox.Within(1.0, elementbox) )
+   {
+   cutsides.insert( cutside );
+   }
+   }*/
   plain_side_set cutsides;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
-    BoundingBox sidebox;
-    sidebox.Assign( *cutside );
-    if( sidebox.Within(1.0, elementbox) )
-    {
-      cutsides.insert( cutside );
-    }
-  }*/
-  plain_side_set cutsides;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
-  {
-    Side * cutside = &*i->second;
-    cutsides.insert( cutside );
+    cutsides.insert(cutside);
   }
 
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
-    file.precision( 16 );
+    Side * cutside = *i;
+    file.precision(16);
     int cutsidetype = cutside->Nodes().size();
-    if ( cutsidetype == 3 )
+    if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3,3> cutsidecoordinates;
-      cutside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 3> cutsidecoordinates;
+      cutside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
-    else if ( cutsidetype == 4 )
+    else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3,4> cutsidecoordinates;
-      cutside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 4> cutsidecoordinates;
+      cutside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
     else
     {
-      throw std::runtime_error( "SelfCut: irregular side" );
+      throw std::runtime_error("SelfCut: irregular side");
     }
     file << "){";
     Point::PointPosition cutsideselfcutposition = cutside->SelfCutPosition();
-    for ( int i=0; i<cutsidetype; ++i )
+    for (int i = 0; i < cutsidetype; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1292,40 +1381,43 @@ void GEO::CUT::SelfCut::SCmgmGmsh( const std::string & name )
   file << "};\n";
 
   plain_edge_set cutsideedges;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     std::vector<Edge*> cutedges = cutside->Edges();
-    for ( std::vector<Edge*>::iterator i=cutedges.begin(); i!=cutedges.end(); ++i )
+    for (std::vector<Edge*>::iterator i = cutedges.begin(); i != cutedges.end();
+        ++i)
     {
-      Edge * cutsideedge = * i;
-      cutsideedges.insert( cutsideedge );
+      Edge * cutsideedge = *i;
+      cutsideedges.insert(cutsideedge);
     }
   }
   int cutsideedgessize = cutsideedges.size();
   file << "View \"" << cutsideedgessize << " Edges\" {\n";
-  for ( plain_edge_set::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i )
+  for (plain_edge_set::iterator i = cutsideedges.begin();
+      i != cutsideedges.end(); ++i)
   {
-    Edge * cutsideedge = * i;
-    file.precision( 16 );
+    Edge * cutsideedge = *i;
+    file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3,2> cutsideedgecoordinates;
-    cutsideedge->Coordinates( cutsideedgecoordinates.A() );
-    for ( int i=0; i<2; ++i )
+    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    for (int i = 0; i < 2; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
-      file << cutsideedgecoordinates( 0, i ) << ","
-           << cutsideedgecoordinates( 1, i ) << ","
-           << cutsideedgecoordinates( 2, i );
+      file << cutsideedgecoordinates(0, i) << ","
+          << cutsideedgecoordinates(1, i) << ","
+          << cutsideedgecoordinates(2, i);
     }
     file << "){";
-    Point::PointPosition cutsideselfcutposition = cutsideedge->SelfCutPosition();
-    for ( int i=0; i<2; ++i )
+    Point::PointPosition cutsideselfcutposition =
+        cutsideedge->SelfCutPosition();
+    for (int i = 0; i < 2; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1336,94 +1428,96 @@ void GEO::CUT::SelfCut::SCmgmGmsh( const std::string & name )
   file << "};\n";
 
   plain_node_set cutsidenodes;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     std::vector<Node*> cutnodes = cutside->Nodes();
-    for ( std::vector<Node*>::iterator i=cutnodes.begin(); i!=cutnodes.end(); ++i )
+    for (std::vector<Node*>::iterator i = cutnodes.begin(); i != cutnodes.end();
+        ++i)
     {
-      Node * cutsidenode = * i;
-      cutsidenodes.insert( cutsidenode );
+      Node * cutsidenode = *i;
+      cutsidenodes.insert(cutsidenode);
     }
   }
   int cutnodessize = cutsidenodes.size();
   file << "View \"" << cutnodessize << " Nodes\" {\n";
-  for ( plain_node_set::iterator i=cutsidenodes.begin(); i!=cutsidenodes.end(); ++i )
+  for (plain_node_set::iterator i = cutsidenodes.begin();
+      i != cutsidenodes.end(); ++i)
   {
-    Node * cutsidenode = * i;
-    file.precision( 16 );
+    Node * cutsidenode = *i;
+    file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3,1> cutsidenodecoordinates;
-    cutsidenode->Coordinates( cutsidenodecoordinates.A() );
-    file << cutsidenodecoordinates( 0, 0 ) << ","
-         << cutsidenodecoordinates( 1, 0 ) << ","
-         << cutsidenodecoordinates( 2, 0 );
+    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0)
+        << "," << cutsidenodecoordinates(2, 0);
     file << "){";
-    Point::PointPosition cutsideselfcutposition = cutsidenode->SelfCutPosition();
+    Point::PointPosition cutsideselfcutposition =
+        cutsidenode->SelfCutPosition();
     file << cutsideselfcutposition;
     file << "};\n";
   }
   file << "};\n";
 
   plain_side_set cuttingsides;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     plain_side_set selfcutsides = cutside->CuttingSides();
-    for ( plain_side_set::iterator i=selfcutsides.begin(); i!=selfcutsides.end(); ++i )
+    for (plain_side_set::iterator i = selfcutsides.begin();
+        i != selfcutsides.end(); ++i)
     {
-      Side * cuttingside = * i;
-      cuttingsides.insert( cuttingside );
+      Side * cuttingside = *i;
+      cuttingsides.insert(cuttingside);
     }
   }
   int cuttingsidessize = cuttingsides.size();
   file << "View \"" << cuttingsidessize << " Cuttingsides\" {\n";
-  for ( plain_side_set::iterator i=cuttingsides.begin(); i!=cuttingsides.end(); ++i )
+  for (plain_side_set::iterator i = cuttingsides.begin();
+      i != cuttingsides.end(); ++i)
   {
-    Side * cuttingside = * i;
-    file.precision( 16 );
+    Side * cuttingside = *i;
+    file.precision(16);
     int cutsidetype = cuttingside->Nodes().size();
-    if ( cutsidetype == 3 )
+    if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3,3> cutsidecoordinates;
-      cuttingside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 3> cutsidecoordinates;
+      cuttingside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
-    else if ( cutsidetype == 4 )
+    else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3,4> cutsidecoordinates;
-      cuttingside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 4> cutsidecoordinates;
+      cuttingside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
     else
     {
-      throw std::runtime_error( "SelfCut: irregular side" );
+      throw std::runtime_error("SelfCut: irregular side");
     }
     file << "){";
     int cutsideselfcutposition = -0.5;
-    for ( int i=0; i<cutsidetype; ++i )
+    for (int i = 0; i < cutsidetype; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1434,250 +1528,256 @@ void GEO::CUT::SelfCut::SCmgmGmsh( const std::string & name )
   file << "};\n";
 
   plain_node_set selfcutnodes;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     plain_node_set selfnodes = cutside->SelfCutNodes();
-    for ( plain_node_set::iterator i=selfnodes.begin(); i!=selfnodes.end(); ++i )
+    for (plain_node_set::iterator i = selfnodes.begin(); i != selfnodes.end();
+        ++i)
     {
-      Node * selfcutnode = * i;
-      selfcutnodes.insert( selfcutnode );
+      Node * selfcutnode = *i;
+      selfcutnodes.insert(selfcutnode);
     }
   }
   int selfcutnodessize = selfcutnodes.size();
   file << "View \"" << selfcutnodessize << " Selfcutnodes\" {\n";
-  for ( plain_node_set::iterator i=selfcutnodes.begin(); i!=selfcutnodes.end(); ++i )
+  for (plain_node_set::iterator i = selfcutnodes.begin();
+      i != selfcutnodes.end(); ++i)
   {
-    Node * selfcutnode = * i;
-    file.precision( 16 );
+    Node * selfcutnode = *i;
+    file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3,1> cutsidenodecoordinates;
-    selfcutnode->Coordinates( cutsidenodecoordinates.A() );
-    file << cutsidenodecoordinates( 0, 0 ) << ","
-         << cutsidenodecoordinates( 1, 0 ) << ","
-         << cutsidenodecoordinates( 2, 0 );
+    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    selfcutnode->Coordinates(cutsidenodecoordinates.A());
+    file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0)
+        << "," << cutsidenodecoordinates(2, 0);
     file << "){";
-    Point::PointPosition cutsideselfcutposition = selfcutnode->SelfCutPosition();
+    Point::PointPosition cutsideselfcutposition =
+        selfcutnode->SelfCutPosition();
     file << cutsideselfcutposition;
     file << "};\n";
   }
   file << "};\n";
 
   plain_edge_set selfcutedges;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     plain_edge_set selfedges = cutside->SelfCutEdges();
-    for ( plain_edge_set::iterator i=selfedges.begin(); i!=selfedges.end(); ++i )
+    for (plain_edge_set::iterator i = selfedges.begin(); i != selfedges.end();
+        ++i)
     {
-      Edge * selfcutedge = * i;
-      selfcutedges.insert( selfcutedge );
+      Edge * selfcutedge = *i;
+      selfcutedges.insert(selfcutedge);
     }
   }
   int selfcutedgessize = selfcutedges.size();
-    file << "View \"" << selfcutedgessize << " Selfcutedges\" {\n";
-    for ( plain_edge_set::iterator i=selfcutedges.begin(); i!=selfcutedges.end(); ++i )
+  file << "View \"" << selfcutedgessize << " Selfcutedges\" {\n";
+  for (plain_edge_set::iterator i = selfcutedges.begin();
+      i != selfcutedges.end(); ++i)
+  {
+    Edge * selfcutedge = *i;
+    file.precision(16);
+    file << "SL (";
+    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    selfcutedge->Coordinates(cutsideedgecoordinates.A());
+    for (int i = 0; i < 2; ++i)
     {
-      Edge * selfcutedge = * i;
-      file.precision( 16 );
-      file << "SL (";
-      LINALG::Matrix<3,2> cutsideedgecoordinates;
-      selfcutedge->Coordinates( cutsideedgecoordinates.A() );
-      for ( int i=0; i<2; ++i )
+      if (i > 0)
       {
-        if ( i > 0 )
-        {
-          file << ", ";
-        }
-        file << cutsideedgecoordinates( 0, i ) << ","
-             << cutsideedgecoordinates( 1, i ) << ","
-             << cutsideedgecoordinates( 2, i );
+        file << ", ";
       }
-      file << "){";
-      Point::PointPosition cutsideselfcutposition = selfcutedge->SelfCutPosition();
-      for ( int i=0; i<2; ++i )
+      file << cutsideedgecoordinates(0, i) << ","
+          << cutsideedgecoordinates(1, i) << ","
+          << cutsideedgecoordinates(2, i);
+    }
+    file << "){";
+    Point::PointPosition cutsideselfcutposition =
+        selfcutedge->SelfCutPosition();
+    for (int i = 0; i < 2; ++i)
+    {
+      if (i > 0)
       {
-        if ( i > 0 )
+        file << ", ";
+      }
+      file << cutsideselfcutposition;
+    }
+    file << "};\n";
+  }
+  file << "};\n";
+
+  std::vector<std::vector<Point*> > selfcuttriangles;
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
+  {
+    Side * cutside = *i;
+    std::vector<std::vector<Point*> > selftriangles =
+        cutside->SelfCutTriangles();
+    for (std::vector<std::vector<Point*> >::iterator i = selftriangles.begin();
+        i != selftriangles.end(); ++i)
+    {
+      std::vector<Point*> selfcuttriangle = *i;
+      selfcuttriangles.push_back(selfcuttriangle);
+    }
+  }
+  int selfcuttrianglessize = selfcuttriangles.size();
+  file << "View \"" << selfcuttrianglessize << " Selfcuttriangles\" {\n";
+  for (std::vector<std::vector<Point*> >::iterator i = selfcuttriangles.begin();
+      i != selfcuttriangles.end(); ++i)
+  {
+    std::vector<Point*> selfcuttriangle = *i;
+    int selfcuttriangleposition = 0;
+    int elementfacetpointssize = selfcuttriangle.size();
+    for (std::vector<Point*>::iterator i = selfcuttriangle.begin();
+        i != selfcuttriangle.end(); ++i)
+    {
+      Point * elementfacetpoint1 = *i;
+      Point * elementfacetpoint2 = NULL;
+      if (i + 1 != selfcuttriangle.end())
+      {
+        elementfacetpoint2 = *(i + 1);
+      }
+      else
+      {
+        elementfacetpoint2 = *(i + 1 - elementfacetpointssize);
+      }
+      file << "SL (";
+      LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
+      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
+      LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
+      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
+      file << elementfacetpoint1coordinates(0, 0) << ","
+          << elementfacetpoint1coordinates(1, 0) << ","
+          << elementfacetpoint1coordinates(2, 0) << ","
+          << elementfacetpoint2coordinates(0, 0) << ","
+          << elementfacetpoint2coordinates(1, 0) << ","
+          << elementfacetpoint2coordinates(2, 0);
+      file << "){";
+      for (int i = 0; i < 2; ++i)
+      {
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsideselfcutposition;
+        file << selfcuttriangleposition;
       }
       file << "};\n";
     }
-    file << "};\n";
-
-    std::vector<std::vector<Point*> > selfcuttriangles;
-    for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
-    {
-      Side * cutside = * i;
-      std::vector<std::vector<Point*> > selftriangles = cutside->SelfCutTriangles();
-      for ( std::vector<std::vector<Point*> >::iterator i=selftriangles.begin(); i!=selftriangles.end(); ++i )
-      {
-        std::vector<Point*> selfcuttriangle = * i;
-        selfcuttriangles.push_back( selfcuttriangle );
-      }
-    }
-    int selfcuttrianglessize = selfcuttriangles.size();
-    file << "View \"" << selfcuttrianglessize << " Selfcuttriangles\" {\n";
-    for ( std::vector<std::vector<Point*> >::iterator i=selfcuttriangles.begin(); i!=selfcuttriangles.end(); ++i )
-    {
-      std::vector<Point*> selfcuttriangle = * i;
-      int selfcuttriangleposition = 0;
-      int elementfacetpointssize = selfcuttriangle.size();
-      for ( std::vector<Point*>::iterator i=selfcuttriangle.begin(); i!=selfcuttriangle.end(); ++i )
-      {
-        Point * elementfacetpoint1 = * i;
-        Point * elementfacetpoint2 = NULL;
-        if ( i+1 != selfcuttriangle.end() )
-        {
-          elementfacetpoint2 = * (i+1);
-        }
-        else
-        {
-          elementfacetpoint2 = * (i+1-elementfacetpointssize);
-        }
-        file << "SL (";
-        LINALG::Matrix<3,1> elementfacetpoint1coordinates;
-        elementfacetpoint1->Coordinates( elementfacetpoint1coordinates.A() );
-        LINALG::Matrix<3,1> elementfacetpoint2coordinates;
-        elementfacetpoint2->Coordinates( elementfacetpoint2coordinates.A() );
-        file << elementfacetpoint1coordinates( 0, 0 ) << ","
-             << elementfacetpoint1coordinates( 1, 0 ) << ","
-             << elementfacetpoint1coordinates( 2, 0 ) << ","
-             << elementfacetpoint2coordinates( 0, 0 ) << ","
-             << elementfacetpoint2coordinates( 1, 0 ) << ","
-             << elementfacetpoint2coordinates( 2, 0 );
-        file << "){";
-        for ( int i=0; i<2; ++i )
-        {
-          if ( i > 0 )
-          {
-            file << ", ";
-          }
-          file << selfcuttriangleposition;
-        }
-        file << "};\n";
-      }
-    }
-    file << "};\n";
+  }
+  file << "};\n";
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * Status of one problematic side for gmsh                                  wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::ErrorGmsh( const std::string & name, Side & cutside )
+void GEO::CUT::SelfCut::ErrorGmsh(const std::string & name, Side & cutside)
 {
 
-  std::ofstream file( name.c_str() );
+  std::ofstream file(name.c_str());
 
-/*  BoundingBox elementbox;
-  double x[3];
-  x[0] = 0.52;
-  x[1] = 0.035;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.52;
-  x[1] = 0.035;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.52;
-  x[1] = 0.045;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.52;
-  x[1] = 0.045;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.035;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.035;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.045;
-  x[2] = -0.005;
-  elementbox.AddPoint( x );
-  x[0] = 0.53;
-  x[1] = 0.045;
-  x[2] = 0.005;
-  elementbox.AddPoint( x );
+  /*  BoundingBox elementbox;
+   double x[3];
+   x[0] = 0.52;
+   x[1] = 0.035;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.52;
+   x[1] = 0.035;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.52;
+   x[1] = 0.045;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.52;
+   x[1] = 0.045;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.035;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.035;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.045;
+   x[2] = -0.005;
+   elementbox.AddPoint( x );
+   x[0] = 0.53;
+   x[1] = 0.045;
+   x[2] = 0.005;
+   elementbox.AddPoint( x );
+   plain_side_set cutsides;
+   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+   i!=selfcut_sides_.end();
+   ++i )
+   {
+   Side * cutside = &*i->second;
+   BoundingBox sidebox;
+   sidebox.Assign( *cutside );
+   if( sidebox.Within(1.0, elementbox) )
+   {
+   cutsides.insert( cutside );
+   }
+   }*/
   plain_side_set cutsides;
-  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
-  {
-    Side * cutside = &*i->second;
-    BoundingBox sidebox;
-    sidebox.Assign( *cutside );
-    if( sidebox.Within(1.0, elementbox) )
-    {
-      cutsides.insert( cutside );
-    }
-  }*/
-  plain_side_set cutsides;
-/*  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
-        i!=selfcut_sides_.end();
-        ++i )
-  {
-    Side * cutside = &*i->second;
-    cutsides.insert( cutside );
-  }*/
-  cutsides.insert( &cutside );
+  /*  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=selfcut_sides_.begin();
+   i!=selfcut_sides_.end();
+   ++i )
+   {
+   Side * cutside = &*i->second;
+   cutsides.insert( cutside );
+   }*/
+  cutsides.insert(&cutside);
 
   int cutsidessize = cutsides.size();
   file << "View \"" << cutsidessize << " Sides\" {\n";
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
-    file.precision( 16 );
+    Side * cutside = *i;
+    file.precision(16);
     int cutsidetype = cutside->Nodes().size();
-    if ( cutsidetype == 3 )
+    if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3,3> cutsidecoordinates;
-      cutside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 3> cutsidecoordinates;
+      cutside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
-    else if ( cutsidetype == 4 )
+    else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3,4> cutsidecoordinates;
-      cutside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 4> cutsidecoordinates;
+      cutside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
     else
     {
-      throw std::runtime_error( "SelfCut: irregular side" );
+      throw std::runtime_error("SelfCut: irregular side");
     }
     file << "){";
     Point::PointPosition cutsideselfcutposition = cutside->SelfCutPosition();
-    for ( int i=0; i<cutsidetype; ++i )
+    for (int i = 0; i < cutsidetype; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1688,40 +1788,43 @@ void GEO::CUT::SelfCut::ErrorGmsh( const std::string & name, Side & cutside )
   file << "};\n";
 
   plain_edge_set cutsideedges;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     std::vector<Edge*> cutedges = cutside->Edges();
-    for ( std::vector<Edge*>::iterator i=cutedges.begin(); i!=cutedges.end(); ++i )
+    for (std::vector<Edge*>::iterator i = cutedges.begin(); i != cutedges.end();
+        ++i)
     {
-      Edge * cutsideedge = * i;
-      cutsideedges.insert( cutsideedge );
+      Edge * cutsideedge = *i;
+      cutsideedges.insert(cutsideedge);
     }
   }
   int cutsideedgessize = cutsideedges.size();
   file << "View \"" << cutsideedgessize << " Edges\" {\n";
-  for ( plain_edge_set::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i )
+  for (plain_edge_set::iterator i = cutsideedges.begin();
+      i != cutsideedges.end(); ++i)
   {
-    Edge * cutsideedge = * i;
-    file.precision( 16 );
+    Edge * cutsideedge = *i;
+    file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3,2> cutsideedgecoordinates;
-    cutsideedge->Coordinates( cutsideedgecoordinates.A() );
-    for ( int i=0; i<2; ++i )
+    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    for (int i = 0; i < 2; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
-      file << cutsideedgecoordinates( 0, i ) << ","
-           << cutsideedgecoordinates( 1, i ) << ","
-           << cutsideedgecoordinates( 2, i );
+      file << cutsideedgecoordinates(0, i) << ","
+          << cutsideedgecoordinates(1, i) << ","
+          << cutsideedgecoordinates(2, i);
     }
     file << "){";
-    Point::PointPosition cutsideselfcutposition = cutsideedge->SelfCutPosition();
-    for ( int i=0; i<2; ++i )
+    Point::PointPosition cutsideselfcutposition =
+        cutsideedge->SelfCutPosition();
+    for (int i = 0; i < 2; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1732,94 +1835,96 @@ void GEO::CUT::SelfCut::ErrorGmsh( const std::string & name, Side & cutside )
   file << "};\n";
 
   plain_node_set cutsidenodes;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     std::vector<Node*> cutnodes = cutside->Nodes();
-    for ( std::vector<Node*>::iterator i=cutnodes.begin(); i!=cutnodes.end(); ++i )
+    for (std::vector<Node*>::iterator i = cutnodes.begin(); i != cutnodes.end();
+        ++i)
     {
-      Node * cutsidenode = * i;
-      cutsidenodes.insert( cutsidenode );
+      Node * cutsidenode = *i;
+      cutsidenodes.insert(cutsidenode);
     }
   }
   int cutnodessize = cutsidenodes.size();
   file << "View \"" << cutnodessize << " Nodes\" {\n";
-  for ( plain_node_set::iterator i=cutsidenodes.begin(); i!=cutsidenodes.end(); ++i )
+  for (plain_node_set::iterator i = cutsidenodes.begin();
+      i != cutsidenodes.end(); ++i)
   {
-    Node * cutsidenode = * i;
-    file.precision( 16 );
+    Node * cutsidenode = *i;
+    file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3,1> cutsidenodecoordinates;
-    cutsidenode->Coordinates( cutsidenodecoordinates.A() );
-    file << cutsidenodecoordinates( 0, 0 ) << ","
-         << cutsidenodecoordinates( 1, 0 ) << ","
-         << cutsidenodecoordinates( 2, 0 );
+    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0)
+        << "," << cutsidenodecoordinates(2, 0);
     file << "){";
-    Point::PointPosition cutsideselfcutposition = cutsidenode->SelfCutPosition();
+    Point::PointPosition cutsideselfcutposition =
+        cutsidenode->SelfCutPosition();
     file << cutsideselfcutposition;
     file << "};\n";
   }
   file << "};\n";
 
   plain_side_set cuttingsides;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     plain_side_set selfcutsides = cutside->CuttingSides();
-    for ( plain_side_set::iterator i=selfcutsides.begin(); i!=selfcutsides.end(); ++i )
+    for (plain_side_set::iterator i = selfcutsides.begin();
+        i != selfcutsides.end(); ++i)
     {
-      Side * cuttingside = * i;
-      cuttingsides.insert( cuttingside );
+      Side * cuttingside = *i;
+      cuttingsides.insert(cuttingside);
     }
   }
   int cuttingsidessize = cuttingsides.size();
   file << "View \"" << cuttingsidessize << " Cuttingsides\" {\n";
-  for ( plain_side_set::iterator i=cuttingsides.begin(); i!=cuttingsides.end(); ++i )
+  for (plain_side_set::iterator i = cuttingsides.begin();
+      i != cuttingsides.end(); ++i)
   {
-    Side * cuttingside = * i;
-    file.precision( 16 );
+    Side * cuttingside = *i;
+    file.precision(16);
     int cutsidetype = cuttingside->Nodes().size();
-    if ( cutsidetype == 3 )
+    if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3,3> cutsidecoordinates;
-      cuttingside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 3> cutsidecoordinates;
+      cuttingside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
-    else if ( cutsidetype == 4 )
+    else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3,4> cutsidecoordinates;
-      cuttingside->Coordinates( cutsidecoordinates.A() );
-      for ( int i=0; i<cutsidetype; ++i )
+      LINALG::Matrix<3, 4> cutsidecoordinates;
+      cuttingside->Coordinates(cutsidecoordinates.A());
+      for (int i = 0; i < cutsidetype; ++i)
       {
-        if ( i > 0 )
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsidecoordinates( 0, i ) << ","
-             << cutsidecoordinates( 1, i ) << ","
-             << cutsidecoordinates( 2, i );
+        file << cutsidecoordinates(0, i) << "," << cutsidecoordinates(1, i)
+            << "," << cutsidecoordinates(2, i);
       }
     }
     else
     {
-      throw std::runtime_error( "SelfCut: irregular side" );
+      throw std::runtime_error("SelfCut: irregular side");
     }
     file << "){";
     int cutsideselfcutposition = -0.5;
-    for ( int i=0; i<cutsidetype; ++i )
+    for (int i = 0; i < cutsidetype; ++i)
     {
-      if ( i > 0 )
+      if (i > 0)
       {
         file << ", ";
       }
@@ -1830,207 +1935,226 @@ void GEO::CUT::SelfCut::ErrorGmsh( const std::string & name, Side & cutside )
   file << "};\n";
 
   plain_node_set selfcutnodes;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     plain_node_set selfnodes = cutside->SelfCutNodes();
-    for ( plain_node_set::iterator i=selfnodes.begin(); i!=selfnodes.end(); ++i )
+    for (plain_node_set::iterator i = selfnodes.begin(); i != selfnodes.end();
+        ++i)
     {
-      Node * selfcutnode = * i;
-      selfcutnodes.insert( selfcutnode );
+      Node * selfcutnode = *i;
+      selfcutnodes.insert(selfcutnode);
     }
   }
   int selfcutnodessize = selfcutnodes.size();
   file << "View \"" << selfcutnodessize << " Selfcutnodes\" {\n";
-  for ( plain_node_set::iterator i=selfcutnodes.begin(); i!=selfcutnodes.end(); ++i )
+  for (plain_node_set::iterator i = selfcutnodes.begin();
+      i != selfcutnodes.end(); ++i)
   {
-    Node * selfcutnode = * i;
-    file.precision( 16 );
+    Node * selfcutnode = *i;
+    file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3,1> cutsidenodecoordinates;
-    selfcutnode->Coordinates( cutsidenodecoordinates.A() );
-    file << cutsidenodecoordinates( 0, 0 ) << ","
-         << cutsidenodecoordinates( 1, 0 ) << ","
-         << cutsidenodecoordinates( 2, 0 );
+    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    selfcutnode->Coordinates(cutsidenodecoordinates.A());
+    file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0)
+        << "," << cutsidenodecoordinates(2, 0);
     file << "){";
-    Point::PointPosition cutsideselfcutposition = selfcutnode->SelfCutPosition();
+    Point::PointPosition cutsideselfcutposition =
+        selfcutnode->SelfCutPosition();
     file << cutsideselfcutposition;
     file << "};\n";
   }
   file << "};\n";
 
   plain_edge_set selfcutedges;
-  for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
-    Side * cutside = * i;
+    Side * cutside = *i;
     plain_edge_set selfedges = cutside->SelfCutEdges();
-    for ( plain_edge_set::iterator i=selfedges.begin(); i!=selfedges.end(); ++i )
+    for (plain_edge_set::iterator i = selfedges.begin(); i != selfedges.end();
+        ++i)
     {
-      Edge * selfcutedge = * i;
-      selfcutedges.insert( selfcutedge );
+      Edge * selfcutedge = *i;
+      selfcutedges.insert(selfcutedge);
     }
   }
   int selfcutedgessize = selfcutedges.size();
-    file << "View \"" << selfcutedgessize << " Selfcutedges\" {\n";
-    for ( plain_edge_set::iterator i=selfcutedges.begin(); i!=selfcutedges.end(); ++i )
+  file << "View \"" << selfcutedgessize << " Selfcutedges\" {\n";
+  for (plain_edge_set::iterator i = selfcutedges.begin();
+      i != selfcutedges.end(); ++i)
+  {
+    Edge * selfcutedge = *i;
+    file.precision(16);
+    file << "SL (";
+    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    selfcutedge->Coordinates(cutsideedgecoordinates.A());
+    for (int i = 0; i < 2; ++i)
     {
-      Edge * selfcutedge = * i;
-      file.precision( 16 );
-      file << "SL (";
-      LINALG::Matrix<3,2> cutsideedgecoordinates;
-      selfcutedge->Coordinates( cutsideedgecoordinates.A() );
-      for ( int i=0; i<2; ++i )
+      if (i > 0)
       {
-        if ( i > 0 )
-        {
-          file << ", ";
-        }
-        file << cutsideedgecoordinates( 0, i ) << ","
-             << cutsideedgecoordinates( 1, i ) << ","
-             << cutsideedgecoordinates( 2, i );
+        file << ", ";
       }
-      file << "){";
-      Point::PointPosition cutsideselfcutposition = selfcutedge->SelfCutPosition();
-      for ( int i=0; i<2; ++i )
+      file << cutsideedgecoordinates(0, i) << ","
+          << cutsideedgecoordinates(1, i) << ","
+          << cutsideedgecoordinates(2, i);
+    }
+    file << "){";
+    Point::PointPosition cutsideselfcutposition =
+        selfcutedge->SelfCutPosition();
+    for (int i = 0; i < 2; ++i)
+    {
+      if (i > 0)
       {
-        if ( i > 0 )
+        file << ", ";
+      }
+      file << cutsideselfcutposition;
+    }
+    file << "};\n";
+  }
+  file << "};\n";
+
+  std::vector<std::vector<Point*> > selfcuttriangles;
+  for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
+  {
+    Side * cutside = *i;
+    std::vector<std::vector<Point*> > selftriangles =
+        cutside->SelfCutTriangles();
+    for (std::vector<std::vector<Point*> >::iterator i = selftriangles.begin();
+        i != selftriangles.end(); ++i)
+    {
+      std::vector<Point*> selfcuttriangle = *i;
+      selfcuttriangles.push_back(selfcuttriangle);
+    }
+  }
+  int selfcuttrianglessize = selfcuttriangles.size();
+  file << "View \"" << selfcuttrianglessize << " Selfcuttriangles\" {\n";
+  for (std::vector<std::vector<Point*> >::iterator i = selfcuttriangles.begin();
+      i != selfcuttriangles.end(); ++i)
+  {
+    std::vector<Point*> selfcuttriangle = *i;
+    int selfcuttriangleposition = 0;
+    int elementfacetpointssize = selfcuttriangle.size();
+    for (std::vector<Point*>::iterator i = selfcuttriangle.begin();
+        i != selfcuttriangle.end(); ++i)
+    {
+      Point * elementfacetpoint1 = *i;
+      Point * elementfacetpoint2 = NULL;
+      if (i + 1 != selfcuttriangle.end())
+      {
+        elementfacetpoint2 = *(i + 1);
+      }
+      else
+      {
+        elementfacetpoint2 = *(i + 1 - elementfacetpointssize);
+      }
+      file << "SL (";
+      LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
+      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
+      LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
+      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
+      file << elementfacetpoint1coordinates(0, 0) << ","
+          << elementfacetpoint1coordinates(1, 0) << ","
+          << elementfacetpoint1coordinates(2, 0) << ","
+          << elementfacetpoint2coordinates(0, 0) << ","
+          << elementfacetpoint2coordinates(1, 0) << ","
+          << elementfacetpoint2coordinates(2, 0);
+      file << "){";
+      for (int i = 0; i < 2; ++i)
+      {
+        if (i > 0)
         {
           file << ", ";
         }
-        file << cutsideselfcutposition;
+        file << selfcuttriangleposition;
       }
       file << "};\n";
     }
-    file << "};\n";
-
-    std::vector<std::vector<Point*> > selfcuttriangles;
-    for ( plain_side_set::iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
-    {
-      Side * cutside = * i;
-      std::vector<std::vector<Point*> > selftriangles = cutside->SelfCutTriangles();
-      for ( std::vector<std::vector<Point*> >::iterator i=selftriangles.begin(); i!=selftriangles.end(); ++i )
-      {
-        std::vector<Point*> selfcuttriangle = * i;
-        selfcuttriangles.push_back( selfcuttriangle );
-      }
-    }
-    int selfcuttrianglessize = selfcuttriangles.size();
-    file << "View \"" << selfcuttrianglessize << " Selfcuttriangles\" {\n";
-    for ( std::vector<std::vector<Point*> >::iterator i=selfcuttriangles.begin(); i!=selfcuttriangles.end(); ++i )
-    {
-      std::vector<Point*> selfcuttriangle = * i;
-      int selfcuttriangleposition = 0;
-      int elementfacetpointssize = selfcuttriangle.size();
-      for ( std::vector<Point*>::iterator i=selfcuttriangle.begin(); i!=selfcuttriangle.end(); ++i )
-      {
-        Point * elementfacetpoint1 = * i;
-        Point * elementfacetpoint2 = NULL;
-        if ( i+1 != selfcuttriangle.end() )
-        {
-          elementfacetpoint2 = * (i+1);
-        }
-        else
-        {
-          elementfacetpoint2 = * (i+1-elementfacetpointssize);
-        }
-        file << "SL (";
-        LINALG::Matrix<3,1> elementfacetpoint1coordinates;
-        elementfacetpoint1->Coordinates( elementfacetpoint1coordinates.A() );
-        LINALG::Matrix<3,1> elementfacetpoint2coordinates;
-        elementfacetpoint2->Coordinates( elementfacetpoint2coordinates.A() );
-        file << elementfacetpoint1coordinates( 0, 0 ) << ","
-             << elementfacetpoint1coordinates( 1, 0 ) << ","
-             << elementfacetpoint1coordinates( 2, 0 ) << ","
-             << elementfacetpoint2coordinates( 0, 0 ) << ","
-             << elementfacetpoint2coordinates( 1, 0 ) << ","
-             << elementfacetpoint2coordinates( 2, 0 );
-        file << "){";
-        for ( int i=0; i<2; ++i )
-        {
-          if ( i > 0 )
-          {
-            file << ", ";
-          }
-          file << selfcuttriangleposition;
-        }
-        file << "};\n";
-      }
-    }
-    file << "};\n";
+  }
+  file << "};\n";
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * cuts the edges of the first cutside with the other cutside               wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::PerformSelfCut( Side & cutside, Side & otherside, PointSet & selfcutpoints)
+void GEO::CUT::SelfCut::PerformSelfCut(Side & cutside, Side & otherside,
+    PointSet & selfcutpoints)
 {
 
   std::vector<Edge*> cutsideedges = cutside.Edges();
-  for ( std::vector<Edge*>::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i )
+  for (std::vector<Edge*>::iterator i = cutsideedges.begin();
+      i != cutsideedges.end(); ++i)
   {
     Edge * cutsideedge = *i;
     PointSet sidepairselfcutpoints;
-    otherside.Cut( mesh_, *cutsideedge, sidepairselfcutpoints );
-    for ( PointSet::iterator i=sidepairselfcutpoints.begin(); i!=sidepairselfcutpoints.end(); ++i )
+    otherside.Cut(mesh_, *cutsideedge, sidepairselfcutpoints);
+    for (PointSet::iterator i = sidepairselfcutpoints.begin();
+        i != sidepairselfcutpoints.end(); ++i)
     {
       Point * edgeselfcutpoint = *i;
-      cutsideedge->AddPoint( edgeselfcutpoint );
+      cutsideedge->AddPoint(edgeselfcutpoint);
       selfcutpoints.insert(edgeselfcutpoint);
     }
   }
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * gets the edges of the new created sides                                  wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::GetSelfCutEdges( Side & cutside )
+void GEO::CUT::SelfCut::GetSelfCutEdges(Side & cutside)
 {
 
   std::vector<Edge*> cutsideedges = cutside.Edges();
-  for ( std::vector<Edge*>::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i )
+  for (std::vector<Edge*>::iterator i = cutsideedges.begin();
+      i != cutsideedges.end(); ++i)
   {
-    Edge * cutsideedge = * i;
+    Edge * cutsideedge = *i;
     plain_int_set cutsideedgenodeids;
     std::vector<Node*> cutsideedgenodes = cutsideedge->Nodes();
-  	for ( std::vector<Node*>::iterator i=cutsideedgenodes.begin(); i!=cutsideedgenodes.end(); ++i )
-  	{
-  	  Node * cutsideedgenode = * i;
-  	  int cutsideedgenodeid = cutsideedgenode->Id();
-  	  cutsideedgenodeids.insert( cutsideedgenodeid );
-  	}
-  	std::map<plain_int_set,Teuchos::RCP<Edge> >::iterator edgeiterator = selfcut_edges_.find( cutsideedgenodeids );
-  	if ( edgeiterator == selfcut_edges_.end() )
-  	{
-  	  std::map<plain_int_set,Teuchos::RCP<Edge> > cutsideedgercp = mesh_.Edges();
-  	  std::map<plain_int_set,Teuchos::RCP<Edge> >::iterator edgeiterator = cutsideedgercp.find( cutsideedgenodeids );
-  	  selfcut_edges_[cutsideedgenodeids] = edgeiterator->second;
-  	}
+    for (std::vector<Node*>::iterator i = cutsideedgenodes.begin();
+        i != cutsideedgenodes.end(); ++i)
+    {
+      Node * cutsideedgenode = *i;
+      int cutsideedgenodeid = cutsideedgenode->Id();
+      cutsideedgenodeids.insert(cutsideedgenodeid);
+    }
+    std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator edgeiterator =
+        selfcut_edges_.find(cutsideedgenodeids);
+    if (edgeiterator == selfcut_edges_.end())
+    {
+      std::map<plain_int_set, Teuchos::RCP<Edge> > cutsideedgercp =
+          mesh_.Edges();
+      std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator edgeiterator =
+          cutsideedgercp.find(cutsideedgenodeids);
+      selfcut_edges_[cutsideedgenodeids] = edgeiterator->second;
+    }
   }
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * checks if the direction of rotation of the cycle is correct              wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-bool GEO::CUT::SelfCut::CheckNormal( std::vector<double> cutsideplane, Cycle & maincycle )
+bool GEO::CUT::SelfCut::CheckNormal(std::vector<double> cutsideplane,
+    Cycle & maincycle)
 {
 
   std::vector<Point*> maincyclepoints = maincycle();
-  std::vector<double> maincycleplane = KERNEL::EqnPlanePolygon( maincyclepoints, false );
-  if( fabs( cutsideplane[0] ) > TOL_EQN_PLANE and cutsideplane[0] * maincycleplane[0] < 0.0 )
+  std::vector<double> maincycleplane = KERNEL::EqnPlanePolygon(maincyclepoints,
+      false);
+  if (fabs(cutsideplane[0]) > TOL_EQN_PLANE
+      and cutsideplane[0] * maincycleplane[0] < 0.0)
   {
     return false;
   }
-  else if( fabs( cutsideplane[1] ) > TOL_EQN_PLANE and cutsideplane[1] * maincycleplane[1] < 0.0 )
+  else if (fabs(cutsideplane[1]) > TOL_EQN_PLANE
+      and cutsideplane[1] * maincycleplane[1] < 0.0)
   {
     return false;
   }
-  else if( fabs( cutsideplane[2] ) > TOL_EQN_PLANE and cutsideplane[2] * maincycleplane[2] < 0.0 )
+  else if (fabs(cutsideplane[2]) > TOL_EQN_PLANE
+      and cutsideplane[2] * maincycleplane[2] < 0.0)
   {
     return false;
   }
@@ -2041,159 +2165,153 @@ bool GEO::CUT::SelfCut::CheckNormal( std::vector<double> cutsideplane, Cycle & m
 
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * deletes all pointers which are pointing to a soon to be erased side      wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseSidePointer( Side & cutside )
+void GEO::CUT::SelfCut::EraseSidePointer(Side & cutside)
 {
 
   std::vector<Edge*> cutsideedges = cutside.Edges();
-  for ( std::vector<Edge*>::iterator i=cutsideedges.begin(); i!=cutsideedges.end(); ++i)
+  for (std::vector<Edge*>::iterator i = cutsideedges.begin();
+      i != cutsideedges.end(); ++i)
   {
-    Edge * cutsideedge = * i;
-    cutsideedge->EraseCutSide( &cutside );
+    Edge * cutsideedge = *i;
+    cutsideedge->EraseCutSide(&cutside);
   }
   PointSet cutsidepoints = cutside.CutPoints();
-  for ( PointSet::iterator i=cutsidepoints.begin(); i!=cutsidepoints.end(); ++i)
+  for (PointSet::iterator i = cutsidepoints.begin(); i != cutsidepoints.end();
+      ++i)
   {
-    Point * cutsidepoint = * i;
-    cutsidepoint->EraseCutSide( &cutside );
+    Point * cutsidepoint = *i;
+    cutsidepoint->EraseCutSide(&cutside);
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * erases a side                                                            wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseSide( std::vector<plain_int_set> & cutsideids )
+void GEO::CUT::SelfCut::EraseSide(std::vector<plain_int_set> & cutsideids)
 {
 
-  for ( std::vector<plain_int_set>::iterator i=cutsideids.begin(); i!=cutsideids.end(); ++i)
+  for (std::vector<plain_int_set>::iterator i = cutsideids.begin();
+      i != cutsideids.end(); ++i)
   {
     plain_int_set cutsideid = *i;
     selfcut_sides_.erase(cutsideid);
-    mesh_.EraseSide( cutsideid );
+    mesh_.EraseSide(cutsideid);
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * deletes all pointers which are pointing to a soon to be erased edge      wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseEdgePointer( Edge & cutsideedge )
+void GEO::CUT::SelfCut::EraseEdgePointer(Edge & cutsideedge)
 {
 
-  std::vector<Node*> cutsideedgenodes =cutsideedge.Nodes();
-  for ( std::vector<Node*>::iterator i=cutsideedgenodes.begin(); i!=cutsideedgenodes.end(); ++i)
+  std::vector<Node*> cutsideedgenodes = cutsideedge.Nodes();
+  for (std::vector<Node*>::iterator i = cutsideedgenodes.begin();
+      i != cutsideedgenodes.end(); ++i)
   {
-    Node * cutsideedgenode = * i;
-    cutsideedgenode->EraseCutSideEdge( &cutsideedge );
+    Node * cutsideedgenode = *i;
+    cutsideedgenode->EraseCutSideEdge(&cutsideedge);
   }
   PointPositionSet cutsideedgepoints = cutsideedge.CutPoints();
-  for ( PointPositionSet::iterator i=cutsideedgepoints.begin(); i!=cutsideedgepoints.end(); ++i)
+  for (PointPositionSet::iterator i = cutsideedgepoints.begin();
+      i != cutsideedgepoints.end(); ++i)
   {
-    Point * cutsideedgepoint = * i;
-    cutsideedgepoint->EraseCutSideEdge( &cutsideedge );
+    Point * cutsideedgepoint = *i;
+    cutsideedgepoint->EraseCutSideEdge(&cutsideedge);
   }
 
 }
-
 
 /*-------------------------------------------------------------------------------------*
  * erases an edge                                                           wirtz 05/13
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::EraseEdge(std::vector<plain_int_set> & cutsideedgeids )
+void GEO::CUT::SelfCut::EraseEdge(std::vector<plain_int_set> & cutsideedgeids)
 {
 
-  for ( std::vector<plain_int_set>::iterator i=cutsideedgeids.begin(); i!=cutsideedgeids.end(); ++i)
+  for (std::vector<plain_int_set>::iterator i = cutsideedgeids.begin();
+      i != cutsideedgeids.end(); ++i)
   {
     plain_int_set cutsideedgeid = *i;
-    selfcut_edges_.erase( cutsideedgeid );
-    mesh_.EraseEdge( cutsideedgeid );
+    selfcut_edges_.erase(cutsideedgeid);
+    mesh_.EraseEdge(cutsideedgeid);
   }
 
 }
 
-
 void GEO::CUT::SelfCut::PlotAcross()
 {
 
-  std::cout << "\n====================================================================================================================\n";
+  std::cout
+      << "\n====================================================================================================================\n";
 
 }
-
 
 void GEO::CUT::SelfCut::PointPlotHead()
 {
 
-  std::cout << "x\ty\tz\t# pid\n"
-            << "-----------------------------\n";
+  std::cout << "x\ty\tz\t# pid\n" << "-----------------------------\n";
 
 }
-
 
 void GEO::CUT::SelfCut::NodePlotHead()
 {
 
   std::cout << "x\ty\tz\t# pid\t# nid\tSelfCutPosition\n"
-            << "-------------------------------------------------------\n";
+      << "-------------------------------------------------------\n";
 
 }
-
 
 void GEO::CUT::SelfCut::EdgePlotHead()
 {
 
-  for ( int i=1; i<3; ++i )
+  for (int i = 1; i < 3; ++i)
   {
     std::cout << "# nid_" << i << "\t";
   }
-  std::cout << "SelfCutPosition\n"
-            << "-------------------------------\n";
+  std::cout << "SelfCutPosition\n" << "-------------------------------\n";
 
 }
 
 void GEO::CUT::SelfCut::SidePlotHead()
 {
 
-  for ( int i=1; i<4; ++i )
+  for (int i = 1; i < 4; ++i)
   {
     std::cout << "# nid_" << i << "\t";
   }
   std::cout << "# sid\tSelfCutPosition\n"
-            << "-----------------------------------------------\n";
+      << "-----------------------------------------------\n";
 
 }
 
-
-void GEO::CUT::SelfCut::PointPlot( Point & point )
+void GEO::CUT::SelfCut::PointPlot(Point & point)
 {
 
-  LINALG::Matrix<3,1> pointcoordinates;
-  point.Coordinates( pointcoordinates.A() );
-  std::cout << std::setprecision( 16 ) << pointcoordinates(0) << "\t"
-            << std::setprecision( 16 ) << pointcoordinates(1) << "\t"
-            << std::setprecision( 16 ) << pointcoordinates(2) << "\t# "
-            << point.Id();
+  LINALG::Matrix<3, 1> pointcoordinates;
+  point.Coordinates(pointcoordinates.A());
+  std::cout << std::setprecision(16) << pointcoordinates(0) << "\t"
+      << std::setprecision(16) << pointcoordinates(1) << "\t"
+      << std::setprecision(16) << pointcoordinates(2) << "\t# " << point.Id();
 }
 
-void GEO::CUT::SelfCut::NodePlot( Node & node )
+void GEO::CUT::SelfCut::NodePlot(Node & node)
 {
 
-  PointPlot( *node.point() );
-  std::cout << "\t# " << node.Id() << "\t"
-            << node.SelfCutPosition() << "\n";
+  PointPlot(*node.point());
+  std::cout << "\t# " << node.Id() << "\t" << node.SelfCutPosition() << "\n";
 
 }
 
-void GEO::CUT::SelfCut::EdgePlot( Edge & edge )
+void GEO::CUT::SelfCut::EdgePlot(Edge & edge)
 {
 
   std::vector<Node*> edgenodes = edge.Nodes();
-  for ( unsigned int i=0; i<edgenodes.size(); ++i )
+  for (unsigned int i = 0; i < edgenodes.size(); ++i)
   {
     std::cout << "# " << edgenodes[i]->Id() << "\t";
   }
@@ -2201,11 +2319,11 @@ void GEO::CUT::SelfCut::EdgePlot( Edge & edge )
 
 }
 
-void GEO::CUT::SelfCut::SidePlot( Side & side )
+void GEO::CUT::SelfCut::SidePlot(Side & side)
 {
 
   std::vector<Node*> sidenodes = side.Nodes();
-  for ( unsigned int i=0; i<sidenodes.size(); ++i )
+  for (unsigned int i = 0; i < sidenodes.size(); ++i)
   {
     std::cout << "# " << sidenodes[i]->Id() << "\t";
   }
@@ -2213,15 +2331,16 @@ void GEO::CUT::SelfCut::SidePlot( Side & side )
 
 }
 
-void GEO::CUT::SelfCut::SideNodePlot( Side & side )
+void GEO::CUT::SelfCut::SideNodePlot(Side & side)
 {
 
   std::vector<Node*> sidenodes = side.Nodes();
   NodePlotHead();
-  for ( std::vector<Node*>::iterator i=sidenodes.begin(); i!=sidenodes.end(); ++i )
+  for (std::vector<Node*>::iterator i = sidenodes.begin(); i != sidenodes.end();
+      ++i)
   {
-    Node * sidenode = * i;
-    NodePlot( * sidenode );
+    Node * sidenode = *i;
+    NodePlot(*sidenode);
   }
 
 }

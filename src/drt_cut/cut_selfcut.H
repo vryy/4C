@@ -1,14 +1,14 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file cut_selfcut.H
+ \file cut_selfcut.H
 
-\brief class that provides all routines to handle cutsides which cut each other
+ \brief class that provides all routines to handle cutsides which cut each other
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
-</pre>
+ <pre>
+ Maintainer: Andy Wirtz
+ wirtz@lnm.mw.tum.de
+ http://www.lnm.mw.tum.de
+ 089 - 289-15270
+ </pre>
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_SELFCUT_H
@@ -24,7 +24,7 @@ class SelfCut
 public:
 
   /// constructor
-  SelfCut( Mesh & cut_mesh );
+  SelfCut(Mesh & cut_mesh);
 
   /*========================================================================*/
   //! @name Main routines to run the self cut
@@ -46,11 +46,8 @@ public:
   //! @name Basic routines to run the collision detection
   /*========================================================================*/
 
-  /// stores all cutsides in a sorted vector to find cutting sides later
-  std::vector<Side*> PrepareDetection();
-
   /// finds cutsides which possibly cuts the considered side
-  void FindCuttingSides( std::vector<Side*> & allsortedcutsides );
+  void FindCuttingSides();
 
   /// finds cutpoints by searching the intersection between the edges of one side with the other side and vice versa
   void FindSelfCutPoints();
@@ -110,41 +107,42 @@ public:
   void CutMeshStatusText();
 
   /// Status of one problematic side for text viewer
-  void ErrorStatusText( Side & cutside );
+  void ErrorStatusText(Side & cutside);
 
   /// Status of the cutted sides for gmsh
-  void CuttedSideStatusGmsh( const std::string & name );
+  void CuttedSideStatusGmsh(const std::string & name);
 
   /// Status of the cutmesh in gmsh for my CMGM
-  void SCmgmGmsh( const std::string & name );
+  void SCmgmGmsh(const std::string & name);
 
   /// Status of one problematic side for gmsh
-  void ErrorGmsh( const std::string & name, Side & cutside );
+  void ErrorGmsh(const std::string & name, Side & cutside);
 
   /*========================================================================*/
   //! @name Auxiliary routines to run the self cut
   /*========================================================================*/
 
   /// cuts the edges of the first cutside with the other cutside
-  void PerformSelfCut( Side & cutside, Side & otherside, PointSet & selfcutpoints );
+  void PerformSelfCut(Side & cutside, Side & otherside,
+      PointSet & selfcutpoints);
 
   /// gets the edges of the new created sides
-  void GetSelfCutEdges( Side & cutside );
+  void GetSelfCutEdges(Side & cutside);
 
   /// checks if the direction of rotation of the cycle is correct
-  bool CheckNormal( std::vector<double> cutsideplane, Cycle & maincycle );
+  bool CheckNormal(std::vector<double> cutsideplane, Cycle & maincycle);
 
   /// deletes all pointers which are pointing to a soon to be erased side
-  void EraseSidePointer( Side & cutside );
+  void EraseSidePointer(Side & cutside);
 
   /// erases a side
-  void EraseSide( std::vector<plain_int_set> & cutsideids );
+  void EraseSide(std::vector<plain_int_set> & cutsideids);
 
   /// deletes all pointers which are pointing to a soon to be erased edge
-  void EraseEdgePointer( Edge & cutsideedge );
+  void EraseEdgePointer(Edge & cutsideedge);
 
   /// erases an edge
-  void EraseEdge(std::vector<plain_int_set> & cutsideedgeids );
+  void EraseEdge(std::vector<plain_int_set> & cutsideedgeids);
 
   void PlotAcross();
 
@@ -156,16 +154,17 @@ public:
 
   void SidePlotHead();
 
-  void PointPlot( Point & point );
+  void PointPlot(Point & point);
 
-  void NodePlot( Node & node );
+  void NodePlot(Node & node);
 
-  void EdgePlot( Edge & edge );
+  void EdgePlot(Edge & edge);
 
-  void SidePlot( Side & side );
+  void SidePlot(Side & side);
 
-  void SideNodePlot( Side & side );
+  void SideNodePlot(Side & side);
 
+  void Debug(const std::string & viewname);
 
 private:
   GEO::CUT::Mesh & mesh_;
@@ -176,9 +175,7 @@ private:
 
   std::map<int, Teuchos::RCP<Node> > selfcut_nodes_;
 
-
 };
-
 
 }
 }
