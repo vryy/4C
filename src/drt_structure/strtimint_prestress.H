@@ -58,6 +58,9 @@ namespace STR
 
     //! Update element
     void UpdateStepElement();
+
+    //! Write external and internal forces for dynamic restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
     //@}
 
   };  // class TimIntPrestress

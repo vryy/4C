@@ -17,6 +17,7 @@ Maintainer: Sebastian Kehl
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io.H"
 
 /*======================================================================*/
 /* constructor */
@@ -122,6 +123,16 @@ void STR::TimIntPrestress::UpdateStepElement()
     acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
   }
   
+}
+
+/*----------------------------------------------------------------------*/
+/* write internal and external forces for restart */
+/* only necessary for dynamic restart! */
+void STR::TimIntPrestress::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+  output->WriteVector("fexternal", fextn_);
+  output->WriteVector("fint",fintn_);
+  return;
 }
 
 /*----------------------------------------------------------------------*/
