@@ -184,7 +184,7 @@ AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
-AZSUB                           300
+AZSUB                           50
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
 DWINDTAU                        1.5
@@ -232,7 +232,7 @@ AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
-AZSUB                           300
+AZSUB                           50
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
 DWINDTAU                        1.5
@@ -280,7 +280,7 @@ AZPREC                          BGS2x2  // ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
-AZSUB                           300
+AZSUB                           50
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
 DWINDTAU                        1.5
@@ -3113,6 +3113,6 @@ STRUCTURE DIS structure NODE 421 QUANTITY dispx VALUE 3.39612066463595465e-04 TO
 STRUCTURE DIS structure NODE 141 QUANTITY dispx VALUE -1.94215116357751176e-04 TOLERANCE 1e-9 NAME ux(8.5,35,0)
 THERMAL DIS thermo NODE 433 QUANTITY temp VALUE 79.9968774850210735 TOLERANCE 1.0e-9 NAME T(-3.5,0,0)
 THERMAL DIS thermo NODE 421 QUANTITY temp VALUE 79.9821761564873412 TOLERANCE 1.0e-9 NAME T(3.5,30,0)
-THERMAL DIS thermo NODE 141 QUANTITY temp VALUE 72.3629249094317970 TOLERANCE 1.0e-9 NAME T(8.5,35,0)
+THERMAL DIS thermo NODE 141 QUANTITY temp VALUE 72.3629248986587328 TOLERANCE 1.0e-9 NAME T(8.5,35,0)
 ---------------------------------------------------------------END
 // END

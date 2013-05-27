@@ -182,7 +182,7 @@ AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
-AZSUB                           300
+AZSUB                           50
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
 DWINDTAU                        1.5
@@ -230,7 +230,7 @@ AZPREC                          ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
-AZSUB                           300
+AZSUB                           50
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block0_block1_order
 DWINDTAU                        1.5
@@ -278,7 +278,7 @@ AZPREC                          BGS2x2  // ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
-AZSUB                           300
+AZSUB                           50
 AZTOL                           1e-08
 BGS2X2_FLIPORDER                block1_block0_order
 DWINDTAU                        1.5
@@ -3109,8 +3109,8 @@ STRUCTURE DIS structure NODE 433 QUANTITY dispy VALUE 0 TOLERANCE 1e-9 NAME uy(-
 STRUCTURE DIS structure NODE 433 QUANTITY dispz VALUE 0 TOLERANCE 1e-9 NAME uz(-3.5,0,0)
 STRUCTURE DIS structure NODE 421 QUANTITY dispx VALUE  2.98145366638007646e-04 TOLERANCE 1e-9 NAME ux(3.5,30,0)  //lin: 3.47632750586648399e-04 
 STRUCTURE DIS structure NODE 141 QUANTITY dispx VALUE -1.97630160936439946e-04 TOLERANCE 1e-9 NAME ux(8.5,35,0)  //lin: -1.84705088155790055e-04
-THERMAL DIS thermo NODE 433 QUANTITY temp VALUE 79.9972266692807068 TOLERANCE 1.0e-9 NAME T(-3.5,0,0)  //lin: 79.9968774850210735
+THERMAL DIS thermo NODE 433 QUANTITY temp VALUE 79.9972266670992411 TOLERANCE 1.0e-9 NAME T(-3.5,0,0)  //lin: 79.9968774850210735
 THERMAL DIS thermo NODE 421 QUANTITY temp VALUE 79.9825948170646086 TOLERANCE 1.0e-9 NAME T(3.5,30,0)  //lin: 79.9821761564873412
-THERMAL DIS thermo NODE 141 QUANTITY temp VALUE 72.1044254487243279 TOLERANCE 1.0e-9 NAME T(8.5,35,0)  //lin: 72.3629248976951800
+THERMAL DIS thermo NODE 141 QUANTITY temp VALUE 72.1044254378911518 TOLERANCE 1.0e-9 NAME T(8.5,35,0)  //lin: 72.3629248976951800
 ---------------------------------------------------------------END
 // END
