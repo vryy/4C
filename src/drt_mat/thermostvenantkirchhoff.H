@@ -240,8 +240,7 @@ private:
     void GetThermalStress_T(
       const LINALG::Matrix<1,1>* Ntemp,  //!< element temperature T_{n+1}
       Teuchos::ParameterList& params,  //!< parameter list
-      LINALG::Matrix<6,1>* stresstemp_T,  //!< linearisation of thermal stress w.r.t T
-      LINALG::Matrix<6,1>* ctemp_T  //!< linearisation of ctemp w.r.t T
+      LINALG::Matrix<6,1>* stresstemp_T  //!< linearisation of thermal stress w.r.t T
       );
 
     //! calculates stress-temperature modulus

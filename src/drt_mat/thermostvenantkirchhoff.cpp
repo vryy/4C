@@ -495,8 +495,10 @@ void MAT::ThermoStVenantKirchhoff::GetMechStress_T(
   LINALG::Matrix<6,1>* stress
   )
 {
+  // calculate derivative of cmat w.r.t T_{n+1}
   LINALG::Matrix<6,6> cmat_T(false);
   GetCmatAtTempnp_T(cmat_T,params);
+
   // evaluate stresses
   // \f \sigma = {\mathbf C}_{,T} \,\varepsilon_{\rm GL} \f
   stress->MultiplyNN(cmat_T,*glstrain);
@@ -511,8 +513,7 @@ void MAT::ThermoStVenantKirchhoff::GetMechStress_T(
 void MAT::ThermoStVenantKirchhoff::GetThermalStress_T(
   const LINALG::Matrix<1,1>* Ntemp,
   Teuchos::ParameterList& params,
-  LINALG::Matrix<6,1>* stresstemp_T,
-  LINALG::Matrix<6,1>* ctemp_T
+  LINALG::Matrix<6,1>* stresstemp_T
   )
 {
   LINALG::Matrix<1,1> init(true);
@@ -523,11 +524,13 @@ void MAT::ThermoStVenantKirchhoff::GetThermalStress_T(
   LINALG::Matrix<1,1> deltaT(true);
   deltaT.Update(*Ntemp,init);
 
-  GetCthermoAtTempnp_T(*ctemp_T,params);
+  // calculate derivative of ctemp w.r.t T_{n+1}
+  LINALG::Matrix<6,1> ctemp_T(false);
+  GetCthermoAtTempnp_T(ctemp_T,params);
 
   // temperature dependent stress
   // sigma = C_T . Delta T = m . I . Delta T
-  stresstemp_T->MultiplyNN(*ctemp_T,deltaT);
+  stresstemp_T->MultiplyNN(ctemp_T,deltaT);
 
 }  // GetThermalStress_T
 
