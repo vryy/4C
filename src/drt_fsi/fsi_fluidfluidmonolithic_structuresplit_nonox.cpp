@@ -114,7 +114,6 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
   ddginc_ = Teuchos::null;
   solgpre_= Teuchos::null;
   ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(),true));
-  dugpre_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
 
 //fgpre_ = Teuchos::null;
 //sgipre_ = Teuchos::null;
@@ -816,11 +815,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(Teuchos::
 
 #ifdef DEBUG
   if(ddgpred_ == Teuchos::null) { dserror("Vector 'ddgpred_' has not been initialized properly."); }
-  if(dugpre_ == Teuchos::null) { dserror("Vector 'dugpre_' has not been initialized properly."); }
 #endif
 
-
- // ----------------------
+  // ----------------------
   // process fluid unknowns
   fx = Extractor().ExtractVector(x,1);
 
@@ -830,21 +827,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(Teuchos::
   Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSICondVector(fx_emb);
 
   // ----------------------
-  // process structure unknowns
-  //FluidField().VelocityToDisplacement(fcx);
-  FluidField().VelocityToDisplacement(fcx,StructToFluid(ddgpred_),dugpre_);
-  Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
-
-  Teuchos::RCP<Epetra_Vector> s = StructureField()->Interface()->InsertOtherVector(sox);
-  StructureField()->Interface()->InsertFSICondVector(scx, s);
-  sx = s;
-
-  // ----------------------
   // process ale unknowns
   Teuchos::RCP<Epetra_Vector> fcxforale = FluidField().Interface()->ExtractFSICondVector(fx_emb);
-  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fcxforale->Map(),true));
-  FluidField().VelocityToDisplacement(fcxforale,zeros,dugpre_);
+  FluidField().VelocityToDisplacement(fcxforale);
   Teuchos::RCP<Epetra_Vector> acx = FluidToStruct(fcxforale);
   acx = StructToAle(acx);
 
@@ -855,6 +840,19 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(Teuchos::
   AleField().Interface()->InsertFSICondVector(acx, a);
 
   ax = a;
+
+  // ----------------------
+  // process structure unknowns
+  Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
+
+  //Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
+  // convert ALE interface displacements to structure interface displacements
+  Teuchos::RCP<Epetra_Vector> scx = AleToStruct(acx);
+  scx->Update(-1.0, *ddgpred_, 1.0);
+
+  Teuchos::RCP<Epetra_Vector> s = StructureField()->Interface()->InsertOtherVector(sox);
+  StructureField()->Interface()->InsertFSICondVector(scx, s);
+  sx = s;
 
   // ----------------------
   // Store field vectors to know them later on as previous quantities
@@ -1041,15 +1039,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
   rhs_ = LINALG::CreateVector(*DofRowMap(), true);
 
   firstcall_ = true;
-
-  // ---------------
-  // prepare first call
-
-  // store fluid interface velocity increment due to predictor
-  // or inhomogeneous Dirichlet boundary conditions
-  dugpre_ = Teuchos::rcp(new Epetra_Vector(*FluidField().ExtractInterfaceVelnp()),true);
-  dugpre_->Update(-1.0, *FluidField().ExtractInterfaceVeln(), 1.0);
-
 
   // non linear loop
   while ( (iter_ ==  1) or ((not Converged()) and (iter_ <= itermax_)) )

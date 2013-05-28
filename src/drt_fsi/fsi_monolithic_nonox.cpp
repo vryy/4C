@@ -420,7 +420,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
 		      "========================================================================="<< IO::endl;
 
   // enter converged state etc
-  IO::cout << "|nit |";
+  IO::cout << "|nit|";
 
   // different style due relative or absolute error checking
   // displacement
