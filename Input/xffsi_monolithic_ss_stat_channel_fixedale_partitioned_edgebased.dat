@@ -122,7 +122,7 @@ MAXTIME                         1000.0
 TIMESTEP                        1
 NUMSTEP                         1
 RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit
+COUPALGO                        iter_fluidfluid_monolithicfluidsplit
 RELAX                           1.0
 ITEMAX                          10
 CONVTOL                         1.0E-12

@@ -110,7 +110,7 @@ STRUCTPCOMEGA 1.0 1.0
 STRUCTPCITER 1 1
 FLUIDPCOMEGA 1.0 1.0 1.0
 FLUIDPCITER 1 1 1
-SHAPEDERIVATIVES                No
+SHAPEDERIVATIVES                yes
 PRECONDREUSE                    0
 SECONDORDER                     No
 --------------------------------------------------------------------SOLVER 1
