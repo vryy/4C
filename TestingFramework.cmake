@@ -67,6 +67,28 @@ macro(post_processing arg nproc stresstype startstep)
   set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES TIMEOUT 1000 )
   set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
 endmacro(post_processing)
+
+# CODE TESTING
+macro(codetesting arg)
+
+   if (${arg} STREQUAL check_unused_input_params)
+       
+      add_test(NAME ${arg}-ct
+      COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_input_params.py $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}")
+
+      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
+
+   elseif (${arg} STREQUAL check_unused_inpar_params)
+
+      add_test(NAME ${arg}-ct
+       COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_inpar_params.py ${PROJECT_SOURCE_DIR}")   
+      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )   
+
+   endif()
+
+endmacro(codetesting)
  
 ###------------------------------------------------------------------ List of tests
 ##if(NOT TRILINOS_DEV)
@@ -1140,6 +1162,9 @@ baci_framework_test(tutorial_fsi 2)
 
 # cut test 
 cut_test(2)
+
+codetesting( check_unused_input_params )
+codetesting( check_unused_inpar_params )
 
 if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
