@@ -118,7 +118,6 @@ VELGRAD_INTERFACE_STAB          yes
 PRESSCOUPLING_INTERFACE_STAB    yes
 PRESSCOUPLING_INTERFACE_FAC      10
 GHOST_PENALTY_FAC               0.01
-NITSCHE_EVP                    yes
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY  1 DENSITY 1
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000 NUE 0.0 DENS 1
