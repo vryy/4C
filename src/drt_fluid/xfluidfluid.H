@@ -78,6 +78,10 @@ namespace FLD
                                DRT::Discretization    & embdis);
 
 
+      void EvaluateNitschepar();
+
+      void CreateEmbeddedBoundarydis();
+
       void GmshOutput( DRT::Discretization & bgdis,
                        DRT::Discretization & embdis,
                        DRT::Discretization & cutdiscret,
@@ -346,6 +350,11 @@ namespace FLD
                         const LINALG::MultiMapExtractor& rangemaps,
                         bool splitmatrix);
 
+
+   void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                       const LINALG::MultiMapExtractor& shapederivdomainmaps,
+                       const LINALG::MultiMapExtractor& shapederivrangemaps);
+
     void OutputDiscret();
 
     /// update configuration and output to file/screen
@@ -391,6 +400,16 @@ namespace FLD
     /// called by the staggered FSI in which the velocities on the FSI
     /// interface are prescribed by the other fields.
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
+    ///Return system matrix as block matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(Teuchos::RCP<Epetra_Map> innermap,
+    															  Teuchos::RCP<Epetra_Map> condmap,
+    															  Teuchos::RCP<LINALG::MapExtractor> fsiale);
+
+    //Return embedded fluid discretization writer
+    const Teuchos::RCP<IO::DiscretizationWriter>& EmbDiscWriter() { return emboutput_; }
 
     const Teuchos::RCP<DRT::Discretization>& Discretization() { return embdis_; }
 
@@ -447,6 +466,9 @@ namespace FLD
 
      /// linearization with respect to mesh motion
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
+
+    /// Output block system matrix for fluid-fluid FSI with fluidsplit
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmat_;
 
     Teuchos::RCP<LINALG::SparseOperator> shapederivativestest_;
 
@@ -616,6 +638,7 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      bgdis_;
     Teuchos::RCP<DRT::Discretization>      embdis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
+    Teuchos::RCP<DRT::Discretization>      embboundarydis_;
 
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
@@ -648,6 +671,11 @@ namespace FLD
     /// penalty term for pressure coupling at the interface
     bool presscoupling_interface_stab_;
     double presscoupling_interface_fac_;
+
+    /// if true solving Eigenvalue problem to get the right Nitsche parameter
+    bool nitsche_evp_;
+    /// factor of nitsche parameter calculated of the Eigenvalue-Problem
+    double nitsche_evp_fac_;
 
     /// penalty term for velocity gradients at the interface
     bool velgrad_interface_stab_;
@@ -752,6 +780,9 @@ namespace FLD
     string action_;
 
     string monotype_;
+
+    //! map of embedded element to nitsche parameter
+    Teuchos::RCP<std::map<int,double> >   nitschepar_;
   };
 }
 

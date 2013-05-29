@@ -195,6 +195,17 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
+  case FLD::evaluate_nitsche_par:
+  {
+	    return DRT::ELEMENTS::FluidBoundaryWeakDBCInterface::Impl(this)->EvaluateNitschePar(
+	        this,
+	        params,
+	        discretization,
+	        lm,
+	        elemat1,
+	        elemat2);
+	    break;
+  }
   case FLD::mixed_hybrid_dbc:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->MixHybDirichlet(

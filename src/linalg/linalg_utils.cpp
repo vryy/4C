@@ -681,6 +681,214 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  compute all eigenvalues for the generalized eigenvalue problem
+ |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
+ |  maximum eigenvalue                              shahmiri  05/13
+ *----------------------------------------------------------------------*/
+int LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
+                       		 Epetra_SerialDenseMatrix& B)
+{
+	Epetra_SerialDenseMatrix tmpA(A);
+	Epetra_SerialDenseMatrix tmpB(B);
+
+	//--------------------------------------------------------------------
+	// STEP 1:
+	// Transform the matrix B to upper triangular matrix with the help of
+	// QR-factorization
+	//--------------------------------------------------------------------
+
+	int N = tmpA.M();
+	double* a = tmpA.A();
+	double* b = tmpB.A();
+	int LDA = tmpA.LDA();
+	int LDB = tmpB.LDA();
+
+	// the order of permutation matrix
+	int jpvt[N];
+	// factor uses for calculating orthogonal matrix Q
+	double tau[N];
+    for(int i=0; i<N; ++i)
+    {
+    	jpvt[i] = 0;
+    	tau[i] = 0.;
+    }
+
+
+	int lwork1 = 0;
+	if (N == 1) lwork1 = 1;
+	else
+	{
+	  lwork1 = N*3+1;
+	}
+	double work1[lwork1];
+	int info;
+	dgeqp3(&N,&N,b,&LDB,jpvt,tau,work1,&lwork1,&info);
+
+    if (info < 0)
+    	cout << "Lapack algorithm dgeqp3: The " << info  << "-th argument had an illegal value" << endl;
+
+
+	// calculate the matrix Q from multiplying householder transformations
+	// Q = H(1)*H(2) ... H(k)
+	// H(i) = I - tau-v*v**T
+	// v is a vector with v(1:i-1) = 0 and v(i+1:m) is stored on exit in B(i+1:m,i)
+
+	// Q is initialized as an unit matrix
+	Epetra_SerialDenseMatrix Q_new(true);
+	Q_new.Shape(N,N);
+	for(int i=0; i<N; ++i)
+		Q_new(i,i)=1.0;
+
+	for(int i=0; i<N; ++i)
+	{
+		Epetra_SerialDenseVector v;
+		v.Shape(N,1);
+		v(i,0) = 1.;
+		for(int j=i+1; j<N; ++j)
+			v(j,0) = tmpB(j,i);
+
+	    Epetra_SerialDenseMatrix H;
+	    H.Shape(N,N);
+
+	    H.Multiply('N','T',tau[i],v,v,0.);
+	    H.Scale(-1.);
+	    for(int k=0; k<N; ++k)
+	    	H(k,k) = 1.+H(k,k);
+
+	    Epetra_SerialDenseMatrix Q_help;
+	    Q_help.Shape(N,N);
+	    Q_new.Apply(H,Q_help);
+	    Q_new = Q_help;
+	}
+
+	// permutation matrix
+	Epetra_SerialDenseMatrix P(true);
+	P.Shape(N,N);
+	for(int i=0; i<N; ++i)
+	{
+		int w = jpvt[i];
+		P(w-1,i) = 1.;
+	}
+
+	// annul the under-diagonal elements of B
+    // loop of columns
+    for(int i=0; i<N; ++i)
+    {
+   	 // loop of rows
+   	 for(int j=i+1; j<N; ++j)
+   		 tmpB(j,i)=0.;
+    }
+
+	// the new A:= Q**T A P
+	Epetra_SerialDenseMatrix A_tmp;
+	A_tmp.Shape(N,N);
+    //A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
+	A_tmp.Multiply('T','N',1.,Q_new,tmpA,0.);
+
+    Epetra_SerialDenseMatrix A_new;
+	A_new.Shape(N,N);
+    A_new.Multiply('N','N',1.,A_tmp,P,0.);
+
+    a = A_new.A();
+
+	//--------------------------------------------------------
+    // STEP 2
+    // transform A to a upper hessenberg matrix and keep B as
+    // an upper diagonal matrix
+    //--------------------------------------------------------
+
+	char job = {'S'};
+	char COMPQ = {'V'};
+	char COMPZ = {'V'};
+
+	int ILO = 1;
+	int IHI = N;
+
+	int lwork = 0;
+	if (N == 1) lwork = 1;
+	else
+	{
+	  lwork = N;
+	}
+	double work[lwork];
+
+	Epetra_SerialDenseMatrix A1(true);
+	Epetra_SerialDenseMatrix A2(true);
+	A1.Shape(N,N);
+	A2.Shape(N,N);
+	double* Q = A1.A();
+	int LDQ = A1.LDA();
+	double* Z = A2.A();
+	int LDZ = A2.LDA();
+
+	dgghrd(&COMPQ,&COMPZ,&N,&ILO,&IHI,a,&LDA,b,&LDB,Q,&LDQ,Z,&LDZ,&info);
+
+    if (info < 0)
+    	cout << "Lapack algorithm dgghrd: The " << info  << "-th argument had an illegal value" << endl;
+
+	//--------------------------------------------------------
+    // STEP 3
+    // transform A which is an upper hessenberg matrix to an upper
+	// diagonal matrix and keep B an upper diagonal matrix via a
+	// QZ-transformation
+    //--------------------------------------------------------
+
+	// vectors which contain the eigenvalues of the problem
+	Epetra_SerialDenseVector L1(true);
+	Epetra_SerialDenseVector L2(true);
+	Epetra_SerialDenseVector L3(true);
+	L1.Shape(N,1);
+	L2.Shape(N,1);
+	L3.Shape(N,1);
+	double* ALPHAR = L1.A();
+	double* ALPHAI = L2.A();
+	double* BETA = L3.A();
+
+	int LDH = A_new.LDA();
+	int LDT = B.LDA();
+
+	char COMPQ2 = {'I'};
+	char COMPZ2 = {'I'};
+
+	Epetra_SerialDenseMatrix Q_2(true);
+	Q_2.Shape(N,N);
+	Epetra_SerialDenseMatrix Z_2(true);
+	Z_2.Shape(N,N);
+    double* q_2 = Q_2.A();
+    double* z_2 = Z_2.A();
+
+	dhgeqz(&job,&COMPQ2,&COMPZ2,&N,&ILO,&IHI,a,&LDH,b,&LDT,ALPHAR,ALPHAI,BETA,q_2,&LDQ,z_2,&LDZ,work,&lwork,&info);
+
+    if (info < 0)
+    	cout << "Lapack algorithm dhgeqz: The "<< info << "-th argument haa an illegal value!" << endl;
+    else if(info > N)
+    	cout << "Lapack algorithm dhgeqz: The QZ iteration did not converge. (H,T) is not in Schur Form, but the Eigenvalues should be correct!" << endl;
+
+/*	cout << "--------Final----------" << endl;
+	cout << std::setprecision(16) << "A 2" << A_new << endl;
+	cout << std::setprecision(16) <<  "B 2" << tmpB << endl;
+	cout << std::setprecision(16) << "Q 2 " << Q_2 << endl;
+	cout << std::setprecision(16) << "Z 2 " << Z_2 << endl;*/
+
+
+	double maxlambda = 0.;
+	for (int i=0; i<N; ++i)
+	{
+		if (BETA[i] > 1e-13)
+		{
+			// Eigenvalues:
+			// cout << "lambda " << i << ":  " <<  ALPHAR[i]/BETA[i] << endl;
+			maxlambda = max(ALPHAR[i]/BETA[i],maxlambda);
+		}
+		if ( ALPHAI[i] > 1e-12 )
+		{
+			cout << " Warning: you have an imaginary EW " << ALPHAI[i] << endl;
+		}
+	}
+	return maxlambda;
+}
+
 
 /*----------------------------------------------------------------------*
  |  singular value decomposition (SVD) of a real M-by-N matrix A.       |

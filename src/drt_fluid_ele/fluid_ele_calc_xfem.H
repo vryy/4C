@@ -238,6 +238,7 @@ private:
     //! compute stabilization factors for Nitsche's method
     void NIT_ComputeStabfac(
         bool                            fluidfluidcoupling,
+        Teuchos::ParameterList&         params,            ///< parameter list
         double &                        stabfac_visc,         ///< Nitsche stabilization factor
         double &                        stabfac_conv,         ///< stabilization factor 2
         const double                    NIT_stab_fac,
@@ -248,6 +249,8 @@ private:
         double &                        velgrad_interface_fac,
         const double                    gamma_press_coupling,
         double &                        press_coupling_fac,
+        bool                            nitsche_evp_,
+        int                             sid,
         const double                    h_k
     );
 

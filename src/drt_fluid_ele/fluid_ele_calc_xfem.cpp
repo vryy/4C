@@ -1968,8 +1968,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
         double gamma_ghost_penalty = 0.0;
         double presscoupling_interface_fac = 0.0;
         double gamma_press_coupling = 0.0;
+        bool nitsche_evp = false;
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
+        		           params,
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
                            stabfac_conv,               // stabfac 2 for additional stabilization term to set
                            0.0,                        // viscous Nitsche prefactor
@@ -1980,6 +1982,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
                            velgrad_interface_fac,
                            gamma_press_coupling,
                            presscoupling_interface_fac,
+                           nitsche_evp,
+                           sid,
                            h_k);
 
         //--------------------------------------------
@@ -2856,8 +2860,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         double gamma_ghost_penalty = 0.0;
         double presscoupling_interface_fac = 0.0;
         double gamma_press_coupling = 0.0;
+        bool nitsche_evp = false;
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
+        		           params,
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
                            stabfac_conv,               // stabfac 2 for additional stabilization term to set
                            NIT_stab_fac,               // viscous Nitsche prefactor
@@ -2868,6 +2874,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
                            velgrad_interface_fac,
                            gamma_press_coupling,
                            presscoupling_interface_fac,
+                           nitsche_evp,
+                           sid,
                            h_k);
 
 
@@ -3044,6 +3052,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   bool velgrad_interface_stab = params.get<bool>("velgrad_interface_stab");
 
   bool presscoupling_interface_stab = params.get<bool>("PRESSCOUPLING_INTERFACE_STAB");
+
+  bool nitsche_evp = params.get<bool>("NITSCHE_EVP");
 
   if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
   {
@@ -3419,6 +3429,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
           gamma_press_coupling = params.get<double>("PRESSCOUPLING_INTERFACE_FAC");
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
+        		           params,
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
                            stabfac_conv,               // stabfac 2 for additional stabilization term to set
                            NIT_stab_fac,               // viscous Nitsche prefactor
@@ -3429,6 +3440,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
                            velgrad_interface_fac,
                            gamma_press_coupling,
                            presscoupling_interface_fac,
+                           nitsche_evp,
+                           sid,
                            h_k);
 
         if(fluidfluidcoupling)
@@ -3530,6 +3543,7 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     bool                            fluidfluidcoupling,
+    Teuchos::ParameterList&         params,            ///< parameter list
     double &                        stabfac_visc,         ///< Nitsche stabilization factor
     double &                        stabfac_conv,         ///< stabilization factor 2
     const double                    NIT_stab_fac,         ///< stabilization factor for Nitsche term
@@ -3540,6 +3554,8 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     double &                        velgrad_interface_fac,
     const double                    gamma_press_coupling,
     double &                        press_coupling_fac,
+    bool                            nitsche_evp,
+    int                             sid,
     const double                    h_k)
 {
   // additional stabilization for convective stabilization
@@ -3638,9 +3654,24 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     //   \                                   /        \                               /
     */
 
-    // max(1,alpha)
-    //stabfac_visc = max(1.0*my::densaf_,NIT_stab_fac);
-    stabfac_visc = NIT_stab_fac;
+    if (nitsche_evp)
+    {
+    	// get the nitsche parameter from the eigenvalue problem
+    	std::map<int,double > sideidtonitschepar = *params.get<RCP<std::map<int,double > > >("nitschepar");
+    	std::map<int, double >::const_iterator iter = sideidtonitschepar.find(sid);
+
+        if (iter != sideidtonitschepar.end())
+        	stabfac_visc = iter->second;
+        else
+      	  dserror("no stabfac_visc found!");
+    }
+    else
+    {
+    	// max(1,alpha)
+    	//stabfac_visc = max(1.0*my::densaf_,NIT_stab_fac);
+    	stabfac_visc = NIT_stab_fac;
+    }
+
 
     /*
     //    /                                           \        /                        i               \

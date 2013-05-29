@@ -9,7 +9,6 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
             shahmiri@lnm.mw.tum.de
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -2792,8 +2791,8 @@ void EmbImpl<distype, emb_distype>::EvaluateEmb( LINALG::Matrix<nsd_,1> & xside 
  *--------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
 void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
-    Epetra_SerialDenseMatrix &    C_uu_,          // standard bg-bg-matrix
-    Epetra_SerialDenseVector &    rhs_Cu_,        // standard bg-rhs
+    Epetra_SerialDenseMatrix &    C_uu,          // standard bg-bg-matrix
+    Epetra_SerialDenseVector &    rhs_Cu,        // standard bg-rhs
     bool &                        coupling,       // assemble coupling terms (yes/no)
     bool &                        bg_mortaring,   // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
     LINALG::Matrix<nsd_,1> &      normal,         // normal vector
@@ -2808,9 +2807,9 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     double &                      velgrad_interface_fac, //stabilization fac for velocity gradients at the interface
     bool &                        presscoupling_interface_stab,// penalty term for pressure coupling at the interface
     double &                      presscoupling_interface_fac,//stabilization fac for pressure coupling at the interface
-    LINALG::Matrix<nen_,1> &      funct_,         // bg shape functions
-    LINALG::Matrix<nsd_,nen_> &   derxy_,         // bg deriv
-    LINALG::Matrix<nsd_,nsd_> &   vderxy_,        // bg deriv^n
+    LINALG::Matrix<nen_,1> &      funct,         // bg shape functions
+    LINALG::Matrix<nsd_,nen_> &   derxy,         // bg deriv
+    LINALG::Matrix<nsd_,nsd_> &   vderxy,        // bg deriv^n
     double &                      press,          // bg pressure at integration point
     LINALG::Matrix<nsd_,1> &      velint,         // bg u^n
     LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP, // Dirichlet velocity vector or prescribed jump vector
@@ -2853,7 +2852,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 
   // funct_ * timefac * fac * funct_ (dyadic product)
   LINALG::Matrix<nen_,1> funct_timefacfac(true);
-  funct_timefacfac.Update(timefacfac,funct_,0.0);
+  funct_timefacfac.Update(timefacfac,funct,0.0);
 
   LINALG::Matrix<emb_nen_,1> emb_funct_timefacfac(true);
   emb_funct_timefacfac.Update(timefacfac,emb_funct_,0.0);
@@ -2867,7 +2866,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 
   LINALG::Matrix<emb_nen_,nen_> emb_funct_dyad_timefacfac(true);
   LINALG::Matrix<emb_nen_,nen_> emb_funct_dyad_k1_timefacfac(true);
-  emb_funct_dyad_timefacfac.MultiplyNT(emb_funct_timefacfac, funct_);
+  emb_funct_dyad_timefacfac.MultiplyNT(emb_funct_timefacfac, funct);
   emb_funct_dyad_k1_timefacfac.Update(kappa1, emb_funct_dyad_timefacfac, 0.0);
 
 
@@ -2884,7 +2883,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
   //-----------------------------------------------
   LINALG::Matrix<nen_,nen_> funct_dyad_timefacfac(true);
   LINALG::Matrix<nen_,nen_> funct_dyad_k1_timefacfac(true);
-  funct_dyad_timefacfac.MultiplyNT(funct_timefacfac, funct_);
+  funct_dyad_timefacfac.MultiplyNT(funct_timefacfac, funct);
   funct_dyad_k1_timefacfac.Update(kappa1,funct_dyad_timefacfac,0.0);
 
   for(int ir = 0; ir<nen_; ir++)
@@ -2898,16 +2897,16 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     {
       int iPres = ic*(nsd_+1)+3;
 
-      C_uu_(idVelx, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
-      C_uu_(idVely, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
-      C_uu_(idVelz, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
+      C_uu(idVelx, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
+      C_uu(idVely, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
+      C_uu(idVelz, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
     }
 
     // -(v,p*n)
     double funct_k1_timefacfac_press = funct_timefacfac(ir)*press*kappa1;
-    rhs_Cu_(idVelx,0) -= funct_k1_timefacfac_press*normal(Velx);
-    rhs_Cu_(idVely,0) -= funct_k1_timefacfac_press*normal(Vely);
-    rhs_Cu_(idVelz,0) -= funct_k1_timefacfac_press*normal(Velz);
+    rhs_Cu(idVelx,0) -= funct_k1_timefacfac_press*normal(Velx);
+    rhs_Cu(idVely,0) -= funct_k1_timefacfac_press*normal(Vely);
+    rhs_Cu(idVelz,0) -= funct_k1_timefacfac_press*normal(Velz);
   }
 
 
@@ -2968,9 +2967,9 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 
         // -(v,p*n)
         double funct_k2_timefacfac_press = funct_timefacfac(ir)*emb_press*kappa2;
-        rhs_Cu_(idVelx,0) -= funct_k2_timefacfac_press*normal(Velx);
-        rhs_Cu_(idVely,0) -= funct_k2_timefacfac_press*normal(Vely);
-        rhs_Cu_(idVelz,0) -= funct_k2_timefacfac_press*normal(Velz);
+        rhs_Cu(idVelx,0) -= funct_k2_timefacfac_press*normal(Velx);
+        rhs_Cu(idVely,0) -= funct_k2_timefacfac_press*normal(Vely);
+        rhs_Cu(idVelz,0) -= funct_k2_timefacfac_press*normal(Velz);
       }
 
 
@@ -3029,20 +3028,20 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       int iVely = ic*(nsd_+1)+1;
       int iVelz = ic*(nsd_+1)+2;
 
-      C_uu_(idPres, iVelx) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
-      C_uu_(idPres, iVely) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
-      C_uu_(idPres, iVelz) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
+      C_uu(idPres, iVelx) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
+      C_uu(idPres, iVely) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
+      C_uu(idPres, iVelz) -= alpha_p*funct_dyad_k1_timefacfac(ir,ic)*normal(Velz);
     }
 
     // (q*n,u)
     double velint_normal = velint.Dot(normal);
-    rhs_Cu_(idPres,0) += alpha_p*funct_timefacfac(ir)*kappa1*velint_normal;
+    rhs_Cu(idPres,0) += alpha_p*funct_timefacfac(ir)*kappa1*velint_normal;
 
     //        if(!coupling) // weak Dirichlet case
     //        {
     //          // -(q*n,u_DBC)
     //          double ivelint_WDBC_JUMP_normal = ivelint_WDBC_JUMP.Dot(normal);
-    //          rhs_Cu_(idPres,0) -= funct_timefacfac(ir)*ivelint_WDBC_JUMP_normal;
+    //          rhs_Cu(idPres,0) -= funct_timefacfac(ir)*ivelint_WDBC_JUMP_normal;
     //        }
   }
 
@@ -3070,7 +3069,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 
       // -(q*n,u)
       double emb_velint_normal = emb_velint.Dot(normal);
-      rhs_Cu_(idPres,0) -= alpha_p*funct_timefacfac(ir)*kappa1*emb_velint_normal;
+      rhs_Cu(idPres,0) -= alpha_p*funct_timefacfac(ir)*kappa1*emb_velint_normal;
 
     }
   }// end coupling
@@ -3145,10 +3144,10 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 
 
   LINALG::Matrix<nen_,1> e_funct_visc1_timefacfac(true);
-  e_funct_visc1_timefacfac.Update(k1mu1_fac, funct_, 0.0);
+  e_funct_visc1_timefacfac.Update(k1mu1_fac, funct, 0.0);
 
   LINALG::Matrix<nen_,1> e_funct_visc2_timefacfac(true);
-  e_funct_visc2_timefacfac.Update(k2mu2_fac, funct_, 0.0);
+  e_funct_visc2_timefacfac.Update(k2mu2_fac, funct, 0.0);
 
   //            LINALG::Matrix<emb_nen_,1> s_funct_visc_timefacfac(true);
   //            s_funct_visc_timefacfac.Update(k2mu2_fac, emb_funct_, 0.0);
@@ -3169,43 +3168,43 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       // - (v1, (2*k1*mu1) *eps(Du1)*n)
 
       //(x,x)
-      C_uu_(idVelx, iVelx) -= e_funct_visc1_timefacfac(ir)*(         normal(Velx)*derxy_(Velx,ic)
-          + 0.5 * normal(Vely)*derxy_(Vely,ic)
-          + 0.5 * normal(Velz)*derxy_(Velz,ic)  );
+      C_uu(idVelx, iVelx) -= e_funct_visc1_timefacfac(ir)*(         normal(Velx)*derxy(Velx,ic)
+          + 0.5 * normal(Vely)*derxy(Vely,ic)
+          + 0.5 * normal(Velz)*derxy(Velz,ic)  );
       //(x,y)
-      C_uu_(idVelx, iVely) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy_(Velx,ic);
+      C_uu(idVelx, iVely) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy(Velx,ic);
       //(x,z)
-      C_uu_(idVelx, iVelz) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy_(Velx,ic);
+      C_uu(idVelx, iVelz) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy(Velx,ic);
 
       //(y,x)
-      C_uu_(idVely, iVelx) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy_(Vely,ic);
+      C_uu(idVely, iVelx) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy(Vely,ic);
       //(y,y)
-      C_uu_(idVely, iVely) -= e_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy_(Velx,ic)
-          +       normal(Vely)*derxy_(Vely,ic)
-          + 0.5 * normal(Velz)*derxy_(Velz,ic)  );
+      C_uu(idVely, iVely) -= e_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy(Velx,ic)
+          +       normal(Vely)*derxy(Vely,ic)
+          + 0.5 * normal(Velz)*derxy(Velz,ic)  );
       //(y,z)
-      C_uu_(idVely, iVelz) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy_(Vely,ic);
+      C_uu(idVely, iVelz) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy(Vely,ic);
 
       //(z,x)
-      C_uu_(idVelz, iVelx) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy_(Velz,ic);
+      C_uu(idVelz, iVelx) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy(Velz,ic);
       //(z,y)
-      C_uu_(idVelz, iVely) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy_(Velz,ic);
+      C_uu(idVelz, iVely) -= e_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy(Velz,ic);
       //(z,z)
-      C_uu_(idVelz, iVelz) -= e_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy_(Velx,ic)
-          + 0.5 * normal(Vely)*derxy_(Vely,ic)
-          +       normal(Velz)*derxy_(Velz,ic)  );
+      C_uu(idVelz, iVelz) -= e_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy(Velx,ic)
+          + 0.5 * normal(Vely)*derxy(Vely,ic)
+          +       normal(Velz)*derxy(Velz,ic)  );
     }
 
     // - (v1, (2*k1*mu1) *eps(Du1)*n)
-    rhs_Cu_(idVelx,0) += e_funct_visc1_timefacfac(ir)*(            vderxy_(Velx,Velx)                      *normal(Velx)
-        + 0.5 * ( vderxy_(Velx,Vely) + vderxy_(Vely,Velx))*normal(Vely)
-        + 0.5 * ( vderxy_(Velx,Velz) + vderxy_(Velz,Velx))*normal(Velz)  );
-    rhs_Cu_(idVely,0) += e_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy_(Vely,Velx) + vderxy_(Velx,Vely))*normal(Velx)
-        +         vderxy_(Vely,Vely)                      *normal(Vely)
-        + 0.5 * ( vderxy_(Vely,Velz) + vderxy_(Velz,Vely))*normal(Velz)  );
-    rhs_Cu_(idVelz,0) += e_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy_(Velz,Velx) + vderxy_(Velx,Velz))*normal(Velx)
-        + 0.5 * ( vderxy_(Velz,Vely) + vderxy_(Vely,Velz))*normal(Vely)
-        +         vderxy_(Velz,Velz)                      *normal(Velz)  );
+    rhs_Cu(idVelx,0) += e_funct_visc1_timefacfac(ir)*(            vderxy(Velx,Velx)                      *normal(Velx)
+        + 0.5 * ( vderxy(Velx,Vely) + vderxy(Vely,Velx))*normal(Vely)
+        + 0.5 * ( vderxy(Velx,Velz) + vderxy(Velz,Velx))*normal(Velz)  );
+    rhs_Cu(idVely,0) += e_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy(Vely,Velx) + vderxy(Velx,Vely))*normal(Velx)
+        +         vderxy(Vely,Vely)                      *normal(Vely)
+        + 0.5 * ( vderxy(Vely,Velz) + vderxy(Velz,Vely))*normal(Velz)  );
+    rhs_Cu(idVelz,0) += e_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy(Velz,Velx) + vderxy(Velx,Velz))*normal(Velx)
+        + 0.5 * ( vderxy(Velz,Vely) + vderxy(Vely,Velz))*normal(Vely)
+        +         vderxy(Velz,Velz)                      *normal(Velz)  );
 
   }
 
@@ -3238,43 +3237,43 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
         // + (v2, (2*k1*mu1) *eps(Du1)*n)
 
         //(x,x)
-        C_uiu_(idVelx, iVelx) += s_funct_visc1_timefacfac(ir)*(         normal(Velx)*derxy_(Velx,ic)
-            + 0.5 * normal(Vely)*derxy_(Vely,ic)
-            + 0.5 * normal(Velz)*derxy_(Velz,ic)  );
+        C_uiu_(idVelx, iVelx) += s_funct_visc1_timefacfac(ir)*(         normal(Velx)*derxy(Velx,ic)
+            + 0.5 * normal(Vely)*derxy(Vely,ic)
+            + 0.5 * normal(Velz)*derxy(Velz,ic)  );
         //(x,y)
-        C_uiu_(idVelx, iVely) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy_(Velx,ic);
+        C_uiu_(idVelx, iVely) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy(Velx,ic);
         //(x,z)
-        C_uiu_(idVelx, iVelz) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy_(Velx,ic);
+        C_uiu_(idVelx, iVelz) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy(Velx,ic);
 
         //(y,x)
-        C_uiu_(idVely, iVelx) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy_(Vely,ic);
+        C_uiu_(idVely, iVelx) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy(Vely,ic);
         //(y,y)
-        C_uiu_(idVely, iVely) += s_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy_(Velx,ic)
-            +       normal(Vely)*derxy_(Vely,ic)
-            + 0.5 * normal(Velz)*derxy_(Velz,ic)  );
+        C_uiu_(idVely, iVely) += s_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy(Velx,ic)
+            +       normal(Vely)*derxy(Vely,ic)
+            + 0.5 * normal(Velz)*derxy(Velz,ic)  );
         //(y,z)
-        C_uiu_(idVely, iVelz) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy_(Vely,ic);
+        C_uiu_(idVely, iVelz) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velz)*derxy(Vely,ic);
 
         //(z,x)
-        C_uiu_(idVelz, iVelx) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy_(Velz,ic);
+        C_uiu_(idVelz, iVelx) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Velx)*derxy(Velz,ic);
         //(z,y)
-        C_uiu_(idVelz, iVely) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy_(Velz,ic);
+        C_uiu_(idVelz, iVely) += s_funct_visc1_timefacfac(ir)*    0.5 * normal(Vely)*derxy(Velz,ic);
         //(z,z)
-        C_uiu_(idVelz, iVelz) += s_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy_(Velx,ic)
-            + 0.5 * normal(Vely)*derxy_(Vely,ic)
-            +       normal(Velz)*derxy_(Velz,ic)  );
+        C_uiu_(idVelz, iVelz) += s_funct_visc1_timefacfac(ir)*(   0.5 * normal(Velx)*derxy(Velx,ic)
+            + 0.5 * normal(Vely)*derxy(Vely,ic)
+            +       normal(Velz)*derxy(Velz,ic)  );
       }
 
       // - (v2, (2*k1*mu1) *eps(Du1)*n)
-      rhC_ui_(idVelx,0) -= s_funct_visc1_timefacfac(ir)*(            vderxy_(Velx,Velx)                      *normal(Velx)
-          + 0.5 * ( vderxy_(Velx,Vely) + vderxy_(Vely,Velx))*normal(Vely)
-          + 0.5 * ( vderxy_(Velx,Velz) + vderxy_(Velz,Velx))*normal(Velz)  );
-      rhC_ui_(idVely,0) -= s_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy_(Vely,Velx) + vderxy_(Velx,Vely))*normal(Velx)
-          +         vderxy_(Vely,Vely)                      *normal(Vely)
-          + 0.5 * ( vderxy_(Vely,Velz) + vderxy_(Velz,Vely))*normal(Velz)  );
-      rhC_ui_(idVelz,0) -= s_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy_(Velz,Velx) + vderxy_(Velx,Velz))*normal(Velx)
-          + 0.5 * ( vderxy_(Velz,Vely) + vderxy_(Vely,Velz))*normal(Vely)
-          +         vderxy_(Velz,Velz)                      *normal(Velz)  );
+      rhC_ui_(idVelx,0) -= s_funct_visc1_timefacfac(ir)*(            vderxy(Velx,Velx)                      *normal(Velx)
+          + 0.5 * ( vderxy(Velx,Vely) + vderxy(Vely,Velx))*normal(Vely)
+          + 0.5 * ( vderxy(Velx,Velz) + vderxy(Velz,Velx))*normal(Velz)  );
+      rhC_ui_(idVely,0) -= s_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy(Vely,Velx) + vderxy(Velx,Vely))*normal(Velx)
+          +         vderxy(Vely,Vely)                      *normal(Vely)
+          + 0.5 * ( vderxy(Vely,Velz) + vderxy(Velz,Vely))*normal(Velz)  );
+      rhC_ui_(idVelz,0) -= s_funct_visc1_timefacfac(ir)*(    0.5 * ( vderxy(Velz,Velx) + vderxy(Velx,Velz))*normal(Velx)
+          + 0.5 * ( vderxy(Velz,Vely) + vderxy(Vely,Velz))*normal(Vely)
+          +         vderxy(Velz,Velz)                      *normal(Velz)  );
 
     }
   }// end coupling
@@ -3287,7 +3286,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
 
 
     LINALG::Matrix<nen_,1> e_funct_visc2_timefacfac(true);
-    e_funct_visc2_timefacfac.Update(k2mu2_fac, funct_, 0.0);
+    e_funct_visc2_timefacfac.Update(k2mu2_fac, funct, 0.0);
 
 
     for(int ir = 0; ir<nen_; ir++)
@@ -3334,13 +3333,13 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       }
 
       // - (v1, (2*k2*mu2) *eps(u2)*n)
-      rhs_Cu_(idVelx,0) += e_funct_visc2_timefacfac(ir)*(            emb_vderxy_(Velx,Velx)                          *normal(Velx)
+      rhs_Cu(idVelx,0) += e_funct_visc2_timefacfac(ir)*(            emb_vderxy_(Velx,Velx)                          *normal(Velx)
           + 0.5 * ( emb_vderxy_(Velx,Vely) + emb_vderxy_(Vely,Velx))*normal(Vely)
           + 0.5 * ( emb_vderxy_(Velx,Velz) + emb_vderxy_(Velz,Velx))*normal(Velz)  );
-      rhs_Cu_(idVely,0) += e_funct_visc2_timefacfac(ir)*(    0.5 * ( emb_vderxy_(Vely,Velx) + emb_vderxy_(Velx,Vely))*normal(Velx)
+      rhs_Cu(idVely,0) += e_funct_visc2_timefacfac(ir)*(    0.5 * ( emb_vderxy_(Vely,Velx) + emb_vderxy_(Velx,Vely))*normal(Velx)
           +         emb_vderxy_(Vely,Vely)                          *normal(Vely)
           + 0.5 * ( emb_vderxy_(Vely,Velz) + emb_vderxy_(Velz,Vely))*normal(Velz)  );
-      rhs_Cu_(idVelz,0) += e_funct_visc2_timefacfac(ir)*(    0.5 * ( emb_vderxy_(Velz,Velx) + emb_vderxy_(Velx,Velz))*normal(Velx)
+      rhs_Cu(idVelz,0) += e_funct_visc2_timefacfac(ir)*(    0.5 * ( emb_vderxy_(Velz,Velx) + emb_vderxy_(Velx,Velz))*normal(Velx)
           + 0.5 * ( emb_vderxy_(Velz,Vely) + emb_vderxy_(Vely,Velz))*normal(Vely)
           +         emb_vderxy_(Velz,Velz)                          *normal(Velz)  );
 
@@ -3441,50 +3440,50 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       int iVelz = ic*(nsd_+1)+2;
 
       //(x,x)
-      C_uu_(idVelx, iVelx) -= alpha*e_funct_visc1_timefacfac(ic)*(         normal(Velx)*derxy_(Velx,ir)
-          + 0.5 * normal(Vely)*derxy_(Vely,ir)
-          + 0.5 * normal(Velz)*derxy_(Velz,ir)  );
+      C_uu(idVelx, iVelx) -= alpha*e_funct_visc1_timefacfac(ic)*(         normal(Velx)*derxy(Velx,ir)
+          + 0.5 * normal(Vely)*derxy(Vely,ir)
+          + 0.5 * normal(Velz)*derxy(Velz,ir)  );
       //(y,x)
-      C_uu_(idVely, iVelx) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy_(Velx,ir);
+      C_uu(idVely, iVelx) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy(Velx,ir);
       //(z,x)
-      C_uu_(idVelz, iVelx) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy_(Velx,ir);
+      C_uu(idVelz, iVelx) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy(Velx,ir);
 
       //(x,y)
-      C_uu_(idVelx, iVely) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy_(Vely,ir);
+      C_uu(idVelx, iVely) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy(Vely,ir);
       //(y,y)
-      C_uu_(idVely, iVely) -= alpha*e_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy_(Velx,ir)
-          +       normal(Vely)*derxy_(Vely,ir)
-          + 0.5 * normal(Velz)*derxy_(Velz,ir)  );
+      C_uu(idVely, iVely) -= alpha*e_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy(Velx,ir)
+          +       normal(Vely)*derxy(Vely,ir)
+          + 0.5 * normal(Velz)*derxy(Velz,ir)  );
       //(z,y)
-      C_uu_(idVelz, iVely) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy_(Vely,ir);
+      C_uu(idVelz, iVely) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy(Vely,ir);
 
       //(x,z)
-      C_uu_(idVelx, iVelz) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy_(Velz,ir);
+      C_uu(idVelx, iVelz) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy(Velz,ir);
       //(y,z)
-      C_uu_(idVely, iVelz) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy_(Velz,ir);
+      C_uu(idVely, iVelz) -= alpha*e_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy(Velz,ir);
       //(z,z)
-      C_uu_(idVelz, iVelz) -= alpha*e_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy_(Velx,ir)
-          + 0.5 * normal(Vely)*derxy_(Vely,ir)
-          +       normal(Velz)*derxy_(Velz,ir)  );
+      C_uu(idVelz, iVelz) -= alpha*e_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy(Velx,ir)
+          + 0.5 * normal(Vely)*derxy(Vely,ir)
+          +       normal(Velz)*derxy(Velz,ir)  );
     }
     //  (2mu1k1*eps(v1)*n, u1)
     double timefacfac_visc = alpha*timefacfac*2.0*visceff_1*kappa1;
-    rhs_Cu_(idVelx,0) += timefacfac_visc* (     derxy_(Velx,ir) *       normal(Velx) * velint(Velx)
-        + derxy_(Vely,ir) * 0.5* (normal(Vely) * velint(Velx) + normal(Velx)*velint(Vely))
-        + derxy_(Velz,ir) * 0.5* (normal(Velz) * velint(Velx) + normal(Velx)*velint(Velz)));
+    rhs_Cu(idVelx,0) += timefacfac_visc* (     derxy(Velx,ir) *       normal(Velx) * velint(Velx)
+        + derxy(Vely,ir) * 0.5* (normal(Vely) * velint(Velx) + normal(Velx)*velint(Vely))
+        + derxy(Velz,ir) * 0.5* (normal(Velz) * velint(Velx) + normal(Velx)*velint(Velz)));
 
-    rhs_Cu_(idVely,0) += timefacfac_visc* (     derxy_(Velx,ir) * 0.5* (normal(Vely) * velint(Velx) + normal(Velx)*velint(Vely))
-        + derxy_(Vely,ir) *       normal(Vely) * velint(Vely)
-        + derxy_(Velz,ir) * 0.5* (normal(Velz) * velint(Vely) + normal(Vely)*velint(Velz)));
+    rhs_Cu(idVely,0) += timefacfac_visc* (     derxy(Velx,ir) * 0.5* (normal(Vely) * velint(Velx) + normal(Velx)*velint(Vely))
+        + derxy(Vely,ir) *       normal(Vely) * velint(Vely)
+        + derxy(Velz,ir) * 0.5* (normal(Velz) * velint(Vely) + normal(Vely)*velint(Velz)));
 
-    rhs_Cu_(idVelz,0) += timefacfac_visc* (     derxy_(Velx,ir) * 0.5* (normal(Velx) * velint(Velz) + normal(Velz)*velint(Velx))
-        + derxy_(Vely,ir) * 0.5* (normal(Vely) * velint(Velz) + normal(Velz)*velint(Vely))
-        + derxy_(Velz,ir) *       normal(Velz) * velint(Velz));
+    rhs_Cu(idVelz,0) += timefacfac_visc* (     derxy(Velx,ir) * 0.5* (normal(Velx) * velint(Velz) + normal(Velz)*velint(Velx))
+        + derxy(Vely,ir) * 0.5* (normal(Vely) * velint(Velz) + normal(Velz)*velint(Vely))
+        + derxy(Velz,ir) *       normal(Velz) * velint(Velz));
 
     //       if(!coupling) // weak Dirichlet case
         //       {
       //         // -(2mu*eps(v)*n, u_DBC)
-    //         rhs_Cu_(idVelx,0) -= timefacfac_visc* (  derxy_(Velx,ir) *       normal(Velx) * ivelint_WDBC_JUMP(Velx)
+    //         rhs_Cu(idVelx,0) -= timefacfac_visc* (  derxy_(Velx,ir) *       normal(Velx) * ivelint_WDBC_JUMP(Velx)
     //                                                + derxy_(Vely,ir) * 0.5* (normal(Vely) * ivelint_WDBC_JUMP(Velx) + normal(Velx)*ivelint_WDBC_JUMP(Vely))
     //                                                + derxy_(Velz,ir) * 0.5* (normal(Velz) * ivelint_WDBC_JUMP(Velx) + normal(Velx)*ivelint_WDBC_JUMP(Velz)));
     //
@@ -3518,45 +3517,45 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
         int iVelz = ic*(nsd_+1)+2;
 
         //(x,x)
-        C_uui_(idVelx, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*(         normal(Velx)*derxy_(Velx,ir)
-            + 0.5 * normal(Vely)*derxy_(Vely,ir)
-            + 0.5 * normal(Velz)*derxy_(Velz,ir)  );
+        C_uui_(idVelx, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*(         normal(Velx)*derxy(Velx,ir)
+            + 0.5 * normal(Vely)*derxy(Vely,ir)
+            + 0.5 * normal(Velz)*derxy(Velz,ir)  );
         //(y,x)
-        C_uui_(idVely, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy_(Velx,ir);
+        C_uui_(idVely, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy(Velx,ir);
         //(z,x)
-        C_uui_(idVelz, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy_(Velx,ir);
+        C_uui_(idVelz, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy(Velx,ir);
 
         //(x,y)
-        C_uui_(idVelx, iVely) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy_(Vely,ir);
+        C_uui_(idVelx, iVely) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy(Vely,ir);
         //(y,y)
-        C_uui_(idVely, iVely) += alpha*s_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy_(Velx,ir)
-            +       normal(Vely)*derxy_(Vely,ir)
-            + 0.5 * normal(Velz)*derxy_(Velz,ir)  );
+        C_uui_(idVely, iVely) += alpha*s_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy(Velx,ir)
+            +       normal(Vely)*derxy(Vely,ir)
+            + 0.5 * normal(Velz)*derxy(Velz,ir)  );
         //(z,y)
-        C_uui_(idVelz, iVely) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy_(Vely,ir);
+        C_uui_(idVelz, iVely) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velz)*derxy(Vely,ir);
 
         //(x,z)
-        C_uui_(idVelx, iVelz) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy_(Velz,ir);
+        C_uui_(idVelx, iVelz) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Velx)*derxy(Velz,ir);
         //(y,z)
-        C_uui_(idVely, iVelz) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy_(Velz,ir);
+        C_uui_(idVely, iVelz) += alpha*s_funct_visc1_timefacfac(ic)*    0.5 * normal(Vely)*derxy(Velz,ir);
         //(z,z)
-        C_uui_(idVelz, iVelz) += alpha*s_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy_(Velx,ir)
-            + 0.5 * normal(Vely)*derxy_(Vely,ir)
-            +       normal(Velz)*derxy_(Velz,ir)  );
+        C_uui_(idVelz, iVelz) += alpha*s_funct_visc1_timefacfac(ic)*(   0.5 * normal(Velx)*derxy(Velx,ir)
+            + 0.5 * normal(Vely)*derxy(Vely,ir)
+            +       normal(Velz)*derxy(Velz,ir)  );
       }
       //  (2k1mu1*eps(v1)*n, u2)
       double timefacfac_visc = alpha*timefacfac*2.0*visceff_1*kappa1;
-      rhs_Cu_(idVelx,0) -= timefacfac_visc* (     derxy_(Velx,ir) *       normal(Velx) * emb_velint(Velx)
-          + derxy_(Vely,ir) * 0.5* (normal(Vely) * emb_velint(Velx) + normal(Velx)*emb_velint(Vely))
-          + derxy_(Velz,ir) * 0.5* (normal(Velz) * emb_velint(Velx) + normal(Velx)*emb_velint(Velz)));
+      rhs_Cu(idVelx,0) -= timefacfac_visc* (     derxy(Velx,ir) *       normal(Velx) * emb_velint(Velx)
+          + derxy(Vely,ir) * 0.5* (normal(Vely) * emb_velint(Velx) + normal(Velx)*emb_velint(Vely))
+          + derxy(Velz,ir) * 0.5* (normal(Velz) * emb_velint(Velx) + normal(Velx)*emb_velint(Velz)));
 
-      rhs_Cu_(idVely,0) -= timefacfac_visc* (     derxy_(Velx,ir) * 0.5* (normal(Vely) * emb_velint(Velx) + normal(Velx)*emb_velint(Vely))
-          + derxy_(Vely,ir) *       normal(Vely) * emb_velint(Vely)
-          + derxy_(Velz,ir) * 0.5* (normal(Velz) * emb_velint(Vely) + normal(Vely)*emb_velint(Velz)));
+      rhs_Cu(idVely,0) -= timefacfac_visc* (     derxy(Velx,ir) * 0.5* (normal(Vely) * emb_velint(Velx) + normal(Velx)*emb_velint(Vely))
+          + derxy(Vely,ir) *       normal(Vely) * emb_velint(Vely)
+          + derxy(Velz,ir) * 0.5* (normal(Velz) * emb_velint(Vely) + normal(Vely)*emb_velint(Velz)));
 
-      rhs_Cu_(idVelz,0) -= timefacfac_visc* (     derxy_(Velx,ir) * 0.5* (normal(Velx) * emb_velint(Velz) + normal(Velz)*emb_velint(Velx))
-          + derxy_(Vely,ir) * 0.5* (normal(Vely) * emb_velint(Velz) + normal(Velz)*emb_velint(Vely))
-          + derxy_(Velz,ir) *       normal(Velz) * emb_velint(Velz));
+      rhs_Cu(idVelz,0) -= timefacfac_visc* (     derxy(Velx,ir) * 0.5* (normal(Velx) * emb_velint(Velz) + normal(Velz)*emb_velint(Velx))
+          + derxy(Vely,ir) * 0.5* (normal(Vely) * emb_velint(Velz) + normal(Velz)*emb_velint(Vely))
+          + derxy(Velz,ir) *       normal(Velz) * emb_velint(Velz));
 
       //         // -(2mu*eps(v)*n, u_DBC)
     //         elevec1_epetra(idVelx,0) -= timefacfac_visc* (  derxy_(Velx,ir) *       normal(Velx) * velint_WDBC(Velx)
@@ -3715,22 +3714,22 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       int iVely = ic*(nsd_+1)+1;
       int iVelz = ic*(nsd_+1)+2;
 
-      C_uu_(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stabfac;
-      C_uu_(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stabfac;
-      C_uu_(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stabfac;
+      C_uu(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stabfac;
+      C_uu(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stabfac;
+      C_uu(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stabfac;
     }
 
     // -(stab * v, u)
-    rhs_Cu_(idVelx,0) -= funct_timefacfac(ir)*stabfac*velint(Velx);
-    rhs_Cu_(idVely,0) -= funct_timefacfac(ir)*stabfac*velint(Vely);
-    rhs_Cu_(idVelz,0) -= funct_timefacfac(ir)*stabfac*velint(Velz);
+    rhs_Cu(idVelx,0) -= funct_timefacfac(ir)*stabfac*velint(Velx);
+    rhs_Cu(idVely,0) -= funct_timefacfac(ir)*stabfac*velint(Vely);
+    rhs_Cu(idVelz,0) -= funct_timefacfac(ir)*stabfac*velint(Velz);
 
     if(!coupling) // weak Dirichlet case
     {
       // +(stab * v, u_DBC)
-      rhs_Cu_(idVelx,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Velx);
-      rhs_Cu_(idVely,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Vely);
-      rhs_Cu_(idVelz,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Velz);
+      rhs_Cu(idVelx,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Velx);
+      rhs_Cu(idVely,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Vely);
+      rhs_Cu(idVelz,0) += funct_timefacfac(ir)*stabfac*ivelint_WDBC_JUMP(Velz);
     }
 
   }
@@ -3756,9 +3755,9 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       }
 
       // -(stab * v, u)
-      rhs_Cu_(idVelx,0) += funct_timefacfac(ir)*stabfac*emb_velint(Velx);
-      rhs_Cu_(idVely,0) += funct_timefacfac(ir)*stabfac*emb_velint(Vely);
-      rhs_Cu_(idVelz,0) += funct_timefacfac(ir)*stabfac*emb_velint(Velz);
+      rhs_Cu(idVelx,0) += funct_timefacfac(ir)*stabfac*emb_velint(Velx);
+      rhs_Cu(idVely,0) += funct_timefacfac(ir)*stabfac*emb_velint(Vely);
+      rhs_Cu(idVelz,0) += funct_timefacfac(ir)*stabfac*emb_velint(Velz);
 
 
     }
@@ -3841,22 +3840,22 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
         int iVely = ic*(nsd_+1)+1;
         int iVelz = ic*(nsd_+1)+2;
 
-        C_uu_(idVelx, iVelx) += kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
-        C_uu_(idVely, iVely) += kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
-        C_uu_(idVelz, iVelz) += kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+        C_uu(idVelx, iVelx) += kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+        C_uu(idVely, iVely) += kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
+        C_uu(idVelz, iVelz) += kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
       }
 
       // -(stab * v, u)
-      rhs_Cu_(idVelx,0) -= kappa1*funct_timefacfac(ir)*stabfac_conv*velint(Velx);
-      rhs_Cu_(idVely,0) -= kappa1*funct_timefacfac(ir)*stabfac_conv*velint(Vely);
-      rhs_Cu_(idVelz,0) -= kappa1*funct_timefacfac(ir)*stabfac_conv*velint(Velz);
+      rhs_Cu(idVelx,0) -= kappa1*funct_timefacfac(ir)*stabfac_conv*velint(Velx);
+      rhs_Cu(idVely,0) -= kappa1*funct_timefacfac(ir)*stabfac_conv*velint(Vely);
+      rhs_Cu(idVelz,0) -= kappa1*funct_timefacfac(ir)*stabfac_conv*velint(Velz);
 
       if(!coupling) // weak Dirichlet case
       {
         // +(stab * v, u_DBC)
-        rhs_Cu_(idVelx,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*ivelint_WDBC_JUMP(Velx);
-        rhs_Cu_(idVely,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*ivelint_WDBC_JUMP(Vely);
-        rhs_Cu_(idVelz,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*ivelint_WDBC_JUMP(Velz);
+        rhs_Cu(idVelx,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*ivelint_WDBC_JUMP(Velx);
+        rhs_Cu(idVely,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*ivelint_WDBC_JUMP(Vely);
+        rhs_Cu(idVelz,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*ivelint_WDBC_JUMP(Velz);
       }
 
     }
@@ -3882,9 +3881,9 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
         }
 
         // -(stab * v, u)
-        rhs_Cu_(idVelx,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*emb_velint(Velx);
-        rhs_Cu_(idVely,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*emb_velint(Vely);
-        rhs_Cu_(idVelz,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*emb_velint(Velz);
+        rhs_Cu(idVelx,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*emb_velint(Velx);
+        rhs_Cu(idVely,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*emb_velint(Vely);
+        rhs_Cu(idVelz,0) += kappa1*funct_timefacfac(ir)*stabfac_conv*emb_velint(Velz);
 
 
       }
@@ -3956,7 +3955,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     emb_normal_deriv.MultiplyTN(emb_derxy_,normal);
 
     LINALG::Matrix<nen_,1> e_normal_deriv(true);
-    e_normal_deriv.MultiplyTN(derxy_,normal);
+    e_normal_deriv.MultiplyTN(derxy,normal);
 
     // additional stability of gradients
     // parent column
@@ -3997,7 +3996,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
         //neighbor row
         for (int vi=0; vi<nen_; ++vi)
         {
-          C_uu_(vi*4+ijdim, col) += tau_timefacfac*e_normal_deriv(vi)*e_normal_deriv(ui);
+          C_uu(vi*4+ijdim, col) += tau_timefacfac*e_normal_deriv(vi)*e_normal_deriv(ui);
         }
       }
     }
@@ -4005,7 +4004,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     LINALG::Matrix<3,1> emb_grad_u_n(true);
     emb_grad_u_n.Multiply(emb_vderxy_,normal);
     LINALG::Matrix<3,1> e_grad_u_n(true);
-    e_grad_u_n.Multiply(vderxy_,normal);
+    e_grad_u_n.Multiply(vderxy,normal);
 
     for(int idim = 0; idim <3; ++idim)
     {
@@ -4020,7 +4019,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       // v_neighbor (u_neighbor-u_parent)
       for (int vi=0; vi<nen_; ++vi)
       {
-        rhs_Cu_(vi*4+idim,0) -=  e_normal_deriv(vi)*diff_grad_u_n;
+        rhs_Cu(vi*4+idim,0) -=  e_normal_deriv(vi)*diff_grad_u_n;
       }
     }
   }// velgrad_interface_fac
@@ -4043,7 +4042,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
       // neighbor row
       for (int vi=0; vi<nen_; ++vi)
       {
-        C_uui_(vi*4+3, col) -= tau_timefacfac_press*funct_(vi)*emb_funct_(ui);
+        C_uui_(vi*4+3, col) -= tau_timefacfac_press*funct(vi)*emb_funct_(ui);
       }
     }
 
@@ -4054,13 +4053,13 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
        //parent row
        for (int vi=0; vi<emb_nen_; ++vi)
        {
-         C_uiu_(vi*4+3, col) -= tau_timefacfac_press*emb_funct_(vi)*funct_(ui);
+         C_uiu_(vi*4+3, col) -= tau_timefacfac_press*emb_funct_(vi)*funct(ui);
        }
 
        //neighbor row
        for (int vi=0; vi<nen_; ++vi)
        {
-         C_uu_(vi*4+3, col) += tau_timefacfac_press*funct_(vi)*funct_(ui);
+         C_uu(vi*4+3, col) += tau_timefacfac_press*funct(vi)*funct(ui);
        }
     }
 
@@ -4075,7 +4074,7 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
     for (int vi=0; vi<nen_; ++vi)
     {
       int row = vi*4+3;
-      rhs_Cu_(row,0) -= funct_(vi)*press_jump*tau_timefacfac_press;
+      rhs_Cu(row,0) -= funct(vi)*press_jump*tau_timefacfac_press;
     }
 
   } // presscoupling_interface_stab
@@ -4083,8 +4082,8 @@ void EmbImpl<distype, emb_distype>::NIT2_buildCouplingMatrices(
    // Inflow stabilization term for fluidfluidcoupling
    if(stabfac_conv > 0)
      NIT2_Stab_InflowCoercivity(
-       C_uu_,                            ///< standard bg-bg-matrix
-       rhs_Cu_,                          ///< standard bg-rhs
+       C_uu,                            ///< standard bg-bg-matrix
+       rhs_Cu,                          ///< standard bg-rhs
        velint,                           ///< velocity at integration point
        emb_velint,                          ///< interface velocity at integration point
        ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector

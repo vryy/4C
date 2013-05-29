@@ -33,6 +33,7 @@ Maintainer: Matthias Mayr
 #include "fsi_constrmonolithic_structuresplit.H"
 #include "fsi_mortarmonolithic_structuresplit.H"
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
+#include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
@@ -629,6 +630,34 @@ void fluid_fluid_fsi_drt()
     }
 
     // here we go...
+    fsi->Timeloop();
+
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+    // create fsi specific result test
+    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+    DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+    // do the actual testing
+    DRT::Problem::Instance()->TestAll(*comm);
+
+  }
+  break;
+  case fsi_iter_fluidfluid_monolithicfluidsplit:
+  {
+    Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(*comm,fsidyn));
+
+     //Setup the coupling, create the combined dofmap
+    fsi->SetupSystem();
+
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // Read the restart information, set vectors and variables
+      fsi->ReadRestart(restart);
+    }
+
     fsi->Timeloop();
 
     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());

@@ -105,6 +105,13 @@ namespace ADAPTER {
       Teuchos::RCP<Epetra_Vector> fcx      ///< fluid displacement step increment
       );
 
+    //rk
+    virtual void DisplacementToVelocity(
+    	    Teuchos::RCP<Epetra_Vector> fcx,
+    	    Teuchos::RCP<Epetra_Vector> ddgpre,
+    	    Teuchos::RCP<Epetra_Vector> dugpre
+    );
+
     /// Conversion of velocity to displacement at the interface without predictors or inhomogeneous DBCs
     virtual void VelocityToDisplacement(
       Teuchos::RCP<Epetra_Vector> fcx     ///< fluid velocity step increment at interface
@@ -119,8 +126,15 @@ namespace ADAPTER {
 
     virtual void UseBlockMatrix(bool splitmatrix);
 
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
-      { dserror("Not implemented for XFEM stuff."); }
+    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
+    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
+    //modified to assign fsilambda to the correct (embedded fluid)
+    //discretization in case of fluid split
+    virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter();
 
   protected:
     /// type cast pointer to XFluidFluid
@@ -155,6 +169,9 @@ namespace ADAPTER {
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
 
     bool monolithicfluidfluidfsi_;
+
+    bool isembdiscwriter_;
+
   };
 }
 

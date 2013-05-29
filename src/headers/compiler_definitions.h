@@ -46,6 +46,9 @@ Maintainer: Malte Neumann
 /* required in shell8 element. Do not remove! */
 #define fortranpow          fortranpow_
 #define s8jacb              s8jacb_
+#define dhgeqz              dhgeqz_
+#define dgghrd              dgghrd_
+#define dgeqp3              dgeqp3_
 
 #endif
 
@@ -59,6 +62,12 @@ void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, in
 void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
 void dgetrf(int *m,int *n, double *a, int *lda, int *ipiv, int* info);
 void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+void dhgeqz(char *job, char *compq, char *compz, int *n, int *ilo, int *ihi, double* h, int *ldh, double* t,
+		    int *ldt, double* alphar, double* alphai, double* beta, double* q, int *ldq,
+		    double* z, int *ldz, double *work, int *lwork, int *info);
+void dgghrd(char *compq, char *compz, int *n, int *ilo, int *ihi, double *a, int *lda, double *b, int *ldb,
+		    double *q, int *ldq, double *z, int *lzd, int *info);
+void dgeqp3(int *m, int *n, double *a, int *lda, int* jpvt, double* tau, double *work, int *lwork, int *info);
 
 #ifdef __cplusplus
 }

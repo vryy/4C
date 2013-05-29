@@ -142,6 +142,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance().Name() << " "
     << DRT::ELEMENTS::Combust3Type::Instance().Name() << " "
     << DRT::ELEMENTS::FluidType::Instance().Name() << " "
+    << DRT::ELEMENTS::FluidBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::Ale3Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Ale3_NurbsType::Instance().Name() << " "
     << DRT::ELEMENTS::Ale2Type::Instance().Name() << " "

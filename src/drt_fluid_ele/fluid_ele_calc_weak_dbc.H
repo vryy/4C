@@ -97,6 +97,14 @@ namespace DRT
         Epetra_SerialDenseMatrix&  elemat_epetra ,
         Epetra_SerialDenseVector&  elevec_epetra ) = 0;
 
+      virtual int EvaluateNitschePar(
+        FluidBoundary*             surfele       ,
+        Teuchos::ParameterList&    params        ,
+        DRT::Discretization&       discretization,
+        std::vector<int>&          lm            ,
+        Epetra_SerialDenseMatrix&  elemat_epetra1,
+        Epetra_SerialDenseMatrix&  elemat_epetra2) = 0;
+
       /*!
         \brief Allocate one static instance of the internal
                implementation class for weak dirichlet condition and
@@ -172,6 +180,15 @@ namespace DRT
         std::vector<int>&          lm            ,
         Epetra_SerialDenseMatrix&  elemat_epetra ,
         Epetra_SerialDenseVector&  elevec_epetra );
+
+
+      virtual int EvaluateNitschePar(
+        FluidBoundary*             surfele       ,
+        Teuchos::ParameterList&    params        ,
+        DRT::Discretization&       discretization,
+        std::vector<int>&          lm            ,
+        Epetra_SerialDenseMatrix&  elemat_epetra1,
+        Epetra_SerialDenseMatrix&  elemat_epetra2);
 
     private:
 
@@ -292,6 +309,15 @@ namespace DRT
          std::vector<int>&          lm            ,
          Epetra_SerialDenseMatrix&  elemat_epetra ,
          Epetra_SerialDenseVector&  elevec_epetra );
+
+       virtual int EvaluateNitschePar(
+         FluidBoundary*                lineele       ,
+         Teuchos::ParameterList&    params        ,
+         DRT::Discretization&       discretization,
+         std::vector<int>&          lm            ,
+         Epetra_SerialDenseMatrix&  elemat_epetra1,
+         Epetra_SerialDenseMatrix&  elemat_epetra2);
+
 
      private:
 

@@ -83,6 +83,9 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
   }
 
   interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(interface_->FSICondMap())));
+
+  isembdiscwriter_=false;
+
 }
 
 
@@ -227,7 +230,14 @@ void ADAPTER::FluidFluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> 
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
   /// We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
-  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
+  /*
+   * Delta u(n+1,i+1) = fac * Delta d(n+1,i+1) - dt * u(n)
+   *
+   *             / = 2 / dt   if interface time integration is second order
+   * with fac = |
+   *             \ = 1 / dt   if interface time integration is first order
+   */
+
   double timescale = TimeScaling();
   fcx->Update(-timescale*xfluidfluid_->Dt(),*veln,timescale);
 
@@ -253,6 +263,35 @@ void ADAPTER::FluidFluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> 
   fcx->Update(xfluidfluid_->Dt(),*veln,timescale);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+//needed for monolithic fluid-fluid fsi in case of fluid predictor steps
+//can be removed now, 02/2013
+void ADAPTER::FluidFluidFSI::DisplacementToVelocity(
+	    Teuchos::RCP<Epetra_Vector> fcx,
+	    Teuchos::RCP<Epetra_Vector> ddgpre,
+	    Teuchos::RCP<Epetra_Vector> dugpre
+)
+{
+	  // get interface velocity at t(n)
+	  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+	  /// We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here, taking the velocity and
+	  ///displacement predictor steps Delta Delta u(predicted) and d_structure(predicted) into consideration!
+	  /*
+	   * Delta u(n+1,i+1) = timefac* [ Delta d(n+1,i+1) + Delta d_structure(predicted)]
+	   *
+	   *                  - dt * u(n)*timefac - Delta u_fluid(predicted)
+	   *
+	   *                 / = 2 / dt  if interface time integration is second order
+	   * with   timefac    = |
+	   *                 \ = 1 / dt  if interface time integration is first order
+	   */
+	  double timefac = TimeScaling();
+	  fcx->Update(timefac,*ddgpre,-1.0,*veln,timefac);
+	  fcx->Update(-timefac*xfluidfluid_->Dt(),*dugpre,1.0);
+
+	return;
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::VelocityToDisplacement(
@@ -289,9 +328,92 @@ void ADAPTER::FluidFluidFSI::VelocityToDisplacement(
 }
 
 /*----------------------------------------------------------------------*
+ * splitmatrix is true only for monolithic fluid split
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
-  xfluidfluid_->UseBlockMatrix(condelements,*Interface(),*Interface(),splitmatrix);
+	Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
+
+	xfluidfluid_->UseBlockMatrix(condelements, *Interface(), *Interface());
+
+	if (splitmatrix)
+		isembdiscwriter_=true;
+}
+
+/*----------------------------------------------------------------------*
+ * Remove passed DOFs from Dirichlet map (required for the monolithic
+ *  fluid-fluid fluidsplit algorithm)
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+	xfluidfluid_->RemoveDirichCond(maptoremove);
+	return;
+}
+
+/*----------------------------------------------------------------------*
+ * Returns the embedded fluid DBC-MapExtractor() in the case of
+ * monolithic fluid-split
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidFluidFSI::GetDBCMapExtractor()
+{
+	return xfluidfluid_->EmbeddedDirichMaps();
+}
+
+/*----------------------------------------------------------------------*
+ *  method needed for block matrix creation on the fluid side!
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemMatrix()
+{
+	std::vector<Teuchos::RCP<const Epetra_Map> > innermaps;
+
+	//Non-interface DOF-map for embedded fluid
+	innermaps.push_back(interface_->OtherMap());
+	//DOF-map for background fluid
+	innermaps.push_back(xfluidfluid_->XFluidFluidMapExtractor()->XFluidMap());
+
+	Teuchos::RCP<Epetra_Map> innermap=LINALG::MultiMapExtractor::MergeMaps(innermaps);
+	Teuchos::RCP<Epetra_Map> condmap=Teuchos::rcp(new Epetra_Map(*interface_->FSICondMap()));
+
+	Teuchos::RCP<const Epetra_Map> condconstmap=Teuchos::rcp(new const Epetra_Map(*condmap));
+	Teuchos::RCP<const Epetra_Map> innerconstmap=Teuchos::rcp(new const Epetra_Map(*innermap));
+
+	std::vector<Teuchos::RCP<const Epetra_Map> > mergedmaps;
+	mergedmaps.push_back(condconstmap);
+	mergedmaps.push_back(innerconstmap);
+
+
+	Teuchos::RCP<const Epetra_Map> constmerged=Teuchos::rcp(new const Epetra_Map(*LINALG::MultiMapExtractor::MergeMaps(mergedmaps)));
+
+	//Map extractor extraction of FSI-DOFs from global fluid DOFs (including bg- & emb-DOFs!)
+	Teuchos::RCP<LINALG::MapExtractor> ffsextractor=Teuchos::rcp(new LINALG::MapExtractor());
+	ffsextractor->Setup(*constmerged,condconstmap,innerconstmap);
+
+#ifdef ASSEMBLYTEST
+	cout<<"Let's see if the maps are correct"<<endl;
+	constmerged->Print(cout);
+	condmap->Print(cout);
+	innermap->Print(cout);
+#endif
+
+	return xfluidfluid_->BlockSystemMatrix(innermap,condmap,ffsextractor);
+
+}
+/*---------------------------------------------------------------
+* In case of fluid split:
+* For correct output of the Lagrange Multiplier field fsilambda_,
+* which belongs to the embedded fluid discretization, we need the
+* DiscretizationWriter() for the embedded fluid, namely emboutput_.
+* (In default, DiscWriter() returns output_, the iscretizationWriter() for
+* the background fluid discretization!)
+* We used the flag isembdiscwriter_ for this.
+* It is set to 'true' in UseBlockMatrix() in case of splitmatrix=true,
+* which is only the case for fluid split.
+* That is how we ensure, that DiscWriter() for StructureSplit() remains unchanged!
+*------------------------------------------------------------------------*/
+const Teuchos::RCP<IO::DiscretizationWriter>& ADAPTER::FluidFluidFSI::DiscWriter()
+{
+	if (isembdiscwriter_)
+		return xfluidfluid_->EmbDiscWriter();
+	else
+		return xfluidfluid_->DiscWriter();
 }

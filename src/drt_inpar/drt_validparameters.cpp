@@ -4602,8 +4602,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "FSI solver with various coupling methods"
     );
 
-  Teuchos::Tuple<std::string,20> name;
-  Teuchos::Tuple<int,20> label;
+  Teuchos::Tuple<std::string,21> name;
+  Teuchos::Tuple<int,21> label;
 
   name[ 0] = "basic_sequ_stagg";                          label[ 0] = fsi_basic_sequ_stagg;
   name[ 1] = "iter_stagg_fixed_rel_param";                label[ 1] = fsi_iter_stagg_fixed_rel_param;
@@ -4625,6 +4625,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[17] = "iter_mortar_monolithicstructuresplit";      label[17] = fsi_iter_mortar_monolithicstructuresplit;
   name[18] = "iter_mortar_monolithicfluidsplit";          label[18] = fsi_iter_mortar_monolithicfluidsplit;
   name[19] = "iter_fluidfluid_monolithicstructuresplit";  label[19] = fsi_iter_fluidfluid_monolithicstructuresplit;
+  name[20] = "iter_fluidfluid_monolithicfluidsplit";      label[20] = fsi_iter_fluidfluid_monolithicfluidsplit;
 
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                     "Iteration Scheme over the fields",
@@ -5109,6 +5110,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("PRESSCOUPLING_INTERFACE_STAB","no","switch on/off pressure coupling interface stabilization",&xfluid_stab);
 
   DoubleParameter("PRESSCOUPLING_INTERFACE_FAC",  10, "define stabilization parameter for pressure coupling interface stabilization",&xfluid_stab);
+
+  BoolParameter("NITSCHE_EVP","no","switch on/off calculating nitsche parameter via solving a local eigenvalue problem",&xfluid_stab);
+
+  DoubleParameter("NITSCHE_EVP_FAC",  2, "define the factor the Eigenvalue is multiplied with",&xfluid_stab);
 
   setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the discontinuous stress field?",
                                yesnotuple,yesnovalue,&xfluid_stab);

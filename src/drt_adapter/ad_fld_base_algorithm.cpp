@@ -416,7 +416,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_lung_monolithicfluidsplit or
         coupling == fsi_iter_constr_monolithicstructuresplit or
         coupling == fsi_iter_constr_monolithicfluidsplit or
-        coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
+        coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
+        coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
     {
       // No explicit predictor for these monolithic FSI schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
@@ -526,7 +527,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           coupling == fsi_iter_constr_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
-          coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
+          coupling == fsi_iter_fluidfluid_monolithicstructuresplit 	or
+          coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
       {
         dirichletcond = false;
       }
@@ -573,7 +575,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
       bool monolithicfluidfluidfsi;
-      if(coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
+      if(coupling == fsi_iter_fluidfluid_monolithicstructuresplit
+    	  	  or   coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
         monolithicfluidfluidfsi = true;
       else
         monolithicfluidfluidfsi = false;

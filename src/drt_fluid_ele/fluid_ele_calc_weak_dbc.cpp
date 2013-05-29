@@ -2,6 +2,7 @@
 #include "fluid_ele_calc_weak_dbc.H"
 
 #include "fluid_ele.H"
+#include "fluid_ele_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -12,6 +13,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
@@ -1784,6 +1786,687 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   return 0;
 }
+//-----------------------------------------------------------------
+//    build the matrices A and B and solve the Eigenvalue Problem
+//    Ax = lambda Bx to determine the nitsche parameter for every
+//    element                                    shahmiri 27.05.
+//-----------------------------------------------------------------
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype>
+int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateNitschePar(
+  FluidBoundary*             surfele       ,
+  Teuchos::ParameterList&    params        ,
+  DRT::Discretization&       discretization,
+  std::vector<int>&          lm           ,
+  Epetra_SerialDenseMatrix&  elemat_epetra1,
+  Epetra_SerialDenseMatrix&  elemat_epetra2)
+{
+	//--------------------------------------------------
+	// get material of volume element this surface belongs to
+	RCP<MAT::Material> mat = surfele->ParentElement()->Material();
+
+	// get viscosity
+	double dynvisc = 0.0;
+	if(mat->MaterialType() == INPAR::MAT::m_fluid)
+	{
+		const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+	    // the dynimac viscosity
+	    dynvisc = actmat->Viscosity();
+	}
+
+	//--------------------------------------------------
+	// get elements location vector and ownerships of parent element
+	std::vector<int>  plm ;
+	std::vector<int>  plmowner;
+	std::vector<int>  plmstride;
+	surfele->ParentElement()->DRT::Element::LocationVector(discretization,plm,plmowner,plmstride);
+
+	//--------------------------------------------------
+	//                GET PARENT DATA
+	//--------------------------------------------------
+	// extract node coords
+	for(int i=0;i<piel;++i)
+	{
+		pxyze_(0,i)=surfele->ParentElement()->Nodes()[i]->X()[0];
+	    pxyze_(1,i)=surfele->ParentElement()->Nodes()[i]->X()[1];
+	    pxyze_(2,i)=surfele->ParentElement()->Nodes()[i]->X()[2];
+	}
+
+	std::vector<double> myedispnp ((lm  ).size(),true);
+	std::vector<double> mypedispnp((plm).size(),true);
+	if (surfele->ParentElement()->IsAle())
+	{
+		// mesh displacements, new time step, n+1
+	    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+
+	    if (dispnp==Teuchos::null)
+	    {
+	      dserror("Cannot get state vector 'dispnp'");
+	    }
+
+	    DRT::UTILS::ExtractMyValues(*dispnp,myedispnp,lm);
+	    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
+	}
+
+	if (surfele->ParentElement()->IsAle())
+	{
+		for (int i=0;i<piel;++i)
+	    {
+		  const int fi=4*i;
+		  pedispnp_(0,i) = mypedispnp[  fi];
+		  pedispnp_(1,i) = mypedispnp[1+fi];
+		  pedispnp_(2,i) = mypedispnp[2+fi];
+	    }
+
+	    for (int i=0;i<iel;++i)
+	    {
+	      const int fi=4*i;
+	      edispnp_(0,i) = myedispnp[  fi];
+	      edispnp_(1,i) = myedispnp[1+fi];
+	      edispnp_(2,i) = myedispnp[2+fi];
+	    }
+	}
+
+	if (surfele->ParentElement()->IsAle())
+	{
+		for (int i=0;i<piel;++i)
+		{
+	      pxyze_(0,i) += pedispnp_(0,i);
+	      pxyze_(1,i) += pedispnp_(1,i);
+	      pxyze_(2,i) += pedispnp_(2,i);
+	    }
+	}
+
+	//--------------------------------------------------
+	//          GET BOUNDARY ELEMENT DATA
+	//--------------------------------------------------
+
+	// local surface id
+	int surfaceid =surfele->SurfaceNumber();
+
+
+	// extract node coords
+	for(int i=0;i<iel;++i)
+	{
+	  xyze_(0,i)=surfele->Nodes()[i]->X()[0];
+	  xyze_(1,i)=surfele->Nodes()[i]->X()[1];
+	  xyze_(2,i)=surfele->Nodes()[i]->X()[2];
+	}
+
+	if (surfele->ParentElement()->IsAle())
+	{
+	 for (int i=0;i<iel;++i)
+	 {
+	   xyze_(0,i) += edispnp_(0,i);
+	   xyze_(1,i) += edispnp_(1,i);
+	   xyze_(2,i) += edispnp_(2,i);
+	 }
+	}
+
+	//--------------------------------------------------
+	// get gausspoints to integrate over boundary element
+
+	// get gauss rule
+	DRT::UTILS::GaussRule2D gaussrule=DRT::UTILS::intrule2D_undefined;
+	switch (distype)
+	{
+	  case DRT::Element::quad4:
+	  {
+	    gaussrule = DRT::UTILS::intrule_quad_4point;
+	    break;
+	  }
+	  default:
+	    dserror("invalid discretization type for fluid3surface weak DBC evaluation");
+	    break;
+	 }
+
+	 // gaussian points on surface
+	 const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+
+	 //--------------------------------------------------
+	 // the gausspoints above have to be mapped to the
+	 // parent element to be able to evaluate one sided
+	 // derivatives on the boundary[0.02916
+	 //
+	 // in addition, get information on the orientation of the
+	 // outward normal
+
+	 Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
+	 Epetra_SerialDenseMatrix derivtrafo(3,3);
+
+	 SurfaceGPToParentGP(pqxg     ,
+	                     derivtrafo,
+	                     intpoints,
+	                     pdistype ,
+	                     distype  ,
+	                     surfaceid);
+
+	 const int eledim = piel*3;
+	 elemat_epetra1.Shape(eledim,eledim);
+	 LINALG::Matrix<eledim,eledim> Amat(elemat_epetra1.A(),true);
+
+	 elemat_epetra2.Shape(eledim,eledim);
+	 LINALG::Matrix<eledim,eledim> Bmat(elemat_epetra2.A(),true);
+
+
+     //------------------------------------------------------------------
+	 //          PART I - INTEGRATION LOOP OF SURFACE ELEMENT
+	 //------------------------------------------------------------------
+
+	 for (int iquad=0;iquad<intpoints.nquad;++iquad)
+	 {
+		// cout << "iquad " << iquad << endl;
+	   // gaussian weight
+	   const double wquad = intpoints.qwgt[iquad];
+
+	   // gaussian point in boundary elements local coordinates
+	   const double xi    = intpoints.qxg [iquad][0];
+	   const double eta   = intpoints.qxg [iquad][1];
+
+	   // gaussian point in parent elements local coordinates
+	   const double r     = pqxg(iquad,0);
+	   const double s     = pqxg(iquad,1);
+	   const double t     = pqxg(iquad,2);
+
+       // ------------------------------------------------
+	   // shape function derivs of boundary element at gausspoint
+	   DRT::UTILS::shape_function_2D       (funct_,xi,eta,distype);
+	   DRT::UTILS::shape_function_2D_deriv1(deriv_,xi,eta,distype);
+
+	   // ------------------------------------------------
+	   // compute measure tensor for surface element and the infinitesimal
+	   // area element drs for the integration
+
+	   /*
+	       |                                              0 1 2
+	       |                                             +-+-+-+
+	       |       0 1 2              0...iel-1          | | | | 0
+	       |      +-+-+-+             +-+-+-+-+          +-+-+-+
+	       |      | | | | 1           | | | | | 0        | | | | .
+	       |      +-+-+-+       =     +-+-+-+-+       *  +-+-+-+ .
+	       |      | | | | 2           | | | | | 1        | | | | .
+	       |      +-+-+-+             +-+-+-+-+          +-+-+-+
+	       |                                             | | | | iel-1
+	       |                                             +-+-+-+
+	       |
+	       |       dxyzdrs             deriv              xyze^T
+	       |
+	       |
+	       |                                 +-            -+
+	       |                                 | dx   dy   dz |
+	       |                                 | --   --   -- |
+	       |                                 | dr   dr   dr |
+	       |     yields           dxyzdrs =  |              |
+	       |                                 | dx   dy   dz |
+	       |                                 | --   --   -- |
+	       |                                 | ds   ds   ds |
+	       |                                 +-            -+
+	       |
+	     */
+	    dxyzdrs_.MultiplyNT(deriv_,xyze_);
+	     /*
+	       |
+	       |      +-           -+    +-            -+   +-            -+ T
+	       |      |             |    | dx   dy   dz |   | dx   dy   dz |
+	       |      |  g11   g12  |    | --   --   -- |   | --   --   -- |
+	       |      |             |    | dr   dr   dr |   | dr   dr   dr |
+	       |      |             |  = |              | * |              |
+	       |      |             |    | dx   dy   dz |   | dx   dy   dz |
+	       |      |  g21   g22  |    | --   --   -- |   | --   --   -- |
+	       |      |             |    | ds   ds   ds |   | ds   ds   ds |
+	       |      +-           -+    +-            -+   +-            -+
+	       |
+	       | the calculation of g21 is redundant since g21=g12
+	     */
+	    metrictensor_.MultiplyNT(dxyzdrs_,dxyzdrs_);
+
+	     /*
+	                           +--------------+
+	                          /               |
+	            sqrtdetg =   /  g11*g22-g12^2
+	                       \/
+	     */
+
+	    drs_= sqrt(metrictensor_(0,0)*metrictensor_(1,1)
+	    		-
+	    		metrictensor_(0,1)*metrictensor_(1,0));
+
+
+	    // total integration factor
+	    const double fac = drs_*wquad;
+
+	    // ------------------------------------------------
+	    // compute normal
+	    double length = 0.0;
+	    n_(0) = (xyze_(1,1)-xyze_(1,0))*(xyze_(2,2)-xyze_(2,0))
+	        		 -
+	            (xyze_(2,1)-xyze_(2,0))*(xyze_(1,2)-xyze_(1,0));
+	    n_(1) = (xyze_(2,1)-xyze_(2,0))*(xyze_(0,2)-xyze_(0,0))
+	        		 -
+	            (xyze_(0,1)-xyze_(0,0))*(xyze_(2,2)-xyze_(2,0));
+	    n_(2) = (xyze_(0,1)-xyze_(0,0))*(xyze_(1,2)-xyze_(1,0))
+	        		 -
+	            (xyze_(1,1)-xyze_(1,0))*(xyze_(0,2)-xyze_(0,0));
+        length = n_.Norm2();
+
+	    for(int i=0;i<3;++i)
+	    {
+	      n_(i)/=length;
+	    }
+
+      // ------------------------------------------------
+      // shape functions and derivs of corresponding parent at gausspoint
+
+	  DRT::UTILS::shape_function_3D       (pfunct_,r,s,t,pdistype);
+	  DRT::UTILS::shape_function_3D_deriv1(pderiv_,r,s,t,pdistype);
+
+	  // get Jacobian matrix and determinant
+	  pxjm_=0;
+
+	  for(int i=0;i<piel;++i)
+	  {
+	    for(int rr=0;rr<3;++rr)
+	    {
+		  for(int mm=0;mm<3;++mm)
+		  {
+		    pxjm_(rr,mm)+=pderiv_(rr,i)*pxyze_(mm,i);
+		  }
+	    }
+	  }
+
+	  const double pdet =
+	  pxjm_(0,0)*pxjm_(1,1)*pxjm_(2,2)+
+	  pxjm_(0,1)*pxjm_(1,2)*pxjm_(2,0)+
+	  pxjm_(0,2)*pxjm_(1,0)*pxjm_(2,1)-
+	  pxjm_(0,2)*pxjm_(1,1)*pxjm_(2,0)-
+	  pxjm_(0,0)*pxjm_(1,2)*pxjm_(2,1)-
+	  pxjm_(0,1)*pxjm_(1,0)*pxjm_(2,2);
+
+	  // check for degenerated elements
+	  if (pdet < 0.0)
+	  {
+	    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f",
+	            surfele->ParentElement()->Id(),
+	            pdet);
+	  }
+
+	  //-----------------------------------------------------
+	  //
+	  //             compute global first derivates
+	  //
+	  /*
+	  Use the Jacobian and the known derivatives in element coordinate
+	  directions on the right hand side to compute the derivatives in
+	  global coordinate directions
+
+	          +-                 -+     +-    -+      +-    -+
+	          |  dx    dy    dz   |     | dN_k |      | dN_k |
+	          |  --    --    --   |     | ---- |      | ---- |
+	          |  dr    dr    dr   |     |  dx  |      |  dr  |
+	          |                   |     |      |      |      |
+	          |  dx    dy    dz   |     | dN_k |      | dN_k |
+	          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
+	          |  ds    ds    ds   |     |  dy  |      |  ds  |
+	          |                   |     |      |      |      |
+	          |  dx    dy    dz   |     | dN_k |      | dN_k |
+	          |  --    --    --   |     | ---- |      | ---- |
+	          |  dt    dt    dt   |     |  dz  |      |  dt  |
+	          +-                 -+     +-    -+      +-    -+
+
+	    */
+
+	    // inverse of jacobian (transposed)
+	    /*
+	          +-                 -+     +-                 -+ -1
+	          |  dr    ds    dt   |     |  dx    dy    dz   |
+	          |  --    --    --   |     |  --    --    --   |
+	          |  dx    dx    dx   |     |  dr    dr    dr   |
+	          |                   |     |                   |
+	          |  dr    ds    dt   |     |  dx    dy    dz   |
+	          |  --    --    --   |  =  |  --    --    --   |
+	          |  dy    dy    dy   |     |  ds    ds    ds   |
+	          |                   |     |                   |
+	          |  dr    ds    dt   |     |  dx    dy    dz   |
+	          |  --    --    --   |     |  --    --    --   |
+	          |  dz    dz    dz   |     |  dt    dt    dt   |
+	          +-                 -+     +-                 -+
+
+	    */
+	    pxji_(0,0) = (  pxjm_(1,1)*pxjm_(2,2) - pxjm_(2,1)*pxjm_(1,2))/pdet;
+	    pxji_(1,0) = (- pxjm_(1,0)*pxjm_(2,2) + pxjm_(2,0)*pxjm_(1,2))/pdet;
+	    pxji_(2,0) = (  pxjm_(1,0)*pxjm_(2,1) - pxjm_(2,0)*pxjm_(1,1))/pdet;
+	    pxji_(0,1) = (- pxjm_(0,1)*pxjm_(2,2) + pxjm_(2,1)*pxjm_(0,2))/pdet;
+	    pxji_(1,1) = (  pxjm_(0,0)*pxjm_(2,2) - pxjm_(2,0)*pxjm_(0,2))/pdet;
+	    pxji_(2,1) = (- pxjm_(0,0)*pxjm_(2,1) + pxjm_(2,0)*pxjm_(0,1))/pdet;
+	    pxji_(0,2) = (  pxjm_(0,1)*pxjm_(1,2) - pxjm_(1,1)*pxjm_(0,2))/pdet;
+	    pxji_(1,2) = (- pxjm_(0,0)*pxjm_(1,2) + pxjm_(1,0)*pxjm_(0,2))/pdet;
+	    pxji_(2,2) = (  pxjm_(0,0)*pxjm_(1,1) - pxjm_(1,0)*pxjm_(0,1))/pdet;
+
+	    //-----------------------------------------------------
+	    // compute global derivates at integration point
+	    //
+	    //   dN    +-----  dN (xi)    dxi
+	    //     i    \        i           k
+	    //   --- =   +     ------- * -----
+	    //   dx     /        dxi      dx
+	    //     j   +-----       k       j
+	    //         node k
+	    //
+	    // j : direction of derivative x/y/z
+	    //
+	    for(int nn=0;nn<piel;++nn)
+	    {
+	      for(int rr=0;rr<3;++rr)
+	      {
+	        pderxy_(rr,nn)=pxji_(rr,0)*pderiv_(0,nn);
+
+	        for(int mm=1;mm<3;++mm)
+	        {
+	          pderxy_(rr,nn)+=pxji_(rr,mm)*pderiv_(mm,nn);
+	        }
+	      }
+	    }
+
+	    const unsigned Velx = 0;
+	    const unsigned Vely = 1;
+	    const unsigned Velz = 2;
+
+    	/*
+    	//
+    	//    /                     \
+    	//   |                       |
+    	// + |  eps(v)*n , eps(u)*n  |
+    	//   |                       |
+    	//    \                     / boundaryele
+    	*/
+
+		for (int vi=0; vi<piel; ++vi)
+		{
+		  int ivx = vi*(3) + 0;
+		  int ivy = vi*(3) + 1;
+		  int ivz = vi*(3) + 2;
+
+	      for (int ui=0; ui<piel; ++ui)
+	      {
+	        int iux = ui*(3) + 0;
+			int iuy = ui*(3) + 1;
+			int iuz = ui*(3) + 2;
+
+		    //(x,x)
+			Amat(ivx, iux) += fac*(pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velx,ui)*n_(Velx)  //1
+					          +1./2.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Vely)//2
+			    		      +1./2.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Velz)//3
+			    		      +1./2.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Velx)//4
+			    		      +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Vely,ui)*n_(Vely)//5
+			    		      +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Velz)//6
+			    		      +1./2.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Velx)//7
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Vely)//8
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velz,ui)*n_(Velz)//10
+			    		      +1./4.*pderxy_(Vely,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Velx)//11
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Velx));//12
+
+
+    	    //(x,y)
+	        Amat(ivx, iuy) += fac*(1./2.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velx,ui)*n_(Vely)//1
+	        		          +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Vely)//2
+			    		      +1./4.*pderxy_(Vely,vi)* n_(Velx)*pderxy_(Velx,ui)*n_(Velx)//3
+			    		      +1./2.*pderxy_(Vely,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Vely)//4
+			    		      +1./4.*pderxy_(Vely,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Velz)//5
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Vely)//6
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Vely));//7
+
+
+		    //(x,z)
+    	    Amat(ivx, iuz) += fac*(1./2.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velx,ui)*n_(Velz)
+    	    		          +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Velz)
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Velz)
+			    		      +1./4.*pderxy_(Vely,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Velz)
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velx)*pderxy_(Velx,ui)*n_(Velx)
+			    		      +1./4.*pderxy_(Velz,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Vely)
+			    		      +1./2.*pderxy_(Velz,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Velz));
+
+			//(y,x)
+			Amat(ivy, iux) += fac*(1./2.*pderxy_(Velx,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Velx)
+					          +1./4.*pderxy_(Velx,vi)* n_(Vely)*pderxy_(Vely,ui)*n_(Vely)
+			    			  +1./4.*pderxy_(Velx,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Velz)
+			    			  +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Velx)
+			    			  +1./2.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Vely,ui)*n_(Velx)
+			    			  +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Velx)
+			    			  +1./4.*pderxy_(Velz,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Velx));
+
+		    //(y,y)
+			Amat(ivy, iuy) += fac*(1./4.*pderxy_(Velx,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Vely)//1
+			 		          +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velx,ui)*n_(Velx)//2
+	    	                  +1./2.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Vely)//3
+	    	                  +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Velz)//4
+	    	                  +1./2.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Velx)//5
+	    	                  +      pderxy_(Vely,vi)* n_(Vely)*pderxy_(Vely,ui)*n_(Vely)//6
+	    	                  +1./2.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Velz)//7
+	    	                  +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Velx)//8
+	    	                  +1./2.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Vely)//9
+	    	                  +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velz,ui)*n_(Velz)//10
+	    	                  +1./4.*pderxy_(Velz,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Vely));//11
+
+		    //(y,z)
+		    Amat(ivy, iuz) += fac*(1./4.*pderxy_(Velx,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Velz)//1
+		    				  +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Velz)//2
+		    				  +1./2.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Vely,ui)*n_(Velz)//3
+		    				  +1./4.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Velz)//4
+		    				  +1./4.*pderxy_(Velz,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Velx)//5
+		    				  +1./4.*pderxy_(Velz,vi)* n_(Vely)*pderxy_(Vely,ui)*n_(Vely)//6
+		    				  +1./2.*pderxy_(Velz,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Velz));//7
+
+		    //(z,x)
+		    Amat(ivz, iux) += fac*(1./2.*pderxy_(Velx,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Velx)//1
+		    			      +1./4.*pderxy_(Velx,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Vely)//2
+	    			          +1./4.*pderxy_(Velx,vi)* n_(Velz)*pderxy_(Velz,ui)*n_(Velz)//3
+	    			          +1./4.*pderxy_(Vely,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Velx)//4
+	    			          +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Velx)//5
+	    			          +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Velx)//6
+	    			          +1./2.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velz,ui)*n_(Velx));//7
+
+			//(z,y)
+			Amat(ivz, iuy) += fac*(1./4.*pderxy_(Velx,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Vely)//1
+			   		          +1./4.*pderxy_(Vely,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Velx)//2
+			                  +1./2.*pderxy_(Vely,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Vely)//3
+			                  +1./4.*pderxy_(Vely,vi)* n_(Velz)*pderxy_(Velz,ui)*n_(Velz)//4
+			                  +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Vely)//5
+			                  +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Vely)//6
+			                  +1./2.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velz,ui)*n_(Vely));//7
+
+			//(z,z)
+			Amat(ivz, iuz) += fac*(1./4.*pderxy_(Vely,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Velz)//1
+	    	                  +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velx,ui)*n_(Velx)//2
+		                      +1./4.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Vely,ui)*n_(Vely)//3
+		                      +1./2.*pderxy_(Velx,vi)* n_(Velx)*pderxy_(Velz,ui)*n_(Velz)//4
+		                      +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velx,ui)*n_(Velx)//5
+		                      +1./4.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Vely,ui)*n_(Vely)//6
+		                      +1./2.*pderxy_(Vely,vi)* n_(Vely)*pderxy_(Velz,ui)*n_(Velz)//7
+		                      +1./2.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velx,ui)*n_(Velx)//8
+		                      +1./2.*pderxy_(Velz,vi)* n_(Velz)*pderxy_(Vely,ui)*n_(Vely)//9
+		                      +      pderxy_(Velz,vi)* n_(Velz)*pderxy_(Velz,ui)*n_(Velz));//10
+
+	      }
+		}
+	 }// GP over boundary element - End of PART I
+
+	 // is Amat symmetric?
+     for (int vi=0; vi<piel*3; ++vi)
+     {
+    	for (int ui=0; ui<piel*3; ++ui)
+    	{
+    		if (abs(Amat(vi, ui) - Amat(ui, vi)) > 1E-14)
+    		{
+    			cout << "Warning 1: " << Amat(vi, ui) << " " << Amat(ui, vi) << endl;
+    			dserror("Amat is not symmetric!!!");
+    		}
+    	}
+    }
+
+   //------------------------------------------------------------------
+   //          PART II - INTEGRATION LOOP OF VOLUME INTEGRAL
+   //------------------------------------------------------------------
+
+   /// number of spatial dimensions
+   static const int nsd     = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+   //--------------------------------------------------
+   // Gaussian integration points
+   const DRT::UTILS::IntPointsAndWeights<nsd>
+   pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+
+   LINALG::Matrix<nsd , 1>    pxsi(true);
+
+   //--------------------------------------------------
+   // the actual loop
+   for (int iquad=0; iquad<pintpoints.IP().nquad; ++iquad)
+   {
+     // coordinates of the current integration point
+     const double* gpcoord = (pintpoints.IP().qxg)[iquad];
+     for (int idim=0; idim<nsd ;idim++)
+     {
+    	pxsi(idim) = gpcoord[idim];
+     }
+
+     // get parent elements shape functions
+     DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct_);
+     DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_);
+
+     // get Jacobian matrix and determinant
+     // actually compute its transpose....
+     /*
+       +-            -+ T      +-            -+
+       | dx   dx   dx |        | dx   dy   dz |
+       | --   --   -- |        | --   --   -- |
+       | dr   ds   dt |        | dr   dr   dr |
+       |              |        |              |
+       | dy   dy   dy |        | dx   dy   dz |
+       | --   --   -- |   =    | --   --   -- |
+       | dr   ds   dt |        | ds   ds   ds |
+       |              |        |              |
+       | dz   dz   dz |        | dx   dy   dz |
+       | --   --   -- |        | --   --   -- |
+       | dr   ds   dt |        | dt   dt   dt |
+       +-            -+        +-            -+
+     */
+     pxjm_.MultiplyNT(pderiv_,pxyze_);
+     const double det = pxji_.Invert(pxjm_);
+
+
+     if (det < 1E-16)
+       dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", surfele->ParentElement()->Id(), det);
+
+     // compute integration factor
+     const double fac = pintpoints.IP().qwgt[iquad]*det;
+
+     // compute global first derivates
+     pderxy_.Multiply(pxji_,pderiv_);
+
+	 /*
+	 //    /                \
+	 //   |                  |
+	 //   |  eps(v), eps(u)  |
+	 //   |                  |
+	 //    \                / volume
+	 */
+
+     const unsigned Velx = 0;
+     const unsigned Vely = 1;
+     const unsigned Velz = 2;
+
+	 for (int vi=0; vi<piel; ++vi)
+	 {
+		int ivx = vi*(3) + 0;
+		int ivy = vi*(3) + 1;
+		int ivz = vi*(3) + 2;
+
+        for (int ui=0; ui<piel; ++ui)
+        {
+        	int iux = ui*(3) + 0;
+		    int iuy = ui*(3) + 1;
+		    int iuz = ui*(3) + 2;
+
+	        //(x,x)
+		    Bmat(ivx, iux) += fac*(pderxy_(Velx,vi)*pderxy_(Velx,ui)
+		    		          +1./2.*pderxy_(Vely,vi)*pderxy_(Vely,ui)
+		    		          +1./2.*pderxy_(Velz,vi)*pderxy_(Velz,ui));
+
+		    //(x,y)
+		    Bmat(ivx, iuy) += fac*(1./2.*pderxy_(Vely,vi)*pderxy_(Velx,ui));
+
+		   	//(x,z)
+		   	Bmat(ivx, iuz) += fac*(1./2.*pderxy_(Velz,vi)*pderxy_(Velx,ui));
+
+		   	//(y,x)
+		   	Bmat(ivy, iux) += fac*(1./2.*pderxy_(Velx,vi)*pderxy_(Vely,ui));
+
+		    //(y,y)
+		    Bmat(ivy, iuy) += fac*(pderxy_(Vely,vi)*pderxy_(Vely,ui)
+		    		          +1./2.*pderxy_(Velx,vi)*pderxy_(Velx,ui)
+		    	              +1./2.*pderxy_(Velz,vi)*pderxy_(Velz,ui));
+		   	//(y,z)
+		   	Bmat(ivy, iuz) += fac*(1./2.*pderxy_(Velz,vi)*pderxy_(Vely,ui));
+
+		   	 //(z,x)
+		 	Bmat(ivz, iux) += fac*(1./2.*pderxy_(Velx,vi)*pderxy_(Velz,ui));
+
+		   	  //(z,y)
+		    Bmat(ivz, iuy) += fac*(1./2.*pderxy_(Vely,vi)*pderxy_(Velz,ui));
+
+		   	//(z,z)
+		   	Bmat(ivz, iuz) += fac*(pderxy_(Velz,vi)*pderxy_(Velz,ui)
+		   			          +1./2.*pderxy_(Velx,vi)*pderxy_(Velx,ui)
+		   			          +1./2.*pderxy_(Vely,vi)*pderxy_(Vely,ui));
+         }
+	 }
+
+   }// gauss loop
+
+  // is Bmat symmetric?
+   for (int vi=0; vi<piel*3; ++vi)
+    {
+    	for (int ui=0; ui<piel*3; ++ui)
+    	{
+    		if (abs(Bmat(vi, ui) - Bmat(ui, vi)) > 1E-14)
+    		{
+    			cout << "Warning: " <<  Bmat(vi, ui) << " " << Bmat(ui, vi) << endl;
+    			dserror("Bmat is not symmetric!!!");
+    		}
+    	}
+    }
+
+    //---------------------------------------------------------------
+    //save matrix in matlab-format
+  	//std::ostringstream sa;
+    //sa << "sparsematrixA" << surfele->ParentElement()->Id() << ".mtl";
+    //std::string fname1(sa.str());
+    //std::ostringstream sb;
+    //sb << "sparsematrixB" << surfele->ParentElement()->Id() << ".mtl";
+    //std::string fname2(sb.str());
+    //LINALG::PrintSerialDenseMatrixInMatlabFormat(fname2,(elemat_epetra2));
+    //LINALG::PrintSerialDenseMatrixInMatlabFormat(fname1,(elemat_epetra1));
+
+    // Solve the local eigen value problem Ax = lambda Bx. The function GeneralizedEigen
+    // returns the maximum Eigenvalue of the problem.
+    double maxeigenvalue = LINALG::GeneralizedEigen(elemat_epetra1,elemat_epetra2);
+
+    // Beta is equivalent to alpha * viscosity / h_e, where a alpha is a free parameter
+    // which was usually defined to 35 for fluid-fluid problems.
+    // Beta is defined as nitsche_evp_fac * maxeigenvalue * dynvisc. nitsche_evp_fac should
+    // be at least 2 to get a stable formulation. To reach the value corresponding to alpha
+    // equal to 35 it should be higher than 2.
+
+    double nitsche_evp_fac = params.get<double>("nitsche_evp_fac");
+    double beta = nitsche_evp_fac * maxeigenvalue * dynvisc;
+
+    // fill the map: every side id has it's own parameter beta
+    (*params.get<RCP<std::map<int,double > > >("nitschepar"))[surfele->Id()] = beta;
+
+    // set the nitschepar to access to it in the time-integration approach
+    params.set<RCP<std::map<int,double > > >("nitschepar",(params.get<RCP<std::map<int,double > > >("nitschepar")));
+
+	return 0;
+}
 
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
@@ -1807,7 +2490,6 @@ DRT::ELEMENTS::FluidSurfaceWeakDBCSpaldingsLaw::FluidSurfaceWeakDBCSpaldingsLaw(
 {
   return;
 }
-
 
 //-----------------------------------------------------------------
 // dynamic computation of the penalty paramter using Spaldings law
@@ -3530,5 +4212,18 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   } // end gaussloop
 
   return 0;
+}
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype>
+int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateNitschePar(
+  FluidBoundary*                lineele       ,
+  Teuchos::ParameterList&    params        ,
+  DRT::Discretization&       discretization,
+  std::vector<int>&          plm           ,
+  Epetra_SerialDenseMatrix&  elemat_epetra1 ,
+  Epetra_SerialDenseMatrix&  elevec_epetra2 )
+{
+	dserror("EvaluateNitschePar not implemented for Line!");
+	return 0;
 }
 

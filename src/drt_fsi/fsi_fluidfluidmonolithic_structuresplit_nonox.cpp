@@ -804,8 +804,11 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
   Extractor().InsertVector(*aov,2,f);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------
+* - Called from Evaluate() method in Newton-loop with x=x_sum_
+*   (increment sum)
+* - Field contributions sx,fx,ax are recovered from x
+----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                                                        Teuchos::RCP<const Epetra_Vector>& sx,
                                                                        Teuchos::RCP<const Epetra_Vector>& fx,
@@ -854,6 +857,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::ExtractFieldVectors(Teuchos::
   StructureField()->Interface()->InsertFSICondVector(scx, s);
   sx = s;
 
+  // IMPORTANT:
+  // you can get these increments in a similar way like in fluidsplit, without saving the
+  // previous variables. This is important if you are considering the whole term of lagrange-multiplier.
   // ----------------------
   // Store field vectors to know them later on as previous quantities
   if (solipre_ != Teuchos::null)

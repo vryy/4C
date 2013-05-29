@@ -517,10 +517,10 @@ namespace DRT
        	  }
           if (numnode == 4 or numnode == 8)
           {
+        	  double line0 = 0.0;
         	  double line1 = 0.0;
         	  double line2 = 0.0;
         	  double line3 = 0.0;
-        	  double line0 = 0.0;
 
         	  for(int i=0; i<nsd_; i++)
         	  {

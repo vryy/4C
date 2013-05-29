@@ -174,6 +174,18 @@ namespace LINALG
                       const bool postproc=false);
 
   /*!
+  \brief Compute all eigenvalues the generalized Eigenvalue problem
+  Ax = lambda Bx via QZ-algorithm (B is singular) and returns the
+  maximum Eigenvalue.
+
+  \param A (in):    A Matrix
+  \param B (in):    B Matrix
+
+  */
+  int GeneralizedEigen(Epetra_SerialDenseMatrix& A,
+		               Epetra_SerialDenseMatrix& B);
+
+  /*!
     \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
 
             A = V * S * VT

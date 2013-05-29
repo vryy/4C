@@ -20,6 +20,7 @@ Maintainer: Matthias Mayr
 #include "fsi_mortarmonolithic_structuresplit.H"
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
+#include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -121,6 +122,21 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->StructureField()->Discretization();
+      fsilambda_ = fsiobject->lambda_;
+
+      break;
+    }
+    //rk
+   case fsi_iter_fluidfluid_monolithicfluidsplit:
+    {
+      const Teuchos::RCP<FSI::FluidFluidMonolithicFluidSplitNoNOX>& fsiobject
+        = Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicFluidSplitNoNOX>(fsi);
+
+      if (fsiobject == Teuchos::null)
+        dserror("Cast to FSI::FluidFluidMonolithicFluidSplitNoNOX failed.");
+
+      // Lagrange multiplier lives on the slave field (fluid in this case!)
+      slavedisc_ = fsiobject->FluidField().Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
