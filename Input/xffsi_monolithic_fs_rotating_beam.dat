@@ -96,7 +96,7 @@ MAXTIME      10000.0
 TIMESTEP     0.03
 NUMSTEP     7
 RESTARTEVRY  5
-COUPALGO      iter_fluidfluid_monolithicstructuresplit
+COUPALGO      iter_fluidfluid_monolithicfluidsplit
 SECONDORDER  no
 -------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
