@@ -84,6 +84,21 @@ macro(codetesting arg)
       add_test(NAME ${arg}-ct
        COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_inpar_params.py ${PROJECT_SOURCE_DIR}")   
       set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )  
+
+   elseif (${arg} STREQUAL check_unused_inpar_materials)
+
+      add_test(NAME ${arg}-ct
+       COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_inpar_materials.py ${PROJECT_SOURCE_DIR}")   
+      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
+      set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" ) 
+
+   elseif (${arg} STREQUAL check_nightly_testcases)
+       
+      add_test(NAME ${arg}-ct
+      COMMAND sh -c " python\ ${PROJECT_SOURCE_DIR}/tests/code_test/check_nightly_testcases.py $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/")
+
+      set_tests_properties ( ${arg}-ct PROPERTIES TIMEOUT 1000 )
       set_tests_properties ( ${arg}-ct PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )   
 
    endif()
@@ -1175,6 +1190,8 @@ cut_test(2)
 
 codetesting( check_unused_input_params )
 codetesting( check_unused_inpar_params )
+codetesting( check_unused_inpar_materials )
+codetesting( check_nightly_testcases )
 
 if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")

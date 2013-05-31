@@ -26,7 +26,7 @@ if __name__=='__main__':
     files_to_search = []
     global_src_path = sys.argv[1] + '/' + 'src/'
     
-    source_headers = subprocess.check_output('ls ' + global_src_path, shell=True)
+    source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
     for sh in source_headers.split():
 	baci_files = subprocess.check_output('ls ' + global_src_path + sh, shell=True)
 	baci_files = baci_files.split()
@@ -43,6 +43,14 @@ if __name__=='__main__':
     inpar_materials = subprocess.check_output('grep INPAR ' + global_src_path +  'drt_inpar/drt_validmaterials.cpp', shell=True )
     inpar_materials = inpar_materials.split()
     
+    # partitioning necessary due to maximal size of input arguments of bash console
+    files_to_search_part1 = files_to_search[:len(files_to_search)/2 + 1]
+    files_to_search_part2 = files_to_search[len(files_to_search)/2 + 1:]
+    
+    # Grep for value in code. If the value doesn't appear than the input parameter might be unused
+    # Check first part of files and if this failes check second part
+    # If both fail than the argument doesn't exists  
+	    
     for inpa_mat in progress('Searching inpar materials', inpar_materials):
 	
 	inpa_mat = inpa_mat.strip(' \ntuple<int>(),;')
@@ -57,9 +65,12 @@ if __name__=='__main__':
 		pass
 	      
 	    try:
-		test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(files_to_search), shell=True)
+		test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(files_to_search_part1), shell=True)
 	    except subprocess.CalledProcessError: 
-		fail.update([inpa_mat])	    
+		try:
+		    test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(files_to_search_part2), shell=True)
+		except subprocess.CalledProcessError: 
+		    fail.update([inpa_mat])	    
 
     if not fail:
 	print "Found no unused input material in code"		
