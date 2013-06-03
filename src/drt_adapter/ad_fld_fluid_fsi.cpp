@@ -237,40 +237,6 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::DisplacementToVelocity(
-    Teuchos::RCP<Epetra_Vector> fcx,
-    Teuchos::RCP<Epetra_Vector> ddgpred,
-    Teuchos::RCP<Epetra_Vector> dugpred
-)
-{
-  // get interface velocity at t(n)
-  const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
-
-#ifdef DEBUG
-  // check, whether maps are the same
-  if (! fcx->Map().PointSameAs(veln->Map()))    { dserror("Maps do not match, but they have to."); }
-  if (! fcx->Map().PointSameAs(ddgpred->Map())) { dserror("Maps do not match, but they have to."); }
-  if (! fcx->Map().PointSameAs(dugpred->Map())) { dserror("Maps do not match, but they have to."); }
-#endif
-
-
-  /*
-   * Delta u(n+1,i+1) = fac * [ Delta d(n+1,i+1) - dt * u_fluid(n) + Delta d_(predicted) ]
-   *
-   *                  - Delta u_fluid(predicted)
-   *
-   *             / = 2 / dt   if interface time integration is second order
-   * with fac = |
-   *             \ = 1 / dt   if interface time integration is first order
-   */
-  const double ts = TimeScaling();
-  fcx->Update(-Dt()*ts,*veln,ts,*ddgpred,ts);
-  fcx->Update(-1.0,*dugpred,1.0);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
@@ -290,39 +256,6 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
    */
   const double tau = 1./TimeScaling();
   fcx->Update(Dt(), *veln, tau);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::VelocityToDisplacement(
-    Teuchos::RCP<Epetra_Vector> fcx,
-    Teuchos::RCP<Epetra_Vector> ddgpred,
-    Teuchos::RCP<Epetra_Vector> dugpred
-)
-{
-  // get interface velocity at t(n)
-  const Teuchos::RCP<const Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
-
-#ifdef DEBUG
-  // check, whether maps are the same
-  if (! fcx->Map().PointSameAs(veln->Map()))    { dserror("Maps do not match, but they have to."); }
-  if (! fcx->Map().PointSameAs(ddgpred->Map())) { dserror("Maps do not match, but they have to."); }
-  if (! fcx->Map().PointSameAs(dugpred->Map())) { dserror("Maps do not match, but they have to."); }
-#endif
-
-
-  /*
-   * Delta d(n+1,i+1) = tau * [ Delta u(n+1,i+1) + Delta u(predicted)]
-   *
-   *                  + dt * u(n) - Delta d_structure(predicted)
-   *
-   *             / = dt / 2   if interface time integration is second order
-   * with tau = |
-   *             \ = dt       if interface time integration is first order
-   */
-  const double tau = 1./TimeScaling();
-  fcx->Update(Dt(), *veln, tau, *dugpred, tau);
-  fcx->Update(-1.0, *ddgpred, 1.0);
 }
 
 /*----------------------------------------------------------------------*/

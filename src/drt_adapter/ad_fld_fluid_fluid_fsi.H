@@ -105,24 +105,10 @@ namespace ADAPTER {
       Teuchos::RCP<Epetra_Vector> fcx      ///< fluid displacement step increment
       );
 
-    //rk
-    virtual void DisplacementToVelocity(
-    	    Teuchos::RCP<Epetra_Vector> fcx,
-    	    Teuchos::RCP<Epetra_Vector> ddgpre,
-    	    Teuchos::RCP<Epetra_Vector> dugpre
-    );
-
     /// Conversion of velocity to displacement at the interface without predictors or inhomogeneous DBCs
     virtual void VelocityToDisplacement(
       Teuchos::RCP<Epetra_Vector> fcx     ///< fluid velocity step increment at interface
       );
-
-    /// Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
-    virtual void VelocityToDisplacement(
-        Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid velocity step increment at interface
-        Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
-        Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
-    );
 
     virtual void UseBlockMatrix(bool splitmatrix);
 

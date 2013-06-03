@@ -235,12 +235,8 @@ namespace ADAPTER
     { return fluid_->ApplyMeshVelocity(gridvel); }
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
     { return fluid_->DisplacementToVelocity(fcx); }
-    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx, Teuchos::RCP<Epetra_Vector> ddgpred, Teuchos::RCP<Epetra_Vector> dugpred)
-    { return fluid_->DisplacementToVelocity(fcx,ddgpred,dugpred); }
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
     { return fluid_->VelocityToDisplacement(fcx); }
-    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx, Teuchos::RCP<Epetra_Vector> ddgpred, Teuchos::RCP<Epetra_Vector> dugpred)
-    { return fluid_->VelocityToDisplacement(fcx,ddgpred,dugpred); }
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
     { return fluid_->FreeSurfDisplacementToVelocity(fcx); }
     virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)

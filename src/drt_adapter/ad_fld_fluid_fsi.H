@@ -113,29 +113,11 @@ namespace ADAPTER {
         Teuchos::RCP<Epetra_Vector> fcx     ///< interface displacement step increment
     );
 
-    //! Conversion of displacement to velocity at the interface considering predictors or inhomogeneous DBCs
-    //!
-    //! All input vectors have to live on the fluid field map.
-    virtual void DisplacementToVelocity(
-        Teuchos::RCP<Epetra_Vector> fcx,      ///< interface displacement step increment
-        Teuchos::RCP<Epetra_Vector> ddgpred,  ///< interface displacement increment due to structural predictor
-        Teuchos::RCP<Epetra_Vector> dugpred   ///< interface velocity increment due to fluid predictor
-    );
-
     //! Conversion of velocity to displacement at the interface without predictors or inhomogeneous DBCs
     //!
     //! All input vectors have to live on the fluid field map.
     virtual void VelocityToDisplacement(
         Teuchos::RCP<Epetra_Vector> fcx     ///< interface velocity step increment at interface
-    );
-
-    //! Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
-    //!
-    //! All input vectors have to live on the fluid field map.
-    virtual void VelocityToDisplacement(
-        Teuchos::RCP<Epetra_Vector> fcx,      ///< interface velocity step increment at interface
-        Teuchos::RCP<Epetra_Vector> ddgpred,  ///< interface displacement increment due to structural predictor
-        Teuchos::RCP<Epetra_Vector> dugpred   ///< interface velocity increment due to fluid predictor
     );
 
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
