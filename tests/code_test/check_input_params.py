@@ -94,7 +94,6 @@ if __name__=='__main__':
 		    try:
 			test = subprocess.check_output( '/bin/grep ' +  sec_val[0] + " " + " ".join( files_to_search_part2 ), shell=True)
 		    except subprocess.CalledProcessError: 
-			print sec_val[0]
 			if fail.has_key(section):
 			    fail[section].update([sec_val[0]])
 			else:
