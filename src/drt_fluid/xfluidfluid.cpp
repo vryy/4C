@@ -224,7 +224,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateNitschepar()
     RCP<Epetra_Vector> embboundarydispnp = LINALG::CreateVector(*(xfluid_.embboundarydis_->DofRowMap()),true);
     LINALG::Export(*(xfluid_.aledispnp_),*(embboundarydispnp));
 
-    xfluid_.embboundarydis_->SetState("dispnp", xfluid_.aledispnp_);
+    xfluid_.embboundarydis_->SetState("dispnp", embboundarydispnp);
 
     std::map<int,double>  boundaryeleidtobeta;
     xfluid_.nitschepar_ =  Teuchos::rcp(new std::map<int,double> (boundaryeleidtobeta));
