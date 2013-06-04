@@ -85,15 +85,18 @@ params_(params)
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
 
-  optimizer_ = Teuchos::rcp(new OPTI::GCMMA(
-      optidis_,
-      optimizer_params,
-      dens_,
-      num_constr_,
-      Teuchos::null,
-      Teuchos::null,
-      output
-  ));
+  if (1==1) // use this when different optimizers are present
+  {
+    optimizer_ = Teuchos::rcp(new OPTI::GCMMA(
+        optidis_,
+        params_,
+        dens_,
+        num_constr_,
+        Teuchos::null,
+        Teuchos::null,
+        output
+    ));
+  }
 
   // write output using the derived optimizer -> optimizer must be present here
   Output();
@@ -158,8 +161,12 @@ void TOPOPT::Optimizer::ComputeGradients()
   params.set("adjointvel",adjointvel_);
   params.set("fluiddis",fluiddis_);
 
-//  cout << "fluidvel is " << *(*fluidvel_)[1] << endl;
-//  cout << "adjointvel is " << *(*adjointvel_)[1] << endl;
+//  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
+//      i!=fluidvel_->end();i++)
+//    cout << "in optimizer at gradients fluidvel of step " << i->first << " is " << *i->second << endl;
+//  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
+//      i!=adjointvel_->end();i++)
+//    cout << "in optimizer at gradients adjointvel of step " << i->first << " is " << *i->second << endl;
 
   optidis_->ClearState();
 
@@ -507,6 +514,20 @@ Teuchos::RCP<DRT::ResultTest> TOPOPT::Optimizer::CreateFieldTest()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const int TOPOPT::Optimizer::Iter() const {return optimizer_->Iter();}
+const int TOPOPT::Optimizer::Iter() const
+{
+  return optimizer_->Iter();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TOPOPT::Optimizer::ReadRestart(const int step)
+{
+  return optimizer_->ReadRestart(step);
+}
+
+
+
 
 

@@ -61,7 +61,7 @@ namespace TOPOPT
     void OptimizationLoop();
 
     /// restart topology optimization problem
-    void Restart(int step, const int type);
+    void Restart(const int step, const INPAR::TOPOPT::Restart type);
 
   protected:
 

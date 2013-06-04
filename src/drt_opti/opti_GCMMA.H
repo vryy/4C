@@ -106,6 +106,9 @@ namespace OPTI
     /// write output
     void Output();
 
+    /// perform restart
+    void ReadRestart(int step);
+
     const Teuchos::RCP<const DRT::Discretization> Discretization() const {return discret_;}
     const Teuchos::RCP<const Epetra_Vector> X() const {return x_;}
     const int Iter() const {return total_iter_;}

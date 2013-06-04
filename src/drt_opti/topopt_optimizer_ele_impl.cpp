@@ -20,6 +20,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/optimization_density.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_fluid_ele/fluid_ele_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -69,14 +70,6 @@ DRT::ELEMENTS::TopOptImplInterface* DRT::ELEMENTS::TopOptImplInterface::Impl(
   case DRT::Element::tri6:
   {
     return TopOptImpl<DRT::Element::tri6>::Instance();
-  }
-  case DRT::Element::line2:
-  {
-    return TopOptImpl<DRT::Element::line2>::Instance();
-  }
-  case DRT::Element::line3:
-  {
-    return TopOptImpl<DRT::Element::line3>::Instance();
   }
   default:
   {
@@ -144,6 +137,9 @@ is_higher_order_ele_(false)
 {
   // pointer to class FluidEleParameter (access to the general parameter)
   optiparams_ = DRT::ELEMENTS::TopOptParam::Instance();
+
+  // flag for higher order elements
+  is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
 
   return;
 }
@@ -293,9 +289,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
           else // standard case
           {
             value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
-            if (0==1)// TODO test this (is_higher_order_ele_)
+            if (is_higher_order_ele_)
             {
-              cout << "here higher order ele" << endl;
               for (int idim=0;idim<nsd_;idim++)
               {
                 for (int jdim=0;jdim<nsd_;jdim++)
@@ -314,7 +309,6 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
         break;
       }
       }
-
       objective += optiparams_->Dt()*fac_*optiparams_->ObjDissipationFac()*value;
     }
   }
@@ -383,7 +377,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   std::vector<int> fluidlm;
   DRT::UTILS::DisBasedLocationVector(*fluiddis,*ele,fluidlm,nsd_+1);
 
-  for (std::map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
+  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
       i!=fluidvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
@@ -397,7 +391,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
     eadjointvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,eadjointvel));
   }
 
-  RCP<const Epetra_Vector> dens = optidis.GetState("density");
+  Teuchos::RCP<const Epetra_Vector> dens = optidis.GetState("density");
   LINALG::Matrix<nen_,1> edens(true);
 
   std::vector<double> mymatrix(lm.size());
@@ -659,10 +653,10 @@ DRT::ELEMENTS::TopOptBoundaryImplInterface* DRT::ELEMENTS::TopOptBoundaryImplInt
   {
     return TopOptBoundaryImpl<DRT::Element::tri3>::Instance();
   }
-  /*  case DRT::Element::tri6:
+  case DRT::Element::tri6:
   {
     return TopOptBoundaryImpl<DRT::Element::tri6>::Instance();
-  }*/
+  }
   case DRT::Element::line2:
   {
     return TopOptBoundaryImpl<DRT::Element::line2>::Instance();
@@ -670,22 +664,6 @@ DRT::ELEMENTS::TopOptBoundaryImplInterface* DRT::ELEMENTS::TopOptBoundaryImplInt
   case DRT::Element::line3:
   {
     return TopOptBoundaryImpl<DRT::Element::line3>::Instance();
-  }
-  case DRT::Element::nurbs2:    // 1D nurbs boundary element
-  {
-    return TopOptBoundaryImpl<DRT::Element::nurbs2>::Instance();
-  }
-  case DRT::Element::nurbs3:    // 1D nurbs boundary element
-  {
-    return TopOptBoundaryImpl<DRT::Element::nurbs3>::Instance();
-  }
-  case DRT::Element::nurbs4:    // 2D nurbs boundary element
-  {
-    return TopOptBoundaryImpl<DRT::Element::nurbs4>::Instance();
-  }
-  case DRT::Element::nurbs9:    // 2D nurbs boundary element
-  {
-    return TopOptBoundaryImpl<DRT::Element::nurbs9>::Instance();
   }
   default:
   {
@@ -740,8 +718,7 @@ DRT::ELEMENTS::TopOptBoundaryImpl<distype>::TopOptBoundaryImpl
 ()
 : intpoints_( distype ),
 xsi_(true),
-fac_(0.0),
-is_higher_order_ele_(false)
+fac_(0.0)
 {
   // pointer to class FluidEleParameter (access to the general parameter)
   optiparams_ = DRT::ELEMENTS::TopOptParam::Instance();

@@ -24,6 +24,15 @@ Maintainer: Martin Winklmaier
 #include <stdio.h>
 #include <stdlib.h>
 
+
+
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
+
+
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 OPTI::GCMMA::GCMMA(
@@ -36,15 +45,15 @@ OPTI::GCMMA::GCMMA(
     Teuchos::RCP<IO::DiscretizationWriter>& output
 ) :
 discret_(discret),
-params_(params),
+params_(params.sublist("TOPOLOGY OPTIMIZER")),
 total_iter_(0),
 outer_iter_(0),
 inner_iter_(0),
-max_total_iter_(params.get<int>("MAX_ITER")),
-max_inner_iter_(params.get<int>("MAX_INNER_ITER")),
-max_outer_iter_(params.get<int>("MAX_GRAD_ITER")),
-max_sub_iter_(params.get<int>("MAX_SUB_ITER")),
-max_inner_sub_iter_(params.get<int>("MAX_INNER_SUB_ITER")),
+max_total_iter_(params_.get<int>("MAX_ITER")),
+max_inner_iter_(params_.get<int>("MAX_INNER_ITER")),
+max_outer_iter_(params_.get<int>("MAX_GRAD_ITER")),
+max_sub_iter_(params_.get<int>("MAX_SUB_ITER")),
+max_inner_sub_iter_(params_.get<int>("MAX_INNER_SUB_ITER")),
 m_(numConstraints),
 n_loc_(x->MyLength()),
 n_(x->GlobalLength()),
@@ -64,12 +73,12 @@ r0_(0.0),
 P_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
 Q_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
 b_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
-rho0_(params.get<double>("RHO_INIT")),
+rho0_(params_.get<double>("RHO_INIT")),
 rho_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
-rho0min_(params.get<double>("RHOMIN")),
+rho0min_(params_.get<double>("RHOMIN")),
 rhomin_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
-rho_fac1_(params.get<double>("RHO_FAC1")),
-rho_fac2_(params.get<double>("RHO_FAC2")),
+rho_fac1_(params_.get<double>("RHO_FAC1")),
+rho_fac2_(params_.get<double>("RHO_FAC2")),
 y_mma_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 z_mma_(0.0),
 xsi_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
@@ -81,16 +90,16 @@ a0_(1.0),
 a_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 c_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 d_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
-tol_sub_(params.get<double>("TOL_SUB")),
-tol_kkt_(params.get<double>("TOL_KKT")),
-tol_reducefac_(params.get<double>("tol_reducefac")),
-resfac_sub_(params.get<double>("resfac_sub")),
-fac_stepsize_(params.get<double>("fac_stepsize")),
-asy_fac1_(params.get<double>("asymptotes_fac1")),
-asy_fac2_(params.get<double>("asymptotes_fac2")),
-fac_x_bd_(params.get<double>("fac_x_boundaries")),
-fac_sub_reg_(params.get<double>("fac_sub_reg")),
-facmin_(params.get<double>("FACMIN")),
+tol_sub_(params_.get<double>("TOL_SUB")),
+tol_kkt_(params_.get<double>("TOL_KKT")),
+tol_reducefac_(params_.get<double>("tol_reducefac")),
+resfac_sub_(params_.get<double>("resfac_sub")),
+fac_stepsize_(params_.get<double>("fac_stepsize")),
+asy_fac1_(params_.get<double>("asymptotes_fac1")),
+asy_fac2_(params_.get<double>("asymptotes_fac2")),
+fac_x_bd_(params_.get<double>("fac_x_boundaries")),
+fac_sub_reg_(params_.get<double>("fac_sub_reg")),
+facmin_(params_.get<double>("FACMIN")),
 s_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 upres_(params_.get<int>("UPRES")),
 output_(output)
@@ -154,7 +163,7 @@ output_(output)
   x_diff_->Update(-1.0,*x_min_,1.0);
 
   // minimal distance of boundaries for x-values
-  const double xdiffmin = params.get<double>("X_DIFF_MIN");
+  const double xdiffmin = params_.get<double>("X_DIFF_MIN");
   double* xdiff = x_diff_->Values();
   for (int j=0;j<n_loc_;j++)
   {
@@ -178,7 +187,7 @@ output_(output)
   for (int i=0;i<m_;i++)
   {
     *p1 = 0.0;
-    *p2 = params.get<double>("c_init")*a0_;
+    *p2 = params_.get<double>("c_init")*a0_;
     *p3 = a0_;
     *p4 = rho0_;
     *p5 = rho0min_;
@@ -2341,6 +2350,14 @@ void OPTI::GCMMA::OutputToGmsh()
   gmshfilecontent.close();
   if (screen_out) std::cout << " done" << endl;
 }
+
+
+void OPTI::GCMMA::ReadRestart(int step)
+{
+  dserror("not implemented");
+  return;
+}
+
 
 
 

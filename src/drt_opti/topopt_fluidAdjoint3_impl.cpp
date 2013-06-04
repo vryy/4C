@@ -51,14 +51,6 @@ DRT::ELEMENTS::FluidAdjoint3ImplInterface* DRT::ELEMENTS::FluidAdjoint3ImplInter
   {
     return FluidAdjoint3Impl<DRT::Element::hex27>::Instance();
   }
-//  case DRT::Element::tet4:
-//  {
-//    return FluidAdjoint3Impl<DRT::Element::tet4>::Instance();
-//  }
-//  case DRT::Element::tet10:
-//  {
-//    return FluidAdjoint3Impl<DRT::Element::tet10>::Instance();
-//  }
   case DRT::Element::quad4:
   {
     return FluidAdjoint3Impl<DRT::Element::quad4>::Instance();
@@ -71,16 +63,7 @@ DRT::ELEMENTS::FluidAdjoint3ImplInterface* DRT::ELEMENTS::FluidAdjoint3ImplInter
   {
     return FluidAdjoint3Impl<DRT::Element::quad9>::Instance();
   }
-//  case DRT::Element::tri3:
-//  {
-//    return FluidAdjoint3Impl<DRT::Element::tri3>::Instance();
-//  }
-//  case DRT::Element::tri6:
-//  {
-//    return FluidAdjoint3Impl<DRT::Element::tri6>::Instance();
-//  }
-  // no 1D elements
-  default:
+  default: // no 1D elements
   {
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
     break;
@@ -2109,7 +2092,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
         value = 2*timefacfac*dissipation*reacoeff_*fluidvelint_(idim);
 
         if (not fluidAdjoint3Parameter_->IsStationary())
-          value += timefacfacrhs*2*dissipation*reacoeff_*fluidvelint_old_(idim);
+          value += 2*timefacfacrhs*dissipation*reacoeff_*fluidvelint_old_(idim);
 
         for (int vi=0; vi<nen_; ++vi)
         {
@@ -2130,7 +2113,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
           value = 2*timefacfac*fluidAdjoint3Parameter_->Viscosity()*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
 
           if (not fluidAdjoint3Parameter_->IsStationary())
-            value = 2*timefacfacrhs*fluidAdjoint3Parameter_->Viscosity()*(fluidvelxy_old_(idim,jdim)+fluidvelxy_old_(jdim,idim));
+            value += 2*timefacfacrhs*fluidAdjoint3Parameter_->Viscosity()*(fluidvelxy_old_(idim,jdim)+fluidvelxy_old_(jdim,idim));
 
           for (int vi=0;vi<nen_; ++vi)
           {

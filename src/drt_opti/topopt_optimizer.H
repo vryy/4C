@@ -160,6 +160,8 @@ namespace TOPOPT
 
     const int Iter() const;
 
+    void ReadRestart(const int step);
+
   protected:
 
     /// set the initial density field of the optimization variable

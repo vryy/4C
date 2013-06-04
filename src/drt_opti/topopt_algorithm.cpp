@@ -235,14 +235,11 @@ void TOPOPT::Algorithm::PrepareOptimizationStep()
   if (doGradient_)
     optimizer_->ComputeGradients();
 
+  // data of primal (fluid) problem no more required
   FluidField().Reset(
       true,
       DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
-      Optimizer()->Iter());
-
-  AdjointFluidField()->Reset(
-      DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
-      Optimizer()->Iter());
+      Optimizer()->Iter()+2);
 
   return;
 }
@@ -268,6 +265,13 @@ void TOPOPT::Algorithm::FinishOptimizationStep()
   optimizer_->ComputeValues();
 
   optimizer_->FinishIteration(doGradient_);
+
+  // data of dual (adjoint) problem no more required
+  if (doGradient_)
+    AdjointFluidField()->Reset(
+        DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+        Optimizer()->Iter()+1);
+
   return;
 }
 
@@ -376,7 +380,40 @@ void TOPOPT::Algorithm::Update()
 /* -----------------------------------------------------------------------------------------------*
  * Restart topology optimization at a specifiec point                            winklmaier 12/11 |
  * -----------------------------------------------------------------------------------------------*/
-void TOPOPT::Algorithm::Restart(int step, const int type)
-{dserror("not implemented");
+void TOPOPT::Algorithm::Restart(const int step, const INPAR::TOPOPT::Restart type)
+{
+  dserror("not implemented");
+
+  switch (type)
+  {
+  case INPAR::TOPOPT::adjoint:
+  {
+    dserror("currently not implemented restart type");
+    AdjointFluidField()->ReadRestart(step);
+    break;
+  }
+  case INPAR::TOPOPT::fluid:
+  {
+    dserror("currently not implemented restart type");
+    FluidField().ReadRestart(step);
+    break;
+  }
+  case INPAR::TOPOPT::gradient:
+  {
+    dserror("currently not implemented restart type");
+    break;
+  }
+  case INPAR::TOPOPT::opti_step:
+  {
+    Optimizer()->ReadRestart(step);
+    break;
+  }
+  default:
+  {
+    dserror("unknown restart type");
+    break;
+  }
+  }
+
   return;
 }

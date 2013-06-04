@@ -38,7 +38,7 @@ namespace INPAR
     };
 
     /// reentry point of reinitialization
-    enum Restart_Point
+    enum Restart
     {
       fluid,
       adjoint,

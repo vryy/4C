@@ -16,6 +16,7 @@
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 /*!
  \brief filter main routine
@@ -484,25 +485,26 @@ int main(
     case prb_fluid_topopt:
     {
       std::string basename = problem.outname();
-      int numfield = problem.num_discr();
 
-      PostField* fluidfield = problem.get_discretization(0);
-      FluidEnsightWriter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
+      for (int i=0;i<problem.num_discr();i++)
+      {
+        std::string disname = problem.get_discretization(i)->discretization()->Name();
 
-      PostField* optifield = NULL;
-      // this is a hack due to the strange saving of discretization in postprocessing
-      // here, they are saved in the order in which they are read from file
-      // Thus, for two discretizations present everything is standard
-      // For one discretization, a discretization with number 1 is not allowed
-      // although this number is associated with the discretization in the rest
-      // of the code. So for one discretization which can be either fluid or opti
-      // both PostFields are tried, both with discretization number 0
-      // 
-      if (numfield==1)      optifield = problem.get_discretization(0);
-      else if (numfield==2) optifield = problem.get_discretization(1);
-      ScaTraEnsightWriter optiwriter(optifield, basename);
-      optiwriter.WriteFiles();
+        if (disname.compare("fluid") == 0) // 0=true
+        {
+          PostField* fluidfield = problem.get_discretization(i);
+          FluidEnsightWriter fluidwriter(fluidfield, basename);
+          fluidwriter.WriteFiles();
+        }
+        else if (disname.compare("opti") == 0) // 0=true
+        {
+          PostField* optifield = problem.get_discretization(i);
+          ScaTraEnsightWriter optiwriter(optifield, basename);
+          optiwriter.WriteFiles();
+        }
+        else
+          dserror("unknown discretization for postprocessing of topopt problem!");
+      }
 
       break;
     }

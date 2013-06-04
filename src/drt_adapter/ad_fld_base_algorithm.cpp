@@ -650,7 +650,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluid_->SetInitialFlowField(initfield,startfuncno);
   }
 
-  if (probtype == prb_fluid_topopt)
+  if (probtype==prb_fluid_topopt and timeint!=INPAR::FLUID::timeint_stationary)
     fluid_->Output();
 
   return;

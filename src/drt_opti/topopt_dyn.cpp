@@ -85,7 +85,7 @@ void fluid_topopt_dyn()
   if (restart)
   {
     // check where we restart
-    const int restartaction = DRT::INPUT::IntegralValue<int>(topoptdyn,"RESTART_ACTION");
+    const INPAR::TOPOPT::Restart restartaction = DRT::INPUT::IntegralValue<INPAR::TOPOPT::Restart>(topoptdyn,"RESTART_ACTION");
 cout << "test restart action: 0=fluid,1=adjoint,2=grad,3=opti-step: " << restartaction << endl;
     // read the restart information, set vectors and variables
     topopt_->Restart(restart,restartaction);

@@ -441,12 +441,6 @@ private:
   double fac_;
   //@}
 
-
-  //! Flag to (de)activate higher order elements
-  //! elements with only mixed second order derivatives are not counted as higher order elements
-  //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
-  bool is_higher_order_ele_;
-
   // general optimization parameters
   Teuchos::RCP<TopOptParam> optiparams_;
 

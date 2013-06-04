@@ -85,6 +85,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
+  std::string filename = problem->OutputControlFile()->FileName() + "_adjoint";
 
   // output control for optimization field
   // equal to output for fluid equations except for the filename
@@ -95,7 +96,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
           problem->ProblemName(),
           problem->SpatialApproximation(),
           problem->OutputControlFile()->InputFileName(),
-          problem->OutputControlFile()->FileName() + "_adjoint",
+          filename,
           problem->NDim(),
           problem->Restart(),
           problem->OutputControlFile()->FileSteps(),
@@ -103,7 +104,16 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
       )
   );
 
+
   RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis, adjointoutput));
+  if (DRT::INPUT::IntegralValue<bool>(prbdyn,"OUTPUT_EVERY_ITER"))
+  {
+    output->NewResultFile(1);
+
+    // remove not required control file
+    filename = filename + ".control";
+    std::remove(filename.c_str());
+  }
   output->WriteMesh(0,0.0);
 
 
@@ -292,7 +302,9 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     startfuncno=-1;
 
   adjointTimeInt_->SetInitialAdjointField(initfield,startfuncno);
-  adjointTimeInt_->Output();
+
+  if (timeint!=INPAR::FLUID::timeint_stationary)
+    adjointTimeInt_->Output();
 
   return;
 }

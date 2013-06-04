@@ -675,6 +675,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::TimeUpdate()
  *----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
 {
+
   // output of solution
   if (step_%upres_ == 0)
   {
@@ -682,7 +683,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     output_->NewStep(step_,time_);
     // velocity/pressure vector
     output_->WriteVector("adjoint_velnp",velnp_);
-    output_->WriteVector("adjoint_neumann_loads",neumann_loads_);
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
     output_->WriteVector("adjoint_pressure", pressure);
@@ -698,7 +698,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
       output_->WriteVector("adjoint_veln", veln_);
       output_->WriteVector("adjoint_velnm",velnm_);
-
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -713,7 +712,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     // velocity/pressure vector at time n and n-1
     output_->WriteVector("adjoint_veln", veln_);
     output_->WriteVector("adjoint_velnm",velnm_);
-    output_->WriteVector("adjoint_neumann_loads",neumann_loads_);
   }
 
   if (topopt_porosity_!=Teuchos::null)
@@ -880,8 +878,23 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
 
   if (params_->get<INPAR::TOPOPT::AdjointCase>("special test case") == INPAR::TOPOPT::adjointtest_no)
   {
-    // TODO dbc due to objective function
-  }
+    // TODO currently objective function independent with respect to boundary pressure
+    // -> values zero
+
+    const int nsd = DRT::Problem::Instance()->NDim();
+
+    for (int inode=0;inode<discret_->NumMyRowNodes();inode++)
+    {
+      node = discret_->lRowNode(inode);
+      DRT::Condition* cond = node->GetCondition("Dirichlet");
+      if (cond==NULL) continue;
+
+      double values[3] = {0.0}; // dimension is <= 3 so this is enough
+
+      std::vector<int> gdofs = discret_->Dof(node);
+      velnp_->ReplaceGlobalValues(nsd,(double*)values,&gdofs[0]); // &dofs[0] gives pointer to dofs
+    }
+}
   else // special cases
   {
     INPAR::TOPOPT::AdjointCase testcase = params_->get<INPAR::TOPOPT::AdjointCase>("special test case");
@@ -1152,7 +1165,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
   if (newFiles)
   {
     if (iter<0) dserror("iteration number <0");
-    output_->NewResultFile((iter));
+    output_->NewResultFile(iter);
   }
   else
     output_->OverwriteResultFile();
