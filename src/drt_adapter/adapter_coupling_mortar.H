@@ -39,22 +39,29 @@ namespace MORTAR
 
 namespace ADAPTER
 {
-  /// Couple nonmatching FSI interfaces using mortar method
+  /// Couple non-matching interface meshes using mortar method
   /*!
-    This is a special class used FSI coupling algorithms to interpolate
-    between fluid and structure fields at the interface. The
-    hard work is done by the MORTAR::MortarInterface.
-    (Thus we use the mortar method here.)
+    This is a generic class used to couple any non-matching meshes
+    (or more general: discretizations) at interfaces. The current
+    applications in BACI emcompass FSI coupling algorithms (i.e. to
+    interpolate between fluid and structure fields at the interface)
+    and fluid mesh tying algorithms (i.e. to couple non-matching
+    Eulerian fluid meshes). All the hard work is actually done by
+    the MORTAR::MortarInterface class (thus we use the mortar method).
 
-    The major part of this code is the Setup() method that feeds the FSI
-    interface and extracts the coupling matrices D and M in
-    return.
+    The major part of this code is the Setup() method that gets the
+    non-matching interface meshes on input, initializes the mortar
+    interface and computes the so-called coupling matrices D and M.
 
-    The actual coupling methods MasterToSlave() and SlaveToMaster() just
-    evaluate one simple equation each.
+    The actual coupling methods MasterToSlave() and SlaveToMaster()
+    just evaluate one simple equation each, i.e. primal variables
+    are projected from master to slave side via \f$D^{-1} M\f$ when
+    calling MasterToSlaver(), and dual variables are projected from
+    slave to master side via \f$M^T D^{-T}\f$ when calling SlaveToMaster().
 
-    \author tk
-    \date 06/09
+    Whenever you want to add a new problem class, check whether you
+    can re-use one of the already existing Setup() methods. If not,
+    feel free to write your own tailored Setup() method.
    */
   class CouplingMortar
   {
@@ -63,21 +70,24 @@ namespace ADAPTER
     /// empty constructor
     CouplingMortar();
 
-    /// setup the machinery
+    //! setup the machinery
+    //! Version 1 ---> for standard ALE FSI mesh tying
     void Setup( DRT::Discretization& masterdis,
                 DRT::Discretization& slavedis,
                 DRT::Discretization& aledis, ///> we need this for mesh initialization
                 const Epetra_Comm& comm,
                 bool structslave = false);
 
-    /// setup the machinery
+    //! setup the machinery
+    //! Version 2 ---> for sliding ALE FSI mesh tying
+    void Setup( DRT::Discretization& dis );
+
+    //! setup the machinery
+    //! Version 3 ---> for Eulerian fluid mesh tying
     bool Setup( DRT::Discretization& dis,
                 const Epetra_Comm& comm,
                 int meshtyingoption,
                 bool structslave = false);
-
-    /// setup the machinery
-    void Setup( DRT::Discretization& dis );
 
     /// perform mesh initialization
     void MeshInit( DRT::Discretization& masterdis,
@@ -88,36 +98,37 @@ namespace ADAPTER
                    const Epetra_Comm& comm,
                    bool structslave);
 
-    ///filling matrices (standard case)
+    /// filling matrices (standard case)
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
 
-    ///filling matrices (case of transferring same dofs on two different meshes)
+    /// filling matrices (case of transferring same dofs on two different meshes)
     void Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl);
 
+    /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave
     (
-        Teuchos::RCP<Epetra_Vector> mv ///< structural interface displacements
+        Teuchos::RCP<Epetra_Vector> mv ///< e.g. for FSI: structural interface displacements
     ) const;
 
     /// const version
     Teuchos::RCP<Epetra_Vector> MasterToSlave
     (
-        Teuchos::RCP<const Epetra_Vector> mv ///< structural interface displacements
+        Teuchos::RCP<const Epetra_Vector> mv ///< e.g. for FSI: structural interface displacements
     ) const;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_Vector> SlaveToMaster
     (
-        Teuchos::RCP<Epetra_Vector> sv   ///< fluid interface loads
+        Teuchos::RCP<Epetra_Vector> sv   ///< e.g. for FSI: fluid interface loads
     ) const;
 
     /// const version
     Teuchos::RCP<Epetra_Vector> SlaveToMaster
     (
-        Teuchos::RCP<const Epetra_Vector> sv   ///< fluid interface loads
+        Teuchos::RCP<const Epetra_Vector> sv   ///< e.g. for FSI: fluid interface loads
     ) const;
 
-    /// the mortar interface
+    /// the mortar interface itself
     Teuchos::RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
 
     /// the interface dof map of the master side
@@ -126,23 +137,23 @@ namespace ADAPTER
     /// the interface dof map of the slave side
     Teuchos::RCP<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
 
-    /// the interface dof map of the lagrainge multiplier
+    /// the interface dof map of the Lagrange multiplier
     Teuchos::RCP<Epetra_Map> LmDofRowMap()  const { return glmdofrowmap_; }
-
-    /// the mortar projection operator
-    Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
-
-    /// return constraint matrix
-    Teuchos::RCP<LINALG::SparseMatrix> GetConMatrix() const { return conmatrix_;}
-
-    /// return mortar M matrix
-    Teuchos::RCP<LINALG::SparseMatrix> GetMMatrix() const { return M_;}
 
     /// return mortar D matrix
     Teuchos::RCP<LINALG::SparseMatrix> GetDMatrix() const { return D_;}
 
     /// return inverted mortar matrix \f$D^{-1}\f$
     Teuchos::RCP<LINALG::SparseMatrix> GetDinvMatrix() const { return Dinv_;}
+
+    /// return mortar M matrix
+    Teuchos::RCP<LINALG::SparseMatrix> GetMMatrix() const { return M_;}
+
+    /// return the mortar projection operator \f$P=D^{-1} M\f$
+    Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
+
+    /// return constraint matrix (for saddle point formulation only)
+    Teuchos::RCP<LINALG::SparseMatrix> GetConMatrix() const { return conmatrix_;}
 
 
   private:
@@ -154,12 +165,13 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Map>              masterdofrowmap_; ///< map of master row dofs
     Teuchos::RCP<Epetra_Map>              slavedofrowmap_;  ///< map of slave row dofs
     Teuchos::RCP<Epetra_Map>              glmdofrowmap_;    ///< map of slave row dofs
-    Teuchos::RCP<LINALG::SparseMatrix>    conmatrix_ ;
 
-    Teuchos::RCP<LINALG::SparseMatrix> D_;            ///< mortar matrix
-    Teuchos::RCP<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
-    Teuchos::RCP<LINALG::SparseMatrix> M_;            ///< mortar matrix
-    Teuchos::RCP<LINALG::SparseMatrix> DinvM_;        ///< product of Dinv_ \times M_
+    Teuchos::RCP<LINALG::SparseMatrix>    D_;               ///< mortar matrix
+    Teuchos::RCP<LINALG::SparseMatrix>    Dinv_;            ///< inverse of mortar matrix D_
+    Teuchos::RCP<LINALG::SparseMatrix>    M_;               ///< mortar matrix
+    Teuchos::RCP<LINALG::SparseMatrix>    DinvM_;           ///< product of Dinv_ \times M_
+
+    Teuchos::RCP<LINALG::SparseMatrix>    conmatrix_ ;      ///< constraint matrix
   };
 }
 
