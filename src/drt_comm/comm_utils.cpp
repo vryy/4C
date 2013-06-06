@@ -313,7 +313,7 @@ void COMM_UTILS::NestedParGroup::SetSubComm(Teuchos::RCP<Epetra_Comm> subcomm)
   return;
 }
 
-
+#if(0)
 /*----------------------------------------------------------------------*
  | broadcast all discretizations from bcast to all other groups gee 03/12 |
  *----------------------------------------------------------------------*/
@@ -337,7 +337,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
 //    for (int i=0; i<numfield; ++i)
 //      numdis[i] = 1; //obsolete! problem->NumDis(i);
   }
-  gcomm->MaxAll(&sbcaster,&bcaster,1);
+  gcomm->MaxAll(&sbcaster,&bcaster,1); // communicate proc null of bgroup
   gcomm->Broadcast(&numfield,1,bcaster);
 //  numdis.resize(numfield);
 //  gcomm->Broadcast(&numdis[0],numfield,bcaster);
@@ -428,6 +428,147 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
         gcomm->Barrier();
       } // for (int k=0; k<group->NumGroups(); ++k)
 //    } // for (int j=0; j<numdis[i]; ++j)
+  } // for (int i=0; i<numfield; ++i)
+  return;
+}
+
+#endif
+/*----------------------------------------------------------------------*
+ | broadcast all discretizations from group 0 to all other groups using
+ | a ponzi scheme                                          biehler 05/13 |
+ *----------------------------------------------------------------------*/
+void COMM_UTILS::BroadcastDiscretizations()
+{
+   // source of all discretizations is always group 0
+   int bgroup =0 ;
+   // group to which discretizations are sent
+   int tgroup= -1;
+
+   DRT::Problem* problem = DRT::Problem::Instance();
+   Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
+   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+
+   // number of levels needed for the ponzi scheme
+   int numlevels;
+   // get next larger power of two
+   numlevels= (int) (log(group->NumGroups())/log(2)+1);
+
+  int sbcaster = -1;
+  int bcaster = -1;
+  int numfield = 0;
+  std::vector<int> numdis;
+  // only proc 0 of group bgroup
+  if (group->GroupId()==bgroup && lcomm->MyPID()==0)
+  {
+    sbcaster = group->GPID(0);
+    numfield = problem->NumFields();
+  }
+  gcomm->MaxAll(&sbcaster,&bcaster,1); // communicate proc null of bgroup
+  gcomm->Broadcast(&numfield,1,bcaster);
+
+  const std::vector<std::string> disnames = DRT::Problem::Instance()->GetDisNames();
+
+  for (int i=0; i<numfield; ++i)
+  {
+      Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
+      std::string name;
+      std::string distype;
+      std::vector<char> data;
+      if (gcomm->MyPID()==bcaster)
+      {
+        DRT::Container cont;
+        dis = problem->GetDis(disnames[i]);
+        name = dis->Name();
+        distype = problem->SpatialApproximation();
+        cont.Add("disname",name);
+        cont.Add("distype",distype);
+        DRT::PackBuffer buffer;
+        cont.Pack(buffer);
+        buffer.StartPacking();
+        cont.Pack(buffer);
+        std::swap(data,buffer());
+      }
+      // create map to export from proc 0 of group bgroup to all
+      {
+        int snummyelements = 0;
+        int rnummyelements = 1;
+        int myelements = 0;
+        if (gcomm->MyPID()==bcaster) snummyelements = 1;
+        Epetra_Map source(-1,snummyelements,&myelements,0,*gcomm);
+        Epetra_Map target(-1,rnummyelements,&myelements,0,*gcomm);
+        DRT::Exporter exporter(source,target,*gcomm);
+        std::map<int,std::vector<char> > smap;
+        if (gcomm->MyPID()==bcaster) smap[0] = data;
+        exporter.Export<char>(smap);
+        data = smap[0];
+      }
+      DRT::Container cont;
+      std::vector<char> singledata;
+      std::vector<char>::size_type index = 0;
+      cont.ExtractfromPack(index,data,singledata);
+      cont.Unpack(singledata);
+      const std::string* rname = cont.Get<string>("disname");
+      name = *rname;
+      const std::string* rdistype = cont.Get<string>("distype");
+      distype = *rdistype;
+      // allocate or get the discretization
+      if (group->GroupId()==bgroup)
+      {
+        dis = problem->GetDis(disnames[i]);
+      }
+      else
+      {
+        if (distype=="Nurbs")
+          dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name,lcomm));
+        else
+          dis = Teuchos::rcp(new DRT::Discretization(name,lcomm));
+      }
+      // copy the discretization to the other groups
+      for (int k=numlevels; k>0; --k)
+      {
+        // reset source and target group in every step
+        tgroup=-1;
+        bgroup=0;
+
+        int color = MPI_UNDEFINED;
+        gcomm->Barrier();
+
+        // color all sending groups
+        if(group->GroupId()%(int)(pow(2.0,k))==0)
+        {
+          color = group->GroupId()/k;
+          bgroup = group->GroupId();
+        }
+        // color all receivig groups
+        if((group->GroupId()%(int)(pow(2.0,k-1)))==0 && !(group->GroupId()%(int)(pow(2.0,k))==0) )
+        {
+          color = (group->GroupId()-pow(2.0,k-1))/k;
+          tgroup=group->GroupId();
+        }
+        //std::cout << " GroupID " << group->GroupId() << "color " << color << std::endl;
+        gcomm->Barrier();
+
+        MPI_Comm intercomm;
+        Epetra_MpiComm* mpicomm = dynamic_cast<Epetra_MpiComm*>(gcomm.get());
+        if (!mpicomm) dserror("dyncast failed");
+        MPI_Comm_split(mpicomm->Comm(),color,gcomm->MyPID(),&intercomm);
+
+
+        if (bgroup==group->GroupId() || tgroup==group->GroupId())
+        {
+          Teuchos::RCP<Epetra_MpiComm> icomm = Teuchos::rcp(new Epetra_MpiComm(intercomm));
+          NPDuplicateDiscretization(bgroup,tgroup,group,dis,icomm);
+          icomm = Teuchos::null;
+          MPI_Comm_free(&intercomm);
+        }
+       if (group->GroupId()==tgroup)
+       {
+          const std::string disname = dis->Name();
+         problem->AddDis(disname,dis);
+       }
+       gcomm->Barrier();
+      } // for (int k=numlevels; k>0; --k)
   } // for (int i=0; i<numfield; ++i)
   return;
 }

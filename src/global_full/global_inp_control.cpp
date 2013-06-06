@@ -96,8 +96,10 @@ void ntainp_ccadiscret(
       problem->ReadKnots(reader);
     }
     gcomm->Barrier();
-    COMM_UTILS::BroadcastDiscretizations(0); // group 0 broadcasts the discretizations
-  break;
+    // group 0 broadcasts the discretizations to the other groups
+    COMM_UTILS::BroadcastDiscretizations();
+    gcomm->Barrier();
+    break;
   default:
     dserror("nptype (nested parallelity type) not recognized");
     break;
