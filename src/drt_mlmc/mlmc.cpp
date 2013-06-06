@@ -128,8 +128,10 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
   numb_run_ =  start_run_;//+numruns_pergroup_;     // counter of how many runs were made monte carlo
 
-
-   SetupEvalDisAtEleCenters(AllMyOutputEleIds_);
+  // init number of wall elements
+  tot_num_wall_elements_ = 0;
+  SetupEvalDisAtEleCenters(AllMyOutputEleIds_);
+  SetupEvalPeakWallStress();
 
 
    reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
@@ -147,6 +149,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 	  meshfilename_ = meshfilename_helper2;
   else
 	  meshfilename_ = meshfilename_helper2.substr(pos+1);
+
 
   //init stuff that is only needed when we want to prolongate the results to a finer mesh,
   // and hence have a fine discretization
@@ -251,14 +254,12 @@ void STR::MLMC::Integrate()
     ResetPrestress();
     SetupStochMat((random_seed+(unsigned int)numb_run_));
     discret_->Comm().Barrier();
-    IO::cout << "check" << IO::endl;
+
 
     if(!reduced_output_)
     {
-      cout << "Test in here 2" << endl;
       output_->NewResultFile(filename_,(numb_run_));
       output_->WriteMesh(1, 0.01);
-      IO::cout << "check2" << IO::endl;
     }
 
     else
@@ -320,8 +321,20 @@ void STR::MLMC::Integrate()
         break;
     }
 
-    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl);
-    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea);
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp =Teuchos::rcp(new std::vector <std::vector<double > >);
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses =Teuchos::rcp(new std::vector <std::vector<double > >);
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains =Teuchos::rcp(new std::vector <std::vector<double > >);
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params =Teuchos::rcp(new std::vector <std::vector<double > >);
+
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+    ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+    ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_cauchy,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+
+    // Evaluate Peak stress and strain vallues
+    EvalPeakWallStress(dis_coarse, INPAR::STR::stress_cauchy,INPAR::STR::strain_ea );
+
+
     if (numb_run_-start_run_== 0 &&  prolongate_res_)
     {
      // not parallel
@@ -450,9 +463,15 @@ void STR::MLMC::IntegrateNoReset()
         dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
         break;
     }
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp =Teuchos::rcp(new std::vector <std::vector<double > >);
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses =Teuchos::rcp(new std::vector <std::vector<double > >);
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains =Teuchos::rcp(new std::vector <std::vector<double > >);
+    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params =Teuchos::rcp(new std::vector <std::vector<double > >);
 
-    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl);
-    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea);
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+    ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+    ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_cauchy,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
 
     numb_run_++;
     } while (numb_run_< numruns);
@@ -1569,55 +1588,240 @@ void STR::MLMC::SetupEvalDisAtEleCenters(std::vector <int> AllOutputEleIds)
   {
     ArrayAllOutputEleIds[i]=AllOutputEleIds[i];
   }
-
   OutputMap_ = Teuchos::rcp(new Epetra_Map (NumGlobalMapElements,NumMyElements,&(ArrayAllOutputEleIds[0]),0,actdis_coarse_->Comm()));
 }
-void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPAR::STR::StressType iostress,INPAR::STR::StrainType iostrain )
-{
-  IO::cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << IO::endl;
-  std::vector < Teuchos::RCP< std::vector<double > > > my_output_elements_c_disp;
-  std::vector < Teuchos::RCP< std::vector<double > > > my_output_elements_c_stresses;
-  std::vector < Teuchos::RCP< std::vector<double > > > my_output_elements_c_strains;
-  std::vector < Teuchos::RCP< std::vector <double > > > my_output_elements_mat_params;
 
-  for(unsigned int i = 0; i<my_output_elements_.size(); i++)
+void STR::MLMC::SetupEvalPeakWallStress()
+{
+  int  num_my_wall_elements =0;
+ // Now loop over all elements in EleRowMap
+
+  for(int i=0;i<actdis_coarse_->ElementRowMap()->NumMyElements();i++)
   {
-    RCP <std::vector<double> > my_c_disp = Teuchos::rcp(new std::vector<double> (3, 0.0));
-    int myNumNodes= actdis_coarse_->gElement(my_output_elements_[i])->NumNode();
-    const int* myNodeIds = actdis_coarse_->gElement(my_output_elements_[i])->NodeIds();
+    // check wether element has AAANeohookeStopro Material as indicator for AAA wall
+    if(actdis_coarse_->lRowElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
+    {
+      num_my_wall_elements++;
+      my_wall_elements_.push_back(actdis_coarse_->lRowElement(i)->Id());
+    }
+  }//EOF Loop over Elements
+  // Broadcast the information of how many wall elements we have to all other procs
+  actdis_coarse_->Comm().SumAll(&num_my_wall_elements,&tot_num_wall_elements_,1);
+}
+
+void STR::MLMC::EvalPeakWallStress(Teuchos::RCP<const Epetra_Vector> disp, INPAR::STR::StressType iostress,INPAR::STR::StrainType iostrain )
+{
+  // Eval all wall elements on proc
+  Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp =Teuchos::rcp(new std::vector <std::vector<double > >);
+  Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses =Teuchos::rcp(new std::vector <std::vector<double > >);
+  Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains =Teuchos::rcp(new std::vector <std::vector<double > >);
+  Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params =Teuchos::rcp(new std::vector <std::vector<double > >);
+  EvalDisAtEleCenters(disp,
+      iostress,
+      iostrain,
+      &my_wall_elements_,
+      my_output_elements_c_disp,
+      my_output_elements_c_stresses,
+      my_output_elements_c_strains,
+      my_output_elements_mat_params);
+
+  // compute von Mises stress
+  Teuchos::RCP< std::vector <double> > vonMisesStress = Teuchos::rcp(new std::vector<double > );
+  Teuchos::RCP< std::vector <double> > vonMisesStrain = Teuchos::rcp(new std::vector<double > );
+  Teuchos::RCP< std::vector <double> > DispMag = Teuchos::rcp(new std::vector<double > );
+  Teuchos::RCP< std::vector <double> > Beta = Teuchos::rcp(new std::vector<double > );
+
+  CalcVonMises(my_output_elements_c_stresses,vonMisesStress);
+  CalcVonMises(my_output_elements_c_strains,vonMisesStrain);
+
+  // compute disp magnitude
+  for(unsigned int i=0;i<my_output_elements_c_disp->size();i++)
+  {
+    DispMag->push_back(sqrt( pow(my_output_elements_c_disp->at(i).at(0),2)+pow(my_output_elements_c_disp->at(i).at(1),2)+pow(my_output_elements_c_disp->at(i).at(2),2) ));
+    // since my_output_elements_mat_params is the same size we use the same for loop here
+    Beta->push_back(my_output_elements_mat_params->at(i).at(1));
+  }
+
+  //calculate maximum and 99% quantile across procs
+  // temp variables to store peak values in
+  Teuchos::RCP<std::pair <int , double > > temp_peak = Teuchos::rcp(new std::pair <int , double  >);
+  Teuchos::RCP<std::pair <int , double > > temp_quantile99 = Teuchos::rcp(new std::pair <int , double > );
+  // list to store the peak values in
+  Teuchos::RCP<std::list<std::pair <int , double > > > peak_vals = Teuchos::rcp(new std::list<std::pair <int , double  > >);
+  Teuchos::RCP<std::list<std::pair <int , double > > > quantile99_vals = Teuchos::rcp(new std::list<std::pair <int , double  > >);
+
+
+  ComputePeakAndQuantile(vonMisesStress,&my_wall_elements_,temp_peak,temp_quantile99);
+  peak_vals->push_back(*temp_peak);
+  quantile99_vals->push_back(*temp_quantile99);
+
+  ComputePeakAndQuantile(vonMisesStrain,&my_wall_elements_,temp_peak,temp_quantile99);
+  peak_vals->push_back(*temp_peak);
+  quantile99_vals->push_back(*temp_quantile99);
+
+  ComputePeakAndQuantile(DispMag,&my_wall_elements_,temp_peak,temp_quantile99);
+  peak_vals->push_back(*temp_peak);
+  quantile99_vals->push_back(*temp_quantile99);
+
+  ComputePeakAndQuantile(Beta,&my_wall_elements_,temp_peak,temp_quantile99);
+  peak_vals->push_back(*temp_peak);
+  quantile99_vals->push_back(*temp_quantile99);
+
+  ExportPeakStressDataAndWriteToFile(peak_vals,quantile99_vals);
+
+}
+
+void STR::MLMC::CalcVonMises(Teuchos::RCP<std::vector <std::vector<double > > > input_components , Teuchos::RCP< std::vector <double> > output_vM )
+{
+  for(unsigned int i=0;i<input_components->size();i++)
+  {
+    output_vM->push_back(sqrt( pow(input_components->at(i).at(0),2)+pow(input_components->at(i).at(1),2)+pow(input_components->at(i).at(2),2)
+                                -input_components->at(i).at(0)*input_components->at(i).at(1)
+                                -input_components->at(i).at(1)*input_components->at(i).at(2)
+                                -input_components->at(i).at(2)*input_components->at(i).at(0)
+                                +3*(
+                                    pow(input_components->at(i).at(3),2)
+                                   +pow(input_components->at(i).at(4),2)
+                                  +pow(input_components->at(i).at(5),2))));
+  }
+
+}
+
+void STR::MLMC::ComputePeakAndQuantile(Teuchos::RCP<std::vector <double > >  values , std::vector <int>* ele_ids, Teuchos::RCP<std::pair<int, double> > peak,Teuchos::RCP<std::pair<int, double> > quantile99)
+{
+  // Build a list< pair< int eleGID, double some quantity e.g. vM Stress > >
+  // and sort it
+  std::list< std::pair< int, double > > my_quantity;
+
+
+  //loop over all element ids
+  std::pair< int, double> thispair;
+  for(unsigned int i=0;i<ele_ids->size();i++)
+  {
+    thispair.first  = ele_ids->at(i);
+    thispair.second = values->at(i);
+    my_quantity.push_back( thispair);
+  }
+
+  // sort the the listin ascending order by the estimated distance
+  // this is the STL sorting, which is pretty fast
+  my_quantity.sort(MyComparePairs);
+
+  //now we need to communicate top ten percent
+  int num_top_ten = (int) (tot_num_wall_elements_*0.1+0.5);
+  thispair.first  = -1;
+  thispair.second = -10000000;
+  //resize to top ten fill up the remainder if needed with small number and negative ele id
+  my_quantity.resize(num_top_ten,thispair);
+
+  // gather does not like lists, thus
+  std::vector<int> my_quantity_id_vec(0);
+  std::vector<double> my_quantity_value_vec(0);
+
+  // put data in separate vectors because Gather doesnt like vectors of pairs
+  for (std::list< std::pair< int, double > >::iterator it = my_quantity.begin(); it != my_quantity.end(); it++)
+  {
+    my_quantity_id_vec.push_back(it->first);
+    my_quantity_value_vec.push_back(it->second);
+  }
+
+  // vector to gather all the data in
+  std::vector<double>  my_quantity_values_gathered_vec(0);
+  std::vector<int>  my_quantity_id_gathered_vec(0);
+
+  // gather informatio across all procs
+  const int my_numprocs = actdis_coarse_->Comm().NumProc();
+
+  // information how many processors participate in total
+  std::vector<int> allproc(actdis_coarse_->Comm().NumProc());
+  for (int i=0;i<actdis_coarse_->Comm().NumProc();++i) allproc[i] = i;
+
+  LINALG::Gather<int>(my_quantity_id_vec,my_quantity_id_gathered_vec,my_numprocs,&allproc[0], actdis_coarse_->Comm());
+  LINALG::Gather<double>(my_quantity_value_vec,my_quantity_values_gathered_vec,my_numprocs,&allproc[0], actdis_coarse_->Comm());
+
+  //put data back into list for sorting
+  std::list< std::pair< int, double > > my_quantity_gathered;
+  for (unsigned int i=0; i<my_quantity_id_gathered_vec.size();i++)
+  {
+    std::pair<int,double> mytemp;
+    mytemp.first=my_quantity_id_gathered_vec[i];
+    mytemp.second=my_quantity_values_gathered_vec[i];
+    my_quantity_gathered.push_back(mytemp);
+  }
+  // sort the list
+  my_quantity_gathered.sort(MyComparePairs);
+
+  peak->first=my_quantity_gathered.begin()->first;
+  peak->second=my_quantity_gathered.begin()->second;
+
+   // write to screen
+   //if(!actdis_coarse_->Comm().MyPID())
+   //{
+   //for (std::list< std::pair< int, double > >::iterator it = my_quantity_gathered.begin(); it != my_quantity_gathered.end(); it++)
+     //{
+        // IO::cout << " " << it->second << " "<< it->first << IO::endl;
+     //}
+   //}
+   std::list< std::pair< int ,double> >::iterator it = my_quantity_gathered.begin();
+   std::advance( it,(int)(tot_num_wall_elements_*0.01));
+   quantile99->first=it->first;
+   quantile99->second=it->second;
+}
+
+
+void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
+      INPAR::STR::StressType iostress,
+      INPAR::STR::StrainType iostrain,
+      std::vector <int> * output_elements,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params)
+{
+
+  // we need the displacements in vector with colmap layout
+  actdis_coarse_->ClearState();
+  actdis_coarse_->SetState("displacement",disp);
+  // get the displacements in col map layout
+  Teuchos::RCP<const Epetra_Vector> disp_colmap = actdis_coarse_->GetState("displacement");
+
+  for(unsigned int i = 0; i<output_elements->size(); i++)
+  {
+    std::vector<double>  my_c_disp (3, 0.0);
+    int myNumNodes= actdis_coarse_->gElement(output_elements->at(i))->NumNode();
+    const int* myNodeIds = actdis_coarse_->gElement(output_elements->at(i))->NodeIds();
     for (int k=0; k< myNumNodes ; k++)
     {
       const DRT::Node* node = actdis_coarse_->gNode(myNodeIds[k]);
       std::vector <int> myDofsPerNode = actdis_coarse_->Dof(node);
       for (unsigned int l=0; l<myDofsPerNode.size(); l++)
       {
-        (*my_c_disp)[l]+=1./myNumNodes*(*disp)[disp->Map().LID(myDofsPerNode[l])];
+        my_c_disp[l]+=1./myNumNodes*(*disp_colmap)[disp_colmap->Map().LID(myDofsPerNode[l])];
       }
     }
-    my_output_elements_c_disp.push_back(my_c_disp);
+    my_output_elements_c_disp->push_back(my_c_disp);
 
-    RCP <std::vector<double> > mat_params = Teuchos::rcp(new std::vector<double>);
+    std::vector<double> mat_params ;
     // get the mat parameters
-    if(actdis_coarse_->gElement(my_output_elements_[i])->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
+    if(actdis_coarse_->gElement(output_elements->at(i))->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
     {
-      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->gElement(my_output_elements_[i])->Material().get());
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->gElement(output_elements->at(i))->Material().get());
 
-      mat_params->push_back(aaa_stopro->Youngs());
-      mat_params->push_back(aaa_stopro->Beta());
+      mat_params.push_back(aaa_stopro->Youngs());
+      mat_params.push_back(aaa_stopro->Beta());
     }
     else
     {
-      mat_params->push_back(0.0);
-      mat_params->push_back(0.0);
+      mat_params.push_back(0.0);
+      mat_params.push_back(0.0);
     }
-    my_output_elements_mat_params.push_back(mat_params);
+    my_output_elements_mat_params->push_back(mat_params);
   }
   // Now we need to get ele stresses and strains
-  //INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
- // INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
   Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
   Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
   Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
+
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   p.set("action","calc_struct_stress");
@@ -1642,18 +1846,16 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
 
   const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstrainmap", gpstrainmap);
-
   //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  Evaluate2(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  Evaluate2(p,output_elements,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
-
   // also get element stresses
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", gpstressmap);
   RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestress);
-  Evaluate2(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  Evaluate2(p,output_elements,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (elestress==Teuchos::null)
   {
@@ -1663,42 +1865,98 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   p.set("gpstressmap", gpstrainmap);
   RCP<Epetra_MultiVector> elestrains = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestrains);
-  Evaluate2(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  Evaluate2(p,output_elements,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (elestress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }
-  // now we have stresses and strains in elestress and elestrain which have Elementrowmap format
+
+  // now we have stresses and strains in elestress and elestrain in  Element rowmap layout
   // hence loop over the elements
-  for(unsigned int i = 0; i<my_output_elements_.size(); i++)
+  for(unsigned int i = 0; i<output_elements->size(); i++)
   {
-    RCP <std::vector<double> > element_c_stresses = Teuchos::rcp(new std::vector<double>);
-    RCP <std::vector<double> > element_c_strains = Teuchos::rcp(new std::vector<double>);
+    std::vector<double>  element_c_stresses;
+    std::vector<double>  element_c_strains;
     for(int k = 0;k<6 ; k++)
     {
-      element_c_stresses->push_back((*elestress)[k][(elestress->Map().LID(my_output_elements_[i]))]);
-      element_c_strains->push_back((*elestrains)[k][(elestrains->Map().LID(my_output_elements_[i]))]);
+      element_c_stresses.push_back((*elestress)[k][(elestress->Map().LID(output_elements->at(i)))]);
+      element_c_strains.push_back((*elestrains)[k][(elestrains->Map().LID(output_elements->at(i)))]);
     }
-    my_output_elements_c_stresses.push_back(element_c_stresses);
-    my_output_elements_c_strains.push_back(element_c_strains);
+    my_output_elements_c_stresses->push_back(element_c_stresses);
+    my_output_elements_c_strains->push_back(element_c_strains);
   }
+}
 
+void STR::MLMC::ExportPeakStressDataAndWriteToFile(
+      Teuchos::RCP<std::list <std::pair <int , double > > >  peak_values,
+      Teuchos::RCP<std::list <std::pair <int , double > > >  quantile99_values)
+{
+  if (actdis_coarse_->Comm().MyPID()==0)
+  {
+    // assemble name for outputfile
+    std::stringstream outputfile2;
+    outputfile2 << filename_ << "_statistics_output_" << start_run_ << "_max_values" << ".txt";
+    std::string name = outputfile2.str();;
+    // file to write output
+    std::ofstream File;
+    if (numb_run_ == 0 || numb_run_ == start_run_)
+    {
+      File.open(name.c_str(),std::ios::out);
+      if (File.is_open())
+      {
+        File << "runid "<< "vMstress EID vMstrain EID Phi EID disp EID beta EID vMstress99 EID vMstrain99 EID Phi99 EID disp99 EID beta99 EID "
+            << endl;
+        File.close();
+      }
+      else
+      {
+        dserror("Unable to open statistics output file");
+      }
+     }
+
+    // reopen in append mode
+    File.open(name.c_str(),std::ios::app);
+    File << numb_run_ ;
+    for (std::list< std::pair< int, double > >::iterator it = peak_values->begin(); it != peak_values->end(); it++)
+    {
+      File << " " << it->second << " "<< it->first;
+    }
+    for (std::list< std::pair< int, double > >::iterator it = quantile99_values->begin(); it != quantile99_values->end(); it++)
+    {
+      File << " " << it->second << " "<< it->first;
+    }
+    File << endl;
+    File.close();
+    }
+
+  actdis_coarse_->Comm().Barrier();
+}
+
+void STR::MLMC::ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> OutputMap,
+      INPAR::STR::StressType iostress,
+      INPAR::STR::StrainType iostrain,
+      std::vector <int> * output_elements,
+      Teuchos::RCP<std::vector <std::vector<double > > >  my_output_elements_c_disp,
+      Teuchos::RCP<std::vector <std::vector<double > > >  my_output_elements_c_stresses,
+      Teuchos::RCP<std::vector <std::vector<double > > >  my_output_elements_c_strains,
+      Teuchos::RCP<std::vector <std::vector<double > > >  my_output_elements_mat_params)
+{
   // now we need to setup a map
   // set up map <int,DRT::CONTAINER>
   std::map<int,Teuchos::RCP <DRT::Container> >my_output_element_map;
-  for(unsigned int i = 0; i<my_output_elements_.size(); i++)
+  for(unsigned int i = 0; i<output_elements->size(); i++)
   {
     // put all the stuff into container
     Teuchos::RCP<DRT::Container> mycontainer = Teuchos::rcp(new DRT::Container);
-    mycontainer->Add("stresses",(my_output_elements_c_stresses[i]));
-    mycontainer->Add("strains",(my_output_elements_c_strains[i]));
-    mycontainer->Add("disp",(my_output_elements_c_disp[i]));
-    mycontainer->Add("mat_params",(my_output_elements_mat_params[i]));
-    my_output_element_map.insert( std::pair <int,Teuchos::RCP< DRT::Container> >(my_output_elements_[i],mycontainer) );
+    mycontainer->Add("stresses",(my_output_elements_c_stresses->at(i)));
+    mycontainer->Add("strains",(my_output_elements_c_strains->at(i)));
+    mycontainer->Add("disp",(my_output_elements_c_disp->at(i)));
+    mycontainer->Add("mat_params",(my_output_elements_mat_params->at(i)));
+    my_output_element_map.insert( std::pair <int,Teuchos::RCP< DRT::Container> >(output_elements->at(i),mycontainer) );
   }
   // build exporter
-  DRT::Exporter myexporter(*(actdis_coarse_->ElementRowMap()),*OutputMap_,actdis_coarse_->Comm());
+  DRT::Exporter myexporter(*(actdis_coarse_->ElementRowMap()),*OutputMap,actdis_coarse_->Comm());
   // this actually transfers everything to proc 0
   myexporter.Export(my_output_element_map);
 
@@ -1783,6 +2041,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
  *----------------------------------------------------------------------*/
 void STR::MLMC::Evaluate2(
                         Teuchos::ParameterList&              params,
+                        std::vector <int>  * eval_elements,
                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
                         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
                         Teuchos::RCP<Epetra_Vector>          systemvector1,
@@ -1815,10 +2074,11 @@ void STR::MLMC::Evaluate2(
   // in the orginal function we have la(dofsets_.size()); here
   DRT::Element::LocationArray la(1);
   //my_output_elements_
-  for (unsigned int i=0; i<my_output_elements_.size(); ++i)
+  for (unsigned int i=0; i<eval_elements->size(); ++i)
   {
     // only evaluate the necessary elements for efficiency
-    DRT::Element* actele = actdis_coarse_->gElement(my_output_elements_[i]);
+    DRT::Element* actele = actdis_coarse_->gElement(eval_elements->at(i));
+
     {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
     // get element location vector, dirichlet flags and ownerships
@@ -1853,6 +2113,7 @@ void STR::MLMC::Evaluate2(
       strategy.AssembleVector1( la[row].lm_, la[row].lmowner_ );
       strategy.AssembleVector2( la[row].lm_, la[row].lmowner_ );
       strategy.AssembleVector3( la[row].lm_, la[row].lmowner_ );
+
     }
   } // for (int i=0; i<numcolele; ++i)
 

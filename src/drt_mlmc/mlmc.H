@@ -133,10 +133,26 @@ private:
   std::vector <int> AllMyOutputEleIds_;
 
   //! brief vector stores gids of elements we want the output of specific to proc
-  std::vector <int> my_output_elements_;
+  std::vector <int>  my_output_elements_;
+
+  //! brief vector stores gids of elements in the AAA wall
+   std::vector <int> my_wall_elements_;
+
+  //! brief total number of elements in the AAA wall
+   int tot_num_wall_elements_;
 
   //! brief map for communicating the element data to proc 0
   Teuchos::RCP<const Epetra_Map> OutputMap_;
+
+  //! brief compares the second entry of a pair<int,double>. To be passed to the sorting algo
+  static bool MyComparePairs (const std::pair<int,double>& first, const std::pair<int,double>& second)
+  {
+    if (first.second > second.second)
+      return true;
+    else
+      return false;
+  }
+
 
 
 
@@ -330,22 +346,58 @@ public:
   //! function to evaluate the discretization at certain nodes which are for now hard coded in this function
   void EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> displacement_of_discretization );
 
-  //! \brief evaluate the discretization at specific elements and write to txt. files vector of elements passed from input file
+  //! \brief evaluate the discretization at specific elements  vector of elements passed from input file
   void EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
       INPAR::STR::StressType iostress,
-      INPAR::STR::StrainType iostrain);
+      INPAR::STR::StrainType iostrain,
+      std::vector <int> * output_elements,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp,
+     // std::vector <std::vector<double > >   *my_output_elements_c_stresses,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params);
+
+  //! \brief write max values and 99% quantile values to file
+  void ExportPeakStressDataAndWriteToFile(
+        Teuchos::RCP<std::list <std::pair <int , double > > >  peak_values,
+        Teuchos::RCP<std::list <std::pair <int , double > > >  quantile99_values);
+
+  //! \brief data of elementsto txt. files vector of elements passed from input file
+  void ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> OutputMap,
+      INPAR::STR::StressType iostress,
+      INPAR::STR::StrainType iostrain,
+      std::vector <int> * output_elements,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains,
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params);
+
 
   //! \brief determine which of the output elemenst are on which proc
   void SetupEvalDisAtEleCenters(std::vector <int> AllOutputEleIds);
 
-  //! \brief more or less a copy of the evaluate function of discretization class, allwos us to evaluate specifi elements only
+  //! \brief more or less a copy of the evaluate function of discretization class, allwos us to evaluate specific elements only
   void Evaluate2(
                          Teuchos::ParameterList&              params,
+                         std::vector <int>                   *eval_elements,
                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
                          Teuchos::RCP<Epetra_Vector>          systemvector1,
                          Teuchos::RCP<Epetra_Vector>          systemvector2,
                          Teuchos::RCP<Epetra_Vector>          systemvector3);
+
+
+  //! brief setup map to communicate element stresses and strains in the wall to proc 0
+   void SetupEvalPeakWallStress();
+
+   //! brief compute peak wall stress
+   void EvalPeakWallStress(Teuchos::RCP<const Epetra_Vector> disp, INPAR::STR::StressType iostress,INPAR::STR::StrainType iostrain );
+
+   //! brief compute von Mises stresses or strains
+   void CalcVonMises(Teuchos::RCP<std::vector <std::vector<double > > >  input_components, Teuchos::RCP< std::vector <double> > output_vM);
+
+   //! brief compute maximum value as well as some quantile of some quantity (over all procs)
+   void ComputePeakAndQuantile(Teuchos::RCP<std::vector <double > >  values , std::vector <int>* corresponding_ele_ids,Teuchos::RCP<std::pair<int, double> > peak,Teuchos::RCP<std::pair<int, double> > quantile99);
 
   // #########################################################################
   // ##     functions needed for Multilevel Monte Carlo only                ##
@@ -389,6 +441,7 @@ public:
 
   //! brief write calculated statistics to file
   void WriteStatOutput();
+
 
 
 };  // class MLMC
