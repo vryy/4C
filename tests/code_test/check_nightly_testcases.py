@@ -3,7 +3,7 @@
 # 
 # Maintainer: A. Nagler
 #
-# Script for searching parameters which arem't used any longer
+# Script for searching parameters which aren't used any longer
 
 from read_ccarat_NIGHTLYTESTCASES import read_ccarat, write_ccarat
 from elements    import bcdictionary, surfaces
@@ -12,6 +12,8 @@ from sets        import Set
 
 import sys, subprocess, re
 
+ELEMENTS_NOT_TO_SEARCH = []
+MATERIALS_NOT_TO_SEARCH = []
 
 
 if __name__=='__main__':
@@ -65,6 +67,9 @@ if __name__=='__main__':
 		material = line[ line.index('//MAT') + 2 ]
 	    except ValueError:
 		continue
+	      
+	    if material in MATERIALS_NOT_TO_SEARCH:
+		continue
 	
 	    try:
 		test = subprocess.check_output('grep ' + material + ' ' + " ".join(files_to_search), shell=True)
@@ -88,6 +93,9 @@ if __name__=='__main__':
 	    try:
 		element = line[2] + ' ' + line[3]
 	    except IndexError:
+		continue
+	      
+	    if element in  ELEMENTS_NOT_TO_SEARCH:
 		continue
 	
 	    try:
