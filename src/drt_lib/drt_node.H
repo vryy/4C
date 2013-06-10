@@ -103,7 +103,7 @@ public:
   \param coords (in): vector of nodal coordinates, length 3
   \param owner  (in): Owner of this node.
   */
-  Node(int id, const double* coords, const int owner);
+  Node(int id, const double* coords, const int owner, const bool iscosserat=false);
 
   /*!
   \brief Copy Constructor
@@ -171,7 +171,7 @@ public:
   /*!
   \brief Return coordinates (length 3)
   */
-  virtual inline const double* X() const { return x_; }
+  virtual inline const double* X() const { return &x_[0]; }
 
   /*!
   \brief Return processor-local number of elements adjacent to this node
@@ -302,7 +302,8 @@ protected:
   //! proc owning this node
   int                                      owner_;
   //! nodal coords
-  double                                   x_[3];
+  //double                                   x_[3];
+  std::vector<double>                      x_;
   //! pointers to adjacent elements
   std::vector<Element*>                    element_;
   //! some conditions e.g. BCs

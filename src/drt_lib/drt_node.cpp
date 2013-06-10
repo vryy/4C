@@ -46,9 +46,12 @@ Maintainer: Michael Gee
 DRT::NodeType DRT::NodeType::instance_;
 
 
+/*----------------------------------------------------------------------*
+ |  kind of ctor (public)                                    mwgee 06/13|
+ *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::NodeType::Create( const std::vector<char> & data )
 {
-  double dummycoord[3] = {999.,999.,999.};
+  double dummycoord[6] = {999.,999.,999.,999.,999.,999.};
   DRT::Node* object = new DRT::Node(-1,dummycoord,-1);
   object->Unpack(data);
   return object;
@@ -58,13 +61,15 @@ DRT::ParObject* DRT::NodeType::Create( const std::vector<char> & data )
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Node::Node(int id, const double* coords, const int owner) :
+DRT::Node::Node(int id, const double* coords, const int owner,  const bool iscosserat) :
 ParObject(),
 id_(id),
 lid_(-1),
 owner_(owner)
 {
-  for (int i=0; i<3; ++i) x_[i] = coords[i];
+  if (!iscosserat) x_.resize(3);
+  else             x_.resize(6);
+  for (unsigned i=0; i<x_.size(); ++i) x_[i] = coords[i];
   return;
 }
 
@@ -76,10 +81,9 @@ ParObject(old),
 id_(old.id_),
 lid_(old.lid_),
 owner_(old.owner_),
+x_(old.x_),
 element_(old.element_)
 {
-  for (int i=0; i<3; ++i) x_[i] = old.x_[i];
-
   // we do NOT want a deep copy of the condition_ a condition is
   // only a reference in the node anyway
   std::map<std::string,Teuchos::RCP<Condition> >::const_iterator fool;
@@ -167,7 +171,8 @@ void DRT::Node::Pack(DRT::PackBuffer& data) const
   int owner = Owner();
   AddtoPack(data,owner);
   // x_
-  AddtoPack(data,x_,3*sizeof(double));
+//  AddtoPack(data,x_,3*sizeof(double));
+  AddtoPack(data,x_);
 
   return;
 }
@@ -189,7 +194,8 @@ void DRT::Node::Unpack(const std::vector<char>& data)
   // owner_
   ExtractfromPack(position,data,owner_);
   // x_
-  ExtractfromPack(position,data,x_,3*sizeof(double));
+//  ExtractfromPack(position,data,x_,3*sizeof(double));
+  ExtractfromPack(position,data,x_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -230,17 +236,14 @@ DRT::Condition* DRT::Node::GetCondition(const string& name) const
   return curr->second.get();
 }
 
-
 /*----------------------------------------------------------------------*
  |  Change position reference                                  (public) |
- |                                                            mc	06/11 |
+ |                                                            mc  06/11 |
  *----------------------------------------------------------------------*/
 void DRT::Node::ChangePos(std::vector<double> nvector)
 {
 
 	for (int i=0; i<3; ++i) x_[i] = x_[i]+ nvector[i];
-
 	return;
 }
-
 
