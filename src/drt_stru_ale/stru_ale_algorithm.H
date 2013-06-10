@@ -70,7 +70,7 @@ namespace STRU_ALE
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
-    
+
     /// time loop
     void TimeLoop();
 
@@ -86,8 +86,10 @@ namespace STRU_ALE
     /// material coordinates evaluated from spatial ones
     void AdvectionMap(double* XMat1,
                       double* XMat2,
+                      double* XMat3,
                       double* XMesh1,
                       double* XMesh2,
+                      double* XMesh3,
                       DRT::Element** ElementPtr,
                       int numelements);
     
@@ -106,7 +108,6 @@ namespace STRU_ALE
   Teuchos::RCP<MORTAR::ManagerBase>                cmtman_;        // contact manager
   Teuchos::RCP< ::ADAPTER::Coupling>               coupalestru_; // ale struct cpupling
   Teuchos::RCP< ::ADAPTER::Coupling>               coupstrualei_;  // ale struct coupling on ale interface
-
 
  };  // Algorithm
 }  // namespace STRU_ALE

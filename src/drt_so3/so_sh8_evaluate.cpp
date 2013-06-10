@@ -92,7 +92,15 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+
+        std::vector<double> mydispmat(lm.size());
+        if (structale_)
+        {
+          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+        }
+
+        nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -113,7 +121,15 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+
+        std::vector<double> mydispmat(lm.size());
+        if (structale_)
+        {
+          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+        }
+
+        nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -136,7 +152,15 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+
+        std::vector<double> mydispmat(lm.size());
+        if (structale_)
+        {
+          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+        }
+
+        nlnstiffmass(lm,mydisp,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -163,7 +187,15 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+
+        std::vector<double> mydispmat(lm.size());
+        if (structale_)
+        {
+          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+        }
+
+        nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // lump mass
@@ -202,7 +234,15 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
           sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         } else {
-          nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+
+          std::vector<double> mydispmat(lm.size());
+          if (structale_)
+          {
+            RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+            DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+          }
+
+          nlnstiffmass(lm,mydisp,myres,mydispmat,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         {
           DRT::PackBuffer data;

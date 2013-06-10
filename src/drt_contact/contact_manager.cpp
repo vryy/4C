@@ -694,9 +694,11 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
   Teuchos::RCP<Epetra_Vector> activetoggle;
   Teuchos::RCP<Epetra_Vector> sliptoggle;
   Teuchos::RCP<Epetra_Vector> weightedwear;
+  Teuchos::RCP<Epetra_Vector> realwear;
+
 
   // quantities to be written for restart
-  GetStrategy().DoWriteRestart(activetoggle,sliptoggle,weightedwear);
+  GetStrategy().DoWriteRestart(activetoggle,sliptoggle,weightedwear,realwear);
 
   // export restart information for contact to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
@@ -717,12 +719,20 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
     output.WriteVector("sliptoggle",sliptoggleexp);
   }
   
-  // wear
+  // weighted wear
   if (weightedwear != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> weightedwearexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     LINALG::Export(*weightedwear,*weightedwearexp);
     output.WriteVector("weightedwear", weightedwearexp);
+  }
+
+  // unweighted  wear
+  if (realwear != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> realwearexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    LINALG::Export(*realwear,*realwearexp);
+    output.WriteVector("realwear", realwearexp);
   }
 
   return;
@@ -920,12 +930,19 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   // *********************************************************************
   // wear
   // *********************************************************************
- 
   bool wear = GetStrategy().Wear();
   if (wear)
   {
+
+    // ***************************************************************************
+    // we do not compute the non-weighted wear here. we just write    farah 06/13
+    // the output. the non-weighted wear will be used as dirichlet-b.
+    // for the ale problem. n.w.wear will be called in stru_ale_algorithm.cpp
+    // and computed in GetStrategy().OutputWear();
+    // ***************************************************************************
+
     // evaluate wear (not weighted)
-    GetStrategy().OutputWear();
+    //GetStrategy().OutputWear();
 
     // write output
     Teuchos::RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();

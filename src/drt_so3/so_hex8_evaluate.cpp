@@ -106,7 +106,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+      std::vector<double> mydispmat(lm.size());
+      for (unsigned i=0; i<mydispmat.size(); ++i) mydispmat[i] = 0.0;
+      nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
@@ -126,6 +128,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
+      std::vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }
+
       // default: geometrically non-linear analysis with Total Lagrangean approach
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
       {
@@ -134,7 +143,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
                                         INPAR::STR::stress_none,INPAR::STR::strain_none);
 
         else // standard analysis
-          nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+          nlnstiffmass(lm,mydisp,myres,mydispmat,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
                             INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // special case: geometric linear
@@ -162,10 +171,17 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
 
+      std::vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }
+
       // default: geometrically non-linear analysis with Total Lagrangean approach
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
       {
-        nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // special case: geometric linear
@@ -210,6 +226,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      std::vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
@@ -218,7 +240,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
           invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                                         INPAR::STR::stress_none,INPAR::STR::strain_none);
         else // standard analysis
-        nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // special case: geometric linear
@@ -292,6 +314,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
+        std::vector<double> mydispmat(lm.size());
+        if (structale_)
+        {
+          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+        }
+
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
         {
@@ -299,7 +328,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
             invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
           else // standard analysis
-            nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+            nlnstiffmass(lm,mydisp,myres,mydispmat,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         // if a linear analysis is desired
         else  // (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
@@ -892,6 +921,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+
+      std::vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }
+
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> stress;
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> strain;
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> plstrain;
@@ -909,7 +946,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
           invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
         else // standard analysis
-          nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+          nlnstiffmass(lm,mydisp,myres,mydispmat,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
       }
       // add stresses to global map
       //get EleID Id()
@@ -1125,7 +1162,39 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
 
   return;
 }
+/*----------------------------------------------------------------------*
+ |  init the element jacobian mapping with respect to the    farah 06/13|
+ |  material configuration.                                             |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
+{
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xmat;
 
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    Node** nodes=Nodes();
+    if(!nodes) dserror("Nodes() returned null pointer");
+
+    xmat(i,0)  = Nodes()[i]->X()[0] + dispmat[i*NODDOF_SOH8+0];
+    xmat(i,1)  = Nodes()[i]->X()[1] + dispmat[i*NODDOF_SOH8+1];
+    xmat(i,2)  = Nodes()[i]->X()[2] + dispmat[i*NODDOF_SOH8+2];
+  }
+  invJ_.clear();
+  detJ_.clear();
+  invJ_.resize(NUMGPT_SOH8);
+  detJ_.resize(NUMGPT_SOH8);
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+    //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
+    invJ_[gp].Multiply(derivs[gp],xmat);
+    detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
+
+  }
+
+  return;
+}
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
@@ -1133,6 +1202,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       std::vector<int>&         lm,             // location matrix
       std::vector<double>&      disp,           // current displacements
       std::vector<double>&      residual,       // current residual displ
+      std::vector<double>&      dispmat,        // current material displacements
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,                 // element internal force vector
@@ -1157,9 +1227,10 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     dserror("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // reference coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xmat;   // material coord. of element
 
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
@@ -1172,6 +1243,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
+
+    // material displacements for structure with ale
+    if(structale_ == true)
+    {
+      xmat(i,0)  = xrefe(i,0) + dispmat[i*NODDOF_SOH8+0];
+      xmat(i,1)  = xrefe(i,1) + dispmat[i*NODDOF_SOH8+1];
+      xmat(i,2)  = xrefe(i,2) + dispmat[i*NODDOF_SOH8+2];
+    }
 
     if (pstype_==INPAR::STR::prestress_mulf)
     {
@@ -1261,11 +1340,15 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
   } // -------------------------------------------------------------------- EAS
 
+  // build new jacobian mapping with respect to the material configuration
+  if (structale_==true)
+    InitJacobianMapping(dispmat);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
   LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
@@ -1307,7 +1390,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       defgrd = Fnew;
     }
     else
-      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
       defgrd.MultiplyTT(xcurr,N_XYZ);
 
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
@@ -2920,5 +3002,147 @@ void DRT::ELEMENTS::So_hex8::PK2toCauchy(
   (*cauchystress).MultiplyNT(temp,(*defgrd));
 
 }  // PK2toCauchy()
+
+/*----------------------------------------------------------------------*
+ | Evaluates Material coordinates from spatial coordinates   farah 05/13|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::AdvectionMapElement(double* XMat1,
+                                                 double* XMat2,
+                                                 double* XMat3,
+                                                 double* XMesh1,
+                                                 double* XMesh2,
+                                                 double* XMesh3,
+                                                 RCP<const Epetra_Vector> disp,
+                                                 RCP<const Epetra_Vector> dispmat,
+                                                 LocationArray& la,
+                                                 bool& found)
+{
+  LINALG::SerialDenseVector funct(NUMNOD_SOH8);
+  LINALG::SerialDenseMatrix xcure(NUMDIM_SOH8,NUMNOD_SOH8);
+
+  // spatial displacements
+  std::vector<double> mydisp(la[0].lm_.size());
+  DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+
+  // material displacements
+  std::vector<double> mydispmat(la[0].lm_.size());
+  DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,la[0].lm_);
+
+  for (int k=0; k<NUMNOD_SOH8; ++k)
+  {
+    xcure(0,k) = Nodes()[k]->X()[0]+ mydisp[k*NUMDIM_SOH8+0];
+    xcure(1,k) = Nodes()[k]->X()[1]+ mydisp[k*NUMDIM_SOH8+1];
+    xcure(2,k) = Nodes()[k]->X()[2]+ mydisp[k*NUMDIM_SOH8+2];
+  }
+
+  // first estimation for parameter space coordinates
+  double e1,e2,e3;
+  e1=0.0;
+  e2=0.0;
+  e3=0.0;
+
+  // converged
+  bool converged = false;
+
+  int j = 0;
+
+  while (!converged and j<10)
+  {
+    // shape functions and derivatives
+    LINALG::SerialDenseMatrix deriv(NUMDIM_SOH8,NUMNOD_SOH8);
+    DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,Shape());
+    DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,Shape());
+
+    // jacobian matrix (lhs of linearized equation)
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> xjm;
+    xjm.Clear();
+
+    for (int k=0; k<NUMNOD_SOH8; ++k)
+    {
+         xjm(0,0) += deriv(0,k) * xcure(0,k);
+         xjm(1,0) += deriv(0,k) * xcure(1,k);
+         xjm(2,0) += deriv(0,k) * xcure(2,k);
+
+         xjm(0,1) += deriv(1,k) * xcure(0,k);
+         xjm(1,1) += deriv(1,k) * xcure(1,k);
+         xjm(2,1) += deriv(1,k) * xcure(2,k);
+
+         xjm(0,2) += deriv(2,k) * xcure(0,k);
+         xjm(1,2) += deriv(2,k) * xcure(1,k);
+         xjm(2,2) += deriv(2,k) * xcure(2,k);
+    }
+
+    // rhs of (linearized equation)
+    double rhs[NUMDIM_SOH8];
+    rhs[0]=0.0;
+    rhs[1]=0.0;
+    rhs[2]=0.0;
+
+    rhs[0]=-(*XMesh1);
+    rhs[1]=-(*XMesh2);
+    rhs[2]=-(*XMesh3);
+
+    for (int k=0; k<NUMNOD_SOH8; ++k)
+    {
+      rhs[0]+=funct(k)*xcure(0,k);
+      rhs[1]+=funct(k)*xcure(1,k);
+      rhs[2]+=funct(k)*xcure(2,k);
+    }
+
+    if (sqrt(rhs[0]*rhs[0]+rhs[1]*rhs[1]+rhs[2]*rhs[2])<1e-12)
+      converged = true;
+
+    // solve equation
+    if (abs(xjm.Determinant())<1.0e-12)
+    {
+      dserror("*** WARNING: jacobi singular ***");
+      break;
+    }
+
+    double xjm_invert = xjm.Invert();
+    if (abs(xjm_invert)<1.0e-12) dserror("ERROR: Singular Jacobian for advection map");
+
+    // delta xi, delta eta
+    double deltae1=-(xjm(0,0)*rhs[0]+xjm(0,1)*rhs[1]+xjm(0,2)*rhs[2]);
+    double deltae2=-(xjm(1,0)*rhs[0]+xjm(1,1)*rhs[1]+xjm(1,2)*rhs[2]);
+    double deltae3=-(xjm(2,0)*rhs[0]+xjm(2,1)*rhs[1]+xjm(2,2)*rhs[2]);
+
+    // incremental update
+    e1 = e1 + deltae1; //+
+    e2 = e2 + deltae2; //+
+    e3 = e3 + deltae3; //+
+
+    j=j+1;
+  }
+
+  if(!converged)
+  {
+    dserror("Evaluation of element coordinates not converged!");
+  }
+  // if material parameters are within the element, evaluate material
+  // coordinates
+  if (e1>=-1-1e-8 and e1<=1+1e-8 and e2>=-1-1e-8 and e2<=1+1e-8  and e3>=-1-1e-8 and e3<=1+1e-8 )
+  {
+    found = true;
+
+    double xmat1=0;
+    double xmat2=0;
+    double xmat3=0;
+
+    DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,Shape());
+
+    for (int k=0; k<NUMNOD_SOH8; ++k)
+    {
+      xmat1 += funct(k) * (Nodes()[k]->X()[0] + mydispmat[k*NUMDIM_SOH8+0]);
+      xmat2 += funct(k) * (Nodes()[k]->X()[1] + mydispmat[k*NUMDIM_SOH8+1]);
+      xmat3 += funct(k) * (Nodes()[k]->X()[2] + mydispmat[k*NUMDIM_SOH8+2]);
+    }
+
+    *XMat1 = xmat1;
+    *XMat2 = xmat2;
+    *XMat3 = xmat3;
+  }
+  return;
+}
 
 

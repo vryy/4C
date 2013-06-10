@@ -593,6 +593,9 @@ namespace STR
     //! Return displacements \f$D_{n}\f$
     Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
 
+    //! Return material displacements \f$D_{n}\f$
+    Teuchos::RCP<Epetra_Vector> Dismat() { return (*dism_)(0); }
+
     //! known displacements at \f$t_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
 
@@ -987,28 +990,24 @@ namespace STR
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
     Teuchos::RCP<TimIntMStep<Epetra_Vector> > dis_;
+    //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
+    Teuchos::RCP<TimIntMStep<Epetra_Vector> > dism_;
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
     Teuchos::RCP<TimIntMStep<Epetra_Vector> > vel_;
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
     Teuchos::RCP<TimIntMStep<Epetra_Vector> > acc_;
-    Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
-                                        //!< \f${D}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
-                                        //!< \f${V}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
-                                        //!< \f${A}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> disn_;   //!< global displacements
+                                         //!< \f${D}_{n+1}\f$
+                                         //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> dismatn_;//!< global material displacements
+    Teuchos::RCP<Epetra_Vector> veln_;   //!< global velocities
+                                         //!< \f${V}_{n+1}\f$
+                                         //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> accn_;   //!< global accelerations
+                                         //!< \f${A}_{n+1}\f$
+                                         //!< at \f$t_{n+1}\f$
     //! additional external forces
-    Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
-    //@}
-
-    //! @name Structure with ale specific stuff
-    //@{
-
-    Teuchos::RCP<Epetra_Vector> dismatn_; //!< global material displacements
-                                          //!< (structure with ale)
+    Teuchos::RCP<Epetra_Vector> fifc_;   //!< interface force in e.g. FSI
     //@}
 
 

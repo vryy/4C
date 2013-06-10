@@ -621,8 +621,11 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     for (int i=0;i<3;++i)
       gap+=(mgpx[i]-sgpx[i])*gpn[i];
     
-    // evaluate wear at current GP
-    // not including wearcoefficient
+    //***********************************************************************
+    // Here, the tangential relative slip increment is used and NOT the
+    // nodal weighted tangential relative slip increment !!!
+    // The wearcoefficient is not included in this calculation
+    //***********************************************************************
     double wearval = 0;
     if(wear)
     {
@@ -632,14 +635,18 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       for (int i=0;i<nrow;++i)
       {
          CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*> (mynodes[i]);
+
+         //nodal tangent interpolation
          gpt[0]+=sval[i]*myconode->CoData().txi()[0];
          gpt[1]+=sval[i]*myconode->CoData().txi()[1];
          gpt[2]+=sval[i]*myconode->CoData().txi()[2];
          
+         // delta D
          sgpjump[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
          sgpjump[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
          sgpjump[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
        
+         // LM interpolation
          gplm[0]+=lmval[i]*(*lagmult)(0,i);
          gplm[1]+=lmval[i]*(*lagmult)(1,i);
          gplm[2]+=lmval[i]*(*lagmult)(2,i);
@@ -668,7 +675,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       jump[2] = sgpjump[2] - mgpjump[2]; 
         
       // evaluate wear   
-      // normal contact stress 
+      // normal contact stress -- normal LM value
       for (int i=0;i<3;++i)
         wearval+=gpn[i]*gplm[i];
  
@@ -7514,7 +7521,8 @@ bool CONTACT::CoIntegrator::AssembleWear(const Epetra_Comm& comm,
     CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
 
     // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID()) continue;
+    if (snode->Owner() != comm.MyPID())
+      continue;
 
     // do not process slave side boundary nodes
     // (their row entries would be zero anyway!)

@@ -1223,7 +1223,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       sdofmap = interface_[i]->SlaveRowDofs();
       snodemap = interface_[i]->SlaveRowNodes();
     }
-      
+
     // export global quantity to current interface slave dof map (column or row)
     Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
     
@@ -1282,8 +1282,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 
           // explicity set global Lag. Mult. to zero for inactive nodes
           // (this is what we wanted to enforce anyway before condensation)
-          if (cnode->Active()==false)
-            (*vectorinterface)[locindex[dof]] = 0.0;
+          //if (cnode->Active()==false)
+          //  (*vectorinterface)[locindex[dof]] = 0.0;
 
           // store updated LM into node
           cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
@@ -1316,9 +1316,9 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
               double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
               
               if(DRT::Problem::Instance()->ProblemType()!=prb_struct_ale)
-                frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear();
+                frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear(); // amount of wear
               else
-                frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear();
+                frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear(); // wear for each ale step
             }
           break;
         }
@@ -1450,7 +1450,7 @@ void CONTACT::CoAbstractStrategy::OutputWear()
       for (int j=0;j<3;++j)
         nn[j]=frinode->MoData().n()[j];
       wear = frinode->FriDataPlus().Wear();
-
+      
       // find indices for DOFs of current node in Epetra_Vector
       // and put node values (normal and tangential stress components) at these DOFs
       std::vector<int> locindex(dim);
@@ -1683,14 +1683,18 @@ void CONTACT::CoAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> 
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
                                                  Teuchos::RCP<Epetra_Vector>& sliptoggle,
-                                                 Teuchos::RCP<Epetra_Vector>& weightedwear)
+                                                 Teuchos::RCP<Epetra_Vector>& weightedwear,
+                                                 Teuchos::RCP<Epetra_Vector>& realwear)
 {
   // initalize
   activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
   if (friction_)
     sliptoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
   if (wear_)
-    weightedwear = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+  {
+    weightedwear = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));   // weighted
+    realwear = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));       // unweighted
+  }
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1715,10 +1719,16 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& ac
       {
         CONTACT::FriNode* frinode = static_cast<CONTACT::FriNode*>(cnode);
         if (frinode->FriData().Slip()) (*sliptoggle)[dof]=1;
-        if (wear_)  (*weightedwear)[dof] = frinode->FriDataPlus().Wear();
+        if (wear_)
+        {
+          (*weightedwear)[dof] = frinode->FriDataPlus().Wear();
+        }
       }
     }
   }
+
+  if (friction_ and wear_)
+    realwear=  wearoutput_;
 
   return;
 }
@@ -1760,6 +1770,8 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // friction
   Teuchos::RCP<Epetra_Vector> sliptoggle;
   Teuchos::RCP<Epetra_Vector> weightedwear;
+  Teuchos::RCP<Epetra_Vector> realwear;
+
   if(friction_)
   {  
     sliptoggle =Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
@@ -1774,6 +1786,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   {
     weightedwear = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
     reader.ReadVector(weightedwear, "weightedwear");
+
+    realwear = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    reader.ReadVector(realwear, "realwear");
   }
   
   // store restart information on active set and slip set
@@ -1803,11 +1818,16 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
           // set value stick / slip in cnode
           // set wear value
           if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
-          if (wear_) static_cast<CONTACT::FriNode*>(cnode)->FriDataPlus().Wear() = (*weightedwear)[dof];
+          if (wear_)
+            static_cast<CONTACT::FriNode*>(cnode)->FriDataPlus().Wear() = (*weightedwear)[dof];
         }
       }
     }
   }
+
+  if (friction_ and wear_)
+    wearoutput_=realwear;
+
 
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));

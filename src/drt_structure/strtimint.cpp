@@ -141,6 +141,7 @@ STR::TimInt::TimInt
   young_temp_(DRT::INPUT::IntegralValue<int>(sdynparams,"YOUNG_IS_TEMP_DEPENDENT")==1),
   zeros_(Teuchos::null),
   dis_(Teuchos::null),
+  dism_(Teuchos::null),
   vel_(Teuchos::null),
   acc_(Teuchos::null),
   disn_(Teuchos::null),
@@ -210,6 +211,8 @@ STR::TimInt::TimInt
 
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  // material_displacements D_{n}
+  dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // accelerations A_{n}
@@ -217,6 +220,8 @@ STR::TimInt::TimInt
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // material displacements Dm_{n+1} at t_{n+1}
+  dismatn_ = LINALG::CreateVector(*dofrowmap_,true);
   // velocities V_{n+1} at t_{n+1}
   veln_ = LINALG::CreateVector(*dofrowmap_, true);
   // accelerations A_{n+1} at t_{n+1}
@@ -335,12 +340,6 @@ STR::TimInt::TimInt
       break;
     }
   }
-
-
-  // check for structural problem with ale
-  if(DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
-    dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
-
 
   // check for patient specific needs
   const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
@@ -495,9 +494,9 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
            << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << endl;
 #endif // #ifdef CONTACTPSEUDO2D
 
-      if (probtype!=prb_tsi)
-        cout << RED << "WARNING: Contact and Meshtying are still experimental "
-             << "for the chosen problem type \"" << probname << "\"!\n" << END_COLOR << endl;
+//      if (probtype!=prb_tsi)
+//        cout << RED << "WARNING: Contact and Meshtying are still experimental "
+//             << "for the chosen problem type \"" << probname << "\"!\n" << END_COLOR << endl;
 
       // errors
       if (probtype!=prb_tsi and probtype!=prb_struct_ale)
@@ -912,6 +911,7 @@ void STR::TimInt::ResetStep()
 {
   // reset state vectors
   disn_->Update(1.0, (*dis_)[0], 0.0);
+  dismatn_->Update(1.0, (*dism_)[0], 0.0);
   veln_->Update(1.0, (*vel_)[0], 0.0);
   accn_->Update(1.0, (*acc_)[0], 0.0);
 
@@ -967,11 +967,19 @@ void STR::TimInt::ReadRestartState()
   IO::DiscretizationReader reader(discret_, step_);
   reader.ReadVector(disn_, "displacement");
   dis_->UpdateSteps(*disn_);
+
+  if( (dismatn_!=Teuchos::null) )
+  {
+    reader.ReadVector(dismatn_, "material_displacement");
+    dism_->UpdateSteps(*dismatn_);
+  }
+
   reader.ReadVector(veln_, "velocity");
   vel_->UpdateSteps(*veln_);
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
   reader.ReadMesh(step_);
+
   return;
 }
 
@@ -1155,6 +1163,7 @@ void STR::TimInt::OutputRestart
     output_->WriteMesh(step_, (*time_)[0]);
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
+    output_->WriteVector("material_displacement", (*dism_)(0));
     output_->WriteVector("velocity", (*vel_)(0));
     output_->WriteVector("acceleration", (*acc_)(0));
     if(!HaveStatMech())
@@ -1186,6 +1195,7 @@ void STR::TimInt::OutputRestart
   if (HaveContactMeshtying())
   {
       cmtman_->WriteRestart(*output_);
+
       cmtman_->PostprocessTractions(*output_);
   }
 
@@ -1232,6 +1242,10 @@ void STR::TimInt::OutputState
   // write now
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("displacement", (*dis_)(0));
+
+  if( (dismatn_!=Teuchos::null))
+    output_->WriteVector("material_displacement", (*dism_)(0));
+
   // for visualization of vel and acc do not forget to comment in corresponding lines in StructureEnsightWriter
   if(writevelacc_)
   {
@@ -1314,8 +1328,8 @@ void STR::TimInt::DetermineStressStrain()
     //set coupling state for volume coupled problems (e.g. for tsi and poro)
     SetCouplingState();
 
-    if(dismatn_!= Teuchos::null)
-      discret_->SetState(0,"material displacement",dismatn_);
+    if( (dismatn_!=Teuchos::null) )
+      discret_->SetState(0,"material_displacement",dismatn_);
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
@@ -1907,8 +1921,10 @@ void STR::TimInt::ApplyForceStiffInternal
   //set coupling state for volume coupled problems (e.g. for tsi and poro)
   SetCouplingState();
 
-  if(dismatn_!=Teuchos::null)
-    discret_->SetState(0,"material displacement",dismatn_);
+  // Set material displacement state for ale-wear formulation
+  if( (dismatn_!=Teuchos::null) )
+    discret_->SetState(0,"material_displacement",dismatn_);
+
   discret_->Evaluate(p, stiff, damp, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -2101,26 +2117,21 @@ void STR::TimInt::SetForceInterface
 }
 
 /*----------------------------------------------------------------------*/
-/* apply the new material displacements                      mgit 05/11 */
+/* apply the new material_displacements                      mgit 05/11 */
 void STR::TimInt::ApplyDisMat(
   Teuchos::RCP<Epetra_Vector> dismat
   )
 {
-  // FIXGIT: This is done only for nonzero entries
+  // FIXGIT: This is done only for nonzero entries --> try to store the zero-entries to !!!
   // These values are replaced because here, the new absolute material
   // displacement has been evaluated (not the increment)
 
-  // loop over all row nodes
-   for (int k=0;k<discret_->NumMyRowNodes();++k)
+   for (int k=0;k<dismat->MyLength();++k)
    {
-     int gid = discret_->NodeRowMap()->GID(k);
-     int locid = (dismat->Map()).LID(2*gid);
-
-     if ((*dismat)[locid]!=0.0)
-       (*dismatn_)[locid] = (*dismat)[locid];
-
-     if ((*dismat)[locid+1]!=0.0)
-       (*dismatn_)[locid+1] = (*dismat)[locid+1];
+     if ((*dismat)[k] != 0.0)
+     {
+       (*dismatn_)[k]=(*dismat)[k];
+     }
    }
    return;
  }
@@ -2224,6 +2235,8 @@ void STR::TimInt::Reset()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  // displacements D_{n}
+  dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // accelerations A_{n}

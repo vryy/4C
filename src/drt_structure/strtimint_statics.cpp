@@ -18,6 +18,8 @@ Maintainer: Alexander Popp
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+
 
 /*======================================================================*/
 /* constructor */
@@ -269,6 +271,11 @@ void STR::TimIntStatics::UpdateStepState()
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
   dis_->UpdateSteps(*disn_);
+
+  //new material displacements
+  if( (dismatn_!=Teuchos::null))
+    dism_->UpdateSteps(*dismatn_);
+
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}
   vel_->UpdateSteps(*veln_);  // this simply copies zero vectors
@@ -308,6 +315,12 @@ void STR::TimIntStatics::UpdateStepElement()
   // go to elements
   discret_->ClearState();
   discret_->SetState("displacement",(*dis_)(0));
+
+  // Set material displacement state for ale-wear formulation
+  if( (dism_!=Teuchos::null))
+    discret_->SetState("material_displacement",(*dism_)(0));
+
+
   discret_->Evaluate(p, null, null, null, null,Teuchos::null);
   discret_->ClearState();
 }

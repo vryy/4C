@@ -73,6 +73,8 @@ private:
   // our solution
   //! global displacement DOFs
   Teuchos::RCP<Epetra_Vector> dis_;
+  //! global material displacement DOFs
+  Teuchos::RCP<Epetra_Vector> dism_;
   //! global velocity DOFs
   Teuchos::RCP<Epetra_Vector> vel_;
   //! global acceleration DOFs

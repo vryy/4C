@@ -573,7 +573,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle, 
                         Teuchos::RCP<Epetra_Vector>& sliptoggle, 
-                        Teuchos::RCP<Epetra_Vector>& weightedwear);
+                        Teuchos::RCP<Epetra_Vector>& weightedwear,
+                        Teuchos::RCP<Epetra_Vector>& realwear);
     
     /*!
     \brief Perform a write restart

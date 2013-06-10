@@ -155,7 +155,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
-        RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
-        RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
@@ -224,7 +224,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
-        RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
@@ -303,7 +303,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         std::vector<double> mydispmat(lm.size());
         if (structale_)
         {
-          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);

@@ -39,9 +39,10 @@ StruResultTest::StruResultTest(Teuchos::RCP<DRT::Discretization> strudis_in,
 StruResultTest::StruResultTest(STR::TimInt& tintegrator)
   : DRT::ResultTest("STRUCTURE")
 {
-  dis_ = tintegrator.Dis();
-  vel_ = tintegrator.Vel();
-  acc_ = tintegrator.Acc();
+  dis_  = tintegrator.Dis();
+  dism_ = tintegrator.Dismat();
+  vel_  = tintegrator.Vel();
+  acc_  = tintegrator.Acc();
   strudisc_ = tintegrator.Discretization();
 }
 
@@ -107,6 +108,27 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         {
           unknownpos = false;
           result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,3))];
+        }
+      }
+
+      // test material displacements
+      if (dism_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& dismpmap = dism_->Map();
+        if (position=="dispmx")
+        {
+          unknownpos = false;
+          result = (*dism_)[dismpmap.LID(strudisc_->Dof(0,actnode,0))];
+        }
+        else if (position=="dispmy")
+        {
+          unknownpos = false;
+          result = (*dism_)[dismpmap.LID(strudisc_->Dof(0,actnode,1))];
+        }
+        else if (position=="dispmz")
+        {
+          unknownpos = false;
+          result = (*dism_)[dismpmap.LID(strudisc_->Dof(0,actnode,2))];
         }
       }
 

@@ -187,6 +187,18 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
+  /// Evaluates Material coordinates from spatial coordinates
+  void AdvectionMapElement(double* XMat1,
+                           double* XMat2,
+                           double* XMat3,
+                           double* XMesh1,
+                           double* XMesh2,
+                           double* XMesh3,
+                           Teuchos::RCP<const Epetra_Vector> disp,
+                           Teuchos::RCP<const Epetra_Vector> dispmat,
+                           LocationArray& la,
+                           bool& found);
+
   /*!
   \brief Destructor
 
@@ -365,6 +377,8 @@ public:
   //const vector<double> GetFibervec(){return fiberdirection_;};
   const std::vector<double> soh8_ElementCenterRefeCoords();
 
+  //! struct_ale
+  bool structale_;
   //@}
 
 protected:
@@ -443,6 +457,8 @@ protected:
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame
   std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >                 invJ_;
+  //! vector of inverses of the jacobian in material frame
+  std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >                 invJmat_;
   //! determinant of Jacobian in material frame
   std::vector<double>                                                   detJ_;
 
@@ -474,11 +490,15 @@ protected:
   //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
 
+  //! init the inverse of the jacobian and its determinant in the material configuration
+  virtual void InitJacobianMapping(std::vector<double>& dispmat);
+
   //! Calculate nonlinear stiffness and mass matrix
   virtual void nlnstiffmass(
       std::vector<int>& lm,  ///< location matrix
       std::vector<double>& disp,  ///< current displacements
       std::vector<double>& residual,  ///< current residual displ
+      std::vector<double>& dispmat,  ///< current material displacements
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
@@ -551,6 +571,7 @@ protected:
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* defgrd,
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* cauchystress
     );
+
 
   //! push forward of Green-Lagrange strain to Euler-Almansi strains
   void GLtoEA(

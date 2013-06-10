@@ -78,6 +78,12 @@ void stru_ale_dyn_drt(int restart)
   // structure ale object
   Teuchos::RCP<STRU_ALE::Algorithm> stru_ale = Teuchos::rcp(new STRU_ALE::Algorithm(comm));
 
+  // read restart before joining the time loop
+  if (restart!=0)
+  {
+    stru_ale->ReadRestart(restart);
+  }
+
   // solve the whole problem
   stru_ale->TimeLoop();
   
