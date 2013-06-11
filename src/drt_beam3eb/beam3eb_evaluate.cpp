@@ -357,7 +357,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   {
 
     // gaussian points
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
     LINALG::Matrix<1,NODALDOFS*nnodes> N_i;
 
     //integration loops
@@ -485,7 +485,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   const int nnode = 2;
 
   //matrix for current positions and tangents
-  std::vector<double> disp_totlag(nnode*dofpn);
+  std::vector<double> disp_totlag(nnode*dofpn,0.0);
 
   LINALG::Matrix<3,1> r_;
   LINALG::Matrix<3,1> r_x;
@@ -565,13 +565,10 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   //TODO: The integration rule should be set via input parameter and not hard coded as here
   //Get integrationpoints for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
-
-  //clear disp_totlag vector before assembly
-  disp_totlag.clear();
 
   //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
   for (int node = 0 ; node < nnode ; node++)
@@ -941,7 +938,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   const int nnode = 2;
 
   //matrix for current positions and tangents
-  std::vector<double> disp_totlag(nnode*dofpn);
+  std::vector<double> disp_totlag(nnode*dofpn, 0.0);
   std::vector<FAD> disp_totlag_fad(nnode*dofpn, 0.0);
 
   LINALG::Matrix<3,1> r_;
@@ -1036,13 +1033,10 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   //TODO: The integration rule should be set via input parameter and not hard coded as here (standard: 3)
   //Get integrationpoints for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
-
-  //clear disp_totlag vector before assembly
-  disp_totlag.clear();
 
   //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
   for (int node = 0 ; node < nnode ; node++)
@@ -1568,7 +1562,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
 
     //TODO: The integration rule should be set via input parameter and not hard coded as here
     //Get integrationpoints for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
     //Get DiscretizationType of beam element
     const DRT::Element::DiscretizationType distype = Shape();
@@ -1870,7 +1864,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
 
     //TODO: The integration rule should be set via input parameter and not hard coded as here
     //Get integrationpoints for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
 
     //Get DiscretizationType of beam element
     const DRT::Element::DiscretizationType distype = Shape();

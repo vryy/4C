@@ -87,7 +87,7 @@ using namespace cln;
                                 // hermitian polynomials (3 nodal dofs). So the valid values of NODALDOFS are 2 and 3
 //#define ANS                     // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
 
-#define mygaussrule intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
+#define mygaussruleeb intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT

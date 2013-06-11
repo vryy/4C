@@ -357,7 +357,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
     {
 
       // gaussian points
-      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
       LINALG::Matrix<1,4> N_i;
 
       //integration loops
@@ -469,10 +469,10 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
   const int nnode = 2;
 
   //matrix for current nodal positions and nodal tangents
-  std::vector<double> disp_totlag(nnode*dofpn);
+  std::vector<double> disp_totlag(nnode*dofpn,0.0);
 
   //matrix for current nodal twist angle
-  std::vector<double> twist_totlag(nnode*1);
+  std::vector<double> twist_totlag(nnode*1,0.0);
 
   //abbreviated matrices for clearness
   LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde;
@@ -571,14 +571,10 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   //
   //Get integrationpoints for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
-
-  //clear disp_totlag vector before assembly
-  disp_totlag.clear();
-  twist_totlag.clear();
 
   //update displacement vector with disp = [ r1 t1 alpha1 r2 t2 alpha2]
   for (int node = 0 ; node < nnode ; node++)
@@ -1255,7 +1251,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(std::vector<double>& disp,
 //
 //  //TODO: The integration rule should be set via input parameter and not hard coded as here
 //  //Get integrationpoints for exact integration
-//  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+//  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
 //
 //  //Get DiscretizationType of beam element
 //  const DRT::Element::DiscretizationType distype = Shape();

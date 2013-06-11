@@ -255,7 +255,7 @@ void DRT::ELEMENTS::Beam3ebtor::SetUpReferenceGeometry(const std::vector<double>
 	  DRT::Element::DiscretizationType distype = Shape();
 
 	  //Get integrationpoints for exact integration
-	  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+	  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
 
 	  Tref_.resize(gausspoints.nquad);
 
