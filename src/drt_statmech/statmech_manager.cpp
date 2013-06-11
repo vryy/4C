@@ -5022,9 +5022,6 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
   int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
   int oscdir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
   double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
-  // incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir 0.0)
-  double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                       DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
 
 //------------------------------------------------------gather dbc node set(s)
   // loop over row elements
@@ -5066,60 +5063,39 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
           for(int n=0; n<cut.N(); n++)
           {
             int nodelidn = discret_->NodeRowMap()->LID(element->Nodes()[n]->Id());
-            if(nodelidn>-1)
-            {
-              if(nodedbcstatus.at(nodelidn)==false)
-              {
-                switch((int)(round(cut(2,n))))
-                {
-                  // case 1: broken element (in z-dir); node_n+1 displaced, node_n is fixed in dir. of displacement
-                  case 1:
-                  {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 n"<<endl;
-                    nodedbcstatus.at(nodelidn) = true;
-                    fixednodes.push_back(element->Nodes()[n]->Id());
-                  }
-                  break;
-                  // case 2: broken element (in z-dir); node_n displaced, node_n+1 is fixed in dir. of displacement
-                  case 2:
-                  {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 n"<<endl;
-                    nodedbcstatus.at(nodelidn) = true;
-                    oscillnodes.push_back(element->Nodes()[n]->Id());
-                    (*deltadbc)[doflids.at(numdof*n+oscdir)] =  (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
-                  }
-                  break;
-                }
-              }
-            }
             int nodelidnp = discret_->NodeRowMap()->LID(element->Nodes()[n+1]->Id());
-            //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp = "<<nodelidnp<<"/"<<discret_->NodeRowMap()->GID(nodelidnp)<<endl;
-            if(nodelidnp>-1)
+
+            // only consider this node pair if it is not already subject to Dirichlet BCs
+            if(nodedbcstatus.at(nodelidn)==false && nodedbcstatus.at(nodelidnp)==false)
             {
-              //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp cut = "<<(int)cut(2,n)<<endl;
-              if(nodedbcstatus.at(nodelidnp)==false)
+              // case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
+              if(cut(2,n)==1.0)
               {
-                switch((int)(round(cut(2,n))))
-                {
-                  // case 1: broken element (in z-dir); node_n+1 displaced, node_n is fixed in dir. of displacement
-                  case 1:
-                  {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 np"<<endl;
-                    nodedbcstatus.at(nodelidnp) = true;
-                    oscillnodes.push_back(element->Nodes()[n+1]->Id());
-                    (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*tcincrement;
-                  }
-                  break;
-                  // case 2: broken element (in z-dir); node_n displaced, node_n+1 is fixed in dir. of displacement
-                  case 2:
-                  {
-                   // cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 np"<<endl;
-                    nodedbcstatus.at(nodelidnp) = true;
-                    fixednodes.push_back(element->Nodes()[n+1]->Id());
-                  }
-                  break;
-                }
-              }
+                // update dbc status for these nodes (dofs)
+                nodedbcstatus.at(nodelidn) = true;
+                nodedbcstatus.at(nodelidnp) = true;
+                // add GID of fixed node to fixed-nodes-vector (to be added to condition later)
+                fixednodes.push_back(element->Nodes()[n]->Id());
+                // add GID of oscillating node to osc.-nodes-vector
+                oscillnodes.push_back(element->Nodes()[n+1]->Id());
+                // incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
+                // time curve increment
+                double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                              DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+                (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
+              }// end of case 1
+              // case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
+              if(cut(2,n)==2.0)
+              {
+                nodedbcstatus.at(nodelidn) = true;
+                nodedbcstatus.at(nodelidnp) = true;
+                oscillnodes.push_back(element->Nodes()[n]->Id());
+                fixednodes.push_back(element->Nodes()[n+1]->Id());
+                // oscillating node
+                double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                              DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+                (*deltadbc)[doflids.at(numdof*n+oscdir)] = (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
+              } // end of case 2
             }
           }
         }
@@ -5130,17 +5106,7 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
     dbcnodesets_.push_back(fixednodes);
 
 //---------check/set force sensors anew for each time step
-    // add DOF LID where a force sensor is to be set
     UpdateForceSensors(dbcnodesets_[0], oscdir);
-    //if(!discret_->Comm().MyPID())
-    //  cout<<"\n=========================================="<<endl;
-    //for(int pid=0; pid<discret_->Comm().NumProc();pid++)
-    //{
-    //  if(pid==discret_->Comm().MyPID())
-    //    cout<<"UpdateForceSensors_"<<pid<<": "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
-    //  discret_->Comm().Barrier();
-    //}
-    //cout<<"==========================================\n"<<endl;
   }
   else // only ever use the fixed set of nodes after the first time dirichlet values were imposed
   {
@@ -5151,9 +5117,11 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
       std::vector<int> dofnode = discret_->Dof(oscnode);
       // oscillating node
       double znode = oscnode->X()[2] + (*dis)[discret_->DofRowMap()->LID(dofnode[2])];
+      double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                      DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
       (*deltadbc)[discret_->DofRowMap()->LID(dofnode[oscdir])] = znode/(*periodlength_)[2]*amp*tcincrement;
     }
-    // dofs of fixednodes_ remain untouched since displacement at fixednodes_ dofs are 0.0
+    // dofs of fixednodes_ remain untouched since fixednodes_ dofs are 0.0
   }
   return;
 }

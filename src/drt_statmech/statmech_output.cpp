@@ -5180,8 +5180,8 @@ void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&      
     for(std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.begin(); it!=currentpositions.end(); it++)
       COG += it->second;
     COG.Scale(1.0/(double)discret_->NumMyColNodes());
-    cout<<"COG =\n"<<COG<<endl;   
-    filecontent << std::scientific << std::setprecision(15) << COG(0)<<"  "<<COG(1)<<"  "<<COG(2)<<std::endl;
+//    cout<<"COG =\n"<<COG<<endl;
+//    filecontent << std::scientific << std::setprecision(15) << COG(0)<<"  "<<COG(1)<<"  "<<COG(2)<<std::endl;
     
     // calculate relative position to COG
     for(int i=0; i<discret_->NumMyColNodes(); i++)
