@@ -186,9 +186,26 @@ void LARGEROTATIONS::angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matr
   spin2.Multiply(spin,spin);
 
   // compute rotation matrix according to Crisfield Vol. 2, equation (16.22)
-  for(int i=0;i<3;i++)
-    for(int j=0;j<3;j++)
-      R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(pow(theta_abs,2)) * spin2(i,j);
+  if (theta_abs > 1.0e-12)
+  {
+    for(int i=0;i<3;i++)
+    {
+      for(int j=0;j<3;j++)
+      {
+        R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(pow(theta_abs,2)) * spin2(i,j);
+      }
+    }
+  }
+  else
+  {
+    for(int i=0;i<3;i++)
+    {
+      for(int j=0;j<3;j++)
+      {
+        R(i,j) = identity(i,j);
+      }
+    }
+  }
 
   return;
 }
