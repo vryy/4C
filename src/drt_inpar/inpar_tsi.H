@@ -50,7 +50,8 @@ namespace TSI
     mortar_mortar_dual,
     mortar_mortar_std,
     proj_mortar_std,
-    proj_LSI
+    proj_mortar_dual,
+    proj_RBFI
   };
 
   //! @name Solution technique and related stuff

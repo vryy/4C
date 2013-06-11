@@ -2159,15 +2159,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "tfsi_mortar_mortar_dual",
       "tfsi_mortar_mortar_std",
       "tfsi_proj_mortar_std",
-      "tfsi_proj_LSI"),
+      "tfsi_proj_mortar_dual",
+      "tfsi_proj_RBFI"),
     tuple<int>(
       INPAR::TSI::conforming,
       INPAR::TSI::mortar_mortar_dual,
       INPAR::TSI::mortar_mortar_std,
       INPAR::TSI::proj_mortar_std,
-      INPAR::TSI::proj_LSI),
+      INPAR::TSI::proj_mortar_dual,
+      INPAR::TSI::proj_RBFI),
       &tsidyn
       );
+
+  BoolParameter("TFSI_MORTAR_ADDITIONAL_BOUNDLAYER","No","additional boundary layer for mortar coupling",&tsidyn);
 
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);

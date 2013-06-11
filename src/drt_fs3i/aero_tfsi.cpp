@@ -47,6 +47,7 @@ FS3I::AeroTFSI::AeroTFSI(
   // decide if monolithic or partitioned coupling
   coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
   tfsi_coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_COUPALGO");
+  additional_boundary_layer_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_MORTAR_ADDITIONAL_BOUNDLAYER");
   PrintCouplingStrategy();
 
 #ifdef INCA_COUPLING
@@ -115,6 +116,8 @@ void FS3I::AeroTFSI::Timeloop()
   FILE *outFile;
   outFile = fopen("interfaceTemp.txt", "w");
   fclose(outFile);
+  outFile = fopen("interfaceFlux.txt", "w");
+  fclose(outFile);
 
   double t_start = 0.0;
   double t_end = 0.0;
@@ -132,7 +135,8 @@ void FS3I::AeroTFSI::Timeloop()
     int lengthphysicaldomain = 0;
     if(tfsi_coupling_ == INPAR::TSI::mortar_mortar_std or
         tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
-        tfsi_coupling_ == INPAR::TSI::proj_mortar_std)
+        tfsi_coupling_ == INPAR::TSI::proj_mortar_std or
+        tfsi_coupling_ == INPAR::TSI::proj_mortar_dual)
     {
       t_start = Teuchos::Time::wallTime();
 
@@ -187,12 +191,21 @@ void FS3I::AeroTFSI::Timeloop()
       break;
     }
     case INPAR::TSI::mortar_mortar_dual :
+    case INPAR::TSI::proj_mortar_dual :
     {
       aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain, aerocoords, ithermoloadStart, aerosenddata);
       break;
     }
+    case INPAR::TSI::proj_RBFI :
+    {
+      aerocoupling_->PackDataRBFI(interf, idispnStart, ithermoloadStart, aerosenddata, false);
+      // additional send which will be removed 15.05.2013
+      SendAeroData(aerosenddata);
+      break;
+    }
     default:
       dserror("Coupling strategy %d is not yet implemented.", tfsi_coupling_);
+      break;
     }
 
     t_end = Teuchos::Time::wallTime()-t_start;
@@ -221,7 +234,12 @@ void FS3I::AeroTFSI::Timeloop()
       outFile = fopen("interfaceTemp.txt", "a");
       fprintf(outFile, "%.8e  ", tsi_->Time());
       fclose(outFile);
+      outFile = fopen("interfaceFlux.txt", "a");
+      fprintf(outFile, "%.12e  ", tsi_->Time());
+      fclose(outFile);
     }
+    double flux_in = 0.0;
+    double flux_struct = 0.0;
 
     // full vectors of structural and thermal field to be filled and applied to the TSI problem
     Teuchos::RCP<Epetra_Vector> strfifc = LINALG::CreateVector(*tsi_->StructureField()->Discretization()->DofRowMap(), true);
@@ -238,13 +256,14 @@ void FS3I::AeroTFSI::Timeloop()
       ReceiveAeroData(aerodata);
 
       //fill data from INCA into suitable variables
-      SplitData(aerodata, aerocoords, aeroforces, 0);
+      flux_in += SplitData(aerodata, aerocoords, aeroforces, 0);
 
       // receive data from INCA for boundary layer around physical domain
       // only geometry is important, forces are dropped
       if(tfsi_coupling_ == INPAR::TSI::mortar_mortar_std or
           tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
-          tfsi_coupling_ == INPAR::TSI::proj_mortar_std)
+          tfsi_coupling_ == INPAR::TSI::proj_mortar_std or
+          tfsi_coupling_ == INPAR::TSI::proj_mortar_dual)
       {
         lengthphysicaldomain[interf] = aerocoords.size();
         aerodata.clear();
@@ -266,11 +285,13 @@ void FS3I::AeroTFSI::Timeloop()
       switch(tfsi_coupling_)
       {
       case INPAR::TSI::proj_mortar_std :
+      case INPAR::TSI::proj_mortar_dual :
       {
         aerocoupling_->BuildMortarCoupling(interf, idispn, aerocoords);
         // no break here!
       }
       case INPAR::TSI::conforming :
+      case INPAR::TSI::proj_RBFI :
       {
         aerocoupling_->ProjectForceOnStruct(interf, idispn, aerocoords, aeroforces, iforce, ithermoload);
         break;
@@ -289,6 +310,7 @@ void FS3I::AeroTFSI::Timeloop()
       }
       default:
         dserror("Coupling strategy %d is not yet implemented.", tfsi_coupling_);
+        break;
       }
 
       // apply structural interface tractions to the structural field
@@ -296,8 +318,24 @@ void FS3I::AeroTFSI::Timeloop()
       // apply thermal interface heat flux to the thermal field
       aerocoupling_->ThrApplyInterfaceVal(interf, ithermoload, thrfifc);
 
+      double flux_serial = 0.0;
+      double flux_global = 0.0;
+      for(int k=0; k<ithermoload->MyLength(); k++)
+        flux_serial += (*ithermoload)[k];
+      lcomm_.SumAll(&flux_serial, &flux_global, 1);
+      flux_struct += flux_global;
+
       t_end = Teuchos::Time::wallTime()-t_start;
       BACITime += t_end;
+    }
+
+    if(lcomm_.MyPID() == 0)
+    {
+      outFile = fopen("interfaceFlux.txt", "a");
+      fprintf(outFile, "%.12e  ", flux_in);
+      fprintf(outFile, "%.12e  ", flux_struct);
+      fprintf(outFile, "%.12e\n", flux_in/flux_struct);
+      fclose(outFile);
     }
 
     t_start = Teuchos::Time::wallTime();
@@ -345,12 +383,19 @@ void FS3I::AeroTFSI::Timeloop()
           break;
         }
         case INPAR::TSI::mortar_mortar_dual :
+        case INPAR::TSI::proj_mortar_dual :
         {
           aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain[interf], aerocoords, itemp, aerosenddata);
           break;
         }
+        case INPAR::TSI::proj_RBFI :
+        {
+          aerocoupling_->PackDataRBFI(interf, idispnp, itemp, aerosenddata, true);
+          break;
+        }
         default:
           dserror("Coupling strategy %d is not yet implemented.", tfsi_coupling_);
+          break;
         }
 
         t_end = Teuchos::Time::wallTime()-t_start;
@@ -584,13 +629,19 @@ void FS3I::AeroTFSI::ReceiveAeroData(
 /*----------------------------------------------------------------------*
  | cast data from INCA in a different format                ghamm 12/11 |
  *----------------------------------------------------------------------*/
-void FS3I::AeroTFSI::SplitData(
+double FS3I::AeroTFSI::SplitData(
   std::vector<double>& aerodata,
   std::map<int, LINALG::Matrix<3,1> >& aerocoords,
   std::map<int, LINALG::Matrix<4,1> >& aeroforces,
   int startingvalue
   )
 {
+  // without additional boundary layer leave here
+  if(startingvalue != 0 and additional_boundary_layer_ == false)
+    return 0.0;
+
+  double flux_in = 0.0;
+
   // incoming data from INCA (xxxxyyyyzzzzffff) splitted into xyzxyzxyzxyz & ffff
   size_t length = aerodata.size();
   size_t lengthquarter = length/4;
@@ -606,7 +657,7 @@ void FS3I::AeroTFSI::SplitData(
     aerocoords[out] = tmp1;
 
     // only geometry is important in case of the additional boundary layer --> no forces
-    if(startingvalue == 0)
+    if(startingvalue == 0 and additional_boundary_layer_ == true)
     {
       // note: currently heat fluxes are transferred but forces not yet --> zeros
       for(size_t in=0; in<3; in++)
@@ -616,10 +667,11 @@ void FS3I::AeroTFSI::SplitData(
       tmp2(3)=aerodata[3*lengthquarter + out - startingvalue];
 
       aeroforces[out] = tmp2;
+      flux_in += tmp2(3);
     }
   }
 
-  return;
+  return flux_in;
 }
 
 
@@ -709,7 +761,20 @@ void FS3I::AeroTFSI::PrintCouplingStrategy()
     IO::cout << "\nTFSI coupling: mortar coupling with dual shape functions for Lagrange multiplier. \n" << IO::endl;
     break;
   }
+  case INPAR::TSI::proj_mortar_dual:
+  {
+    IO::cout << "\nTFSI coupling: conservative projection from fluid to structure and mortar coupling \n"
+        "with dual shape functions for Lagrange multiplier for structure to fluid. \n" << IO::endl;
+    break;
+  }
+  case INPAR::TSI::proj_RBFI:
+  {
+    IO::cout << "\nTFSI coupling: conservative projection from fluid to structure and radial basis function \n"
+        "interpolation for structure to fluid. \n" << IO::endl;
+    break;
+  }
   default:
     dserror("Coupling strategy %d is not yet implemented.", tfsi_coupling_);
+    break;
   }
 }

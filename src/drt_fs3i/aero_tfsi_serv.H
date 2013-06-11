@@ -24,12 +24,14 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
-#include <map>
-#include <vector>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../headers/definitions.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_MpiComm.h>
+#include <map>
+#include <vector>
 
 
 /*----------------------------------------------------------------------*
@@ -54,6 +56,13 @@ namespace STR
     class MapExtractor;
   }
 }
+
+struct sendingdata {
+   double x;
+   double y;
+   double z;
+   double T;
+};
 
 
 namespace FS3I
@@ -135,6 +144,16 @@ namespace FS3I
 
       /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA
       void PackData
+      (
+        int interf,   ///< interface id
+        Teuchos::RCP<Epetra_Vector> idispnp,  ///< interface displacements
+        Teuchos::RCP<Epetra_Vector> itempnp,  ///< interface temperatures
+        std::vector<double>& packeddata, ///< output: packed data, ready for sending
+        bool writedata = true   ///< bool whether interface point data is written to file
+      );
+
+      /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA
+      void PackDataRBFI
       (
         int interf,   ///< interface id
         Teuchos::RCP<Epetra_Vector> idispnp,  ///< interface displacements
@@ -228,6 +247,23 @@ namespace FS3I
         Teuchos::RCP<Epetra_Vector> ithermoload  ///< distributed heat fluxes to the nodes of the element
       );
 
+      /// compares first the z coord and then the x coord of data struct
+      static bool MyComparePairs (const sendingdata& first, const sendingdata& second)
+      {
+        if(fabs(first.z - second.z) < EPS6)
+        {
+          if (first.x < second.x)
+            return true;
+          else
+            return false;
+        }
+
+        if (first.z < second.z)
+          return true;
+        else
+          return false;
+       }
+
     private:
       std::vector<Teuchos::RCP<DRT::Discretization> > istructdis_;  ///< discretization of structural interface
       std::vector<Teuchos::RCP<DRT::Discretization> > ithermodis_;  ///< discretization of thermal interface
@@ -249,6 +285,8 @@ namespace FS3I
       std::vector<Teuchos::RCP<LINALG::SparseMatrix> > M_;  ///< M matrix of mortar coupling
 
       INPAR::MORTAR::ShapeFcn shapefcn_;      // employed type of shape function set
+
+      Teuchos::RCP<Epetra_MpiComm> serialcomm_;   ///< current implementation of mortar coupling is just serial
 
 //      Teuchos::RCP<Epetra_Vector> matconfig_; ///< material configuration of structural gids
 

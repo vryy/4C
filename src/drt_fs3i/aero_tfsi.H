@@ -111,7 +111,7 @@ namespace FS3I
     );
 
     /// modifiy the reveived data into a more useful format
-    void SplitData(
+    double SplitData(
     std::vector<double>& aerodata,  ///< raw data from INCA
     std::map<int, LINALG::Matrix<3,1> >& aerocoords,  ///< coordinates where loads are applied
     std::map<int, LINALG::Matrix<4,1> >& aeroforces,  ///< loads to be applied
@@ -148,6 +148,8 @@ namespace FS3I
     INPAR::TSI::BaciIncaCoupling tfsi_coupling_;   ///< Coupling strategy for TFSI problem
 
     Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
+
+    bool additional_boundary_layer_;   ///< bool whether an additional boundary layer is used for mortar coupling
 
   }; // AeroTFSI
 

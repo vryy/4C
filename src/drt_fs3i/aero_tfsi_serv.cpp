@@ -40,9 +40,6 @@ Maintainer: Georg Hammerl
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_io/io_pstream.H"
 
-#include <Epetra_MpiComm.h>
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
@@ -61,7 +58,8 @@ DinvM_(0),
 serialslrownoderestr_(0),
 D_(0),
 M_(0),
-shapefcn_(INPAR::MORTAR::shape_undefined)
+shapefcn_(INPAR::MORTAR::shape_undefined),
+serialcomm_(Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF)))
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if(ndim != 3)
@@ -221,8 +219,8 @@ shapefcn_(INPAR::MORTAR::shape_undefined)
     structreduelements_.push_back(streles);
 
     //storage of useful dof maps
-    istructdofredumap_.push_back(LINALG::AllreduceEMap(*(istructnewdis->DofRowMap())));
-    ithermodofredumap_.push_back(LINALG::AllreduceEMap(*(ithermonewdis->DofRowMap())));
+    istructdofredumap_.push_back(Teuchos::rcp(istructnewdis->DofColMap(), false));
+    ithermodofredumap_.push_back(Teuchos::rcp(ithermonewdis->DofColMap(), false));
 
     // map extractor for the communication between the full thermo field and the newly created thermo surf discret
     structrowmapext_.push_back(Teuchos::rcp(new LINALG::MapExtractor(*(structdis->DofRowMap()),Teuchos::rcp(istructnewdis->DofRowMap(), false))));
@@ -468,7 +466,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
 //    DinvM_.clear();
   // CAREFUL HERE!
   // As long as the interface is fixed, it is enough to build the coupling matrices just once
-  if(DinvM_.size() != 0)
+  if(DinvM_.size() != 0 or (D_.size() != 0 and M_.size() != 0) )
     return;
 
   // Redistribute displacement of structural nodes on the interface to all processors --> redundant disp needed
@@ -486,7 +484,6 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
 
   // input data for Mortar interface which is build on each proc
   int interfID = 0;
-  Teuchos::RCP<Epetra_MpiComm> serialcomm = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF));
   // transfer of four degrees of freedom per node
   int dim = 3;
   int dofpernode = 1; // = 4; (for mechanical and thermal coupling)
@@ -507,6 +504,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
     break;
   }
   case INPAR::TSI::mortar_mortar_dual :
+  case INPAR::TSI::proj_mortar_dual :
   {
     input.set<string>("SHAPEFCN","dual");
     shapefcn_ = INPAR::MORTAR::shape_dual;
@@ -514,13 +512,14 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   }
   default:
     dserror("ERROR: Interface must either have dual or standard shape functions.");
+    break;
   }
 
   // generate serialmasterdofrowmap_, no overlap is allowed for merged dof map (not needed for pure thermal coupling)
 //  Teuchos::RCP<Epetra_Map> serialmasterdofrowmap = LINALG::MergeMap(istructdofredumap_, ithermodofredumap_,false);
   Teuchos::RCP<Epetra_Map> serialmasterdofrowmap = Teuchos::rcp(new Epetra_Map(*ithermodofredumap_[interf]));
   // gids and node ids on master and slave side must not be overlapping
-  Teuchos::RCP<Epetra_Map> serialslavedofrowmap = Teuchos::rcp(new Epetra_Map((int)aerocoords.size()*dofpernode, mastermaxdof_+1, *serialcomm));
+  Teuchos::RCP<Epetra_Map> serialslavedofrowmap = Teuchos::rcp(new Epetra_Map((int)aerocoords.size()*dofpernode, mastermaxdof_+1, *serialcomm_));
 
   // preparation for global AssembleDM
   std::set<int> slaverowdofsrestricted;
@@ -535,7 +534,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
     LINALG::Matrix<3,1> querypoint(true);
 
     // create a mortar interface for each structural interface element and the corresponding nodal fluid cloud
-    MORTAR::MortarInterface interface(interfID, *serialcomm, dim, input, INPAR::MORTAR::redundant_all);
+    MORTAR::MortarInterface interface(interfID, *serialcomm_, dim, input, INPAR::MORTAR::redundant_all);
 
     // feeding master nodes to the interface including ghosted nodes
     // only consider the first 'dim' dofs
@@ -556,7 +555,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
       for (int k=0;k<3;++k)
         nodalpos[k] = currentpositions[node->Id()](k);
       Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
-          nodalpos, /*node->Owner()*/ serialcomm->MyPID(), dofpernode, dofids, false));
+          nodalpos, /*node->Owner()*/ serialcomm_->MyPID(), dofpernode, dofids, false));
 
       interface.AddMortarNode(mrtrnode);
 
@@ -570,8 +569,8 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
     LINALG::Matrix<3,1> edgelength = currentpositions[nodeids[0]];
     edgelength -= currentpositions[nodeids[2]];
 
-    // TODO: FIND GOOD VALUE HERE: CURRENT 1.5
-    double radius = 1.5 * sqrt( edgelength(0)*edgelength(0) + edgelength(1)*edgelength(1) + edgelength(2)*edgelength(2) );
+    // TODO: FIND GOOD VALUE HERE: CURRENT 2.5
+    double radius = 2.5 * sqrt( edgelength(0)*edgelength(0) + edgelength(1)*edgelength(1) + edgelength(2)*edgelength(2) );
     // search close fluid nodes and triangulate them
     std::vector<int> closefluidnodes = searchTree->searchPointsInRadius(aerocoords, querypoint, radius);
     if(closefluidnodes.size() < 9)
@@ -600,7 +599,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
       std::vector<int> dofids(dofpernode);
       for (int k=0;k<dofpernode;++k) dofids[k] = (mastermaxdof_+1) + nodeid*dofpernode+k;
       Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
-          Teuchos::rcp(new MORTAR::MortarNode(nodeid+mastermaxnodeid_, pos, serialcomm->MyPID(), dofpernode, dofids, true));
+          Teuchos::rcp(new MORTAR::MortarNode(nodeid+mastermaxnodeid_, pos, serialcomm_->MyPID(), dofpernode, dofids, true));
 
       interface.AddMortarNode(mrtrnode);
     }
@@ -612,7 +611,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
     // feed single master element to the interface
     {
       Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
-                  new MORTAR::MortarElement(currele->Id(), /*currele->Owner()*/ serialcomm->MyPID(), currele->Shape(),
+                  new MORTAR::MortarElement(currele->Id(), /*currele->Owner()*/ serialcomm_->MyPID(), currele->Shape(),
                       currele->NumNode(), currele->NodeIds(), false));
 
       interface.AddMortarElement(mrtrele);
@@ -626,7 +625,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
       for(size_t n=0; n<nodeids.size(); n++)
         nodeidswithoffset[n] = nodeids[n] + mastermaxnodeid_;
       Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(elemiter + EleOffset,
-          serialcomm->MyPID(), DRT::Element::tri3, (int)nodeidswithoffset.size(), &nodeidswithoffset[0], true));
+          serialcomm_->MyPID(), DRT::Element::tri3, (int)nodeidswithoffset.size(), &nodeidswithoffset[0], true));
 
       interface.AddMortarElement(mrtrele);
     }
@@ -692,11 +691,6 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   D->Complete();
   M->Complete(*serialmasterdofrowmap, *serialslavedofrowmap);
 
-  // restricted slave node map to extract correct data from aeroforces later
-  std::vector<int> slrownodes(slaverownodesrestricted.begin(),slaverownodesrestricted.end());
-  Teuchos::RCP<Epetra_Map> serialslrownoderestr = Teuchos::rcp(new Epetra_Map(-1,(int)slrownodes.size(),&slrownodes[0],0,*serialcomm));
-  serialslrownoderestr_.push_back(serialslrownoderestr);
-
   if(shapefcn_ == INPAR::MORTAR::shape_dual)
   {
     // Build Dinv
@@ -723,9 +717,14 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   }
   else
   {
+    // restricted slave node map to extract correct data from aeroforces later
+    std::vector<int> slrownodes(slaverownodesrestricted.begin(),slaverownodesrestricted.end());
+    Teuchos::RCP<Epetra_Map> serialslrownoderestr = Teuchos::rcp(new Epetra_Map(-1,(int)slrownodes.size(),&slrownodes[0],0,*serialcomm_));
+    serialslrownoderestr_.push_back(serialslrownoderestr);
+
     // restricted slave dof map must be used
     std::vector<int> slrowdofs(slaverowdofsrestricted.begin(),slaverowdofsrestricted.end());
-    Teuchos::RCP<Epetra_Map> serialslrowdofrestr = Teuchos::rcp(new Epetra_Map(-1,(int)slrowdofs.size(),&slrowdofs[0],0,*serialcomm));
+    Teuchos::RCP<Epetra_Map> serialslrowdofrestr = Teuchos::rcp(new Epetra_Map(-1,(int)slrowdofs.size(),&slrowdofs[0],0,*serialcomm_));
 
     // copy matrix to correct row map
     Teuchos::RCP<LINALG::SparseMatrix> D_restr = Teuchos::rcp(new LINALG::SparseMatrix(*serialslrowdofrestr, 10));
@@ -839,10 +838,8 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructStd
   // get solver parameter list of linear solver
   const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  Teuchos::RCP<Epetra_MpiComm> serialcomm = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF));
-
   // create solver
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(solverparams, *serialcomm, NULL));
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(solverparams, *serialcomm_, NULL));
 
   // solve D^T lambda = forces_fl for lambda
   Teuchos::RCP<Epetra_Operator> Dtransp = LINALG::Transpose(*D_[interf]->EpetraMatrix());
@@ -981,7 +978,121 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
 
   } // end elements loop
 
+  // in case of a flat plate problem (which is the only problem that we solve so far),
+  // INCA assumes the following data structure for conforming interface meshes:
+  //
+  //  z    10 11 12 13 14
+  //  ^     5  6  7  8  9
+  //  |     0  1  2  3  4
+  //  --> x
+  //
+  // only proc 0 communicates with INCA --> sorting on proc 0 is enough
+  if(istructdis_[0]->Comm().MyPID() == 0)
+  {
+    std::list<sendingdata> datatobesorted;
+    {
+      size_t size = INCAdata.size();
+      size_t sizequarter = size/4;
+      for(size_t out=0; out<sizequarter; out++)
+      {
+        sendingdata tmp;
+        tmp.x = INCAdata[out*4 + 0];
+        tmp.y = INCAdata[out*4 + 1];
+        tmp.z = INCAdata[out*4 + 2];
+        tmp.T = INCAdata[out*4 + 3];
+        datatobesorted.push_back(tmp);
+      }
+
+      // sorting is done in here
+      datatobesorted.sort(MyComparePairs);
+
+      INCAdata.clear();
+      INCAdata.reserve(size);
+      for(std::list<sendingdata>::const_iterator iter=datatobesorted.begin(); iter!=datatobesorted.end(); ++iter)
+      {
+        INCAdata.push_back(iter->x);
+        INCAdata.push_back(iter->y);
+        INCAdata.push_back(iter->z);
+        INCAdata.push_back(iter->T);
+      }
+    }
+  }
+
   // do some reordering for INCA (xyzTxyzTxyzTxyzT --> xxxxyyyyzzzzTTTT)
+  size_t size = INCAdata.size();
+  packeddata.resize(size);
+  size_t sizequarter = size/4;
+  for(size_t out=0; out<sizequarter; out++)
+  {
+    for(size_t in=0; in<4; in++)
+    {
+      packeddata[in*sizequarter + out] = INCAdata[out*4 + in];
+    }
+  }
+
+  if(istructdis_[0]->Comm().MyPID() == 0 && interf == 0 && writedata)
+  {
+    FILE *outFile;
+    outFile = fopen("interfaceTemp.txt", "a");
+    fprintf(outFile, "%.8e\n", packeddata[699]);
+    fclose(outFile);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::UTILS::AeroCouplingUtils::PackDataRBFI
+(
+  int interf,
+  Teuchos::RCP<Epetra_Vector> idispnp,
+  Teuchos::RCP<Epetra_Vector> itempnp,
+  std::vector<double>& packeddata,
+  bool writedata
+)
+{
+  // make all interface data full redundant
+  // idispn
+  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_[interf],*(istructdis_[interf]->DofRowMap())));
+  Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_[interf],true);
+  redudisp -> Import(*idispnp,*interimpo,Add);
+
+  // itemp
+  Teuchos::RCP<Epetra_Import> interimpothermo = Teuchos::rcp(new Epetra_Import(*ithermodofredumap_[interf],*(ithermodis_[interf]->DofRowMap())));
+  Teuchos::RCP<Epetra_Vector> redutemp = LINALG::CreateVector(*ithermodofredumap_[interf],true);
+  redutemp -> Import(*itempnp,*interimpothermo,Add);
+
+  std::vector<double> INCAdata;
+
+  for(int i=0; i<istructdis_[interf]->NodeColMap()->NumMyElements(); i++)
+  {
+      // insert nodal position
+      DRT::Node* snode = istructdis_[interf]->lColNode(i);
+      std::vector<int> lms;
+      lms.reserve(3);
+      istructdis_[interf]->Dof(snode, lms);
+      std::vector<double> mydisp(3);
+      DRT::UTILS::ExtractMyValues(*redudisp,mydisp,lms);
+      for (int a=0; a<3; a++)
+      {
+        INCAdata.push_back( snode->X()[a] + mydisp[a] );
+      }
+
+      // insert nodal temperature
+      DRT::Node* tnode = ithermodis_[interf]->lColNode(i);
+      std::vector<int> lmt;
+      lmt.reserve(1);
+      ithermodis_[interf]->Dof(tnode, lmt);
+      std::vector<double> mytemp(1);
+      DRT::UTILS::ExtractMyValues(*redutemp,mytemp,lmt);
+      INCAdata.push_back( mytemp[0] );
+
+  } // end nodecolmap loop
+
+
+//  // do some reordering for INCA (xyzTxyzTxyzTxyzT --> xxxxyyyyzzzzTTTT)
   size_t size = INCAdata.size();
   packeddata.resize(size);
   size_t sizequarter = size/4;
@@ -1099,10 +1210,8 @@ void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluidStd
   // get solver parameter list of linear solver
   const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  Teuchos::RCP<Epetra_MpiComm> serialcomm = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF));
-
   // create solver
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(solverparams, *serialcomm, NULL));
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(solverparams, *serialcomm_, NULL));
 
   // M d_str = rhs
   Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(M_[interf]->RangeMap(), true));
