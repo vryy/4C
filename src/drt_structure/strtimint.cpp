@@ -299,7 +299,7 @@ STR::TimInt::TimInt
     discret_->GetCondition("Locsys", locsysconditions);
     if (locsysconditions.size())
     {
-      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_, true));
+      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
     }
   }
 
@@ -809,7 +809,7 @@ void STR::TimInt::ApplyDirichletBC
   // in the case of local systems we have to rotate forward ...
   if (locsysman_ != Teuchos::null)
   {
-    locsysman_->RotateGlobalToLocal(dis);
+    locsysman_->RotateGlobalToLocal(dis,true);
     locsysman_->RotateGlobalToLocal(vel);
     locsysman_->RotateGlobalToLocal(acc);
   }
@@ -838,7 +838,7 @@ void STR::TimInt::ApplyDirichletBC
   // in the case of local systems we have to rotate back into global Cartesian frame
   if (locsysman_ != Teuchos::null)
   {
-    locsysman_->RotateLocalToGlobal(dis);
+    locsysman_->RotateLocalToGlobal(dis,true);
     locsysman_->RotateLocalToGlobal(vel);
     locsysman_->RotateLocalToGlobal(acc);
   }

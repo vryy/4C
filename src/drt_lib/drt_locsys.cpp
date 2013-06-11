@@ -6,63 +6,32 @@ surfaces and supplying all necessary transformation methods for parallel
 vectors and matrices.
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+Maintainer: Christoph Meier
+            meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15264
+            089 - 289-15262
 </pre>
 
 *----------------------------------------------------------------------*/
 
 #include "drt_locsys.H"
-
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_blocksparsematrix.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_fem_general/largerotations.H"
 
 
 
 /*-------------------------------------------------------------------*
- |  ctor (public)                                         bborn 12/08|
+ |  ctor (public)                                         meier 06/13|
  *-------------------------------------------------------------------*/
-DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret, const bool transformleftonly):
+DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret):
 discret_(discret),
-transformleftonly_(transformleftonly),
-type_(DRT::UTILS::LocsysManager::def),
 dim_(-1),
-numlocsys_(-1)
+numlocsys_(-1),
+locsyscurve_(false)
 {
-  Setup();
-}
-
-
-
-/*-------------------------------------------------------------------*
- |  set-up                                                 popp 09/08|
- *-------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::Setup()
-{
-  // IMPORTANT NOTE:
-  // The definition of local coordinate systems only makes sense in
-  // combination with Dirichlet boundary conditions. This means that
-  // in order to define a symmetry boundary condition, both locsys
-  // AND Dirichlet condition have to formulated for the same entity
-  // (i.e. point, line, surface, volume).
-
-  // Due to the coordinate trafo the Dirichlet DOFs in the input file transform:
-  // x->n, y->t1, z->t2
-  // --> normal and tangent vector MUST be part of xy-plane
-  if ( Comm().MyPID()==0 )
-    std::cout << "KEEP IN MIND: inclined area MUST be part of the xy-plane" << std::endl;
-
-  // STILL MISSING:
-  // - Testing on fluid problems in 2D and 3D
-  // - Check, if D.B.C condition is defined wherever Locsys is defined
-  // - Efficiency (at the moment, we use standard methods like LINALG::
-  //   Multiply for the transformation of global vectors and matrices)
-
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = DRT::Problem::Instance()->NDim();
 
@@ -78,26 +47,50 @@ void DRT::UTILS::LocsysManager::Setup()
   // check for locsys boundary conditions
   Discret().GetCondition("Locsys",locsysconds_);
   numlocsys_ = (int)locsysconds_.size();
-  type_.resize(numlocsys_);
   id_.resize(numlocsys_);
   typelocsys_.resize(numlocsys_);
-  normals_.Reshape(numlocsys_,3);
-  tangents_.Reshape(numlocsys_,3);
-  origins_.Reshape(numlocsys_,3);
-  thirddir_.Reshape(numlocsys_,3);
 
   for (int i=0; i<NumLocsys(); ++i)
   {
     id_[i] = locsysconds_[i]->Id();
-    const std::string* type = locsysconds_[i]->Get<std::string>("Type");
-    if (*type=="default")
-      type_[i] = DRT::UTILS::LocsysManager::def;
-    else if (*type=="FunctionEvaluation")
-      type_[i] = DRT::UTILS::LocsysManager::functionevaluation;
-    else if (*type=="OriginRadialSliding")
-      type_[i] = DRT::UTILS::LocsysManager::originradialsliding;
-    else dserror("Unknown type of locsys");
   }
+
+  //First Setup is made in the constructor. If we have no time dependent locsys conditions
+  //in our problem, this is the only time where the whole setup routine is conducted.
+  Setup(-1.0);
+}
+
+/*-------------------------------------------------------------------*
+ |  set-up                                                meier 06/13|
+ *-------------------------------------------------------------------*/
+void DRT::UTILS::LocsysManager::Setup(const double time)
+{
+  // IMPORTANT NOTE:
+  // The definition of local coordinate systems only makes sense in
+  // combination with Dirichlet boundary conditions. This means that
+  // in order to define a boundary condition, both locsys
+  // AND Dirichlet condition have to formulated for the same entity
+  // (i.e. point, line, surface, volume).
+
+  // LIMITATIONS:
+  // - So far locsys only works for 2D and 3D solids and for beam elements of Kirchhoff type
+  // - Due to this limitation it's necessary to distinguish between this different element types
+  //   by means of there nodal DoFs. If further element types are integrated into locsys
+  //   more elaborate criteria might be useful.
+
+  //If we have no time curves in the locsys conditions the whole Setup method is only conducted
+  //once in the constructor (where time is set to -1.0).
+  if (time>=0.0 and locsyscurve_==false)
+    return;
+
+  // get dof row map of discretization
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // get node row layout of discretization
+  const Epetra_Map* noderowmap = discret_.NodeRowMap();
+
+  // Since also time dependent conditions are possible we clear all local systems in the beginning
+  nodalrotvectors_.clear();
 
   // As for Dirichlet conditions, we keep to a very strict hierarchy
   // for evaluation of the Locsys conditions: Volume locsys conditions
@@ -118,100 +111,66 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::VolumeLocsys;
 
-      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
-      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
-      double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
-      double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const std::vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
+      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
+      const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
+      const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      // check for sanity of input data
-      if (Dim()==2)
+      //Check, if we have time dependent locsys conditions
+      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
+        locsyscurve_=true;
+
+      //Here we have the convention that 2D problems "live" in the global xy-plane.
+      if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
+        dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
+
+      //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
+      //assigned to each node consists of a constant, a time dependent and spatially variable part:
+      //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+      LINALG::Matrix<3,1> currotangle;
+      currotangle.Clear();
+
+      for (int k=0;k<(int)nodes->size();++k)
       {
-        // volume locsys makes no sense for 2D
-        dserror("ERROR: Volume locsys definition for 2D problem");
-      }
-      else
-      {
-        // normal has to be provided
-        if (ln==0.0 || n->size() != 3)
-          dserror("ERROR: No normal provided for 3D locsys definition");
+        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+        if (!havenode) continue;
 
-        // tangent has to be provided
-        if (lt==0.0 || t->size() != 3)
-          dserror("ERROR: No tangent provided for 3D locsys definition");
-
-        // tangent has to be orthogonal
-        double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
-        if (abs(ndott)>1.0e-8)
-          dserror("ERROR: Locsys normal and tangent not orthogonal");
-      }
-
-      // build unit normal and tangent
-      for (int k=0;k<3;++k)
-      {
-        normals_(i,k)  = (*n)[k]/ln;
-        tangents_(i,k) = (*t)[k]/lt;
-      }
-
-      // build third direction (corkscrew rule)
-      thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
-      thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
-      thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
-
-      // build locsystoggle vector with locsys IDs
-      if (type_[i] == DRT::UTILS::LocsysManager::def)
-      {
-        for (int k=0;k<(int)nodes->size();++k)
+        //Weights of rotations vector due to time curve and spatial function
+        for (int j=0;j<3;j++)
         {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-
-          int indices = (*nodes)[k];
-          double values  = i;
-          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+          // factor given by time curve
+          std::vector<double> curvefac(1,1.0);
+          int curvenum = (*curve)[j];
+          if (curvenum>=0 && time>=0.0)
+          {
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
+          }
+          // factor given by spatial function
+          double functfac = 1.0;
+          if ((*funct)[j]>0)
+          {
+            DRT::Node* node = Discret().gNode((*nodes)[k]);
+            functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(0, node->X(), 0.0, &discret_);
+          }
+          currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
         }
-      }
-      if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-          dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
-        for (int k=0;k<origins_.N();k++)
-          origins_(i,k) = (*o)[k];
-      }
-      // special locsys case: originradialsliding
-      if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-        // store locsys position (to identify this locsys type later on)
-        radslideids_.push_back(i);
-        for (int k=0;k<origins_.M();k++)
-          origins_(i,k) = (*o)[k];
 
-        for (int k=0;k<(int)nodes->size();++k)
-        {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-          int indices = (*nodes)[k];
-          double values  = i;
-          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-        }
+        nodalrotvectors_[(*nodes)[k]]=currotangle;
+
+        int indices = (*nodes)[k];
+        double values  = i;
+        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
     else if (currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
              currlocsys->Type() == DRT::Condition::LineLocsys ||
              currlocsys->Type() == DRT::Condition::PointLocsys)
     {
-      // do nothing yet
+      // already done
     }
     else
       dserror("ERROR: Unknown type of locsys condition!");
   }  // end volume locsys
-
   //**********************************************************************
   // read surface locsys conditions
   //**************************+*******************************************
@@ -223,112 +182,62 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::SurfaceLocsys;
 
-      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
-      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
-      double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
-      double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const std::vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
+      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
+      const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
+      const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      // check for sanity of input data
-      if (Dim()==2)
+      //Check, if we have time dependent locsys conditions
+      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
+        locsyscurve_=true;
+
+      //Here we have the convention that 2D problems "live" in the global xy-plane.
+      if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
+        dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
+
+      //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
+      //assigned to each node consists of a constant, a time dependent and spatially variable part:
+      //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+      LINALG::Matrix<3,1> currotangle;
+      currotangle.Clear();
+
+      for (int k=0;k<(int)nodes->size();++k)
       {
-        // normal has to be provided
-        if (ln==0.0 || n->size()!=3)
-          dserror("ERROR: No normal provided for 2D locsys definition");
+        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+        if (!havenode) continue;
 
-        // normal must lie in x1x2-plane
-        if ((*n)[2]!=0.0)
-          dserror("ERROR: Invalid normal provided for 2D locsys definition");
-
-        // tangent must not be provided
-        if (lt!=0.0)
-          dserror("ERROR: Tangent provided for 2D locsys definition");
-
-        // build unit normal and tangent
-        normals_(i,0)  = (*n)[0]/ln;
-        normals_(i,1)  = (*n)[1]/ln;
-
-        // build unit tangent from 2D orthogonality
-        tangents_(i,0)  = -(*n)[1]/ln;
-        tangents_(i,1)  =  (*n)[0]/ln;
-      }
-      else
-      {
-        // normal has to be provided
-        if (ln==0.0 || n->size()!=3)
-          dserror("ERROR: No normal provided for 3D locsys definition");
-
-        // tangent has to be provided
-        if (lt==0.0 || t->size()!=3)
-          dserror("ERROR: No tangent provided for 3D locsys definition");
-
-        // tangent has to be orthogonal
-        double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
-        if (abs(ndott)>1.0e-8)
-          dserror("ERROR: Locsys normal and tangent not orthogonal");
-
-        // build unit normal and tangent
-        for (int k=0;k<3;++k)
+        //Weights of rotations vector due to time curve and spatial function
+        for (int j=0;j<3;j++)
         {
-          normals_(i,k)  = (*n)[k]/ln;
-          tangents_(i,k) = (*t)[k]/lt;
+          // factor given by time curve
+          std::vector<double> curvefac(1,1.0);
+          int curvenum = (*curve)[j];
+          if (curvenum>=0 && time>=0.0)
+          {
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
+          }
+          // factor given by spatial function
+          double functfac = 1.0;
+          if ((*funct)[j]>0)
+          {
+            DRT::Node* node = Discret().gNode((*nodes)[k]);
+            functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(0, node->X(), 0.0, &discret_);
+          }
+          currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
         }
-      }
 
-      // build third direction (corkscrew rule)
-      thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
-      thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
-      thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
+        nodalrotvectors_[(*nodes)[k]]=currotangle;
 
-      // build locsystoggle vector with locsys IDs
-      if (type_[i] == DRT::UTILS::LocsysManager::def)
-      {
-        for (int k=0;k<(int)nodes->size();++k)
-        {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-
-          int indices = (*nodes)[k];
-          double values  = i;
-          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-        }
-      }
-      if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-          dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
-
-        for (int k=0;k<origins_.N();k++)
-          origins_(i,k) = (*o)[k];
-      }
-      if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-        // store locsys position (to identify this locsys type later on)
-        radslideids_.push_back(i);
-        for (int k=0;k<origins_.N();k++)
-          origins_(i,k) = (*o)[k];
-
-        for (int k=0;k<(int)nodes->size();++k)
-        {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-          int indices = (*nodes)[k];
-          double values  = i;
-          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-        }
+        int indices = (*nodes)[k];
+        double values  = i;
+        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::LineLocsys ||
              currlocsys->Type() == DRT::Condition::PointLocsys)
     {
-      // do nothing yet
+      // already done
     }
     else
       dserror("ERROR: Unknown type of locsys condition!");
@@ -345,111 +254,62 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::LineLocsys;
 
-      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
-      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
-      double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
-      double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const std::vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
+      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
+      const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
+      const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      // check for sanity of input data
-      if (Dim()==2)
+      //Check, if we have time dependent locsys conditions
+      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
+        locsyscurve_=true;
+
+      //Here we have the convention that 2D problems "live" in the global xy-plane.
+      if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
+        dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
+
+      //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
+      //assigned to each node consists of a constant, a time dependent and spatially variable part:
+      //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+      LINALG::Matrix<3,1> currotangle;
+      currotangle.Clear();
+
+      for (int k=0;k<(int)nodes->size();++k)
       {
-        // normal has to be provided
-        if (ln==0.0)
-          dserror("ERROR: No normal provided for 2D locsys definition");
+        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+        if (!havenode) continue;
 
-        // normal must lie in x1x2-plane
-        if ((*n)[2]!=0.0)
-          dserror("ERROR: Invalid normal provided for 2D locsys definition");
-
-        // tangent must not be provided
-        if (lt!=0.0)
-          dserror("ERROR: Tangent provided for 2D locsys definition");
-
-        // build unit normal and tangent
-        normals_(i,0)  = (*n)[0]/ln;
-        normals_(i,1)  = (*n)[1]/ln;
-
-        // build unit tangent from 2D orthogonality
-        tangents_(i,0)  = -(*n)[1]/ln;
-        tangents_(i,1)  =  (*n)[0]/ln;
-      }
-      else
-      {
-        // normal has to be provided
-        if (ln==0.0)
-          dserror("ERROR: No normal provided for 3D locsys definition");
-
-        // tangent has to be provided
-        if (lt==0.0)
-          dserror("ERROR: No tangent provided for 3D locsys definition");
-
-        // tangent has to be orthogonal
-        double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
-        if (abs(ndott)>1.0e-8)
-          dserror("ERROR: Locsys normal and tangent not orthogonal");
-
-        // build unit normal and tangent
-        for (int k=0;k<3;++k)
+        //Weights of rotations vector due to time curve and spatial function
+        for (int j=0;j<3;j++)
         {
-          normals_(i,k)  = (*n)[k]/ln;
-          tangents_(i,k) = (*t)[k]/lt;
+          // factor given by time curve
+          std::vector<double> curvefac(1,1.0);
+          int curvenum = (*curve)[j];
+          if (curvenum>=0 && time>=0.0)
+          {
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
+          }
+          // factor given by spatial function
+          double functfac = 1.0;
+          if ((*funct)[j]>0)
+          {
+            DRT::Node* node = Discret().gNode((*nodes)[k]);
+            functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(0, node->X(), 0.0, &discret_);
+          }
+          currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
         }
-      }
 
-      // build third direction (corkscrew rule)
-      thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
-      thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
-      thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
+        nodalrotvectors_[(*nodes)[k]]=currotangle;
 
-      // build locsystoggle vector with locsys IDs
-      if (type_[i] == DRT::UTILS::LocsysManager::def)
-      {
-        for (int k=0;k<(int)nodes->size();++k)
-        {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-
-          int indices = (*nodes)[k];
-          double values  = i;
-          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-        }
-      }
-      if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-            dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
-        for (int k=0;k<origins_.N();k++)
-            origins_(i,k) = (*o)[k];
-      }
-      if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-        // store locsys position (to identify this locsys type later on)
-        radslideids_.push_back(i);
-        for (int k=0;k<origins_.N();k++)
-          origins_(i,k) = (*o)[k];
-
-        for (int k=0;k<(int)nodes->size();++k)
-        {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-          int indices = (*nodes)[k];
-          double values  = i;
-          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-        }
+        int indices = (*nodes)[k];
+        double values  = i;
+        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
              currlocsys->Type() == DRT::Condition::PointLocsys)
     {
-      // already done or do nothing yet
+      // already done
     }
     else
       dserror("ERROR: Unknown type of locsys condition!");
@@ -466,102 +326,55 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::PointLocsys;
 
-      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
-      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
-      double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
-      double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const std::vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
+      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
+      const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
+      const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      // check for sanity of input data
-      if (Dim()==2)
+      //Check, if we have time dependent locsys conditions
+      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
+        locsyscurve_=true;
+
+      //Here we have the convention that 2D problems "live" in the global xy-plane.
+      if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
+        dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
+
+      //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
+      //assigned to each node consists of a constant, a time dependent and spatially variable part:
+      //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+      LINALG::Matrix<3,1> currotangle;
+      currotangle.Clear();
+
+      for (int k=0;k<(int)nodes->size();++k)
       {
-        // normal has to be provided
-        if (ln==0.0)
-          dserror("ERROR: No normal provided for 2D locsys definition");
+        bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+        if (!havenode) continue;
 
-        // normal must lie in x1x2-plane
-        if ((*n)[2]!=0.0)
-          dserror("ERROR: Invalid normal provided for 2D locsys definition");
-
-        // tangent must not be provided
-        if (lt!=0.0)
-          dserror("ERROR: Tangent provided for 2D locsys definition");
-
-        // build unit normal and tangent
-        normals_(i,0)  = (*n)[0]/ln;
-        normals_(i,1)  = (*n)[1]/ln;
-
-        // build unit tangent from 2D orthogonality
-        tangents_(i,0)  = -(*n)[1]/ln;
-        tangents_(i,1)  =  (*n)[0]/ln;
-      }
-      else
-      {
-        // normal has to be provided
-        if (ln==0.0)
-          dserror("ERROR: No normal provided for 3D locsys definition");
-
-        // tangent has to be provided
-        if (lt==0.0)
-          dserror("ERROR: No tangent provided for 3D locsys definition");
-
-        // tangent has to be orthogonal
-        double ndott = (*n)[0]*(*t)[0] + (*n)[1]*(*t)[1] + (*n)[2]*(*t)[2];
-        if (abs(ndott)>1.0e-8)
-          dserror("ERROR: Locsys normal and tangent not orthogonal");
-
-        // build unit normal and tangent
-        for (int k=0;k<3;++k)
+        //Weights of rotations vector due to time curve and spatial function
+        for (int j=0;j<3;j++)
         {
-          normals_(i,k)  = (*n)[k]/ln;
-          tangents_(i,k) = (*t)[k]/lt;
+          // factor given by time curve
+          std::vector<double> curvefac(1,1.0);
+          int curvenum = (*curve)[j];
+          if (curvenum>=0 && time>=0.0)
+          {
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
+          }
+          // factor given by spatial function
+          double functfac = 1.0;
+          if ((*funct)[j]>0)
+          {
+            DRT::Node* node = Discret().gNode((*nodes)[k]);
+            functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(0, node->X(), 0.0, &discret_);
+          }
+          currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
         }
-      }
 
-      // build third direction (corkscrew rule)
-      thirddir_(i,0) = normals_(i,1)*tangents_(i,2)-normals_(i,2)*tangents_(i,1);
-      thirddir_(i,1) = normals_(i,2)*tangents_(i,0)-normals_(i,0)*tangents_(i,2);
-      thirddir_(i,2) = normals_(i,0)*tangents_(i,1)-normals_(i,1)*tangents_(i,0);
+        nodalrotvectors_[(*nodes)[k]]=currotangle;
 
-      // build locsystoggle vector with locsys IDs
-      if (type_[i] == DRT::UTILS::LocsysManager::def)
-        for (int k=0;k<(int)nodes->size();++k)
-        {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-
-          int indices = (*nodes)[k];
-          double values  = i;
-          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-        }
-      if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-          dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
-        for (int k=0;k<origins_.N();k++)
-          origins_(i,k) = (*o)[k];
-      }
-      if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-      {
-        // read origin from input file
-        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-        if(o->size() != 3)
-          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-        // store locsys position (to identify this locsys type later on)
-        radslideids_.push_back(i);
-        for (int k=0;k<origins_.N();k++)
-          origins_(i,k) = (*o)[k];
-
-        for (int k=0;k<(int)nodes->size();++k)
-        {
-          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-          if (!havenode) continue;
-                    int indices = (*nodes)[k];
-                    double values  = i;
-                    locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-        }
+        int indices = (*nodes)[k];
+        double values  = i;
+        locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
       }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
@@ -574,46 +387,39 @@ void DRT::UTILS::LocsysManager::Setup()
       dserror("ERROR: Unknown type of locsys condition!");
   }  // end point locsys
 
-  Print(cout);
+  if (time < 0.0)
+    Print(cout);
 
   // When building the transformation matrix we apply a node-by-node
   // strategy. The global matrix trafo_ will consist of nodal blocks
-  // of dimension (numdof)x(numdof). To be consistent with as many
-  // field types (structure, fluid) as possible, the following rule
-  // holds: "For a dim-dimensional problem, the first dim dofs are
-  // transformed whereas all other dofs remain untouched. This e.g.
-  // accounts for the fact that a node in a 3D fluid discretization
-  // has 4 dofs: 3 velocity dofs (to be transformed) and 1 pressure
-  // dofs (isotropic). If special fields are constructed with more than
-  // dim geometric dofs, i.e. that have to be transformed, then the
-  // following code might have to be modified!
+  // of dimension (numdof)x(numdof). The following code block is designed
+  // for 2D and 3D solid elements as well as for beam elements of Kirchhoff
+  //type (applying nodal tangents). If special fields are constructed with
+  // more than dim geometric dofs, i.e. that have to be transformed, then
+  //the following code might have to be modified!
 
   //**********************************************************************
   // Build transformation matrix trafo_
   //**********************************************************************
-
-  // get dof row layout of discretization
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // we need to make sure that two nodes sharing the same dofs are not
   // transformed twice. This is a NURBS/periodic boundary feature.
   Teuchos::RCP<Epetra_Vector> already_processed = LINALG::CreateVector(*dofrowmap,true);
   already_processed->PutScalar(0.0);
 
-  // for transformleftonly_ option, perform a check for zero diagonal
-  // elements. They will crash the SGS-like preconditioners
+  // Perform a check for zero diagonal elements. They will crash the SGS-like preconditioners
   bool sanity_check=false;
 
-  // number of nodes subjected to local co-ordinate systems
+  // GIDs of all DoFs subjected to local co-ordinate systems
   std::set<int> locsysdofset;
 
   trafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,3));
 
   for (int i=0;i<noderowmap->NumMyElements();++i)
   {
-    int gid = noderowmap->GID(i);
-    DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    int nodeGID = noderowmap->GID(i);
+    DRT::Node* node = Discret().gNode(nodeGID);
+    if (!node) dserror("ERROR: Cannot find node with gid %",nodeGID);
     std::vector<int> dofs = Discret().Dof(node);
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
@@ -634,7 +440,7 @@ void DRT::UTILS::LocsysManager::Setup()
       continue;
     }
 
-    // unity matrix for non-locsys node (programmed late at night)
+    // unity matrix for non-locsys node
     if (locsysindex<0)
     {
       for (int r=0;r<numdof;++r)
@@ -643,243 +449,84 @@ void DRT::UTILS::LocsysManager::Setup()
     // trafo matrix for locsys node
     else
     {
-
-      // first create an identity matrix of size numdof --- the default node
-      // trafo, applying in particular to pressure dofs in fluid problems
       Epetra_SerialDenseMatrix nodetrafo(numdof,numdof);
-
       for (int k=0;k<numdof;++k) nodetrafo(k,k)=1.0;
 
-      // ---------------------------------------------------
-      //
-      // tnb-vectors (tangent, normal, binormal)
-      //
-      // o in the default case without a spatial function, they are just
-      //   copies of the vectors stored in the condition
-      // o in the case of spatial functions applied to the local coordinate
-      //   system, they are rotated according to the prescribed function
-      //
-      LINALG::Matrix<3,1> n;
-      LINALG::Matrix<3,1> t;
-      LINALG::Matrix<3,1> b;
+      LINALG::Matrix<3,1> currrotvector = nodalrotvectors_[nodeGID];
+      LINALG::Matrix<3,3> currrotationmatrix;
 
-      n.Clear();
-      t.Clear();
-      b.Clear();
+      //Compute rotation matrix out of rotation angle
+      LARGEROTATIONS::angletotriad(currrotvector, currrotationmatrix);
 
-      for (int k=0;k<Dim();++k)
+      //base vectors of local system
+      LINALG::Matrix<3,1> vec1;
+      LINALG::Matrix<3,1> vec2;
+      LINALG::Matrix<3,1> vec3;
+
+      //The columns of the rotation matrix are the base vectors
+      for (int j=0;j<3;j++)
       {
-        n(k)=normals_ (locsysindex,k);
-        t(k)=tangents_(locsysindex,k);
-      }
-      if (Dim()==3)
-      {
-        for (int k=0;k<Dim();++k)
-        {
-          b(k)=thirddir_(locsysindex,k);
-        }
+        vec1(j)=currrotationmatrix(j,0);
+        vec2(j)=currrotationmatrix(j,1);
+        vec3(j)=currrotationmatrix(j,2);
       }
 
-      if(transformleftonly_)
+      //Check for zero-diagonal elements
+      if(fabs(vec1(0))<1e-9 || fabs(vec2(1))<1e-9 || fabs(vec3(2))<1e-9)
       {
-        // BE AWARE: LocSys assumes, that the inclined boundary condition is
-        // part of the xy-plane!! (NO other alternative allowed)
-        // sanity check
-        if(fabs(n(0))<1e-9 || fabs(t(1))<1e-9 || fabs(b(2))<1e-9)
-        {
-          sanity_check=true;
-        }
+        sanity_check=true;
       }
 
-      DRT::Condition* currlocsys = locsysconds_[locsysindex];
-      const std::vector<int>* funct = currlocsys->Get<std::vector<int> >("(axis,angle)-funct");
-      if(funct)
+      if (numdof<6) // for solid elements
       {
-        // sanity checks
-        if(funct->size()!=2)
+        // trafo for 2D case
+        if (Dim()==2)
         {
-          dserror("two functions are required. One three-component vector valued (axis), one scalar (angle)\n");
-        }
-
-        if((*funct)[0]>0 && (*funct)[1]>0)
-        {
-          // check number of components in both spatial functions
-          if((DRT::Problem::Instance()->Funct((*funct)[0]-1)).NumberComponents()!=3)
+          for (int i=0;i<2;i++)
           {
-            dserror("expecting vector-valued function for rotation axis of local coordinate system, but got %d components\n",(DRT::Problem::Instance()->Funct((*funct)[0]-1)).NumberComponents());
+            nodetrafo(0,i)=vec1(i);
+            nodetrafo(1,i)=vec2(i);
           }
-          if((DRT::Problem::Instance()->Funct((*funct)[1]-1)).NumberComponents()!=1)
-          {
-            dserror("expecting scalar function for rotation angle of local coordinate system, got %d components\n",(DRT::Problem::Instance()->Funct((*funct)[1]-1)).NumberComponents());
-          }
-
-          // if necessary, the local coordinate system is rotated according to
-          // a given spatial functions (for curved surfaces etc.)
-          const double time =0.0;
-
-          const double angle=(DRT::Problem::Instance()->Funct((*funct)[1]-1)).Evaluate(
-            0        ,
-            node->X(),
-            time     ,
-            &discret_);
-          const double x=(DRT::Problem::Instance()->Funct((*funct)[0]-1)).Evaluate(
-            0        ,
-            node->X(),
-            time     ,
-            &discret_);
-          const double y=(DRT::Problem::Instance()->Funct((*funct)[0]-1)).Evaluate(
-            1        ,
-            node->X(),
-            time     ,
-            &discret_);
-          const double z=(DRT::Problem::Instance()->Funct((*funct)[0]-1)).Evaluate(
-            2        ,
-            node->X(),
-            time     ,
-            &discret_);
-
-          // set rotation matrix R_
-          SetAxisRotation(x,y,z,angle);
-
-          // compute rotated local coordinate system according to precomputed
-          // rotation matrix R_
-          LocalRotation(n);
-          LocalRotation(t);
-          LocalRotation(b);
-        } // end if(funct)
-      }
-
-      // case: originradialsliding
-      // shift between def and originradialsliding
-      bool radslidetoggle = false;
-      // look for existing originradialsliding locsys
-      for(int k=0;k<(int)radslideids_.size();k++)
-        if(locsysindex==radslideids_.at(k))
-        {
-          currlocsys = locsysconds_[locsysindex];
-          radslidetoggle = true;
-          continue;
         }
-
-      // ---------------------------------------------------
-      // set rotation of this nodes dofs ('nodetrafo')
-      /* case: originradialsliding:
-       * transformation matrix set up
-       *  - n: standard (outward) normal given by input file
-       *  - radialfirstdir: direction given by origin and coordinates of current node
-       *  - radialsecdir: binormal to n and radialfirstdir
-       */
-      if(radslidetoggle)
-      {
-        std::vector<double> radialdir;
-        std::vector<double> thirddir;
-        radialdir.resize(3, 0.0);
-        thirddir.resize(3, 0.0);
-
-        // get nodal coordinates
-        const double *nodecoords;
-        // lenght of radial vector
-        double lrad;
-
-        nodecoords = Discret().gNode(gid)->X();
-        // length of radial vector
-        lrad = sqrt((nodecoords[0]-origins_(locsysindex,0))*(nodecoords[0]-origins_(locsysindex,0))+
-                    (nodecoords[1]-origins_(locsysindex,1))*(nodecoords[1]-origins_(locsysindex,1))+
-                    (nodecoords[2]-origins_(locsysindex,2))*(nodecoords[2]-origins_(locsysindex,2)));
-        // construct radial unit vector
-        for(int l=0;l<3;l++)
-          radialdir.at(l) = (nodecoords[l]-origins_(locsysindex,l))/lrad;
-        // construct second direction (radialdir x normal)
-        thirddir.at(0) = radialdir.at(1)*n(2)-radialdir.at(2)*n(1);
-        thirddir.at(1) = radialdir.at(2)*n(0)-radialdir.at(0)*n(2);
-        thirddir.at(2) = radialdir.at(0)*n(1)-radialdir.at(1)*n(0);
-
-        // trafo for 2D and 3D case
-        nodetrafo(0,0) = n(0);
-        nodetrafo(0,1) = n(1);
-        nodetrafo(1,0) = radialdir.at(0);
-        nodetrafo(1,1) = radialdir.at(1);
-
-        // additional trafo for 3D case
+        // trafo for 3D case
         if (Dim()==3)
         {
-          nodetrafo(0,2) = n(2);
-          nodetrafo(1,2) = radialdir.at(2);
-          nodetrafo(2,0) = thirddir.at(0);
-          nodetrafo(2,1) = thirddir.at(1);
-          nodetrafo(2,2) = thirddir.at(2);
-        }
-
-        // fluid case, 4x4
-        if(numdof==4)
-        {
-          for(int i=0;i<(numdof-1);i++)
+          for (int i=0;i<3;i++)
           {
-            nodetrafo(3,i) = 0.0;
-            nodetrafo(i,3) = 0.0;
+            nodetrafo(0,i)=vec1(i);
+            nodetrafo(1,i)=vec2(i);
+            nodetrafo(2,i)=vec3(i);
           }
-          nodetrafo(3,3) = 1.0;
         }
-
-        for (int r=0;r<numdof;++r)
-          for (int c=0;c<numdof;++c)
-            trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
-
-        // store the DOF with locsys
-        if (transformleftonly_)
-          for (int r=0;r<numdof;++r)
-            locsysdofset.insert(dofs[r]);
       }
-      // build trafo_ conventionally
-      else
+      else //for Kirchhoff beam elements
       {
-        // trafo for 2D and 3D case
-        nodetrafo(0,0)=n(0);
-        nodetrafo(0,1)=n(1);
-        nodetrafo(1,0)=t(0);
-        nodetrafo(1,1)=t(1);
-
-        // additional trafo for 3D case
-        if (Dim()==3)
+        for (int i=0;i<3;i++)
         {
-          nodetrafo(0,2)=n(2);
-          nodetrafo(1,2)=t(2);
-          nodetrafo(2,0)=b(0);
-          nodetrafo(2,1)=b(1);
-          nodetrafo(2,2)=b(2);
+          nodetrafo(3,3+i)=vec1(i);   // In this implementation only the nodal tangents (local dofs 3,4,5),
+          nodetrafo(4,3+i)=vec2(i);   // which are necessary for clamped ends with arbitrary spatial orientation,
+          nodetrafo(5,3+i)=vec3(i);   // but NOT the nodal positions (local dofs 0,1,2) are transformed.
         }
-
-        // fluid case, 4x4
-        if(numdof==4)
-        {
-          for(int i=0;i<(numdof-1);i++)
-          {
-            nodetrafo(3,i) = 0.0;
-            nodetrafo(i,3) = 0.0;
-          }
-          nodetrafo(3,3) = 1.0;
-        }
-
-        // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
-        for (int r=0;r<numdof;++r)
-        {
-          for (int c=0;c<numdof;++c)
-          {
-            trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
-          }
-        }
-
-        // store the DOF with locsys
-        if (transformleftonly_)
-          for (int r=0;r<numdof;++r)
-            locsysdofset.insert(dofs[r]);
       }
-    }
 
-    // node dofs are marked now as already processed
-    for (int rr=0;rr<numdof;++rr)
-    {
-      (*already_processed)[dofrowmap->LID(dofs[rr])]=1.0;
+      // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
+      for (int r=0;r<numdof;++r)
+      {
+        for (int c=0;c<numdof;++c)
+        {
+          trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
+        }
+      }
+
+      // store the DOF with locsys
+      for (int r=0;r<numdof;++r)
+        locsysdofset.insert(dofs[r]);
+
+      // node dofs are marked now as already processed
+      for (int rr=0;rr<numdof;++rr)
+      {
+        (*already_processed)[dofrowmap->LID(dofs[rr])]=1.0;
+      }
     }
   }
 
@@ -887,9 +534,8 @@ void DRT::UTILS::LocsysManager::Setup()
   trafo_->Complete();
 
   // throw warning if transformation matrix has zero diagonal elements since
-  // they end up on the diagonal of the system matrix in the fast
-  // transformleftonly_ case
-  if(sanity_check && transformleftonly_)
+  // they end up on the diagonal of the system matrix
+  if(sanity_check)
   {
     printf("Locsys warning:\n");
     printf("A zero diagonal element on the transformation matrix occured on proc %d.\n",Comm().MyPID());
@@ -904,28 +550,48 @@ void DRT::UTILS::LocsysManager::Setup()
 
   // create unique/row map of DOFs subjected to local co-ordinate change
   // transformation matrix for relevent DOFs with local system
-  if (transformleftonly_)
+  int nummyentries = 0;
+  int* myglobalentries = NULL;
+  std::vector<int> locsysdofs;
+  if (locsysdofset.size() > 0)
   {
-    int nummyentries = 0;
-    int* myglobalentries = NULL;
-    std::vector<int> locsysdofs;
-    if (locsysdofset.size() > 0)
-    {
-      locsysdofs.reserve(locsysdofset.size());
-      locsysdofs.assign(locsysdofset.begin(), locsysdofset.end());
-      nummyentries = locsysdofs.size();
-      myglobalentries = &(locsysdofs[0]);
-    }
-    locsysdofmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
-                                       discret_.DofRowMap()->IndexBase(),
-                                       discret_.Comm()));
-    if (locsysdofmap_ == Teuchos::null) dserror("Creation failed.");
-
-    subtrafo_ = trafo_->ExtractDirichletRows(*locsysdofmap_);
-    //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows()
-    //     << " nummycols=" << subtrafo_->EpetraMatrix()->NumMyCols()
-    //     << endl;
+    locsysdofs.reserve(locsysdofset.size());
+    locsysdofs.assign(locsysdofset.begin(), locsysdofset.end());
+    nummyentries = locsysdofs.size();
+    myglobalentries = &(locsysdofs[0]);
   }
+  locsysdofmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
+                                     discret_.DofRowMap()->IndexBase(),
+                                     discret_.Comm()));
+  if (locsysdofmap_ == Teuchos::null) dserror("Creation failed.");
+
+  //The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient manner
+  subtrafo_ = trafo_->ExtractDirichletRows(*locsysdofmap_);
+
+  /*
+  REMARK:
+   The most general approach to apply Dirichlet conditions in a rotated, local system would be:
+   1) Transform the system into local coordinates by means of
+      K \cdot D = F --> \tilde{K} \cdot \tilde{D} = \tilde{F}
+      with \tilde{K} = trafo_ \cdot K \cdot trafo_^T, \tilde{F} = trafo_ \cdot F, \tilde{D} = trafo_ \cdot D
+   2) Apply Dirichlet conditions in the rotated system
+   3) Transform the system back into global coordinates, i.e.
+      \tilde{K} \cdot \tilde{D} = \tilde{F} --> K \cdot D = F
+      with K = trafo_^T \cdot \tilde{K} \cdot trafo_, F = trafo_^T \cdot \tilde{F}, D = trafo_^T \cdot \tilde{D}
+
+   Nevertheless, we apply a more efficient algorithm which can be shown,to deliver an equivalent system of equations:
+   1) Therefore we only apply one left transformation to our system of equations according
+      K \cdot D = F --> trafo_ \cdot K \cdot D = trafo_ \cdot F
+   2) Afterwards we apply the rotated Dirichlet conditions in an appropriate manner, i.e. we zero the corresponding
+      Dirichlet line and than insert the corresponding local base vector vec_i of the assigned local system into the
+      corresponding 3*3-block, e.g. if the DoFs of the locsys node are represented by fourth, fifth and sixth column:
+      (*,*,*,*,*,*,*,*,*,*,*,*) --> (0,0,0, vec_i^T, 0,0,0,0,0,0)
+      We don't invert the left transformation of our system afterwards. This means, that we don't solve the original but
+      a algebraic manipulated system of equations, nevertheless we still solve for the original, non-rotated DoFs D.
+      However, this is actually no drawback since e.g. zero-diagonal elements resulting from rotated Dirichlet
+      conditions would still exist even if we applied the back transformation afterwards.
+  */
+
 
   // done here
   return;
@@ -942,7 +608,7 @@ ostream& operator << (ostream& os, const DRT::UTILS::LocsysManager& manager)
 
 
 /*----------------------------------------------------------------------*
- |  print manager (public)                                    popp 09/08|
+ |  print manager (public)                                   meier 06/13|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::Print(ostream& os) const
 {
@@ -951,28 +617,12 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
     os << "\n-------------------------------------DRT::UTILS::LocysManager\n";
     for (int i=0;i<NumLocsys();++i)
     {
-      printf("Locsys entity ID: %3d ",locsysconds_[i]->Id());
+      printf("*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: %1d ",locsysconds_[i]->Id());
       if (TypeLocsys(i)==DRT::Condition::PointLocsys)        printf("Point   ");
       else if (TypeLocsys(i)==DRT::Condition::LineLocsys)    printf("Line    ");
       else if (TypeLocsys(i)==DRT::Condition::SurfaceLocsys) printf("Surface ");
       else if (TypeLocsys(i)==DRT::Condition::VolumeLocsys)  printf("Volume  ");
       else dserror("ERROR: Unknown type of locsys condition!");
-      printf("Normal: %8.4e %8.4e %8.4e Tangent1: %8.4e %8.4e %8.4e Tangent2: %8.4e %8.4e %8.4e Type: ",
-      normals_(i,0),normals_(i,1),normals_(i,2),
-      tangents_(i,0),tangents_(i,1),tangents_(i,2),
-      thirddir_(i,0),thirddir_(i,1),thirddir_(i,2));
-      switch(type_[i])
-      {
-        case DRT::UTILS::LocsysManager::def:                 printf("default");
-        break;
-        case DRT::UTILS::LocsysManager::functionevaluation:  printf("functionevaluation");
-        break;
-        case DRT::UTILS::LocsysManager::originradialsliding: printf("originradialsliding");
-        break;
-        default:
-          dserror("Unknown type of locsys");
-        break;
-      }
       printf("\n");
     }
     os << "-------------------------------------------------------------\n\n";
@@ -991,28 +641,10 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
   // transform rhs vector
   RotateGlobalToLocal(rhs);
 
-  // transform system matrix
-  if (transformleftonly_)
-  {
-    // selective multiplication from left
-    Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
-    // put transformed rows back into global matrix
-    sysmat->Put(*temp,1.0,locsysdofmap_);
-  }
-  else
-  {
-    Teuchos::RCP<LINALG::SparseMatrix> temp;
-    Teuchos::RCP<LINALG::SparseMatrix> temp2;
-
-    // We want to keep the SaveGraph() value of sysmat also after transformation.
-    // It is not possible to keep ExplicitDirichlet()==true after transformation,
-    // so we explicitly set this to false.
-    temp = LINALG::Multiply(*trafo_,false,*sysmat,false,false,sysmat->SaveGraph(),true);  // multiply from left
-    temp2 = LINALG::Multiply(*temp,false,*trafo_,true,false,sysmat->SaveGraph(),true);  // multiply from right
-
-    // this is a deep copy (expensive!)
-    *sysmat = *temp2;
-  }
+  // selective multiplication from left
+  Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
+  // put transformed rows back into global matrix
+  sysmat->Put(*temp,1.0,locsysdofmap_);
 
   return;
 }
@@ -1023,28 +655,10 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat)
 {
-  // transform system matrix
-  if (transformleftonly_)
-  {
-    // selective multiplication from left
-    Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
-    // put transformed rows back into global matrix
-    sysmat->Put(*temp,1.0,locsysdofmap_);
-  }
-  else
-  {
-    Teuchos::RCP<LINALG::SparseMatrix> temp;
-    Teuchos::RCP<LINALG::SparseMatrix> temp2;
-
-    // We want to keep the SaveGraph() value of sysmat also after transformation.
-    // It is not possible to keep ExplicitDirichlet()==true after transformation,
-    // so we explicitly set this to false.
-    temp = LINALG::Multiply(*trafo_,false,*sysmat,false,false,sysmat->SaveGraph(),true);  // multiply from left
-    temp2 = LINALG::Multiply(*temp,false,*trafo_,true,false,sysmat->SaveGraph(),true);  // multiply from right
-
-    // this is a deep copy (expensive!)
-    *sysmat = *temp2;
-  }
+  // selective multiplication from left
+  Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
+  // put transformed rows back into global matrix
+  sysmat->Put(*temp,1.0,locsysdofmap_);
 
   return;
 }
@@ -1052,14 +666,21 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseM
 /*----------------------------------------------------------------------*
  |  Transform vector global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec)
+void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset)
 {
+
+  //Add an offset value to the displacement vector. This offsett value is needed for Kirchhoff type
+  //beam elements, where tangent vectors and not position vectors are rotated!!!
+  if (offset)
+  {
+    AddOffset(vec, false);
+  }
+
   // y = trafo_ . x  with x = vec
   Epetra_Vector tmp(*vec);
   trafo_->Multiply(false,tmp,*vec);
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  |  Transform result + system local -> global (public)        popp 09/08|
@@ -1094,22 +715,76 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
 /*----------------------------------------------------------------------*
  |  Transform vector local -> global (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec)
+void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset)
 {
   Epetra_Vector tmp(*vec);
   trafo_->Multiply(true,tmp,*vec);
+
+  //Remove offset value from the displacement vector. This offset value is needed for Kirchhoff type
+  //beam elements, where tangent vectors and not position vectors are rotated!!!
+  if (offset)
+  {
+    AddOffset(vec, true);
+  }
+
   return;
+
 }
 /*----------------------------------------------------------------------*
  |  Transform matrix local -> global (public)              mueller 05/10|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat)
 {
+
   Teuchos::RCP<LINALG::SparseMatrix> temp;
   Teuchos::RCP<LINALG::SparseMatrix> temp2;
   temp = LINALG::Multiply(*sysmat,false,*trafo_,false,false,sysmat->SaveGraph(),true);
   temp2 = LINALG::Multiply(*trafo_,true,*temp,false,false,sysmat->SaveGraph(),true);
   *sysmat = *temp2;
+
   return;
 }
+/*----------------------------------------------------------------------*
+ |  Add displacement offset value                            meier 06/13|
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse)
+{
+  // get dof row map of discretization
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+  for (int i=0; i<discret_.NumMyRowNodes();i++)
+  {
+    int GID = 0;
+    int numdofpn=(discret_.Dof(discret_.lRowNode(i))).size();
+    DRT::Node* currnode = discret_.lRowNode(i);
+    if (currnode==NULL) dserror("Can't get row node %d of discretization!", (i+1));
 
+    LINALG::Matrix<3,1> rot_angle;
+    LINALG::Matrix<3,3> mat_sys;
+
+    for (int j=0;j<3;j++)
+    {
+      rot_angle(j) = currnode->X()[3+j];
+    }
+    LARGEROTATIONS::angletotriad(rot_angle, mat_sys);
+    //Check, if we have beam elements
+    if (numdofpn>=6)
+    {
+      for (int k=0;k<3;k++)
+      {
+        GID = (discret_.Dof(discret_.lRowNode(i)))[3 + k];
+        if (inverse == false)
+        {
+          (*vec)[dofrowmap->LID(GID)]+=mat_sys(k,0);
+        }
+        else
+        {
+          (*vec)[dofrowmap->LID(GID)]-=mat_sys(k,0);
+        }
+      }
+    }
+    else
+    {
+      //only implemented for beam elements so far!
+    }
+  }
+}

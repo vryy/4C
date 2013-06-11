@@ -272,6 +272,10 @@ void STR::TimIntImpl::Predict()
     pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), accn_);
   }
 
+	// Update locals systems (which may be time dependent)
+	if (locsysman_ != Teuchos::null)
+  	locsysman_->Setup(timen_);
+
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
 

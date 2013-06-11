@@ -1,8 +1,8 @@
 //
-// Maintainer: Alexander Popp
-// popp@lnm.mw.tum.de
+// Maintainer: Christoph Meier
+// meier@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15238
+// 089 - 289-15262
 //
 // necessary defines: BINIO
 //
@@ -193,11 +193,13 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
+----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
-DLINE                           2
-E 2 - normal -0.894427191 -0.447213596 0 tangent 0.0 0.0 0.0 origin 0.0 0.0 0.0 Type default
-E 4 - normal 0.894427191 -0.447213596 0 tangent 0.0 0.0 0.0 origin 0.0 0.0 0.0 Type default
+DLINE  2
+E 2 - ROTANGLE 0.0 0.0 -2.677945045 CURVE none none none FUNCT 0 0 0
+//NORMAL -0.894427191 -0.447213596 0.0
+E 4 - ROTANGLE 0.0 0.0 -0.4636476090 CURVE none none none FUNCT 0 0 0
+//NORMAL  0.894427191 -0.447213596 0.0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DSURF                           0

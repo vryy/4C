@@ -3,10 +3,10 @@
 \file drt_locsys.H
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+Maintainer: Christoph Meier
+            meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15264
+            089 - 289-15262
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -30,7 +30,32 @@ namespace UTILS {
        and supplying all necessary transformation methods for parallel vectors
        and matrices.
 
-\author popp (popp@lnm.mw.tum.de)
+
+     The most general approach to apply Dirichlet conditions in a rotated, local system would be:
+
+     1) Transform the system into local coordinates by means of
+        \f$ K \cdot D = F \rightarrow \tilde{K} \cdot \tilde{D} = \tilde{F}\f$
+        \f$ \text{with} \quad  \tilde{K} = Q \cdot K \cdot Q^T, \quad \tilde{F} = Q \cdot F, \quad \tilde{D} = Q \cdot D \f$
+
+     2) Apply Dirichlet conditions in the rotated system in the standard way (Dirichlet Line: 1 at diagonal, zeros else)
+
+     3) Transform the system back into global coordinates, i.e.
+        \f$ \tilde{K} \cdot \tilde{D} = \tilde{F} \rightarrow K \cdot D = F \f$
+        \f$ \text{with} \quad K = Q^T \cdot \tilde{K} \cdot Q, \quad F = Q^T \cdot \tilde{F}, \quad D = Q^T \cdot \tilde{D}\f$
+
+        Here the transformation matrix #trafo_ is denoted \f$Q \f$.
+
+     Nevertheless, we apply a more efficient algorithm which can be shown,to deliver an equivalent system of equations:
+
+     1) Therefore we only apply one left transformation to our system of equations according
+        \f$ K \cdot D = F \rightarrow Q \cdot K \cdot D = Q \cdot F \f$
+
+     2) Afterwards we apply the rotated Dirichlet conditions in an appropriate manner
+
+        We don't invert the left transformation of our system afterwards. This means, that we don't solve the original but
+        an algebraic manipulated system of equations. Nevertheless we still solve for the original, non-rotated DoFs D.
+
+\author meier (meier@lnm.mw.tum.de)
 */
 class LocsysManager
 {
@@ -49,12 +74,12 @@ public:
    *                                to be applied on sysmatrix, if true
    *
    */
-  explicit LocsysManager(DRT::Discretization& discret, const bool transformleftonly = false);
+  explicit LocsysManager(DRT::Discretization& discret);
 
   /*!
    * \brief Set-up stuff common to all constructors
    */
-  void Setup();
+  void Setup(const double time);
 
   /*!
    *\brief Destructor
@@ -142,7 +167,7 @@ public:
   //! @name Evaluation methods
 
   /*!
-   * \brief Apply forward transformation of linear system of equations
+   * \brief Apply forward transformation of linear system of equations.
    *
    * This method transform the matrix #sysmat from global co-ordinate
    * into local co-ordinate systems, i.e.
@@ -151,10 +176,6 @@ public:
    * respectively. The transformation matrix #trafo_ is denoted \f$Q : D \mapsto \tilde{D}\f$.
    * The similar thing is done for the right-hand-side vector:
    *   \f[ \tilde{R} = Q \cdot R \f]
-   *
-   * In case of #transformleftonly_==true the matrix is only transformed from
-   * the left. This yields
-   *   \f[ \hat{K} = Q \cdot K \f]
    */
   void RotateGlobalToLocal(
     Teuchos::RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
@@ -171,7 +192,7 @@ public:
    * \brief Apply forward transformation of a single vector
    *
    */
-  void RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec);
+  void RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false);
 
   /*!
    * \brief Apply backward transformation of result and linear system of equations
@@ -183,13 +204,19 @@ public:
    * \brief Apply backward transformation of a single vector
    *
    */
-  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec);
+  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false);
 
   /*!
 	 * \brief Apply backward transformation of a matrix
 	 *
 	 */
   void RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat);
+
+  /*!
+   * \brief Add displacement offset value in order to apply Dirichlet conditions on local systems
+   *
+   */
+  void AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse);
 
   //@}
 
@@ -199,101 +226,11 @@ protected:
   LocsysManager operator = (const LocsysManager& old);
   LocsysManager(const LocsysManager& old);
 
-  /// @name Methods for Local coordinate systems varying in space
-
-  /*!
-
-  \brief Construct rotation matrix around given axis
-
-  \param x     (i) first coordinate of rotation axis
-  \param y     (i) second coordinate of rotation axis
-  \param z     (i) third coordinate of rotation axis
-  \param angle (i) rotation angle
-
-  */
-  void SetAxisRotation(const double x,const double y,const double z,const double angle)
-  {
-    // norm axis vector
-
-    const double norm=sqrt(x*x+y*y+z*z);
-
-    if(norm<1e-9)
-    {
-      dserror("rotation axis specified incorrectly (length near zero)\n");
-    }
-
-    LINALG::Matrix<3,1> n;
-    n(0)=x/norm;
-    n(1)=y/norm;
-    n(2)=z/norm;
-
-    // set up rotation
-    const double sa  =sin(angle);
-    const double ca  =cos(angle);
-    const double omca=1-ca;
-
-    /*
-
- +--                                            |                                             |                                             --+
- |                                              |                                             |                                               |
- |             cos(a)    + n_x*n_x*(1.0-cos(a)) | n_x*n_y*(1.0-cos(a)) +     n_z*sin(a)       | n_x*n_z*(1.0-cos(a)) +     n_y*sin(a)         |
- |                                              |                                             |                                               |
- |                                              |                                             |                                               |
- |  n_y*n_x*(1.0-cos(a)) +     n_z*sin(a)       |            cos(a)    + n_y*n_y*(1.0-cos(a)) | n_y*n_z*(1.0-cos(a)) -     n_x*sin(a)         |
- |                                              |                                             |                                               |
- |                                              |                                             |                                               |
- |  n_z*n_x*(1.0-cos(a)) -     n_y*sin(a)       | n_z*n_y*(1.0-cos(a)) -     n_x*sin(a)       |            cos(a)    + n_z*n_z*(1.0-cos(a))   |
- |                                              |                                             |                                               |
- +--                                            |                                             |                                             --+
-
-    */
-
-    R_(0,0)=            ca + n(0)*n(0)*omca;
-    R_(1,0)=n(1)*n(0)*omca +      n(2)*sa;
-    R_(2,0)=n(2)*n(0)*omca -      n(1)*sa;
-
-    R_(0,1)=n(0)*n(1)*omca -      n(2)*sa;
-    R_(1,1)=            ca + n(1)*n(1)*omca;
-    R_(2,1)=n(2)*n(1)*omca +      n(0)*sa;
-
-    R_(0,2)=n(0)*n(2)*omca +      n(1)*sa;
-    R_(1,2)=n(1)*n(2)*omca -      n(0)*sa;
-    R_(2,2)=            ca + n(2)*n(2)*omca;
-
-    return;
-  }
-  /*
-  \brief Rotate a given vector using rotation matrix R_
-
-  \param vec (i/o) vector to rotate
-  */
-  void LocalRotation(LINALG::Matrix<3,1> & vec)
-  {
-    LINALG::Matrix<3,1> old(vec);
-
-    vec.Multiply(R_,old);
-
-    return;
-  }
-  // @}
-
   /// @name Private Attributes
   //@{
 
   /// current discretization
   DRT::Discretization&                     discret_;
-
-  /// transform system matrix only by left-multiplying
-  bool                                     transformleftonly_;
-
-  /// type of locsys
-  enum Type
-  {
-    def,
-    functionevaluation,
-    originradialsliding
-  };
-  std::vector<DRT::UTILS::LocsysManager::Type>  type_;
 
   /// id of locsys condition
   std::vector<int>                         id_;
@@ -307,27 +244,20 @@ protected:
   /// number of local systems
   int                                      numlocsys_;
 
-  /// Rotation matrix for coordinate systems varying in space
-  LINALG::Matrix<3,3>                      R_;
-
-
-  /// types of local systems conditions
+  /// types of local system conditions
   std::vector<DRT::Condition::ConditionType> typelocsys_;
 
-  /// local system normals / tangents
-  Epetra_SerialDenseMatrix                 normals_;
-  Epetra_SerialDenseMatrix                 tangents_;
-  Epetra_SerialDenseMatrix                 origins_;
-  Epetra_SerialDenseMatrix                 thirddir_;
+  /// vector that indicates the existence of time curves within the locsys condition
+  bool locsyscurve_;
+
+  /// maps the GID of a node onto the pseudo-rotation vector which rotates the global xyz system onto local system of the node
+  std::map<int,LINALG::Matrix<3,1> > nodalrotvectors_;
 
   /// assignment of local systems to nodes
   Teuchos::RCP<Epetra_Vector>              locsystoggle_;
 
   /// maps containing the DOFs affected by locsys
   Teuchos::RCP<Epetra_Map>                 locsysdofmap_;
-
-  /// store OriginRadialSliding locsys IDs
-  std::vector<int>                         radslideids_;
 
   /// Transformation matrix which maps globally oriented components
   /// into locally oriented components (dubbed 'forward' transformation)

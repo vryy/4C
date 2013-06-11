@@ -104,6 +104,7 @@ void NodeReader::Read()
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
   std::string tmp;
+  std::string tmp2;
 
   if (!myrank && !reader_.MyOutputFlag())
   {
@@ -131,17 +132,36 @@ void NodeReader::Read()
 
         if (tmp=="NODE")
         {
-          double coords[3];
+          double coords[6];
           int nodeid;
+          //read in the node coordinates
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
+          //store current position of file reader
+          int length = file.tellg();
+          file >> tmp2;
           nodeid--;
-          if (tmp!="COORD") dserror("failed to read node %d",nodeid);
           std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
-          for (unsigned i=0; i<diss.size(); ++i)
+          if (tmp2!="ROTANGLE") //Common (Boltzmann) Nodes with 3 DoFs
           {
-            // create node and add to discretization
-            Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank));
-            diss[i]->AddNode(node);
+            //go back with file reader in order to make the expression in tmp2 available to tmp in the next iteration step
+            file.seekg(length);
+            for (unsigned i=0; i<diss.size(); ++i)
+            {
+              // create node and add to discretization
+              Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank));
+              diss[i]->AddNode(node);
+             }
+          }
+          else //Cosserat Nodes with 6 DoFs
+          {
+            //read in the node ritations in case of cosserat nodes
+            file >> coords[3] >> coords[4] >> coords[5];
+            for (unsigned i=0; i<diss.size(); ++i)
+            {
+              // create node and add to discretization
+              Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank,true));
+              diss[i]->AddNode(node);
+            }
           }
           ++bcount;
           if (block != nblock-1) // last block takes all the rest
