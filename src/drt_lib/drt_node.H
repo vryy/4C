@@ -169,9 +169,14 @@ public:
   virtual inline int Owner() const { return owner_; }
 
   /*!
-  \brief Return coordinates (length 3)
+  \brief Return coordinates (length 3 or 6 for a Cosserat node)
   */
   virtual inline const double* X() const { return &x_[0]; }
+
+  /*!
+  \brief Return bool whether node is a cosserat node and therefore has 6 coordinates
+  */
+  virtual inline const bool IsCosserat() const { return (x_.size()==(unsigned)6); }
 
   /*!
   \brief Return processor-local number of elements adjacent to this node
