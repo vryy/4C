@@ -388,11 +388,11 @@ protected:
 
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
-     \param dis     (in)      current displacement vector (row map)
+     \param discol  (in)      current displacement vector (col map)
      \param coord   (in/out)  current node coordinates of element
      \param lids    (in/out)  nodal DOF LIDs of the element*/
   void GetElementNodeCoords(DRT::Element*               element,
-                            Teuchos::RCP<Epetra_Vector> dis,
+                            Teuchos::RCP<Epetra_Vector> discol,
                             LINALG::SerialDenseMatrix&  coord,
                             std::vector<int>*           lids=NULL);
   /*!\brief update locations of force sensors

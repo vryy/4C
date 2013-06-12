@@ -5049,23 +5049,24 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
 /*------------------------------------------------------------------------------*                                                 |
 | Viscoelasticity ouput                                  (public) mueller 11/12|
 *------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const Epetra_Vector& dis, const Epetra_Vector& fint, std::ostringstream& filename)
+void STATMECH::StatMechManager::ViscoelasticityOutput(const double&        time,
+                                                      const Epetra_Vector& dis,
+                                                      const Epetra_Vector& fint,
+                                                      std::ostringstream&  filename)
 {
 #ifdef DEBUG
   if (forcesensor_ == Teuchos::null)
     dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
 #endif  // #ifdef DEBUG
-  double f = 0;//mean value of force
+  double f = 0;// summed force
   double d = 0;//Displacement
 
-  for(int i=0; i<forcesensor_->MyLength(); i++)// forcesensor_ is unique on each Proc (see UpdateForceSensors() !)
+  // forcesensor_ is unique on each Proc (row map!) (see UpdateForceSensors() !)
+  for(int i=0; i<forcesensor_->MyLength(); i++)
     if((*forcesensor_)[i]>0.9)
     {
-      // translate i to DofRowMap LID
-      int dofgid = discret_->DofColMap()->GID(i);
-      int rowid = discret_->DofRowMap()->LID(dofgid);
-      f += fint[rowid];
-      d = dis[rowid];
+      f += fint[i];
+      d = dis[i];
     }
 
   //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
