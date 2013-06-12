@@ -69,8 +69,20 @@ namespace TOPOPT
 
   }; // class TopoptFluidCloneStrategy
 
-  // prints the logo of topology optimization
+  /// prints the logo of topology optimization
   void printTopOptLogo();
+
+  /// expands a filename
+  /*
+   * the given filename is expanded so that
+   *    o the folder remains the same
+   *    o the filename within the folder starts with the expansion
+   *    o optionally the restart number is lowered by 1 (-1 vanishes)
+   */
+  std::string expandFilename(
+      const std::string& filename,
+      const std::string& expansion,
+      bool handleRestart = true);
 }
 
 #endif /* TOPOPT_UTILS_H_ */

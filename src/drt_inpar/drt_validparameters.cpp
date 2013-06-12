@@ -4096,7 +4096,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&topoptcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&topoptcontrol);
 
-  setStringToIntegralParameter<int>("RESTART_ACTION","Fluid_Time_Step","Startint field of Restart",
+  setStringToIntegralParameter<int>("RESTART_ACTION","Finished_Optimization_Step","Startint field of Restart",
       tuple<std::string>(
           "Fluid_Time_Step",
           "Adjoint_Time_Step",

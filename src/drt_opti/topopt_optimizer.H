@@ -150,7 +150,7 @@ namespace TOPOPT
       if (compute) ComputeValues();
       return obj_;
     }
-    const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(bool compute)
+    const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(bool compute = false)
     {
       if (compute) ComputeGradients();
       return obj_der_;

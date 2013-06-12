@@ -29,6 +29,7 @@ namespace DRT
 
 namespace IO
 {
+  class DiscretizationReader;
   class DiscretizationWriter;
 }
 
@@ -107,11 +108,15 @@ namespace OPTI
     void Output();
 
     /// perform restart
-    void ReadRestart(int step);
+    Teuchos::RCP<IO::DiscretizationReader> ReadRestart(int step);
 
     const Teuchos::RCP<const DRT::Discretization> Discretization() const {return discret_;}
-    const Teuchos::RCP<const Epetra_Vector> X() const {return x_;}
+
+    /// current optimization variable (saved as x_mma_)
+    const Teuchos::RCP<const Epetra_Vector> X() const {return x_mma_;}
+    Teuchos::RCP<Epetra_Vector> X() {return x_mma_;}
     const int Iter() const {return total_iter_;}
+    const Teuchos::RCP<IO::DiscretizationWriter> OutputWriter() const {return output_;}
 
 
   private:
@@ -319,6 +324,7 @@ namespace OPTI
 
     //! @name output handling
     const int upres_; /// write solution every upres steps to gmsh
+    const int uprestart_; /// write restart every uprestart steps
 
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}

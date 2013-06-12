@@ -111,6 +111,7 @@ namespace TOPOPT
     Teuchos::RCP<TOPOPT::Optimizer>& optimizer_;
 
     bool doGradient_; /// compute gradient(s) in current optimization step
+    INPAR::TOPOPT::Restart restarttype_; /// type of restart
   };
 
 } // namespace TOPOPT

@@ -40,6 +40,7 @@ namespace INPAR
     /// reentry point of reinitialization
     enum Restart
     {
+      no_restart,
       fluid,
       adjoint,
       gradient,

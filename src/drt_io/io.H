@@ -298,6 +298,9 @@ public:
 
   //@}
 
+  /// output control
+  Teuchos::RCP<OutputControl> Output(){ return output_;}
+
 private:
 
   //! open new mesh file

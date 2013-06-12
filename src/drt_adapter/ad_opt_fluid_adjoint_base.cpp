@@ -20,6 +20,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_opti/topopt_fluidAdjointImplTimeIntegration.H"
+#include "../drt_opti/topopt_utils.H"
 #include "../linalg/linalg_solver.H"
 
 
@@ -85,7 +86,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  std::string filename = problem->OutputControlFile()->FileName() + "_adjoint";
+  std::string filename = TOPOPT::expandFilename(problem->OutputControlFile()->FileName(),"xxx_adjoint_");
 
   // output control for optimization field
   // equal to output for fluid equations except for the filename

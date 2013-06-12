@@ -18,6 +18,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_opti/topopt_optimizer.H"
+#include "../drt_opti/topopt_utils.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 
@@ -46,7 +47,6 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-
   // output control for optimization field
   // equal to output for fluid equations except for the filename
   // and the - not necessary - input file name
@@ -56,7 +56,7 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
           problem->ProblemName(),
           problem->SpatialApproximation(),
           problem->OutputControlFile()->InputFileName(),
-          problem->OutputControlFile()->FileName() + "_opti",
+          TOPOPT::expandFilename(problem->OutputControlFile()->FileName(),"xxx_opti_"),
           problem->NDim(),
           problem->Restart(),
           problem->OutputControlFile()->FileSteps(),

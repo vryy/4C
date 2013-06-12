@@ -14,22 +14,17 @@ Maintainer: Martin Winklmaier
 
 #include "opti_GCMMA.H"
 
+#include "topopt_utils.H"
 #include "../drt_inpar/inpar_topopt.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_discret.H"
 #include "../headers/definitions.h"
 #include <Epetra_SerialDenseSolver.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-
-
-
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-
 
 
 
@@ -102,6 +97,7 @@ fac_sub_reg_(params_.get<double>("fac_sub_reg")),
 facmin_(params_.get<double>("FACMIN")),
 s_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 upres_(params_.get<int>("UPRES")),
+uprestart_(params.get<int>("RESTARTEVRY")),
 output_(output)
 {
   if (m_>100)
@@ -2299,6 +2295,7 @@ void OPTI::GCMMA::Output()
 {
   // step number and time
   output_->NewStep(total_iter_,(double)total_iter_);
+
   // velocity/pressure vector
   output_->WriteVector("x_mma",x_mma_);
 
@@ -2316,15 +2313,79 @@ void OPTI::GCMMA::Output()
   output_->WriteDouble("obj",obj_);
   output_->WriteVector("obj_deriv",obj_deriv_);
 
+  // optimization algorithm data - part 2 (Epetra_SerialDenseVector)
+  Teuchos::RCP<std::vector<double> > constrvec = Teuchos::rcp(new std::vector<double>(m_));
   double* constr = constr_->Values();
-  for (int i=0;i<m_;i++)
-  {
-    std::ostringstream s; s << i;
-    std::string name = "constr" + s.str();
-    output_->WriteDouble(name,*constr);
-    constr++;
-  }
+  std::vector<double>::iterator constrvecit = constrvec->begin();
+  for (int i=0;i<m_;i++) { *constrvecit=*constr; constr++; constrvecit++; }
+  output_->WriteRedundantDoubleVector("constr",constrvec);
   output_->WriteVector("constr_deriv",constr_deriv_);
+
+  if (uprestart_ != 0 && total_iter_>0 && total_iter_%uprestart_ == 0) //add restart data
+  {
+    // iteration counter
+    output_->WriteInt("out_it",outer_iter_);
+    output_->WriteInt("in_it",inner_iter_);
+
+    // optimization algorithm data - part 1 (Epetra_Vector)
+    output_->WriteVector("xsi",xsi_);
+    output_->WriteVector("eta",eta_);
+    output_->WriteVector("asymp_max",asymp_max_);
+    output_->WriteVector("asymp_min",asymp_min_);
+
+    // optimization algorithm data - part 2 (Epetra_SerialDenseVector)
+    Teuchos::RCP<std::vector<double> > yvec = Teuchos::rcp(new std::vector<double>(m_));
+    Teuchos::RCP<std::vector<double> > lamvec = Teuchos::rcp(new std::vector<double>(m_));
+    Teuchos::RCP<std::vector<double> > muvec = Teuchos::rcp(new std::vector<double>(m_));
+    Teuchos::RCP<std::vector<double> > svec = Teuchos::rcp(new std::vector<double>(m_));
+    Teuchos::RCP<std::vector<double> > rhovec = Teuchos::rcp(new std::vector<double>(m_));
+    Teuchos::RCP<std::vector<double> > constrappvec = Teuchos::rcp(new std::vector<double>(m_));
+
+    double* yptr = y_mma_->Values();
+    double* lamptr = lam_->Values();
+    double* muptr = mu_->Values();
+    double* sptr = s_->Values();
+    double* rhoptr = rho_->Values();
+    double* constrappptr = constr_appr_->Values();
+
+    std::vector<double>::iterator yvecit = yvec->begin();
+    std::vector<double>::iterator lamvecit = lamvec->begin();
+    std::vector<double>::iterator muvecit = muvec->begin();
+    std::vector<double>::iterator svecit = svec->begin();
+    std::vector<double>::iterator rhovecit = rhovec->begin();
+    std::vector<double>::iterator constrappvecit = constrappvec->begin();
+
+    for (int i=0;i<m_;i++)
+    {
+      *yvecit = *yptr;
+      *lamvecit = *lamptr;
+      *muvecit = *muptr;
+      *svecit = *sptr;
+      *rhovecit = *rhoptr;
+      *constrappvecit=*constrappptr;
+
+      yptr++; yvecit++;
+      lamptr++; lamvecit++;
+      muptr++; muvecit++;
+      sptr++; svecit++;
+      rhoptr++; rhovecit++;
+      constrappptr++; constrappvecit++;
+    }
+
+    output_->WriteRedundantDoubleVector("y_mma",yvec);
+    output_->WriteRedundantDoubleVector("lam",lamvec);
+    output_->WriteRedundantDoubleVector("mu",muvec);
+    output_->WriteRedundantDoubleVector("s",svec);
+    output_->WriteRedundantDoubleVector("rho",rhovec);
+    output_->WriteRedundantDoubleVector("constr_app",constrappvec);
+
+
+    // optimization algorithm data - part 3 (doubles)
+    output_->WriteDouble("zet",zet_);
+    output_->WriteDouble("z_mma",z_mma_);
+    output_->WriteDouble("rho0",rho0_);
+    output_->WriteDouble("obj_app",obj_appr_);
+  }
 
   return;
 }
@@ -2352,10 +2413,93 @@ void OPTI::GCMMA::OutputToGmsh()
 }
 
 
-void OPTI::GCMMA::ReadRestart(int step)
+Teuchos::RCP<IO::DiscretizationReader> OPTI::GCMMA::ReadRestart(int step)
 {
-  dserror("not implemented");
-  return;
+  // discretization reader with opti filename (restart number reduced by one here for correct file names)
+  Teuchos::RCP<IO::DiscretizationReader> reader = Teuchos::rcp(new IO::DiscretizationReader(
+      discret_,
+      Teuchos::rcp(new IO::InputControl(TOPOPT::expandFilename(output_->Output()->FileName(),""))),
+      step));
+
+  // iteration counter
+  total_iter_ = reader->ReadInt("step");
+  outer_iter_ = reader->ReadInt("out_it");
+  inner_iter_ = reader->ReadInt("in_it");
+
+  // optimization algorithm data - part 1 (Epetra_Vector)
+  reader->ReadVector(x_,"x");
+  reader->ReadVector(x_old_, "x_old");
+  reader->ReadVector(x_old2_,"x_old2");
+  reader->ReadVector(x_mma_,"x_mma");
+  reader->ReadVector(xsi_,"xsi");
+  reader->ReadVector(eta_,"eta");
+  reader->ReadVector(asymp_max_,"asymp_max");
+  reader->ReadVector(asymp_min_,"asymp_min");
+  reader->ReadVector(obj_deriv_,"obj_deriv");
+  reader->ReadMultiVector(constr_deriv_,"constr_deriv");
+
+  // optimization algorithm data - part 2 (Epetra_SerialDenseVector)
+  Teuchos::RCP<std::vector<double> > yvec = Teuchos::rcp(new std::vector<double>(m_));
+  Teuchos::RCP<std::vector<double> > lamvec = Teuchos::rcp(new std::vector<double>(m_));
+  Teuchos::RCP<std::vector<double> > muvec = Teuchos::rcp(new std::vector<double>(m_));
+  Teuchos::RCP<std::vector<double> > svec = Teuchos::rcp(new std::vector<double>(m_));
+  Teuchos::RCP<std::vector<double> > rhovec = Teuchos::rcp(new std::vector<double>(m_));
+  Teuchos::RCP<std::vector<double> > constrvec = Teuchos::rcp(new std::vector<double>(m_));
+  Teuchos::RCP<std::vector<double> > constrappvec = Teuchos::rcp(new std::vector<double>(m_));
+
+  reader->ReadRedundantDoubleVector(yvec,"y_mma");
+  reader->ReadRedundantDoubleVector(lamvec,"lam");
+  reader->ReadRedundantDoubleVector(muvec,"mu");
+  reader->ReadRedundantDoubleVector(svec,"s");
+  reader->ReadRedundantDoubleVector(rhovec,"rho");
+  reader->ReadRedundantDoubleVector(constrvec,"constr");
+  reader->ReadRedundantDoubleVector(constrappvec,"constr_app");
+
+  double* yptr = y_mma_->Values();
+  double* lamptr = lam_->Values();
+  double* muptr = mu_->Values();
+  double* sptr = s_->Values();
+  double* rhoptr = rho_->Values();
+  double* constrptr = constr_->Values();
+  double* constrappptr = constr_appr_->Values();
+
+  std::vector<double>::iterator yvecit = yvec->begin();
+  std::vector<double>::iterator lamvecit = lamvec->begin();
+  std::vector<double>::iterator muvecit = muvec->begin();
+  std::vector<double>::iterator svecit = svec->begin();
+  std::vector<double>::iterator rhovecit = rhovec->begin();
+  std::vector<double>::iterator constrvecit = constrvec->begin();
+  std::vector<double>::iterator constrappvecit = constrappvec->begin();
+
+  for (int i=0;i<m_;i++)
+  {
+    *yptr = *yvecit;
+    *lamptr = *lamvecit;
+    *muptr = *muvecit;
+    *sptr = *svecit;
+    *rhoptr = *rhovecit;
+    *constrptr = *constrvecit;
+    *constrappptr = *constrappvecit;
+
+    yptr++; yvecit++;
+    lamptr++; lamvecit++;
+    muptr++; muvecit++;
+    sptr++; svecit++;
+    rhoptr++; rhovecit++;
+    constrptr++; constrvecit++;
+    constrappptr++; constrappvecit++;
+  }
+
+  // optimization algorithm data - part 3 (doubles)
+  zet_ = reader->ReadDouble("zet");
+  z_mma_ = reader->ReadDouble("z_mma");
+  rho0_ = reader->ReadDouble("rho0");
+  obj_ = reader->ReadDouble("obj");
+  obj_appr_ = reader->ReadDouble("obj_app");
+
+//  Teuchos::RCP<Epetra_Vector> asymp_min_; /// lower moving asymptote
+//  Teuchos::RCP<Epetra_Vector> asymp_max_; /// upper moving asymptote
+  return reader;
 }
 
 

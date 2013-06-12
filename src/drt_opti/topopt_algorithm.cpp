@@ -34,7 +34,8 @@ TOPOPT::Algorithm::Algorithm(
 : FluidTopOptCouplingAlgorithm(comm, topopt),
   topopt_(topopt),
   optimizer_(Optimizer()),
-  doGradient_(true)
+  doGradient_(true),
+  restarttype_(INPAR::TOPOPT::no_restart)
 {
   // initialize system vector (without values)
   poro_ = Teuchos::rcp(new Epetra_Vector(*optimizer_->OptiDis()->NodeColMap(),false));
@@ -61,6 +62,9 @@ void TOPOPT::Algorithm::OptimizationLoop()
 
   // solve the primary field
   DoFluidField();
+
+  // required when restart is called
+  FinishOptimizationStep();
 
   // optimization process has not yet finished
   while (OptimizationFinished() == false)
@@ -382,8 +386,7 @@ void TOPOPT::Algorithm::Update()
  * -----------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::Restart(const int step, const INPAR::TOPOPT::Restart type)
 {
-  dserror("not implemented");
-
+  restarttype_ = type;
   switch (type)
   {
   case INPAR::TOPOPT::adjoint:
