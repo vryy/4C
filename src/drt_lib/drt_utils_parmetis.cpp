@@ -46,7 +46,8 @@ Maintainer: Michael Gee
 
 #include <Epetra_Time.h>
 
-#ifdef HAVE_Trilinos_Q1_2013
+//#ifdef HAVE_Trilinos_Q1_2013
+#if 1
 //Include Isorropia_Exception.hpp only because the helper functions at
 //the bottom of this file (which create the epetra objects) can
 //potentially throw exceptions.
@@ -1013,7 +1014,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   comm->Barrier();
 
-#ifdef HAVE_Trilinos_Q1_2013
+//#ifdef HAVE_Trilinos_Q1_2013
+#if 1
 
   // use Isorropia
 
@@ -1069,7 +1071,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     fflush(stdout);
   }
 
-#else
+#else  // use old PARMETIS partition algorithm
 
   // prepare parmetis input and call parmetis to partition the graph
   std::vector<int> vtxdist(numproc+1,0);
