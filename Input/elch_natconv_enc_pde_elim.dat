@@ -90,7 +90,6 @@ C_SMAGORINSKY                   0.17
 CHANNEL_L_TAU                   0.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SIMPLER_SOLVER                  3
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1

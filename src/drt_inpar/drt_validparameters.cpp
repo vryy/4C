@@ -1495,7 +1495,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC",false,"");
 
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for meshtying and contact",&scontact);
-  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for meshtying and contact in saddlepoint formulation",&scontact);
+//  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for meshtying and contact in saddlepoint formulation",&scontact);
 
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
        tuple<std::string>("None","none",
@@ -2443,7 +2443,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for fluid dynamics",&fdyn);
 
   // number of linear solver used for fluid problem (former fluid pressure solver for SIMPLER preconditioning with fluid)
-  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for fluid dynamics (fluid pressure solver within SIMPLER preconditioner)",&fdyn);
+  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for fluid dynamics (ONLY NECESSARY FOR BlockGaussSeidel solver block within fluid mehstying case any more!!!!)",&fdyn);
 
   setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
       "Time Integration Scheme",
@@ -2625,7 +2625,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   }
 
   setStringToIntegralParameter<int>("SIMPLER","no",
-                               "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",
+                               "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",
                                yesnotuple,yesnovalue,&fdyn);
 
 /*  setStringToIntegralParameter<int>("SPLITFLUID","no",
@@ -3719,7 +3719,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn);
 
   BoolParameter("BLOCKPRECOND","NO",
-      "Switch to block-preconditioned family of solvers, needs additional SIMPLER SOLVER block!",&scatradyn);
+      "Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&scatradyn);
 
   setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
                                "Type of scalar transport problem",
@@ -3770,7 +3770,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // linear solver id used for scalar transport/elch problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);
-  IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);
+  //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(

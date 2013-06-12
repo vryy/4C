@@ -54,7 +54,6 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   2
-SIMPLER_SOLVER                  3
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
@@ -66,9 +65,6 @@ SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
---------------------------------------------------------------------SOLVER 3
-NAME                            Fluid_Pressure_Solver
-SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR

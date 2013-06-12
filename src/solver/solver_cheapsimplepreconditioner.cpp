@@ -80,6 +80,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   const bool pisml = schurSolver_list_.isSublist("ML Parameters");
   const bool visifpack = predictSolver_list_.isSublist("IFPACK Parameters");
   const bool pisifpack = schurSolver_list_.isSublist("IFPACK Parameters");
+
   if (!visml && !visifpack) dserror("Have to use either ML or Ifpack for velocities");
   if (!pisml && !pisifpack) dserror("Have to use either ML or Ifpack for pressure");
 

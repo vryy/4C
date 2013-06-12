@@ -31,7 +31,6 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
-SIMPLER_SOLVER                  2
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1

@@ -485,18 +485,17 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
         if (linsolvernumber == (-1))
           dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
-        // get the solver number used for meshtying/contact problems
-        const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
-        // check if the SIMPLER solver has a valid solver number
-        if (simplersolvernumber == (-1))
-          dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in CONTACT DYNAMIC to a valid number!");
+        // provide null space information
+        if (prec == INPAR::SOLVER::azprec_CheapSIMPLE ||
+                  prec == INPAR::SOLVER::azprec_TekoSIMPLE) {
+          actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1")); // Inverse2 is created within blockpreconditioners.cpp
+        } else if (prec == INPAR::SOLVER::azprec_MueLuAMG_contactSP) {
+          // note: the null space is definitely too long and wrong for the Lagrange multipliers
+          // don't forget to call FixMLNullspace for "Inverse1"!
+          //actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1")); // TODO do we need this?
+        }
 
-        solver->PutSolverParamsToSubParams("Inverse1", DRT::Problem::Instance()->SolverParams(linsolvernumber));
-        solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(simplersolvernumber));
 
-        // note: the null space is definitely too long and wrong for the Lagrange multipliers
-        // don't forget to call FixMLNullspace for "Inverse1"!
-        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"));
       }
     }
     break;

@@ -55,7 +55,6 @@ NUMSTASTEPS                     0
 PHYSICAL_TYPE                   Topology_optimization
 PREDICTOR                       steady_state
 SIMPLER                         no
-SIMPLER_SOLVER                  -1
 STARTFUNCNO                     1
 STARTINGALGO                    One_Step_Theta
 START_THETA                     1.0

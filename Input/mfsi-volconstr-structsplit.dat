@@ -53,7 +53,6 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   2
-SIMPLER_SOLVER                  3
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

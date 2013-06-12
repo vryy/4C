@@ -74,7 +74,7 @@ REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Belos                           // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Belos                          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann

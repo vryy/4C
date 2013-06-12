@@ -65,7 +65,6 @@ ALPHA_M                         0.5
 ALPHA_F                         0.5
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-SIMPLER_SOLVER                  3
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 SYSTEM                          spsimpler
@@ -131,6 +130,8 @@ AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
 IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                            // none sym infnorm scaling of the system
+SUB_SOLVER1                     3
+SUB_SOLVER2                     3
 --------------------------------------------------------------------SOLVER 3
 NAME                            Contact_Simpler_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

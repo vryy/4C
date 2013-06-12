@@ -74,7 +74,6 @@ SAMPLING_STOP                   15
 DUMPING_PERIOD                  1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SIMPLER_SOLVER                  3
 FSSUGRDIFF                      No
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function

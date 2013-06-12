@@ -37,7 +37,6 @@ PENALTYPARAMTAN                 0
 SEMI_SMOOTH_CN                  1
 SEMI_SMOOTH_CT                  1
 SEMI_SMOOTH_NEWTON              Yes
-SIMPLER_SOLVER                  -1
 STRATEGY                        LagrangianMultipliers
 SYSTEM                          Condensed
 THERMOLAGMULT                   Yes

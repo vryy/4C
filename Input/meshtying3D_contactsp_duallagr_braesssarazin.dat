@@ -55,7 +55,6 @@ MAXITER                         50
 DIVERCONT                       Yes
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-SIMPLER_SOLVER                  2                               // not needed (only for input)
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 ERROR_NORMS                     bending

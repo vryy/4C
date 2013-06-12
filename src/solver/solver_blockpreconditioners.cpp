@@ -48,6 +48,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
     bool cstr = params_.get<bool>("CONSTRAINT",false);
     bool fl = params_.isSublist("SIMPLER") || params_.get<bool>("FLUID",false); //params_.get<bool>("FLUIDSIMPLE",false); // SIMPLE for fluids
     bool elch = params_.get<bool>("ELCH",false);
+
     if (mt || co || cstr)
     {
       // adapt ML null space for contact/meshtying/constraint problems
@@ -58,11 +59,12 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       //      {
       //        const Epetra_Map& oldmap = A->FullRowMap();
       //        const Epetra_Map& newmap = A->Matrix(0,0).EpetraMatrix()->RowMap();
-      //        LINALG::Solver::FixMLNullspace("Inverse1",oldmap, newmap, params_.sublist("Inverse1"));
+      //        LINALG::Solver::FixMLNullspace("Inverse1",oldmap, newmap, params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
       //      }
 
       // adapt null space for constraint equations
-      Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+      //Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+      Teuchos::ParameterList& inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2");
       if(inv2.isSublist("ML Parameters"))
       {
         // Schur complement system (1 degree per "node") -> standard nullspace
@@ -83,7 +85,8 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         inv2.sublist("Michael's secret vault").set<RCP<std::vector<double> > >("pressure nullspace",pnewns);
       }
 
-      P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
+      //P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
+      P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2"),outfile_));
     }
     else if(fl || elch) // CheapSIMPLE for pure fluid problems
     {
@@ -100,21 +103,24 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
       // this is a fix for the old SIMPLER sublist
-      if(!params_.isSublist("Inverse1") && params_.isSublist("SIMPLER"))
+      //if(!params_.isSublist("Inverse1") && params_.isSublist("SIMPLER"))
+      // TODO this if clause can probably go away!
+      if(!params_.sublist("CheapSIMPLE Parameters").isSublist("Inverse1") && params_.isSublist("SIMPLER"))
       {
-        Teuchos::ParameterList& inv1 = params_.sublist("Inverse1");
+        Teuchos::ParameterList& inv1 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1");
         inv1 = params_;
         inv1.remove("SIMPLER");
         inv1.remove("Inverse1",false);
-        Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
-        inv2 = params_.sublist("SIMPLER");
+        Teuchos::ParameterList& inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2");
+        inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("SIMPLER");
         params_.remove("SIMPLER");
         params_.sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
         params_.set("FLUID",true);
       }
 
       // fix null spae for ML inverses
-      Teuchos::ParameterList& inv1 = params_.sublist("Inverse1");
+      //Teuchos::ParameterList& inv1 = params_.sublist("Inverse1");
+      Teuchos::ParameterList& inv1 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1");
       if(inv1.isSublist("ML Parameters"))
       {
         ndofpernode = inv1.sublist("NodalBlockInformation").get<int>("numdf",0);
@@ -141,7 +147,8 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         inv1.sublist("Michael's secret vault").set<RCP<std::vector<double> > >("velocity nullspace",vnewns);
       }
 
-      Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+      //Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+      Teuchos::ParameterList& inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2");
       if(inv2.isSublist("ML Parameters"))
       {
         inv2.sublist("ML Parameters").set("PDE equations",1);
@@ -153,7 +160,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         inv2.sublist("Michael's secret vault").set<RCP<std::vector<double> > >("pressure nullspace",pnewns);
       }
 
-      P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
+      P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2"),outfile_));
     }
     //else if(!params_.isSublist("Inverse1") || !params_.isSublist("Inverse2"))
     else

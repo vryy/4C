@@ -188,8 +188,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // plausibility check
       switch (azprectype)
       {
-        case INPAR::SOLVER::azprec_BGS2x2:      // block preconditioners, that are implemented in BACI
         case INPAR::SOLVER::azprec_CheapSIMPLE:
+        case INPAR::SOLVER::azprec_BGS2x2:      // block preconditioners, that are implemented in BACI
           break;
         case INPAR::SOLVER::azprec_BGSnxn:      // block preconditioners from Teko
         case INPAR::SOLVER::azprec_TekoSIMPLE:
@@ -223,14 +223,31 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
 
+      // add sub block solvers/smoothers to block preconditioners
+      switch (azprectype)
+      {
+        case INPAR::SOLVER::azprec_CheapSIMPLE:
+          break; // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
+        case INPAR::SOLVER::azprec_BGS2x2:      // block preconditioners, that are implemented in BACI
+        case INPAR::SOLVER::azprec_BGSnxn:      // block preconditioners from Teko
+        case INPAR::SOLVER::azprec_TekoSIMPLE:
+        {
+          // set Inverse blocks for block preconditioner
+          // for BGS preconditioner
+          // This is only necessary for BGS. CheapSIMPLE has a more modern framework
+          solver->PutSolverParamsToSubParams("Inverse1",
+              DRT::Problem::Instance()->SolverParams(fluidsolver));
+
+          solver->PutSolverParamsToSubParams("Inverse2",
+              DRT::Problem::Instance()->SolverParams(fluidpressuresolver));
+        }
+        break;
+        default:
+              dserror("Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. Please set AZPREC to BGS2x2 in solver block %i",mshsolver);
+              break;
+      }
+
       solver->Params().set<bool>("MESHTYING",true);   // mark it as meshtying problem
-
-      // set Inverse blocks for block preconditioner
-      solver->PutSolverParamsToSubParams("Inverse1",
-          DRT::Problem::Instance()->SolverParams(fluidsolver));
-
-      solver->PutSolverParamsToSubParams("Inverse2",
-          DRT::Problem::Instance()->SolverParams(fluidpressuresolver));
     }
     break;
     case INPAR::FLUID::condensed_smat:
@@ -262,6 +279,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
+
       break;
     }
   }
@@ -271,14 +289,39 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       probtype != prb_fluid_xfem and
       probtype != prb_combust)
   {
+    const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
+    const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");        // meshtying solver (with block preconditioner, e.g. BGS 2x2)
+
+    // check, if meshtying solver is used with a valid block preconditioner
+    const int azprectype
+      = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+          DRT::Problem::Instance()->SolverParams(mshsolver),
+          "AZPREC"
+          );
+
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
     {
+      // switch types
       case INPAR::FLUID::condensed_bmat:
       {
-        // meshtying fluid
-        // block Gauss Seidel or SIMPLE preconditioners
-        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
-        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
+        switch (azprectype)
+        {
+          // block preconditioners, that are implemented in BACI
+          case INPAR::SOLVER::azprec_CheapSIMPLE:
+          {
+            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
+            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
+          }
+          break;
+          case INPAR::SOLVER::azprec_BGS2x2:
+          case INPAR::SOLVER::azprec_BGSnxn:      // block preconditioners from Teko
+          case INPAR::SOLVER::azprec_TekoSIMPLE:
+          {
+            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
+            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
+          }
+          break;
+        } // end switch azprectype
       }
       break;
       case INPAR::FLUID::sps_pc:
@@ -286,7 +329,24 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         // meshtying fluid
         // pure saddle point problem. only SIMPLE type preconditioners available
         // the standard nullspace is computed for the constraint block within the SIMPLE block preconditioner class
-        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
+        switch (azprectype)
+        {
+          // block preconditioners, that are implemented in BACI
+          case INPAR::SOLVER::azprec_CheapSIMPLE:
+          {
+            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
+            //actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
+          }
+          break;
+          case INPAR::SOLVER::azprec_BGS2x2:
+          case INPAR::SOLVER::azprec_BGSnxn:      // block preconditioners from Teko
+          case INPAR::SOLVER::azprec_TekoSIMPLE:
+          {
+            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
+            //actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
+          }
+          break;
+        } // end switch azprectype
       }
       break;
       default:
@@ -939,21 +999,28 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
   const RCP<LINALG::Solver> solver,
   const Teuchos::ParameterList& fdyn)
 {
+  // The SIMPLER (yes,no) parameter only controls whether the fluid matrix is
+  // assembled into a 2x2 blocked operator or a plain 1x1 block matrix
+  // A "second solver" for the preconditioner is only needed if SIMPLER == yes
   if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
-    // add Inverse1 block for velocity dofs
-    Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
-    inv1 = solver->Params();
-    inv1.remove("SIMPLER",false); // not necessary
-    inv1.remove("Inverse1",false);
+    const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
+    INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+    if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
+        prec != INPAR::SOLVER::azprec_TekoSIMPLE)  // TODO adapt error message
+      dserror("If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER %i block in your dat file.",linsolvernumber);
 
-    // get the solver number used for SIMPLER SOLVER
-    const int linsolvernumber_simpler = fdyn.get<int>("SIMPLER_SOLVER");
-    if (linsolvernumber_simpler == (-1))
-      dserror("no SIMPLER_SOLVER number set for fluid problem solved with SIMPLER. Please set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number!");
-    // add Inverse2 block for pressure dofs
-    solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler));
-    // use CheapSIMPLE preconditioner (hardwired, change me for others)
+    // add Inverse1 block for velocity dofs
+    // tell Inverse1 block about NodalBlockInformation
+    // In contrary to contact/meshtying problems this is necessary here, since we originally have built the
+    // null space for the whole problem (velocity and pressure dofs). However, if we split the matrix into
+    // velocity and pressure block, we have to adapt the null space information for the subblocks. Therefore
+    // we need the nodal block information in the first subblock for the velocities. The pressure null space
+    // is trivial to be built using a constant vector
+    Teuchos::ParameterList& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+    inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
+
+    // CheapSIMPLE is somewhat hardwired here
     solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
     solver->Params().set("FLUID",true);
   }

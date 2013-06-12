@@ -49,7 +49,6 @@ NUMSTEP                         1
 PHYSICAL_TYPE                   Poro
 RESTARTEVRY                     20
 SIMPLER                         no
-SIMPLER_SOLVER                  -1
 STARTFUNCNO                     -1
 STARTINGALGO                    One_Step_Theta
 START_THETA                     1

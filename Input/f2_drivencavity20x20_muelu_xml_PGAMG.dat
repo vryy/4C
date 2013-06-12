@@ -18,12 +18,10 @@ MATERIALS                       1
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-NUMFIELD                        1
 RESTART                         0
 //!RESTART                      5
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-SIMPLER_SOLVER                  2
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     1

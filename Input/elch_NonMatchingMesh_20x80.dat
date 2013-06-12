@@ -32,7 +32,6 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SIMPLER_SOLVER                  2
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      2

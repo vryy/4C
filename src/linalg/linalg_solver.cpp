@@ -1225,6 +1225,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   {
     Teuchos::ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
     simplelist.set("Prec Type","CheapSIMPLE"); // not used
+    Teuchos::ParameterList& predictList = simplelist.sublist("Inverse1");
+    predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+    std::cout << predictList << std::endl;
+    Teuchos::ParameterList& schurList = simplelist.sublist("Inverse2");
+    schurList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
   }
   //------------------------------------- set parameters for ML if used
   if (azprectyp == INPAR::SOLVER::azprec_ML       ||
@@ -1537,6 +1542,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     {
       Teuchos::ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
       simplelist.set("Prec Type","CheapSIMPLE"); // not used
+      Teuchos::ParameterList& predictList = simplelist.sublist("Inverse1");
+      predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      Teuchos::ParameterList& schurList = simplelist.sublist("Inverse2");
+      schurList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     //------------------------------------- set parameters for ML if used
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||

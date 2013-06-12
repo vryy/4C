@@ -146,7 +146,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
     // add Inverse1 block for velocity dofs
-    Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
+    /*Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
     inv1 = solver->Params();
     inv1.remove("SIMPLER",false); // not necessary
     inv1.remove("Inverse1",false);
@@ -159,7 +159,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler));
     // use CheapSIMPLE preconditioner (hardwired, change me for others)
     solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
-    solver->Params().set("FLUID",true);
+    solver->Params().set("FLUID",true);*/
+    dserror("Fix handling of SIMPLER with top opt adjoint fluid...");
   }
 
   // -------------------------------------------------------------------

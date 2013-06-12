@@ -44,7 +44,6 @@ ALPHA_M                         0.5
 ALPHA_F                         0.5
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
-SIMPLER_SOLVER                  4
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     1

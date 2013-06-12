@@ -410,9 +410,9 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(*domainmap));
 
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  const int simplersolvernumber = fdyn.get<int>("SIMPLER_SOLVER");
+  const int simplersolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   if (simplersolvernumber == (-1))
-    dserror("no simpler solver, that is used to solve this system, defined for fluid pressure problem. \nPlease set SIMPLER_SOLVER in FLUID DYNAMIC to a valid number!");
+    dserror("no simpler solver, that is used to solve this system, defined for fluid pressure problem. \nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
   Teuchos::RCP<LINALG::Solver> solver =
     Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),

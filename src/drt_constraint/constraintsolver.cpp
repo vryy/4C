@@ -372,6 +372,7 @@ void UTILS::ConstraintSolver::SolveSimple
   // FIXME: The solver should not be taken from the contact dynamic section here,
   // but must be specified somewhere else instead (popp 11/2012)
 
+  /*
   //make solver CheapSIMPLE-ready
   // meshtying/contact for structure
   const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
@@ -380,9 +381,15 @@ void UTILS::ConstraintSolver::SolveSimple
   // check if the meshtying/contact solver has a valid solver number
   if (linsolvernumber == (-1))
    dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
+   */
 
   Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter list
+  const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
+  const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   solver_->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
+
+  //Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter list
+  //solver_->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
   if(!solver_->Params().isSublist("Aztec Parameters") &&
      !solver_->Params().isSublist("Belos Parameters"))
   {
@@ -395,7 +402,7 @@ void UTILS::ConstraintSolver::SolveSimple
   }
   solver_->Params().set<bool>("CONSTRAINT",true);      // handling of constraint null space within Simple type preconditioners
   solver_->Params().sublist("CheapSIMPLE Parameters"); // this automatically sets preconditioner to CheapSIMPLE!
-  solver_->Params().sublist("Inverse1") = sfparams;
+  /*solver_->Params().sublist("Inverse1") = sfparams;
   // get the solver number used for meshtying/contact problems
   const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
   // check if the SIMPLER solver has a valid solver number
@@ -403,6 +410,7 @@ void UTILS::ConstraintSolver::SolveSimple
     dserror("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in CONTACT DYNAMIC to a valid number!");
   solver_->PutSolverParamsToSubParams("Inverse2",
       DRT::Problem::Instance()->SolverParams(simplersolvernumber));
+  */
 
   //build block matrix for SIMPLE
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat=

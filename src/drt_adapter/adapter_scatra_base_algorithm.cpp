@@ -176,20 +176,25 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     // create a 2nd solver for block-preconditioning if chosen from input
     if (DRT::INPUT::IntegralValue<int>(scatradyn,"BLOCKPRECOND"))
     {
-      // set Inverse1 block (for primary variable), use Fluid Scatra Solver
-      Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
-      inv1 = solver->Params();
-      inv1.remove("SIMPLER",false);
-      inv1.remove("Inverse1",false);
-      // set Inverse2 block (for secondary variable), use ScalarTransportElectricPotential Solver
-      // get the solver number used for SIMPLER SOLVER
-      const int linsolvernumber_simpler = scatradyn.get<int>("SIMPLER_SOLVER");
-      if (linsolvernumber_simpler == (-1))
-        dserror("no SIMPLER_SOLVER number set for ELCH problem (solved with SIMPLER). Please set SIMPLER_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
-      solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler));
-      // use CheapSIMPLE preconditioner (hardwired; change me for others)
+      const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
+          prec != INPAR::SOLVER::azprec_TekoSIMPLE)  // TODO adapt error message
+        dserror("If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER %i block in your dat file.",linsolvernumber);
+
       solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
       solver->Params().set("ELCH",true); // internal CheapSIMPLE modus for ML null space computation
+
+      // add Inverse1 block for velocity dofs
+      // tell Inverse1 block about NodalBlockInformation
+      // In contrary to contact/meshtying problems this is necessary here, since we originally have built the
+      // null space for the whole problem (velocity and pressure dofs). However, if we split the matrix into
+      // velocity and pressure block, we have to adapt the null space information for the subblocks. Therefore
+      // we need the nodal block information in the first subblock for the velocities. The pressure null space
+      // is trivial to be built using a constant vector
+      Teuchos::ParameterList& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+      inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
+
 
       // print unused solver parameters to screen
       /*
