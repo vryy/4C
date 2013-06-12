@@ -289,21 +289,21 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       probtype != prb_fluid_xfem and
       probtype != prb_combust)
   {
-    const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
-    const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");        // meshtying solver (with block preconditioner, e.g. BGS 2x2)
-
-    // check, if meshtying solver is used with a valid block preconditioner
-    const int azprectype
-      = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
-          DRT::Problem::Instance()->SolverParams(mshsolver),
-          "AZPREC"
-          );
-
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
     {
       // switch types
       case INPAR::FLUID::condensed_bmat:
       {
+        const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
+        const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");        // meshtying solver (with block preconditioner, e.g. BGS 2x2)
+
+        // check, if meshtying solver is used with a valid block preconditioner
+        const int azprectype
+          = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+              DRT::Problem::Instance()->SolverParams(mshsolver),
+              "AZPREC"
+              );
+
         switch (azprectype)
         {
           // block preconditioners, that are implemented in BACI
@@ -326,6 +326,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       break;
       case INPAR::FLUID::sps_pc:
       {
+        const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
+        const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");        // meshtying solver (with block preconditioner, e.g. BGS 2x2)
+
+        // check, if meshtying solver is used with a valid block preconditioner
+        const int azprectype
+          = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+              DRT::Problem::Instance()->SolverParams(mshsolver),
+              "AZPREC"
+              );
+
         // meshtying fluid
         // pure saddle point problem. only SIMPLE type preconditioners available
         // the standard nullspace is computed for the constraint block within the SIMPLE block preconditioner class
