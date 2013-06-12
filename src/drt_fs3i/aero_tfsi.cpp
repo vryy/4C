@@ -48,6 +48,7 @@ FS3I::AeroTFSI::AeroTFSI(
   coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
   tfsi_coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_COUPALGO");
   additional_boundary_layer_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_MORTAR_ADDITIONAL_BOUNDLAYER");
+  fluid_forces_transfer_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_FLUID_FORCES_TRANSFER");
   PrintCouplingStrategy();
 
 #ifdef INCA_COUPLING
@@ -97,6 +98,24 @@ FS3I::AeroTFSI::AeroTFSI(
   default:
   {
     dserror("For TFSI coupling only Monolithic or IterStagg is available.");
+    break;
+  }
+  }
+
+  switch(tfsi_coupling_)
+  {
+  case INPAR::TSI::conforming :
+  case INPAR::TSI::proj_RBFI :
+  {
+    if(additional_boundary_layer_ == true)
+      dserror("There is no additional boundary layer available for non-mortar coupled TFSI problems");
+    break;
+
+  }
+  default:
+  {
+    if(fluid_forces_transfer_ == true)
+      dserror("There is only support for pure thermal problems for for the chosen tfsi_coupling type");
     break;
   }
   }
@@ -643,31 +662,43 @@ double FS3I::AeroTFSI::SplitData(
   double flux_in = 0.0;
 
   // incoming data from INCA (xxxxyyyyzzzzffff) splitted into xyzxyzxyzxyz & ffff
+  // or in case of forces that are included:
+  // incoming data from INCA (xxxx yyyy zzzz hhhh fxfxfxfx fyfyfyfy fzfzfzfz) splitted into xyzxyzxyzxyz & hfxfyfzhfxfyfzhfxfyfz
   size_t length = aerodata.size();
-  size_t lengthquarter = length/4;
-  for(size_t out=startingvalue; out<(lengthquarter+startingvalue); out++)
+  size_t numfluidpoints;
+  if(fluid_forces_transfer_)
+    numfluidpoints = length/7;
+  else
+    numfluidpoints = length/4;
+
+  for(size_t out=startingvalue; out<(numfluidpoints+startingvalue); out++)
   {
     LINALG::Matrix<3,1> tmp1;
-    LINALG::Matrix<4,1> tmp2;
+    LINALG::Matrix<4,1> tmp2(true);
 
     for(size_t in=0; in<3; in++)
     {
-      tmp1(in)=aerodata[in*lengthquarter + out - startingvalue];
+      tmp1(in)=aerodata[in*numfluidpoints + out - startingvalue];
     }
     aerocoords[out] = tmp1;
 
-    // only geometry is important in case of the additional boundary layer --> no forces
+    // only geometry is important in case of the additional boundary layer --> no fluxes/forces
     if(startingvalue == 0 and additional_boundary_layer_ == true)
     {
-      // note: currently heat fluxes are transferred but forces not yet --> zeros
-      for(size_t in=0; in<3; in++)
+      // pull out heat flux
+      tmp2(0)=aerodata[3*numfluidpoints + out];
+
+      // pull out forces (if available)
+      if(fluid_forces_transfer_)
       {
-        tmp2(in)=0.0;
+        for(size_t in=1; in<4; in++)
+        {
+          tmp2(in)=aerodata[(in+3)*numfluidpoints + out];
+        }
       }
-      tmp2(3)=aerodata[3*lengthquarter + out - startingvalue];
 
       aeroforces[out] = tmp2;
-      flux_in += tmp2(3);
+      flux_in += tmp2(0);
     }
   }
 

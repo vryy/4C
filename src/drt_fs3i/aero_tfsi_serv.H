@@ -298,6 +298,8 @@ namespace FS3I
 
       int mastermaxnodeid_; ///< max node id on TSI side
 
+      bool fixedfluidinterface_; ///< bool whether a fixed fluid interface is used
+
     }; // class AeroCouplingUtils
 
   }

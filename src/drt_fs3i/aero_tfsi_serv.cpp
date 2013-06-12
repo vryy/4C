@@ -65,6 +65,10 @@ serialcomm_(Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF)))
   if(ndim != 3)
     dserror("Coupling with Aero code is only implemented for 3D problems!!");
 
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  fixedfluidinterface_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_FIXED_FLUID_INTERF");
+
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structelements;
   std::map<int, std::map<int, DRT::Node*> > dummy2;  // dummy map
@@ -418,10 +422,10 @@ void FS3I::UTILS::AeroCouplingUtils::DistributeForceToNodes
     std::vector<int> lmowner(num);
     // extract global dof ids
     istructdis_[interf]->Dof(snode, slm);
-    // aeroforce[0...2] are forces
+    // aeroforce[1...3] are forces
     for(int k=0; k<num; k++)
     {
-      val[k] = funct[iter] * aeroforce(k);
+      val[k] = funct[iter] * aeroforce(k+1);
       lmowner[k] = snode->Owner();
     }
 
@@ -439,8 +443,8 @@ void FS3I::UTILS::AeroCouplingUtils::DistributeForceToNodes
     std::vector<int> tlmowner(num);
     // extract global dof ids
     ithermodis_[interf]->Dof(tnode, tlm);
-    // aeroforce[3] is a thermal flux
-    tval[0] = funct[iter] * aeroforce(3);
+    // aeroforce[0] is a thermal flux
+    tval[0] = funct[iter] * aeroforce(0);
     tlmowner[0] = tnode->Owner();
 
     // do assembly of thermal fluxes
@@ -779,14 +783,14 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructDual
     (*slavevalues)[i] = aeroforces[serialslrownoderestr_[interf]->GID(i)](3);
   */
 
-  // so far only thermo fluxes need to be transferred (4th entry in aeroforces)
+  // so far only thermo fluxes need to be transferred (1st entry in aeroforces)
   // NOTE: There is no dofset available for artificially created fluid nodes
   // Assumption: Meshtying restriction is only needed for additional boundary layer
   // Hence: Here in serial (LID=GID), values from aeroforces can directly be inserted into slavevalues vector
   std::map<int, LINALG::Matrix<4,1> >::const_iterator iter;
   for(iter=aeroforces.begin(); iter!=aeroforces.end(); ++iter)
   {
-    (*slavevalues)[iter->first] = iter->second(3);
+    (*slavevalues)[iter->first] = iter->second(0);
   }
 
   // currently the interface only lives within MPI_COMM_SELF --> not parallel
@@ -819,19 +823,19 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructStd
   if(slavevalues->MyLength() > (int)aeroforces.size())
     dserror("size of slavevalues (%i) is larger than incoming data (%i)", slavevalues->MyLength(), (aeroforces.size()));
 
-  // so far only thermo fluxes need to be transferred (4th entry in aeroforces)
+  // so far only thermo fluxes need to be transferred (1st entry in aeroforces)
   for(int i=0; i<slavevalues->MyLength(); i++)
-    (*slavevalues)[i] = aeroforces[serialslrownoderestr_[interf]->GID(i)](3);
+    (*slavevalues)[i] = aeroforces[serialslrownoderestr_[interf]->GID(i)](0);
   */
 
-  // so far only thermo fluxes need to be transferred (4th entry in aeroforces)
+  // so far only thermo fluxes need to be transferred (1st entry in aeroforces)
   // NOTE: There is no dofset available for artificially created fluid nodes
   // Assumption: Meshtying restriction is only needed for additional boundary layer
   // Hence: Here in serial (LID=GID), values from aeroforces can directly be inserted into slavevalues vector
   std::map<int, LINALG::Matrix<4,1> >::const_iterator iter;
   for(iter=aeroforces.begin(); iter!=aeroforces.end(); ++iter)
   {
-    (*slavevalues)[iter->first] = iter->second(3);
+    (*slavevalues)[iter->first] = iter->second(0);
   }
 
   const int linsolvernumber = 9;
@@ -924,6 +928,11 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
   Teuchos::RCP<Epetra_Import> interimpothermo = Teuchos::rcp(new Epetra_Import(*ithermodofredumap_[interf],*(ithermodis_[interf]->DofRowMap())));
   Teuchos::RCP<Epetra_Vector> redutemp = LINALG::CreateVector(*ithermodofredumap_[interf],true);
   redutemp -> Import(*itempnp,*interimpothermo,Add);
+
+  // in case the fluid interface is not able to move but the structural interface is allowed to do so --> "semi-coupling"
+  // this is just a temporary implementation and should be removed soon (12.06.2013)
+  if(fixedfluidinterface_)
+    redudisp->PutScalar(0.0);
 
   //current position of structural nodes
   std::map<int,LINALG::Matrix<3,1> > currentpositions = CurrentInterfacePos(interf, redudisp);
@@ -1063,6 +1072,11 @@ void FS3I::UTILS::AeroCouplingUtils::PackDataRBFI
   Teuchos::RCP<Epetra_Import> interimpothermo = Teuchos::rcp(new Epetra_Import(*ithermodofredumap_[interf],*(ithermodis_[interf]->DofRowMap())));
   Teuchos::RCP<Epetra_Vector> redutemp = LINALG::CreateVector(*ithermodofredumap_[interf],true);
   redutemp -> Import(*itempnp,*interimpothermo,Add);
+
+  // in case the fluid interface is not able to move but the structural interface is allowed to do so --> "semi-coupling"
+  // this is just a temporary implementation and should be removed soon (12.06.2013)
+  if(fixedfluidinterface_)
+    redudisp->PutScalar(0.0);
 
   std::vector<double> INCAdata;
 

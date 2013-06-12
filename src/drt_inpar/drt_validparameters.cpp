@@ -2172,6 +2172,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       );
 
   BoolParameter("TFSI_MORTAR_ADDITIONAL_BOUNDLAYER","No","additional boundary layer for mortar coupling",&tsidyn);
+  BoolParameter("TFSI_FIXED_FLUID_INTERF","Yes","fluid interface is fixed",&tsidyn);
+  BoolParameter("TFSI_FLUID_FORCES_TRANSFER","No","fluid forces are transferred to BACI",&tsidyn);
 
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);

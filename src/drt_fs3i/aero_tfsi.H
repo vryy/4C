@@ -151,6 +151,8 @@ namespace FS3I
 
     bool additional_boundary_layer_;   ///< bool whether an additional boundary layer is used for mortar coupling
 
+    bool fluid_forces_transfer_;   ///< bool whether fluid forces are transferred from INCA
+
   }; // AeroTFSI
 
 } // namespace FS3I
