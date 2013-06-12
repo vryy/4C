@@ -133,10 +133,10 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
       LINALG_COPY_PARAM(Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "ProblemType", std::string, "contact",
           linSystemProps, "ProblemType");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "time step", int, -1,
           linSystemProps, "time step");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "iter", int, -1,
           linSystemProps, "iter");
     }
