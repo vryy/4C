@@ -343,7 +343,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // write out aggregates
   Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>());
-  aggExpFact->SetParameter("Output filename",Teuchos::ParameterEntry(std::string("aggs_level%LEVELID_proc%PROCID.out")));
+  aggExpFact->SetParameter("Output filename",Teuchos::ParameterEntry(std::string("aggs_%TIMESTEP(%ITER)_level%LEVELID_proc%PROCID.out")));
+  if(params.isSublist("Linear System properties")) {
+      const Teuchos::ParameterList & linSystemProps = params.sublist("Linear System properties");
+      epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact masterDofMap");
+      aggExpFact->SetParameter("Output file: time step",Teuchos::ParameterEntry(linSystemProps.get< int > ("time step")));
+      aggExpFact->SetParameter("Output file: iter",Teuchos::ParameterEntry(linSystemProps.get< int > ("iter")));
+  }
   aggExpFact->SetFactory("Aggregates",UCAggFact);
   aggExpFact->SetFactory("DofsPerNode",dropFact);
   //Input(fineLevel, "Aggregates");         //< factory which created aggregates

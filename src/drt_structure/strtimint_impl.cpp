@@ -1733,6 +1733,8 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
       if (costrat != Teuchos::null) linSystemProps.set<std::string>("ProblemType", "contact");
       else                          linSystemProps.set<std::string>("ProblemType", "meshtying");
+      linSystemProps.set<int>("time step",step_);
+      linSystemProps.set<int>("iter",iter_);
     }
     // feed Belos based solvers with contact information
     if (contactsolver_->Params().isSublist("Belos Parameters"))
@@ -1752,6 +1754,8 @@ void STR::TimIntImpl::CmtLinearSolve()
       Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
       if (costrat != Teuchos::null) linSystemProps.set<std::string>("ProblemType", "contact");
       else                          linSystemProps.set<std::string>("ProblemType", "meshtying");
+      linSystemProps.set<int>("time step",step_);
+      linSystemProps.set<int>("iter",iter_);
     }
 
   } // end: feed solver with contact/meshtying information
