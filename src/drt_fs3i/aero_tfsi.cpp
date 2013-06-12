@@ -683,7 +683,7 @@ double FS3I::AeroTFSI::SplitData(
     aerocoords[out] = tmp1;
 
     // only geometry is important in case of the additional boundary layer --> no fluxes/forces
-    if(startingvalue == 0 and additional_boundary_layer_ == true)
+    if(startingvalue == 0)
     {
       // pull out heat flux
       tmp2(0)=aerodata[3*numfluidpoints + out];
