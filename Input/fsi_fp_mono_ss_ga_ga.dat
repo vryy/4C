@@ -36,7 +36,7 @@ PREDICTOR                       constant_acceleration
 TIMEINTEGR                      Np_Gen_Alpha
 -----------------------------------------------------------------FSI DYNAMIC
 ADAPTIVEDIST                    0.01
-BASETOL                         1e-06
+BASETOL                         1e-09
 COUPALGO                        iter_monolithicstructuresplit
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
@@ -47,22 +47,22 @@ SECONDORDER                     no
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
-TOL_DIS_INC_INF                 1e-06
-TOL_DIS_INC_L2                  1e-06
-TOL_DIS_RES_INF                 1e-06
-TOL_DIS_RES_L2                  1e-06
-TOL_FSI_INC_INF                 1e-06
-TOL_FSI_INC_L2                  1e-06
-TOL_FSI_RES_INF                 1e-06
-TOL_FSI_RES_L2                  1e-06
-TOL_PRE_INC_INF                 1e-06
-TOL_PRE_INC_L2                  1e-06
-TOL_PRE_RES_INF                 1e-06
-TOL_PRE_RES_L2                  1e-06
-TOL_VEL_INC_INF                 1e-06
-TOL_VEL_INC_L2                  1e-06
-TOL_VEL_RES_INF                 1e-06
-TOL_VEL_RES_L2                  1e-06
+TOL_DIS_INC_INF                 1e-09
+TOL_DIS_INC_L2                  1e-09
+TOL_DIS_RES_INF                 1e-09
+TOL_DIS_RES_L2                  1e-09
+TOL_FSI_INC_INF                 1e-09
+TOL_FSI_INC_L2                  1e-09
+TOL_FSI_RES_INF                 5e-07
+TOL_FSI_RES_L2                  5e-07
+TOL_PRE_INC_INF                 1e-09
+TOL_PRE_INC_L2                  1e-09
+TOL_PRE_RES_INF                 1e-09
+TOL_PRE_RES_L2                  1e-09
+TOL_VEL_INC_INF                 1e-09
+TOL_VEL_INC_L2                  1e-09
+TOL_VEL_RES_INF                 1e-09
+TOL_VEL_RES_L2                  1e-09
 UPRES                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
@@ -211,8 +211,8 @@ ALE DIS ale NODE 11 QUANTITY dispx VALUE -6.666666666e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.7099999999 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 1.079999999e+01 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -9.99999999999e-01 TOLERANCE 1e-8
-FSI NODE 20 QUANTITY lambdax VALUE 2.72404751192976402e+00 TOLERANCE 1e-6
-FSI NODE 20 QUANTITY lambday VALUE -1.16775388386886902e+00 TOLERANCE 1e-5
-FSI NODE 20 QUANTITY lambdaz VALUE -1.16776301149856021e+00 TOLERANCE 1e-5
+FSI NODE 20 QUANTITY lambdax VALUE 2.72405259029981561e+00 TOLERANCE 1e-5
+FSI NODE 20 QUANTITY lambday VALUE -1.16775874520197442 TOLERANCE 1e-5
+FSI NODE 20 QUANTITY lambdaz VALUE -1.16776019157390665e+00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
