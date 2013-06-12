@@ -307,10 +307,10 @@ E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DVOL                            1
 //                              support_total_z
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           1
-//                              support_inclined_plane_up
-E 3 - normal -0.176327 1.0 0.0 tangent 1.0 0.176327 0.0 origin 0.0 0.0 0.0 Type default 0 0
+----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+DSURF   1
+E 3  - ROTANGLE 2.01937681 2.406599614 0.0 CURVE none none none FUNCT 0 0 0
+//normal -0.176327 1.0 0.0 tangent 1.0 0.176327 0.0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 //                              thr_conv_hot_gas

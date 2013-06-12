@@ -121,7 +121,7 @@ AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
-AZOUTPUT                        0
+AZOUTPUT                        0  
 AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
@@ -221,10 +221,10 @@ DVOL                            0
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           1
-// support inclined plane up
-E 3 - normal -0.5 0.866025 0.0 tangent 0.866025 0.5 0.0 origin 0.0 0.0 0.0 Type default 0 0
+----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+DSURF   1
+E 3  - ROTANGLE 1.570796052 2.720699205 0 CURVE none none none FUNCT 0 0 0
+//normal -0.5 0.866025 0.0 tangent  0.866025 0.5 0.0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
 DVOL                            0
 ------------------------------------DESIGN THERMO CONVECTION LINE CONDITIONS
@@ -888,11 +888,11 @@ NODE 242 COORD 2.0000000000000000e+02 0.0000000000000000e+00 1.0000000000000000e
 99 SOLIDH8 HEX8 215 217 239 237 216 218 240 238 MAT 1 KINEM linear EAS none
 100 SOLIDH8 HEX8 217 219 241 239 218 220 242 240 MAT 1 KINEM linear EAS none
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 7.0891343903476578e-01 TOLERANCE 1.0e-13
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 4.0929155569109776e-01 TOLERANCE 1.0e-13
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13
-STRUCTURE DIS structure NODE 241 QUANTITY dispx VALUE 4.3600352929129410e-01 TOLERANCE 1.0e-13
-STRUCTURE DIS structure NODE 241 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13
-STRUCTURE DIS structure NODE 241 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 7.0891343903476578e-01 TOLERANCE 1.0e-6
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 4.0929155569109776e-01 TOLERANCE 1.0e-6
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-6
+STRUCTURE DIS structure NODE 241 QUANTITY dispx VALUE 4.3600352929129410e-01 TOLERANCE 1.0e-6
+STRUCTURE DIS structure NODE 241 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-6
+STRUCTURE DIS structure NODE 241 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-6
 -------------------------------------------------------------------------END
 //                              END

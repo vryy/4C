@@ -755,8 +755,13 @@ void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool 
   {
     int GID = 0;
     int numdofpn=(discret_.Dof(discret_.lRowNode(i))).size();
+
+    //nothing to do for 2D/3D solid elements
+    if (numdofpn<6) continue;
+
     DRT::Node* currnode = discret_.lRowNode(i);
-    if (currnode==NULL) dserror("Can't get row node %d of discretization!", (i+1));
+    if (currnode->IsCosserat()==false)
+      dserror("No rotational DoFs for node %i initialized! Did you set ROTANGLE  for the nodes in your input file?", (i+1));
 
     LINALG::Matrix<3,1> rot_angle;
     LINALG::Matrix<3,3> mat_sys;
@@ -765,26 +770,22 @@ void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool 
     {
       rot_angle(j) = currnode->X()[3+j];
     }
+
     LARGEROTATIONS::angletotriad(rot_angle, mat_sys);
-    //Check, if we have beam elements
-    if (numdofpn>=6)
+
+    for (int k=0;k<3;k++)
     {
-      for (int k=0;k<3;k++)
+      GID = (discret_.Dof(discret_.lRowNode(i)))[3 + k];
+      if (inverse == false)
       {
-        GID = (discret_.Dof(discret_.lRowNode(i)))[3 + k];
-        if (inverse == false)
-        {
-          (*vec)[dofrowmap->LID(GID)]+=mat_sys(k,0);
-        }
-        else
-        {
-          (*vec)[dofrowmap->LID(GID)]-=mat_sys(k,0);
-        }
+        (*vec)[dofrowmap->LID(GID)]+=mat_sys(k,0);
+      }
+      else
+      {
+        (*vec)[dofrowmap->LID(GID)]-=mat_sys(k,0);
       }
     }
-    else
-    {
-      //only implemented for beam elements so far!
-    }
   }
+
+  return;
 }
