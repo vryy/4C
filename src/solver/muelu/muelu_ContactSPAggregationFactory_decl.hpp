@@ -47,7 +47,7 @@ namespace MueLu {
     //! Input
     //@{
 
-    RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+    RCP<const Teuchos::ParameterList> GetValidParameterList(const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
 
     void DeclareInput(Level &currentLevel) const;
 
