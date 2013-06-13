@@ -522,9 +522,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
     // gaussian points
     const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);
-    const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule);
+    // get integration rule
+    const DRT::UTILS::IntPointsAndWeights<1> intpoints(gaussrule);
 
-    const int ngp = intpoints.nquad;
+    const int ngp = intpoints.IP().nquad;
     Teuchos::RCP<Epetra_SerialDenseVector> poro = rcp(new Epetra_SerialDenseVector(ngp));
     const int numdim = 2;
     const int numnode = NumNode();
@@ -566,15 +567,15 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       (mypres)(inode,0) = myvelpres[numdim+(inode*numdofpernode)];
     }
 
-    Epetra_SerialDenseMatrix pqxg(intpoints.nquad,2);
-    Epetra_SerialDenseMatrix derivtrafo(intpoints.nquad,2);
+    Epetra_SerialDenseMatrix pqxg;
+    Epetra_SerialDenseMatrix derivtrafo;
 
-    DRT::UTILS::LineGPToParentGP(pqxg     ,
-                                 derivtrafo,
-                                 intpoints,
-                                 parentele->Shape() ,
-                                 distype  ,
-                                 LLineNumber());
+    DRT::UTILS::BoundaryGPToParentGP<2>(pqxg     ,
+                                        derivtrafo,
+                                        intpoints,
+                                        parentele->Shape() ,
+                                        distype  ,
+                                        LLineNumber());
 
     for (int gp=0; gp<ngp; ++gp)
     {
@@ -585,7 +586,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::shape_function_2D_deriv1(deriv,pqxg(gp,0),pqxg(gp,1),parentele->Shape());
 
       LINALG::SerialDenseVector  funct1D(numnode);
-      DRT::UTILS::shape_function_1D(funct1D,intpoints.qxg[gp][0],Shape());
+      DRT::UTILS::shape_function_1D(funct1D,intpoints.IP().qxg[gp][0],Shape());
 
       // pressure at integration point
       double press = funct1D.Dot(mypres);

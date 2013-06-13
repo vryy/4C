@@ -3105,27 +3105,9 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   //--------------------------------------------------
   // get gausspoints to integrate over boundary element
 
-  // get gauss rule
-  DRT::UTILS::GaussRule1D gaussrule=DRT::UTILS::intrule1D_undefined;
-  switch (distype)
-  {
-  case DRT::Element::line2:
-  {
-    gaussrule = DRT::UTILS::intrule_line_2point;
-    break;
-  }
-  case DRT::Element::nurbs3:
-  {
-    gaussrule = DRT::UTILS::intrule_line_3point;
-    break;
-  }
-  default:
-    dserror("invalid discretization type for fluid2line weak DBC evaluation");
-    break;
-  }
+  // get integration rule
+  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
-  // gaussian points on surface
-  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
   //--------------------------------------------------
   // the gausspoints above have to be mapped to the
@@ -3135,15 +3117,15 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // in addition, get information on the orientation of the
   // outward normal
 
-  Epetra_SerialDenseMatrix pqxg(intpoints.nquad,2);
-  Epetra_SerialDenseMatrix derivtrafo(2,2);
+  Epetra_SerialDenseMatrix pqxg;
+  Epetra_SerialDenseMatrix derivtrafo;
 
-  DRT::UTILS::LineGPToParentGP(pqxg     ,
-                               derivtrafo,
-                               intpoints,
-                               pdistype ,
-                               distype  ,
-                               lineid);
+  DRT::UTILS::BoundaryGPToParentGP<2>(pqxg     ,
+                                      derivtrafo,
+                                      intpoints,
+                                      pdistype ,
+                                      distype  ,
+                                      lineid);
 
 
   // --------------------------------------------------
@@ -3208,13 +3190,13 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
-  for (int iquad=0;iquad<intpoints.nquad;++iquad)
+  for (int iquad=0;iquad<intpoints.IP().nquad;++iquad)
   {
     // gaussian weight
-    const double wquad = intpoints.qwgt[iquad];
+    const double wquad = intpoints.IP().qwgt[iquad];
 
     // gaussian point in boundary elements local coordinates
-    const double xi    = intpoints.qxg [iquad][0];
+    const double xi    = intpoints.IP().qxg [iquad][0];
 
     // gaussian point in parent elements local coordinates
     const double r     = pqxg(iquad,0);
