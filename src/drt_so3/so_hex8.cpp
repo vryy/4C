@@ -139,7 +139,6 @@ time_(0.0)
   else
     structale_ = false;
 
-  return;
 
   return;
 }
@@ -172,6 +171,16 @@ time_(old.time_)
 
   if (pstype_==INPAR::STR::prestress_id)
     invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+
+  if(DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
+  {
+    if (kintype_==soh8_linear)
+      dserror("Structure-Ale approach only for nonlinear kinematics !!!");
+
+    structale_ = true;
+  }
+  else
+    structale_ = false;
 
   return;
 }
