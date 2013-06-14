@@ -8,10 +8,10 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-example taken form Harari 2004
-here: - withou calculation of initial phidt
-- phi_0 does not match DBC at x=1
-remark: scilab non-matching DBC without assuming zero acceleration
+example taken from Harari 2004
+here: - without calculation of initial phidt
+      - phi_0 does not match DBC at x=1
+      remark scilab-code: non-matching DBC without assuming zero acceleration
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        10
 NODES                           11

@@ -408,7 +408,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           }
         }
       } // end if (nsd == 3)
-      else dserror("action 'calc_loma_statistics' is a 3D specific action");
+      else dserror("action 'calc_turbscatra_statistics' is a 3D specific action");
     }
     break;
     case FLD::calc_loma_statistics:

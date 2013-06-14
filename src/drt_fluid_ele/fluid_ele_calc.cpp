@@ -203,6 +203,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
   LINALG::Matrix<nen_,1>    escabofoaf(true);
   BodyForce(ele,fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+  if (params.get("forcing",false))
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &ebofoaf, NULL, "forcing");
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
@@ -2428,12 +2430,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-    tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
+    tau_(0) = 1.0/(c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
-                      + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
-    tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
+                      + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle)));
+    tau_(1) = 1.0/(c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
-                      + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
+                      + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk)));
   }
   break;
 
@@ -2746,6 +2748,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     switch(fldpara_->WhichTau())
     {
     case INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen:
+    case INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
     {
       /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
 

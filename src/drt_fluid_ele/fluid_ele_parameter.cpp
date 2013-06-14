@@ -189,7 +189,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     if(myrank==0)
     {
       std::cout << std::endl << "Warning: \n"
-        "a) Using PSPG stabilization yields a conservative formulation (Hughes, Wells 2005)"
+        "a) Using PSPG stabilization yields a conservative formulation (Hughes & Wells 2005)\n"
         "b) Instablities may occur for complex flow situations" << std::endl;
     }
   }

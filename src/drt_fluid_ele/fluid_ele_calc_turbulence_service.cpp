@@ -1303,6 +1303,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
         velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(2,0) * vdiv_
                           +velint_(2,0) * mffsvdiv_);
+
+        if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+        {
+          dserror("Conservative formulation not supported for loma!");
+        }
       }
     }
   }
@@ -1376,6 +1381,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
               estif_u(fvi,fui) += beta * timefacfac * densaf_
                                 * funct_(vi) * funct_(ui) * mffsvdiv_;
             }
+
+            if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+            {
+              dserror("Conservative formulation not supported for loma!");
+            }
           }
         }
       }
@@ -1441,6 +1451,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesReynolds(
                         * (mffsvelint_(1,0) * mffsvdiv_);
         velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(2,0) * mffsvdiv_);
+
+        if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+        {
+          dserror("Conservative formulation not supported for loma!");
+        }
       }
     }
   }
