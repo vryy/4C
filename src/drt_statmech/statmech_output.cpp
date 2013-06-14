@@ -1368,6 +1368,19 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
       // write special output for broken elements
       if (numshifts > 0)
       {
+//        // Uncomment if check of oscillating node positions is needed
+//        if(cut(2,0)==1.0)
+//        {
+//          gmshfilecontent << "SP(" << std::scientific;
+//          gmshfilecontent << coord(0,i+1) << "," << coord(1, i+1) << "," << coord(2,i+1);
+//          gmshfilecontent << ")" << "{" << std::scientific << 0.75 << ","<< 0.75 << "};" << endl;
+//        }
+//        else if(cut(2,0)==2.0)
+//        {
+//          gmshfilecontent << "SP(" << std::scientific;
+//          gmshfilecontent << coord(0,i) << "," << coord(1, i) << "," << coord(2,i);
+//          gmshfilecontent << ")" << "{" << std::scientific << 0.75 << ","<< 0.75 << "};" << endl;
+//        }
         // directional vector
         LINALG::Matrix<3, 1> dir;
         for (int dof = 0; dof < ndim; dof++)

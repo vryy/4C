@@ -1898,8 +1898,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // toggling Gmsh Output for structure detection
   setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen, special gmsh visualization for network structure types is generated.",
                                yesnotuple,yesnovalue,&statmech);
-  setStringToIntegralParameter<int>("FIXEDDIRICHNODES","Yes","If chosen, the set of Dirichlet Nodes is fixed and is not updated/changed anymore.",
-                               yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
   //Number of time steps between two gmsh outputs written
@@ -1919,9 +1917,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("HISTOGRAMBINS",1,"number of bins for histograms showing the density-density-correlation-function",&statmech);
   // number of raster point along for ddcorr output boundary box shift -> n³ points in volume
   IntParameter("NUMRASTERPOINTS",3,"number of bins for histograms showing the density-density-correlation-function",&statmech);
-  //Reading whether DBCs shall be applied to broken elements
-  setStringToIntegralParameter<int>("PERIODICDBC","No","If chosen, Point DBCs are applied to the nodes of discontinuous elements",
-                               yesnotuple,yesnovalue,&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
                                yesnotuple,yesnovalue,&statmech);
