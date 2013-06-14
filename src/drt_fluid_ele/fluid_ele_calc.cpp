@@ -2430,12 +2430,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-    tau_(0) = 1.0/(c1*DSQR(densaf_)*DSQR(sigma_tot)
+    tau_(0) = 1.0/sqrt((c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
-                      + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle)));
-    tau_(1) = 1.0/(c1*DSQR(densaf_)*DSQR(sigma_tot)
+                      + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
+    tau_(1) = 1.0/sqrt((c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
-                      + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk)));
+                      + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
   }
   break;
 
@@ -2475,12 +2475,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double c2 = 2.0;
     c3 = 4.0/mk;
 
-    tau_(0) = 1.0/(sqrt(c1*densaf_*sigma_tot
+    tau_(0) = 1.0/(c1*densaf_*sigma_tot
                       + c2*densaf_*vel_norm/strle
-                      + c3*visceff_/DSQR(strle)));
-    tau_(1) = 1.0/(sqrt(c1*densaf_*sigma_tot
+                      + c3*visceff_/DSQR(strle));
+    tau_(1) = 1.0/(c1*densaf_*sigma_tot
                       + c2*densaf_*vel_norm/hk
-                      + c3*visceff_/DSQR(hk)));
+                      + c3*visceff_/DSQR(hk));
   }
   break;
 
