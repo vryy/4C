@@ -18,7 +18,6 @@ Maintainer: Caroline Danowski
 /* Debugging options for TSI algorithm                                  */
 /************************************************************************/
 //#define COUPLEINITTEMPERATURE  /* flag for THR: constant temperature T_0 in couple term  */
-//#define TSIBLOCKMATRIXMERGE    /* flag to activate merge of systemmatrix in monolithic TSI */
 //#define TSIPARALLEL            /* flag for parallel TSI */
 //#define MonTSIwithoutTHR       /* flag to comment out all coupling terms in STR field */
 //#define MonTSIwithoutSTR       /* flag to comment out all coupling terms in THR field */

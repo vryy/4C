@@ -71,9 +71,11 @@ TSI::Monolithic::Monolithic(
   errfile_(NULL),
   zeros_(Teuchos::null),
   strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
+  tsidyn_(DRT::Problem::Instance()->TSIDynamicParams()),
   blockrowdofmap_(Teuchos::null),
   systemmatrix_(Teuchos::null),
-  iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(DRT::Problem::Instance()->TSIDynamicParams(),"ITERNORM")),
+  merge_tsi_blockmatrix_(DRT::INPUT::IntegralValue<bool>(tsidyn_,"MERGE_TSI_BLOCK_MATRIX")),
+  iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(tsidyn_,"ITERNORM")),
   iter_(0),
   sdyn_(sdynparams),
   veln_(Teuchos::null)
@@ -119,27 +121,32 @@ TSI::Monolithic::Monolithic(
   veln_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
   veln_->PutScalar(0.0);
 
-  // tsi solver
-#ifdef TSIBLOCKMATRIXMERGE
-  // create a linear solver
-  // get UMFPACK...
-  Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-  solverparams->set("solver","umfpack");
-
-  solver_ = Teuchos::rcp(new LINALG::Solver(
-                      solverparams,
-                      Comm(),
-                      DRT::Problem::Instance()->ErrorFile()->Handle()
-                      )
-                );
-#else
-  // create a linear solver
-  CreateLinearSolver();
-
+  // tsi solver: create a linear solver
+  
+  // get iterative solver
+  if (merge_tsi_blockmatrix_ == false)
+    CreateLinearSolver();
+  // get direct solver, e.g. UMFPACK
+  else  // (merge_tsi_blockmatrix_ == true)
+  {
+#ifndef TFSI
+  if (Comm().MyPID() == 0)
+    cout << "Merged TSI block matrix is used!\n" << endl;
 #endif
 
+    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
+    solverparams->set("solver","umfpack");
+
+    solver_ = Teuchos::rcp(new LINALG::Solver(
+                        solverparams,
+                        Comm(),
+                        DRT::Problem::Instance()->ErrorFile()->Handle()
+                        )
+                  );
+  }  // end BlockMatrixMerge
+
   // structural and thermal contact
-  if(StructureField()->ContactManager()!=Teuchos::null)
+  if(StructureField()->ContactManager() != Teuchos::null)
   {
     cmtman_ = StructureField()->ContactManager();
 
@@ -161,7 +168,7 @@ TSI::Monolithic::Monolithic(
     (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
     
     // if there are inclined structural Dirichlet BC, get the structural LocSysManager
-    if ( locsysconditions.size() )
+    if (locsysconditions.size())
     {
       locsysman_ = StructureField()->LocsysManager();
     }
@@ -216,10 +223,8 @@ void TSI::Monolithic::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::CreateLinearSolver()
 {
-  // get dynamic section of TSI
-  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
   // get the solver number used for linear TSI solver
-  const int linsolvernumber = tsidyn.get<int>("LINEAR_SOLVER");
+  const int linsolvernumber = tsidyn_.get<int>("LINEAR_SOLVER");
   // check if the TSI solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for monolithic TSI. Please set LINEAR_SOLVER in TSI DYNAMIC to a valid number!");
@@ -272,34 +277,34 @@ void TSI::Monolithic::CreateLinearSolver()
   // plausibility check
   switch (azprectype)
   {
-    case INPAR::SOLVER::azprec_BGS2x2:
-      break;
-    case INPAR::SOLVER::azprec_BGSnxn:
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
-    {
-#ifdef HAVE_TEKO
-      // check if structural solver and thermal solver are Stratimikos based (Teko expects stratimikos)
-      int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(slinsolvernumber), "SOLVER");
-      if ( (solvertype != INPAR::SOLVER::stratimikos_amesos) and
-           (solvertype != INPAR::SOLVER::stratimikos_aztec) and
-           (solvertype != INPAR::SOLVER::stratimikos_belos)
-         )
-      dserror("Teko expects a STRATIMIKOS solver object in STRUCTURE SOLVER");
-
-      solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(tlinsolvernumber), "SOLVER");
-      if ( (solvertype != INPAR::SOLVER::stratimikos_amesos) and
-           (solvertype != INPAR::SOLVER::stratimikos_aztec) and
-           (solvertype != INPAR::SOLVER::stratimikos_belos)
-         )
-        dserror("Teko expects a STRATIMIKOS solver object in thermal solver %3d",tlinsolvernumber);
-#else
-      dserror("Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
-#endif
-    }
+  case INPAR::SOLVER::azprec_BGS2x2:
     break;
+  case INPAR::SOLVER::azprec_BGSnxn:
+  case INPAR::SOLVER::azprec_TekoSIMPLE:
+  {
+#ifdef HAVE_TEKO
+    // check if structural solver and thermal solver are Stratimikos based (Teko expects stratimikos)
+    int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(slinsolvernumber), "SOLVER");
+    if ( (solvertype != INPAR::SOLVER::stratimikos_amesos) and
+         (solvertype != INPAR::SOLVER::stratimikos_aztec) and
+         (solvertype != INPAR::SOLVER::stratimikos_belos)
+       )
+    dserror("Teko expects a STRATIMIKOS solver object in STRUCTURE SOLVER");
 
-    default:
-      dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
+    solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(tlinsolvernumber), "SOLVER");
+    if ( (solvertype != INPAR::SOLVER::stratimikos_amesos) and
+         (solvertype != INPAR::SOLVER::stratimikos_aztec) and
+         (solvertype != INPAR::SOLVER::stratimikos_belos)
+       )
+      dserror("Teko expects a STRATIMIKOS solver object in thermal solver %3d",tlinsolvernumber);
+#else
+    dserror("Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
+#endif
+    break;
+  }
+
+  default:
+    dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
     break;
   }
 
@@ -320,11 +325,11 @@ void TSI::Monolithic::CreateLinearSolver()
 
   // prescribe rigid body modes
   StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                       solver_->Params().sublist("Inverse1")
-                                       );
+                                        solver_->Params().sublist("Inverse1")
+                                        );
   ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                    solver_->Params().sublist("Inverse2")
-                                    );
+                                     solver_->Params().sublist("Inverse2")
+                                     );
 }  // CreateLinearSolver()
 
 
@@ -416,9 +421,7 @@ void TSI::Monolithic::NewtonFull()
 
     // check whether we have a sanely filled tangent matrix
     if (not systemmatrix_->Filled())
-    {
       dserror("Effective tangent matrix must be filled here");
-    }
 
     // create full monolithic rhs vector
     // make negative residual not necessary: rhs_ is already negative
@@ -434,6 +437,7 @@ void TSI::Monolithic::NewtonFull()
 
     // reset solver tolerance
     solver_->ResetTolerance();
+
     // --------------------------------------------- build residual norms
     // here the new convergence test stuff has to be included
     normrhs_ = CalculateVectorNorm(iternorm_, rhs_);
@@ -488,9 +492,7 @@ void TSI::Monolithic::NewtonFull()
     PrintNewtonConv();
   }
   else if (iter_ >= itermax_)
-  {
     dserror("Newton unconverged in %d iterations", iter_);
-  }
 
 }  // NewtonFull()
 
@@ -514,7 +516,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   Teuchos::RCP<Epetra_Vector> tx;
 
   // if an increment vector exists
-  if (x!=Teuchos::null)
+  if (x != Teuchos::null)
   {
     // extract displacement sx and temperature tx incremental vector of global
     // unknown incremental vector x
@@ -527,8 +529,8 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
     std::cout << "Until here only old solution of Newton step. No update applied\n" << *(ThermoField()->Tempnp()) <<  std::endl;
 #endif // TSIMONOLITHASOUTPUT
   }
-  // else(x=Teuchos::null): initialize the system
 
+  // else (x == Teuchos::null): initialize the system
 #ifdef TSIMONOLITHASOUTPUT
   std::cout << "Tempnp vor UpdateNewton\n" << *(ThermoField()->Tempnp()) <<  std::endl;
   printf("Tempnp vor UpdateNewton ThermoField()->ExtractTempnp[0] %12.8f\n",(*ThermoField()->ExtractTempnp())[0]);
@@ -561,8 +563,10 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 
 #ifdef TSIMONOLITHASOUTPUT
     Teuchos::RCP<Epetra_Vector> tempera = Teuchos::rcp(new Epetra_Vector(ThermoField()->Tempn()->Map(),true));
+
     if (ThermoField()->Tempnp() != Teuchos::null)
       tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
+
     StructureField()->ApplyCouplingState(tempera,"temperature");
     StructureField()->ApplyCouplingState(ThermoField()->Tempn(),"temperature");
 #endif // TSIMONOLITHASOUTPUT
@@ -798,6 +802,7 @@ void TSI::Monolithic::SetupSystemMatrix()
           *(ThermoField()->Discretization()->DofColMap(0)),
           *(StructureField()->Discretization()->DofRowMap(0))
           );
+
   if (locsysman_ != Teuchos::null)
   {
     // rotate k_st to local coordinate system --> k_st^{~}
@@ -811,6 +816,7 @@ void TSI::Monolithic::SetupSystemMatrix()
             false
             );
   }  // end locsys
+  // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
     k_st->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
 
@@ -852,7 +858,7 @@ void TSI::Monolithic::SetupSystemMatrix()
            );
 
   // call the element and calculate the matrix block
-#if !defined(MonTSIwithoutSTR) and !defined(COUPLEINITTEMPERATURE)
+#if ( (!defined(MonTSIwithoutSTR)) and (!defined(COUPLEINITTEMPERATURE)) )
   ApplyThrCouplMatrix(k_ts);
   ApplyThrCouplMatrix_ConvBC(k_ts);
 #endif
@@ -941,33 +947,9 @@ void TSI::Monolithic::LinearSolve()
   // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
-#ifdef TSIBLOCKMATRIXMERGE
-  // merge blockmatrix to SparseMatrix and solve
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-
-#ifdef TSI_DEBUG
-  #ifndef TFSI
-  if (Comm().MyPID() == 0) { std::cout << " DBC applied to TSI system" <<  std::endl; }
-  #endif  // TFSI
-#endif  // TSI_DEBUG
-
-  // standard solver call
-  solver_->Solve(
-             sparse->EpetraOperator(),
-             iterinc_,
-             rhs_,
-             true,
-             iter_==1
-             );
-
-#ifdef TSI_DEBUG
-  #ifndef TFSI
-  if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
-  #endif  // TFSI
-#endif  // TSI_DEBUG
-
-#else // use bgs2x2_operator
-
+  // default: use block matrix
+  if (merge_tsi_blockmatrix_ == false)
+  {
 #ifdef TSI_DEBUG
   #ifndef TFSI
   if (Comm().MyPID() == 0)
@@ -990,14 +972,28 @@ void TSI::Monolithic::LinearSolve()
 
   // Infnormscaling: unscale system after solving
   UnscaleSolution(*systemmatrix_,*iterinc_,*rhs_);
+  }  // use block matrix
 
+  else // (merge_tsi_blockmatrix_ == true)
+  {
+    // merge blockmatrix to SparseMatrix and solve
+    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+
+    // standard solver call
+    solver_->Solve(
+               sparse->EpetraOperator(),
+               iterinc_,
+               rhs_,
+               true,
+               iter_==1
+               );
+  }  // MergeBlockMatrix
+  
 #ifdef TSI_DEBUG
   #ifndef TFSI
-  if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
+    if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
   #endif  // TFSI
 #endif  // TSI_DEBUG
-
-#endif  // TSIBLOCKMATRIXMERGE
 
 }  // LinearSolve()
 
@@ -2555,10 +2551,8 @@ void TSI::Monolithic::ScaleSystem(
   )
 {
   //should we scale the system?
-  const Teuchos::ParameterList& tsidyn
-    = DRT::Problem::Instance()->TSIDynamicParams();
   const bool scaling_infnorm
-    = (bool)DRT::INPUT::IntegralValue<int>(tsidyn,"INFNORMSCALING");
+    = (bool)DRT::INPUT::IntegralValue<int>(tsidyn_,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -2609,10 +2603,8 @@ void TSI::Monolithic::UnscaleSolution(
   Epetra_Vector& b
   )
 {
-  const Teuchos::ParameterList& tsidyn
-    = DRT::Problem::Instance()->TSIDynamicParams();
   const bool scaling_infnorm
-    = (bool)DRT::INPUT::IntegralValue<int>(tsidyn,"INFNORMSCALING");
+    = (bool)DRT::INPUT::IntegralValue<int>(tsidyn_,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -2724,21 +2716,18 @@ void TSI::Monolithic::SetDefaultParameters()
 {
   // time parameters
   // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn
-    = DRT::Problem::Instance()->TSIDynamicParams();
-  // call the TSI parameter list
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
 
   // get the parameters for the Newton iteration
-  itermax_ = tsidyn.get<int>("ITEMAX");
-  itermin_ = tsidyn.get<int>("ITEMIN");
+  itermax_ = tsidyn_.get<int>("ITEMAX");
+  itermin_ = tsidyn_.get<int>("ITEMIN");
 
   // what kind of norm do we wanna test for coupled TSI problem
   normtypeinc_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn_,"NORM_INC");
   normtyperhs_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_RESF");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn_,"NORM_RESF");
   // what kind of norm do we wanna test for the single fields
   normtypedisi_
     = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_,"NORM_DISP");
@@ -2754,7 +2743,7 @@ void TSI::Monolithic::SetDefaultParameters()
     = DRT::INPUT::IntegralValue<INPAR::THR::VectorNorm>(tdyn,"ITERNORM");
   // in total when do we reach a converged state for complete problem
   combincrhs_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidyn,"NORMCOMBI_RESFINC");
+    = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidyn_,"NORMCOMBI_RESFINC");
 
 #ifndef TFSI
   switch (combincrhs_)
@@ -2846,8 +2835,8 @@ void TSI::Monolithic::SetDefaultParameters()
   }
 
   // test the TSI-residual and the TSI-increment
-  tolinc_ = tsidyn.get<double>("TOLINC");
-  tolrhs_ = tsidyn.get<double>("CONVTOL");
+  tolinc_ = tsidyn_.get<double>("TOLINC");
+  tolrhs_ = tsidyn_.get<double>("CONVTOL");
 
   // get the single field tolerances from this field itselves
   toldisi_ = sdyn_.get<double>("TOLDISP");

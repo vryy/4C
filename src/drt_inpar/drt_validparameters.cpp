@@ -1180,6 +1180,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // linear solver id used for structural problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&sdyn);
 
+  // flag decides if young's modulus is temperature dependent, so far only available
+  // for temperature-dependent St.Venant Kirchhoff material
   setStringToIntegralParameter<int>("YOUNG_IS_TEMP_DEPENDENT","No",
                                "Use temperature-dependent Young's modulus",
                                yesnotuple,yesnovalue,&sdyn);
@@ -2149,6 +2151,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     tuple<int>(0,1),
     &tsidyn
     );
+
+  // merge TSI block matrix to enable use of direct solver in monolithic TSI
+  // default: "No", i.e. use block matrix
+  BoolParameter("MERGE_TSI_BLOCK_MATRIX","No","Merge TSI block matrix",&tsidyn);
 
   // Coupling strategy for BACI-INCA coupling (TFSI)
   setStringToIntegralParameter<int>("TFSI_COUPALGO","tfsi_conforming",
