@@ -207,7 +207,7 @@ void DRT::UTILS::Random::SetRandRange(const double lower, const double upper)
 {
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
   boost::random::uniform_real_distribution<double>::param_type parm(lower, upper);
-  uni_dist_.param(parm);
+  uni_rand_no_.distribution().param(parm);
   return;
 #else
   dserror("Your outdated boost version does not support changing the range afterwards!");
@@ -219,7 +219,7 @@ void DRT::UTILS::Random::SetMeanVariance(const double mean, const double var)
 {
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
   boost::random::normal_distribution<double>::param_type parm(mean, var);
-  norm_dist_.param(parm);
+  norm_rand_no_.distribution().param(parm);
   return;
 #else
   dserror("Your outdated boost version does not support changing mean or sigma afterwards!");

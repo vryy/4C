@@ -28,7 +28,7 @@ References are
 
 <pre>
 Maintainer: Ursula Rasthofer
-            grasthofer@lnm.mw.tum.de
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
