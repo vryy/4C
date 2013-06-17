@@ -5078,8 +5078,13 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double&        time,
   for(int i=0; i<forcesensor_->MyLength(); i++)
     if((*forcesensor_)[i]>0.9)
     {
-      f += fint[i];
-      d = dis[i];
+      // translate i to DofRowMap LID
+      int rowid = discret_->DofRowMap()->LID(discret_->DofColMap()->GID(i));
+      if(rowid>-1)
+      {
+        f += fint[rowid];
+        d = dis[rowid];
+      }
     }
 
   //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
