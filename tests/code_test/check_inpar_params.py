@@ -13,8 +13,12 @@ from sets        import Set
 import sys, subprocess
 
 # Dictionary of unused parameters we want to keep in the code
-UNUSED_PARAMS_TO_KEEP = []
-
+UNUSED_PARAMS_TO_KEEP = [ 
+			'INPAR::THR::midavg_imrlik',
+			'INPAR::THR::midavg_vag',
+			'INPAR::THR::pred_vag',
+			'INPAR::THR::soltech_vag'
+			]
 
 if __name__=='__main__':
   
@@ -24,9 +28,10 @@ if __name__=='__main__':
     
     # collect source files of src
     files_to_search = []
-    global_src_path = sys.argv[1] + '/' + 'src/'
+    global_src_path = sys.argv[1] + 'src/'
     
     source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
+   
     for sh in source_headers.split():
 	baci_files = subprocess.check_output('ls ' + global_src_path + sh, shell=True)
 	baci_files = baci_files.split()
