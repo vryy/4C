@@ -66,6 +66,10 @@ STR::TimIntExpl::TimIntExpl
   if (locsysman_ != Teuchos::null)
     dserror("Explicit TIS cannot handle local co-ordinate systems");
 
+  // explicit time integrators cannot handle nonlinear inertia forces
+  if (HaveNonlinearMass())
+    dserror("Explicit TIS cannot handle nonlinear inertia forces (flag: MASSLIN)");
+
   // get away
   return;
 }

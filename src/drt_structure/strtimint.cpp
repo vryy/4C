@@ -233,7 +233,20 @@ STR::TimInt::TimInt
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
   mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
   if (damping_ != INPAR::STR::damp_none)
-    damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+  {
+    if (!HaveNonlinearMass())
+    {
+      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+    }
+    else
+    {
+      //Since our element evaluate routine is only designed for two input matrices
+      //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
+      //inertia forces AND material damping.
+      dserror("So far its not possible to model nonlinear inertia forces and damping!");
+    }
+  }
+
 
   // set initial fields
   SetInitialFields();
@@ -1938,6 +1951,90 @@ void STR::TimInt::ApplyForceStiffInternal
   // *********** time measurement ***********
 
   // that's it
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* evaluate inertial force and its linearization */
+void STR::TimInt::ApplyForceStiffInternalAndInertial
+(
+  const double time,  //!< evaluation time
+  const double dt,  //!< step size
+  const double timintfac_dis,  //!< additional parameter from time integration 1
+  const double timintfac_vel,  //!< additional parameter from time integration 2
+  const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+  const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
+  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+  const Teuchos::RCP<Epetra_Vector> acc,  // acceleration state
+  Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+  Teuchos::RCP<Epetra_Vector> finert,  //!< inertial force
+  Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
+  Teuchos::RCP<LINALG::SparseOperator> mass  //!< mass matrix
+)
+{
+    //dis->Print(std::cout);
+    //vel->Print(std::cout);
+    // create the parameters for the discretization
+    Teuchos::ParameterList p;
+    // action for elements
+    const std::string action = "calc_struct_nlnstiffmass";
+    p.set("action", action);
+    // other parameters that might be needed by the elements
+    p.set("total time", time);
+    p.set("delta time", dt);
+
+    p.set("timintfac_dis", timintfac_dis);
+    p.set("timintfac_vel", timintfac_vel);
+
+    discret_->ClearState();
+    discret_->SetState(0,"residual displacement", disi);
+    discret_->SetState(0,"displacement", dis);
+    discret_->SetState(0,"velocity", vel);
+    discret_->SetState(0,"acceleration", acc);
+
+    discret_->Evaluate(p, stiff, mass, fint, finert, Teuchos::null);
+    discret_->ClearState();
+
+    mass->Complete();
+
+  return;
+};
+
+/*----------------------------------------------------------------------*/
+/* check wether we have nonlinear inertia forces or not */
+bool STR::TimInt::HaveNonlinearMass()
+{
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  bool masslin = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "MASSLIN");
+
+  return masslin;
+}
+
+/*----------------------------------------------------------------------*/
+/* check wether the initial conditions are fulfilled */
+void STR::TimInt::NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
+                                            Teuchos::RCP<Epetra_Vector> dis,
+                                            const Teuchos::RCP<Epetra_Vector> vel,
+                                            const Teuchos::RCP<Epetra_Vector> acc)
+{
+  double fextnorm;
+  fext->Norm2(&fextnorm);
+
+  double dispnorm;
+  dis->Norm2(&dispnorm);
+
+  double velnorm;
+  vel->Norm2(&velnorm);
+
+  double accnorm;
+  acc->Norm2(&accnorm);
+
+  if (fextnorm > 1.0e-14)
+    dserror("Initial configuration does not fulfill equilibrium, check your initial external forces, velocities and accelerations!!!");
+
+  if ((dispnorm > 1.0e-14) or (velnorm > 1.0e-14) or (accnorm > 1.0e-14))
+    dserror("Nonlinear inertia terms (input flag 'MASSLIN' set to 'yes') are only possible for vanishing initial displacements, velocities and accelerations so far!!!");
+
   return;
 }
 

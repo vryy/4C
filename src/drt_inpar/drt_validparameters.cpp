@@ -1122,6 +1122,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Use linearization of external follower load in Newton",
                                     yesnotuple,yesnovalue,&sdyn);
 
+  setStringToIntegralParameter<int>("MASSLIN","no",
+                                    "Use linearization of nonlinear inertial forces in Newton",
+                                    yesnotuple,yesnovalue,&sdyn);
+
 // Since predicor "none" would be misleading, the usage of no predictor is called vague.
   setStringToIntegralParameter<int>("PREDICT","ConstDis","Type of predictor",
                                tuple<std::string>(

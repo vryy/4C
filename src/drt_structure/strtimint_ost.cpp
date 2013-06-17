@@ -64,7 +64,9 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   fintn_(Teuchos::null),
   fext_(Teuchos::null),
   fextn_(Teuchos::null),
+  finert_(Teuchos::null),
   finertt_(Teuchos::null),
+  finertn_(Teuchos::null),
   fvisct_(Teuchos::null)
 {
   // info to user
@@ -76,8 +78,17 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
              << IO::endl;
   }
 
-  // determine mass, damping and initial accelerations
-  DetermineMassDampConsistAccel();
+  if (!HaveNonlinearMass())
+  {
+    // determine mass, damping and initial accelerations
+    DetermineMassDampConsistAccel();
+  }
+  else
+  {
+    // the case of nonlinear inertia terms works so far only for examples with vanishing initial accelerations, i.e. the initial external
+    // forces and initial velocities have to be chosen consistently!!!
+    (*acc_)(0)->PutScalar(0.0);
+  }
 
   // create state vectors
 
@@ -94,9 +105,6 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   fint_ = LINALG::CreateVector(*dofrowmap_, true);
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
-  // set initial internal force vector
-  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0),
-                          fint_, stiff_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -105,10 +113,31 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
-  // inertial mid-point force vector F_inert
+  // inertial force vector F_{int;n} at last time
+  finert_ = LINALG::CreateVector(*dofrowmap_, true);
+  // inertial mid-force vector F_{int;n+1-alpha_f}
   finertt_ = LINALG::CreateVector(*dofrowmap_, true);
+  // inertial force vector F_{int;n+1} at new time
+  finertn_ = LINALG::CreateVector(*dofrowmap_, true);
   // viscous mid-point force vector F_visc
   fvisct_ = LINALG::CreateVector(*dofrowmap_, true);
+
+  if (!HaveNonlinearMass())
+  {
+    // set initial internal force vector
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_);
+  }
+  else
+  {
+    double timeintfac_dis=theta_*theta_*(*dt_)[0]*(*dt_)[0];
+    double timeintfac_vel=theta_*(*dt_)[0];
+
+    // Check, if initial residuum really vanishes for acc_ = 0
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_);
+
+    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
+  }
+
 
   // have a nice day
   return;
@@ -229,8 +258,39 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   // initialise internal forces
   fintn_->PutScalar(0.0);
 
-  // ordinary internal force and stiffness
-  ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_,damp_);
+  // build new internal forces and stiffness
+  if (!HaveNonlinearMass())
+  {
+    // ordinary internal force and stiffness
+    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, damp_);
+  }
+  else
+  {
+    //Remark: Since our element evaluate routine is only designed for two input matrices
+    //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
+    //inertia forces AND material damping. Therefore this case is already captured in strtimint.cpp.
+
+    //If we have nonlinear inertia forces, the corresponding contributions are computed together with the internal forces
+    finertn_->PutScalar(0.0);
+    mass_->Zero();
+
+    // In general the nonlinear inertia force can depend on displacements, velocities and accelerations,
+    // i.e     finertn_=finertn_(disn_, veln_, accn_):
+    //
+    //    LIN finertn_ = [ d(finertn_)/d(disn_) + 1/(theta_*dt_)*d(finertn_)/d(veln_)
+    //                 + 1/(theta_*theta_*dt_*dt_)*d(finertn_)/d(accn_) ]*disi_
+    //
+    //    LIN finertt_ = 1/(theta_*dt_^2)[ (theta_^2*dt_^2)*d(finertn_)/d(disn_)
+    //                 + (theta_*dt_)*d(finertn_)/d(veln_) + d(finertn_)/d(accn_)]*disi_
+    //
+    // While the factor 1/(theta_*dt_^2) is applied later on in strtimint_ost.cpp the
+    // factors timintfac_dis=(theta_^2*dt_^2) and timeintfac_vel=(theta_*dt_) have directly to be applied
+    // on element level before the three contributions of the linearization are summed up in mass_.
+
+    double timintfac_dis=theta_*theta_*(*dt_)[0]*(*dt_)[0];
+    double timintfac_vel=theta_*(*dt_)[0];
+    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_);
+  }
 
   // apply forces and stiffness due to constraints
   ParameterList pcon;
@@ -241,8 +301,17 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   // potential forces
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
 
-  // inertial forces #finertt_
-  mass_->Multiply(false, *acct_, *finertt_);
+  // build new internal forces and stiffness
+  if (!HaveNonlinearMass())
+  {
+    // inertial forces #finertt_
+    mass_->Multiply(false, *acct_, *finertt_);
+  }
+  else
+  {
+    // F_{inert;1+theta} := theta * F_{inert;n+1} + (1-theta) * F_{inert;n}
+    finertt_->Update(theta_, *finertn_, (1.0-theta_), *finert_, 0.0);
+  }
 
   // viscous forces due Rayleigh damping
   if (damping_ == INPAR::STR::damp_rayleigh)
@@ -467,6 +536,10 @@ void STR::TimIntOneStepTheta::UpdateStepState()
   //    F_{int;n} := F_{int;n+1}
   fint_->Update(1.0, *fintn_, 0.0);
 
+  // update new inertial force
+  //    F_{inert;n} := F_{inert;n+1}
+  finert_->Update(1.0, *finertn_, 0.0);
+
   // update surface stress
   UpdateStepSurfstress();
 
@@ -499,8 +572,41 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
   // go to elements
   discret_->ClearState();
   discret_->SetState("displacement",(*dis_)(0));
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
+
+  if (!HaveNonlinearMass())
+  {
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  }
+  else
+  {
+    // In the NonlinearMass-case its possible to make an update of displacements, velocities
+    // and accelerations at the end of time step (currently only necessary for Kirchhoff beams)
+    // An corresponding update rule has to be implemented in the element, otherwise
+    // displacements, velocities and accelerations remain unchange.
+    discret_->SetState("velocity",(*vel_)(0));
+    discret_->SetState("acceleration",(*acc_)(0));
+
+    Teuchos::RCP<Epetra_Vector> update_disp;
+    update_disp = LINALG::CreateVector(*dofrowmap_, true);
+
+    Teuchos::RCP<Epetra_Vector> update_vel;
+    update_vel = LINALG::CreateVector(*dofrowmap_, true);
+
+    Teuchos::RCP<Epetra_Vector> update_acc;
+    update_acc = LINALG::CreateVector(*dofrowmap_, true);
+
+
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
+
+    disn_->Update(1.0,*update_disp,1.0);
+    (*dis_)(0)->Update(1.0,*update_disp,1.0);
+    veln_->Update(1.0,*update_vel,1.0);
+    (*vel_)(0)->Update(1.0,*update_vel,1.0);
+    accn_->Update(1.0,*update_acc,1.0);
+    (*acc_)(0)->Update(1.0,*update_acc,1.0);
+
+  }
+
   discret_->ClearState();
 }
 
@@ -511,6 +617,7 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
   IO::DiscretizationReader reader(discret_, step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
+  reader.ReadVector(finert_, "finert");
 
   return;
 }
@@ -523,5 +630,6 @@ void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<IO::DiscretizationW
 {
   output->WriteVector("fexternal",fext_);
   output->WriteVector("fint",fint_);
+  output->WriteVector("finert",finert_);
   return;
 }

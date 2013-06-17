@@ -437,6 +437,34 @@ namespace STR
       Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null  //!< material damping matrix
     );
 
+    //! Evaluate internal and inertial forces and their linearizations
+    void ApplyForceStiffInternalAndInertial
+    (
+      const double time,  //!< evaluation time
+      const double dt,  //!< step size
+      const double timintfac_dis,  //!< time integration factor for d(Res) / d dis
+      const double timintfac_vel,  //!< time integration factor for d(Res) / d vel
+      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+      const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
+      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+      const Teuchos::RCP<Epetra_Vector> acc,  // acceleration state
+      Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+      Teuchos::RCP<Epetra_Vector> finert,  //!< inertial force
+      Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> mass  //!< mass matrix
+    );
+
+
+    //! Return bool indicating if we have nonlinear inertia forces
+    bool HaveNonlinearMass();
+
+    //! check wether the initial conditions are fulfilled */
+    void NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
+                                   Teuchos::RCP<Epetra_Vector> dis,
+                                   Teuchos::RCP<Epetra_Vector> vel,
+                                   Teuchos::RCP<Epetra_Vector> acc
+                                  );
+
     //! Evaluate ordinary internal force
     //!
     //! We need incremental displacements, because the internal variables,

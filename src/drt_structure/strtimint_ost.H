@@ -338,7 +338,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> finertt_;  //!< intertial force
+    Teuchos::RCP<Epetra_Vector> finert_;  //!< inertial force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> finertt_;  //!< inertial mid-force
+    Teuchos::RCP<Epetra_Vector> finertn_;  //!< inertial force at \f$t_{n+1}\f$
+
     Teuchos::RCP<Epetra_Vector> fvisct_;  //!< viscous force
 
     //@}

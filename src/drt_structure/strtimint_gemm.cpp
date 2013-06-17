@@ -102,6 +102,10 @@ STR::TimIntGEMM::TimIntGEMM
   // viscous mid-point force vector F_visc
   fviscm_ = LINALG::CreateVector(*dofrowmap_, true);
 
+  // gemm time integrator cannot handle nonlinear inertia forces
+  if (HaveNonlinearMass())
+    dserror("Gemm time integrator cannot handle nonlinear inertia forces (flag: MASSLIN)");
+
   // have a nice day
   return;
 }
