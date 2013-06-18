@@ -16,9 +16,12 @@ import sys, subprocess
 PARAMS_EXISTING_ONLY_IN_VALIDPARAMS = {
 				      'TOPOLOGY OPTIMIZATION CONTROL': ['CONV_CHECK_TYPE']
 				      }
+
 # Dictionary of unused parameters we want to keep in the code
 UNUSED_PARAMS_TO_KEEP = { 
+			  # Output parameters for GID will be kept. Output for SE (Strain Energy) will be implemented soon?!
 			  'IO':                 ['OUTPUT_GID', 'STRUCT_SE'], 
+			  # Path following paramters, which will be kept 
 			  'STRUCTURAL DYNAMIC': ['CONTROLTYPE', 'CONTROLNODE']
 			}
 
@@ -31,7 +34,12 @@ if __name__=='__main__':
     
     # collect source files of src
     files_to_search = []
-    global_src_path = sys.argv[2] + '/' + 'src/'
+    name = sys.argv[2]
+    
+    if name[-1] == '/':
+	global_src_path = sys.argv[2] + 'src/'
+    else:	
+	global_src_path = sys.argv[2] + '/' + 'src/'
     
     source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
     for sh in source_headers.split():
@@ -45,12 +53,12 @@ if __name__=='__main__':
     # Create current default header file via the -d option of baci
     default_header_file = subprocess.check_output(sys.argv[1] + ' -d', shell=True)
 
-    f = file('default.head','w')
+    f = file('xxx_default.head','w')
     print >> f, default_header_file
     f.close()
     
     # Read in of default header
-    section_names, sections = read_ccarat('default.head')
+    section_names, sections = read_ccarat('xxx_default.head')
     
     print 'Start to search params'
     

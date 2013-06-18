@@ -3,7 +3,7 @@
 # 
 # Maintainer: A. Nagler
 #
-# Script for searching parameters which arem't used any longer
+# Script for searching parameters which aren't used any longer
 
 from read_ccarat_NIGHTLYTESTCASES import read_ccarat, write_ccarat
 from elements    import bcdictionary, surfaces
@@ -14,10 +14,21 @@ import sys, subprocess
 
 # Dictionary of unused parameters we want to keep in the code
 UNUSED_PARAMS_TO_KEEP = [ 
-			'INPAR::THR::midavg_imrlik',
-			'INPAR::THR::midavg_vag',
-			'INPAR::THR::pred_vag',
-			'INPAR::THR::soltech_vag'
+			# IrmLike isn't supported any longer since commit 17668
+			'INPAR::STR::midavg_imrlik',		
+			'INPAR::THR::midavg_imrlik', 
+			# value if no solver is given
+			'INPAR::STR::midavg_vag',
+			'INPAR::STR::pred_vag',
+			'INPAR::STR::soltech_vag',
+			'INPAR::THR::midavg_vag',		
+			'INPAR::THR::pred_vag',			
+			'INPAR::THR::soltech_vag',
+			# Parameters for path-following techniques, which currently aren't supported in Baci
+			'INPAR::STR::control_arc1',
+			'INPAR::STR::control_arc2',
+			'INPAR::STR::control_dis',
+			'INPAR::STR::control_load'
 			]
 
 if __name__=='__main__':
@@ -28,7 +39,12 @@ if __name__=='__main__':
     
     # collect source files of src
     files_to_search = []
-    global_src_path = sys.argv[1] + 'src/'
+    
+    name = sys.argv[1]
+    if name[-1] == '/':
+	global_src_path = name + 'src/'
+    else:	
+	global_src_path = name + '/' + 'src/'
     
     source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
    

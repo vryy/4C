@@ -24,7 +24,12 @@ if __name__=='__main__':
     
     # collect source files of src
     files_to_search = []
-    global_src_path = sys.argv[1] + '/' + 'src/'
+    
+    name = sys.argv[1]
+    if name[-1] == '/':
+	global_src_path = name + 'src/'
+    else:	
+	global_src_path = name + '/' + 'src/'
     
     source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
     for sh in source_headers.split():

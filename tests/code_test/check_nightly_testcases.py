@@ -19,12 +19,14 @@ MATERIALS_NOT_TO_SEARCH = []
 if __name__=='__main__':
   
     if len(sys.argv) < 3:
-      print "usage: %s inputfile.dat baci-exe source-path" % sys.argv[0]
+      print "usage: %s baci-exe source-path" % sys.argv[0]
       sys.exit(1)    
     
-    
-    # Find all active nightly testcases in the TestingFramework
-    f = file(sys.argv[2] + 'TestingFramework.cmake', 'r')
+    name = sys.argv[2]
+    if name[-1] == '/':
+	f = file(name + 'TestingFramework.cmake', 'r')
+    else:
+	f = file(name + '/' + 'TestingFramework.cmake', 'r')
     
     # Initialization of Set to avoid double counting
     nightly_testcases = Set()
