@@ -168,9 +168,9 @@ namespace TOPOPT
     void SetInitialDensityField(const INPAR::TOPOPT::InitialDensityField init,const int startfuncno);
 
     /// check if all required data for an optimization step is present
-    bool CheckData(bool doAdjoint);
+    bool CheckData(const bool doAdjoint);
 
-    void TransformFlowFields(bool doAdjoint);
+    void TransformFlowFields(const bool doAdjoint,const bool rowToCol);
 
     //! @name general stuff
     Teuchos::RCP<DRT::Discretization> optidis_; /// discretization of optimization field

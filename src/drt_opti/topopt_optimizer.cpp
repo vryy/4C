@@ -115,8 +115,13 @@ void TOPOPT::Optimizer::ComputeValues()
   double loc_obj = 0.0;
   Epetra_SerialDenseVector loc_constr = Epetra_SerialDenseVector(num_constr_);
 
+  const bool doAdjoint = false;
+
   // check if all data is present
-  CheckData(false);
+  CheckData(doAdjoint);
+
+  // Transform fluid field to colmap
+  TransformFlowFields(doAdjoint,true);
 
   Teuchos::ParameterList params;
 
@@ -138,6 +143,9 @@ void TOPOPT::Optimizer::ComputeValues()
   // communicate local values over processors
   optidis_->Comm().SumAll(&loc_obj,&obj_,1);
   optidis_->Comm().SumAll(loc_constr.Values(),constr_->Values(),num_constr_);
+
+  // Re-Transform fluid field to rowmap
+  TransformFlowFields(doAdjoint,false); // TODO is this required (back-mapping + 2nd argument)
 }
 
 
@@ -150,7 +158,13 @@ void TOPOPT::Optimizer::ComputeGradients()
   obj_der_->PutScalar(0.0);
   constr_der_->PutScalar(0.0);
 
-  CheckData(true);
+  const bool doAdjoint = true;
+
+  // check if all data is present
+  CheckData(doAdjoint);
+
+  // Transform fluid field to colmap
+  TransformFlowFields(doAdjoint,true);
 
   Teuchos::ParameterList params;
 
@@ -176,6 +190,9 @@ void TOPOPT::Optimizer::ComputeGradients()
   optidis_->Evaluate(params,Teuchos::null,obj_der_);
 
   optidis_->ClearState();
+
+  // Re-Transform fluid field to rowmap
+  TransformFlowFields(doAdjoint,false); // TODO is this required (back-mapping + 2nd argument)
 }
 
 
@@ -422,7 +439,7 @@ bool TOPOPT::Optimizer::Converged(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool TOPOPT::Optimizer::CheckData(bool doAdjoint)
+bool TOPOPT::Optimizer::CheckData(const bool doAdjoint)
 {
   // n timesteps
   // -> solutions at time t^0,t^1,...,t^n
@@ -437,11 +454,8 @@ bool TOPOPT::Optimizer::CheckData(bool doAdjoint)
   if (num_sols!=fluidvel_->size())
     dserror("fluid field and time step numbers do not fit: n_f = %i, n_t = %i",fluidvel_->size(),num_sols);
 
-  if ( (doAdjoint==true) and (num_sols!=adjointvel_->size()))
+  if ((doAdjoint==true) and (num_sols!=adjointvel_->size()))
     dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols);
-
-  // Transform fluid and adjoint field so that it is better readable at element level
-  TransformFlowFields(doAdjoint);
 
   return true;
 }
@@ -450,38 +464,37 @@ bool TOPOPT::Optimizer::CheckData(bool doAdjoint)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TOPOPT::Optimizer::TransformFlowFields(bool doAdjoint)
+void TOPOPT::Optimizer::TransformFlowFields(const bool doAdjoint, const bool rowToCol)
 {
-  const Epetra_Map* colmap = fluiddis_->DofColMap();
+  const Epetra_Map* targetmap = NULL;
+  if (rowToCol) targetmap= fluiddis_->DofColMap();
+  else targetmap = fluiddis_->DofRowMap();
 
-  // if maps have been mapped before, dont change them
-  if (not fluidvel_->begin()->second->Map().PointSameAs(*colmap))
+  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
+      i!=fluidvel_->end();i++)
   {
-    RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*colmap,false));
+    // if maps have been mapped before, dont change them
+    if (i->second->Map().PointSameAs(*targetmap)) continue;
 
-    for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
-        i!=fluidvel_->end();i++)
-    {
-      // export vector from row to column map
-      LINALG::Export(*i->second,*vec);
+    RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*targetmap,false));
 
-      // set new vector
-      i->second = vec;
-    }
+    // export vector to target map
+    LINALG::Export(*i->second,*vec);
+    i->second = vec;
   }
 
   // if maps have been mapped before, dont change them
-  if ((doAdjoint==true) and (not adjointvel_->begin()->second->Map().PointSameAs(*colmap)))
+  if (doAdjoint==true)
   {
-    Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*colmap,false));
-
     for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
         i!=adjointvel_->end();i++)
     {
-      // export vector from row to column map
-      LINALG::Export(*i->second,*vec);
+      if (i->second->Map().PointSameAs(*targetmap)) continue;
 
-      // set new vector
+      RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*targetmap,false));
+
+      // export vector to target map
+      LINALG::Export(*i->second,*vec);
       i->second = vec;
     }
   }
