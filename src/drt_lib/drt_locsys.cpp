@@ -420,7 +420,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
     int nodeGID = noderowmap->GID(i);
     DRT::Node* node = Discret().gNode(nodeGID);
     if (!node) dserror("ERROR: Cannot find node with gid %",nodeGID);
-    std::vector<int> dofs = Discret().Dof(node);
+    std::vector<int> dofs = Discret().Dof(0,node);
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
 
@@ -754,7 +754,7 @@ void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool 
   for (int i=0; i<discret_.NumMyRowNodes();i++)
   {
     int GID = 0;
-    int numdofpn=(discret_.Dof(discret_.lRowNode(i))).size();
+    int numdofpn=(discret_.Dof(0,discret_.lRowNode(i))).size();
 
     //nothing to do for 2D/3D solid elements
     if (numdofpn<6) continue;
@@ -775,7 +775,7 @@ void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool 
 
     for (int k=0;k<3;k++)
     {
-      GID = (discret_.Dof(discret_.lRowNode(i)))[3 + k];
+      GID = (discret_.Dof(0,discret_.lRowNode(i)))[3 + k];
       if (inverse == false)
       {
         (*vec)[dofrowmap->LID(GID)]+=mat_sys(k,0);
