@@ -59,6 +59,8 @@ namespace MAT
       const double density_;
       /// shear modulus
       const double mue_;
+      /// Poisson's ratio
+      const double nue_;
       /// mass fraction of elastin
       const double phielastin_;
       /// prestretch of elastin
@@ -389,7 +391,7 @@ namespace MAT
     /// elastic response for one collagen fiber family
     void EvaluateFiberFamily
     (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< Cauchy-Green
       const int gp,  ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
@@ -411,7 +413,7 @@ namespace MAT
     /// elastic response for Elastin
     void EvaluateElastin
     (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< Cauchy-Green
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
     );
@@ -419,7 +421,7 @@ namespace MAT
     /// elastic response for smooth muscle cells
     void EvaluateMuscle
     (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< Cauchy-Green
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
       const int gp, ///< current Gauss point
@@ -429,7 +431,7 @@ namespace MAT
     /// volumetric part
     void EvaluateVolumetric
     (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< Cauchy-Green
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
       double currMassDens,  ///< current mass density
@@ -440,7 +442,7 @@ namespace MAT
     void MassProduction
     (
       const int gp,  ///< current Gauss point
-      LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< cauchy green strain
+      LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
       LINALG::Matrix<4,1>* massstress,  ///< growth stress measure
       LINALG::Matrix<4,1>* massprodcomp  ///< mass production rate
@@ -450,7 +452,7 @@ namespace MAT
     void MassProductionSingleFiber
     (
       const int gp,  ///< current Gauss point
-      LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< cauchy green strain
+      LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
       double* massstress,  ///< growth stress measure
       double* massprodcomp,  ///< mass production rate
@@ -464,6 +466,7 @@ namespace MAT
     /// compute stress and cmat for implicit integration with whole stress as driving force
     void EvaluateImplicitAll
     (
+      LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
       const int gp,  ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
@@ -477,6 +480,7 @@ namespace MAT
     /// compute stress and cmat for implicit integration with fiber stress as driving force
     void EvaluateImplicitSingle
     (
+      LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
       const int gp,  ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
@@ -502,7 +506,7 @@ namespace MAT
     void GradMassDStress
     (
       LINALG::Matrix<NUM_STRESS_3D,1>* derivative,  ///< result
-      LINALG::Matrix<3,3> Cmatrix,  ///< cauchy green strain in matrix notation
+      LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       LINALG::Matrix<3,3> Smatrix,  ///< 2nd PK-stress in matrix notation
       LINALG::Matrix<3,1> a,  ///< fiber vector
       double J,  ///< determinant of F
@@ -514,7 +518,7 @@ namespace MAT
     void GradMassDStretch
     (
       LINALG::Matrix<NUM_STRESS_3D,1>* derivative,  ///< result
-      LINALG::Matrix<3,3> Cmatrix,  ///< cauchy green strain in matrix notation
+      LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       LINALG::Matrix<3,3> Smatrix,  ///< 2nd PK-stress in matrix notation
       LINALG::Matrix<NUM_STRESS_3D,1> Cinv,
       LINALG::Matrix<3,1> a,  ///< fiber vector

@@ -1299,6 +1299,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENS","Density");
     AddNamedReal(m,"MUE","Shear Modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"PHIE","mass fraction of elastin");
     AddNamedReal(m,"PREELA","prestretch of elastin");
     AddNamedReal(m,"K1","Parameter for linear collagen fiber stiffness");
