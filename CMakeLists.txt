@@ -766,6 +766,8 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_utils_clonestrategy.cpp
   src/drt_scatra/scatra_timint_tg.cpp
   src/drt_scatra/scatra_timint_reinitialization.cpp
+  src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
+  src/drt_scatra/turbulence_hit_scalar_forcing.cpp
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
@@ -917,8 +919,6 @@ set(OBJS_POST_GID_TXT
   src/post_gid/gid_out_txt.c
 )
 set(OBJS_DRT_FLUID
-  src/drt_fluid/drt_transfer_turb_inflow.cpp
-  src/drt_fluid/dyn_smag.cpp
   src/drt_fluid/fluid_coupling_red_models.cpp
   src/drt_fluid/fluid_dyn_nln_drt.cpp
   src/drt_fluid/fluid_meshtying.cpp
@@ -933,21 +933,30 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
   src/drt_fluid/fluidimplicitintegration.cpp
   src/drt_fluid/fluidresulttest.cpp
-  src/drt_fluid/scale_sep_gmo.cpp
-  src/drt_fluid/turbulent_flow_algorithm.cpp
-  src/drt_fluid/turbulence_statistic_manager.cpp
-  src/drt_fluid/turbulence_statistics_bfs.cpp
-  src/drt_fluid/turbulence_statistics_oracles.cpp
-  src/drt_fluid/turbulence_statistics_ccy.cpp
-  src/drt_fluid/turbulence_statistics_cha.cpp
-  src/drt_fluid/turbulence_statistics_bcf.cpp
-  src/drt_fluid/turbulence_statistics_ldc.cpp
-  src/drt_fluid/turbulence_statistics_mean_general.cpp
-  src/drt_fluid/turbulence_statistics_sqc.cpp
-  src/drt_fluid/xfluid.cpp
-  src/drt_fluid/xfluidfluid.cpp
-  src/drt_fluid/xfluidfluidresulttest.cpp
   src/drt_fluid/fluid_timint.cpp
+)
+set(OBJS_DRT_FLUID_TURBULENCE
+  src/drt_fluid_turbulence/dyn_smag.cpp
+  src/drt_fluid_turbulence/drt_transfer_turb_inflow.cpp
+  src/drt_fluid_turbulence/scale_sep_gmo.cpp
+  src/drt_fluid_turbulence/turbulence_hit_initial_field.cpp
+  src/drt_fluid_turbulence/turbulence_hit_forcing.cpp
+  src/drt_fluid_turbulence/turbulent_flow_algorithm.cpp
+  src/drt_fluid_turbulence/turbulence_statistic_manager.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_bfs.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_bcf.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_ccy.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_cha.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_hit.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_ldc.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_mean_general.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_oracles.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_sqc.cpp
+)
+set(OBJS_DRT_FLUID_XFLUID
+  src/drt_fluid_xfluid/xfluid.cpp
+  src/drt_fluid_xfluid/xfluidfluid.cpp
+  src/drt_fluid_xfluid/xfluidfluidresulttest.cpp
 )
 set(OBJS_DRT_SR_LIB
   src/drt_smoothrod/smoothrod.cpp
@@ -1614,13 +1623,15 @@ set(MULTIFIELD_LIBRARIES
 # the adapter layer
 add_library(drt_adapter ${OBJS_DRT_ADAPT})
 
-# algorithm libraries the adapters depend upon
+# algorithm libraries the adapters depend uo
 add_library(alg_ale ${OBJS_DRT_ALEALG})
 add_library(alg_artnet ${OBJS_DRT_ARTNET})
 add_library(alg_combust ${OBJS_DRT_COMBUST})
 #add_library(alg_contact SHARED ${OBJS_DRT_CONTACT})
 add_library(alg_contact ${OBJS_DRT_CONTACT})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
+add_library(alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE})
+add_library(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
 add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})
@@ -1637,6 +1648,9 @@ set(SINGLEFIELD_LIBRARIES
   alg_artnet
   alg_combust
   alg_fluid
+  alg_fluid_turbulence
+  alg_fluid
+  alg_xfluid
   alg_redairways
   alg_scatra
   alg_structure

@@ -192,7 +192,7 @@ void CAVITATION::Algorithm::Integrate()
   {
     Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::IntegrateFluid");
     Teuchos::TimeMonitor monitor(*t);
-    fluid_->MultiCorrector();
+    fluid_->Solve();
   }
 
   return;

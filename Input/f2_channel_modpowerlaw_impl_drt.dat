@@ -1,8 +1,8 @@
 //
-// Maintainer: Ursula Mayer
-// mayer@lnm.mw.tum.de
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15257
+// 089 - 289-15236
 //
 // necessary defines: D_FLUID2 BINIO
 //
@@ -1256,7 +1256,7 @@ NODE 441 COORD 5.00000000e-01 4.99999851e-01 0.00000000e+00
 FLUID DIS fluid NODE 101 QUANTITY velx VALUE 2.297352892e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 101 QUANTITY vely VALUE 0.000000000e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 101 QUANTITY pressure VALUE 1.340960661e-02 TOLERANCE 1e-9
-FLUID DIS fluid NODE 21 QUANTITY tractionx VALUE 4.684729787e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 21 QUANTITY tractiony VALUE -4.792320526e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 21 QUANTITY tractionx VALUE 4.68472954542767273e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 21 QUANTITY tractiony VALUE -4.79232084766922972e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

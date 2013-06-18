@@ -20,8 +20,8 @@ Maintainer: Florian Henke
 #include "combust_reinitializer.H"
 #include "combust_fluidimplicitintegration.H"
 #include "combust_reinitialization_pde.H"
-#include "../drt_fluid/turbulence_statistic_manager.H"
-#include "../drt_fluid/turbulence_statistics_mean_general.H"
+#include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
@@ -1434,7 +1434,7 @@ void COMBUST::Algorithm::DoFluidField()
   FluidField().ImportFlameFront(flamefront_,true);
 
   // solve nonlinear Navier-Stokes equations
-  FluidField().NonlinearSolve();
+  FluidField().Solve();
 
   // clear fluid's memory to flamefront
   FluidField().ImportFlameFront(Teuchos::null,false);

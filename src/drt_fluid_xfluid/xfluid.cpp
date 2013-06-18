@@ -14,7 +14,7 @@ Maintainer:  Benedikt Schott
 
 #include <Teuchos_ParameterList.hpp>
 
-#include "fluid_utils.H"
+#include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
@@ -68,7 +68,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "fluid_utils_time_integration.H"
+#include "../drt_fluid/fluid_utils_time_integration.H"
 
 #include "xfluid_defines.H"
 
@@ -2880,7 +2880,7 @@ void FLD::XFluid::TimeLoop()
 
 
     // -----------------------------------------------------------------
-    //        prepare nonlinear solve (used for NonlinearSolve()
+    //        prepare nonlinear solve (used for Solve())
     // -----------------------------------------------------------------
     PrepareSolve();
 
@@ -2888,7 +2888,7 @@ void FLD::XFluid::TimeLoop()
     // -----------------------------------------------------------------
     //                     solve nonlinear equation
     // -----------------------------------------------------------------
-    NonlinearSolve();
+    Solve();
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -2962,7 +2962,7 @@ void FLD::XFluid::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
-    NonlinearSolve();
+    Solve();
 
 
     // -------------------------------------------------------------------
@@ -3109,7 +3109,7 @@ void FLD::XFluid::PrepareNonlinearSolve()
 /*----------------------------------------------------------------------*
  |  solve the nonlinear problem                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::NonlinearSolve()
+void FLD::XFluid::Solve()
 {
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both

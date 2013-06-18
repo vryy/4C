@@ -15,6 +15,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_timint_ost.H"
 #include "scatra_ele_action.H"
 #include "scatra_utils.H"
+#include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
@@ -22,7 +23,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_fluid/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_smag.H"
 
 
 /*----------------------------------------------------------------------*
@@ -419,6 +420,10 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   // time deriv. of this step becomes most recent time derivative of
   // last step
   phidtn_->Update(1.0,*phidtnp_,0.0);
+
+  // call time update of forcing routine
+  if (homisoturb_forcing_ != Teuchos::null)
+    homisoturb_forcing_->TimeUpdateForcing();
 
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();

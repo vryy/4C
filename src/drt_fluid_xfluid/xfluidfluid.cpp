@@ -63,10 +63,10 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
-#include "fluid_utils_time_integration.H"
+#include "../drt_fluid/fluid_utils_time_integration.H"
 #include "xfluidfluidresulttest.H"
 
-#include "fluid_utils.H"
+#include "../drt_fluid/fluid_utils.H"
 
 #include "xfluid_defines.H"
 
@@ -2558,14 +2558,14 @@ void FLD::XFluidFluid::TimeLoop()
     }
 
     // -----------------------------------------------------------------
-    //        prepare nonlinear solve (used for NonlinearSolve()
+    //        prepare nonlinear solve (used for Solve())
     // -----------------------------------------------------------------
     PrepareNonlinearSolve();
 
     // -----------------------------------------------------------------
     //                     solve nonlinear equation
     // -----------------------------------------------------------------
-    NonlinearSolve();
+    Solve();
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -2635,7 +2635,7 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
-    NonlinearSolve();
+    Solve();
 
     // -------------------------------------------------------------------
     //         calculate lift'n'drag forces from the residual
@@ -2953,7 +2953,7 @@ void FLD::XFluidFluid::PrepareMonolithicFixedAle()
 // ----------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void FLD::XFluidFluid::NonlinearSolve()
+void FLD::XFluidFluid::Solve()
 {
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
@@ -3308,7 +3308,7 @@ void FLD::XFluidFluid::NonlinearSolve()
   if (alefluid_)
     aletotaldispn_->Update(1.0,*aledispn_,1.0);
 
-}//FLD::XFluidFluid::NonlinearSolve()
+}//FLD::XFluidFluid::Solve()
 
 // -------------------------------------------------------------------
 //
@@ -3898,7 +3898,7 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution()
                        aledispnp_);
   }
 
-  NonlinearSolve();
+  Solve();
 
 }//FLD::XFluidFluid::UpdateMonolithicFluidSolution()
 

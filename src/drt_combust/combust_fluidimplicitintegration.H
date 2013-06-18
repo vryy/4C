@@ -154,7 +154,7 @@ public:
   void PrepareTimeStep();
 
   /// prepare a nonlinear iteration
-  void PrepareNonlinearSolve();
+  void PrepareSolve();
 
   /// import the flame front from the combustion algorithm
   void StoreFlameFront(
@@ -194,7 +194,7 @@ public:
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or fixpoint iteration
   */
-  void NonlinearSolve();
+  void Solve();
 
   Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 

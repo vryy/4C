@@ -21,14 +21,15 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
 #include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_fluid/turbulence_statistics_mean_general.H"
-#include "../drt_fluid/turbulence_statistics_ccy.H"
-#include "../drt_fluid/turbulence_statistics_cha.H"
-#include "../drt_fluid/turbulence_statistics_bcf.H"
-#include "../drt_fluid/turbulence_statistics_ldc.H"
-#include "../drt_fluid/turbulence_statistics_bfs.H"
-#include "../drt_fluid/turbulence_statistics_oracles.H"
-#include "../drt_fluid/turbulence_statistics_sqc.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_mean_general.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_ccy.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_cha.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_bcf.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_ldc.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_bfs.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_oracles.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_sqc.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_hit.H"
 
 namespace FLD
 {
@@ -73,7 +74,8 @@ namespace FLD
     statistics_ldc_(Teuchos::null          ),
     statistics_bfs_(Teuchos::null          ),
     statistics_oracles_(Teuchos::null      ),
-    statistics_sqc_(Teuchos::null          )
+    statistics_sqc_(Teuchos::null          ),
+    statistics_hit_(Teuchos::null          )
   {
     subgrid_dissipation_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"),"SUBGRID_DISSIPATION");
     // initialize
@@ -131,6 +133,28 @@ namespace FLD
                                                           mydispnp_           ,
                                                           *params_             ,
                                                           subgrid_dissipation_));
+    }
+    else if(fluid.special_flow_=="decaying_homogeneous_isotropic_turbulence"
+            or fluid.special_flow_=="forced_homogeneous_isotropic_turbulence"
+            or fluid.special_flow_=="scatra_forced_homogeneous_isotropic_turbulence")
+    {
+      if (fluid.special_flow_=="decaying_homogeneous_isotropic_turbulence")
+        flow_=decaying_homogeneous_isotropic_turbulence;
+      else if (fluid.special_flow_=="forced_homogeneous_isotropic_turbulence")
+        flow_=forced_homogeneous_isotropic_turbulence;
+      else
+        flow_=scatra_forced_homogeneous_isotropic_turbulence;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      if (flow_==forced_homogeneous_isotropic_turbulence
+          or flow_==scatra_forced_homogeneous_isotropic_turbulence)
+        statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,true));
+      else
+        statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,false));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
     {
@@ -367,7 +391,8 @@ namespace FLD
     statistics_ldc_(Teuchos::null          ),
     statistics_bfs_(Teuchos::null          ),
     statistics_oracles_(Teuchos::null      ),
-    statistics_sqc_(Teuchos::null          )
+    statistics_sqc_(Teuchos::null          ),
+    statistics_hit_(Teuchos::null          )
   {
 
     // subgrid dissipation
@@ -586,6 +611,8 @@ namespace FLD
     {
       if (flow_ == combust_oracles)
       {
+        std::cout << "######### Check this before you use it! #######" << std::endl;
+        // is setting for myrank=0 only really correct?
         samstart_  = modelparams->get<int>("SAMPLING_START",1);
         samstop_   = modelparams->get<int>("SAMPLING_STOP", 1000000000);
         dumperiod_ = 0; // used as switch for the multi-record statistic output
@@ -692,7 +719,8 @@ namespace FLD
     StoreElementValues(step);
 
     // sampling takes place only in the sampling period
-    if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
+    if( (step>=samstart_ && step<=samstop_ && flow_ != no_special_flow) // usual case with statistical-stationary state
+       or (step != 0 && flow_ == decaying_homogeneous_isotropic_turbulence)) // time-dependent!
     {
       double tcpu=Teuchos::Time::wallTime();
 
@@ -723,6 +751,23 @@ namespace FLD
           dserror("need statistics_channel_ to do a time sample for a turbulent passive scalar transport in channel");
 
         statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,myforce_);
+        break;
+      }
+      case decaying_homogeneous_isotropic_turbulence:
+      case forced_homogeneous_isotropic_turbulence:
+      {
+        if(statistics_hit_==Teuchos::null)
+          dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
+
+        statistics_hit_->DoTimeSample(myvelnp_);
+        break;
+      }
+      case scatra_forced_homogeneous_isotropic_turbulence:
+      {
+        if(statistics_hit_==Teuchos::null)
+          dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
+
+        statistics_hit_->DoScatraTimeSample(myvelnp_,myphinp_);
         break;
       }
       case lid_driven_cavity:
@@ -778,9 +823,15 @@ namespace FLD
             if (inflow_)
             {
               if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
-                statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,myforce_);
+                 dserror("Use channel_flow_of_height_2 instead of scatra_channel_flow_of_height_2!");
+                 // to get DoScatraTimeSample() running also for inflow problems pointswise evaluation
+                 // as available for channel flow is required
+                 //statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,myforce_);
+                 // if the inflow channel is not subject to scalar transport using the functions for usual channel flow is ok
+              else if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+                 statistics_channel_->DoTimeSample(myvelnp_,myforce_);
               else
-                dserror("scatra_channel_flow_of_height_2 expected!");
+                dserror("channel_flow_of_height_2 expected!");
             }
           }
         }
@@ -793,7 +844,13 @@ namespace FLD
           {
             if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
-              statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,myforce_,eosfac);
+              std::cout << "Warning: no statistics for loma inflow channel!" << std::endl;
+              // to get DoLomaTimeSample() running also for inflow problems pointswise evaluation
+              // as available for channel flow is required
+              //statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,myforce_,eosfac);
+              // statistics_channel_->DoTimeSample(myvelnp_,myforce_) is not an option,
+              // since it requires visc and dens
+              // you may use the statistics of the inlet section instead
             }
           }
         }
@@ -1030,6 +1087,32 @@ namespace FLD
 
     } // end step in sampling period
 
+    // for homogeneous isotropic turbulence, the initial field is averaged
+    // to get the amount of energy at the beginning which depends on the
+    // resolution
+    if (flow_ == decaying_homogeneous_isotropic_turbulence and step == 0)
+    {
+      if (discret_->Comm().MyPID() == 0)
+      {
+        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+        cout << "calculate initial energy spectrum  ";
+        cout << "XXXXXXXXXXXXXXXXXXXXX";
+        cout << "\n\n";
+      }
+
+      statistics_hit_->DoTimeSample(myvelnp_);
+      statistics_hit_->DumpStatistics(0);
+      statistics_hit_->ClearStatistics();
+
+      if (discret_->Comm().MyPID() == 0)
+      {
+        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+        cout << "wrote statistics record            ";
+        cout << "XXXXXXXXXXXXXXXXXXXXX";
+        cout << "\n\n";
+      }
+    }
+
     return;
   }
 
@@ -1120,7 +1203,7 @@ namespace FLD
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoOutput(IO::DiscretizationWriter& output,
                                             int                       step,
-                                            const double              inflow)
+                                            const bool                inflow)
   {
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
@@ -1217,13 +1300,45 @@ namespace FLD
           statistics_channel_multiphase_->DumpStatistics(step);
         break;
       }
-      case lid_driven_cavity:
+      case decaying_homogeneous_isotropic_turbulence:
+      case forced_homogeneous_isotropic_turbulence:
       {
-        if(statistics_ldc_==Teuchos::null)
-          dserror("need statistics_ldc_ to do a time sample for a lid driven cavity");
+        if(statistics_hit_==Teuchos::null)
+          dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
 
+        if (flow_ == forced_homogeneous_isotropic_turbulence)
+        {
+          // write statistics only during sampling period
+          if(outputformat == write_single_record)
+            statistics_hit_->DumpStatistics(step);
+          else if (outputformat == write_multiple_records)
+          {
+            statistics_hit_->DumpStatistics(step,true);
+            statistics_hit_->ClearStatistics();
+          }
+        }
+        else
+        {
+          // write statistics for every time step,
+          // since there is not any statistical-stationary state
+          statistics_hit_->DumpStatistics(step);
+          statistics_hit_->ClearStatistics();
+        }
+        break;
+      }
+      case scatra_forced_homogeneous_isotropic_turbulence:
+      {
+        if(statistics_hit_==Teuchos::null)
+          dserror("need statistics_hit_ to do sampling for homogeneous isotropic turbulence");
+
+        // write statistics only during sampling period
         if(outputformat == write_single_record)
-          statistics_ldc_->DumpStatistics(step);
+           statistics_hit_->DumpScatraStatistics(step);
+        else if (outputformat == write_multiple_records)
+        {
+          statistics_hit_->DumpScatraStatistics(step,true);
+          statistics_hit_->ClearScatraStatistics();
+        }
         break;
       }
       case loma_lid_driven_cavity:
@@ -1291,10 +1406,18 @@ namespace FLD
             if (inflow_)
             {
               if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
-               {
+              {
                 if(outputformat == write_single_record)
                   statistics_channel_->DumpScatraStatistics(step);
-               }
+              }
+              else if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+              {
+                if(output_inflow)
+                {
+                  statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+                  statistics_channel_->ClearStatistics();
+                }
+              }
             }
          }
         }
@@ -1308,8 +1431,9 @@ namespace FLD
           {
             if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
-              if(outputformat == write_single_record)
-                statistics_channel_->DumpLomaStatistics(step);
+              std::cout << "Warning: no statistics for loma inflow channel!" << std::endl;
+//              if(outputformat == write_single_record)
+//                statistics_channel_->DumpLomaStatistics(step);
             }
           }
         }
@@ -1364,9 +1488,6 @@ namespace FLD
         break;
       }
       }
-
-//      if (discret_->Comm().MyPID()==0 && outputformat != do_not_write )
-//        std::cout << "done" << std::endl;
 
       if(discret_->Comm().MyPID()==0 && outputformat != do_not_write)
       {
@@ -1455,6 +1576,9 @@ namespace FLD
     {
       statistics_channel_->StoreScatraDiscretAndParams(scatradis_,scatraparams_,scatraextraparams_,scatratimeparams_);
     }
+
+    if (flow_ == scatra_forced_homogeneous_isotropic_turbulence)
+      statistics_hit_->StoreScatraDiscret(scatradis_);
 
     withscatra_ = true;
 

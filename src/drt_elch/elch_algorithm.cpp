@@ -16,7 +16,7 @@ Maintainer: Georg Bauer
 #include "elch_algorithm.H"
 #include "../drt_scatra/scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_fluid/turbulence_statistic_manager.H"
+#include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../linalg/linalg_mapextractor.H"
 // Output after each Outer Iteration step
 #include "../drt_io/io.H"
@@ -260,10 +260,7 @@ void ELCH::Algorithm::DoFluidStep()
   }
 
   // solve nonlinear Navier-Stokes system
-  if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
-    FluidField().MultiCorrector();
-  else
-    FluidField().NonlinearSolve();
+  FluidField().Solve();
 
   return;
 }

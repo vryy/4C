@@ -21,7 +21,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_elementtype.H"
 
 // turbulence model development
-#include "../drt_fluid/fluid_turbulence_defines.H"
+#include "../drt_fluid_turbulence/fluid_turbulence_defines.H"
 
 
 /*----------------------------------------------------------------------*

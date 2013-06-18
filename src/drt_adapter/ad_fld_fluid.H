@@ -353,19 +353,19 @@ namespace ADAPTER {
       Do the nonlinear solve for the time step. All boundary conditions have
       been set.
      */
-    virtual void NonlinearSolve() = 0;
+    virtual void Solve() = 0;
 
     /// predictor
     virtual void Predictor() = 0;
-
-    /// (multiple) corrector
-    virtual void MultiCorrector() = 0;
 
     /// linear fluid solve with just a interface load
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+
+    /// do an intermediate solution step
+    virtual void CalcIntermediateSolution() = 0;
 
     //@}
 

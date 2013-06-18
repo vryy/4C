@@ -1,0 +1,1144 @@
+/*!
+
+\file turbulence_hit_forcing.cpp
+
+\brief routines to calculate forcing for homogeneous isotropic turbulence simulations
+
+References are
+
+<pre>
+
+</pre>
+
+<pre>
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*/
+
+#include <complex>
+
+#include"fftw3.h"
+
+#include "turbulence_hit_forcing.H"
+
+#include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/standardtypes_cpp.H"
+
+#define USE_TRAGET_SPECTRUM
+//#define TIME_UPDATE_FORCING_SPECTRUM
+
+namespace FLD
+{
+
+/*--------------------------------------------------------------*
+ | constructor                                  rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+HomIsoTurbForcing::HomIsoTurbForcing(
+        FluidImplicitTimeInt& timeint)
+        :
+        forcing_type_(DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(timeint.params_->sublist("TURBULENCE MODEL"),"FORCING_TYPE")),
+        discret_(timeint.discret_),
+        forcing_(timeint.forcing_),
+        velnp_(timeint.velnp_),
+        velaf_(timeint.velaf_),
+        threshold_wavenumber_(timeint.params_->sublist("TURBULENCE MODEL").get<double>("THRESHOLD_WAVENUMBER",0)),
+        is_genalpha_(timeint.is_genalpha_),
+        num_force_steps_(timeint.params_->sublist("TURBULENCE MODEL").get<int>("FORCING_TIME_STEPS",0)),
+        dt_(timeint.dta_),
+        Pin_(timeint.params_->sublist("TURBULENCE MODEL").get<double>("POWER_INPUT",0)),
+        E_kf_(0.0)
+{
+  if (timeint.special_flow_ == "forced_homogeneous_isotropic_turbulence"
+      or timeint.special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
+    flow_type_ = forced_homogeneous_isotropic_turbulence;
+  else
+    flow_type_ = decaying_homogeneous_isotropic_turbulence;
+
+  // determine number of modes
+  // number of modes equal to number of elements in one spatial direction
+  // this does not yield the correct value
+  // nummodes_ = (int) pow((double) discret_->NumGlobalElements(),1.0/3.0);
+  switch (discret_->NumGlobalElements())
+  {
+    case 512:
+    {
+      nummodes_ = 8;
+      break;
+    }
+    case 32768:
+    {
+      nummodes_ = 32;
+      break;
+    }
+    case 262144:
+    {
+      nummodes_ = 64;
+      break;
+    }
+    default:
+    {
+      dserror("Set problem size! %i", discret_->NumGlobalElements());
+      break;
+    }
+  }
+
+  //-------------------------------------------------
+  // create set of node coordinates
+  //-------------------------------------------------
+
+  // the criterion allows differences in coordinates by 1e-9
+  std::set<double,LineSortCriterion> coords;
+  // loop all nodes and store x1-coordinate
+  for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+  {
+    DRT::Node* node = discret_->lRowNode(inode);
+    if ((node->X()[1]<2e-9 && node->X()[1]>-2e-9) and (node->X()[2]<2e-9 && node->X()[2]>-2e-9))
+    coords.insert(node->X()[0]);
+  }
+  // communicate coordinates to all procs via round Robin loop
+  {
+#ifdef PARALLEL
+    int myrank  =discret_->Comm().MyPID();
+#endif
+    int numprocs=discret_->Comm().NumProc();
+
+    std::vector<char> sblock;
+    std::vector<char> rblock;
+
+#ifdef PARALLEL
+    // create an exporter for point to point communication
+    DRT::Exporter exporter(discret_->Comm());
+#endif
+
+    // communicate coordinates
+    for (int np=0;np<numprocs;++np)
+    {
+      DRT::PackBuffer data;
+
+      for (std::set<double,LineSortCriterion>::iterator x1line = coords.begin();
+           x1line != coords.end();
+           ++x1line)
+      {
+        DRT::ParObject::AddtoPack(data,*x1line);
+      }
+      data.StartPacking();
+      for (std::set<double,LineSortCriterion>::iterator x1line = coords.begin();
+           x1line != coords.end();
+           ++x1line)
+      {
+        DRT::ParObject::AddtoPack(data,*x1line);
+      }
+      std::swap( sblock, data() );
+
+#ifdef PARALLEL
+      MPI_Request request;
+      int tag = myrank;
+
+      int frompid = myrank;
+      int topid  = (myrank+1)%numprocs;
+
+      int length=sblock.size();
+
+      exporter.ISend(frompid,topid,
+                     &(sblock[0]),sblock.size(),
+                     tag,request);
+
+      rblock.clear();
+
+      // receive from predecessor
+      frompid=(myrank+numprocs-1)%numprocs;
+      exporter.ReceiveAny(frompid,tag,rblock,length);
+
+      if(tag!=(myrank+numprocs-1)%numprocs)
+      {
+        dserror("received wrong message (ReceiveAny)");
+      }
+
+      exporter.Wait(request);
+
+      {
+        // for safety
+        exporter.Comm().Barrier();
+      }
+#else
+      // dummy communication
+      rblock.clear();
+      rblock=sblock;
+#endif
+
+      // unpack received block into set of all coordinates
+      {
+        std::vector<double> coordsvec;
+
+        coordsvec.clear();
+
+        std::vector<char>::size_type index = 0;
+        while (index < rblock.size())
+        {
+          double onecoord;
+          DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+          coords.insert(onecoord);
+        }
+      }
+    }
+  }
+  // push coordinates in vectors
+  {
+    coordinates_ = Teuchos::rcp(new std::vector<double> );
+
+    for(std::set<double,LineSortCriterion>::iterator coord1 = coords.begin();
+        coord1 != coords.end();
+        ++coord1)
+    {
+      coordinates_->push_back(*coord1);
+    }
+  }
+
+  //-------------------------------------------------
+  // create set of wave numbers
+  //-------------------------------------------------
+
+  // the criterion allows differences in coordinates by 1e-9
+  std::set<double,LineSortCriterion> wavenum;
+  // loop all wave vectors and store wave number
+  for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
+  {
+    for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
+    {
+      for (int k_3 = (-nummodes_/2); k_3 <= 0; k_3++)
+      {
+        const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+        wavenum.insert(k);
+      }
+    }
+  }
+
+  // push wave numbers in vector
+  {
+    wavenumbers_ = Teuchos::rcp(new std::vector<double> );
+
+    wavenumbers_->resize((std::size_t) nummodes_);
+    for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+      (*wavenumbers_)[rr] = rr;
+  }
+
+  // set size of energy-spectrum vector
+  energyspectrum_n_ = Teuchos::rcp(new std::vector<double> );
+  energyspectrum_n_->resize(wavenumbers_->size());
+  energyspectrum_np_ = Teuchos::rcp(new std::vector<double> );
+  energyspectrum_np_->resize(wavenumbers_->size());
+  // and initialize with zeros, just to be sure
+  for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
+  {
+    (*energyspectrum_n_)[rr] = 0.0;
+    (*energyspectrum_np_)[rr] = 0.0;
+  }
+
+  // forcing factor: factor to multiply Fourier coefficients of velocity
+  force_fac_ = Teuchos::rcp(new Epetra_SerialDenseVector(nummodes_*nummodes_*(nummodes_/2+1)));
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | initialize energy spectrum by initial field  rasthofer 05/13 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbForcing::SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type)
+{
+  if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+  {
+#ifdef USE_TRAGET_SPECTRUM
+    if (init_field_type == INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum)
+    {
+      for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+      {
+        if ((*wavenumbers_)[rr]>0.0)
+          (*energyspectrum_n_)[rr] = 0.5 * pow((*wavenumbers_)[rr],-5.0/3.0);
+        else
+          (*energyspectrum_n_)[rr] = 0.0;
+      }
+    }
+    else if (init_field_type == INPAR::FLUID::initialfield_passive_hit_const_input)
+    {
+      (*energyspectrum_n_)[0] = 0.0;
+      for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
+      {
+        if ((*wavenumbers_)[rr] > 0.0 and (*wavenumbers_)[rr] <= 2.0)
+         (*energyspectrum_n_)[rr] = 1.0;
+        else
+         (*energyspectrum_n_)[rr] = pow(2.0,5.0/3.0) * pow((*wavenumbers_)[rr],-5.0/3.0);
+      }
+    }
+    else if (init_field_type == INPAR::FLUID::initialfield_hit_comte_bellot_corrsin)
+    {
+      //----------------------------------------
+      // set-up wave numbers
+      //----------------------------------------
+
+      // wave number given from experiment [cm-1]
+      // have to be transferred to [m-1] and non-dimensionalized
+      std::vector<double> k_exp(19);
+      k_exp[0] = 0.20;
+      k_exp[1] = 0.25;
+      k_exp[2] = 0.30;
+      k_exp[3] = 0.40;
+      k_exp[4] = 0.50;
+      k_exp[5] = 0.70;
+      k_exp[6] = 1.00;
+      k_exp[7] = 1.50;
+      k_exp[8] = 2.00;
+      k_exp[9] = 2.50;
+      k_exp[10] = 3.00;
+      k_exp[11] = 4.00;
+      k_exp[12] = 6.00;
+      k_exp[13] = 8.00;
+      k_exp[14] = 10.00;
+      k_exp[15] = 12.50;
+      k_exp[16] = 15.00;
+      k_exp[17] = 17.50;
+      k_exp[18] = 20.00;
+
+      // non-dimensionalize wave number (according to Collis 2002)
+      // grid size of experiment
+      const double M = 0.0508;
+      // domain length
+      const double L = 10.0 * M;
+      // reference length
+      const double L_ref = L / (2.0 * PI);
+
+      for (std::size_t rr = 0; rr < k_exp.size(); rr ++)
+        k_exp[rr] *= (L_ref/0.01);
+
+      //----------------------------------------
+      // set-up energy
+      //----------------------------------------
+
+      // energy spectrum given from experiment [cm3/s2]
+      // have to be transferred to [m3/s2] and non-dimensionalized
+      std::vector<double> E_exp(19);
+      E_exp[0] = 129.0;
+      E_exp[1] = 230.0;
+      E_exp[2] = 322.0;
+      E_exp[3] = 435.0;
+      E_exp[4] = 457.0;
+      E_exp[5] = 380.0;
+      E_exp[6] = 270.0;
+      E_exp[7] = 168.0;
+      E_exp[8] = 120.0;
+      E_exp[9] = 89.0;
+      E_exp[10] = 70.3;
+      E_exp[11] = 47.0;
+      E_exp[12] = 24.7;
+      E_exp[13] = 12.6;
+      E_exp[14] = 7.42;
+      E_exp[15] = 3.96;
+      E_exp[16] = 2.33;
+      E_exp[17] = 1.34;
+      E_exp[18] = 0.80;
+
+      // non-dimensionalize energy spectrum
+      // inlet velocity of experiment
+      const double U_0 = 10.0;
+      // reference time
+      const double t_ref = 64.0 * M / U_0;
+
+      for (std::size_t rr = 0; rr < E_exp.size(); rr ++)
+        E_exp[rr] *= ((0.01*0.01*0.01)*(t_ref*t_ref)/(L_ref*L_ref*L_ref));
+
+      // set energy spectrum at k=0 to 0
+      (*energyspectrum_n_)[0] = 0.0;
+      for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
+      {
+        // the smallest value for k=1, the next smaller 1.41
+        // the following required extrapolation for k<1.6 yields
+        // negative values for k=1, which are not physical
+        // therefore, energy is set to zero for this case -> only initial field
+        // here extrapolation from log-plot is used -> 0.006
+
+        // determine position of k
+        int position = -1;
+        for (std::size_t i = 0; i < k_exp.size(); i++)
+        {
+          if ((*wavenumbers_)[rr] < k_exp[i])
+          {
+            position = i;
+            break;
+          }
+        }
+
+        if (position == -1)
+          dserror("Could not determine wave number!");
+
+        if (position > 0)
+          // interpolate energy
+          (*energyspectrum_n_)[rr] = E_exp[position] + (E_exp[position-1] - E_exp[position]) / (k_exp[position] - k_exp[position-1]) * (k_exp[position] - (*wavenumbers_)[rr]);
+        else
+          // extrapolate energy
+          (*energyspectrum_n_)[rr] = E_exp[position+1] - (E_exp[position+1] - E_exp[position]) / (k_exp[position+1] - k_exp[position]) * (k_exp[position+1] - (*wavenumbers_)[rr]);
+
+        // see above
+        if ((*wavenumbers_)[rr] == 1)
+         (*energyspectrum_n_)[rr] = 0.006;
+      }
+    }
+    else
+      dserror("Other initial spectra than simple algebraic spectrum not yet implemented!");
+
+
+//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+//  {
+//    if (init_field_type == INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum)
+//    {
+//      if ((*wavenumbers_)[rr]>0.0)
+//        (*energyspectrum_n_)[rr] = 0.5 * pow((*wavenumbers_)[rr],-5.0/3.0);
+//      else
+//        (*energyspectrum_n_)[rr] = 0.0;
+//    }
+//    else
+//      dserror("Other initial spectra than simple algebraic spectrum not yet implemented!");
+//  }
+
+
+//  for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
+//    std::cout << "k  "<< (*wavenumbers_)[rr] << "  " << (*energyspectrum_n_)[rr] << std::endl;
+#else
+    CalculateForcing(0);
+    TimeUpdateForcing();
+#endif
+  }
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | activate calculation of forcing              rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbForcing::ActivateForcing(const bool activate)
+{
+  activate_ = activate;
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | calculate volume force                       rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbForcing::CalculateForcing(const int step)
+{
+  // check if forcing is selected
+  if (flow_type_ == forced_homogeneous_isotropic_turbulence
+      or (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_))
+  {
+    //-------------------------------------------------------------------------------
+    // calculate Fourier transformation of velocity
+    //-------------------------------------------------------------------------------
+
+    // set and initialize working arrays
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > u2_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > u3_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+
+    Teuchos::RCP<Teuchos::Array <double> > local_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > local_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > local_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+    Teuchos::RCP<Teuchos::Array <double> > global_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > global_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > global_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+    //-----------------------------------
+    // prepare Fourier transformation
+    //-----------------------------------
+
+    // set solution in local vectors for velocity
+
+    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    {
+      // get node
+      DRT::Node* node = discret_->lRowNode(inode);
+
+      // get coordinates
+      LINALG::Matrix<3,1> xyz(true);
+      for (int idim = 0; idim < 3; idim++)
+          xyz(idim,0) = node->X()[idim];
+
+      // get global ids of all dofs of the node
+      std::vector<int> dofs = discret_->Dof(node);
+
+      // determine position
+      std::vector<int> loc(3);
+      for (int idim = 0; idim < 3; idim++)
+      {
+        for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+        {
+          if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
+          {
+            // due to periodic boundary conditions,
+            // the value at the last node is equal to the one at the first node
+            // using this strategy, no special care is required for slave nodes
+            if ((int) rr < nummodes_)
+             loc[idim] = rr;
+            else
+             loc[idim] = 0;
+
+            break;
+          }
+        }
+      }
+
+      // get position in velocity vectors local_u_1, local_u_2 and local_u_3
+      const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
+
+      // get local dof id corresponding to the global id
+      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      // set value
+      if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum
+          or (forcing_type_ == INPAR::FLUID::fixed_power_input and (not is_genalpha_)))
+      {
+        (*local_u1)[pos] = (*velnp_)[lid];
+        // analogously for remaining directions
+        lid = discret_->DofRowMap()->LID(dofs[1]);
+        (*local_u2)[pos] = (*velnp_)[lid];
+        lid = discret_->DofRowMap()->LID(dofs[2]);
+        (*local_u3)[pos] = (*velnp_)[lid];
+      }
+      else
+      {
+        (*local_u1)[pos] = (*velaf_)[lid];
+        // analogously for remaining directions
+        lid = discret_->DofRowMap()->LID(dofs[1]);
+        (*local_u2)[pos] = (*velaf_)[lid];
+        lid = discret_->DofRowMap()->LID(dofs[2]);
+        (*local_u3)[pos] = (*velaf_)[lid];
+      }
+    }
+
+    // get values form all processors
+    // number of nodes without slave nodes
+    const int countallnodes = nummodes_*nummodes_*nummodes_;
+    discret_->Comm().SumAll(&((*local_u1)[0]),
+                            &((*global_u1)[0]),
+                            countallnodes);
+
+    discret_->Comm().SumAll(&((*local_u2)[0]),
+                            &((*global_u2)[0]),
+                            countallnodes);
+
+    discret_->Comm().SumAll(&((*local_u3)[0]),
+                            &((*global_u3)[0]),
+                            countallnodes);
+
+    //----------------------------------------
+    // fast Fourier transformation using FFTW
+    //----------------------------------------
+
+    // note: this is not very efficient, since each
+    // processor does the fft and there is no communication
+
+    // set-up
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                         &((*global_u1)[0]),
+                                         (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))),
+                                         FFTW_ESTIMATE);
+    // fft
+    fftw_execute(fft);
+    // analogously for remaining directions
+    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                               &((*global_u2)[0]),
+                               (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
+                               FFTW_ESTIMATE);
+    fftw_execute(fft);
+    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                               &((*global_u3)[0]),
+                               (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
+                               FFTW_ESTIMATE);
+    fftw_execute(fft);
+
+    // scale solution (not done in the fftw routine)
+    for (int i=0; i< u1_hat->size(); i++)
+    {
+      (*u1_hat)[i] /= nummodes_*nummodes_*nummodes_;
+      (*u2_hat)[i] /= nummodes_*nummodes_*nummodes_;
+      (*u3_hat)[i] /= nummodes_*nummodes_*nummodes_;
+    }
+
+    //----------------------------------------
+    // compute energy spectrum
+    //----------------------------------------
+
+    // transfer from FFTW structure to intervals around zero
+    // FFTW assumes wave numbers in the following intervals
+    // k_1: [0,(nummodes_-1)]
+    // k_2: [0,(nummodes_-1)]
+    // k_3: [0,nummodes_/2]
+    // here, we would like to have
+    // k_1: [-nummodes_/2,(nummodes_/2-1)]
+    // k_2: [-nummodes_/2,(nummodes_/2-1)]
+    // k_3: [-nummodes_/2,0]
+    // using peridocity and conjugate symmetry allows for setting
+    // the Fourier coefficients in the required interval
+//    Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+//    Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+//    Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+    // reset energy spectrum at time n+1/n+af
+    for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
+      (*energyspectrum_np_)[rr] = 0.0;
+
+    // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
+    // the complete number of modes is required here
+    // hence, we have k_3: [0,(nummodes_-1)]
+
+    // reset (just to be sure)
+    E_kf_ = 0.0;
+
+    for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+    {
+      for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+      {
+        for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_-1); fftw_k_3++)
+        {
+
+          int pos_fftw_k_1 = -999;
+          int pos_fftw_k_2 = -999;
+          int pos_fftw_k_3 = -999;
+
+          int k_1 = -999;
+          int k_2 = -999;
+          int k_3 = -999;
+
+          if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
+              (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
+              fftw_k_3 == 0)
+          {
+            // wave number vector is part of construction domain
+            // and this value is taken
+            k_1 = fftw_k_1;
+            k_2 = fftw_k_2;
+            k_3 = fftw_k_3;
+
+            pos_fftw_k_1 = fftw_k_1;
+            pos_fftw_k_2 = fftw_k_2;
+            pos_fftw_k_3 = fftw_k_3;
+          }
+          else
+          {
+            // check if current wave vector is in the domain of fftw
+            // if not shift to domain using periodicity and conjugate symmetry
+            if (fftw_k_3 > (nummodes_/2))
+            {
+              // find corresponding value in fftw-range first
+              int intermediate_fftw_3 = fftw_k_3 - nummodes_;
+              // since intermediate_fftw_3 is still outside of domain,
+              // get position of conjugate complex
+              intermediate_fftw_3 *= -1;
+              int intermediate_fftw_1 = -fftw_k_1;
+              int intermediate_fftw_2 = -fftw_k_2;
+              // check if this position is inside intervals
+              if ((intermediate_fftw_1 >= 0 and intermediate_fftw_1 <= (nummodes_-1))
+                   and (intermediate_fftw_2 >= 0 and intermediate_fftw_2 <= (nummodes_-1))
+                   and (intermediate_fftw_3 >= 0 and intermediate_fftw_3 <= (nummodes_/2)))
+              {
+                 pos_fftw_k_1 = intermediate_fftw_1;
+                 pos_fftw_k_2 = intermediate_fftw_2;
+                 pos_fftw_k_3 = intermediate_fftw_3;
+              }
+              else
+              {
+                // shift intermediate_fftw_1 and intermediate_fftw_2 into fftw interval
+                // intermediate_fftw_3 always lies within the fftw interval
+                if (intermediate_fftw_1 < 0)
+                  intermediate_fftw_1 += nummodes_;
+                if (intermediate_fftw_2 < 0)
+                  intermediate_fftw_2 += nummodes_;
+
+                pos_fftw_k_1 = intermediate_fftw_1;
+                pos_fftw_k_2 = intermediate_fftw_2;
+                pos_fftw_k_3 = intermediate_fftw_3;
+              }
+            }
+            else
+            {
+              pos_fftw_k_1 = fftw_k_1;
+              pos_fftw_k_2 = fftw_k_2;
+              pos_fftw_k_3 = fftw_k_3;
+            }
+
+            // see whether the negative wave vector is in the construction domain
+            k_1 = -pos_fftw_k_1;
+            k_2 = -pos_fftw_k_2;
+            k_3 = -pos_fftw_k_3;
+            if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
+                (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
+                (k_3 >= (-nummodes_/2) and k_3 <= 0))
+            {
+
+            }
+            else
+            {
+              // if negative wave vector is not in the construction domain
+              // we have to shift it into the domain using the periodicity of the
+              // wave number field
+              // -k_3 always lies within the construction domain!
+              if (k_1 < (-nummodes_/2))
+                 k_1 += nummodes_;
+              if (k_2 < (-nummodes_/2))
+                k_2 += nummodes_;
+            }
+          }
+
+          // get position in u1_hat
+          const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
+
+          // calculate energy
+          // E = 1/2 * u_i * conj(u_i)
+          // u_i * conj(u_i) = real(u_i)^2 + imag(u_i)^2
+          // const std::complex<double> energy = 0.5 * ((*u1_hat)[pos] * conj((*u1_hat)[pos])
+          //                                          + (*u2_hat)[pos] * conj((*u2_hat)[pos])
+          //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
+          // instead
+          const double energy = 0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+
+          if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+          {
+
+          // get wave number
+          const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+
+          // insert into sampling vector
+          // find position via k
+          for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+          {
+            if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
+            {
+              (*energyspectrum_np_)[rr] += energy;
+            }
+          }
+          }
+          else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
+          {
+            if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_2 < threshold_wavenumber_)
+                and ((k_1*k_1 + k_2*k_2 + k_3*k_3) > 0))
+              E_kf_ += energy;
+          }
+          else
+            dserror("Unknown forcing type!");
+        }
+      }
+    }
+
+    //--------------------------------------------------------
+    // forcing factor from energy spectrum
+    //--------------------------------------------------------
+
+    // reset to zero (just to be sure)
+    for (int rr = 0; rr < (nummodes_*nummodes_*(nummodes_/2+1)); rr++)
+     (*force_fac_)(rr) = 0.0;
+
+    for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+    {
+      for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+      {
+        for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_/2+1); fftw_k_3++)
+        {
+            int k_1 = -999;
+            int k_2 = -999;
+            int k_3 = -999;
+
+            if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
+                (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
+                fftw_k_3 == 0)
+            {
+              // wave number vector is part of construction domain
+              // and this value is taken
+              k_1 = fftw_k_1;
+              k_2 = fftw_k_2;
+              k_3 = fftw_k_3;
+            }
+            else
+            {
+              // see whether the negative wave vector is in the construction domain
+              k_1 = -fftw_k_1;
+              k_2 = -fftw_k_2;
+              k_3 = -fftw_k_3;
+              if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
+                  (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
+                  (k_3 >= (-nummodes_/2) and k_3 <= 0))
+              {
+
+              }
+              else
+              {
+                // if negative wave vector is not in the construction domain
+                // we have to shift it into the domain using the periodicity of the
+                // wave number field
+                // -k_3 always lies within the construction domain!
+                if (k_1 < (-nummodes_/2))
+                   k_1 += nummodes_;
+                if (k_2 < (-nummodes_/2))
+                  k_2 += nummodes_;
+              }
+            }
+
+            if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+            {
+              // compute linear compensation factor from energy spectrum
+
+              // following Hickel 2007
+              //         (1/(2*E))* dE/dt if k <= k_t
+              // C(k) =
+              //         0                else
+              // threshold wave number k_t
+              // E intermediate energy spectrum, i.e. solution without forcing
+
+              // get wave number
+              double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+              if (k <= threshold_wavenumber_ and k > 0)
+              {
+                int rr_k = 0;
+                for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+                {
+                  if ((*wavenumbers_)[rr] > k)
+                  {
+                    rr_k = rr;
+                    break;
+                  }
+                }
+
+                // interpolate spectrum to wave number
+                double E_n = Interpolate(k, (*wavenumbers_)[rr_k-1], (*wavenumbers_)[rr_k], (*energyspectrum_n_)[rr_k-1], (*energyspectrum_n_)[rr_k]);
+                double E_np = Interpolate(k, (*wavenumbers_)[rr_k-1], (*wavenumbers_)[rr_k], (*energyspectrum_np_)[rr_k-1], (*energyspectrum_np_)[rr_k]);
+
+                // get position in fac-vector
+                const int pos = fftw_k_3 + (nummodes_/2+1) * (fftw_k_2 + nummodes_ * fftw_k_1);
+
+                // calculate C
+                (*force_fac_)(pos) = (1.0/(2.0 * E_np)) * (E_np - E_n)/dt_;
+              }
+
+            }
+            else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
+            {
+              // compute power input
+
+              // following Bazilevs et al. 2007
+              //
+              // fac = Pin/(2*E_kf)
+              // Pin: fixed power input
+              // E_kf: energy of wave numbers with |k_i|<k_f
+
+              // note: we have "-" here, since we take -fac*u in the function below
+              const double fac = -Pin_/(2.0*E_kf_);
+
+              if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_2 < threshold_wavenumber_)
+                  and ((k_1*k_1 + k_2*k_2 + k_3*k_3) > 0))
+              {
+                // get position in fac-vector
+                const int pos = fftw_k_3 + (nummodes_/2+1) * (fftw_k_2 + nummodes_ * fftw_k_1);
+
+                // set factor
+                (*force_fac_)(pos) = fac;
+              }
+            }
+            else
+              dserror("Unknown forcing type!");
+
+        }
+      }
+    }
+
+    // reset E_kf_
+    E_kf_ = 0.0;
+  }
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | get forcing                                   rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbForcing::UpdateForcing(const int step)
+{
+  // check if forcing is selected
+  if (activate_ and (flow_type_ == forced_homogeneous_isotropic_turbulence
+      or (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_)))
+  {
+    //-------------------------------------------------------------------------------
+    // calculate Fourier transformation of velocity
+    //-------------------------------------------------------------------------------
+
+    // set and initialize working arrays
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > u2_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > u3_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+
+    Teuchos::RCP<Teuchos::Array <double> > local_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > local_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > local_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+    Teuchos::RCP<Teuchos::Array <double> > global_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > global_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > global_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+    //-----------------------------------
+    // prepare Fourier transformation
+    //-----------------------------------
+
+    // set solution in local vectors for velocity
+
+    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    {
+      // get node
+      DRT::Node* node = discret_->lRowNode(inode);
+
+      // get coordinates
+      LINALG::Matrix<3,1> xyz(true);
+      for (int idim = 0; idim < 3; idim++)
+          xyz(idim,0) = node->X()[idim];
+
+      // get global ids of all dofs of the node
+      std::vector<int> dofs = discret_->Dof(node);
+
+      // determine position
+      std::vector<int> loc(3);
+      for (int idim = 0; idim < 3; idim++)
+      {
+        for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+        {
+          if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
+          {
+            // due to periodic boundary conditions,
+            // the value at the last node is equal to the one at the first node
+            // using this strategy, no special care is required for slave nodes
+            if ((int) rr < nummodes_)
+             loc[idim] = rr;
+            else
+             loc[idim] = 0;
+
+            break;
+          }
+        }
+      }
+
+      // get position in velocity vectors local_u_1, local_u_2 and local_u_3
+      const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
+
+      // get local dof id corresponding to the global id
+      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      // set value
+      if (not is_genalpha_)
+      {
+        (*local_u1)[pos] = (*velnp_)[lid];
+        // analogously for remaining directions
+        lid = discret_->DofRowMap()->LID(dofs[1]);
+        (*local_u2)[pos] = (*velnp_)[lid];
+        lid = discret_->DofRowMap()->LID(dofs[2]);
+        (*local_u3)[pos] = (*velnp_)[lid];
+      }
+      else
+      {
+        (*local_u1)[pos] = (*velaf_)[lid];
+        // analogously for remaining directions
+        lid = discret_->DofRowMap()->LID(dofs[1]);
+        (*local_u2)[pos] = (*velaf_)[lid];
+        lid = discret_->DofRowMap()->LID(dofs[2]);
+        (*local_u3)[pos] = (*velaf_)[lid];
+      }
+    }
+
+    // get values form all processors
+    // number of nodes without slave nodes
+    const int countallnodes = nummodes_*nummodes_*nummodes_;
+    discret_->Comm().SumAll(&((*local_u1)[0]),
+                            &((*global_u1)[0]),
+                            countallnodes);
+
+    discret_->Comm().SumAll(&((*local_u2)[0]),
+                            &((*global_u2)[0]),
+                            countallnodes);
+
+    discret_->Comm().SumAll(&((*local_u3)[0]),
+                            &((*global_u3)[0]),
+                            countallnodes);
+
+    //----------------------------------------
+    // fast Fourier transformation using FFTW
+    //----------------------------------------
+
+    // note: this is not very efficient, since each
+    // processor does the fft and there is no communication
+
+    // set-up
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                         &((*global_u1)[0]),
+                                         (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))),
+                                         FFTW_ESTIMATE);
+    // fft
+    fftw_execute(fft);
+    // analogously for remaining directions
+    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                               &((*global_u2)[0]),
+                               (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
+                               FFTW_ESTIMATE);
+    fftw_execute(fft);
+    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                               &((*global_u3)[0]),
+                               (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
+                               FFTW_ESTIMATE);
+    fftw_execute(fft);
+
+    // scale solution (not done in the fftw routine)
+    for (int i=0; i< u1_hat->size(); i++)
+    {
+      (*u1_hat)[i] /= nummodes_*nummodes_*nummodes_;
+      (*u2_hat)[i] /= nummodes_*nummodes_*nummodes_;
+      (*u3_hat)[i] /= nummodes_*nummodes_*nummodes_;
+    }
+
+    //----------------------------------------
+    // set forcing vector
+    //----------------------------------------
+
+    // Fourier coefficients of forcing
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > f1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > f2_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+    Teuchos::RCP<Teuchos::Array <std::complex<double> > > f3_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+    // where f_hat = -C(k) * u_hat according to Hickel 2007
+    // C denotes a linear compensation factor
+    // or where C denotes the dissipation dependent factor from
+    // Bazilevs et al.
+
+    Teuchos::RCP<Teuchos::Array <double> > f1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > f2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    Teuchos::RCP<Teuchos::Array <double> > f3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+    for (int rr = 0; rr < (nummodes_*nummodes_*(nummodes_/2+1)); rr++)
+    {
+      (*f1_hat)[rr] = -(*force_fac_)(rr) * (*u1_hat)[rr];
+      (*f2_hat)[rr] = -(*force_fac_)(rr) * (*u2_hat)[rr];
+      (*f3_hat)[rr] = -(*force_fac_)(rr) * (*u3_hat)[rr];
+    }
+
+    //----------------------------------------
+    // fast Fourier transformation using FFTW
+    //----------------------------------------
+
+    // setup
+    fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                               (reinterpret_cast<fftw_complex*>(&((*f1_hat)[0]))),
+                               &((*f1)[0]), FFTW_ESTIMATE);
+    // fft
+    fftw_execute(fft);
+
+    // similar for the remaining two directions
+    fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                               (reinterpret_cast<fftw_complex*>(&((*f2_hat)[0]))),
+                               &((*f2)[0]), FFTW_ESTIMATE);
+    fftw_execute(fft);
+    fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                               (reinterpret_cast<fftw_complex*>(&((*f3_hat)[0]))),
+                               &((*f3)[0]), FFTW_ESTIMATE);
+    fftw_execute(fft);
+
+    //----------------------------------------
+    // set force vector
+    //----------------------------------------
+
+    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    {
+      // get node
+      DRT::Node* node = discret_->lRowNode(inode);
+
+      // get coordinates
+      LINALG::Matrix<3,1> xyz(true);
+      for (int idim = 0; idim < 3; idim++)
+          xyz(idim,0) = node->X()[idim];
+
+      // get global ids of all dofs of the node
+      std::vector<int> dofs = discret_->Dof(node);
+
+      // determine position
+      std::vector<int> loc(3);
+      for (int idim = 0; idim < 3; idim++)
+      {
+        for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+        {
+          if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
+          {
+            // due to periodic boundary conditions,
+            // the value at the last node is equal to the one at the first node
+            // using this strategy, no special care is required for slave nodes
+            if ((int) rr < nummodes_)
+             loc[idim] = rr;
+            else
+             loc[idim] = 0;
+
+            break;
+          }
+        }
+      }
+
+      // get position in transferred velocity vectors u_1, u_2 and u_3
+      const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
+
+      // get local dof id corresponding to the global id
+      int lid = discret_->DofRowMap()->LID(dofs[0]);
+      // set value
+      int err = forcing_->ReplaceMyValues(1,&((*f1)[pos]),&lid);
+      // analogous for remaining directions
+      lid = discret_->DofRowMap()->LID(dofs[1]);
+      err = forcing_->ReplaceMyValues(1,&((*f2)[pos]),&lid);
+      lid = discret_->DofRowMap()->LID(dofs[2]);
+      err = forcing_->ReplaceMyValues(1,&((*f3)[pos]),&lid);
+      if (err >0)
+        dserror("Could not set forcing!");
+    }
+  }
+  else
+   // set force to zero
+   forcing_->PutScalar(0.0);
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | time update of energy spectrum               rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbForcing::TimeUpdateForcing()
+{
+#ifdef TIME_UPDATE_FORCING_SPECTRUM
+  if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+  {
+    // compute E^n+1 from forced solution
+    CalculateForcing(0);
+    // update energy spectrum
+    for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
+    {
+      (*energyspectrum_n_)[rr] = (*energyspectrum_np_)[rr];
+      (*energyspectrum_np_)[rr] = 0.0;
+    }
+  }
+#endif
+
+  // reset to zero
+  E_kf_ = 0.0;
+
+  for (int rr = 0; rr < (nummodes_*nummodes_*(nummodes_/2+1)); rr++)
+   (*force_fac_)(rr) = 0.0;
+
+  forcing_->PutScalar(0.0);
+
+  return;
+}
+
+}

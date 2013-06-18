@@ -39,7 +39,7 @@ CONVTOL                         1e-10
 GRIDVEL                         1
 INITIALFIELD field_by_function //zero_field
 INITSTATITEMAX                  5
-ITEMAX                          2
+ITEMAX                          1
 LIFTDRAG                        No
 MAXTIME                         1000
 NEUMANNINFLOW                   yes

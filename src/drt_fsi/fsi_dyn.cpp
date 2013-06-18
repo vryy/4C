@@ -43,8 +43,8 @@ Maintainer: Matthias Mayr
 
 #include "fs_monolithic.H"
 
-#include "../drt_fluid/xfluid.H"
-#include "../drt_fluid/xfluidfluid.H"
+#include "../drt_fluid_xfluid/xfluid.H"
+#include "../drt_fluid_xfluid/xfluidfluid.H"
 
 #include "../drt_scatra/scatra_utils.H"
 

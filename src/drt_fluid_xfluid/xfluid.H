@@ -331,7 +331,7 @@ namespace FLD
     void PrepareSolve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
-    void NonlinearSolve();
+    void Solve();
 
     /// reconstruct ghost values using ghost penalty approach
     void ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,

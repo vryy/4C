@@ -89,6 +89,8 @@ namespace FLD
 namespace SCATRA
 {
 
+class HomIsoTurbScalarForcing;
+
 /*!
  * \brief implicit time integration for scalar transport problems
  *
@@ -97,6 +99,8 @@ namespace SCATRA
 
 class ScaTraTimIntImpl
 {
+  friend class HomIsoTurbInitialScalarField;
+  friend class HomIsoTurbScalarForcing;
 
 public:
 
@@ -241,12 +245,6 @@ public:
 
   //! return flux vector
   Teuchos::RCP<Epetra_MultiVector> Flux() { return flux_; };
-
-  //! return scatra structure growth vector
-  Teuchos::RCP<Epetra_MultiVector> StrGrowth() { return scstrgrdisp_; };
-
-  //! return scatra fluid growth vector
-  Teuchos::RCP<Epetra_MultiVector> FldGrowth() { return scfldgrdisp_; };
 
   //! return Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
@@ -490,11 +488,21 @@ public:
   //! @name turbulence and related
   /*========================================================================*/
 
+  ///! get access to dynamic Smagorinsky class of fluid time integration
   void AccessDynSmagFilter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag);
+
+  ///! calculate intermediate solution to determine forcing for homogeneous isotropic turbulence
+  void CalcIntermediateSolution();
 
   /*========================================================================*/
   //! @name Biofilm methods
   /*========================================================================*/
+
+  //! return scatra structure growth vector
+  Teuchos::RCP<Epetra_MultiVector> StrGrowth() { return scstrgrdisp_; };
+
+  //! return scatra fluid growth vector
+  Teuchos::RCP<Epetra_MultiVector> FldGrowth() { return scfldgrdisp_; };
 
   //! set scatra fluid displacement vector due to biofilm growth
   void SetScFldGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp);
@@ -1115,6 +1123,16 @@ protected:
 
   //! flag for turbulent inflow (turbulent loma specific)
   bool turbinflow_;
+
+  /// flag for special turbulent flow
+  string special_flow_;
+
+  //! the vector containing source term externally computed
+  //! forcing for homogeneous isotropic turbulence
+  Teuchos::RCP<Epetra_Vector> forcing_;
+
+  //! forcing for homogeneous isotropic turbulence
+  Teuchos::RCP<SCATRA::HomIsoTurbScalarForcing> homisoturb_forcing_;
 
   /*========================================================================*/
   //! @name variables for reinitialization of level sets

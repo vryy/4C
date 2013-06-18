@@ -20,7 +20,8 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
-#include "../drt_fluid/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_smag.H"
+#include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 // for AVM3 solver:
@@ -899,6 +900,13 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     discret_->ClearState();
     discret_->SetState("hist",zeros_); // we need a zero vector here!!!!
     discret_->SetState("phinp",phin_); // that's the initial field phi0
+
+    // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
+    if (forcing_!=Teuchos::null)
+    {
+      eleparams.set("forcing",true);
+      discret_->SetState("forcing",forcing_);
+    }
 
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -2949,9 +2957,11 @@ const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggl
   return dirichtoggle;
 } // ScaTraTimIntImpl::DirichletToggle
 
+
 /*========================================================================*/
 // turbulence and related
 /*========================================================================*/
+
 
 /*----------------------------------------------------------------------*
  | provide access to the dynamic Smagorinsky filter     rasthofer 08/12 |
@@ -3067,6 +3077,72 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | calculate intermediate solution                       rasthofer 05/13|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcIntermediateSolution()
+{
+  if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" and
+      extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic" and
+      DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(extraparams_->sublist("TURBULENCE MODEL"),"FORCING_TYPE")
+      == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+  {
+    bool activate = true;
+
+    if (activate)
+    {
+      if (homisoturb_forcing_ == Teuchos::null)
+        dserror("Forcing expected!");
+
+      if (myrank_ == 0)
+      {
+        std::cout << "+------------------------------------------------------------------------+\n";
+        std::cout << "|     calculate intermediate solution\n";
+        std::cout << "|"<< std::endl;
+      }
+
+      // turn off forcing in NonlinearSolve()
+      homisoturb_forcing_->ActivateForcing(false);
+
+      // temporary store velnp_ since it will be modified in NonlinearSolve()
+      const Epetra_Map* dofrowmap = discret_->DofRowMap();
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,true);
+      tmp->Update(1.0,*phinp_,0.0);
+
+      // compute intermediate solution without forcing
+      forcing_->PutScalar(0.0); // just to be sure
+      NonlinearSolve();
+
+      // calculate required forcing
+      homisoturb_forcing_->CalculateForcing(step_);
+
+      // reset velnp_
+      phinp_->Update(1.0,*tmp,0.0);
+
+      // recompute intermediate values, since they have been likewise overwritten
+      // only for gen.-alpha
+      ComputeIntermediateValues();
+
+      homisoturb_forcing_->ActivateForcing(true);
+
+      if (myrank_ == 0)
+      {
+        std::cout << "|\n";
+        std::cout << "+------------------------------------------------------------------------+\n";
+        std::cout << "+------------------------------------------------------------------------+\n";
+        std::cout << "|" << std::endl;
+      }
+    }
+    else
+      // set force to zero
+      forcing_->PutScalar(0.0);
+  }
+
+  return;
+}
+
 
 /*==========================================================================*/
 // Biofilm related

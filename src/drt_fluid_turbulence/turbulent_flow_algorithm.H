@@ -14,13 +14,14 @@ Maintainer: Ursula Rasthofer
 #define TURBULENT_FLOW_ALGORITHM_H
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_fluid/fluid_discret_extractor.H"
 
 #include "../drt_fluid/fluidresulttest.H"
 
 
 namespace FLD
 {
+
+class FluidDiscretExtractor;
 
 class TurbulentFlowAlgorithm
 {

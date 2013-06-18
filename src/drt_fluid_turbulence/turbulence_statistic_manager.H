@@ -54,7 +54,6 @@ namespace SCATRA
 namespace FLD
 {
 // forward declarations
-//class FluidGenAlphaIntegration;
 class FluidImplicitTimeInt;
 class CombustFluidImplicitTimeInt;
 class TurbulenceStatisticsCha;
@@ -62,6 +61,7 @@ class TurbulenceStatisticsCcy;
 class TurbulenceStatisticsLdc;
 class TurbulenceStatisticsBfs;
 class TurbulenceStatisticsSqc;
+class TurbulenceStatisticsHit;
 class TurbulenceStatisticsGeneralMean;
 
 
@@ -156,7 +156,7 @@ public:
   void DoOutput(
        IO::DiscretizationWriter& output,
        int step,
-       const double inflow = false);
+       const bool inflow = false);
 
   /*!
   \brief Restart collection of statistics
@@ -292,7 +292,10 @@ private:
     bubbly_channel_flow             ,
     rotating_circular_cylinder_nurbs,
     rotating_circular_cylinder_nurbs_scatra,
-    time_averaging                           }    flow_;
+    decaying_homogeneous_isotropic_turbulence,
+    forced_homogeneous_isotropic_turbulence,
+    scatra_forced_homogeneous_isotropic_turbulence,
+    time_averaging                          }    flow_;
 
   //! flag to include scatra field
   bool withscatra_;
@@ -334,6 +337,9 @@ private:
 
   //! turbulence statistics for square cylinder
   Teuchos::RCP<TurbulenceStatisticsSqc>         statistics_sqc_;
+
+  //! turbulence statistics for homogeneous isotropic turbulence
+  Teuchos::RCP<TurbulenceStatisticsHit>         statistics_hit_;
 
 }; // end class TurbulenceStatisticManager
 

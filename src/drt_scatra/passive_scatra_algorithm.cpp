@@ -97,10 +97,12 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 void SCATRA::PassiveScaTraAlgorithm::DoFluidStep()
 {
   // solve nonlinear Navier-Stokes system
-  if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
-    FluidField().MultiCorrector();
-  else
-    FluidField().NonlinearSolve();
+
+  // currently only required for forced homogeneous isotropic turbulence with
+  // passive scalar transport; does nothing otherwise
+  FluidField().CalcIntermediateSolution();
+
+  FluidField().Solve();
 
   return;
 }

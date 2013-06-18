@@ -3,7 +3,7 @@
 
 #include "cut_point.H"
 
-#include "../drt_fluid/xfluid_defines.H"
+#include "../drt_fluid_xfluid/xfluid_defines.H"
 
 namespace GEO
 {

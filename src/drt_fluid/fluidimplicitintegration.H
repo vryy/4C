@@ -89,6 +89,7 @@ namespace FLD
 
 // forward declarations
 class TurbulenceStatisticManager;
+class HomIsoTurbForcing;
 class DynSmagFilter;
 class LESScaleSeparation;
 class Meshtying;
@@ -115,6 +116,8 @@ namespace UTILS
 class FluidImplicitTimeInt : public TimInt
 {
   friend class TurbulenceStatisticManager;
+  friend class HomIsoTurbInitialField;
+  friend class HomIsoTurbForcing;
   friend class FluidResultTest;
 
 public:
@@ -160,19 +163,6 @@ public:
   void PrepareTimeStep();
 
   /*!
-  \brief do nonlinear iteration, e.g. full Newton, Newton like or
-         Fixpoint iteration
-
-  */
-  void NonlinearSolve();
-
-  /*!
-  \brief solve linearised fluid
-
-  */
-  void LinearSolve();
-
-  /*!
   \brief predictor
 
   */
@@ -182,8 +172,12 @@ public:
   \brief (multiple) corrector
 
   */
-  void MultiCorrector();
+  void Solve();
+  
+    /*!
+  \brief solve linearised fluid
 
+  */
   Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
   /*!
@@ -620,10 +614,22 @@ protected:
   void AssembleMatAndRHS();
 
   /*!
+  \brief calculate intermediate soution
+
+  */
+  void CalcIntermediateSolution();
+
+  /*!
   \brief apply Dirichlet boundary conditions to system of equations
 
   */
   void ApplyDirichletToSystem();
+
+  /*!
+  \brief apply weak or mixed hybrid Dirichlet boundary conditions to system of equations
+
+  */
+  void ApplyWeakOrMixedHybridDirichletToSystem();
 
   /*!
   \brief update acceleration for generalized-alpha time integration
@@ -642,6 +648,25 @@ protected:
   //!
   //! This is an implicit predictor, i.e. it calls the solver once.
   void PredictTangVelConsistAcc();
+
+  /*!
+  \brief update surface tension (free surface flow only)
+
+  */
+  void FreeSurfaceFlowSurfaceTensionUpdate();
+
+  /*!
+  \brief update free surface flow
+
+  */
+  void FreeSurfaceFlowUpdate();
+
+  /*!
+  \brief add mat and rhs of edge-based stabilization
+
+  */
+  void AssembleEdgeBasedMatandRHS();
+
 
   //! @name general algorithm parameters
 
@@ -711,7 +736,7 @@ protected:
   double presnorm_;
   //@}
 
-  /// flag for special flow: currently channel flow or flow in a lid-driven cavity
+  /// flag for special turbulent flow
   string special_flow_;
 
   /// flag for potential Neumann inflow
@@ -751,6 +776,9 @@ protected:
 
   /// the vector containing external loads
   Teuchos::RCP<Epetra_Vector>    external_loads_;
+
+  /// the vector containing volume force externally computed
+  Teuchos::RCP<Epetra_Vector>    forcing_;
 
   /// the vector containing potential Neumann-type outflow terms
 //  Teuchos::RCP<Epetra_Vector>    outflow_;
@@ -841,6 +869,9 @@ protected:
 
   //! manager for turbulence statistics
   Teuchos::RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;
+
+  //! forcing for homogeneous isotropic turbulence
+  Teuchos::RCP<FLD::HomIsoTurbForcing> homisoturb_forcing_;
 
   //! @name Dynamic Smagorinsky model: methods and variables
   //        -------------------------

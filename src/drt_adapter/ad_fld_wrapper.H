@@ -168,16 +168,16 @@ namespace ADAPTER
     virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }
     virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
     virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { dserror("not implemented!"); return; }
-    virtual void NonlinearSolve()
-    { return fluid_->NonlinearSolve(); }
+    virtual void Solve()
+    { return fluid_->Solve(); }
     virtual void Predictor()
     { return fluid_->Predictor(); }
-    virtual void MultiCorrector()
-    { return fluid_->MultiCorrector(); }
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
     { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
     { return fluid_->LinearSolver(); }
+    virtual void CalcIntermediateSolution()
+    { return fluid_->CalcIntermediateSolution(); }
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap()
     { return fluid_->InnerVelocityRowMap(); }
     virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap()

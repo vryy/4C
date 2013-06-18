@@ -12,6 +12,7 @@ Maintainer: Ursula Rasthofer
  *------------------------------------------------------------------------------------------------*/
 
 #include "turbulent_flow_algorithm.H"
+#include "../drt_fluid/fluid_discret_extractor.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -107,7 +108,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     printf("#   STEP = %4d/%4d     TIME: %11.4E  DT = %11.4E \n",
            step_ , numtimesteps_, inflowfluidalgo_->FluidField().Time(),inflowfluidalgo_->FluidField().Dt());
     // slove nonlinear problem
-    inflowfluidalgo_->FluidField().NonlinearSolve();
+    inflowfluidalgo_->FluidField().Solve();
     // update time integration
     inflowfluidalgo_->FluidField().Update();
     // write output of statistics only
@@ -119,8 +120,8 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
 
     // increase time and step only
     fluidalgo_->FluidField().PrepareTimeandStep();
-    // velnp is set manually instead of being computed in NonlinearSolve()
-    // replaces NonlinearSolve
+    // velnp is set manually instead of being computed in Solve()
+    // replaces Solve
     fluidalgo_->FluidField().SetVelocityField(velnp_);
     // update time integration with given velocity field
     fluidalgo_->FluidField().Update();

@@ -115,7 +115,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidAleNonlinearSolve(
   // no computation of fluid velocities in case only ScaTra and ALE are to compute
   if (not pseudotransient)
   {
-    FluidField().NonlinearSolve();
+    FluidField().Solve();
   }
 
   return;

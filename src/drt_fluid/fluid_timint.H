@@ -124,10 +124,10 @@ public:
   virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
 
 
-  virtual void NonlinearSolve() = 0;
+  virtual void Solve() = 0;
   virtual void Predictor()           { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
-  virtual void MultiCorrector() {dserror("Not implemented in the base class");}
+  virtual void CalcIntermediateSolution() {dserror("Not implemented in the base class");}
   /// get the linear solver object used for this field
   virtual Teuchos::RCP<LINALG::Solver>  LinearSolver() {dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() {dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; } // only used for FSI

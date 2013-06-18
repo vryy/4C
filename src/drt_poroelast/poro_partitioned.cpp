@@ -172,7 +172,7 @@ void POROELAST::Partitioned::DoFluidStep()
 
   //FluidField()->PrepareSolve();
   // Newton-Raphson iteration
-  FluidField()->NonlinearSolve();
+  FluidField()->Solve();
 }
 
 /*----------------------------------------------------------------------*/

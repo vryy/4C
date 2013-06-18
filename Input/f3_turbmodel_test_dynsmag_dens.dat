@@ -37,7 +37,7 @@ CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
 CONVTOL                         1e-06
 GRIDVEL                         1
-ITEMAX                          2
+ITEMAX                          1
 MAXTIME                         0.1
 NONLINITER Newton //fixed_point_like
 NUMSTEP                         4

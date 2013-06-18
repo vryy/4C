@@ -154,7 +154,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
   {
     FluidField().PrepareSolve();
-    FluidField().NonlinearSolve();
+    FluidField().Solve();
   }
 }
 

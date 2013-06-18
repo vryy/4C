@@ -15,12 +15,13 @@ Maintainer: Andreas Ehrl
 #include "scatra_timint_bdf2.H"
 #include "scatra_ele_action.H"
 #include "scatra_utils.H"
+#include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_fluid/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_smag.H"
 
 
 /*----------------------------------------------------------------------*
@@ -422,6 +423,10 @@ void SCATRA::TimIntBDF2::Update(const int num)
   // solution of this step becomes most recent solution of the last step
   phinm_->Update(1.0,*phin_ ,0.0);
   phin_ ->Update(1.0,*phinp_,0.0);
+
+  // call time update of forcing routine
+  if (homisoturb_forcing_ != Teuchos::null)
+    homisoturb_forcing_->TimeUpdateForcing();
 
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();

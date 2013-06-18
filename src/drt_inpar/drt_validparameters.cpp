@@ -2520,25 +2520,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
-                               "Initial field for fluid problem",
-                               tuple<std::string>(
-                                 "zero_field",
-                                 "field_by_function",
-                                 "disturbed_field_from_function",
-                                 "FLAME_VORTEX_INTERACTION",
-                                 "BELTRAMI-FLOW",
-                                 "KIM-MOIN-FLOW",
-                                 "BOCHEV-TEST"),
-                               tuple<int>(
-                                     INPAR::FLUID::initfield_zero_field,
-                                     INPAR::FLUID::initfield_field_by_function,
-                                     INPAR::FLUID::initfield_disturbed_field_from_function,
-                                     INPAR::FLUID::initfield_flame_vortex_interaction,
-                                     INPAR::FLUID::initfield_beltrami_flow,
-                                     INPAR::FLUID::initfield_kim_moin_flow,
-                                     INPAR::FLUID::initfield_bochev_test),
-                               &fdyn);
+  {
+    // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
+    Teuchos::Tuple<std::string,11> name;
+    Teuchos::Tuple<int,11> label;
+    name[ 0] = "zero_field";                             label[ 0] = INPAR::FLUID::initfield_zero_field;
+    name[ 1] = "field_by_function";                      label[ 1] = INPAR::FLUID::initfield_field_by_function;
+    name[ 2] = "disturbed_field_from_function";          label[ 2] = INPAR::FLUID::initfield_disturbed_field_from_function;
+    name[ 3] = "FLAME_VORTEX_INTERACTION";               label[ 3] = INPAR::FLUID::initfield_flame_vortex_interaction;
+    name[ 4] = "BELTRAMI-FLOW";                          label[ 4] = INPAR::FLUID::initfield_beltrami_flow;
+    name[ 5] = "KIM-MOIN-FLOW";                          label[ 5] = INPAR::FLUID::initfield_kim_moin_flow;
+    name[ 6] = "BOCHEV-TEST";                            label[ 6] = INPAR::FLUID::initfield_bochev_test;
+    name[ 7] = "hit_comte_bellot_corrsin_initial_field"; label[ 7] = INPAR::FLUID::initialfield_hit_comte_bellot_corrsin;
+    name[ 8] = "forced_hit_simple_algebraic_spectrum";   label[ 8] = INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum;
+    name[ 9] = "forced_hit_numeric_spectrum";            label[ 9] = INPAR::FLUID::initialfield_forced_hit_numeric_spectrum;
+    name[10] = "forced_hit_passive";                     label[10] = INPAR::FLUID::initialfield_passive_hit_const_input;
+
+    setStringToIntegralParameter<int>(
+        "INITIALFIELD",
+        "zero_field",
+        "Initial field for fluid problem",
+        name,
+        label,
+        &fdyn);
+  }
 
   setStringToIntegralParameter<int>("LIFTDRAG","No",
                                "Calculate lift and drag forces along specified boundary",
@@ -3070,19 +3075,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
 
+  //----------------------------------------------------------------------
+  // modeling strategies
+  //----------------------------------------------------------------------
+
   setStringToIntegralParameter<int>(
     "TURBULENCE_APPROACH",
     "DNS_OR_RESVMM_LES",
     "There are several options to deal with turbulent flows.",
     tuple<std::string>(
       "DNS_OR_RESVMM_LES",
-      "CLASSICAL_LES",
-      "RANS"),
+      "CLASSICAL_LES"),
     tuple<std::string>(
       "Try to solve flow as an underresolved DNS.\nMind that your stabilisation already acts as a kind of turbulence model!",
-      "Perform a classical Large Eddy Simulation adding \naddititional turbulent viscosity. This may be based on various physical models.",
-      "Solve Reynolds averaged Navier Stokes using an \nalgebraic, one- or two equation closure.\nNot implemented yet."),
-    tuple<int>(0,1,2),
+      "Perform a classical Large Eddy Simulation adding \naddititional turbulent viscosity. This may be based on various physical models."),
+    tuple<int>(0,1),
     &fdyn_turbu);
 
   setStringToIntegralParameter<int>(
@@ -3108,28 +3115,60 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     tuple<int>(0,1,2,3,4,5,6),
     &fdyn_turbu);
 
+  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
+                               tuple<std::string>(
+                                 "No",
+                                 "Smagorinsky_all",
+                                 "Smagorinsky_small"
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::no_fssgv,
+                                   INPAR::FLUID::smagorinsky_all,
+                                   INPAR::FLUID::smagorinsky_small
+                                   ),
+                               &fdyn_turbu);
+
+  //----------------------------------------------------------------------
+  // turbulence specific output and statistics
+  //----------------------------------------------------------------------
+
+  IntParameter("SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbu);
+  IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);
+  IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
+
+  BoolParameter("SUBGRID_DISSIPATION","No","Flag to (de)activate estimation of subgrid-scale dissipation (only for seclected flows).",&fdyn_turbu);
+
+  BoolParameter("OUTMEAN","No","Flag to (de)activate averaged paraview output",&fdyn_turbu);
+
+  //----------------------------------------------------------------------
+  // turbulent flow problem and general characteristics
+  //----------------------------------------------------------------------
+
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     // Otherwise BACI DEBUG version will crash during runtime!
-    Teuchos::Tuple<std::string,15> name;
-    Teuchos::Tuple<int,15> label;
-    name[ 0] = "no";                                      label[ 0] = 0;
-    name[ 1] = "time_averaging";                          label[ 1] = 1;
-    name[ 2] = "channel_flow_of_height_2";                label[ 2] = 2;
-    name[ 3] = "lid_driven_cavity";                       label[ 3] = 3;
-    name[ 4] = "backward_facing_step";                    label[ 4] = 4;
-    name[ 5] = "square_cylinder";                         label[ 5] = 5;
-    name[ 6] = "square_cylinder_nurbs";                   label[ 6] = 6;
-    name[ 7] = "rotating_circular_cylinder_nurbs";        label[ 7] = 7;
-    name[ 8] = "rotating_circular_cylinder_nurbs_scatra"; label[ 8] = 8;
-    name[ 9] = "loma_channel_flow_of_height_2";           label[ 9] = 9;
-    name[10] = "loma_lid_driven_cavity";                  label[10] = 10;
-    name[11] = "loma_backward_facing_step";               label[11] = 11;
-    name[12] = "combust_oracles";                         label[12] = 12;
-    name[13] = "bubbly_channel_flow";                     label[13] = 13;
-    name[14] = "scatra_channel_flow_of_height_2";         label[14] = 14;
+    Teuchos::Tuple<std::string,18> name;
+    Teuchos::Tuple<int,18> label;
+    name[ 0] = "no";                                             label[ 0] = 0;
+    name[ 1] = "time_averaging";                                 label[ 1] = 1;
+    name[ 2] = "channel_flow_of_height_2";                       label[ 2] = 2;
+    name[ 3] = "lid_driven_cavity";                              label[ 3] = 3;
+    name[ 4] = "backward_facing_step";                           label[ 4] = 4;
+    name[ 5] = "square_cylinder";                                label[ 5] = 5;
+    name[ 6] = "square_cylinder_nurbs";                          label[ 6] = 6;
+    name[ 7] = "rotating_circular_cylinder_nurbs";               label[ 7] = 7;
+    name[ 8] = "rotating_circular_cylinder_nurbs_scatra";        label[ 8] = 8;
+    name[ 9] = "loma_channel_flow_of_height_2";                  label[ 9] = 9;
+    name[10] = "loma_lid_driven_cavity";                         label[10] = 10;
+    name[11] = "loma_backward_facing_step";                      label[11] = 11;
+    name[12] = "combust_oracles";                                label[12] = 12;
+    name[13] = "bubbly_channel_flow";                            label[13] = 13;
+    name[14] = "scatra_channel_flow_of_height_2";                label[14] = 14;
+    name[15] = "decaying_homogeneous_isotropic_turbulence";      label[15] = 15;
+    name[16] = "forced_homogeneous_isotropic_turbulence";        label[16] = 16;
+    name[17] = "scatra_forced_homogeneous_isotropic_turbulence"; label[17] = 17;
 
-    Teuchos::Tuple<std::string,15> description;
+    Teuchos::Tuple<std::string,18> description;
     description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
     description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
     description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
@@ -3145,6 +3184,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     description[12]="ORACLES test rig for turbulent premixed combustion.";
     description[13]="Turbulent two-phase flow: bubbly channel flow, statistical data are averaged in homogeneous planse and over time.";
     description[14]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
+    description[15]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
+    description[16]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
+    description[17]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",
@@ -3167,7 +3209,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "z"            ,
       "xy"           ,
       "xz"           ,
-      "yz"           ),
+      "yz"           ,
+      "xyz"          ),
     tuple<std::string>(
       "no homogeneous directions available, averaging is restricted to time averaging",
       "average along x-direction"                                                     ,
@@ -3175,9 +3218,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "average along z-direction"                                                     ,
       "Wall normal direction is z, average in x and y direction"                      ,
       "Wall normal direction is y, average in x and z direction (standard case)"      ,
-      "Wall normal direction is x, average in y and z direction"                      ),
-    tuple<int>(0,1,2,3,4,5,6),
+      "Wall normal direction is x, average in y and z direction"                      ,
+      "averageing in all directions"                                                 ),
+    tuple<int>(0,1,2,3,4,5,6,7),
     &fdyn_turbu);
+
+  //---------------------------------------
+  // further problem-specific parameters
+
+  // CHANNEL FLOW
+  //--------------
 
   DoubleParameter(
     "CHAN_AMPL_INIT_DIST",
@@ -3185,27 +3235,58 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",
     &fdyn_turbu);
 
-  IntParameter("SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbu);
-  IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);
-  IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
-  BoolParameter("SUBGRID_DISSIPATION","No","Flag to (de)activate estimation of subgrid-scale dissipation.",&fdyn_turbu);
-
-  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
+  setStringToIntegralParameter<int>("FORCING_TYPE","linear_compensation_from_intermediate_spectrum","forcing strategy",
                                tuple<std::string>(
-                                 "No",
-                                 "Smagorinsky_all",
-                                 "Smagorinsky_small"
+                                 "linear_compensation_from_intermediate_spectrum",
+                                 "fixed_power_input"
                                  ),
                                tuple<int>(
-                                   INPAR::FLUID::no_fssgv,
-                                   INPAR::FLUID::smagorinsky_all,
-                                   INPAR::FLUID::smagorinsky_small
+                                   INPAR::FLUID::linear_compensation_from_intermediate_spectrum,
+                                   INPAR::FLUID::fixed_power_input
                                    ),
                                &fdyn_turbu);
-  BoolParameter("OUTMEAN","No","Flag to (de)activate averaged paraview output",&fdyn_turbu);
+
+  // HIT
+  //--------------
+
+  IntParameter(
+    "FORCING_TIME_STEPS",
+    0,
+    "Number of time steps during which forcing is applied. Decaying homogeneous isotropic turbulence only.",
+    &fdyn_turbu);
+
+  DoubleParameter(
+    "THRESHOLD_WAVENUMBER",
+    0.0,
+    "Forcing is only applied to wave numbers lower or equal than the given threshold wave number.",
+    &fdyn_turbu);
+
+  DoubleParameter(
+    "POWER_INPUT", 0.0, "power of forcing", &fdyn_turbu);
+
+  setStringToIntegralParameter<int>(
+    "SCALAR_FORCING",
+    "no",
+    "Define forcing for scalar field.",
+    tuple<std::string>(
+      "no",
+      "isotropic",
+      "mean_scalar_gradient"),
+    tuple<std::string>(
+      "Do not force the scalar field",
+      "Force scalar field isotropically such as the fluid field.",
+      "Force scalar field by imposed mean-scalar gradient."),
+    tuple<int>(0,1,2),
+    &fdyn_turbu);
+
+  DoubleParameter(
+    "MEAN_SCALAR_GRADIENT",
+    0.0,
+    "Value of imposed mean-scalar gradient to force scalar field.",
+    &fdyn_turbu);
 
   /*----------------------------------------------------------------------*/
-  // sublist with additional input parameters for smagorinsky model
+  // sublist with additional input parameters for Smagorinsky model
   Teuchos::ParameterList& fdyn_turbsgv = fdyn.sublist("SUBGRID VISCOSITY",false,"");
 
   DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbsgv);
@@ -3615,31 +3696,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("VELCURVENO",-1,"curve number for time-dependent scalar transport velocity field",&scatradyn);
 
-  setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
-                               "Initial Field for scalar transport problem",
-                               tuple<std::string>(
-                                 "zero_field",
-                                 "field_by_function",
-                                 "field_by_condition",
-                                 "disturbed_field_by_function",
-                                 "1D_DISCONTPV",
-                                 "FLAME_VORTEX_INTERACTION",
-                                 "RAYTAYMIXFRAC",
-                                 "L_shaped_domain",
-                                 "facing_flame_fronts",
-                                 "oracles_flame"),
-                               tuple<int>(
-                                   INPAR::SCATRA::initfield_zero_field,
-                                   INPAR::SCATRA::initfield_field_by_function,
-                                   INPAR::SCATRA::initfield_field_by_condition,
-                                   INPAR::SCATRA::initfield_disturbed_field_by_function,
-                                   INPAR::SCATRA::initfield_discontprogvar_1D,
-                                   INPAR::SCATRA::initfield_flame_vortex_interaction,
-                                   INPAR::SCATRA::initfield_raytaymixfrac,
-                                   INPAR::SCATRA::initfield_Lshapeddomain,
-                                   INPAR::SCATRA::initfield_facing_flame_fronts,
-                                   INPAR::SCATRA::initfield_oracles_flame),
-                               &scatradyn);
+  {
+    // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
+    Teuchos::Tuple<std::string,12> name;
+    Teuchos::Tuple<int,12> label;
+    name[ 0] = "zero_field";                   label[ 0] = INPAR::SCATRA::initfield_zero_field;
+    name[ 1] = "field_by_function";            label[ 1] = INPAR::SCATRA::initfield_field_by_function;
+    name[ 2] = "field_by_condition";           label[ 2] = INPAR::SCATRA::initfield_field_by_condition;
+    name[ 3] = "disturbed_field_by_function";  label[ 3] = INPAR::SCATRA::initfield_disturbed_field_by_function;
+    name[ 4] = "1D_DISCONTPV";                 label[ 4] = INPAR::SCATRA::initfield_discontprogvar_1D;
+    name[ 5] = "FLAME_VORTEX_INTERACTION";     label[ 5] = INPAR::SCATRA::initfield_flame_vortex_interaction;
+    name[ 6] = "RAYTAYMIXFRAC";                label[ 6] = INPAR::SCATRA::initfield_raytaymixfrac;
+    name[ 7] = "L_shaped_domain";              label[ 7] = INPAR::SCATRA::initfield_Lshapeddomain;
+    name[ 8] = "facing_flame_fronts";          label[ 8] = INPAR::SCATRA::initfield_facing_flame_fronts;
+    name[ 9] = "oracles_flame";                label[ 9] = INPAR::SCATRA::initfield_oracles_flame;
+    name[10] = "high_forced_hit";              label[10] = INPAR::SCATRA::initialfield_forced_hit_high_Sc;
+    name[11] = "low_forced_hit";               label[11] = INPAR::SCATRA::initialfield_forced_hit_low_Sc;
+
+    setStringToIntegralParameter<int>(
+        "INITIALFIELD",
+        "zero_field",
+        "Initial Field for scalar transport problem",
+        name,
+        label,
+        &scatradyn);
+  }
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
 

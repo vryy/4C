@@ -1,0 +1,2073 @@
+/*!----------------------------------------------------------------------
+\file turbulence_statistics_hit.cpp
+
+\brief routines for homogeneous isotropic turbulence
+
+Documentation see header.
+
+
+<pre>
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+
+
+#include <complex>
+
+#include"fftw3.h"
+
+#include "turbulence_statistics_hit.H"
+
+#include "../drt_fluid_ele/fluid_ele_action.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/standardtypes_cpp.H"
+
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/newtonianfluid.H"
+
+namespace FLD
+{
+
+/*--------------------------------------------------------------*
+ | constructor                                  rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+TurbulenceStatisticsHit::TurbulenceStatisticsHit(
+  RCP<DRT::Discretization>    actdis,
+  Teuchos::ParameterList&     params,
+  const bool forced):
+  discret_(actdis),
+  params_(params)
+{
+  // set type
+  if (forced == true)
+   type_ = forced_homogeneous_isotropic_turbulence;
+  else
+   type_ = decaying_homogeneous_isotropic_turbulence;
+
+  //-----------------------------------
+  // output to screen
+  //-----------------------------------
+
+  if (discret_->Comm().MyPID() == 0)
+  {
+    std::cout << "This is the turbulence statistics manager of\n";
+    std::cout << "homogeneous isotropic turbulence:\n\n";
+    if (type_ == forced_homogeneous_isotropic_turbulence)
+      std::cout << "   FORCED HOMOGENEOUS ISOTROPIC TURBULENCE\n";
+    else
+      std::cout << "   DECAYING HOMOGENEOUS ISOTROPIC TURBULENCE\n";
+    std::cout << std::endl;
+  }
+
+  //-----------------------------------
+  // determine number of modes
+  //-----------------------------------
+
+  // number of modes equal to number of elements in one spatial direction
+  // this does not yield the correct value
+  // nummodes_ = (int) pow((double) discret_->NumGlobalElements(),1.0/3.0);
+  switch (discret_->NumGlobalElements())
+  {
+    case 512:
+    {
+      nummodes_ = 8;
+      break;
+    }
+    case 32768:
+    {
+      nummodes_ = 32;
+      break;
+    }
+    case 262144:
+    {
+      nummodes_ = 64;
+      break;
+    }
+    default:
+    {
+      dserror("Set problem size! %i", discret_->NumGlobalElements());
+      break;
+    }
+  }
+
+  //-------------------------------------------------
+  // create set of node coordinates
+  //-------------------------------------------------
+
+  // the criterion allows differences in coordinates by 1e-9
+  std::set<double,LineSortCriterion> coords;
+  // loop all nodes and store x1-coordinate
+  for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+  {
+    DRT::Node* node = discret_->lRowNode(inode);
+    if ((node->X()[1]<2e-9 && node->X()[1]>-2e-9) and (node->X()[2]<2e-9 && node->X()[2]>-2e-9))
+    coords.insert(node->X()[0]);
+  }
+  // communicate coordinates to all procs via round Robin loop
+  {
+#ifdef PARALLEL
+    int myrank  =discret_->Comm().MyPID();
+#endif
+    int numprocs=discret_->Comm().NumProc();
+
+    std::vector<char> sblock;
+    std::vector<char> rblock;
+
+#ifdef PARALLEL
+    // create an exporter for point to point communication
+    DRT::Exporter exporter(discret_->Comm());
+#endif
+
+    // communicate coordinates
+    for (int np=0;np<numprocs;++np)
+    {
+      DRT::PackBuffer data;
+
+      for (std::set<double,LineSortCriterion>::iterator x1line = coords.begin();
+           x1line != coords.end();
+           ++x1line)
+      {
+        DRT::ParObject::AddtoPack(data,*x1line);
+      }
+      data.StartPacking();
+      for (std::set<double,LineSortCriterion>::iterator x1line = coords.begin();
+           x1line != coords.end();
+           ++x1line)
+      {
+        DRT::ParObject::AddtoPack(data,*x1line);
+      }
+      std::swap( sblock, data() );
+
+#ifdef PARALLEL
+      MPI_Request request;
+      int tag = myrank;
+
+      int frompid = myrank;
+      int topid  = (myrank+1)%numprocs;
+
+      int length=sblock.size();
+
+      exporter.ISend(frompid,topid,
+                     &(sblock[0]),sblock.size(),
+                     tag,request);
+
+      rblock.clear();
+
+      // receive from predecessor
+      frompid=(myrank+numprocs-1)%numprocs;
+      exporter.ReceiveAny(frompid,tag,rblock,length);
+
+      if(tag!=(myrank+numprocs-1)%numprocs)
+      {
+        dserror("received wrong message (ReceiveAny)");
+      }
+
+      exporter.Wait(request);
+
+      {
+        // for safety
+        exporter.Comm().Barrier();
+      }
+#else
+      // dummy communication
+      rblock.clear();
+      rblock=sblock;
+#endif
+
+      // unpack received block into set of all coordinates
+      {
+        std::vector<double> coordsvec;
+
+        coordsvec.clear();
+
+        std::vector<char>::size_type index = 0;
+        while (index < rblock.size())
+        {
+          double onecoord;
+          DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+          coords.insert(onecoord);
+        }
+      }
+    }
+  }
+
+  // push coordinates in vector
+  {
+    coordinates_ = Teuchos::rcp(new std::vector<double> );
+
+    for(std::set<double,LineSortCriterion>::iterator coord1 = coords.begin();
+        coord1 != coords.end();
+        ++coord1)
+    {
+      coordinates_->push_back(*coord1);
+    }
+  }
+
+  //-------------------------------------------------
+  // create set of wave numbers
+  //-------------------------------------------------
+
+  // the criterion allows differences in coordinates by 1e-9
+  std::set<double,LineSortCriterion> wavenum;
+  // loop all wave vectors and store wave number
+  for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
+  {
+    for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
+    {
+      for (int k_3 = (-nummodes_/2); k_3 <= 0; k_3++)
+      {
+        const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+        wavenum.insert(k);
+      }
+    }
+  }
+
+  // push wave numbers in vector
+  {
+    wavenumbers_ = Teuchos::rcp(new std::vector<double> );
+
+//    for(std::set<double,LineSortCriterion>::iterator waven1 = wavenum.begin();
+//        waven1 != wavenum.end();
+//        ++waven1)
+//    {
+//      wavenumbers_->push_back(*waven1);
+//    }
+
+    //TODO: das scheint richtig zu sein
+    //wavenumbers_->clear();
+    wavenumbers_->resize((std::size_t) nummodes_);
+    for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+      (*wavenumbers_)[rr] = rr;
+
+  }
+
+  // set size of energy-spectrum vector
+  energyspectrum_ = Teuchos::rcp(new std::vector<double> );
+  energyspectrum_->resize(wavenumbers_->size());
+  // and initialize with zeros, just to be sure
+  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
+    (*energyspectrum_)[rr] = 0.0;
+
+  // set size of dissipation-spectrum vector
+  dissipationspectrum_ = Teuchos::rcp(new std::vector<double> );
+  dissipationspectrum_->resize(wavenumbers_->size());
+  // and initialize with zeros, just to be sure
+  for (std::size_t rr = 0; rr < dissipationspectrum_->size(); rr++)
+    (*dissipationspectrum_)[rr] = 0.0;
+
+  // set size of scalar-variance-spectrum vector
+  scalarvariancespectrum_ = Teuchos::rcp(new std::vector<double> );
+  scalarvariancespectrum_->resize(wavenumbers_->size());
+  // and initialize with zeros, just to be sure
+  for (std::size_t rr = 0; rr < scalarvariancespectrum_->size(); rr++)
+    (*scalarvariancespectrum_)[rr] = 0.0;
+
+  //-------------------------------------------------
+  // initialize remaining variables
+  //-------------------------------------------------
+
+  // sum over velocity vector
+  sumvel_ = Teuchos::rcp(new std::vector<double> );
+  sumvel_->resize(3);
+
+  // sum over squares of velocity vector componetnts
+  sumvelvel_ = Teuchos::rcp(new std::vector<double> );
+  sumvelvel_->resize(3);
+
+  // allocate some (toggle) vectors
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  toggleu_ = LINALG::CreateVector(*dofrowmap,true);
+  togglev_ = LINALG::CreateVector(*dofrowmap,true);
+  togglew_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // set number of samples to zero
+  numsamp_ = 0;
+
+  // time-step size
+  dt_ = params_.get<double>("time step size");
+
+  // get fluid viscosity from material definition --- for computation
+  // of ltau
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+  if (id==-1)
+    dserror("Could not find Newtonian fluid material");
+  else
+  {
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+    // we need the kinematic viscosity here
+    double dens = actmat->density_;
+    visc_ = actmat->viscosity_/dens;
+  }
+
+  //-------------------------------------------------
+  // set step for output of energy spectrum
+  //-------------------------------------------------
+  // decaying homogeneous isotropic turbulence
+
+  // get number of forcing steps
+  int num_forcing_steps = params_.sublist("TURBULENCE MODEL").get<int>("FORCING_TIME_STEPS",0);
+
+  // determine output steps for energy spectrum of decaying case
+  // experimental data are available for
+  // t*U_0/M = 42 corresponds to 0+(number of forcing steps) in simulation
+  // t*U_0/M = 98 corresponds to 56+(number of forcing steps) in simulation
+  // t*U_0/M = 171 corresponds to 129+(number of forcing steps) in simulation
+  std::vector<double> times_exp(2);
+  times_exp[0] = 56.0;
+  times_exp[1] = 129.0;
+  // using
+  // grid size of experiment M = 0.0508;
+  // domain length  L = 10.0 * M;
+  // reference length L_ref = L / (2.0 * PI);
+  // inlet velocity of experiment U_0 = 10.0;
+  // reference time t_ref = 64.0 * M / U_0;
+  times_exp[0] /= 64.0;
+  times_exp[1] /= 64.0;
+
+  // set steps in vector
+  outsteps_ = Teuchos::rcp(new std::vector<int> );
+  outsteps_->push_back(num_forcing_steps);
+  for (std::size_t rr = 0; rr < times_exp.size(); rr++)
+  {
+    //(*outsteps_)[rr] = (int)(times_exp[rr]/dt_);
+    outsteps_->push_back((int)(times_exp[rr]/dt_) + (double) num_forcing_steps);
+  }
+
+//  std::cout << "Remove" << std::endl;
+//  outsteps_->clear();
+//  outsteps_->resize(101);
+//  for (std::size_t rr = 0; rr < outsteps_->size(); rr ++)
+//      (*outsteps_)[rr] = rr;
+
+  //-------------------------------------------------------------------------
+  // initialize output and initially open respective statistics output file
+  //-------------------------------------------------------------------------
+
+  Teuchos::RCP<std::ofstream> log_1;
+  Teuchos::RCP<std::ofstream> log_2;
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s.append(".energy_spectra");
+
+    log_1 = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
+    (*log_1) << "# Energy and dissipation spectra for incompressible homogeneous isotropic turbulence\n\n\n\n";
+
+    log_1->flush();
+
+    s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s.append(".kinetic_energy");
+
+    log_2 = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
+    (*log_2) << "# Evolution of kinetic energy for incompressible homogeneous isotropic turbulence\n\n\n";
+
+    log_2->flush();
+  }
+
+  //-------------------------------------------------------------------------
+  // write resolved turbulent kinetic energy for given discretization
+  //-------------------------------------------------------------------------
+  if (type_ == decaying_homogeneous_isotropic_turbulence)
+    CalculateResolvedEnergyDecayingTurbulence();
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | deconstructor                                rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+TurbulenceStatisticsHit::~TurbulenceStatisticsHit()
+{
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | do sampling                                  rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::DoTimeSample(
+  Teuchos::RCP<Epetra_Vector> velnp)
+{
+  //-------------------------------------------------------------------------------------------------
+  // calculate energy spectrum via Fourier transformation
+  //-------------------------------------------------------------------------------------------------
+
+  // set and initialize working arrays
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u2_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u3_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+
+  Teuchos::RCP<Teuchos::Array <double> > local_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > local_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > local_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  Teuchos::RCP<Teuchos::Array <double> > global_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > global_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > global_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  //-----------------------------------
+  // prepare Fourier transformation
+  //-----------------------------------
+
+  // set solution in local vectors for velocity
+
+  for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+  {
+    // get node
+    DRT::Node* node = discret_->lRowNode(inode);
+
+    // get coordinates
+    LINALG::Matrix<3,1> xyz(true);
+    for (int idim = 0; idim < 3; idim++)
+        xyz(idim,0) = node->X()[idim];
+
+    // get global ids of all dofs of the node
+    std::vector<int> dofs = discret_->Dof(node);
+
+    // determine position
+    std::vector<int> loc(3);
+    for (int idim = 0; idim < 3; idim++)
+    {
+      for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+      {
+        if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
+        {
+          // due to periodic boundary conditions,
+          // the value at the last node is equal to the one at the first node
+          // using this strategy, no special care is required for slave nodes
+          if ((int) rr < nummodes_)
+           loc[idim] = rr;
+          else
+           loc[idim] = 0;
+
+          break;
+        }
+      }
+    }
+
+    // get position in velocity vectors local_u_1, local_u_2 and local_u_3
+    const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
+
+    // get local dof id corresponding to the global id
+    int lid = discret_->DofRowMap()->LID(dofs[0]);
+    // set value
+    (*local_u1)[pos] = (*velnp)[lid];
+    // analogously for remaining directions
+    lid = discret_->DofRowMap()->LID(dofs[1]);
+    (*local_u2)[pos] = (*velnp)[lid];
+    lid = discret_->DofRowMap()->LID(dofs[2]);
+    (*local_u3)[pos] = (*velnp)[lid];
+  }
+
+  // get values form all processors
+  // number of nodes without slave nodes
+  const int countallnodes = nummodes_*nummodes_*nummodes_;
+  discret_->Comm().SumAll(&((*local_u1)[0]),
+                          &((*global_u1)[0]),
+                          countallnodes);
+
+  discret_->Comm().SumAll(&((*local_u2)[0]),
+                          &((*global_u2)[0]),
+                          countallnodes);
+
+  discret_->Comm().SumAll(&((*local_u3)[0]),
+                          &((*global_u3)[0]),
+                          countallnodes);
+
+//  if (discret_->Comm().MyPID() == 0){
+//  std::cout << "u1 " << std::endl;
+//  for (int i=0; i< global_u1->size(); i++)
+//    std::cout << (*global_u1)[i] << std::endl;
+//  }
+
+  //----------------------------------------
+  // fast Fourier transformation using FFTW
+  //----------------------------------------
+
+  // note: this is not very efficient, since each
+  // processor does the fft and there is no communication
+
+  // set-up
+  fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                       &((*global_u1)[0]),
+                                       (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))),
+                                       FFTW_ESTIMATE);
+  // fft
+  fftw_execute(fft);
+  // analogously for remaining directions
+  fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                             &((*global_u2)[0]),
+                             (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
+                             FFTW_ESTIMATE);
+  fftw_execute(fft);
+  fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                             &((*global_u3)[0]),
+                             (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
+                             FFTW_ESTIMATE);
+  fftw_execute(fft);
+
+  // scale solution (not done in the fftw routine)
+  for (int i=0; i< u1_hat->size(); i++)
+  {
+    (*u1_hat)[i] /= nummodes_*nummodes_*nummodes_;
+    (*u2_hat)[i] /= nummodes_*nummodes_*nummodes_;
+    (*u3_hat)[i] /= nummodes_*nummodes_*nummodes_;
+  }
+
+//  std::cout << "u1_hat_fftw " << std::endl;
+//  for (int i=0; i< u1_hat->size(); i++)
+//    std::cout << "real  " << real((*u1_hat)[i]) << "    imag  " << imag((*u1_hat)[i]) << std::endl;
+  //dserror("ENDE!");
+
+  //----------------------------------------
+  // compute energy spectrum
+  //----------------------------------------
+
+  // transfer from FFTW structure to intervals around zero
+  // FFTW assumes wave numbers in the following intervals
+  // k_1: [0,(nummodes_-1)]
+  // k_2: [0,(nummodes_-1)]
+  // k_3: [0,nummodes_/2]
+  // here, we would like to have
+  // k_1: [-nummodes_/2,(nummodes_/2-1)]
+  // k_2: [-nummodes_/2,(nummodes_/2-1)]
+  // k_3: [-nummodes_/2,0]
+  // using peridocity and conjugate symmetry allows for setting
+  // the Fourier coefficients in the required interval
+  Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
+  // the complete number of modes is required here
+  // hence, we have k_3: [0,(nummodes_-1)]
+  std::vector<double> counter(wavenumbers_->size());
+  for (std::size_t rr = 0; rr < counter.size(); rr++)
+    counter[rr] = 0.0;
+
+  for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+  {
+    for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+    {
+      for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_-1); fftw_k_3++)
+      {
+
+        int pos_fftw_k_1 = -999;
+        int pos_fftw_k_2 = -999;
+        int pos_fftw_k_3 = -999;
+
+        int k_1 = -999;
+        int k_2 = -999;
+        int k_3 = -999;
+
+        if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
+            (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
+            fftw_k_3 == 0)
+        {
+          // wave number vector is part of construction domain
+          // and this value is taken
+          k_1 = fftw_k_1;
+          k_2 = fftw_k_2;
+          k_3 = fftw_k_3;
+
+          pos_fftw_k_1 = fftw_k_1;
+          pos_fftw_k_2 = fftw_k_2;
+          pos_fftw_k_3 = fftw_k_3;
+        }
+        else
+        {
+          // check if current wave vector is in the domain of fftw
+          // if not shift to domain using periodicity and conjugate symmetry
+          if (fftw_k_3 > (nummodes_/2))
+          {
+            // find corresponding value in fftw-range first
+            int intermediate_fftw_3 = fftw_k_3 - nummodes_;
+            // since intermediate_fftw_3 is still outside of domain,
+            // get position of conjugate complex
+            intermediate_fftw_3 *= -1;
+            int intermediate_fftw_1 = -fftw_k_1;
+            int intermediate_fftw_2 = -fftw_k_2;
+            // check if this position is inside intervals
+            if ((intermediate_fftw_1 >= 0 and intermediate_fftw_1 <= (nummodes_-1))
+                 and (intermediate_fftw_2 >= 0 and intermediate_fftw_2 <= (nummodes_-1))
+                 and (intermediate_fftw_3 >= 0 and intermediate_fftw_3 <= (nummodes_/2)))
+            {
+               pos_fftw_k_1 = intermediate_fftw_1;
+               pos_fftw_k_2 = intermediate_fftw_2;
+               pos_fftw_k_3 = intermediate_fftw_3;
+            }
+            else
+            {
+              // shift intermediate_fftw_1 and intermediate_fftw_2 into fftw interval
+              // intermediate_fftw_3 always lies within the fftw interval
+              if (intermediate_fftw_1 < 0)
+                intermediate_fftw_1 += nummodes_;
+              if (intermediate_fftw_2 < 0)
+                intermediate_fftw_2 += nummodes_;
+
+              pos_fftw_k_1 = intermediate_fftw_1;
+              pos_fftw_k_2 = intermediate_fftw_2;
+              pos_fftw_k_3 = intermediate_fftw_3;
+            }
+          }
+          else
+          {
+            pos_fftw_k_1 = fftw_k_1;
+            pos_fftw_k_2 = fftw_k_2;
+            pos_fftw_k_3 = fftw_k_3;
+          }
+
+          // see whether the negative wave vector is in the construction domain
+          k_1 = -pos_fftw_k_1;
+          k_2 = -pos_fftw_k_2;
+          k_3 = -pos_fftw_k_3;
+          if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
+              (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
+              (k_3 >= (-nummodes_/2) and k_3 <= 0))
+          {
+
+          }
+          else
+          {
+            // if negative wave vector is not in the construction domain
+            // we have to shift it into the domain using the periodicity of the
+            // wave number field
+            // -k_3 always lies within the construction domain!
+            if (k_1 < (-nummodes_/2))
+               k_1 += nummodes_;
+            if (k_2 < (-nummodes_/2))
+              k_2 += nummodes_;
+          }
+        }
+
+//        if (fftw_k_3 > nummodes_/2)
+//        {
+//          std::cout << "fftw_k_1 " << fftw_k_1 << "pos_fftw_k_1 " << pos_fftw_k_1 << " k_1 " << k_1 << std::endl;
+//          std::cout << "fftw_k_2 " << fftw_k_2 << "pos_fftw_k_2 " << pos_fftw_k_2 << " k_2 " << k_2 << std::endl;
+//          std::cout << "fftw_k_3 " << fftw_k_3 << "pos_fftw_k_3 " << pos_fftw_k_3 << " k_3 " << k_3 << std::endl;
+//        }
+
+        // get position in u1_hat
+        const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
+
+        // get wave number
+        const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+
+        // calculate energy
+        // E = 1/2 * u_i * conj(u_i)
+        // u_i * conj(u_i) = real(u_i)^2 + imag(u_i)^2
+        // const std::complex<double> energy = 0.5 * ((*u1_hat)[pos] * conj((*u1_hat)[pos])
+        //                                          + (*u2_hat)[pos] * conj((*u2_hat)[pos])
+        //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
+        // instead
+        const double energy = 0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+//        const double energy = 2*PI*k*k * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+//        const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+//        if (k >= (4.2426-2e-3) and k<= (4.2426+2e-3))
+//        if (k >= (1-2e-3) and k<= (1+2e-3))
+//        {
+//          std::cout << "k_1 " << k_1 << std::endl;
+//          std::cout << "k_2 " << k_2 << std::endl;
+//          std::cout << "k_3 " << k_3 << std::endl;
+//        std::cout << "k " << k << " energy  " << energy << std::endl;
+//        }
+        //const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+
+        // insert into sampling vector
+        // find position via k
+        for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+        {
+//          if (k >= ((*wavenumbers_)[rr]-2e-9) and k<= ((*wavenumbers_)[rr]+2e-9))
+          if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
+          {
+            (*energyspectrum_)[rr] += energy;
+            // TODO: klaeren
+            (*dissipationspectrum_)[rr] += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*energy);
+            counter[rr] += 1;
+          }
+        }
+      }
+    }
+  }
+
+//  std::cout << "wavenumbers" << std::endl;
+//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+//    std::cout << "k " << (*wavenumbers_)[rr] << " counter "<< counter[rr] << std::endl;
+//
+//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
+//  {
+//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr]/counter[rr];
+//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr] * 2 * PI * (*wavenumbers_)[rr] * (*wavenumbers_)[rr];
+////      std::cout << (*wavenumbers_)[rr] << std::endl;
+////      if ((*wavenumbers_)[rr] >= (3-2e-9) and (*wavenumbers_)[rr]<= (3+2e-9))
+////          std::cout << "k " << (*wavenumbers_)[rr] << " energy  " << (*energyspectrum_)[rr] << std::endl;
+//  }
+//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+//      std::cout << "k " << (*wavenumbers_)[rr] << std::endl;
+//  dserror("ENDE");
+
+//  std::cout << "STATISTICS " << std::endl;
+//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
+//      std::cout << (*wavenumbers_)[rr] << "   "<< (*energyspectrum_)[rr] << std::endl;
+
+
+  //-------------------------------------------------------------------------------------------------
+  // calculate means in physical space
+  //-------------------------------------------------------------------------------------------------
+
+  //----------------------------------
+  // initialize toggle vectors
+  //----------------------------------
+
+  // toggle vectors are one in the position of a dof of this node,
+  // else 0
+  toggleu_->PutScalar(0.0);
+  togglev_->PutScalar(0.0);
+  togglew_->PutScalar(0.0);
+
+  for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+  {
+    // get node
+    DRT::Node* node = discret_->lRowNode(nn);
+
+    // get global dof ids
+    std::vector<int> dof = discret_->Dof(node);
+    double one = 1.0;
+
+    // set one in respective position
+    toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+    togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+    togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+  }
+
+  // compute squared values of velocity
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> squaredvelnp = LINALG::CreateVector(*dofrowmap,true);
+  squaredvelnp->Multiply(1.0,*velnp,*velnp,0.0);
+
+  //----------------------------------
+  // get values for velocity
+  //----------------------------------
+
+  // velocity components
+  double u;
+  double v;
+  double w;
+  velnp->Dot(*toggleu_,&u);
+  velnp->Dot(*togglev_,&v);
+  velnp->Dot(*togglew_,&w);
+
+  // square of velocity components
+  double uu;
+  double vv;
+  double ww;
+  squaredvelnp->Dot(*toggleu_,&uu);
+  squaredvelnp->Dot(*togglev_,&vv);
+  squaredvelnp->Dot(*togglew_,&ww);
+
+  //-------------------------------------------------
+  // add spatial mean values to statistical sample
+  //-------------------------------------------------
+
+  (*sumvel_)[0] = u/countallnodes;
+  (*sumvel_)[1] = v/countallnodes;
+  (*sumvel_)[2] = w/countallnodes;
+
+  (*sumvelvel_)[0] = uu/countallnodes;
+  (*sumvelvel_)[1] = vv/countallnodes;
+  (*sumvelvel_)[2] = ww/countallnodes;
+
+//  std::cout << (*sumvel_)[0] << "  " << (*sumvel_)[1] << "  " << (*sumvel_)[2] << std::endl;
+//  std::cout << (*sumvelvel_)[0] << "  " << (*sumvelvel_)[1] << "  " << (*sumvelvel_)[2] << std::endl;
+
+  //----------------------------------------------------------------------
+  // increase sample counter
+  //----------------------------------------------------------------------
+
+  // for forced case only, since there is not any statistic-stationary state
+  // for the decaying case (merely averaging in space)
+  if (type_ == forced_homogeneous_isotropic_turbulence)
+    numsamp_++;
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | do sampling                                  rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::DoScatraTimeSample(
+  Teuchos::RCP<Epetra_Vector> velnp,
+  Teuchos::RCP<Epetra_Vector> phinp)
+{
+  //-------------------------------------------------------------------------------------------------
+  // calculate energy spectrum via Fourier transformation
+  //-------------------------------------------------------------------------------------------------
+
+  // set and initialize working arrays
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u2_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u3_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+
+  Teuchos::RCP<Teuchos::Array <double> > local_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > local_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > local_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  Teuchos::RCP<Teuchos::Array <double> > global_u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > global_u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > global_u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > phi_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <double> > local_phi = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > global_phi = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  //-----------------------------------
+  // prepare Fourier transformation
+  //-----------------------------------
+
+  // set solution in local vectors for velocity
+
+  for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+  {
+    // get node
+    DRT::Node* node = discret_->lRowNode(inode);
+
+    // get coordinates
+    LINALG::Matrix<3,1> xyz(true);
+    for (int idim = 0; idim < 3; idim++)
+        xyz(idim,0) = node->X()[idim];
+
+    // get global ids of all dofs of the node
+    std::vector<int> dofs = discret_->Dof(node);
+
+    // determine position
+    std::vector<int> loc(3);
+    for (int idim = 0; idim < 3; idim++)
+    {
+      for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+      {
+        if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
+        {
+          // due to periodic boundary conditions,
+          // the value at the last node is equal to the one at the first node
+          // using this strategy, no special care is required for slave nodes
+          if ((int) rr < nummodes_)
+           loc[idim] = rr;
+          else
+           loc[idim] = 0;
+
+          break;
+        }
+      }
+    }
+
+    // get position in velocity vectors local_u_1, local_u_2 and local_u_3
+    const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
+
+    // get local dof id corresponding to the global id
+    int lid = discret_->DofRowMap()->LID(dofs[0]);
+    // set value
+    (*local_u1)[pos] = (*velnp)[lid];
+    // analogously for remaining directions
+    lid = discret_->DofRowMap()->LID(dofs[1]);
+    (*local_u2)[pos] = (*velnp)[lid];
+    lid = discret_->DofRowMap()->LID(dofs[2]);
+    (*local_u3)[pos] = (*velnp)[lid];
+  }
+
+  // set also solution of scalar field
+
+  for (int inode = 0; inode < scatradiscret_->NumMyRowNodes(); inode++)
+  {
+    // get node
+    DRT::Node* node = scatradiscret_->lRowNode(inode);
+
+    // get coordinates
+    LINALG::Matrix<3,1> xyz(true);
+    for (int idim = 0; idim < 3; idim++)
+        xyz(idim,0) = node->X()[idim];
+
+    // get global ids of all dofs of the node
+    std::vector<int> dofs = scatradiscret_->Dof(node);
+    if (dofs.size()>1)
+      dserror("Only one scatra dof per node expected!");
+
+    // determine position
+    std::vector<int> loc(3);
+    for (int idim = 0; idim < 3; idim++)
+    {
+      for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+      {
+        if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
+        {
+          // due to periodic boundary conditions,
+          // the value at the last node is equal to the one at the first node
+          // using this strategy, no special care is required for slave nodes
+          if ((int) rr < nummodes_)
+           loc[idim] = rr;
+          else
+           loc[idim] = 0;
+
+          break;
+        }
+      }
+    }
+
+    // get position in velocity vectors local_u_1, local_u_2 and local_u_3
+    const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
+
+    // get local dof id corresponding to the global id
+    int lid = scatradiscret_->DofRowMap()->LID(dofs[0]);
+    // set value
+    (*local_phi)[pos] = (*phinp)[lid];
+  }
+
+  // get values form all processors
+  // number of nodes without slave nodes
+  const int countallnodes = nummodes_*nummodes_*nummodes_;
+  discret_->Comm().SumAll(&((*local_u1)[0]),
+                          &((*global_u1)[0]),
+                          countallnodes);
+
+  discret_->Comm().SumAll(&((*local_u2)[0]),
+                          &((*global_u2)[0]),
+                          countallnodes);
+
+  discret_->Comm().SumAll(&((*local_u3)[0]),
+                          &((*global_u3)[0]),
+                          countallnodes);
+
+  discret_->Comm().SumAll(&((*local_phi)[0]),
+                          &((*global_phi)[0]),
+                          countallnodes);
+
+//  if (discret_->Comm().MyPID() == 0){
+//  std::cout << "u1 " << std::endl;
+//  for (int i=0; i< global_u1->size(); i++)
+//    std::cout << (*global_u1)[i] << std::endl;
+//  }
+
+  //----------------------------------------
+  // fast Fourier transformation using FFTW
+  //----------------------------------------
+
+  // note: this is not very efficient, since each
+  // processor does the fft and there is no communication
+
+  // set-up
+  fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                       &((*global_u1)[0]),
+                                       (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))),
+                                       FFTW_ESTIMATE);
+  // fft
+  fftw_execute(fft);
+  // analogously for remaining directions
+  fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                             &((*global_u2)[0]),
+                             (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
+                             FFTW_ESTIMATE);
+  fftw_execute(fft);
+  fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                             &((*global_u3)[0]),
+                             (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
+                             FFTW_ESTIMATE);
+  fftw_execute(fft);
+  // as well as phi
+  fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                             &((*global_phi)[0]),
+                             (reinterpret_cast<fftw_complex*>(&((*phi_hat)[0]))),
+                             FFTW_ESTIMATE);
+  fftw_execute(fft);
+
+  // scale solution (not done in the fftw routine)
+  for (int i=0; i< u1_hat->size(); i++)
+  {
+    (*u1_hat)[i] /= nummodes_*nummodes_*nummodes_;
+    (*u2_hat)[i] /= nummodes_*nummodes_*nummodes_;
+    (*u3_hat)[i] /= nummodes_*nummodes_*nummodes_;
+    (*phi_hat)[i] /= nummodes_*nummodes_*nummodes_;
+  }
+
+//  std::cout << "u1_hat_fftw " << std::endl;
+//  for (int i=0; i< u1_hat->size(); i++)
+//    std::cout << "real  " << real((*u1_hat)[i]) << "    imag  " << imag((*u1_hat)[i]) << std::endl;
+//  dserror("ENDE!");
+
+  //----------------------------------------
+  // compute energy spectrum
+  //----------------------------------------
+
+  // transfer from FFTW structure to intervals around zero
+  // FFTW assumes wave numbers in the following intervals
+  // k_1: [0,(nummodes_-1)]
+  // k_2: [0,(nummodes_-1)]
+  // k_3: [0,nummodes_/2]
+  // here, we would like to have
+  // k_1: [-nummodes_/2,(nummodes_/2-1)]
+  // k_2: [-nummodes_/2,(nummodes_/2-1)]
+  // k_3: [-nummodes_/2,0]
+  // using peridocity and conjugate symmetry allows for setting
+  // the Fourier coefficients in the required interval
+  Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
+  // the complete number of modes is required here
+  // hence, we have k_3: [0,(nummodes_-1)]
+  std::vector<double> counter(wavenumbers_->size());
+  for (std::size_t rr = 0; rr < counter.size(); rr++)
+    counter[rr] = 0.0;
+
+  for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+  {
+    for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+    {
+      for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_-1); fftw_k_3++)
+      {
+
+        int pos_fftw_k_1 = -999;
+        int pos_fftw_k_2 = -999;
+        int pos_fftw_k_3 = -999;
+
+        int k_1 = -999;
+        int k_2 = -999;
+        int k_3 = -999;
+
+        if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
+            (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
+            fftw_k_3 == 0)
+        {
+          // wave number vector is part of construction domain
+          // and this value is taken
+          k_1 = fftw_k_1;
+          k_2 = fftw_k_2;
+          k_3 = fftw_k_3;
+
+          pos_fftw_k_1 = fftw_k_1;
+          pos_fftw_k_2 = fftw_k_2;
+          pos_fftw_k_3 = fftw_k_3;
+        }
+        else
+        {
+          // check if current wave vector is in the domain of fftw
+          // if not shift to domain using periodicity and conjugate symmetry
+          if (fftw_k_3 > (nummodes_/2))
+          {
+            // find corresponding value in fftw-range first
+            int intermediate_fftw_3 = fftw_k_3 - nummodes_;
+            // since intermediate_fftw_3 is still outside of domain,
+            // get position of conjugate complex
+            intermediate_fftw_3 *= -1;
+            int intermediate_fftw_1 = -fftw_k_1;
+            int intermediate_fftw_2 = -fftw_k_2;
+            // check if this position is inside intervals
+            if ((intermediate_fftw_1 >= 0 and intermediate_fftw_1 <= (nummodes_-1))
+                 and (intermediate_fftw_2 >= 0 and intermediate_fftw_2 <= (nummodes_-1))
+                 and (intermediate_fftw_3 >= 0 and intermediate_fftw_3 <= (nummodes_/2)))
+            {
+               pos_fftw_k_1 = intermediate_fftw_1;
+               pos_fftw_k_2 = intermediate_fftw_2;
+               pos_fftw_k_3 = intermediate_fftw_3;
+            }
+            else
+            {
+              // shift intermediate_fftw_1 and intermediate_fftw_2 into fftw interval
+              // intermediate_fftw_3 always lies within the fftw interval
+              if (intermediate_fftw_1 < 0)
+                intermediate_fftw_1 += nummodes_;
+              if (intermediate_fftw_2 < 0)
+                intermediate_fftw_2 += nummodes_;
+
+              pos_fftw_k_1 = intermediate_fftw_1;
+              pos_fftw_k_2 = intermediate_fftw_2;
+              pos_fftw_k_3 = intermediate_fftw_3;
+            }
+          }
+          else
+          {
+            pos_fftw_k_1 = fftw_k_1;
+            pos_fftw_k_2 = fftw_k_2;
+            pos_fftw_k_3 = fftw_k_3;
+          }
+
+          // see whether the negative wave vector is in the construction domain
+          k_1 = -pos_fftw_k_1;
+          k_2 = -pos_fftw_k_2;
+          k_3 = -pos_fftw_k_3;
+          if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
+              (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
+              (k_3 >= (-nummodes_/2) and k_3 <= 0))
+          {
+
+          }
+          else
+          {
+            // if negative wave vector is not in the construction domain
+            // we have to shift it into the domain using the periodicity of the
+            // wave number field
+            // -k_3 always lies within the construction domain!
+            if (k_1 < (-nummodes_/2))
+               k_1 += nummodes_;
+            if (k_2 < (-nummodes_/2))
+              k_2 += nummodes_;
+          }
+        }
+
+//        if (fftw_k_3 > nummodes_/2)
+//        {
+//          std::cout << "fftw_k_1 " << fftw_k_1 << "pos_fftw_k_1 " << pos_fftw_k_1 << " k_1 " << k_1 << std::endl;
+//          std::cout << "fftw_k_2 " << fftw_k_2 << "pos_fftw_k_2 " << pos_fftw_k_2 << " k_2 " << k_2 << std::endl;
+//          std::cout << "fftw_k_3 " << fftw_k_3 << "pos_fftw_k_3 " << pos_fftw_k_3 << " k_3 " << k_3 << std::endl;
+//        }
+
+        // get position in u1_hat
+        const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
+
+        // get wave number
+        const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+
+        // calculate energy
+        // E = 1/2 * u_i * conj(u_i)
+        // u_i * conj(u_i) = real(u_i)^2 + imag(u_i)^2
+        // const std::complex<double> energy = 0.5 * ((*u1_hat)[pos] * conj((*u1_hat)[pos])
+        //                                          + (*u2_hat)[pos] * conj((*u2_hat)[pos])
+        //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
+        // instead
+        const double energy = 0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+        const double variance = 0.5 * norm((*phi_hat)[pos]);
+//        const double energy = 2*PI*k*k * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+//        const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+//        if (k >= (4.2426-2e-3) and k<= (4.2426+2e-3))
+//        if (k >= (1-2e-3) and k<= (1+2e-3))
+//        {
+//          std::cout << "k_1 " << k_1 << std::endl;
+//          std::cout << "k_2 " << k_2 << std::endl;
+//          std::cout << "k_3 " << k_3 << std::endl;
+//        std::cout << "k " << k << " energy  " << energy << std::endl;
+//        }
+        //const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+
+        // insert into sampling vector
+        // find position via k
+        for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+        {
+//          if (k >= ((*wavenumbers_)[rr]-2e-9) and k<= ((*wavenumbers_)[rr]+2e-9))
+          if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
+          {
+            (*energyspectrum_)[rr] += energy;
+            (*scalarvariancespectrum_)[rr] += variance;
+            // TODO: klaeren
+            (*dissipationspectrum_)[rr] += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*energy);
+            counter[rr] += 1;
+          }
+        }
+      }
+    }
+  }
+
+//  std::cout << "wavenumbers" << std::endl;
+//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+//    std::cout << "k " << (*wavenumbers_)[rr] << " counter "<< counter[rr] << std::endl;
+//
+//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
+//  {
+//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr]/counter[rr];
+//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr] * 2 * PI * (*wavenumbers_)[rr] * (*wavenumbers_)[rr];
+////      std::cout << (*wavenumbers_)[rr] << std::endl;
+////      if ((*wavenumbers_)[rr] >= (3-2e-9) and (*wavenumbers_)[rr]<= (3+2e-9))
+////          std::cout << "k " << (*wavenumbers_)[rr] << " energy  " << (*energyspectrum_)[rr] << std::endl;
+//  }
+//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+//      std::cout << "k " << (*wavenumbers_)[rr] << std::endl;
+//  dserror("ENDE");
+
+//  std::cout << "STATISTICS " << std::endl;
+//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
+//      std::cout << (*wavenumbers_)[rr] << "   "<< (*energyspectrum_)[rr] << std::endl;
+
+
+  //-------------------------------------------------------------------------------------------------
+  // calculate means in physical space
+  //-------------------------------------------------------------------------------------------------
+
+  // TODO: scalar field
+
+  //----------------------------------
+  // initialize toggle vectors
+  //----------------------------------
+
+  // toggle vectors are one in the position of a dof of this node,
+  // else 0
+  toggleu_->PutScalar(0.0);
+  togglev_->PutScalar(0.0);
+  togglew_->PutScalar(0.0);
+
+  for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+  {
+    // get node
+    DRT::Node* node = discret_->lRowNode(nn);
+
+    // get global dof ids
+    std::vector<int> dof = discret_->Dof(node);
+    double one = 1.0;
+
+    // set one in respective position
+    toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+    togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+    togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+  }
+
+  // compute squared values of velocity
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> squaredvelnp = LINALG::CreateVector(*dofrowmap,true);
+  squaredvelnp->Multiply(1.0,*velnp,*velnp,0.0);
+
+  //----------------------------------
+  // get values for velocity
+  //----------------------------------
+
+  // velocity components
+  double u;
+  double v;
+  double w;
+  velnp->Dot(*toggleu_,&u);
+  velnp->Dot(*togglev_,&v);
+  velnp->Dot(*togglew_,&w);
+
+  // square of velocity components
+  double uu;
+  double vv;
+  double ww;
+  squaredvelnp->Dot(*toggleu_,&uu);
+  squaredvelnp->Dot(*togglev_,&vv);
+  squaredvelnp->Dot(*togglew_,&ww);
+
+  //-------------------------------------------------
+  // add spatial mean values to statistical sample
+  //-------------------------------------------------
+
+  (*sumvel_)[0] = u/countallnodes;
+  (*sumvel_)[1] = v/countallnodes;
+  (*sumvel_)[2] = w/countallnodes;
+
+  (*sumvelvel_)[0] = uu/countallnodes;
+  (*sumvelvel_)[1] = vv/countallnodes;
+  (*sumvelvel_)[2] = ww/countallnodes;
+
+//  std::cout << (*sumvel_)[0] << "  " << (*sumvel_)[1] << "  " << (*sumvel_)[2] << std::endl;
+//  std::cout << (*sumvelvel_)[0] << "  " << (*sumvelvel_)[1] << "  " << (*sumvelvel_)[2] << std::endl;
+
+  //----------------------------------------------------------------------
+  // increase sample counter
+  //----------------------------------------------------------------------
+
+    numsamp_++;
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | evaluation of dissipation rate and rbvmm-related quantities  |
+ |                                              rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::EvaluateResiduals(
+  std::map<std::string,RCP<Epetra_Vector> > statevecs)
+{
+#if 0
+  // parameterlist for the element call
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",FLD::calc_dissipation);
+
+  // parameters for a turbulence model
+  {
+    eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+    if ((params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL")=="Scale_Similarity"))
+      dserror("Scale-similarity model not supported");
+  }
+
+  // TODO: add comment
+  RCP<std::vector<double> > local_incrvol           = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrhk            = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrhbazilevs     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrstrle         = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrgradle        = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+  RCP<std::vector<double> > local_incrtauC          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrtauM          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+  RCP<std::vector<double> > local_incrres           = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+  RCP<std::vector<double> > local_incrres_sq        = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+  RCP<std::vector<double> > local_incrabsres        = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+  RCP<std::vector<double> > local_incrtauinvsvel    = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1)  ,0.0));
+
+  RCP<std::vector<double> > local_incrsvelaf        = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+  RCP<std::vector<double> > local_incrsvelaf_sq     = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+  RCP<std::vector<double> > local_incrabssvelaf     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+  RCP<std::vector<double> > local_incrresC          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrresC_sq       = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrspressnp      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incrspressnp_sq   = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+  RCP<std::vector<double> > local_incr_eps_pspg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_graddiv    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+  RCP<std::vector<double> > local_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+  RCP<std::vector<double> > local_incrcrossstress   = Teuchos::rcp(new std::vector<double> (6*(nodeplanes_->size()-1),0.0));
+  RCP<std::vector<double> > local_incrreystress     = Teuchos::rcp(new std::vector<double> (6*(nodeplanes_->size()-1),0.0));
+
+  // pass variables for local sum to the element
+  eleparams.set<double>("incrvol"          ,local_incrvol         );
+  eleparams.set<double>("incrhk"           ,local_incrhk          );
+  eleparams.set<double>("incrhbazilevs"    ,local_incrhbazilevs   );
+  eleparams.set<double>("incrstrle"        ,local_incrstrle       );
+  eleparams.set<double>("incrgradle"       ,local_incrgradle      );
+
+  eleparams.set<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
+  eleparams.set<double>("incrtauC"         ,local_incrtauC        );
+  eleparams.set<double>("incrtauM"         ,local_incrtauM        );
+  eleparams.set<double>("incrres"          ,local_incrres         );
+  eleparams.set<double>("incrres_sq"       ,local_incrres_sq      );
+  eleparams.set<double>("incrabsres"       ,local_incrabsres      );
+  eleparams.set<double>("incrtauinvsvel"   ,local_incrtauinvsvel  );
+  eleparams.set<double>("incrsvelaf"       ,local_incrsvelaf      );
+  eleparams.set<double>("incrsvelaf_sq"    ,local_incrsvelaf_sq   );
+  eleparams.set<double>("incrabssvelaf"    ,local_incrabssvelaf   );
+  eleparams.set<double>("incrresC"         ,local_incrresC        );
+  eleparams.set<double>("incrresC_sq"      ,local_incrresC_sq     );
+  eleparams.set<double>("incrspressnp"     ,local_incrspressnp    );
+  eleparams.set<double>("incrspressnp_sq"  ,local_incrspressnp_sq );
+
+  eleparams.set<double>("incr_eps_pspg"    ,local_incr_eps_pspg    );
+  eleparams.set<double>("incr_eps_supg"    ,local_incr_eps_supg    );
+  eleparams.set<double>("incr_eps_cross"   ,local_incr_eps_cross   );
+  eleparams.set<double>("incr_eps_rey"     ,local_incr_eps_rey     );
+  eleparams.set<double>("incr_eps_graddiv"   ,local_incr_eps_graddiv   );
+  eleparams.set<double>("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
+  eleparams.set<double>("incr_eps_visc"    ,local_incr_eps_visc    );
+  eleparams.set<double>("incr_eps_conv"    ,local_incr_eps_conv    );
+  eleparams.set<double>("incr_eps_mfs"     ,local_incr_eps_mfs     );
+  eleparams.set<double>("incr_eps_mfscross",local_incr_eps_mfscross);
+  eleparams.set<double>("incr_eps_mfsrey"  ,local_incr_eps_mfsrey  );
+  eleparams.set<double>("incr_eps_avm3"    ,local_incr_eps_avm3    );
+
+  eleparams.set<double>("incrcrossstress"  ,local_incrcrossstress  );
+  eleparams.set<double>("incrreystress"    ,local_incrreystress    );
+
+  // set loma parameters to zero, since loma is not intended here
+  eleparams.set<double>("thermpress at n+alpha_F/n+1",0.0);
+  eleparams.set<double>("thermpress at n+alpha_M/n",0.0);
+  eleparams.set<double>("thermpressderiv at n+alpha_F/n+1",0.0);
+  eleparams.set<double>("thermpressderiv at n+alpha_M/n+1",0.0);
+
+  // set state vectors for element call
+  for(std::map<std::string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
+                                                state!=statevecs.end()  ;
+                                                ++state                 )
+  {
+    discret_->SetState(state->first,state->second);
+  }
+
+  // call loop over elements to compute means
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  discret_->ClearState();
+
+  // variables to sum over all processors
+  double global_incrvol           = 0.0;
+  double global_incrhk            = 0.0;
+  double global_incrhbazilevs     = 0.0;
+  double global_incrstrle         = 0.0;
+  double global_incrgradle        = 0.0;
+
+  double global_incrtauC          = 0.0;
+  double global_incrtauM          = 0.0;
+
+  double global_incrres           = 0.0;
+  double global_incrres_sq        = 0.0;
+  double global_incrabsres        = 0.0;
+
+  double global_incrtauinvsvel    = 0.0;
+
+  double global_incrsvelaf        = 0.0;
+  double global_incrsvelaf_sq     = 0.0;
+  double global_incrabssvelaf     = 0.0;
+
+  double global_incrresC          = 0.0;
+  double global_incrresC_sq       = 0.0;
+  double global_incrspressnp      = 0.0;
+  double global_incrspressnp_sq   = 0.0;
+
+  double global_incr_eps_pspg     = 0.0;
+  double global_incr_eps_supg     = 0.0;
+  double global_incr_eps_cross    = 0.0;
+  double global_incr_eps_rey      = 0.0;
+  double global_incr_eps_graddiv  = 0.0;
+  double global_incr_eps_eddyvisc = 0.0;
+  double global_incr_eps_visc     = 0.0;
+  double global_incr_eps_conv     = 0.0;
+  double global_incr_eps_mfs      = 0.0;
+  double global_incr_eps_mfscross = 0.0;
+  double global_incr_eps_mfsrey   = 0.0;
+  double global_incr_eps_avm3     = 0.0;
+
+  double global_incrcrossstress   = 0.0;
+  double global_incrreystress     = 0.0;
+#endif
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | dump statistics to file                      rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::DumpStatistics(
+  int step,
+  bool multiple_records)
+{
+  //------------------------------
+  // compute remaining quantities
+  //------------------------------
+  // decaying homogeneous isotropic turbulence
+
+  // resolved turbulent kinetic energy from energy spectrum per unit mass
+  double q_E = 0.0;
+  // resolved turbulent kinetic energy from velocity fluctuations per unit mass
+  double q_u = 0.0;
+  // mean-flow kinetic energy  per unit mass
+  double mke = 0.0;
+  // velocity fluctuations
+  double u_prime = 0.0;
+  // Taylor scale
+  double lambda = 0.0;
+  // dissipation
+  double diss = 0.0;
+  // Taylor scale Reynolds number
+  double Re_lambda = 0.0;
+
+  if (type_ == decaying_homogeneous_isotropic_turbulence)
+  {
+    //TODO sollte so passen
+    for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
+       //q_E += (*energyspectrum_)[rr];
+       //q_E +=IntegrateTrapezoidalRule((*wavenumbers_)[rr-1], (*wavenumbers_)[rr], (*energyspectrum_)[rr-1], (*energyspectrum_)[rr]);
+    {
+      if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
+        q_E += (*energyspectrum_)[rr];
+        //q_E +=IntegrateTrapezoidalRule((*wavenumbers_)[rr-1], (*wavenumbers_)[rr], (*energyspectrum_)[rr-1], (*energyspectrum_)[rr]);
+    }
+
+    for (int rr = 0; rr < 3; rr++)
+      q_u += 0.5 * ((*sumvelvel_)[rr] - (*sumvel_)[rr] * (*sumvel_)[rr]);
+
+    for (int rr = 0; rr < 3; rr++)
+      mke += 0.5 * (*sumvel_)[rr] * (*sumvel_)[rr];
+  }
+
+  if (type_ == forced_homogeneous_isotropic_turbulence)
+  {
+    for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
+    {
+      if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
+      {
+        q_E += ((*energyspectrum_)[rr]/numsamp_);
+        // TODO: klaeren
+        //diss += ((*dissipationspectrum_)[rr]/numsamp_);
+        diss += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*((*energyspectrum_)[rr]/numsamp_));
+      }
+    }
+
+    u_prime = sqrt(2.0/3.0*q_E);
+    lambda = sqrt(5.0*q_E/diss);
+    Re_lambda = lambda*u_prime/visc_;
+  }
+
+  //------------------------------
+  // write results to file
+  //------------------------------
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    Teuchos::RCP<std::ofstream> log_k;
+
+    std::string s_k = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s_k.append(".energy_spectra");
+
+    if (step == 0 and type_ == decaying_homogeneous_isotropic_turbulence)
+    {
+      log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::app));
+
+      (*log_k) << "# Energy spectrum of initial field (non-dimensionalized form)\n";
+      (*log_k) << "#     k              E\n";
+      (*log_k) << std::scientific;
+      for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+      {
+        (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
+        (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr];
+        (*log_k) << "\n";
+
+        if ((*wavenumbers_)[rr] >= (3-2e-9) and (*wavenumbers_)[rr]<= (3+2e-9))
+            std::cout << "k " << (*wavenumbers_)[rr] << " energy  " << (*energyspectrum_)[rr] << std::endl;
+      }
+      (*log_k) << "\n\n\n";
+    }
+    else
+    {
+      if (type_ == forced_homogeneous_isotropic_turbulence)
+      {
+        if (not multiple_records)
+        {
+          log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::out));
+          (*log_k) << "# Energy and dissipation spectra for incompressible homogeneous isotropic turbulence\n\n\n";
+        }
+        else
+          log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::app));
+
+        (*log_k) << "# Statistics record ";
+        (*log_k) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+        (*log_k) << "# tke = " << q_E << "    Taylor scale = " << lambda << "    Re_lambda = " << Re_lambda << "\n";
+        (*log_k) << std::scientific;
+        (*log_k) << "#     k              E              D\n";
+        for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+        {
+          (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
+          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr]/numsamp_;
+          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*dissipationspectrum_)[rr]/numsamp_;
+          (*log_k) << "\n";
+        }
+        (*log_k) << "\n\n\n";
+      }
+      else
+      {
+        log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::app));
+
+        bool print = false;
+        for (std::size_t rr = 0; rr < outsteps_->size(); rr++)
+        {
+          if (step == (*outsteps_)[rr])
+          {
+            print = true;
+            break;
+          }
+        }
+
+        if (print)
+        {
+          (*log_k) << "# Energy spectrum at time: "<< step*dt_ << " \n";
+          (*log_k) << "#     k              E              D\n";
+          (*log_k) << std::scientific;
+          for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+          {
+            (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
+            (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr];
+            (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*dissipationspectrum_)[rr];
+            (*log_k) << "\n";
+          }
+          (*log_k) << "\n\n\n";
+        }
+      }
+    }
+
+    log_k->flush();
+
+    if (type_ == decaying_homogeneous_isotropic_turbulence)
+    {
+      Teuchos::RCP<std::ofstream> log_t;
+
+      std::string s_t = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      s_t.append(".kinetic_energy");
+
+      log_t = Teuchos::rcp(new std::ofstream(s_t.c_str(),std::ios::app));
+
+      if (step == 0)
+        (*log_t) << "#     t               q(E)          q(u'u')          MKE\n";
+
+      (*log_t) << std::scientific;
+      (*log_t) <<  " "  << std::setw(11) << std::setprecision(4) << step*dt_;
+      (*log_t) << "     " << std::setw(11) << std::setprecision(4) << q_E;
+      (*log_t) << "     " << std::setw(11) << std::setprecision(4) << q_u;
+      (*log_t) << "     " << std::setw(11) << std::setprecision(4) << mke;
+
+      (*log_t) << "\n";
+      log_t->flush();
+    }
+  }
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | dump statistics to file                      rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::DumpScatraStatistics(
+  int step,
+  bool multiple_records)
+{
+  //------------------------------
+  // compute remaining quantities
+  //------------------------------
+  // decaying homogeneous isotropic turbulence
+
+  // resolved turbulent kinetic energy from energy spectrum per unit mass
+  double q_E = 0.0;
+//  // resolved turbulent kinetic energy from velocity fluctuations per unit mass
+//  double q_u = 0.0;
+//  // mean-flow kinetic energy  per unit mass
+//  double mke = 0.0;
+  // velocity fluctuations
+  double u_prime = 0.0;
+  // Taylor scale
+  double lambda = 0.0;
+  // dissipation
+  double diss = 0.0;
+  // Taylor scale Reynolds number
+  double Re_lambda = 0.0;
+
+  if (type_ == forced_homogeneous_isotropic_turbulence)
+  {
+    for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
+    {
+      if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
+      {
+        q_E += ((*energyspectrum_)[rr]/numsamp_);
+        // TODO: klaeren
+        //diss += ((*dissipationspectrum_)[rr]/numsamp_);
+        diss += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*((*energyspectrum_)[rr]/numsamp_));
+      }
+    }
+
+    u_prime = sqrt(2.0/3.0*q_E);
+    lambda = sqrt(5.0*q_E/diss);
+    Re_lambda = lambda*u_prime/visc_;
+  }
+
+  //------------------------------
+  // write results to file
+  //------------------------------
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    Teuchos::RCP<std::ofstream> log_k;
+
+    std::string s_k = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s_k.append(".energy_spectra");
+
+//    {
+//      if (type_ == forced_homogeneous_isotropic_turbulence)
+//      {
+        if (not multiple_records)
+        {
+          log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::out));
+          (*log_k) << "# Energy and dissipation spectra for incompressible homogeneous isotropic turbulence\n\n\n";
+        }
+        else
+          log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::app));
+
+        (*log_k) << "# Statistics record ";
+        (*log_k) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+        (*log_k) << "# tke = " << q_E << "    Taylor scale = " << lambda << "    Re_lambda = " << Re_lambda << "\n";
+        (*log_k) << std::scientific;
+        (*log_k) << "#     k              E              E_phi\n";
+        for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+        {
+          (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
+          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr]/numsamp_;
+          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*scalarvariancespectrum_)[rr]/numsamp_;
+//          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*dissipationspectrum_)[rr]/numsamp_;
+          (*log_k) << "\n";
+        }
+        (*log_k) << "\n\n\n";
+//      }
+//    }
+
+    log_k->flush();
+  }
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | reset statistics to zero                     rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::ClearStatistics()
+{
+  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
+  {
+    (*energyspectrum_)[rr] = 0.0;
+    (*dissipationspectrum_)[rr] = 0.0;
+  }
+
+  for (std::size_t rr = 0; rr < sumvel_->size(); rr++)
+  {
+    (*sumvel_)[rr] = 0.0;
+    (*sumvelvel_)[rr] = 0.0;
+  }
+
+  numsamp_ = 0;
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | reset statistics to zero                     rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::ClearScatraStatistics()
+{
+  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
+  {
+    (*energyspectrum_)[rr] = 0.0;
+    (*dissipationspectrum_)[rr] = 0.0;
+    (*scalarvariancespectrum_)[rr] = 0.0;
+  }
+
+  for (std::size_t rr = 0; rr < sumvel_->size(); rr++)
+  {
+    (*sumvel_)[rr] = 0.0;
+    (*sumvelvel_)[rr] = 0.0;
+  }
+
+  numsamp_ = 0;
+
+  return;
+}
+
+
+/*--------------------------------------------------------------*
+ | calculate the resolved energy for the given discretization   |
+ |                                              rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+void TurbulenceStatisticsHit::CalculateResolvedEnergyDecayingTurbulence()
+{
+  //----------------------------------------
+  // set reference values
+  //----------------------------------------
+
+  // non-dimensionalize wave number (according to Collis 2002)
+  // grid size of experiment
+  const double M = 0.0508;
+  // domain length
+  const double L = 10.0 * M;
+  // reference length
+  const double L_ref = L / (2.0 * PI);
+  // non-dimensionalize energy spectrum
+  // inlet velocity of experiment
+  const double U_0 = 10.0;
+  // reference time
+  const double t_ref = 64.0 * M / U_0;
+
+  //----------------------------------------
+  // set-up wave numbers
+  //----------------------------------------
+
+  // wave number given from experiment [cm-1]
+  // have to be transferred to [m-1] and non-dimensionalized
+  std::vector<double> k_exp(20);
+  k_exp[0] = 0.15;
+  k_exp[1] = 0.20;
+  k_exp[2] = 0.25;
+  k_exp[3] = 0.30;
+  k_exp[4] = 0.40;
+  k_exp[5] = 0.50;
+  k_exp[6] = 0.70;
+  k_exp[7] = 1.00;
+  k_exp[8] = 1.50;
+  k_exp[9] = 2.00;
+  k_exp[10] = 2.50;
+  k_exp[11] = 3.00;
+  k_exp[12] = 4.00;
+  k_exp[13] = 6.00;
+  k_exp[14] = 8.00;
+  k_exp[15] = 10.00;
+  k_exp[16] = 12.50;
+  k_exp[17] = 15.00;
+  k_exp[18] = 17.50;
+  k_exp[19] = 20.00;
+
+  for (std::size_t rr = 0; rr < k_exp.size(); rr ++)
+    k_exp[rr] *= (L_ref/0.01);
+
+  //----------------------------------------
+  // set-up energy
+  //----------------------------------------
+
+  // energy spectrum given from experiment [cm3/s2]
+  // have to be transferred to [m3/s2] and non-dimensionalized
+  // first measured location
+  std::vector<double> E_exp_1(20);
+  E_exp_1[0] = -1.0;
+  E_exp_1[1] = 129.0;
+  E_exp_1[2] = 230.0;
+  E_exp_1[3] = 322.0;
+  E_exp_1[4] = 435.0;
+  E_exp_1[5] = 457.0;
+  E_exp_1[6] = 380.0;
+  E_exp_1[7] = 270.0;
+  E_exp_1[8] = 168.0;
+  E_exp_1[9] = 120.0;
+  E_exp_1[10] = 89.0;
+  E_exp_1[11] = 70.3;
+  E_exp_1[12] = 47.0;
+  E_exp_1[13] = 24.7;
+  E_exp_1[14] = 12.6;
+  E_exp_1[15] = 7.42;
+  E_exp_1[16] = 3.96;
+  E_exp_1[17] = 2.33;
+  E_exp_1[18] = 1.34;
+  E_exp_1[19] = 0.80;
+
+  // second measured location
+  std::vector<double> E_exp_2(20);
+  E_exp_2[0] = -1.0;
+  E_exp_2[1] = 106.0;
+  E_exp_2[2] = 196.0;
+  E_exp_2[3] = 195.0;
+  E_exp_2[4] = 202.0;
+  E_exp_2[5] = 168.0;
+  E_exp_2[6] = 127.0;
+  E_exp_2[7] = 79.2;
+  E_exp_2[8] = 47.8;
+  E_exp_2[9] = 34.6;
+  E_exp_2[10] = 28.6;
+  E_exp_2[11] = 23.1;
+  E_exp_2[12] = 14.3;
+  E_exp_2[13] = 5.95;
+  E_exp_2[14] = 2.23;
+  E_exp_2[15] = 0.900;
+  E_exp_2[16] = 0.363;
+  E_exp_2[17] = 0.162;
+  E_exp_2[18] = 0.0660;
+  E_exp_2[19] = 0.0330;
+
+  // third measured location
+  std::vector<double> E_exp_3(20);
+  E_exp_3[0] = 49.7;
+  E_exp_3[1] = 92.0;
+  E_exp_3[2] = 120;
+  E_exp_3[3] = 125;
+  E_exp_3[4] = 98.0;
+  E_exp_3[5] = 81.5;
+  E_exp_3[6] = 60.2;
+  E_exp_3[7] = 39.4;
+  E_exp_3[8] = 24.1;
+  E_exp_3[9] = 16.5;
+  E_exp_3[10] = 12.5;
+  E_exp_3[11] = 9.12;
+  E_exp_3[12] = 5.62;
+  E_exp_3[13] = 1.69;
+  E_exp_3[14] = 0.520;
+  E_exp_3[15] = 0.161;
+  E_exp_3[16] = 0.0520;
+  E_exp_3[17] = 0.0141;
+  E_exp_3[18] = -1.0;
+  E_exp_3[19] = -1.0;
+
+  for (std::size_t rr = 0; rr < E_exp_1.size(); rr ++)
+  {
+    E_exp_1[rr] *= ((0.01*0.01*0.01)*(t_ref*t_ref)/(L_ref*L_ref*L_ref));
+    E_exp_2[rr] *= ((0.01*0.01*0.01)*(t_ref*t_ref)/(L_ref*L_ref*L_ref));
+    E_exp_3[rr] *= ((0.01*0.01*0.01)*(t_ref*t_ref)/(L_ref*L_ref*L_ref));
+  }
+
+  //----------------------------------------
+  // get cut-off wave number
+  //----------------------------------------
+
+  // determine cut-off wave number
+  // via number of elements in each spatial direction
+  // k_c = Pi/h, where h=2Pi/nele (domain (2Pi)^3 assumed)
+  // note: nele = nummodes_
+  // cut-off wave number
+  const double k_c = ((double) nummodes_)/2.0-1;
+
+  //---------------------------------------------------------------
+  // calculate resolved and subgrid-scale turbulent kinetic energy
+  //---------------------------------------------------------------
+
+  // variables for total turbulent kinetic energy at
+  // the three measure locations
+  double q_1 = 0.0;
+  double q_2 = 0.0;
+  double q_3 = 0.0;
+
+  // variables for resolved turbulent kinetic energy at
+  // the three measure locations
+  double q_1_r = 0.0;
+  double q_2_r = 0.0;
+  double q_3_r = 0.0;
+
+  // integration of energy spectrum via trapezoidal rule
+  int rr_k_max = 0.0;
+#if 0
+  for (std::size_t rr = 1; rr < E_exp_1.size(); rr++)
+  {
+    std::cout << "rr " << rr << std::endl;
+    if (E_exp_1[rr-1] > 0.0)
+    {
+      std::cout << "1 " << 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]) << std::endl;
+      std::cout << "k_exp[rr] " << k_exp[rr] << std::endl;
+      std::cout << "k_exp[rr-1] " << k_exp[rr-1] << std::endl;
+      std::cout << "E_exp_1[rr] " << E_exp_1[rr] << std::endl;
+      std::cout << "E_exp_1[rr-1] " << E_exp_1[rr-1] << std::endl;
+      q_1 += (0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]));
+      std::cout << q_1 << std::endl;
+      if (k_exp[rr] <= k_c)
+      {
+        std::cout << "rr for k_c " << rr << "   " << k_exp[rr] << std::endl;
+        q_1_r += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]);
+        rr_k_max = rr;
+      }
+    }
+    if (E_exp_2[rr-1] > 0.0)
+    {
+      q_2 += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_2[rr] + E_exp_2[rr-1]);
+      if (k_exp[rr] <= (k_c))
+        q_2_r += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_2[rr] + E_exp_2[rr-1]);
+    }
+    if (E_exp_2[rr] > 0.0)
+    {
+      q_3 += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_3[rr] + E_exp_3[rr-1]);
+      if (k_exp[rr] <= (k_c))
+        q_3_r += 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_3[rr] + E_exp_3[rr-1]);
+    }
+  }
+#endif
+  for (std::size_t rr = 1; rr < E_exp_1.size(); rr++)
+  {
+    if (E_exp_1[rr-1] > 0.0)
+    {
+      q_1 += IntegrateTrapezoidalRule(k_exp[rr-1], k_exp[rr], E_exp_1[rr-1], E_exp_1[rr]);
+      if (k_exp[rr] <= k_c)
+      {
+        q_1_r += IntegrateTrapezoidalRule(k_exp[rr-1], k_exp[rr], E_exp_1[rr-1], E_exp_1[rr]);
+        rr_k_max = rr;
+      }
+    }
+    if (E_exp_2[rr-1] > 0.0)
+    {
+      q_2 += IntegrateTrapezoidalRule(k_exp[rr-1], k_exp[rr], E_exp_2[rr-1], E_exp_2[rr]);
+      if (k_exp[rr] <= k_c)
+        q_2_r += IntegrateTrapezoidalRule(k_exp[rr-1], k_exp[rr], E_exp_2[rr-1], E_exp_2[rr]);
+    }
+    if (E_exp_2[rr] > 0.0)
+    {
+      q_3 += IntegrateTrapezoidalRule(k_exp[rr-1], k_exp[rr], E_exp_3[rr-1], E_exp_3[rr]);
+      if (k_exp[rr] <= k_c)
+        q_3_r += IntegrateTrapezoidalRule(k_exp[rr-1], k_exp[rr], E_exp_3[rr-1], E_exp_3[rr]);
+    }
+  }
+  // integrate resolved turbulent kinetic energy from k_max to k_c,
+  // which is missing above
+  if (rr_k_max < (int)(E_exp_1.size()-1))
+  {
+    const double E1_k_c = Interpolate(k_c, k_exp[rr_k_max], k_exp[rr_k_max+1], E_exp_1[rr_k_max], E_exp_1[rr_k_max+1]);
+    q_1_r += IntegrateTrapezoidalRule(k_exp[rr_k_max], k_c, E_exp_1[rr_k_max], E1_k_c);
+
+    const double E2_k_c = Interpolate(k_c, k_exp[rr_k_max], k_exp[rr_k_max+1], E_exp_2[rr_k_max], E_exp_2[rr_k_max+1]);
+    q_2_r += IntegrateTrapezoidalRule(k_exp[rr_k_max], k_c, E_exp_2[rr_k_max], E2_k_c);
+
+    if (E_exp_3[rr_k_max+1] > 0.0 and E_exp_3[rr_k_max] > 0.0)
+    {
+      const double E3_k_c = Interpolate(k_c, k_exp[rr_k_max], k_exp[rr_k_max+1], E_exp_3[rr_k_max], E_exp_3[rr_k_max+1]);
+      q_3_r += IntegrateTrapezoidalRule(k_exp[rr_k_max], k_c, E_exp_3[rr_k_max], E3_k_c);
+    }
+  }
+# if 0
+  // integration of energy spectrum via Simpson rule
+  for (std::size_t rr = 2; rr < E_exp_1.size(); rr++)
+  {
+    std::cout << "rr " << rr << std::endl;
+    if (E_exp_1[rr-1] > 0.0 and E_exp_1[rr-2] > 0.0)
+    {
+      //std::cout << "1 " << 0.5 * (k_exp[rr] - k_exp[rr-1]) * (E_exp_1[rr] + E_exp_1[rr-1]) << std::endl;
+      std::cout << "k_exp[rr] " << k_exp[rr] << std::endl;
+      std::cout << "k_exp[rr-1] " << k_exp[rr-1] << std::endl;
+      std::cout << "k_exp[rr-2] " << k_exp[rr-2] << std::endl;
+      std::cout << "E_exp_1[rr] " << E_exp_1[rr] << std::endl;
+      std::cout << "E_exp_1[rr-1] " << E_exp_1[rr-1] << std::endl;
+      std::cout << "E_exp_1[rr-2] " << E_exp_1[rr-2] << std::endl;
+      q_1 += (1.0/6.0 * (k_exp[rr] - k_exp[rr-2]) * (E_exp_1[rr] + 4 * E_exp_1[rr-1] + E_exp_1[rr-2]));
+      std::cout << q_1 << std::endl;
+      if (k_exp[rr] <= k_c)
+        q_1_r += (1.0/6.0 * (k_exp[rr] - k_exp[rr-2]) * (E_exp_1[rr] + 4 * E_exp_1[rr-1] + E_exp_1[rr-2]));
+      rr++;
+    }
+  }
+#endif
+
+  // subgrid turbulent kinetic energy at
+  // the three measure locations
+  const double q_1_sgs = q_1 - q_1_r;
+  const double q_2_sgs = q_2 - q_2_r;
+  const double q_3_sgs = q_3 - q_3_r;
+
+  //------------------------------
+  // write results to file
+  //------------------------------
+
+  Teuchos::RCP<std::ofstream> log;
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s.append(".kinetic_energy");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
+    (*log) << "# Turbulent kinetic energy from experimental spectrum (non-dimensionalized form)\n";
+    (*log) << "#     t           q (total)      q (resolved)    q (subgrid)\n";
+    (*log) << std::scientific;
+    (*log) <<  " "  << std::setw(11) << std::setprecision(4) << 42.0*M/U_0/t_ref;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_1;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_1_r;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_1_sgs;
+    (*log) << "\n";
+    (*log) <<  " "  << std::setw(11) << std::setprecision(4) << 98.0*M/U_0/t_ref;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_2;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_2_r;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_2_sgs;
+    (*log) << "\n";
+    (*log) <<  " "  << std::setw(11) << std::setprecision(4) << 171.0*M/U_0/t_ref;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_3;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_3_r;
+    (*log) << "     " << std::setw(11) << std::setprecision(4) << q_3_sgs;
+    (*log) << "\n\n\n";
+    log->flush();
+  }
+
+//  double test = 0.0;
+//  for (std::size_t rr = 0; rr < E_exp_1.size(); rr++)
+//  {
+//    test += E_exp_1[rr];
+//  }
+//  std::cout << "test  " << test << std::endl;
+
+  return;
+}
+
+
+} //end namespace FLD

@@ -41,9 +41,6 @@
 #include "../drt_mat/elchphase.H"
 #include "../drt_mat/newman.H"
 
-// include define flags for turbulence models under development
-#include "../drt_fluid/fluid_turbulence_defines.H"
-
 //TODO(ehrl): Dirichlet for eliminated species
 
 //#define DEBUG_BATTERY

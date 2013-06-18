@@ -40,10 +40,12 @@ Maintainer: Andreas Ehrl
 #include "scatra_utils.H"
 #include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
-#include "../drt_fluid/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
+#include "turbulence_hit_initial_scalar_field.H"
+#include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_SerialDenseVector.h>
 
@@ -129,6 +131,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
   DynSmag_(Teuchos::null),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
+  forcing_(Teuchos::null),
+  homisoturb_forcing_(Teuchos::null),
   reinitswitch_(extraparams->get<bool>("REINITSWITCH",false)),
   updateprojection_(false),
   upres_    (params->get<int>("UPRES")),
@@ -543,6 +547,24 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // subgrid-viscosity approach are intended to be used simultaneously
     if (turbmodel_==INPAR::FLUID::smagorinsky and fssgd_ != INPAR::SCATRA::fssugrdiff_no)
       dserror("No combination of classical turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
+  }
+
+  // -------------------------------------------------------------------
+  // initialize forcing for homogeneous isotropic turbulence
+  // -------------------------------------------------------------------
+  // flag for special flow
+  special_flow_ = extraparams_->sublist("TURBULENCE MODEL").get<std::string>("CANONICAL_FLOW","no");
+  if (scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
+  {
+    if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
+    {
+      if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
+      {
+        forcing_ = LINALG::CreateVector(*dofrowmap,true);
+        forcing_->PutScalar(0.0);
+        homisoturb_forcing_ = Teuchos::rcp(new SCATRA::HomIsoTurbScalarForcing(this));
+      }
+    }
   }
 
   // -------------------------------------------------------------------
@@ -1331,6 +1353,15 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Solve()
 {
+  // -----------------------------------------------------------------
+  // intermediate solution step for homogeneous isotropic turbulence
+  // -----------------------------------------------------------------
+  if (solvtype_==INPAR::SCATRA::solvertype_nonlinear)
+    CalcIntermediateSolution();
+
+  // -----------------------------------------------------------------
+  //                     solve (non-)linear equation
+  // -----------------------------------------------------------------
   if (solvtype_==INPAR::SCATRA::solvertype_nonlinear)
     NonlinearSolve();
   else
@@ -1986,6 +2017,20 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     }
   break;
   }
+  case INPAR::SCATRA::initialfield_forced_hit_high_Sc:
+  case INPAR::SCATRA::initialfield_forced_hit_low_Sc:
+  {
+    // initialize calculation of initial field based on fast Fourier transformation
+    Teuchos::RCP<HomIsoTurbInitialScalarField> HitInitialScalarField = Teuchos::rcp(new SCATRA::HomIsoTurbInitialScalarField(*this,init));
+    // calculate initial field
+    HitInitialScalarField->CalculateInitialField();
+
+    // initialize forcing algorithm
+    if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
+      homisoturb_forcing_->SetInitialSpectrum(init);
+
+    break;
+  }
   default:
     dserror("Unknown option for initial field: %d", init); break;
   } // switch(init)
@@ -2469,6 +2514,13 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
+
+  // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
+  if (homisoturb_forcing_ != Teuchos::null)
+    homisoturb_forcing_->UpdateForcing(step_);
+
+  if (forcing_!=Teuchos::null)
+    discret_->SetState("forcing",forcing_);
 
   // add reinitialization specific time-integration parameters
   if (reinitswitch_) AddReinitializationParameters(eleparams);

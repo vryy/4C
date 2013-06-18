@@ -105,7 +105,7 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 
 
   FluidField().PrepareSolve();
-  FluidField().NonlinearSolve();
+  FluidField().Solve();
 }
 
 

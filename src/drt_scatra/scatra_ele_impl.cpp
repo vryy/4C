@@ -866,7 +866,51 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         mfs_conservative_ = true;
         else
           dserror("Unknown form of convective term!");
+        if (scatratype == INPAR::SCATRA::scatratype_loma and mfs_conservative_)
+          dserror("Conservative formulation not supported for loma!");
       }
+    }
+
+    // ---------------------------------------------------------------------
+    // call routine for calculation of body force in element nodes
+    // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
+    // ---------------------------------------------------------------------
+    BodyForce(ele,time);
+
+    // set externally calculated source term instead of body force by volume
+    // Neumann boundary condition of input file
+    if (params.sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
+    {
+      // extract additional local values from global vector
+      Teuchos::RCP<const Epetra_Vector> source = discretization.GetState("forcing");
+      std::vector<double> mysource(lm.size());
+      DRT::UTILS::ExtractMyValues(*source,mysource,lm);
+
+      // fill element array
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numdofpernode_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          bodyforce_[k](i,0) = mysource[k+(i*numdofpernode_)];
+        }
+      } // for i
+    }
+    // special forcing mean scalar gradient
+    else if (params.sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="mean_scalar_gradient")
+    {
+      // get mean-scalar gradient
+      const double grad_phi = params.sublist("TURBULENCE MODEL").get<double>("MEAN_SCALAR_GRADIENT");
+
+      // fill element array
+      for (int i=0;i<nen_;++i)
+      {
+        for (int k = 0; k< numdofpernode_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          bodyforce_[k](i,0) = -grad_phi*evelnp_(2,i);
+        }
+      } // for i
     }
 
     // calculate element coefficient matrix and rhs
@@ -1656,12 +1700,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
   )
 {
-  // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
-  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
-  // ---------------------------------------------------------------------
-  BodyForce(ele,time);
-
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------

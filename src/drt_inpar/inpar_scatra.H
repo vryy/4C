@@ -66,7 +66,9 @@ namespace INPAR
       initfield_raytaymixfrac,
       initfield_Lshapeddomain,
       initfield_facing_flame_fronts,
-      initfield_oracles_flame
+      initfield_oracles_flame,
+      initialfield_forced_hit_high_Sc,
+      initialfield_forced_hit_low_Sc
     };
 
     /// form of convective term

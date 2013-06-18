@@ -287,7 +287,7 @@ namespace FLD
     void PrepareSolve() { PrepareNonlinearSolve(); }
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
-    void NonlinearSolve();
+    void Solve();
 
     /// solve linearised fluid
     void LinearSolve();
@@ -299,8 +299,6 @@ namespace FLD
     /// predictor
 //    void Predictor();
 
-    /// (multiple) corrector
-//    void MultiCorrector();
 
     Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 

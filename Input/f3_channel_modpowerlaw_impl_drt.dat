@@ -1,8 +1,8 @@
 //
-// Maintainer: Ursula Mayer
-// mayer@lnm.mw.tum.de
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15257
+// 089 - 289-15236
 //
 // necessary defines: D_FLUID3 BINIO
 //
@@ -2877,8 +2877,8 @@ FLUID DIS fluid NODE 43 QUANTITY velx VALUE 2.292374942e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 43 QUANTITY vely VALUE 1.621948763e-21 TOLERANCE 1e-9
 FLUID DIS fluid NODE 43 QUANTITY velz VALUE 0.000000000e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 43 QUANTITY pressure VALUE 2.339423750e-02 TOLERANCE 1e-9
-FLUID DIS fluid NODE 271 QUANTITY tractionx VALUE 4.675919660e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 271 QUANTITY tractiony VALUE -4.789241459e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 271 QUANTITY tractionx VALUE 4.67591943306645219e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 271 QUANTITY tractiony VALUE -4.78924164253351992e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 271 QUANTITY tractionz VALUE 2.379503504e-02 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

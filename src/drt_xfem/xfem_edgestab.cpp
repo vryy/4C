@@ -26,7 +26,7 @@ Maintainer: Benedikt Schott
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
-#include "../drt_fluid/xfluid_defines.H"
+#include "../drt_fluid_xfluid/xfluid_defines.H"
 
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_fluid.H"

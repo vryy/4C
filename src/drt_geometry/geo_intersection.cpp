@@ -15,7 +15,7 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "../drt_fluid/xfluid_defines.H"
+#include "../drt_fluid_xfluid/xfluid_defines.H"
 
 #include "../drt_io/io_pstream.H"
 

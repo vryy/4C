@@ -33,8 +33,8 @@ Maintainer: Florian Henke
 #include "../drt_fluid/fluid_utils_time_integration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
-#include "../drt_fluid/drt_transfer_turb_inflow.H"
-#include "../drt_fluid/turbulence_statistic_manager.H"
+#include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
+#include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_io/io.H"
@@ -551,8 +551,8 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
       IO::cout << "/!\\ warning: 'time' and 'time step' are set to 0.0 and 1.0 for output control file" << IO::endl;
       timealgo_ = INPAR::FLUID::timeint_stationary;
       time_ =  0.0; // only needed for output
-      dta_ =   1.0; // for calculation, we reset this value at the end of NonlinearSolve()
-      dtp_ =   1.0; // for calculation, we reset this value at the end of NonlinearSolve()
+      dta_ =   1.0; // for calculation, we reset this value at the end of Solve()
+      dtp_ =   1.0; // for calculation, we reset this value at the end of Solve()
       theta_ = 1.0;
       // set max iterations for initial stationary algorithm
       itemax_ = params_->get<int>("max nonlin iter steps init stat sol");
@@ -630,7 +630,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
 /*------------------------------------------------------------------------------------------------*
  | prepare a fluid nonlinear iteration                                                henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
+void FLD::CombustFluidImplicitTimeInt::PrepareSolve()
 {
 
   // -------------------------------------------------------------------
@@ -1333,7 +1333,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
   if (hist->MyLength() != accn->MyLength())
     dserror("vectors must have the same length");
 
-  //TODO es ist sowas auch noch in PrepareNonlinearSolve(). Was brauchen wir?
+  //TODO es ist sowas auch noch in PrepareSolve(). Was brauchen wir?
   //stationary case (timealgo_== INPAR::FLUID::timeint_stationary))
   if ( (timealgo_==INPAR::FLUID::timeint_one_step_theta) or
        (timealgo_==INPAR::FLUID::timeint_afgenalpha) )
@@ -1347,11 +1347,11 @@ Teuchos::RCP<const Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
 /*------------------------------------------------------------------------------------------------*
  | solve the nonlinear fluid problem                                                  henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
+void FLD::CombustFluidImplicitTimeInt::Solve()
 {
   while (!FluidRefSolLoopFinished()) // iterator between NS-solution and recomputation of reference solution
   {
-    PrepareNonlinearSolve();
+    PrepareSolve();
 
     TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
@@ -2679,7 +2679,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // --------------------------
   // dump turbulence statistics
   // --------------------------
-  turbstatisticsmanager_->DoOutput((*output_), step_, 0.0);
+  turbstatisticsmanager_->DoOutput((*output_), step_, 0);
 
 //  if (step_%upres_ == 0)  //write solution
 //  {

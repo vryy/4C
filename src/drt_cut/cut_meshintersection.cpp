@@ -23,7 +23,7 @@ Maintainer: Benedikt Schott
 
 #include "cut_meshintersection.H"
 
-#include "../drt_fluid/xfluid_defines.H"
+#include "../drt_fluid_xfluid/xfluid_defines.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

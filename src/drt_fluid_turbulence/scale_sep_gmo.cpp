@@ -1,4 +1,4 @@
-#include "../drt_fluid/scale_sep_gmo.H"
+#include "scale_sep_gmo.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_cut/cut_position.H"

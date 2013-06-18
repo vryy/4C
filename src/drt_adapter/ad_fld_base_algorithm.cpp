@@ -30,8 +30,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/xfluid.H"
-#include "../drt_fluid/xfluidfluid.H"
+#include "../drt_fluid_xfluid/xfluid.H"
+#include "../drt_fluid_xfluid/xfluidfluid.H"
 #include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../linalg/linalg_solver.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>

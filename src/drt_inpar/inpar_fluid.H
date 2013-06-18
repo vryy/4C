@@ -189,7 +189,11 @@ namespace INPAR
       initfield_flame_vortex_interaction,
       initfield_beltrami_flow,
       initfield_kim_moin_flow,
-      initfield_bochev_test
+      initfield_bochev_test,
+      initialfield_hit_comte_bellot_corrsin,
+      initialfield_forced_hit_simple_algebraic_spectrum,
+      initialfield_forced_hit_numeric_spectrum,
+      initialfield_passive_hit_const_input
     };
 
     /// initial field
@@ -244,6 +248,13 @@ namespace INPAR
       no_fssgv,
       smagorinsky_all,
       smagorinsky_small
+    };
+
+    //! options for forcing of homogeneous isotropic turbulence
+    enum ForcingType
+    {
+      linear_compensation_from_intermediate_spectrum,
+      fixed_power_input
     };
 
     //! linearisation actions recognized by fluid3 (genalpha implementation)

@@ -365,7 +365,7 @@ void LOMA::Algorithm::OuterLoop()
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) cout<<"\n****************************************\n              FLUID SOLVER\n****************************************\n";
-    FluidField().MultiCorrector();
+    FluidField().Solve();
 
     // set fluid values required in scatra
     SetFluidValuesInScaTra();

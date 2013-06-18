@@ -2,7 +2,7 @@
 #include "ad_fld_fluid_fluid_fsi.H"
 
 #include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_fluid/xfluidfluid.H"
+#include "../drt_fluid_xfluid/xfluidfluid.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
