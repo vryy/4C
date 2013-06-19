@@ -160,7 +160,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
   {
     case INPAR::FLUID::condensed_bmat:
-    case INPAR::FLUID::sps_pc:
     {
       // meshtying fluid (formulation as saddle point problem)
 
@@ -252,7 +251,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     break;
     case INPAR::FLUID::condensed_smat:
     case INPAR::FLUID::condensed_bmat_merged:
-    case INPAR::FLUID::sps_coupled:
     case INPAR::FLUID::coupling_iontransport_laplace:
     { // meshtying (no saddle point problem)
       const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
@@ -319,41 +317,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           {
             actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
             actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
-          }
-          break;
-        } // end switch azprectype
-      }
-      break;
-      case INPAR::FLUID::sps_pc:
-      {
-        const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
-        const int mshsolver = mshparams.get<int>("LINEAR_SOLVER");        // meshtying solver (with block preconditioner, e.g. BGS 2x2)
-
-        // check, if meshtying solver is used with a valid block preconditioner
-        const int azprectype
-          = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
-              DRT::Problem::Instance()->SolverParams(mshsolver),
-              "AZPREC"
-              );
-
-        // meshtying fluid
-        // pure saddle point problem. only SIMPLE type preconditioners available
-        // the standard nullspace is computed for the constraint block within the SIMPLE block preconditioner class
-        switch (azprectype)
-        {
-          // block preconditioners, that are implemented in BACI
-          case INPAR::SOLVER::azprec_CheapSIMPLE:
-          {
-            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
-            //actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
-          }
-          break;
-          case INPAR::SOLVER::azprec_BGS2x2:
-          case INPAR::SOLVER::azprec_BGSnxn:      // block preconditioners from Teko
-          case INPAR::SOLVER::azprec_TekoSIMPLE:
-          {
-            actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
-            //actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
           }
           break;
         } // end switch azprectype

@@ -224,8 +224,6 @@ namespace INPAR
       condensed_smat,
       condensed_bmat,
       condensed_bmat_merged,
-      sps_coupled,
-      sps_pc,
       coupling_iontransport_laplace
     };
 

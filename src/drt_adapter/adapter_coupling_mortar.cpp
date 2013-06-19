@@ -573,9 +573,8 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
 
   // check for invalid parameter values
-  if(meshtyingoption != INPAR::FLUID::sps_coupled and meshtyingoption != INPAR::FLUID::sps_pc)
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
-      dserror("Condensation works only for dual shape functions");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+    dserror("Condensation works only for dual shape functions");
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
     dserror("Mortar coupling adapter only works for segment-based integration");
 
@@ -733,12 +732,7 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // TODO: Difference between condensed and saddlePointproblem
   //       parallel distribution
   // finalize the contact interface construction
-  if(meshtyingoption != INPAR::FLUID::sps_coupled or meshtyingoption != INPAR::FLUID::sps_pc) // Saddle point problem
-  {
-    interface->FillComplete(dis.DofRowMap()->MaxAllGID());
-  }
-  else
-    interface->FillComplete();
+  interface->FillComplete(dis.DofRowMap()->MaxAllGID());
 
   // store old row maps (before parallel redistribution)
   slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
@@ -826,29 +820,26 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
 
-  if(meshtyingoption != INPAR::FLUID::sps_coupled or meshtyingoption != INPAR::FLUID::sps_pc)  // Saddle point problem
-  {
-    // make numbering of LM dofs consecutive and unique across N interfaces
-    int offset_if = 0;
+  // make numbering of LM dofs consecutive and unique across N interfaces
+  int offset_if = 0;
 
-    // build Lagrange multiplier dof map
-    interface->UpdateLagMultSets(offset_if);
+  // build Lagrange multiplier dof map
+  interface->UpdateLagMultSets(offset_if);
 
-    glmdofrowmap_ = Teuchos::null;
-    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface->LagMultDofs());
+  glmdofrowmap_ = Teuchos::null;
+  glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface->LagMultDofs());
 
-    offset_if = glmdofrowmap_->NumGlobalElements();
-    if (offset_if < 0) offset_if = 0;
+  offset_if = glmdofrowmap_->NumGlobalElements();
+  if (offset_if < 0) offset_if = 0;
 
-    // first setup
-    Teuchos::RCP<LINALG::SparseMatrix> constrmt = Teuchos::rcp(new LINALG::SparseMatrix(*(dis.DofRowMap()),100,false,true));
-    constrmt->Add(*D_,true,1.0,1.0);
-    constrmt->Add(*M_,true,-1.0,1.0);
-    constrmt->Complete(*slavedofrowmap_,*(dis.DofRowMap()));
+  // first setup
+  Teuchos::RCP<LINALG::SparseMatrix> constrmt = Teuchos::rcp(new LINALG::SparseMatrix(*(dis.DofRowMap()),100,false,true));
+  constrmt->Add(*D_,true,1.0,1.0);
+  constrmt->Add(*M_,true,-1.0,1.0);
+  constrmt->Complete(*slavedofrowmap_,*(dis.DofRowMap()));
 
-    conmatrix_ = MORTAR::MatrixColTransformGIDs(constrmt,glmdofrowmap_);
+  conmatrix_ = MORTAR::MatrixColTransformGIDs(constrmt,glmdofrowmap_);
 
-  }
   // store interface
   interface_ = interface;
 

@@ -2593,16 +2593,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Condensed_Smat",
                                     "Condensed_Bmat",
                                     "Condensed_Bmat_merged",
-                                    "SaddlePointSystem_coupled",
-                                    "SaddlePointSystem_pc",
                                     "Coupling_ionTransport_Laplace"),
                                   tuple<int>(
                                       INPAR::FLUID::no_meshtying,
                                       INPAR::FLUID::condensed_smat,
                                       INPAR::FLUID::condensed_bmat,
                                       INPAR::FLUID::condensed_bmat_merged,
-                                      INPAR::FLUID::sps_coupled,
-                                      INPAR::FLUID::sps_pc,
                                       INPAR::FLUID::coupling_iontransport_laplace),
                                   &fdyn);
 
@@ -3841,16 +3837,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "Condensed_Smat",
                                       "Condensed_Bmat",
                                       "Condensed_Bmat_merged",
-                                      "SaddlePointSystem_coupled",
-                                      "SaddlePointSystem_pc",
                                       "Coupling_ionTransport_Laplace"), //use the condensed_bmat_merged strategy
                                     tuple<int>(
                                         INPAR::FLUID::no_meshtying,
                                         INPAR::FLUID::condensed_smat,
                                         INPAR::FLUID::condensed_bmat,
                                         INPAR::FLUID::condensed_bmat_merged,
-                                        INPAR::FLUID::sps_coupled,
-                                        INPAR::FLUID::sps_pc,
                                         INPAR::FLUID::coupling_iontransport_laplace),   //use the condensed_bmat_merged strategy
                                     &scatradyn);
 

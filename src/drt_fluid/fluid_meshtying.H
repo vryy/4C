@@ -100,9 +100,6 @@ class Meshtying
     //! Adjust null-space for Krylov projector (slave node are in-active)
     void AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec);
 
-    //! Time update for Lagrange multiplier
-    void UpdateLag();
-
     //! Output: maps & projection matrix
     void OutputSetUp();
 
@@ -126,9 +123,6 @@ class Meshtying
         Teuchos::RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
 
   private:
-
-    //! Adjust the residual for a saddle point system (PrepareMeshtyingSystem)
-    void ResidualSaddlePointSystem(Teuchos::RCP<Epetra_Vector>  residual);   ///> residual established by the element routine
 
     //! Prepare condensation for a block matrix (PrepareMeshtyingSystem)
     void CondensationBlockMatrix(Teuchos::RCP<LINALG::SparseOperator>&   sysmat,     ///> sysmat established by the element routine
@@ -172,26 +166,6 @@ class Meshtying
     //! Compute and update the increments of the slave node (Condensation)
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc);
 
-    //! Prepare the saddle point system in sparse matrix
-    /// the system can only be solved by Umfpack
-    void PrepareSaddlePointSystem(
-        Teuchos::RCP<LINALG::SparseOperator>    sysmat,            ///> sysmat established by the element routine
-        Teuchos::RCP<LINALG::SparseMatrix>      mergedsysmat,      ///> merged sysmat (including Lagrange multiplier)
-        Teuchos::RCP<Epetra_Vector>             residual,          ///> residual established by the element routine
-        Teuchos::RCP<Epetra_Vector>             mergedresidual);   ///> merged residual (including Lagrange multiplier)
-
-    //! Prepare the saddle point system in block matrix
-    /// the system can only be solved by SIMPLER algorithm
-    void PrepareSaddlePointSystemPC(
-        Teuchos::RCP<LINALG::SparseOperator>        sysmat,            ///> sysmat established by the element routine
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksysmat,       ///> merged sysmat (including Lagrange multiplier)
-        Teuchos::RCP<Epetra_Vector>                 residual,          ///> residual established by the element routine
-        Teuchos::RCP<Epetra_Vector>                 mergedresidual);   ///> merged residual (including Lagrange multiplier)
-
-    //! Update increment and Lagrange multiplier after each Newton iteration
-    void UpdateSaddlePointSystem(
-        Teuchos::RCP<Epetra_Vector>      inc,            ///> original increment
-        Teuchos::RCP<Epetra_Vector>      mergedinc);     ///> merged increment
 
   private:
 
