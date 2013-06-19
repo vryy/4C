@@ -1456,7 +1456,11 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(Teuchos::ParameterList& params, 
   Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
 
   bool shearflow = false;
-  if(dbctype==INPAR::STATMECH::dbctype_shearfixed || dbctype==INPAR::STATMECH::dbctype_sheartrans || dbctype==INPAR::STATMECH::dbctype_affineshear)
+  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
+     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
+     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
+     dbctype==INPAR::STATMECH::dbctype_affineshear||
+     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
     shearflow = true;
   //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
   if(periodlength->at(0) > 0.0)

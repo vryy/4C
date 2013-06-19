@@ -5031,18 +5031,15 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
   int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
   int oscdir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
   double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
-  // incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir 0.0)
-  double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                       DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
 
 //------------------------------------------------------gather dbc node set(s)
-  // note: we need column map displacements as we might need access to ghost nodes
-  Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(), true));
-  LINALG::Export(*dis, *discol);
-  // loop over row elements
   // after the the very first entry into the following part, reenter only if the Dirichlet Node Set is dynamically updated
   if(!useinitdbcset_)
   {
+    // note: we need column map displacements as we might need access to ghost nodes
+    Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(), true));
+    LINALG::Export(*dis, *discol);
+
     // clear node sets, as they will be filled for the first time or updated with new node sets
     dbcnodesets_.clear();
     // vectors to manipulate DBC
@@ -5067,15 +5064,13 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
         // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
         LINALG::SerialDenseMatrix cut(numdof,(int)discret_->lRowElement(lid)->NumNode()-1,true);
 //-------------------------------- obtain nodal coordinates of the current element
-        // get nodal coordinates and LIDs of the nodal DOFs
-        // store LIDs of element node dofs
         std::vector<int> doflids;
         GetElementNodeCoords(element, discol, coord, &doflids);
 //-----------------------detect broken/fixed/free elements and fill position vector
         // determine existence and location of broken element
         if(CheckForBrokenElement(coord,cut))
         {
-            // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
+          // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
           // only for Beam3ii case
           if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && dbctype == INPAR::STATMECH::dbctype_shearfixeddel)
           {
@@ -5090,64 +5085,57 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
               }
             }
           }
-
+          // loop over number of cuts (columns)
           for(int n=0; n<cut.N(); n++)
           {
             int nodelidn = discret_->NodeColMap()->LID(element->Nodes()[n]->Id());
-            if(nodelidn>-1)
-            {
-              if(nodedbcstatus.at(nodelidn)==false)
-              {
-                switch((int)(round(cut(2,n))))
-                {
-                  // case 1: broken element (in z-dir); node_n+1 displaced, node_n is fixed in dir. of displacement
-                  case 1:
-                  {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 n"<<endl;
-                    nodedbcstatus.at(nodelidn) = true;
-                    fixednodes.push_back(element->Nodes()[n]->Id());
-                  }
-                  break;
-                  // case 2: broken element (in z-dir); node_n displaced, node_n+1 is fixed in dir. of displacement
-                  case 2:
-                  {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 n"<<endl;
-                    nodedbcstatus.at(nodelidn) = true;
-                    oscillnodes.push_back(element->Nodes()[n]->Id());
-                    (*deltadbc)[doflids.at(numdof*n+oscdir)] =  (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
-                  }
-                  break;
-                }
-              }
-            }
             int nodelidnp = discret_->NodeColMap()->LID(element->Nodes()[n+1]->Id());
-            //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp = "<<nodelidnp<<"/"<<discret_->NodeRowMap()->GID(nodelidnp)<<endl;
-            if(nodelidnp>-1)
+            int noderowlidn = discret_->NodeRowMap()->LID(element->Nodes()[n]->Id());
+            int noderowlidnp = discret_->NodeRowMap()->LID(element->Nodes()[n+1]->Id());
+
+            // only consider this node pair if it is not already subject to Dirichlet BCs
+            if(nodedbcstatus.at(nodelidn)==false && nodedbcstatus.at(nodelidnp)==false)
             {
-              //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp cut = "<<(int)cut(2,n)<<endl;
-              if(nodedbcstatus.at(nodelidnp)==false)
+              // case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
+              if(cut(2,n)==1.0)
               {
-                switch((int)(round(cut(2,n))))
+                // update dbc status for these nodes (dofs)
+                nodedbcstatus.at(nodelidn) = true;
+                nodedbcstatus.at(nodelidnp) = true;
+                // add GID of fixed node to fixed-nodes-vector (to be added to condition later)
+                if(noderowlidn>-1)
+                  fixednodes.push_back(element->Nodes()[n]->Id());
+                // add GID of oscillating node to osc.-nodes-vector
+                if(noderowlidnp>-1)
                 {
-                  // case 1: broken element (in z-dir); node_n+1 displaced, node_n is fixed in dir. of displacement
-                  case 1:
-                  {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 np"<<endl;
-                    nodedbcstatus.at(nodelidnp) = true;
-                    oscillnodes.push_back(element->Nodes()[n+1]->Id());
-                    (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*tcincrement;
-                  }
-                  break;
-                  // case 2: broken element (in z-dir); node_n displaced, node_n+1 is fixed in dir. of displacement
-                  case 2:
-                  {
-                   // cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 np"<<endl;
-                    nodedbcstatus.at(nodelidnp) = true;
-                    fixednodes.push_back(element->Nodes()[n+1]->Id());
-                  }
-                  break;
+                  oscillnodes.push_back(element->Nodes()[n+1]->Id());
+
+                  // incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
+                  // time curve increment
+                  double tcincrement = 0.0;
+                  if(curvenumber>-1)
+                    tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                                  DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+                  (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
                 }
-              }
+              }// end of case 1
+              if(cut(2,n)==2.0)// case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
+              {
+                nodedbcstatus.at(nodelidn) = true;
+                nodedbcstatus.at(nodelidnp) = true;
+                if(noderowlidnp>-1)
+                  fixednodes.push_back(element->Nodes()[n+1]->Id());
+                // oscillating node
+                if(noderowlidn>-1)
+                {
+                  oscillnodes.push_back(element->Nodes()[n]->Id());
+                  double tcincrement = 0.0;
+                  if(curvenumber>-1)
+                    tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                                  DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+                  (*deltadbc)[doflids.at(numdof*n+oscdir)] = amp*tcincrement;
+                }
+              } // end of case 2
             }
           }
         }
@@ -5156,155 +5144,26 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
 //-----------------------------------------update node sets
     dbcnodesets_.push_back(oscillnodes);
     dbcnodesets_.push_back(fixednodes);
-
 //---------check/set force sensors anew for each time step
-    // add DOF LID where a force sensor is to be set
     UpdateForceSensors(dbcnodesets_[0], oscdir);
-    //if(!discret_->Comm().MyPID())
-    //  cout<<"\n=========================================="<<endl;
-    //for(int pid=0; pid<discret_->Comm().NumProc();pid++)
-    //{
-    //  if(pid==discret_->Comm().MyPID())
-    //    cout<<"UpdateForceSensors_"<<pid<<": "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
-    //  discret_->Comm().Barrier();
-    //}
-    //cout<<"==========================================\n"<<endl;
   }
   else // only ever use the fixed set of nodes after the first time dirichlet values were imposed
   {
+    // dofs of fixednodes_ remain untouched since fixednodes_ dofs are 0.0
     for(int i=0; i<(int)dbcnodesets_[0].size(); i++)
     {
       int nodelid = discret_->NodeRowMap()->LID(dbcnodesets_[0][i]);
       DRT::Node* oscnode = discret_->lRowNode(nodelid);
       std::vector<int> dofnode = discret_->Dof(oscnode);
       // oscillating node
-      double znode = oscnode->X()[2] + (*dis)[discret_->DofRowMap()->LID(dofnode[2])];
-      double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                           DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-      (*deltadbc)[discret_->DofRowMap()->LID(dofnode[oscdir])] = znode/(*periodlength_)[2]*amp*tcincrement;
+      double tcincrement = 0.0;
+      if(curvenumber>-1)
+        tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                      DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+      (*deltadbc)[discret_->DofRowMap()->LID(dofnode[oscdir])] = amp*tcincrement;
     }
-    // dofs of fixednodes_ remain untouched since displacement at fixednodes_ dofs are 0.0
   }
   return;
-//  INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE");
-//  const double time = params.get<double>("total time", 0.0); // note: target time (i.e. timen_)
-//  double dt = params.get<double>("delta time", 0.01);
-//  int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
-//  int oscdir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
-//  double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
-//  // time curve increment from curve definition in input file
-//  double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-//                       DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-//  //------------------------------------------------------gather dbc node set(s)
-//  // note: we need column map displacements as we might need access to ghost nodes
-//  Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(), true));
-//  LINALG::Export(*dis, *discol);
-//
-//  // after the the very first entry into the following part, reenter only if the Dirichlet Node Set is dynamically updated
-//  if(!useinitdbcset_)
-//  {
-//    // clear node sets, as they will be filled for the first time or updated with new node sets
-//    dbcnodesets_.clear();
-//    // vectors to manipulate DBC
-//    std::vector<int> oscillnodes;
-//    std::vector<int> fixednodes;
-//    oscillnodes.clear();
-//    fixednodes.clear();
-//    // toggle vector
-//    std::vector<bool> nodedbcstatus(discret_->NumMyColNodes(), false);
-//
-//    for(int lid=0; lid<discret_->NumMyRowElements(); lid++)
-//    {
-//      // An element used to browse through local Row Elements
-//      DRT::Element* element = discret_->lRowElement(lid);
-//      // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
-//      if(element->Id() <= basisnodes_ && element->Id() < statmechparams_.get<int>("NUM_EVAL_ELEMENTS", basiselements_))
-//      {
-//        // number of translational DOFs
-//        int numdof = 3;
-//        // positions of nodes of an element with n nodes
-//        LINALG::SerialDenseMatrix coord(numdof,(int)discret_->lRowElement(lid)->NumNode(), true);
-//        // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
-//        LINALG::SerialDenseMatrix cut(numdof,(int)discret_->lRowElement(lid)->NumNode()-1,true);
-//        //-------------------------------- obtain nodal coordinates of the current element
-//        // get nodal coordinates and LIDs of the nodal DOFs
-//        // store LIDs of element node dofs
-//        std::vector<int> doflids;
-//        GetElementNodeCoords(element, discol, coord, &doflids);
-//        //-----------------------detect broken/fixed/free elements and fill position vector
-//        // determine existence and location of broken element
-//        if(CheckForBrokenElement(coord,cut))
-//        {
-//          // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
-//          // only for Beam3ii case
-//          if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && dbctype == INPAR::STATMECH::dbctype_shearfixeddel)
-//          {
-//            for(int n=0; n<cut.N(); n++)
-//            {
-//              if(cut(2,n)>0.0)
-//              {
-//                //cout<<"Element "<<element->Id()<<" now has a reduced cross section"<<endl;
-//                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-9);
-//                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-9);
-//                break;
-//              }
-//            }
-//          }
-//
-//          // loop over number of cuts (columns)
-//          for(int n=0; n<cut.N(); n++)
-//          {
-//            int nodelidn = discret_->NodeColMap()->LID(element->Nodes()[n]->Id());
-//            int nodelidnp = discret_->NodeColMap()->LID(element->Nodes()[n+1]->Id());
-//
-//            // only consider this node pair if it is not already subject to Dirichlet BCs
-//            if(nodedbcstatus.at(nodelidn)==false && nodedbcstatus.at(nodelidnp)==false)
-//            {
-//              // case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
-//              if(cut(2,n)==1.0)
-//              {
-//                nodedbcstatus.at(nodelidn) = true;
-//                nodedbcstatus.at(nodelidnp) = true;
-//                fixednodes.push_back(element->Nodes()[n]->Id());
-//                oscillnodes.push_back(element->Nodes()[n+1]->Id());
-//                cout<<"ampfrac = "<<(coord(2,n+1)/(*periodlength_)[2])<<", oscdir = "<<oscdir<<endl;
-//                (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*tcincrement;
-//              }
-//              else if(cut(2,n)==2.0)// case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
-//              {
-//                nodedbcstatus.at(nodelidn) = true;
-//                nodedbcstatus.at(nodelidnp) = true;
-//                oscillnodes.push_back(element->Nodes()[n]->Id());
-//                fixednodes.push_back(element->Nodes()[n+1]->Id());
-//                cout<<"ampfrac = "<<(coord(2,n)/(*periodlength_)[2])<<", oscdir = "<<oscdir<<", doflid = "<<doflids.at(numdof*n+oscdir)<<", doflidpos = "<<numdof*n+oscdir<<endl;
-//                (*deltadbc)[doflids.at(numdof*n+oscdir)] = (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
-//              } // end of case 2
-//            }
-//          }
-//        }
-//      }
-//    }
-//    //-----------------------------------------update node sets
-//    dbcnodesets_.push_back(oscillnodes);
-//    dbcnodesets_.push_back(fixednodes);
-//
-//    //---------check/set force sensors anew for each time step
-//    UpdateForceSensors(dbcnodesets_[0], oscdir);
-//  }
-//  else // only ever use the fixed set of nodes after the first time dirichlet values were imposed
-//  {
-//    for(int i=0; i<(int)dbcnodesets_[0].size(); i++)
-//    {
-//      int nodelid = discret_->NodeRowMap()->LID(dbcnodesets_[0][i]);
-//      DRT::Node* oscnode = discret_->lRowNode(nodelid);
-//      std::vector<int> dofnode = discret_->Dof(oscnode);
-//      double znode = oscnode->X()[2] + (*discol)[discret_->DofColMap()->LID(dofnode[2])];
-//      cout<<"znode = "<<znode<<", ampfrac = "<<znode/(*periodlength_)[2]<<", doflid = "<<discret_->DofColMap()->LID(dofnode[oscdir])<<", oscdir = "<<oscdir<<endl;
-//      (*deltadbc)[discret_->DofColMap()->LID(dofnode[oscdir])] = znode/(*periodlength_)[2]*amp*tcincrement;
-//    }
-//    // note: dofs of fixednodes_ remain untouched since fixednodes_ dofs are 0.0
-//  }
-//  return;
 }
 
 /*----------------------------------------------------------------------*

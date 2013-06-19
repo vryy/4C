@@ -1239,7 +1239,11 @@ void DRT::ELEMENTS::BeamCL::MyBackgroundVelocity(Teuchos::ParameterList&       p
   INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
 
   bool shearflow = false;
-  if(dbctype==INPAR::STATMECH::dbctype_shearfixed || dbctype==INPAR::STATMECH::dbctype_sheartrans || dbctype==INPAR::STATMECH::dbctype_affineshear)
+  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
+     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
+     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
+     dbctype==INPAR::STATMECH::dbctype_affineshear||
+     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
     shearflow = true;
 
   //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
