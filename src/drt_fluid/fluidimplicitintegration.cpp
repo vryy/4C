@@ -2680,9 +2680,6 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   if ( physicaltype_ == INPAR::FLUID::poro_p1 )
     gridvn_ ->Update(1.0,*gridv_,0.0);
 
-  if (msht_== INPAR::FLUID::sps_coupled or msht_== INPAR::FLUID::sps_pc)
-    meshtying_->UpdateLag();
-
   if (alefluid_)
   {
     dispnm_->Update(1.0,*dispn_,0.0);
