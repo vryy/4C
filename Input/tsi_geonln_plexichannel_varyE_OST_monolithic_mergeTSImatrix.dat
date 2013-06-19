@@ -330,8 +330,8 @@ NDSURF  5
 NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
-// surface_orthopressure
-E 3 - 1 1 0 0 0 0 0 -5.0e5 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+// surface_pseudo_orthopressure
+E 3 - 1 1 0 0 0 0 0 -5.0e5 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // bottom_line_fixed_xyz

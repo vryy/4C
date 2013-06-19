@@ -138,8 +138,8 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
-E 5 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
-E 7 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+E 5 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
+E 7 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

@@ -149,7 +149,7 @@ DLINE                           0
 DSURF                           1
 // 5 ist tip
 //E 5 - 1 0 0 1 0 0 0 0.0 0.0 -5.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-E 3 - 1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+E 3 - 1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
 DVOL                            0

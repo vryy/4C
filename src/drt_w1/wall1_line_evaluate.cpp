@@ -28,9 +28,8 @@ Maintainer: Markus Gitterle
 using POTENTIAL::PotentialManager;
 
 /*----------------------------------------------------------------------*
- |  Integrate a Line Neumann boundary condition (public)      mgit 03/07|
+ |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
  *----------------------------------------------------------------------*/
-
 int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
@@ -38,18 +37,28 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1)
 {
+  // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load
+  // acting on the spatial configuration. Therefore, it needs to be linearized. On the
+  // contrary, the simplified 'neum_pseudo_orthopressure' option allows for an approximative
+  // modeling of an orthopressure load without the need to do any linearization. However,
+  // this can only be achieved by referring the 'neum_pseudo_orthopressure' load to the last
+  // converged configuration, which introduces an error as compared with 'neum_orthopressure'.
+  bool loadlin = (elemat1!=NULL);
+
   // get type of condition
   enum LoadType
   {
     neum_none,
-    neum_live,
-    neum_orthopressure
+    neum_live,                 // standard Neumann load
+    neum_pseudo_orthopressure, // pseudo-orthopressure load
+    neum_orthopressure         // orthopressure load
   };
 
   LoadType ltype = neum_none;
   const string* type = condition.Get<string>("type");
-  if      (*type == "neum_live")          ltype = neum_live;
-  else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
+  if      (*type == "neum_live")                 ltype = neum_live;
+  else if (*type == "neum_pseudo_orthopressure") ltype = neum_pseudo_orthopressure;
+  else if (*type == "neum_orthopressure")        ltype = neum_orthopressure;
   else dserror("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
@@ -70,7 +79,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   if (curvenum>=0 && usetime)
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-   // set number of nodes
+  // set number of nodes
   const int numnod   = NumNode();
   const DiscretizationType distype = Shape();
 
@@ -82,21 +91,59 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   LINALG::SerialDenseVector    funct(numnod);
   LINALG::SerialDenseMatrix    deriv(1,numnod);
 
-  // element geometry update
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  std::vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-  LINALG::SerialDenseMatrix xye(Wall1::numdim_,numnod);  // material coord. of element
-  LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_,numnod);  // spatial coord. of element
+  // prepare element geometry 1
+  // --> we always need the material configuration
+  LINALG::SerialDenseMatrix xye(Wall1::numdim_,numnod);
   for (int i=0; i<numnod; ++i)
   {
     xye(0,i)=Nodes()[i]->X()[0];
     xye(1,i)=Nodes()[i]->X()[1];
+  }
 
-    xyecurr(0,i) = xye(0,i) + mydisp[i*Wall1::noddof_+0];
-    xyecurr(1,i) = xye(1,i) + mydisp[i*Wall1::noddof_+1];
+  // prepare element geometry 2
+  // --> depending on the type of Neumann condition, we might not need a spatial
+  // configuration at all (standard Neumann), we might need the last converged
+  // spatial position (pseudo-orthopressure) or the true current geometry (orthopressure).
+  LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_,numnod);
 
+  // (1) standard Neumann --> we need only material configuration
+  if (ltype==neum_live)
+  {
+    loadlin = false; // no linearization needed for load in material configuration
+  }
+
+  // (2) pseudo orthopressure --> we need last converged configuration
+  else if (ltype==neum_pseudo_orthopressure)
+  {
+    loadlin = false; // no linearization needed for load in last converged configuration
+
+    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+    for (int i=0; i<numnod; ++i)
+    {
+      xyecurr(0,i) = xye(0,i) + mydisp[i*Wall1::noddof_+0];
+      xyecurr(1,i) = xye(1,i) + mydisp[i*Wall1::noddof_+1];
+    }
+  }
+
+  // (3) true orthopressure --> we need spatial configuration
+  else if (ltype==neum_orthopressure)
+  {
+    if (!loadlin) dserror("No linearization provided for orthopressure load (add 'LOADLIN yes' to input file)");
+
+    RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+    for (int i=0; i<numnod; ++i)
+    {
+      xyecurr(0,i) = xye(0,i) + mydisp[i*Wall1::noddof_+0];
+      xyecurr(1,i) = xye(1,i) + mydisp[i*Wall1::noddof_+1];
+    }
   }
 
   // loop over integration points //new
@@ -162,7 +209,9 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
          break;
        }
-       case neum_orthopressure:{ // orthogonal pressure on deformed config.
+
+       case neum_pseudo_orthopressure:  // pseudo-orthogonal pressure on last converged config.
+       case neum_orthopressure:{        // orthogonal pressure (nonlinear load) on current config.
 
          // check for correct input
          if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
@@ -178,21 +227,54 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
          // compute infinitesimal line element dr for integration along the line
          const double dr = w1_substitution(xyecurr,deriv,&unrm,numnod);
 
-         // load vector ar
-         std::vector<double> ar(Wall1::noddof_);
-
-         // loop the dofs of a node
-         // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
-         for (int i=0; i<Wall1::noddof_; ++i)
-           ar[i] = intpoints.qwgt[gpid] * dr * ortho_value * curvefac;
+         // constant factor for integration
+         const double fac = intpoints.qwgt[gpid] * dr * ortho_value * curvefac;
 
          // add load components
            for (int node=0; node<numnod; ++node)
              for (int j=0; j<Wall1::noddof_; ++j)
-               elevec1[node*Wall1::noddof_+j] += funct[node] * ar[j] * unrm[j];
+               elevec1[node*Wall1::noddof_+j] += funct[node] * unrm[j] * fac;
+
+         // linearization if needed
+         if (loadlin)
+         {
+           // total number of element DOFs
+           int numdof = Wall1::noddof_*numnod;
+
+           // directional derivative of surface
+           Epetra_SerialDenseMatrix a_Dnormal(Wall1::numdim_,numdof);
+
+           //******************************************************************
+           // compute directional derivative
+           //******************************************************************
+
+           // linearization of basis vector
+           Epetra_SerialDenseMatrix dg(Wall1::numdim_,numdof);
+           for (int node=0;node<numnod;++node)
+             for (int k=0;k<Wall1::numdim_;++k)
+               dg(k,node*Wall1::noddof_+k) = deriv(0,node);
+
+           // linearization of local surface normal vector
+           for (int dof=0;dof<numdof;++dof)
+           {
+             a_Dnormal(0,dof) =  dg(1,dof);
+             a_Dnormal(1,dof) = -dg(0,dof);
+           }
+
+           // build surface element load linearization matrix
+           // (CAREFUL: Minus sign due to the fact that external forces enter the global
+           // residual vector with a minus sign, too! However, the load linaerization is
+           // simply added to the global tangent stiffness matrix, thus we explicitly
+           // need to set the minus sign here.)
+           for (int node=0; node<numnod; ++node)
+             for (int dim=0 ; dim<2; dim++)
+               for (int dof=0; dof<elevec1.M(); dof++)
+                 (*elemat1)(node*Wall1::noddof_+dim,dof) -= funct[node] * a_Dnormal(dim, dof) * fac;
+         }
 
          break;
        }
+
        default:{
          dserror("Unknown type of SurfaceNeumann load");
          break;
@@ -239,7 +321,7 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
 	  |                                           | | | .
 	  |                                           +-+-+
 	  |                                           | | | iel-1
-	  |		           	     	                  +-+-+
+	  |		           	     	                      +-+-+
 	  |
 	  |       dxyzdrs             deriv^T          xye^T
 	  |

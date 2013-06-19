@@ -183,8 +183,8 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // intern pressure
-E 1 - 4 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0 // CURVE4
-//E 1 - 3 1 0 0 0 0 0 -1.0e5 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0 // CURVE1
+E 1 - 4 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0 // CURVE4
+//E 1 - 3 1 0 0 0 0 0 -1.0e5 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0 // CURVE1
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 --------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS

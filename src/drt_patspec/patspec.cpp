@@ -290,7 +290,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   {
     if (ortho[i]->GType() != DRT::Condition::Surface) continue;
     const string* type = ortho[i]->Get<string>("type");
-    if (*type == "neum_orthopressure")
+    if (*type == "neum_orthopressure" || *type == "neum_pseudo_orthopressure")
       conds.push_back(ortho[i]);
   }
 

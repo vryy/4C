@@ -7,7 +7,7 @@
 // necessary defines: D_SHELL8 D_SOLID3 D_SOH8 BINIO
 //
 -----------------------------------------------------------------------TITLE
-Default_title
+Pseudo pseudo_orthopressure (i.e. linear) load inside a hollow sphere
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2160
 NODES                           3246
@@ -177,7 +177,7 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - 1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+E 6 - 1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_pseudo_orthopressure Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

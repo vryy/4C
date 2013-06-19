@@ -70,7 +70,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
-MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.4999
+MAT 2 ELAST_CoupNeoHooke YOUNG 2400.5653612 NUE 0.4999
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ----------------------------------------------------------------------CURVE2

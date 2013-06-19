@@ -283,20 +283,24 @@ protected:
                           const Epetra_SerialDenseMatrix& x,
                           const Epetra_SerialDenseMatrix& deriv);
 
-  void FAD_DFAD_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
-                                  const Epetra_SerialDenseMatrix& x,
-                                  const Epetra_SerialDenseMatrix& deriv);
+  /*!
+  \brief Linearize a Neumann boundary condition analytically
 
-  void FAD_SFAD_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
-                                  const Epetra_SerialDenseMatrix& x,
-                                  const Epetra_SerialDenseMatrix& deriv);
-
+  This method computes the analytical surface derivative if necessary (for follower loads).
+  */
   void analytical_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
-                                             const Epetra_SerialDenseMatrix& x,
-                                             const Epetra_SerialDenseMatrix& deriv);
- void FiniteDiff_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
-                                             const Epetra_SerialDenseMatrix& x,
-                                             const Epetra_SerialDenseMatrix& deriv);
+                                      const Epetra_SerialDenseMatrix& x,
+                                      const Epetra_SerialDenseMatrix& deriv);
+
+  /*!
+  \brief Linearize a Neumann boundary condition with automatic differentiation
+
+  This method computes the automatic (Sacado) surface derivative if necessary (for follower loads).
+  This method is for development purposes only, and currently not used.
+  */
+  void automatic_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
+                                     const Epetra_SerialDenseMatrix& x,
+                                     const Epetra_SerialDenseMatrix& deriv);
 
   /*!
   \brief Create matrix with material configuration

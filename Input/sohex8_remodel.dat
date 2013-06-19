@@ -152,7 +152,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // inner wall
-E 3 - 1 1 0 0 0 0 0 -16000.0 0.0 0.0 0.0 0.0 0.0 orthopressure
+E 3 - 1 1 0 0 0 0 0 -16000.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS

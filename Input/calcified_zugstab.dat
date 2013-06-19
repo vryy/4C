@@ -79,7 +79,7 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 1 - 2 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+E 1 - 2 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS

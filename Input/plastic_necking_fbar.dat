@@ -103,7 +103,7 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           0                               // 1
 //                              pressure
-//E 5 - 2 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+//E 5 - 2 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              d7_xyz

@@ -10,7 +10,7 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Default_title
+Orthopressure (i.e. nonlinear) load inside a hollow sphere
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        1080
 NODES                           1082

@@ -19,7 +19,7 @@ problems, NASA-TM-89891, 1987."
 thick-walled cylinder subjected to internal pressure under isothermal conditions
 (constant temperature (T=699.81667K), alpha_T=0).
 
-quarter of a cylinder (r_i=4.06mm, r_a=6.35mm) loaded by an orthopressure at
+quarter of a cylinder (r_i=4.06mm, r_a=6.35mm) loaded by an pseudo_orthopressure at
 the inner side of the body. The load is applied incrementally in the first 2
 seconds and then held constant at 25.17MPa.
 
@@ -289,10 +289,10 @@ NDSURF                          3
 NDVOL                           2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-//                              surf_orthopressure
-E 1 - 1 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+//                              surf_pseudo_orthopressure
+E 1 - 1 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 // without time curve
-//E 1 - 0 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0
+//E 1 - 0 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              line_sym_edge__fix_yz_move_x
