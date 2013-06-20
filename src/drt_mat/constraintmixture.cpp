@@ -3,10 +3,10 @@
 \brief
 This file contains routines for constraint mixture growth and remodeling.
 example input line
-MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 PHIE 0.08 PREELA 1.0
+MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 NUE 0.49 PHIE 0.08 PREELA 1.0
 K1 1.0 K2 1.0 PRECOLL 1.06 K1M 1.0 K2M 1.0 PHIM 1.0 PREMUS 1.0
 SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 HOMSTR 6.75E4 GROWTHFAC 0.5
-STARTTIME 5.0 INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE Single
+STARTTIME 5.0 INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE All
 INITSTRETCH None DEGOPTION Cos
 
 Here an approach for growth and remodeling of an artery is modeled.
@@ -378,7 +378,7 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
   }
   if (params_->degoption_ == "Exp")
   {
-    double taumax = - log(params_->degtol_) * params_->lifetime_;
+    double taumax = - log(params_->degtol_) / log(2.0) * params_->lifetime_;
     numpast = static_cast<int>(round(taumax / dt)) + firstiter;
   }
 
@@ -1451,7 +1451,7 @@ void MAT::ConstraintMixture::Degradation(double t, double& degr)
   }
   else if (params_->degoption_ == "Exp")  // exponential decrease
   {
-    degr = exp(- t / params_->lifetime_);
+    degr = exp(- t / params_->lifetime_ * log(2.0));
   }
   else if (params_->degoption_ == "Cos")  // transition zone with cos shape
   {
