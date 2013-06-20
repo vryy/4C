@@ -143,7 +143,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     // initialize last converged configuration
     xc.LightShape(numnode,numdf);
 
-    // in inverse analysis the spatial configuration is the reference
+    // in inverse design analysis the spatial configuration (i.e imaged state) is the reference for
+    //which we want equilibrium. This true spatial configuration is the material configuration in BACI
+    // no exection here for mulf because displacements are reset after each load step, hence last converged state is always
+    // the material configuration
     if (pstype==INPAR::STR::prestress_id && time <= pstime)
     {
       // no linearization needed for inverse analysis
@@ -172,10 +175,12 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     // initialize spatial configuration
     xc.LightShape(numnode,numdf);
 
-    // in inverse analysis the spatial configuration is the reference
-    if (pstype==INPAR::STR::prestress_id && time <= pstime)
+    // in inverse design analysis the spatial configuration (i.e imaged state) is the reference for
+    //which we want equilibrium. This true spatial configuration is the material configuration in BACI
+    // same holds for mulf
+    if ((pstype==INPAR::STR::prestress_id ||pstype==INPAR::STR::prestress_mulf )&& time <= pstime)
     {
-      // no linearization needed for inverse analysis
+      // no linearization needed for inverse design analysis and mulf
       loadlin = false;
 
       // evaluate material configuration
