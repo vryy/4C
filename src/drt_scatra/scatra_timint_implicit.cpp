@@ -467,13 +467,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // Output
     if (myrank_ == 0)
     {
-      cout << "Fine-scale subgrid-diffusivity approach based on AVM3: ";
+      cout << "SCATRA: Fine-scale subgrid-diffusivity approach based on AVM3: ";
       cout << fssgd_;
+      cout << " with turbulent Prandtl number Prt= ";
+      cout << extraparams_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
       cout << &endl << &endl;
     }
 
-    if (scatratype_ == INPAR::SCATRA::scatratype_loma or
-        scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
+    if ((scatratype_ == INPAR::SCATRA::scatratype_loma or
+         scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca) and
+         turbparams->get<std::string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales")
     {
       if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small
           and turbparams->get<std::string>("FSSUGRVISC") != "Smagorinsky_small")

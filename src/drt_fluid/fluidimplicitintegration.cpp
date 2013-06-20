@@ -84,15 +84,10 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/drt_discret_xfem.H"
 #endif
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     const Teuchos::RCP<DRT::Discretization>&      actdis,
     const Teuchos::RCP<LINALG::Solver>&           solver,
@@ -582,7 +577,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     if (myrank_ == 0)
     {
       // Output
-      cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
+      cout << "FLUID: Fine-scale subgrid-viscosity approach based on AVM3: ";
       cout << &endl << &endl;
       cout << fssgv_;
       cout << " with Smagorinsky constant Cs= ";
