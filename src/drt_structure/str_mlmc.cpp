@@ -71,12 +71,12 @@ void STR::mlmc()
    //                                   //DRT::Problem::Instance()->ErrorFile()->Handle()));
  // actdis->ComputeNullSpaceIfNecessary(solver->Params());
   bool perform_mlmc = Teuchos::getIntegralValue<int>(mlmcp,"MLMC");
-  bool reset_prestress =Teuchos::getIntegralValue<int>(mlmcp,"RESETPRESTRESS");
+  bool param_cont =Teuchos::getIntegralValue<int>(mlmcp,"PARAMETERCONTINUATION");
   if (perform_mlmc==true)
   {
     STR::MLMC mc(actdis,output);
     // Use another integrate function if we do not reset the prestress
-    if(reset_prestress)
+    if(!param_cont)
     {
     	mc.Integrate();
     }

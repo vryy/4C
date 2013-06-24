@@ -153,6 +153,9 @@ namespace ADAPTER
     virtual double TimIntParam()
     { return structure_->TimIntParam(); }
 
+    //! Sets the current time needed for the inverse analysis
+    virtual void SetTimen(double time) { structure_->SetTimen(time); }
+
     /// get the current time
     virtual double GetTime() const
     { return structure_->GetTime(); }
@@ -160,6 +163,10 @@ namespace ADAPTER
     /// get upper limit of time range of interest
     virtual double GetTimeEnd() const
     { return structure_->GetTimeEnd(); }
+
+    //! Set upper limit of time range of interest //HACK for parameter continuation
+    virtual void SetTimeEnd(double timemax)
+    { structure_->SetTimeEnd(timemax); }
 
     /// get time step size \f$\Delta t_n\f$
     virtual double GetTimeStepSize() const
@@ -208,6 +215,18 @@ namespace ADAPTER
     virtual void PrepareOutput()
     { return structure_->PrepareOutput(); }
 
+    // Get restart data
+    virtual void GetRestartData
+    (
+      Teuchos::RCP<int> step,
+      Teuchos::RCP<double> time,
+      Teuchos::RCP<Epetra_Vector> disn,
+      Teuchos::RCP<Epetra_Vector> veln,
+      Teuchos::RCP<Epetra_Vector> accn,
+      Teuchos::RCP<std::vector<char> > elementdata
+    )
+    {return structure_->GetRestartData(step,time, disn,veln,accn,elementdata );}
+
     /// output results
     virtual void Output()
     { return structure_->Output(); }
@@ -215,6 +234,18 @@ namespace ADAPTER
     /// read restart information for given time step
     virtual void ReadRestart(int step)
     { return structure_->ReadRestart(step); }
+
+     /// set restart information for parameter continuation
+    virtual void SetRestart
+    (
+      int step,
+      double time,
+      Teuchos::RCP<Epetra_Vector> disn,
+      Teuchos::RCP<Epetra_Vector> veln,
+      Teuchos::RCP<Epetra_Vector> accn,
+      Teuchos::RCP<std::vector<char> > elementdata
+    )
+    {return structure_->SetRestart(step,time,disn,veln,accn,elementdata);}
 
     /// evaluate reference state (for frictional contact)
     virtual void EvaluateReferenceState()

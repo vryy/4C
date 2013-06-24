@@ -353,6 +353,17 @@ namespace STR
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
     );
+    //! Get data that is written during restart
+    //! \author biehler \data 06/13
+    virtual void GetRestartData
+    (
+      Teuchos::RCP<int> step,
+      Teuchos::RCP<double> time,
+      Teuchos::RCP<Epetra_Vector> disn, //!< new displacement state
+      Teuchos::RCP<Epetra_Vector> veln, //!< new velocity state
+      Teuchos::RCP<Epetra_Vector> accn, //!< new acceleration state
+      Teuchos::RCP<std::vector<char> > elementdata //!< internal element/history variables e.g. F_prestress
+    );
 
     //! Output displacements, velocities and accelerations
     //! and more system vectors
@@ -591,8 +602,28 @@ namespace STR
       const int step //!< restart step
     );
 
+    //! Set restart values
+    void SetRestart
+    (
+      int step,   //!< restart step
+      double time, //!< restart time
+      Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements
+      Teuchos::RCP<Epetra_Vector> veln, //!< restart velocities
+      Teuchos::RCP<Epetra_Vector> accn, //!< restart accelerations
+      Teuchos::RCP<std::vector<char> > elementdata  //!< restart element data
+    );
+
     //! Read and set restart state
     virtual void ReadRestartState();
+
+    //! Sset restart state
+    virtual void SetRestartState
+    (
+      Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements
+      Teuchos::RCP<Epetra_Vector> veln, //!< restart velocities
+      Teuchos::RCP<Epetra_Vector> accn, //!< restart accelerations
+      Teuchos::RCP<std::vector<char> > elementdata  //!< restart element data
+    );
 
     //! Read and set restart forces
     virtual void ReadRestartForce() = 0;
@@ -657,6 +688,9 @@ namespace STR
     //! Return reaction forces
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
+    //! Return element data
+    //Teuchos::RCP<std::vector<char> > ElementData() {return discret_->PackMyElements();}
+
     //! dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> DofRowMap();
 
@@ -713,10 +747,15 @@ namespace STR
     double GetTime() const { return (*time_)[0]; }
 
     //! Sets the current time needed for the inverse analysis
-    void SetTime(double time) const { (*time_)[0]=time; }
+    //void SetTime(double time) const { (*time_)[0]=time; }
+    void SetTime(double time){timen_=time;};
+    //void SetTimen(double time){timen_ = time;};
 
     //! Get upper limit of time range of interest
     double GetTimeEnd() const { return timemax_; }
+
+    //! Set upper limit of time range of interest
+    void SetTimeEnd(double timemax){timemax_=timemax; }
 
     //! Get time step size \f$\Delta t_n\f$
     double GetTimeStepSize() const { return (*dt_)[0]; }

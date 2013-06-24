@@ -129,6 +129,9 @@ private:
   //! brief randomfield stored in class variable so that we can reuse it in every run
   Teuchos::RCP<GenRandomField> random_field_;
 
+  //! \brief vector to store RF values for efficient parameter continuation
+  Teuchos::RCP<std::vector<double> > rf_values_;
+
   //! brief vector which contains all element numbers we need the output from
   std::vector <int> AllMyOutputEleIds_;
 
@@ -329,6 +332,12 @@ public:
 
   //! \brief routine to assign material parameters to each element based on random field
   void SetupStochMat(unsigned int random_seed);
+
+  // Setup Material Parameters in each element based on deterministic value
+  void SetupStochMatDet(double value);
+
+  //! \brief routine to assign material parameters to each element based on random field and
+  void BlendStochMat(unsigned int random_seed, bool reuse_rf_values, double beta_old, double gamma);
 
   //! \brief reset prestress deformation gradient F present in discretisation
   void ResetPrestress();

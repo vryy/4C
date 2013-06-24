@@ -974,6 +974,48 @@ void STR::TimInt::ReadRestart
 }
 
 /*----------------------------------------------------------------------*/
+/* Set restart values passed down from above */
+void STR::TimInt::SetRestart
+(
+  int step,
+  double time,
+  Teuchos::RCP<Epetra_Vector> disn,
+  Teuchos::RCP<Epetra_Vector> veln,
+  Teuchos::RCP<Epetra_Vector> accn,
+  Teuchos::RCP<std::vector<char> > elementdata
+)
+{
+  step_ = step;
+  stepn_ = step_ + 1;
+  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, time));
+  timen_ = (*time_)[0] + (*dt_)[0];
+
+  SetRestartState(disn,veln,accn,elementdata);
+
+  // set restart is only for simple structure problems
+  // hence we put some security measures in place
+  // surface stress
+
+  if (surfstressman_->HaveSurfStress()) dserror("Set restart not implemented for surface stress");
+
+  // constraints
+  if (conman_->HaveConstraint()) dserror("Set restart not implemented for constraints");
+
+  // contact / meshtying
+  if (HaveContactMeshtying()) dserror("Set restart not implemented for contact / meshtying");
+
+  // statistical mechanics
+  if (HaveStatMech()) dserror("Set restart not implemented forstatistical mechanics");
+
+  //biofilm growth
+  if (strgrdisp_!=Teuchos::null) dserror("Set restart not implemented for biofilm growth");
+
+  // fix pointer to #dofrowmap_, which has not really changed, but is
+  // located at different place
+  dofrowmap_ = discret_->DofRowMap();
+}
+
+/*----------------------------------------------------------------------*/
 /* Read and set restart state */
 void STR::TimInt::ReadRestartState()
 {
@@ -996,6 +1038,40 @@ void STR::TimInt::ReadRestartState()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* Read and set restart state */
+void STR::TimInt::SetRestartState
+(
+    Teuchos::RCP<Epetra_Vector> disn,
+    Teuchos::RCP<Epetra_Vector> veln,
+    Teuchos::RCP<Epetra_Vector> accn,
+    Teuchos::RCP<std::vector<char> > elementdata
+    )
+{
+  dis_->UpdateSteps(*disn);
+  vel_->UpdateSteps(*veln);
+  acc_->UpdateSteps(*accn);
+
+  // the following is copied from Readmesh()
+  // before we unpack nodes/elements we store a copy of the nodal row/col map
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeColMap()));
+
+  // unpack nodes and elements and redistirbuted to current layout
+
+  // take care --- we are just adding elements to the discretisation
+  // that means depending on the current distribution and the
+  // distribution of the data read we might increase the
+  // number of elements in dis_
+  // the call to redistribute deletes the unnecessary elements,
+  // so everything should be OK
+  // lets hope we dont need this
+  //discret_->UnPackMyNodes(nodedata);
+  discret_->UnPackMyElements(elementdata);
+  discret_->Redistribute(*noderowmap,*nodecolmap);
+
+  return;
+}
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for constraints */
 void STR::TimInt::ReadRestartConstraint()
@@ -1145,13 +1221,55 @@ void STR::TimInt::OutputStep()
   // write patient specific output
   if (writeresultsevery_ and (step_%writeresultsevery_ == 0))
   {
-    OutputPatspec();
+    cout << "Patspec Params not written because I am to lazy to fix a bug" << endl;
+    //OutputPatspec();
   }
 
   // what's next?
   return;
 }
+/*----------------------------------------------------------------------*/
+/* We need the restart data to perform on "restarts" on the fly for parameter
+ * continuation
+ */
+void STR::TimInt::GetRestartData
+(
+  Teuchos::RCP<int> step,
+  Teuchos::RCP<double> time,
+  Teuchos::RCP<Epetra_Vector> disn,
+  Teuchos::RCP<Epetra_Vector> veln,
+  Teuchos::RCP<Epetra_Vector> accn,
+  Teuchos::RCP<std::vector<char> > elementdata
+)
+{
+  // at some point we have to create a copy
+  *step = step_ ;
+  *time= (*time_)[0];
+  *disn=*disn_;
+  *veln=*veln_;
+  *accn=*accn_;
+  *elementdata = *(discret_->PackMyElements());
 
+  // get restart data is only for simple structure problems
+  // hence
+
+  // surface stress
+  if (surfstressman_->HaveSurfStress()) dserror("Get restart data not implemented for surface stress");
+
+  // constraints
+  if (conman_->HaveConstraint()) dserror("Get restart data not implemented for constraints");
+
+  // contact / meshtying
+  if (HaveContactMeshtying()) dserror("Get restart data not implemented for contact / meshtying");
+
+  // statistical mechanics
+  if (HaveStatMech()) dserror("Get restart data not implemented for statistical mechanics");
+
+  //biofilm growth
+  if (strgrdisp_!=Teuchos::null) dserror("Get restart data not implemented for biofilm growth");
+
+  return;
+}
 /*----------------------------------------------------------------------*/
 /* write restart
  * originally by mwgee 03/07 */
@@ -1877,6 +1995,7 @@ void STR::TimInt::ApplyForceExternal
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState(0,"displacement", dis);
+
   if (damping_ == INPAR::STR::damp_material)
     discret_->SetState(0,"velocity", vel);
   // get load vector
@@ -2098,7 +2217,6 @@ void STR::TimInt::Integrate()
     // integrate time step
     // after this step we hold disn_, etc
     IntegrateStep();
-
     // calculate stresses, strains and energies
     // note: this has to be done before the update since otherwise a potential
     // material history is overwritten

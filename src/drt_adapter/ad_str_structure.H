@@ -210,11 +210,18 @@ namespace ADAPTER {
     /// return time integration factor
     virtual double TimIntParam() = 0;
 
+
+		// set time 
+    virtual void SetTimen(double time) = 0;
+
     /// Get the current time
     virtual double GetTime() const = 0;
 
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const = 0;
+
+    //! Set upper limit of time range of interest 
+    virtual void SetTimeEnd(double timemax) = 0;
 
     /// Get time step size \f$\Delta t_n\f$
     virtual double GetTimeStepSize() const = 0;
@@ -267,11 +274,33 @@ namespace ADAPTER {
     /// prepare output (i.e. calculate stresses, strains, energies)
     virtual void PrepareOutput() = 0;
 
+    // Get restart data
+    virtual void GetRestartData
+    (
+      Teuchos::RCP<int> step,
+     Teuchos::RCP<double> time,
+      Teuchos::RCP<Epetra_Vector> disn,
+      Teuchos::RCP<Epetra_Vector> veln,
+      Teuchos::RCP<Epetra_Vector> accn,
+      Teuchos::RCP<std::vector<char> > elementdata
+    ) = 0;
+
     /// output results
     virtual void Output() = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
+
+    /// set restart information for parameter continuation
+    virtual void SetRestart
+    (
+      int step,
+      double time,
+      Teuchos::RCP<Epetra_Vector> disn,
+      Teuchos::RCP<Epetra_Vector> veln,
+      Teuchos::RCP<Epetra_Vector> accn,
+      Teuchos::RCP<std::vector<char> > elementdata
+    ) = 0;
 
     /// evaluate reference state (for frictional contact)
     virtual void EvaluateReferenceState() = 0;

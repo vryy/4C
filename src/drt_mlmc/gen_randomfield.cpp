@@ -827,6 +827,10 @@ double GenRandomField::EvalFieldAtLocation(std::vector<double> location, bool wr
            File.close();
          }
      return value;
+    // if (elestress==Teuchos::null)
+    // {
+    //   dserror("vector containing element center stresses/strains not available");
+    // }
    }
    else
    {

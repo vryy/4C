@@ -1408,9 +1408,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      "Instead of doing proper MC simulation use DETVALUE for the stochastic parameter",
                                      yesnotuple,yesnovalue,&mlmcp);
   DoubleParameter("DETVALUE",4.61,"Use this value for all elements",&mlmcp);
-  setStringToIntegralParameter<int>("RESETPRESTRESS","YES",
-                                     "Reset prestress after each run but start afterwards",
+  setStringToIntegralParameter<int>("PARAMETERCONTINUATION","NO",
+                                     "Numerical continuation to avoid full nonlinear solution",
                                      yesnotuple,yesnovalue,&mlmcp);
+  IntParameter("NUMCONTSTEPS",2,"Number of continuation steps",&mlmcp);
 
   /*----------------------------------------------------------------------*/
   /* parameters for mortar coupling */

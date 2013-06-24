@@ -134,9 +134,14 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   SetupEvalPeakWallStress();
 
 
-   reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
+  reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
 
-
+  //! \brief vector to store RF values in case of cos series computation
+ // rf_values_ = Teuchos::rcp( new std::vector<double> );
+  // store rf at all element centers
+   rf_values_ = Teuchos::rcp(new std::vector<double>(discret_->NumMyColElements(),0.0));
+  //      Teuchos::RCP<Teuchos::Array <double> > average_psd=
+   //          Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
 
   // meshfiel name to be written to controlfile in prolongated results
   std::stringstream meshfilename_helper1;
@@ -237,6 +242,16 @@ void STR::MLMC::Integrate()
   // get initial random seed from inputfile
   unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
 
+  // init variables to store restart information for parameter continuation
+  Teuchos::RCP<int> cont_step = Teuchos::rcp(new int);
+  Teuchos::RCP<double> cont_time  = Teuchos::rcp(new double);
+  Teuchos::RCP<Epetra_Vector> cont_disn = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector> cont_veln = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector> cont_accn = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  // this should also have row map layout
+  Teuchos::RCP<std::vector<char> > cont_elementdata = Teuchos::rcp(new std::vector<char>);
+
+  const double t0 = Teuchos::Time::wallTime();
   do
   {
     if (myrank == 0)
@@ -252,7 +267,9 @@ void STR::MLMC::Integrate()
       IO::cout << GREEN_LIGHT " RESET PRESTRESS " END_COLOR << IO::endl;
     }
     ResetPrestress();
+    const double t1 = Teuchos::Time::wallTime();
     SetupStochMat((random_seed+(unsigned int)numb_run_));
+    const double t2 = Teuchos::Time::wallTime();
     discret_->Comm().Barrier();
 
 
@@ -266,12 +283,12 @@ void STR::MLMC::Integrate()
     {
       IO::cout << "ATTENTION NO NEW RESULTFILE CREATED" << IO::endl;
     }
-
-
-
     // get input lists
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
+    //store time
+    double t3 = 0;
+    double t4 =0;
     // major switch to different time integrators
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
     {
@@ -299,7 +316,12 @@ void STR::MLMC::Integrate()
         {
           structadaptor.ReadRestart(restart);
         }
+
+        t3 = Teuchos::Time::wallTime();
+        // do we want parameter continuation (for now we use the reset presstress flag)
         structadaptor.Integrate();
+
+        t4 = Teuchos::Time::wallTime();
 
         dis_coarse= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
         // test results
@@ -311,7 +333,6 @@ void STR::MLMC::Integrate()
           Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
           Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
-
 
         // time to go home...
       }
@@ -353,7 +374,26 @@ void STR::MLMC::Integrate()
     }
 
     numb_run_++;
+    const double t5 = Teuchos::Time::wallTime();
+    if(!reduced_output_)
+    {
+      // plot some time measurements
+      if(!discret_->Comm().MyPID())
+          {
+            IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
+            IO::cout<<"Setup Stochastic Material:\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<IO::endl;
+            IO::cout<<"Forward Solve  :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<IO::endl;
+            IO::cout<<"Total Wall Time After " << numb_run_ << " runs:\t"<<std::setprecision(4)<<t5-t0<<"\ts"<<IO::endl;
+            IO::cout<<"=================================================="<<IO::endl;
+          }
+    }
+
+
     } while (numb_run_< numruns);
+  const double t6 = Teuchos::Time::wallTime();
+  IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
+  IO::cout<<"Total runtime:\t"<<std::setprecision(4)<<t6-t0<<"\ts"<<IO::endl;
+  IO::cout<<"=================================================="<<IO::endl;
   if( prolongate_res_ )
   {
     WriteStatOutput();
@@ -373,6 +413,8 @@ void STR::MLMC::IntegrateNoReset()
   const int myrank = discret_->Comm().MyPID();
 
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
 
   // nested par hack
   int numruns =numruns_pergroup_+start_run_;
@@ -380,29 +422,48 @@ void STR::MLMC::IntegrateNoReset()
   // get initial random seed from inputfile
   unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
 
+  // get initial number of continuation steps from input
+  unsigned int num_cont_steps= mlmcp.get<int>("NUMCONTSTEPS");
+
+
+  // init variables to store restart information for parameter continuation
+  Teuchos::RCP<int> cont_step = Teuchos::rcp(new int);
+  Teuchos::RCP<double> cont_time  = Teuchos::rcp(new double);
+  double time_step_size = 0.0 ;
+  Teuchos::RCP<Epetra_Vector> cont_disn = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector> cont_disn_init = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector> cont_veln = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector> cont_accn = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  // this should also have row map layout
+  // we need to of those because we need to store and keep eleementdata of initial run with constant beta
+  Teuchos::RCP<std::vector<char> > cont_elementdata_init = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char> > cont_elementdata = Teuchos::rcp(new std::vector<char>);
+  const double t0 = Teuchos::Time::wallTime();
   do
   {
     if (myrank == 0)
     {
       IO::cout << GREEN_LIGHT "================================================================================" << IO::endl;
       IO::cout << "                            MULTILEVEL MONTE CARLO                              " << IO::endl;
-      IO::cout << "           IO::endl               RUN: " << numb_run_ << "  of  " << numruns  << IO::endl;
+      IO::cout << "                          RUN: " << numb_run_ << "  of  " << numruns  << IO::endl;
       IO::cout << "================================================================================" END_COLOR << IO::endl;
     }
-    if (myrank == 0)
-    {
-      IO::cout << RED_LIGHT " PRESTRESS NOT RESET " END_COLOR << IO::endl;
-      //IO::cout << GREEN_LIGHT " RESET PRESTRESS " END_COLOR << IO::endl;
-    }
-     //ResetPrestress();
-    SetupStochMat((random_seed+(unsigned int)numb_run_));
+    ResetPrestress();
+    //SetupStochMat((random_seed+(unsigned int)numb_run_));
     discret_->Comm().Barrier();
-    output_->NewResultFile(filename_,(numb_run_));
+
+    if(!reduced_output_)
+    {
+        output_->NewResultFile(filename_,(numb_run_));
+        output_->WriteMesh(1, 0.01);
+    }
 
 
-    // get input lists
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
+    //store time
+    double t1 = 0;
+    double t2 = 0;
+    double t3 = 0;
+    double t4 = 0;
     // major switch to different time integrators
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
     {
@@ -416,6 +477,7 @@ void STR::MLMC::IntegrateNoReset()
       case INPAR::STR::dyna_euma:
       case INPAR::STR::dyna_euimsto:
       {
+        Teuchos::RCP<const Epetra_Vector> dis_coarse2 = Teuchos::null;
         // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have acces to the results
         // What follows is basicaly a copy of whats usually in dyn_nlnstructural_drt();
         // create an adapterbase and adapter
@@ -424,6 +486,7 @@ void STR::MLMC::IntegrateNoReset()
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
         ADAPTER::Structure& structadaptor = adapterbase.StructureField();
 
+
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
         if (restart)
@@ -431,24 +494,98 @@ void STR::MLMC::IntegrateNoReset()
           structadaptor.ReadRestart(restart);
         }
         /// Try some nasty stuff
-        //double mytesttime=0.31;
-        if (numb_run_-start_run_!= 0)
+        if (numb_run_-start_run_== 0)
         {
-//          dis_coarse2= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
-//          IO::cout << "disp " << (*dis_coarse2)[2] << IO::endl;
-//          IO::cout << "strating at t= 0.3" << IO::endl;
-//          structadaptor.SetTime(mytesttime);
-//          structadaptor.GetTime();
+
+          // for first run do normal integration
+          //SetupStochMat((random_seed+(unsigned int)numb_run_));
+          // Init all elements with same beta value for referene solution
+          SetupStochMatDet(1.5);
+          structadaptor.Integrate();
+          // get all information
+          structadaptor.GetRestartData(cont_step,cont_time,cont_disn_init,cont_veln,cont_accn,cont_elementdata_init);
+          std::cout << std::setprecision(9) << "cont disp first run " << (*cont_disn_init)[0] << std::endl;
+          // Get timestep size
+          time_step_size=structadaptor.GetTimeStepSize();
         }
-        structadaptor.Integrate();
+        else
+        {
+          t1 = Teuchos::Time::wallTime();
+          // for loop to encapsulate parameter continuation scheme
+          for(unsigned int k =0 ; k<num_cont_steps ; k++)
+          {
+             if(k==0)
+             {
+               *cont_elementdata=*cont_elementdata_init;
+               *cont_disn=*cont_disn_init;
+             }
+             double gamma=1.0/num_cont_steps+(k*(1.0/num_cont_steps));
+             IO::cout << "Gamma is  " << gamma << IO::endl;
+             // if we have prestress we need possibly a two step process
+             // get prestress type
+             INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
 
-        dis_coarse= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
+             if(pstype==INPAR::STR::prestress_mulf)
+             {
+               // get prestress time
+               double pstime = sdyn.get<double>("PRESTRESSTIME");
+               double endtime;
 
-        IO::cout << "disp " << (*dis_coarse)[2] << IO::endl;
+               // compute the number of steps we did in prestressing mode
+               int num_prestress_steps = (int)(pstime/time_step_size);
+               // store maxtime
+               endtime= structadaptor.GetTimeEnd();
+               // alter timemax to compute only one timestep
+               structadaptor.SetTimeEnd(pstime);
+               // set restart without displacement (use acc instead which are zero in statics)
+               structadaptor.SetRestart(num_prestress_steps-1,(num_prestress_steps-1)*time_step_size,cont_accn,cont_veln,cont_accn,cont_elementdata);
+               // set new material parameters
+               // Setup Material Parameters in each element based on deterministic value
+               //measure time only if we really compute the random field (k=0)
+               if(!k)
+                  t2 = Teuchos::Time::wallTime();
+               BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 1.5 ,gamma);
+               //BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 4.61,gamma);
+               if(!k)
+                   t3 = Teuchos::Time::wallTime();
+               structadaptor.Integrate();
+               // create dummy rcp to throw away
+               Teuchos::RCP<int> garbage1 = Teuchos::rcp(new int);
+               Teuchos::RCP<double> garbage2  = Teuchos::rcp(new double);
+               // get the newly computed prestress deformation gradient
+               // use acc for disp again which will be overritten by the accc directly after
+               structadaptor.GetRestartData(garbage1,garbage2,cont_accn,cont_veln,cont_accn,cont_elementdata);
+               // write new prestress data together with old displament data to discretization
+               structadaptor.SetRestart((*(cont_step)-1),(*cont_time)-time_step_size,cont_disn,cont_veln,cont_accn,cont_elementdata);
+               // reset old maxtime
+               structadaptor.SetTimeEnd(endtime);
+               //BlendStochMat((random_seed+(unsigned int)numb_run_),(bool)(k+1),4.61,gamma);
+               BlendStochMat((random_seed+(unsigned int)numb_run_),(bool)(k+1),1.5,gamma);
+               structadaptor.Integrate();
+               structadaptor.GetRestartData(garbage1,garbage2,cont_disn,cont_veln,cont_accn,cont_elementdata);
+
+             }
+             else // no prestress
+             {
+               // set prestress state and time, disp acc vel are al set to zero
+               structadaptor.SetRestart((*(cont_step)-1),(*cont_time)-time_step_size,cont_disn,cont_veln,cont_accn,cont_elementdata);
+               //measure time only if we really compute the random field (k=0)
+               if(!k)
+                 t2 = Teuchos::Time::wallTime();
+               BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 4.61,gamma);
+               if(!k)
+                 t3 = Teuchos::Time::wallTime();
+               structadaptor.Integrate();
+               structadaptor.GetRestartData(cont_step,cont_time,cont_disn,cont_veln,cont_accn,cont_elementdata);
+             }
+
+          }// eof parameter continuation scheme
+          t4 = Teuchos::Time::wallTime();
+        }
+
         // test results
         DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
         DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
-
 
         if(!reduced_output_)
         {
@@ -458,23 +595,49 @@ void STR::MLMC::IntegrateNoReset()
 
         // time to go home...
       }
-        break;
+      break;
       default:
         dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
         break;
+      } // eof switch case
+
+    // check wether we have elements to compute the stresses at
+    if(AllMyOutputEleIds_.size()>0)
+    {
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp =Teuchos::rcp(new std::vector <std::vector<double > >);
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses =Teuchos::rcp(new std::vector <std::vector<double > >);
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains =Teuchos::rcp(new std::vector <std::vector<double > >);
+      Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params =Teuchos::rcp(new std::vector <std::vector<double > >);
+
+      EvalDisAtEleCenters(cont_disn,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+      ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+      EvalDisAtEleCenters(cont_disn,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+      ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_cauchy,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+
+      // Evaluate Peak stress and strain vallues
+      EvalPeakWallStress(cont_disn, INPAR::STR::stress_cauchy,INPAR::STR::strain_ea );
     }
-    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp =Teuchos::rcp(new std::vector <std::vector<double > >);
-    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses =Teuchos::rcp(new std::vector <std::vector<double > >);
-    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains =Teuchos::rcp(new std::vector <std::vector<double > >);
-    Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params =Teuchos::rcp(new std::vector <std::vector<double > >);
 
-    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
-    ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
-    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
-    ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_cauchy,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
-
+    const double t5 = Teuchos::Time::wallTime();
     numb_run_++;
-    } while (numb_run_< numruns);
+    if(!reduced_output_)
+    {
+      // plot some time measurements
+      if(!discret_->Comm().MyPID())
+      {
+        IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
+        IO::cout<<"Setup Stochastic Material:\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<IO::endl;
+        IO::cout<<"Forward Solve  :\t"<<std::setprecision(4)<<t4-t1-(t3-t2)<<"\ts"<<IO::endl;
+        IO::cout<<"Total Wall Time After " << numb_run_ << " runs:\t"<<std::setprecision(4)<<t5-t0<<"\ts"<<IO::endl;
+        IO::cout<<"=================================================="<<IO::endl;
+      }
+    }
+
+  }while (numb_run_< numruns); // eof outer MC loop
+  const double t6 = Teuchos::Time::wallTime();
+  IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
+  IO::cout<<"Total runtime:\t"<<std::setprecision(4)<<t6-t0<<"\ts"<<IO::endl;
+  IO::cout<<"=================================================="<<IO::endl;
   return;
 }
 
@@ -1021,7 +1184,54 @@ void STR::MLMC::CalcDifferenceToLowerLevel(RCP< Epetra_MultiVector> stress, RCP<
 
 }
 
+// Setup Material Parameters in each element based on deterministic value
+void STR::MLMC::SetupStochMatDet(double value)
+{
+  // flag have init stochmat??
+   int stochmat_flag=0;
+   // Get parameters from stochastic matlaw
+   const int myrank = discret_->Comm().MyPID();
 
+   // loop all materials in problem
+   const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+   if (myrank == 0)
+     IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
+   std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+   for (curr=mats.begin(); curr != mats.end(); curr++)
+   {
+     const RCP<MAT::PAR::Material> actmat = curr->second;
+     switch(actmat->Type())
+     {
+        case INPAR::MAT::m_aaaneohooke_stopro:
+        {
+          stochmat_flag=1;
+          MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+        }
+        break;
+       default:
+       {
+        IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
+        break;
+       }
+
+     }
+   } // EOF loop over mats
+   if (!stochmat_flag)// ignore unknown materials ?
+   {
+     dserror("No stochastic material supplied");
+   }
+   // loop over all elements
+    for (int i=0; i< (discret_->NumMyColElements()); i++)
+    {
+      if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
+      {
+        MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
+        aaa_stopro->Init(value,"BETA");
+      }
+    } // EOF loop elements
+
+}
 // Setup Material Parameters in each element based on Random Field
 void STR::MLMC::SetupStochMat(unsigned int random_seed)
 {
@@ -1131,10 +1341,16 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
       std::vector<double> ele_center;
       ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
+      //if(use_det_value_)
+      //{
+       // stoch_mat_par=det_value_;
+      //  IO::cout << "WARNING NOT USING RANDOM FIELD BUT DET_VALUE INSTEAD" << IO::endl;
+      //}
+      //if(numb_run_-start_run_== 0)
       if(use_det_value_)
       {
-        stoch_mat_par=det_value_;
-        IO::cout << "WARNING NOT USING RANDOM FIELD BUT DET_VALUE INSTEAD" << IO::endl;
+        stoch_mat_par=4.561;
+        IO::cout << "WARNING NOT USING RANDOM FIELD BUT 05 INSTEAD" << IO::endl;
       }
       else
       {
@@ -1160,6 +1376,116 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
     }
   } // EOF loop elements
 
+}
+// Compute Stochmat parameter as linear combination
+// beta= (1-gamma)beta_old+ gamma* beta_new, where beta_old is used for all elements
+void STR::MLMC::BlendStochMat(unsigned int random_seed, bool reuse_rf_values, double beta_old, double gamma)
+{
+  // quick check wether we can reuse rf_values
+  if(reuse_rf_values)
+  {
+    if(rf_values_->size() == 0)
+      dserror("random field has not been initializes");
+  }
+  // Variables for Random field
+  double stoch_mat_par;
+  // element center
+  std::vector<double> ele_c_location;
+
+  // flag have init stochmat??
+  int stochmat_flag=0;
+  // Get parameters from stochastic matlaw
+  const int myrank = discret_->Comm().MyPID();
+
+  // loop all materials in problem
+  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  if (myrank == 0)
+    IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
+  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  for (curr=mats.begin(); curr != mats.end(); curr++)
+  {
+    const RCP<MAT::PAR::Material> actmat = curr->second;
+    switch(actmat->Type())
+    {
+       case INPAR::MAT::m_aaaneohooke_stopro:
+       {
+         stochmat_flag=1;
+         MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
+         if (!params) dserror("Cannot cast material parameters");
+       }
+       break;
+      default:
+      {
+       IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
+       break;
+      }
+
+    }
+  } // EOF loop over mats
+  if (!stochmat_flag)// ignore unknown materials ?
+          {
+            //IO::cout << "Mat Type   " << actmat->Type() << IO::endl;
+            dserror("No stochastic material supplied");
+          }
+  // get elements on proc use col map to init ghost elements as well
+
+  Teuchos::RCP<Epetra_Vector> my_ele = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
+  // for doing quick deterministic computations instead of using a field use det_value instead
+  // we do this so we can use our custom element output while doing deterministic simulation
+  if (!reuse_rf_values)
+  {
+    // first run uses deterministic value for all elements hence create rf here in first real run
+    if (numb_run_-start_run_== 1 )
+    {
+      random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
+    }
+    else
+    {
+      random_field_->CreateNewSample(random_seed);
+    }
+  }
+
+  // loop over all elements
+  for (int i=0; i< (discret_->NumMyColElements()); i++)
+  {
+    if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
+    {
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
+      std::vector<double> ele_center;
+      ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
+      // get dim of field
+      if(random_field_->Dimension()==2)
+      {
+        //special hack here assuming circular geometry with r=25 mm
+        double phi= acos(ele_center[0]/25);
+        //compute x coord
+        ele_center[0]=phi*25;
+        ele_center[1]=ele_center[2];
+        //IO::cout << "No Spherical Field" << IO::endl;
+        //ele_center[1]=ele_center[2];
+      }
+      // store all values in
+      if(!reuse_rf_values)
+      {
+        rf_values_->at(i)=random_field_->EvalFieldAtLocation(ele_center,false,false);
+        // test for speed reasosn
+        //rf_values_->push_back(4.61);
+      }
+      // stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,false);
+      // compute blended stopro parameter
+      double blended = beta_old*(1-gamma) + (gamma)*rf_values_->at(i);
+      aaa_stopro->Init(blended,"BETA");
+
+    }
+   // else // no need because size of vector is fixed now
+   // {
+    //  if(!reuse_rf_values)
+     // {
+      // put some stuff into rf_values so that we don not have to bother about keeping track howmany elements actually have aa_stopor
+    //    rf_values_->push_back(1.0);
+     // }
+    //}
+  } // EOF loop elements
 }
 
 // calculate some statistics
@@ -1784,7 +2110,6 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
   actdis_coarse_->SetState("displacement",disp);
   // get the displacements in col map layout
   Teuchos::RCP<const Epetra_Vector> disp_colmap = actdis_coarse_->GetState("displacement");
-
   for(unsigned int i = 0; i<output_elements->size(); i++)
   {
     std::vector<double>  my_c_disp (3, 0.0);
@@ -1828,7 +2153,6 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
   p.set("stress", stress);
   p.set("plstrain",plstrain);
   p.set("strain", strain);
-
   p.set<int>("iostress", iostress);
   p.set<int>("iostrain", iostrain);
 
