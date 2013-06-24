@@ -55,6 +55,7 @@ MAXITER                         100
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
+LOADLIN                         Yes
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA 0.291 //0.44444444444 //0.308641975
