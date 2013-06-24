@@ -1387,8 +1387,6 @@ void STR::MLMC::BlendStochMat(unsigned int random_seed, bool reuse_rf_values, do
     if(rf_values_->size() == 0)
       dserror("random field has not been initializes");
   }
-  // Variables for Random field
-  double stoch_mat_par;
   // element center
   std::vector<double> ele_c_location;
 
@@ -1468,23 +1466,13 @@ void STR::MLMC::BlendStochMat(unsigned int random_seed, bool reuse_rf_values, do
       if(!reuse_rf_values)
       {
         rf_values_->at(i)=random_field_->EvalFieldAtLocation(ele_center,false,false);
-        // test for speed reasosn
-        //rf_values_->push_back(4.61);
+
       }
-      // stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,false);
       // compute blended stopro parameter
       double blended = beta_old*(1-gamma) + (gamma)*rf_values_->at(i);
       aaa_stopro->Init(blended,"BETA");
 
     }
-   // else // no need because size of vector is fixed now
-   // {
-    //  if(!reuse_rf_values)
-     // {
-      // put some stuff into rf_values so that we don not have to bother about keeping track howmany elements actually have aa_stopor
-    //    rf_values_->push_back(1.0);
-     // }
-    //}
   } // EOF loop elements
 }
 
