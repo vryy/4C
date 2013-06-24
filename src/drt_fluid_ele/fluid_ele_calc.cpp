@@ -867,7 +867,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
         CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol);
     }
-
+    
     // get reaction coefficient due to porosity for topology optimization
     // !do this only at gauss point!
     // TODO does it make problems to evaluate at element center? (i think it should, winklmaier)
@@ -2281,10 +2281,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // compute viscous part
     Gvisc = c3*visceff_*visceff_*normG;
 
-    // computation of stabilization parameters tau_Mu and tau_Mp
-    // -> identical for the present definitions
+    // compute stabilization parameter tau_Mu
     tau_(0) = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gvisc));
-    tau_(1) = tau_(0);
+
+    // compute stabilization parameter tau_Mp
+    // ensure that tau_Mp does not become too small for viscosity-dominated flow
+    // lower limit proportional to squared (Braack et al. (2007)) or cubic
+    // Barth et al. (2004) characteristic length
+    // here: lower-limit constant chosen to be 1.0 and cubic char. length
+    const double llc = 1.0;
+    const double powerfac = 3.0;
+    if ((Gnormu < Gvisc) and (std::pow(traceG,(powerfac/2.0)) < llc*sqrt(Gvisc)))
+         tau_(1) = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + (std::pow(traceG,powerfac)/DSQR(llc))));
+    else tau_(1) = tau_(0);
   }
   break;
 
@@ -2340,8 +2349,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double xi02 = std::max(re02,1.0);
     const double xi12 = std::max(re12,1.0);
 
+    // compute stabilization parameter tau_Mu
     tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*sigma_tot*xi01+(4.0*visceff_/mk)*xi02);
-    tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*sigma_tot*xi11+(4.0*visceff_/mk)*xi12);
+
+    // compute stabilization parameter tau_Mp
+    // ensure that tau_Mp does not become too small for viscosity-dominated flow
+    // lower limit proportional to squared (Braack et al. (2007)) or cubic
+    // Barth et al. (2004) characteristic length
+    // here: lower-limit constant chosen to be 1.0 and cubic char. length
+    const double llc = 1.0;
+    const double powerfac = 3.0;
+    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(4.0*visceff_/mk)))
+    {
+       if (re11 < 1.0)
+         tau_(1) = 1.0/(densaf_*sigma_tot+(1.0/(llc*std::pow(hk,powerfac))));
+       else
+         tau_(1) = llc*std::pow(hk,powerfac);
+    }
+    else tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*sigma_tot*xi11+(4.0*visceff_/mk)*xi12);
   }
   break;
 
@@ -2377,8 +2402,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double xi02 = std::max(re02,1.0);
     const double xi12 = std::max(re12,1.0);
 
+    // compute stabilization parameter tau_Mu
     tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*reacoeff_*xi01+(4.0*visceff_/mk)*xi02);
-    tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*reacoeff_*xi11+(4.0*visceff_/mk)*xi12);
+
+    // compute stabilization parameter tau_Mp
+    // ensure that tau_Mp does not become too small for viscosity-dominated flow
+    // lower limit proportional to squared (Braack et al. (2007)) or cubic
+    // Barth et al. (2004) characteristic length
+    // here: lower-limit constant chosen to be 1.0 and cubic char. length
+    const double llc = 1.0;
+    const double powerfac = 3.0;
+    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(4.0*visceff_/mk)))
+    {
+       if (re11 < 1.0)
+         tau_(1) = 1.0/(densaf_*reacoeff_+(1.0/(llc*std::pow(hk,powerfac))));
+       else
+         tau_(1) = llc*std::pow(hk,powerfac);
+    }
+    else tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*reacoeff_*xi11+(4.0*visceff_/mk)*xi12);
   }
   break;
 
@@ -2430,10 +2471,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     c3 = 4.0/(mk*mk);
     // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
 
-    tau_(0) = 1.0/sqrt((c1*DSQR(densaf_)*DSQR(sigma_tot)
+    // compute stabilization parameter tau_Mu
+    tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
                       + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
-    tau_(1) = 1.0/sqrt((c1*DSQR(densaf_)*DSQR(sigma_tot)
+
+    // compute stabilization parameter tau_Mp
+    // ensure that tau_Mp does not become too small for viscosity-dominated flow
+    // lower limit proportional to squared (Braack et al. (2007)) or cubic
+    // Barth et al. (2004) characteristic length
+    // here: lower-limit constant chosen to be 1.0 and cubic char. length
+    const double llc = 1.0;
+    const double powerfac = 3.0;
+    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(sqrt(c3)*visceff_)))
+         tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
+                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
+                      + 1.0/DSQR(llc*std::pow(hk,powerfac))));
+    else tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
                       + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
                       + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
   }
@@ -2475,10 +2530,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double c2 = 2.0;
     c3 = 4.0/mk;
 
+    // compute stabilization parameter tau_Mu
     tau_(0) = 1.0/(c1*densaf_*sigma_tot
-                      + c2*densaf_*vel_norm/strle
-                      + c3*visceff_/DSQR(strle));
-    tau_(1) = 1.0/(c1*densaf_*sigma_tot
+                 + c2*densaf_*vel_norm/strle
+                 + c3*visceff_/DSQR(strle));
+
+    // compute stabilization parameter tau_Mp
+    // ensure that tau_Mp does not become too small for viscosity-dominated flow
+    // lower limit proportional to squared (Braack et al. (2007)) or cubic
+    // Barth et al. (2004) characteristic length
+    // here: lower-limit constant chosen to be 1.0 and cubic char. length
+    const double llc = 1.0;
+    const double powerfac = 3.0;
+    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(c3*visceff_)))
+         tau_(1) = 1.0/(c1*densaf_*sigma_tot
+                      + c2*densaf_*vel_norm/hk
+                      + 1.0/(llc*std::pow(hk,powerfac)));
+    else tau_(1) = 1.0/(c1*densaf_*sigma_tot
                       + c2*densaf_*vel_norm/hk
                       + c3*visceff_/DSQR(hk));
   }
@@ -2522,7 +2591,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // (set to be 4.0 in Badia and Codina (2010), 1.0 in Franca et al. (2005))
     const double c_u = 4.0;
 
-    // tau_Mu not required
+    // compute stabilization parameter tau_Mp (tau_Mu not required)
     tau_(0) = 0.0;
     tau_(1) = DSQR(hk)/(c_u*DSQR(hk)*densaf_*sigma_tot*xi11+(2.0*visceff_/mk));
   }
