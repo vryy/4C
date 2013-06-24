@@ -470,7 +470,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       cout << "SCATRA: Fine-scale subgrid-diffusivity approach based on AVM3: ";
       cout << fssgd_;
       cout << " with turbulent Prandtl number Prt= ";
-      cout << extraparams_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+      cout << extraparams_->sublist("SUBGRID VISCOSITY").get<double>("C_TURBPRANDTL") ;
       cout << &endl << &endl;
     }
 
