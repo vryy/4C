@@ -338,11 +338,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   //----------------------------------------------------------------------
   int itemax = xfluid_.params_->get<int>("max nonlin iter steps");
 
-  // convergence check at itemax is skipped for speedup if
-  // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-  if ((itnum != itemax)
-      or
-      (xfluid_.params_->get<string>("CONVCHECK","L_2_norm")!="L_2_norm_without_residual_at_itemax"))
+  if (itnum != itemax)
   {
     // call standard loop over elements
 
@@ -1832,11 +1828,7 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
   //----------------------------------------------------------------------
   int itemax = xfluid_.params_->get<int>("max nonlin iter steps");
 
-  // convergence check at itemax is skipped for speedup if
-  // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-  if ((itnum != itemax)
-      or
-      (xfluid_.params_->get<string>("CONVCHECK","L_2_norm")!="L_2_norm_without_residual_at_itemax"))
+  if (itnum != itemax)
   {
     // call standard loop over elements
 

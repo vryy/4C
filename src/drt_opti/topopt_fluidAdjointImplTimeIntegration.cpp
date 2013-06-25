@@ -439,13 +439,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       discret_->SetState("velnp",velnp_);
 
 
-      // convergence check at itemax is skipped for speedup if
-      // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-      if ((itnum != itemax)
-          ||
-          (params_->get<std::string>("CONVCHECK","L_2_norm")
-              !=
-                  "L_2_norm_without_residual_at_itemax"))
+      if (itnum != itemax)
       {
         // call standard loop over elements
         discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);

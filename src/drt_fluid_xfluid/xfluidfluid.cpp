@@ -3039,11 +3039,7 @@ void FLD::XFluidFluid::Solve()
 
       int itemax  = params_->get<int>("max nonlin iter steps");
 
-      //convergence check at itemax is skipped for speedup if
-      // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-      if ((itnum != itemax)
-          or
-       (params_->get<string>("CONVCHECK","L_2_norm")!="L_2_norm_without_residual_at_itemax"))
+      if (itnum != itemax)
       {
         state_->EvaluateFluidFluid( eleparams, *bgdis_, *boundarydis_, *embdis_);
       }

@@ -55,6 +55,7 @@ THETA                           0.66
 TIMEINTEGR                      Np_Gen_Alpha
 TIMESTEP                        0.05
 UPRES                           10
+INCONSISTENT_RESIDUAL           yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

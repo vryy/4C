@@ -1533,9 +1533,7 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
         discret_->SetState("velpres nodal iterinc",oldinc_);
 
-        // convergence check at itemax is skipped for speedup if
-        // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-        if ((itnum != itemax_) || (params_->get<std::string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
+        if ((itnum != itemax_))
         {
           // call standard loop over elements
           discret_->Evaluate(eleparams,sysmat_,residual_);

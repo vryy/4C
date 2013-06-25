@@ -2504,22 +2504,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  //"L_infinity_norm",
                                  //"L_1_norm",
-                                 "L_2_norm",
-                                 "L_2_norm_without_residual_at_itemax"
+                                 "L_2_norm"
+                                 //"L_2_norm_without_residual_at_itemax"
                                  ),
                                tuple<std::string>(
                                  //"use max norm (ccarat)",
                                  //"use abs. norm (ccarat)",
-                                 "compute L2 errors of increments (relative) and residuals (absolute)",
-                                 "same as L_2_norm, only no residual norm is computed if itemax is reached (speedup for turbulence calculations, startup phase)"
+                                 "compute L2 errors of increments (relative) and residuals (absolute)"
+                                 //"same as L_2_norm, only no residual norm is computed if itemax is reached (speedup for turbulence calculations, startup phase)"
                                  ),
                                tuple<int>(
                                  //INPAR::FLUID::fncc_Linf,
                                  //INPAR::FLUID::fncc_L1,
-                                 INPAR::FLUID::fncc_L2,
-                                 INPAR::FLUID::fncc_L2_wo_res
+                                 INPAR::FLUID::fncc_L2
+                                 //INPAR::FLUID::fncc_L2_wo_res
                                  ),
                                &fdyn);
+
+  BoolParameter("INCONSISTENT_RESIDUAL","No","do not evaluate residual after solution has converged (->faster)",&fdyn);
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.

@@ -153,6 +153,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
   predictor_ = params_->get<std::string>("predictor","steady_state_predictor");
 
+  // flag to skip calculation of residual after solution has converged
+  inconsistent_ = params_->get<bool>("INCONSISTENT_RESIDUAL",false);
+  if (inconsistent_)
+    std::cout << "Warning: residual will not be adapted to the final solution of the nonlinear solution procedure!" << std::endl;
+
   // form of convective term
   convform_ = params_->get<std::string>("form of convective term","convective");
 
@@ -1249,9 +1254,17 @@ void FLD::FluidImplicitTimeInt::Solve()
     FreeSurfaceFlowUpdate();
   }
 
-  //TODO: Option to compute consistent residual
+  // -------------------------------------------------------------------
+  // recompute residual (i.e., residual belonging to the final solution)
+  // -------------------------------------------------------------------
+  if (not inconsistent_)
+  {
+    AssembleMatAndRHS();
+    // print to screen
+    ConvergenceCheck(0,itmax,ittol);
+  }
 
-} // FluidImplicitTimeInt::MultiCorrector
+} // FluidImplicitTimeInt::Solve
 
 
 /*----------------------------------------------------------------------*
@@ -2108,13 +2121,25 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 
   if (myrank_ == 0)
   {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-      itnum,itmax,ittol,vresnorm_,presnorm_,incvelnorm_L2_/velnorm_L2_,
-      incprenorm_L2_/prenorm_L2_);
-    printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-    if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-      printf(",tf=%10.3E",dtfilter_);
-    printf(")\n");
+    if (itnum>0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+        itnum,itmax,ittol,vresnorm_,presnorm_,incvelnorm_L2_/velnorm_L2_,
+        incprenorm_L2_/prenorm_L2_);
+      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+        printf(",tf=%10.3E",dtfilter_);
+      printf(")\n");
+    }
+    else
+    {
+      printf("|   --/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
+        itmax,ittol,vresnorm_,presnorm_);
+      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+        printf(",tf=%10.3E",dtfilter_);
+      printf(")\n");
+    }
   }
 
   // -------------------------------------------------------------------
@@ -2128,7 +2153,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
       incvelnorm_L2_/velnorm_L2_ <= ittol and
       incprenorm_L2_/prenorm_L2_ <= ittol)
   {
-    if (myrank_ == 0)
+    if (myrank_ == 0 and (inconsistent_ or (not inconsistent_ and itnum==0)))
     {
       printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
       FILE* errfile = params_->get<FILE*>("err file",NULL);
@@ -2143,9 +2168,9 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
   }
   else
   {
-    if (itnum == itmax)
+    if (itnum == itmax or (not inconsistent_ and itnum==0))
     {
-      if (myrank_ == 0)
+      if (myrank_ == 0 and ((itnum == itmax and inconsistent_) or (not inconsistent_ and itnum==0)))
       {
         printf("+---------------------------------------------------------------+\n");
         printf("|            >>>>>> not converged in itemax steps!              |\n");

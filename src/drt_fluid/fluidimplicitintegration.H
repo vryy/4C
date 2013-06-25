@@ -736,6 +736,9 @@ protected:
   double presnorm_;
   //@}
 
+  //! flag to skip calculation of residual after solution has converged
+  bool inconsistent_;
+
   /// flag for special turbulent flow
   string special_flow_;
 
