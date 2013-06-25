@@ -128,14 +128,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(DRT::
   Teuchos::Array<std::string>::iterator i = std::find(datfilevalues_.begin(),datfilevalues_.end(),value);
   if (i==datfilevalues_.end())
   {
-    if (optional_)
-    {
-      condline = PushBack(value,condline);
-      i = std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_);
-    }
-    else
-      dserror("unrecognized std::string '%s' while reading variable '%s' in '%s'",
-              value.c_str(),Name().c_str(),def->SectionName().c_str());
+    dserror("unrecognized std::string '%s' while reading variable '%s' in '%s'",
+            value.c_str(),Name().c_str(),def->SectionName().c_str());
   }
   unsigned pos = &*i - &datfilevalues_[0];
   // choose, if we have an array based on std::string or int
