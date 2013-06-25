@@ -346,6 +346,9 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
           dserror("exact stabilization parameter only available for stationary case");
       }
 
+      // get characteristic element length for stabilization parameter definition
+      charelelength_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::CharEleLength>(stablist,"CHARELELENGTH");
+
       // set (sign) factor for diffusive and reactive stabilization terms
       // (factor is zero for SUPG) and overwrite tau definition when there
       // is no stabilization
@@ -1556,34 +1559,55 @@ double DRT::ELEMENTS::ReInitImpl<distype>::CalcCharEleLength(
   const double  vel_norm
   )
 {
+  // define and initialize streamlength
+  double h = 0.0;
+  
   //---------------------------------------------------------------------
-  // various definitions for characteristic element length
+  // select from various definitions for characteristic element length
   //---------------------------------------------------------------------
-  // a) streamlength due to Tezduyar et al. (1992) -> default
-  // normed velocity vector
-  LINALG::Matrix<nsd_,1> velino;
-  if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
-  else
+  switch (charelelength_)
   {
-    velino.Clear();
-    velino(0,0) = 1;
-  }
+    // a) streamlength due to Tezduyar et al. (1992) -> default
+    // normed velocity vector
+    case INPAR::SCATRA::streamlength:
+    {
+      LINALG::Matrix<nsd_,1> velino(true);
+      if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
+      else
+      {
+        velino.Clear();
+        velino(0,0) = 1.0;
+      }
 
-  // get streamlength using the normed velocity at element centre
-  LINALG::Matrix<nen_,1> tmp;
-  tmp.MultiplyTN(derxy_,velino);
-  const double val = tmp.Norm1();
-  const double hk = 2.0/val; // h=streamlength
+      // get streamlength using the normed velocity at element centre
+      LINALG::Matrix<nen_,1> tmp;
+      tmp.MultiplyTN(derxy_,velino);
+      const double val = tmp.Norm1();
+      h = 2.0/val; // h=streamlength
+    }
+    break;
 
-  // b) volume-equivalent diameter (warning: 3-D formula!)
-  //hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+    // b) volume-equivalent diameter (warning: 3-D formula!)
+    case INPAR::SCATRA::volume_equivalent_diameter:
+    {
+      h = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+    }
+    break;
 
-  // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
-  // cast dimension to a double varibale -> pow()
-  //const double dim = (double) nsd_;
-  //hk = std::pow(vol,1/dim);
+    // c) cubic/square root of element volume/area or element length (3-/2-/1-D)
+    case INPAR::SCATRA::root_of_volume:
+    {
+      // cast dimension to a double varibale -> pow()
+      const double dim = double (nsd_);
+      h = std::pow(vol,1/dim);
+    }
+    break;
 
-  return hk;
+    default: dserror("unknown characteristic element length\n");
+    break;
+  } //switch (charelelength_)
+
+  return h;
 } // ReInitImpl<distype>::CalcCharEleLength()
 
 

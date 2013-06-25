@@ -69,6 +69,7 @@ CONVFORM                        conservative                    // just to be te
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+CHARELELENGTH_PC                root_of_volume
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes

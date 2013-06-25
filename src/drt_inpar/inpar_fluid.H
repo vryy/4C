@@ -111,6 +111,22 @@ namespace INPAR
       tau_not_defined
     };
 
+    /// characteristic element length for tau_Mu
+    enum CharEleLengthU
+    {
+      streamlength_u,
+      volume_equivalent_diameter_u,
+      root_of_volume_u
+    };
+
+    /// characteristic element length for tau_Mp and tau_C
+    enum CharEleLengthPC
+    {
+      streamlength_pc,
+      volume_equivalent_diameter_pc,
+      root_of_volume_pc
+    };
+
     //! flag to select the type of pressure edge-based (EOS) stabilization
     enum EOS_Pres
     {

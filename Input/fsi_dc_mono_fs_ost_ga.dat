@@ -39,6 +39,7 @@ NONLINITER                      fixed_point_like
 STABTYPE                        residual_based
 TDS                             quasistatic
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+CHARELELENGTH_PC                root_of_volume
 TRANSIENT                       no_transient
 SUPG                            yes
 PSPG                            yes

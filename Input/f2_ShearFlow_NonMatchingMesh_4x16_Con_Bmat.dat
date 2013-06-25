@@ -66,6 +66,7 @@ CALCERROR                       shear_flow
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+CHARELELENGTH_PC                root_of_volume
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based

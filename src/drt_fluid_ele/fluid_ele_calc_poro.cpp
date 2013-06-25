@@ -615,9 +615,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
       sigma_tot += 1.0/my::fldpara_->TimeFac();
 
     // calculate characteristic element length
-    double strle  = 0.0;
-    double hk     = 0.0;
-    my::CalcCharEleLength(vol,0.0,strle,hk);
+    double h_u  = 0.0;
+    double h_p     = 0.0;
+    my::CalcCharEleLength(vol,0.0,h_u,h_p);
 
     // constants c_u and c_p as suggested in Badia and Codina (2010), method A
     const double c_u = 4.0;
@@ -626,7 +626,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     // tau_Mu not required for porous flow
     my::tau_(0) = 0.0;
     my::tau_(1) = 1.0/(c_u*my::densaf_*sigma_tot);
-    my::tau_(2) = c_p*DSQR(hk)*my::reacoeff_;
+    my::tau_(2) = c_p*DSQR(h_p)*my::reacoeff_;
   }
 
   //------------------------------------------------------------------------
@@ -877,9 +877,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
         sigma_tot += 1.0/my::fldpara_->TimeFac();
 
       // calculate characteristic element length
-      double strle  = 0.0;
-      double hk     = 0.0;
-      my::CalcCharEleLength(vol,0.0,strle,hk);
+      double h_u  = 0.0;
+      double h_p     = 0.0;
+      my::CalcCharEleLength(vol,0.0,h_u,h_p);
 
       // constants c_u and c_p as suggested in Badia and Codina (2010), method A
       const double c_u = 4.0;
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
       // tau_Mu not required for porous flow
       my::tau_(0) = 0.0;
       my::tau_(1) = 1.0/(c_u*my::densaf_*sigma_tot);
-      my::tau_(2) = c_p*DSQR(hk)*my::reacoeff_;
+      my::tau_(2) = c_p*DSQR(h_p)*my::reacoeff_;
     }
     else dserror("Fluid stabilization parameters have to be evaluated at gauss point for porous flow!");
 

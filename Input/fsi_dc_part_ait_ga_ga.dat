@@ -42,6 +42,8 @@ INITIALFIELD                    zero_field
 ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           1.0
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+CHARELELENGTH_PC                root_of_volume
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        classic_lin

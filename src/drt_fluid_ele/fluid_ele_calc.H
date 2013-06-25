@@ -507,8 +507,8 @@ namespace ELEMENTS
     //! calculate characteristic element length
     void CalcCharEleLength(const double  vol,       ///< volume
                            const double  vel_norm,  ///< norm of velocity vector
-                           double&       strle,     ///< streamlength (for tau_Mu)
-                           double&       hk);       ///< length for tau_Mp
+                           double&       h_u,       ///< length for tau_Mu
+                           double&       h_p);      ///< length for tau_Mp/tau_C
 
 
     //! calculate div(epsilon(u))

@@ -2149,8 +2149,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   double Gnormu = 0.0;
   double Gvisc  = 0.0;
 
-  double strle    = 0.0;
-  double hk       = 0.0;
+  double h_u      = 0.0;
+  double h_p      = 0.0;
   double vel_norm = 0.0;
   double re12     = 0.0;
   double c3       = 0.0;
@@ -2332,16 +2332,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // NOTE: Gen_Alpha (implementation by Peter Gamnitzer) used a different time factor!
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,vel_norm,strle,hk);
+    CalcCharEleLength(vol,vel_norm,h_u,h_p);
 
     // various parameter computations for case with dt:
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
-    const double re01 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(strle));
-    const double re11 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(hk));
+    const double re01 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(h_u));
+    const double re11 = 4.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(h_p));
 
     // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-    const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
-                 re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+    const double re02 = mk * densaf_ * vel_norm * h_u / (2.0 * visceff_);
+                 re12 = mk * densaf_ * vel_norm * h_p / (2.0 * visceff_);
 
     // respective "switching" parameters
     const double xi01 = std::max(re01,1.0);
@@ -2350,7 +2350,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double xi12 = std::max(re12,1.0);
 
     // compute stabilization parameter tau_Mu
-    tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*sigma_tot*xi01+(4.0*visceff_/mk)*xi02);
+    tau_(0) = DSQR(h_u)/(DSQR(h_u)*densaf_*sigma_tot*xi01+(4.0*visceff_/mk)*xi02);
 
     // compute stabilization parameter tau_Mp
     // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -2359,14 +2359,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // here: lower-limit constant chosen to be 1.0 and cubic char. length
     const double llc = 1.0;
     const double powerfac = 3.0;
-    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(4.0*visceff_/mk)))
+    if ((re12 < 1.0) and (llc*std::pow(h_p,powerfac) > DSQR(h_p)/(4.0*visceff_/mk)))
     {
        if (re11 < 1.0)
-         tau_(1) = 1.0/(densaf_*sigma_tot+(1.0/(llc*std::pow(hk,powerfac))));
+         tau_(1) = 1.0/(densaf_*sigma_tot+(1.0/(llc*std::pow(h_p,powerfac))));
        else
-         tau_(1) = llc*std::pow(hk,powerfac);
+         tau_(1) = llc*std::pow(h_p,powerfac);
     }
-    else tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*sigma_tot*xi11+(4.0*visceff_/mk)*xi12);
+    else tau_(1) = DSQR(h_p)/(DSQR(h_p)*densaf_*sigma_tot*xi11+(4.0*visceff_/mk)*xi12);
   }
   break;
 
@@ -2381,7 +2381,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     vel_norm = convvelint_.Norm2();
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,vel_norm,strle,hk);
+    CalcCharEleLength(vol,vel_norm,h_u,h_p);
 
     // various parameter computations for case without dt:
     // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
@@ -2389,12 +2389,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     double re11 = 0.0;
     if (fldpara_->Reaction()) // TODO Martin: check influence of reaction to stabilization
     {
-      re01 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(strle));
-      re11 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(hk));
+      re01 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(h_u));
+      re11 = 4.0 * visceff_ / (mk * densaf_ * reacoeff_ * DSQR(h_p));
     }
     // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
-    const double re02 = mk * densaf_ * vel_norm * strle / (2.0 * visceff_);
-                 re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
+    const double re02 = mk * densaf_ * vel_norm * h_u / (2.0 * visceff_);
+                 re12 = mk * densaf_ * vel_norm * h_p / (2.0 * visceff_);
 
     // respective "switching" parameters
     const double xi01 = std::max(re01,1.0);
@@ -2403,7 +2403,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double xi12 = std::max(re12,1.0);
 
     // compute stabilization parameter tau_Mu
-    tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*reacoeff_*xi01+(4.0*visceff_/mk)*xi02);
+    tau_(0) = DSQR(h_u)/(DSQR(h_u)*densaf_*reacoeff_*xi01+(4.0*visceff_/mk)*xi02);
 
     // compute stabilization parameter tau_Mp
     // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -2412,14 +2412,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // here: lower-limit constant chosen to be 1.0 and cubic char. length
     const double llc = 1.0;
     const double powerfac = 3.0;
-    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(4.0*visceff_/mk)))
+    if ((re12 < 1.0) and (llc*std::pow(h_p,powerfac) > DSQR(h_p)/(4.0*visceff_/mk)))
     {
        if (re11 < 1.0)
-         tau_(1) = 1.0/(densaf_*reacoeff_+(1.0/(llc*std::pow(hk,powerfac))));
+         tau_(1) = 1.0/(densaf_*reacoeff_+(1.0/(llc*std::pow(h_p,powerfac))));
        else
-         tau_(1) = llc*std::pow(hk,powerfac);
+         tau_(1) = llc*std::pow(h_p,powerfac);
     }
-    else tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*reacoeff_*xi11+(4.0*visceff_/mk)*xi12);
+    else tau_(1) = DSQR(h_p)/(DSQR(h_p)*densaf_*reacoeff_*xi11+(4.0*visceff_/mk)*xi12);
   }
   break;
 
@@ -2456,7 +2456,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     vel_norm = convvelint_.Norm2();
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,vel_norm,strle,hk);
+    CalcCharEleLength(vol,vel_norm,h_u,h_p);
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -2473,8 +2473,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
 
     // compute stabilization parameter tau_Mu
     tau_(0) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
-                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(strle)
-                      + c3*DSQR(visceff_)/(DSQR(strle)*DSQR(strle))));
+                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(h_u)
+                      + c3*DSQR(visceff_)/(DSQR(h_u)*DSQR(h_u))));
 
     // compute stabilization parameter tau_Mp
     // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -2483,14 +2483,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // here: lower-limit constant chosen to be 1.0 and cubic char. length
     const double llc = 1.0;
     const double powerfac = 3.0;
-    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
-    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(sqrt(c3)*visceff_)))
+    const double re12 = mk * densaf_ * vel_norm * h_p / (2.0 * visceff_);
+    if ((re12 < 1.0) and (llc*std::pow(h_p,powerfac) > DSQR(h_p)/(sqrt(c3)*visceff_)))
          tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
-                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
-                      + 1.0/DSQR(llc*std::pow(hk,powerfac))));
+                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(h_p)
+                      + 1.0/DSQR(llc*std::pow(h_p,powerfac))));
     else tau_(1) = 1.0/(sqrt(c1*DSQR(densaf_)*DSQR(sigma_tot)
-                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(hk)
-                      + c3*DSQR(visceff_)/(DSQR(hk)*DSQR(hk))));
+                      + c2*DSQR(densaf_)*DSQR(vel_norm)/DSQR(h_p)
+                      + c3*DSQR(visceff_)/(DSQR(h_p)*DSQR(h_p))));
   }
   break;
 
@@ -2516,7 +2516,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     vel_norm = convvelint_.Norm2();
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,vel_norm,strle,hk);
+    CalcCharEleLength(vol,vel_norm,h_u,h_p);
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient (reaction coefficient
@@ -2532,8 +2532,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
 
     // compute stabilization parameter tau_Mu
     tau_(0) = 1.0/(c1*densaf_*sigma_tot
-                 + c2*densaf_*vel_norm/strle
-                 + c3*visceff_/DSQR(strle));
+                 + c2*densaf_*vel_norm/h_u
+                 + c3*visceff_/DSQR(h_u));
 
     // compute stabilization parameter tau_Mp
     // ensure that tau_Mp does not become too small for viscosity-dominated flow
@@ -2542,14 +2542,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // here: lower-limit constant chosen to be 1.0 and cubic char. length
     const double llc = 1.0;
     const double powerfac = 3.0;
-    const double re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
-    if ((re12 < 1.0) and (llc*std::pow(hk,powerfac) > DSQR(hk)/(c3*visceff_)))
+    const double re12 = mk * densaf_ * vel_norm * h_p / (2.0 * visceff_);
+    if ((re12 < 1.0) and (llc*std::pow(h_p,powerfac) > DSQR(h_p)/(c3*visceff_)))
          tau_(1) = 1.0/(c1*densaf_*sigma_tot
-                      + c2*densaf_*vel_norm/hk
-                      + 1.0/(llc*std::pow(hk,powerfac)));
+                      + c2*densaf_*vel_norm/h_p
+                      + 1.0/(llc*std::pow(h_p,powerfac)));
     else tau_(1) = 1.0/(c1*densaf_*sigma_tot
-                      + c2*densaf_*vel_norm/hk
-                      + c3*visceff_/DSQR(hk));
+                      + c2*densaf_*vel_norm/h_p
+                      + c3*visceff_/DSQR(h_p));
   }
   break;
 
@@ -2578,11 +2578,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
       sigma_tot += 1.0/fldpara_->TimeFac();
 
     // calculate characteristic element length
-    CalcCharEleLength(vol,0.0,strle,hk);
+    CalcCharEleLength(vol,0.0,h_u,h_p);
 
     // various parameter computations for case with dt:
     // relating viscous to reactive part
-    const double re11 = 2.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(hk));
+    const double re11 = 2.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(h_p));
 
     // respective "switching" parameter
     const double xi11 = std::max(re11,1.0);
@@ -2593,7 +2593,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
 
     // compute stabilization parameter tau_Mp (tau_Mu not required)
     tau_(0) = 0.0;
-    tau_(1) = DSQR(hk)/(c_u*DSQR(hk)*densaf_*sigma_tot*xi11+(2.0*visceff_/mk));
+    tau_(1) = DSQR(h_p)/(c_u*DSQR(h_p)*densaf_*sigma_tot*xi11+(2.0*visceff_/mk));
   }
   break;
 
@@ -2732,7 +2732,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // "switching" parameter
     const double xi_tau_c = std::min(re12,1.0);
 
-    tau_(2) = 0.5 * densaf_ * vel_norm * hk * xi_tau_c;
+    tau_(2) = 0.5 * densaf_ * vel_norm * h_p * xi_tau_c;
   }
   break;
 
@@ -2752,7 +2752,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
 
     */
 
-    tau_(2) = DSQR(hk)/(sqrt(c3)*tau_(1));
+    tau_(2) = DSQR(h_p)/(sqrt(c3)*tau_(1));
   }
   break;
 
@@ -2775,7 +2775,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // (set to be 4.0 in Badia and Codina (2010))
     const double c_p = 4.0;
 
-    tau_(2) = c_p*DSQR(hk)*reacoeff_;
+    tau_(2) = c_p*DSQR(h_p)*reacoeff_;
   }
   break;
 
@@ -2992,11 +2992,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
       //    Vol 193, pp. 1403-1419, 2004.
 
       // calculate characteristic element length
-      CalcCharEleLength(vol,vel_norm,strle,hk);
+      CalcCharEleLength(vol,vel_norm,h_u,h_p);
 
       //---------------------------------------------- compute tau_Mu = tau_Mp
       /* convective : viscous forces (element reynolds number)*/
-      const double re_convectaf = (vel_normaf * hk / visceff_ ) * (mk/2.0);
+      const double re_convectaf = (vel_normaf * h_p / visceff_ ) * (mk/2.0);
       const double xi_convectaf = std::max(re_convectaf,1.0);
 
       /*
@@ -3015,7 +3015,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
       /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
        * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
 
-      tau_(0) = DSQR(hk) / (4.0 * visceff_ / mk + ( 4.0 * visceff_/mk) * xi_convectaf);
+      tau_(0) = DSQR(h_p) / (4.0 * visceff_ / mk + ( 4.0 * visceff_/mk) * xi_convectaf);
 
       tau_(1) = tau_(0);
 
@@ -3032,11 +3032,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
                           +--------------> Re_convect
                               1
       */
-      const double re_convectnp = (vel_normnp * hk / visceff_ ) * (mk/2.0);
+      const double re_convectnp = (vel_normnp * h_p / visceff_ ) * (mk/2.0);
 
       const double xi_tau_c = std::min(re_convectnp,1.0);
 
-      tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
+      tau_(2) = vel_normnp * h_p * 0.5 * xi_tau_c;
 
     }
     break;
@@ -3050,11 +3050,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
 
       // in contrast to the original definition, we neglect the influence of
       // the subscale velocity on velnormaf
-      tau_(0)=1.0/(CI*visceff_/(hk*hk)+CII*vel_normaf/hk);
+      tau_(0)=1.0/(CI*visceff_/(h_p*h_p)+CII*vel_normaf/h_p);
 
       tau_(1)=tau_(0);
 
-      tau_(2)=(hk*hk)/(CI*tau_(0));
+      tau_(2)=(h_p*h_p)/(CI*tau_(0));
     }
     break;
     default:
@@ -3077,48 +3077,104 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::CalcCharEleLength(
     const double  vol,
     const double  vel_norm,
-    double&       strle,
-    double&       hk
+    double&       h_u,
+    double&       h_p
     )
 {
-  // cast dimension to a double variable -> pow()
-  const double dim = double (nsd_);
-
-  //---------------------------------------------------------------------
-  // various definitions for characteristic element length for tau_Mu
-  //---------------------------------------------------------------------
-  // a) streamlength due to Tezduyar et al. (1992) -> default
-  // normed velocity vector
-  LINALG::Matrix<nsd_,1> velino(true);
-  if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convvelint_);
-  else
-  {
-    velino.Clear();
-    velino(0,0) = 1.0;
-  }
-
-  LINALG::Matrix<nen_,1> tmp;
-  tmp.MultiplyTN(derxy_,velino);
-  const double val = tmp.Norm1();
-  strle = 2.0/val;
-
-  // b) volume-equivalent diameter (warning: 3-D formula!)
-  //strle = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-  // c) cubic/square root of element volume/area
-  //strle = std::pow(vol,1/dim);
-
-  //---------------------------------------------------------------------
-  // various definitions for characteristic element length for tau_Mp
-  //---------------------------------------------------------------------
-  // a) volume-equivalent diameter -> default for 3-D computations
-  if (nsd_==3) hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
-
-  // b) square root of element area -> default for 2-D computations,
-  // may also alternatively be used for 3-D computations
-  else if (nsd_==2) hk = std::pow(vol,1/dim);
   // check for potential 1-D computations
-  else dserror("element length calculation not implemented for 1-D computation!");
+  if (nsd_==1) dserror("Element length not implemented for 1-D computation!");
+
+  //---------------------------------------------------------------------
+  // select from various definitions for characteristic element length
+  // for tau_Mu
+  //---------------------------------------------------------------------
+  switch (fldpara_->CharEleLengthU())
+  {
+    // a) streamlength due to Tezduyar et al. (1992) -> default
+    // normed velocity vector
+    case INPAR::FLUID::streamlength_u:
+    {
+      LINALG::Matrix<nsd_,1> velino(true);
+      if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convvelint_);
+      else
+      {
+        velino.Clear();
+        velino(0,0) = 1;
+      }
+
+      // get streamlength using the normed velocity at element centre
+      LINALG::Matrix<nen_,1> tmp;
+      tmp.MultiplyTN(derxy_,velino);
+      const double val = tmp.Norm1();
+      h_u = 2.0/val; // h=streamlength
+    }
+    break;
+
+    // b) volume-equivalent diameter (warning: 3-D formula!)
+    case INPAR::FLUID::volume_equivalent_diameter_u:
+    {
+      h_u = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+    }
+    break;
+
+    // c) cubic/square root of element volume/area or element length (3- and 2-D)
+    case INPAR::FLUID::root_of_volume_u:
+    {
+      // cast dimension to a double varibale -> pow()
+      const double dim = double (nsd_);
+      h_u = std::pow(vol,1/dim);
+    }
+    break;
+
+    default: dserror("unknown characteristic element length for tau_Mu\n");
+    break;
+  } //switch (charelelengthu_)
+
+  //---------------------------------------------------------------------
+  // select from various definitions for characteristic element length
+  // for tau_Mp and tau_C
+  //---------------------------------------------------------------------
+  switch (fldpara_->CharEleLengthPC())
+  {
+    // a) streamlength due to Tezduyar et al. (1992) -> default
+    // normed velocity vector
+    case INPAR::FLUID::streamlength_pc:
+    {
+      LINALG::Matrix<nsd_,1> velino(true);
+      if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convvelint_);
+      else
+      {
+        velino.Clear();
+        velino(0,0) = 1;
+      }
+
+      // get streamlength using the normed velocity at element centre
+      LINALG::Matrix<nen_,1> tmp;
+      tmp.MultiplyTN(derxy_,velino);
+      const double val = tmp.Norm1();
+      h_p = 2.0/val; // h=streamlength
+    }
+    break;
+
+    // b) volume-equivalent diameter (warning: 3-D formula!)
+    case INPAR::FLUID::volume_equivalent_diameter_pc:
+    {
+      h_p = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+    }
+    break;
+
+    // c) cubic/square root of element volume/area or element length (3- and 2-D)
+    case INPAR::FLUID::root_of_volume_pc:
+    {
+      // cast dimension to a double varibale -> pow()
+      const double dim = double (nsd_);
+      h_p = std::pow(vol,1/dim);
+    }
+    break;
+
+    default: dserror("unknown characteristic element length for tau_Mu and tau_C\n");
+    break;
+  } //switch (charelelengthpc_)
 
   return;
 }

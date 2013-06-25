@@ -260,6 +260,18 @@ CROSS-STRESS                    no_cross
 //                              Franca_Madureira_Valentin_Badia_Codina_wo_dt
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 //
+// Characteristic element length for tau_Mu
+//                              streamlength
+//                              volume_equivalent_diameter
+//                              root_of_volume
+CHARELELENGTH_U                 streamlength
+//
+// Characteristic element length for tau_Mp/tau_C
+//                              streamlength
+//                              volume_equivalent_diameter
+//                              root_of_volume
+CHARELELENGTH_PC                root_of_volume
+//
 // Location where material law is evaluated
 //                              element_center,integration_point
 EVALUATION_MAT                  element_center

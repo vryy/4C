@@ -2867,6 +2867,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt),
                                &fdyn_stab);
 
+  // this parameter selects the characteristic element length for tau_Mu for all
+  // stabilization parameter definitions requiring such a length
+  setStringToIntegralParameter<int>("CHARELELENGTH_U",
+                               "streamlength",
+                               "Characteristic element length for tau_Mu",
+                               tuple<std::string>(
+                                 "streamlength",
+                                 "volume_equivalent_diameter",
+                                 "root_of_volume"),
+                               tuple<int>(
+                                   INPAR::FLUID::streamlength_u,
+                                   INPAR::FLUID::volume_equivalent_diameter_u,
+                                   INPAR::FLUID::root_of_volume_u),
+                               &fdyn_stab);
+
+  // this parameter selects the characteristic element length for tau_Mp and tau_C for 
+  // all stabilization parameter definitions requiring such a length
+  setStringToIntegralParameter<int>("CHARELELENGTH_PC",
+                               "volume_equivalent_diameter",
+                               "Characteristic element length for tau_Mp/tau_C",
+                               tuple<std::string>(
+                                 "streamlength",
+                                 "volume_equivalent_diameter",
+                                 "root_of_volume"),
+                               tuple<int>(
+                                   INPAR::FLUID::streamlength_pc,
+                                   INPAR::FLUID::volume_equivalent_diameter_pc,
+                                   INPAR::FLUID::root_of_volume_pc),
+                               &fdyn_stab);
+
   // this parameter selects the location where tau is evaluated
   setStringToIntegralParameter<int>("EVALUATION_TAU",
                                "element_center",
@@ -3928,6 +3958,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     INPAR::SCATRA::tau_franca_madureira_valentin_wo_dt,
                                     INPAR::SCATRA::tau_exact_1d,
                                     INPAR::SCATRA::tau_zero),
+                               &scatradyn_stab);
+
+  // this parameter selects the characteristic element length for tau for all
+  // stabilization parameter definitions requiring such a length
+  setStringToIntegralParameter<int>("CHARELELENGTH",
+                               "streamlength",
+                               "Characteristic element length for tau",
+                               tuple<std::string>(
+                                 "streamlength",
+                                 "volume_equivalent_diameter",
+                                 "root_of_volume"),
+                               tuple<int>(
+                                   INPAR::SCATRA::streamlength,
+                                   INPAR::SCATRA::volume_equivalent_diameter,
+                                   INPAR::SCATRA::root_of_volume),
                                &scatradyn_stab);
 
   // this parameter selects the all-scale subgrid-diffusivity definition applied

@@ -64,6 +64,7 @@ INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
+CHARELELENGTH_PC                root_of_volume
 TDS                             quasistatic
 TRANSIENT                       no_transient
 SUPG                            yes

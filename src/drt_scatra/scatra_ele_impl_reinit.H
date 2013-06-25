@@ -347,6 +347,8 @@ private:
 
   //! stabilization parameter definition
   enum INPAR::SCATRA::TauType whichtau_;
+  //! characteristic element length for stabilization parameter definition
+  enum INPAR::SCATRA::CharEleLength charelelength_;
 
   /*========================================================================*/
   //! @name scalar degrees of freedom and related

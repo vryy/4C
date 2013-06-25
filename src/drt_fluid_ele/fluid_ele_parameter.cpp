@@ -302,6 +302,21 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
         whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
     }
 
+    // get and check characteristic element length for stabilization parameter tau_Mu
+    charelelengthu_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthU>(stablist,"CHARELELENGTH_U");
+    if (not(charelelengthu_ == INPAR::FLUID::streamlength_u or
+                             INPAR::FLUID::volume_equivalent_diameter_u or
+                             INPAR::FLUID::root_of_volume_u))
+      dserror("Unknown characteristic element length for tau_Mu!");
+
+    // get and check characteristic element length for stabilization parameter
+    // tau_Mp and tau_C
+    charelelengthpc_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthPC>(stablist,"CHARELELENGTH_PC");
+    if (not(charelelengthpc_ == INPAR::FLUID::streamlength_pc or
+                             INPAR::FLUID::volume_equivalent_diameter_pc or
+                             INPAR::FLUID::root_of_volume_pc))
+      dserror("Unknown characteristic element length for tau_Mp and tau_C!");
+
     // in case of viscous and/or reactive stabilization, decide whether to use
     // GLS or USFEM and ensure compatibility of respective definitions
     if (vstab_ == INPAR::FLUID::viscous_stab_usfem or

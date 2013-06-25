@@ -35,6 +35,7 @@ CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+CHARELELENGTH_PC                root_of_volume
 EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

@@ -113,6 +113,14 @@ namespace INPAR
       tau_zero
     };
 
+    /// possible options for characteristic element length
+    enum CharEleLength
+    {
+      streamlength,
+      volume_equivalent_diameter,
+      root_of_volume
+    };
+
     /// possible options for all-scale subgrid diffusivity
     enum AssgdType
     {

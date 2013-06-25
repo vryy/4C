@@ -41,6 +41,7 @@ PREDICTOR                       steady_state
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+CHARELELENGTH_PC                root_of_volume
 TDS                             time_dependent
 TRANSIENT                       yes_transient
 SUPG                            yes

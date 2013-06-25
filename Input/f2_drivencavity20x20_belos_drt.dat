@@ -41,6 +41,7 @@ SIMPLER                         yes
 STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
 TDS                             quasistatic                     // quasistatic time_dependent
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+CHARELELENGTH_PC                root_of_volume
 TRANSIENT                       no_transient                    // no_transient yes_transient
 SUPG                            yes                             // no yes
 PSPG                            yes                             // no_pspg yes

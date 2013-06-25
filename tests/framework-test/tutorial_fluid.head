@@ -147,6 +147,8 @@ TIMESTEP                        0.01
 UPRES                           1
 //
 LINEAR_SOLVER                   1
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+CHARELELENGTH_PC                root_of_volume
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

@@ -108,6 +108,10 @@ public:
   INPAR::FLUID::ReynoldsStress Reynolds(){return reynolds_;};
   //! Flag to define tau
   INPAR::FLUID::TauType WhichTau(){return whichtau_;};
+  //! Flag to define characteristic element length for tau_Mu
+  INPAR::FLUID::CharEleLengthU CharEleLengthU(){return charelelengthu_;};
+  //! Flag to define characteristic element length for tau_Mp and tau_C
+  INPAR::FLUID::CharEleLengthPC CharEleLengthPC(){return charelelengthpc_;};
   //! flag to (de)activate fine-scale subgrid viscosity
   INPAR::FLUID::FineSubgridVisc Fssgv(){return fssgv_;};
   //! (sign) factor for viscous and reactive stabilization terms
@@ -260,6 +264,10 @@ private:
   INPAR::FLUID::ReynoldsStress reynolds_;
   //! Flag to define tau
   INPAR::FLUID::TauType whichtau_;
+  //! Flag to define characteristic element length for tau_Mu
+  INPAR::FLUID::CharEleLengthU charelelengthu_;
+  //! Flag to define characteristic element length for tau_Mp and tau_C
+  INPAR::FLUID::CharEleLengthPC charelelengthpc_;
   //! flag to (de)activate fine-scale subgrid viscosity
   INPAR::FLUID::FineSubgridVisc fssgv_;
   //! (sign) factor for viscous and reactive stabilization terms

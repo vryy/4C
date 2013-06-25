@@ -678,6 +678,8 @@ private:
 
   //! stabilization parameter definition
   enum INPAR::SCATRA::TauType whichtau_;
+  //! characteristic element length for stabilization parameter definition
+  enum INPAR::SCATRA::CharEleLength charelelength_;
   //! turbulence model
   enum INPAR::FLUID::TurbModelAction turbmodel_;
   //! conservative formulation of multifractal subgrid-scale modeling
