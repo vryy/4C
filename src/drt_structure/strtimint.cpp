@@ -1221,8 +1221,7 @@ void STR::TimInt::OutputStep()
   // write patient specific output
   if (writeresultsevery_ and (step_%writeresultsevery_ == 0))
   {
-    cout << "Patspec Params not written because I am to lazy to fix a bug" << endl;
-    //OutputPatspec();
+    OutputPatspec();
   }
 
   // what's next?
@@ -1244,10 +1243,10 @@ void STR::TimInt::GetRestartData
 {
   // at some point we have to create a copy
   *step = step_ ;
-  *time= (*time_)[0];
-  *disn=*disn_;
-  *veln=*veln_;
-  *accn=*accn_;
+  *time = (*time_)[0];
+  *disn = *disn_;
+  *veln = *veln_;
+  *accn = *accn_;
   *elementdata = *(discret_->PackMyElements());
 
   // get restart data is only for simple structure problems
@@ -2217,6 +2216,7 @@ void STR::TimInt::Integrate()
     // integrate time step
     // after this step we hold disn_, etc
     IntegrateStep();
+
     // calculate stresses, strains and energies
     // note: this has to be done before the update since otherwise a potential
     // material history is overwritten
