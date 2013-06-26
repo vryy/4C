@@ -19,7 +19,6 @@ Maintainer: Volker Gravemeier
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
-#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 

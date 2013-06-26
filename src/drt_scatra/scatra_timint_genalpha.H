@@ -16,6 +16,8 @@ Maintainer: Volker Gravemeier
 
 #include "scatra_timint_implicit.H"
 
+#include "../linalg/linalg_utils.H"
+
 
 namespace SCATRA
 {
@@ -91,7 +93,10 @@ public:
   Teuchos::RCP<Epetra_Vector> Phidtam() { return phidtam_; }
 
   /// routine to return fine-scale scalar field fsphi at time step n+alpha_M
-  virtual Teuchos::RCP<Epetra_Vector> FsPhi() { return fsphiaf_; };
+  virtual Teuchos::RCP<Epetra_Vector> FsPhi() {
+    if (Sep_ != Teuchos::null)
+    Sep_->Multiply(false,*phiaf_,*fsphiaf_);
+    return fsphiaf_; };
 
   /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
   double ThermPressAf() { return thermpressaf_; }

@@ -20,7 +20,6 @@ Maintainer: Andreas Ehrl
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_io/io.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 
 

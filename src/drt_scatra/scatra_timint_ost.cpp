@@ -22,7 +22,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 
 

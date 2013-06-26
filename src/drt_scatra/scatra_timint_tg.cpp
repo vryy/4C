@@ -18,7 +18,6 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
 
 
 

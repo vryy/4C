@@ -371,7 +371,23 @@ public:
   Teuchos::RCP<const Epetra_Vector> Hist() { return hist_; }
   Teuchos::RCP<const Epetra_Vector> GridVel() { return gridv_; }
   Teuchos::RCP<      Epetra_Vector> ViewOfGridVel() { return gridv_; }
-  Teuchos::RCP<const Epetra_Vector> FsVel() { return fsvelaf_; }
+  Teuchos::RCP<const Epetra_Vector> FsVel() {
+    // get fine-scale part of velocity at time n+alpha_F or n+1
+    if (Sep_ != Teuchos::null)
+    {
+      if (is_genalpha_)
+        Sep_->Multiply(false,*velaf_,*fsvelaf_);
+      else
+        Sep_->Multiply(false,*velnp_,*fsvelaf_);
+    }
+
+    // set fine-scale velocity for parallel nigthly tests
+    // separation matrix depends on the number of proc here
+    if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales and
+        (DRT::INPUT::IntegralValue<int>(params_->sublist("MULTIFRACTAL SUBGRID SCALES"),"SET_FINE_SCALE_VEL")))
+      fsvelaf_->PutScalar(0.01);
+
+    return fsvelaf_; }
 
   /// provide access to the Dirichlet map
   Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
