@@ -402,6 +402,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growth_ip.cpp
+  src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
   src/drt_mat/diffcond.cpp
   src/drt_mat/elchmat.cpp

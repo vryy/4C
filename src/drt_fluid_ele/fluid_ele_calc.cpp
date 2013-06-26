@@ -37,6 +37,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/ferech_pv.H"
+#include "../drt_mat/herschelbulkley.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -1837,6 +1838,34 @@ else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
   visc_ = m * pow((delta + rateofstrain), (-1)*a);
   // dynamic viscosity
   visc_ *= densaf_;
+}
+else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+{
+  const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
+
+  densaf_ = actmat->Density();
+  densam_ = densaf_;
+  densn_  = densaf_;
+
+  double tau0           = actmat->Tau0();            // yield stress
+  double kfac           = actmat->KFac();            // constant factor
+  double nexp           = actmat->NExp();            // exponent
+  double mexp           = actmat->MExp();            // exponent
+  double uplimshearrate = actmat->UpLimShearRate();  // upper limit of shear rate
+  double lolimshearrate = actmat->LoLimShearRate();  // lower limit of shear rate
+
+  // compute rate of strain at n+alpha_F or n+1
+  double rateofstrain   = -1.0e30;
+  rateofstrain = GetStrainRate(evelaf);
+
+  // calculate dynamic viscosity according to Herschel-Bulkley model
+  // (within lower and upper limit of shear rate)
+  if (rateofstrain < lolimshearrate)
+    visc_ = tau0*((1.0-exp(-mexp*lolimshearrate))/lolimshearrate) + kfac*pow(lolimshearrate,(nexp-1.0));
+  else if (rateofstrain > uplimshearrate)
+    visc_ = tau0*((1.0-exp(-mexp*uplimshearrate))/uplimshearrate) + kfac*pow(uplimshearrate,(nexp-1.0));
+  else
+    visc_ = tau0*((1.0-exp(-mexp*rateofstrain))/rateofstrain) + kfac*pow(rateofstrain,(nexp-1.0));
 }
 else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
 {

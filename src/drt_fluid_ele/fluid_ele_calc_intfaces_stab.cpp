@@ -1285,9 +1285,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
 
   if(pmat->MaterialType() != nmat->MaterialType()) dserror(" not the same material for master and slave parent element");
 
-  if( pmat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && pmat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && pmat->MaterialType() != INPAR::MAT::m_fluid)
+  if( pmat->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && pmat->MaterialType() != INPAR::MAT::m_modpowerlaw
+   && pmat->MaterialType() != INPAR::MAT::m_herschelbulkley
+   && pmat->MaterialType() != INPAR::MAT::m_fluid)
     dserror("Material law for parent element is not a fluid");
 
   // get parent viscosity

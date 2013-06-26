@@ -48,6 +48,7 @@ Maintainer: Lena Wiechert
 #include "viscoanisotropic.H"
 #include "carreauyasuda.H"
 #include "modpowerlaw.H"
+#include "herschelbulkley.H"
 #include "yoghurt.H"
 #include "permeablefluid.H"
 #include "matlist.H"
@@ -295,6 +296,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ModPowerLaw(curmat));
     MAT::PAR::ModPowerLaw* params = static_cast<MAT::PAR::ModPowerLaw*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_herschelbulkley:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::HerschelBulkley(curmat));
+    MAT::PAR::HerschelBulkley* params = static_cast<MAT::PAR::HerschelBulkley*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_yoghurt:

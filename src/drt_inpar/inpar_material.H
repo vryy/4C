@@ -45,6 +45,7 @@ namespace INPAR
       m_fluid,       ///< fluid
       m_carreauyasuda,///< fluid with nonlinear viscosity according to Carreau-Yasuda
       m_modpowerlaw,  ///< fluid with nonlinear viscosity according to a modified power law
+      m_herschelbulkley, ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and extended by an Arrhenius-type term to account for temperature dependence
       m_permeable_fluid,       ///< permeable fluid
       m_scatra,   ///< scalar transport material

@@ -17,6 +17,7 @@
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/herschelbulkley.H"
 #include "../drt_mat/modpowerlaw.H"
 
 
@@ -434,9 +435,10 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // get material of volume element this surface belongs to
   RCP<MAT::Material> mat = surfele->ParentElement()->Material();
 
-  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid)
+  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
+   && mat->MaterialType() != INPAR::MAT::m_fluid)
           dserror("Material law is not a fluid");
 
   // get viscosity
@@ -3059,9 +3061,10 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // get material of volume element this surface belongs to
   RCP<MAT::Material> mat = lineele->ParentElement()->Material();
 
-  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid)
+  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
+   && mat->MaterialType() != INPAR::MAT::m_fluid)
           dserror("Material law is not a fluid");
 
   // get viscosity

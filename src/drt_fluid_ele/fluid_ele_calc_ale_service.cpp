@@ -32,6 +32,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/ferech_pv.H"
+#include "../drt_mat/herschelbulkley.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/newtonianfluid.H"

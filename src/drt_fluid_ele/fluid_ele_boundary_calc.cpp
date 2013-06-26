@@ -38,6 +38,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
+#include "../drt_mat/herschelbulkley.H"
 #include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_poroelast/poroelast_utils.H"
@@ -1201,10 +1202,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
   // get the required material information
   Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
 
-  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid
-      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
+  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
+   && mat->MaterialType() != INPAR::MAT::m_fluid
+   && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
@@ -1224,6 +1226,12 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
     densaf_ = actmat->Density();
     dserror("How to extract viscosity from modified power law material for artery tree??");
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_herschelbulkley)
+  {
+    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(mat.get());
+    densaf_ = actmat->Density();
+    dserror("How to extract viscosity from Herschel Bulkley material law for artery tree??");
   }
   else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
   {
@@ -1307,10 +1315,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalcu
   // get material of volume element this surface belongs to
   Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
 
-  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid
-      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
+  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
+   && mat->MaterialType() != INPAR::MAT::m_fluid
+   && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
@@ -1329,6 +1338,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalcu
   else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
   {
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    densaf_ = actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_herschelbulkley)
+  {
+    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(mat.get());
     densaf_ = actmat->Density();
   }
   else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
@@ -2300,10 +2314,11 @@ template <DRT::Element::DiscretizationType bndydistype,
   // get the required material information
   Teuchos::RCP<MAT::Material> mat = parent->Material();
 
-  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid
-      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
+  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
+   && mat->MaterialType() != INPAR::MAT::m_fluid
+   && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
@@ -3798,10 +3813,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   // get material of volume element this surface belongs to
   Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
 
-  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
-      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-      && mat->MaterialType() != INPAR::MAT::m_fluid
-      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
+  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
+   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
+   && mat->MaterialType() != INPAR::MAT::m_fluid
+   && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
           dserror("Material law is not a fluid");
 
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
@@ -3817,6 +3833,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
   {
     const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    density = actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_herschelbulkley)
+  {
+    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(mat.get());
     density = actmat->Density();
   }
   else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)

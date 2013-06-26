@@ -128,6 +128,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // fluid with non-linear viscosity according to Herschel-Bulkley
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_herschelbulkley",
+                                            "fluid with non-linear viscosity according to Herschel-Bulkley",
+                                            INPAR::MAT::m_herschelbulkley));
+
+    AddNamedReal(m,"TAU_0","yield stress");
+    AddNamedReal(m,"KFAC","constant factor");
+    AddNamedReal(m,"NEXP","exponent");
+    AddNamedReal(m,"MEXP","exponent");
+    AddNamedReal(m,"LOLIMSHEARRATE","lower limit of shear rate");
+    AddNamedReal(m,"UPLIMSHEARRATE","upper limit of shear rate");
+    AddNamedReal(m,"DENSITY","density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // "yoghurt-type" fluid with nonlinear viscosity according to a power law
   // and extended by an Arrhenius-type term to account for temperature dependence
   {
