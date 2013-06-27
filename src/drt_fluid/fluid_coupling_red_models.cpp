@@ -884,16 +884,16 @@ double FLD::UTILS::Fluid_couplingBc::Area( double& density, double& viscosity, i
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set<int>("action",FLD::areacalc);
-  eleparams.set<double>("Area calculation", 0.0);
-  eleparams.set<double>("viscosity", 0.0);
-  eleparams.set<double>("density", 0.0);
+  eleparams.set<int>("action",FLD::calc_area);
+  eleparams.set<double>("area",0.0);
+  eleparams.set<double>("viscosity",0.0);
+  eleparams.set<double>("density",0.0);
 
   const std::string condstring("Art_3D_redD_CouplingCond");
 
   discret_3D_->EvaluateCondition(eleparams,condstring,condid);
 
-  double actarea = eleparams.get<double>("Area calculation");
+  double actarea = eleparams.get<double>("area");
   density = eleparams.get<double>("density");
   viscosity = eleparams.get<double>("viscosity");
 
@@ -1013,8 +1013,8 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   ParameterList eleparams;
-  eleparams.set<int>("action",FLD::integ_pressure_calc);
-  eleparams.set<double>("Inlet integrated pressure", 0.0);
+  eleparams.set<int>("action",FLD::calc_pressure_bou_int);
+  eleparams.set<double>("pressure boundary integral", 0.0);
   eleparams.set("total time",time);
 
   // get a vector layout from the discretization to construct matching
@@ -1028,7 +1028,7 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
   discret_3D_->EvaluateCondition(eleparams,myStoredPressures,condstring,condid);
 
   // ... as well as actual total flowrate on this proc
-  double actpressure = eleparams.get<double>("Inlet integrated pressure");
+  double actpressure = eleparams.get<double>("pressure boundary integral");
 
   // get total flowrate in parallel case
   double parpressure = 0.0;

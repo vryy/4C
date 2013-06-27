@@ -1193,75 +1193,45 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
-                                                  DRT::ELEMENTS::FluidBoundary*  ele,
-                                                  Teuchos::ParameterList&         params,
-                                                  DRT::Discretization&            discretization,
-                                                  std::vector<int>&               lm)
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(
+  DRT::ELEMENTS::FluidBoundary*  ele,
+  Teuchos::ParameterList&        params,
+  DRT::Discretization&           discretization,
+  std::vector<int>&              lm)
 {
-  // get the required material information
+  //------------------------------------------------------------------
+  // get and set density and viscosity (still required for following routines:
+  // FluidImpedanceBc/FluidVolumetricSurfaceFlowBc/Fluid_couplingBc::Area)
+  //------------------------------------------------------------------
   Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
-
-  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
-   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
-   && mat->MaterialType() != INPAR::MAT::m_fluid
-   && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
-          dserror("Material law is not a fluid");
-
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
     densaf_ = actmat->Density();
     visc_   = actmat->Viscosity();
   }
-  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
-  {
-    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
-    densaf_ = actmat->Density();
-    dserror("How to extract viscosity from Carreau Yasuda material law for artery tree??");
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
-  {
-    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
-    densaf_ = actmat->Density();
-    dserror("How to extract viscosity from modified power law material for artery tree??");
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_herschelbulkley)
-  {
-    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(mat.get());
-    densaf_ = actmat->Density();
-    dserror("How to extract viscosity from Herschel Bulkley material law for artery tree??");
-  }
   else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
   {
     const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
     densaf_ = actmat->Density();
     visc_   = actmat->SetViscosity();
   }
-  else
-    dserror("Fluid material expected but got type %d", mat->MaterialType());
-
-  // set required material data for communication
-  params.set<double>("density", densaf_);
+  params.set<double>("density",   densaf_);
   params.set<double>("viscosity", visc_);
+  //------------------------------------------------------------------
+  // end of get and set density and viscosity
+  //------------------------------------------------------------------
 
-  // get gauss rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-
-  double area        = params.get<double>("Area calculation");
-
-  // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
+  //------------------------------------------------------------------
+  // start of actual area calculation
+  //------------------------------------------------------------------
+  // get node coordinates (nsd_: dimension of boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
-
 #ifdef D_ALE_BFLOW
-  // Add the deformation of the ALE mesh to the nodes coordinates
-  // displacements
+  // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector>  dispnp;
   std::vector<double>                mydispnp;
-
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
@@ -1280,116 +1250,63 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
       }
     }
   }
-
 #endif // D_ALE_BFLOW
 
+  // get initial value for area
+  double area = params.get<double>("area");
+
+  // get Gauss rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // Computation of nurb specific stuff is not activated here
     EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
-    
+
+    // add to area integral
     area += fac_;
   }
 
-  params.set<double>("Area calculation", area);
-}//DRT::ELEMENTS::FluidSurface::AreaCaculation
+  // set final value for area
+  params.set<double>("area",area);
+  //------------------------------------------------------------------
+  // end of actual area calculation
+  //------------------------------------------------------------------
+
+}//DRT::ELEMENTS::FluidSurface::AreaCalculation
 
 
 /*----------------------------------------------------------------------*
- |                                                        ismail 04/2010|
+ |                                                       ismail 04/2010 |
+ |                                                           vg 06/2013 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalculation(
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   DRT::ELEMENTS::FluidBoundary*    ele,
-  Teuchos::ParameterList&           params,
-  DRT::Discretization&              discretization,
-  std::vector<int>&                 lm)
+  Teuchos::ParameterList&          params,
+  DRT::Discretization&             discretization,
+  std::vector<int>&                lm)
 {
-
-  //------------------------------------------------------------------
-  // This calculates the integrated the pressure from the
-  // the actual pressure values
-  //------------------------------------------------------------------
-#if 1
-  // get material of volume element this surface belongs to
-  Teuchos::RCP<MAT::Material> mat = ele->ParentElement()->Material();
-
-  if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
-   && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
-   && mat->MaterialType() != INPAR::MAT::m_herschelbulkley
-   && mat->MaterialType() != INPAR::MAT::m_fluid
-   && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
-          dserror("Material law is not a fluid");
-
-  if(mat->MaterialType()== INPAR::MAT::m_fluid)
-  {
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    densaf_ = actmat->Density();
-    //TODO: clearify this
-    //it should now be one
-    //densaf_ = 1.0;
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
-  {
-    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
-    densaf_ = actmat->Density();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
-  {
-    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
-    densaf_ = actmat->Density();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_herschelbulkley)
-  {
-    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(mat.get());
-    densaf_ = actmat->Density();
-  }
-  else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
-  {
-    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
-    densaf_ = actmat->Density();
-    visc_   = actmat->SetViscosity();
-  }
-  else
-    dserror("Fluid material expected but got type %d", mat->MaterialType());
-
-  //get gauss rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-
-  // extract local values from the global vectors
+  // extract pressure values from global velocity/pressure vector
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  if (velnp==Teuchos::null)
-    dserror("Cannot get state vector 'velnp'");
+  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
-  // allocate local velocity vector
-  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
-  // allocate local pressure vector
-  LINALG::Matrix<1,bdrynen_>   eprenp(true);
-
-  // split velocity and pressure, insert into element arrays
-  for (int inode=0; inode<bdrynen_; ++inode)
+  LINALG::Matrix<1,bdrynen_> eprenp(true);
+  for (int inode=0;inode<bdrynen_;inode++)
   {
-    eprenp(inode) = densaf_*myvelnp[nsd_+inode*numdofpernode_];
+    eprenp(inode) = myvelnp[nsd_+inode*numdofpernode_];
   }
 
-  // get  actual outflowrate
-  double pressure    = params.get<double>("Inlet integrated pressure");
-
-  // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
-  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
+  // get node coordinates (nsd_: dimension of boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
 #ifdef D_ALE_BFLOW
-  // Add the deformation of the ALE mesh to the nodes coordinates
-  // displacements
+  // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector>  dispnp;
   std::vector<double>                mydispnp;
-
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
@@ -1409,25 +1326,28 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalcu
   }
 #endif // D_ALE_BFLOW
 
-  //const IntegrationPoints2D  intpoints(gaussrule);
+  // get initial value for pressure boundary integral
+  double press_int = params.get<double>("pressure boundary integral");
+
+  // get Gauss rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // Computation of the unit normal vector at the Gauss points
-    // Computation of nurb specific stuff is not activated here
     EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
-    //Compute elment flowrate (add to actual frow rate obtained before
+    // add to pressure boundary integral
     for (int inode=0;inode<bdrynen_;++inode)
     {
-      pressure += funct_(inode) * eprenp(inode) *fac_;
+      press_int += funct_(inode) * eprenp(inode) *fac_;
     }
-  }  // end Gauss loop
-  // set new flow rate
+  }
 
-  params.set<double>("Inlet integrated pressure", pressure);
-#endif
-}//DRT::ELEMENTS::FluidSurface::IntegratedPressureParameterCalculation
+  // set final value for pressure boundary integral
+  params.set<double>("pressure boundary integral",press_int);
+  
+}//DRT::ELEMENTS::FluidSurface::PressureBoundaryIntegral
 
 
 /*----------------------------------------------------------------------*
@@ -1480,11 +1400,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
 #endif // D_ALE_BFLOW
 
   // first evaluate the area of the surface element
-  params.set<double>("Area calculation",0.0);
-  this->AreaCaculation(ele, params, discretization,lm);
+  params.set<double>("area",0.0);
+  this->AreaCalculation(ele, params, discretization,lm);
 
   // get the surface element area
-  const double elem_area = params.get<double>("Area calculation");
+  const double elem_area = params.get<double>("area");
 
   LINALG::Matrix<(nsd_),1>  xyzGe(true);
 

@@ -1851,16 +1851,16 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",FLD::areacalc);
-  eleparams.set<double>("Area calculation", 0.0);
-  eleparams.set<double>("viscosity", 0.0);
-  eleparams.set<double>("density", 0.0);
+  eleparams.set<int>("action",FLD::calc_area);
+  eleparams.set<double>("area",0.0);
+  eleparams.set<double>("viscosity",0.0);
+  eleparams.set<double>("density",0.0);
 
   const std::string condstring(ds_condname);
 
   discret_->EvaluateCondition(eleparams,condstring,condid);
 
-  double actarea = eleparams.get<double>("Area calculation");
+  double actarea = eleparams.get<double>("area");
   density = eleparams.get<double>("density");
   viscosity = eleparams.get<double>("viscosity");
 

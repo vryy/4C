@@ -60,7 +60,7 @@ enum Action {
 enum BoundaryAction {
     ba_none,
     integrate_Shapefunction,
-    areacalc,
+    calc_area,
     calc_flowrate,
     flowratederiv,
     Outletimpedance,
@@ -72,7 +72,7 @@ enum BoundaryAction {
     mixed_hybrid_dbc,
     conservative_outflow_bc,
     calc_Neumann_inflow,
-    integ_pressure_calc,
+    calc_pressure_bou_int,
     center_of_mass_calc,
     traction_velocity_component,
     traction_Uv_integral_component,

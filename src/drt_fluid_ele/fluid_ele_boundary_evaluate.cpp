@@ -68,20 +68,20 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         mydispnp);
     break;
   }
-  case FLD::areacalc:
+  case FLD::calc_area:
   {
     if (this->Owner() == discretization.Comm().MyPID())
-      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->AreaCaculation(
+      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->AreaCalculation(
           this,
           params,
           discretization,
           lm);
     break;
   }
-  case FLD::integ_pressure_calc:
+  case FLD::calc_pressure_bou_int:
   {
     if(this->Owner() == discretization.Comm().MyPID())
-      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->IntegratedPressureParameterCalculation(
+      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PressureBoundaryIntegral(
           this,
           params,
           discretization,

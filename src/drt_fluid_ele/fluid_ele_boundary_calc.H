@@ -70,18 +70,18 @@ public:
       const std::vector<double>&      mydispnp
   ) = 0;
 
-  virtual void AreaCaculation(
+  virtual void AreaCalculation(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm
   ) = 0;
 
-  virtual void IntegratedPressureParameterCalculation(
+  virtual void PressureBoundaryIntegral(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm
   ) = 0;
 
   virtual void ComputeFlowRate(
@@ -382,11 +382,11 @@ public:
     \param params (in/out)    : ParameterList for communication between control routine
                                 and elements
     */
-  void AreaCaculation(
+  void AreaCalculation(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      Teuchos::ParameterList&           params,
-      DRT::Discretization&              discretization,
-      std::vector<int>&                 lm);
+      Teuchos::ParameterList&          params,
+      DRT::Discretization&             discretization,
+      std::vector<int>&                lm);
 
    /*!
     brief integrate elemental pressure over a surface
@@ -396,11 +396,11 @@ public:
     \param discretization (in): A reference to the underlying discretization
     \param lm (in)            : location vector of this element
     */
-  void IntegratedPressureParameterCalculation(
+  void PressureBoundaryIntegral(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      Teuchos::ParameterList&           params,
-      DRT::Discretization&              discretization,
-      std::vector<int>&                 lm);
+      Teuchos::ParameterList&          params,
+      DRT::Discretization&             discretization,
+      std::vector<int>&                lm);
 
    /*!
     brief center of mass of a surface
