@@ -82,7 +82,6 @@ INITPOTCALC                     no
 MATID                           7
 MAXTIME                         1000
 MESHTYING                       no
-NEUMANNINFLOW                   no
 NUMSTEP                         40
 OUTMEAN                         yes
 OUTPUT_GMSH                     No

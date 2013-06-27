@@ -62,7 +62,7 @@ THETA                           1.0
 TIMEINTEGR One_Step_Theta //BDF2
 TIMESTEP                        1
 UPRES                           1
-NEUMANNINFLOW                   no
+NONLINEARBC                   no
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2

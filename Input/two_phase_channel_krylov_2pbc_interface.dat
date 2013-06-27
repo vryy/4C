@@ -82,7 +82,6 @@ GAMMA                           0.5
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function               // zero_field, field_by_function, field_by_condition, disturbed_field_by_function, 1D_DISCONTPV, FLAME_VORTEX_INTERACTION, RAYTAYMIXFRAC, L_shaped_domain, facing_flame_fronts
 MATID                           2
-NEUMANNINFLOW                   no
 OUTPUT_GMSH                     No
 RESTARTEVRY                     3
 SOLVERTYPE                      nonlinear                       // linear_full, linear_incremental, nonlinear

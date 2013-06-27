@@ -80,7 +80,7 @@ PREDICTOR                       steady_state
 SIMPLER                         no
 THETA                           0.66                            // Time integration factor
 TIMEINTEGR                      One_Step_Theta                  // One_Step_Theta BDF2
-NEUMANNINFLOW                   yes
+NONLINEARBC                   yes
 -----------------------------------------------------------------FSI DYNAMIC
 BASETOL                         1.0e-05
 CONVTOL                         1.0e-04

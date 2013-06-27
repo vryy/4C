@@ -87,7 +87,6 @@ PREDICTOR                       steady_state
 MAXTIME                         3333
 NUMSTEP                         33
 TIMESTEP                        0.333
-NEUMANNINFLOW                   no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
@@ -113,7 +112,6 @@ TIMEINTEGR                      Stationary                      // One_Step_Thet
 TIMESTEP                        0.2
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 ALPHA_F                         0.5

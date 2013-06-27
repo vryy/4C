@@ -547,11 +547,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
     DRT::ELEMENTS::FluidBoundary*  ele,
-    Teuchos::ParameterList&         params,
-    DRT::Discretization&            discretization,
-    std::vector<int>&               lm,
-    Epetra_SerialDenseMatrix&       elemat1,
-    Epetra_SerialDenseVector&       elevec1)
+    Teuchos::ParameterList&        params,
+    DRT::Discretization&           discretization,
+    std::vector<int>&              lm,
+    Epetra_SerialDenseMatrix&      elemat1,
+    Epetra_SerialDenseVector&      elevec1)
 {
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -572,14 +572,38 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
   // genalpha:                  timefacrhs = 1.0
   double timefacrhs = fldpara_->TimeFacRhs();
 
+  // check ALE status
+  const bool isale = ele->ParentElement()->IsAle();
+
   // set flag for type of linearization to default value (fixed-point-like)
   bool is_newton = fldpara_->IsNewton();
 
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
-  // get node coordinates for nsd_-dimensional domain
+  // get global node coordinates for nsd_-dimensional domain
   // (nsd_: number of spatial dimensions of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
+
+  // add potential ALE displacements
+  Teuchos::RCP<const Epetra_Vector>  dispnp;
+  std::vector<double>                mydispnp;
+  if (isale)
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp != Teuchos::null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for(int idim=0;idim<(nsd_);++idim)
+      {
+        xyze_(idim,inode) += mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
 
   // get velocity and scalar vector at time n+alpha_F/n+1
   Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");

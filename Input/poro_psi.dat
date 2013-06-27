@@ -59,7 +59,7 @@ ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         1000
 MESHTYING                       no
-NEUMANNINFLOW                   no
+NONLINEARBC                   no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1

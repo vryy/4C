@@ -930,9 +930,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // ------------------------------------------ form of convective term
   fluidtimeparams->set<string> ("form of convective term", fdyn.get<std::string>("CONVFORM"));
 
-  // ------------------------------------ potential Neumann inflow terms
-  fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<std::string>("NEUMANNINFLOW"));
-
+  // -------------------------- potential nonlinear boundary conditions
+  fluidtimeparams->set<string> ("Nonlinear boundary conditions",fdyn.get<std::string>("NONLINEARBC"));
 
   // ------------------------------------ potential reduced_D 3D coupling method
   fluidtimeparams->set<string> ("Strong 3D_redD coupling",fdyn.get<std::string>("STRONG_REDD_3D_COUPLING_TYPE"));

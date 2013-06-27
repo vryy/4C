@@ -194,8 +194,8 @@ protected:
   double presnorm_;
   //@}
 
-  /// flag for potential Neumann inflow
-  bool neumanninflow_;
+  /// flag for potential nonlinear boundary conditions
+  bool nonlinearbc_;
 
   /// cpu-time measures
   double  dtele_;

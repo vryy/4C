@@ -82,7 +82,6 @@ PREDICTOR                       steady_state
 MAXTIME                         9
 NUMSTEP                         450
 TIMESTEP                        0.015
-NEUMANNINFLOW                   no
 LINEAR_SOLVER                   2
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
@@ -120,7 +119,6 @@ TIMEINTEGR                      Stationary
 TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       No
 UPRES                           1
 ALPHA_F                         0.5

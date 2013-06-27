@@ -88,7 +88,6 @@ PREDICTOR                       steady_state
 MAXTIME                         3333
 NUMSTEP                         33
 TIMESTEP                        0.333
-NEUMANNINFLOW                   no
 GMSH_OUTPUT                     no                              // yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
@@ -115,7 +114,6 @@ TIMEINTEGR                      One_Step_Theta                  // Gen_Alpha
 TIMESTEP                        0.2
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 ALPHA_F                         0.5

@@ -108,7 +108,6 @@ TIMEINTEGR                      Gen_Alpha                       // One_Step_Thet
 TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 ALPHA_F                         0.666666

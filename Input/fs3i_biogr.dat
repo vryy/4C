@@ -73,7 +73,7 @@ ITEMAX                          10
 LIFTDRAG                        No
 LINEAR_SOLVER                   2
 MAXTIME                         10000.0
-NEUMANNINFLOW                   yes
+NONLINEARBC                     yes
 NONLINITER Newton //fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         5
@@ -202,7 +202,6 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 INITPOTCALC                     no
 MAXTIME                         10000.0
-NEUMANNINFLOW                   no
 NUMSTEP                         5
 OUTMEAN                         No
 OUTPUT_GMSH                     No

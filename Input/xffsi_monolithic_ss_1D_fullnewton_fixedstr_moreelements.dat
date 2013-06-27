@@ -57,7 +57,7 @@ STEADYTOL                       1e-6
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
-NEUMANNINFLOW                   no
+NONLINEARBC                   no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based

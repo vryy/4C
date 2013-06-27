@@ -50,7 +50,7 @@ GRIDVEL                         1
 INITIALFIELD                    zero_field                      // field_by_function
 INITSTATITEMAX                  5
 ITEMAX                          10
-NEUMANNINFLOW                   no
+NONLINEARBC                   no
 NONLINITER Newton //fixed_point_like
 NUMSTASTEPS                     0
 PREDICTOR                       steady_state

@@ -42,7 +42,7 @@ LIFTDRAG                        No
 LINEAR_SOLVER                   3
 MAXTIME                         1000
 MESHTYING                       no
-NEUMANNINFLOW                   no
+NONLINEARBC                   no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1

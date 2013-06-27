@@ -54,7 +54,6 @@ INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         1000
-NEUMANNINFLOW                   no
 NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         1

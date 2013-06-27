@@ -645,7 +645,7 @@ protected:
   \brief apply weak or mixed hybrid Dirichlet boundary conditions to system of equations
 
   */
-  void ApplyWeakOrMixedHybridDirichletToSystem();
+  void ApplyNonlinearBoundaryConditions();
 
   /*!
   \brief update acceleration for generalized-alpha time integration
@@ -758,8 +758,8 @@ protected:
   /// flag for special turbulent flow
   string special_flow_;
 
-  /// flag for potential Neumann inflow
-  bool neumanninflow_;
+  /// flag for potential nonlinear boundary conditions
+  bool nonlinearbc_;
 
   /// flag for potential 3D Reduced_D coupling
   bool strong_redD_3d_coupling_;

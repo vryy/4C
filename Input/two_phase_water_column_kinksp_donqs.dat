@@ -67,7 +67,6 @@ ITEMAX                          10
 LIFTDRAG                        No
 LINEAR_SOLVER                   2
 MAXTIME                         1
-NEUMANNINFLOW                   no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         250

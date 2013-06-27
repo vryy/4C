@@ -45,7 +45,6 @@ BLOCKPRECOND                    NO
 CALCERROR                       No
 CONVFORM                        conservative
 INITPOTCALC                     no
-NEUMANNINFLOW                   no
 SCATRATYPE                      Elch_ENC
 VELCURVENO                      -1
 WRITEFLUX_IDS 1 2 // do not write flux of species 3

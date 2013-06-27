@@ -42,7 +42,7 @@ INITSTATITEMAX                  5
 ITEMAX                          5
 LIFTDRAG                        No
 MAXTIME                         1000
-NEUMANNINFLOW                   yes
+NONLINEARBC                   yes
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         10

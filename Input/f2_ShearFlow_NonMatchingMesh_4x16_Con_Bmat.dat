@@ -46,7 +46,7 @@ INITIALFIELD                    field_by_function
 ITEMAX                          9
 LIFTDRAG                        No
 MAXTIME                         1000
-NEUMANNINFLOW                   no
+NONLINEARBC                   no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         25

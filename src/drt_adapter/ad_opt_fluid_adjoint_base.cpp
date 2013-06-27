@@ -228,8 +228,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // ------------------------------------ special test case
   fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointCase>("special test case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(adjointfdyn,"TESTCASE"));
 
-  // ------------------------------------ potential Neumann inflow terms
-  fluidadjointtimeparams->set<string> ("Neumann inflow",fdyn.get<std::string>("NEUMANNINFLOW"));
+  // -------------------------- potential nonlinear boundary conditions
+  fluidadjointtimeparams->set<string> ("Nonlinear boundary conditions",fdyn.get<std::string>("NONLINEARBC"));
 
   // -----------------------sublist containing stabilization parameters
   fluidadjointtimeparams->sublist("RESIDUAL-BASED STABILIZATION")=fdyn.sublist("RESIDUAL-BASED STABILIZATION");

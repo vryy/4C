@@ -195,11 +195,12 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     }
   }
 
-  //------------------------------------------------------------------------------------------------
-  // Neumann inflow term if required
-  //------------------------------------------------------------------------------------------------
-  neumanninflow_ = false;
-  if (params_->get<std::string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+  // -------------------------------------------------------------------
+  // flag for potential nonlinear boundary conditions
+  // -------------------------------------------------------------------
+  nonlinearbc_ = false;
+  if (params_->get<std::string>("Nonlinear boundary conditions","no") == "yes")
+    nonlinearbc_ = true;
 
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
@@ -1540,8 +1541,8 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
           discret_->ClearState();
 
-                 // account for potential Neumann inflow terms
-          if (neumanninflow_)
+                 // potential Neumann inflow terms
+          if (nonlinearbc_)
           {
             // create parameter list
             Teuchos::ParameterList condparams;

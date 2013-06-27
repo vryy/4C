@@ -76,7 +76,7 @@ START_THETA                     0.67
 LIFTDRAG                        no
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.01
-NEUMANNINFLOW                   yes
+NONLINEARBC                   yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 TIMESTEP                        0.1

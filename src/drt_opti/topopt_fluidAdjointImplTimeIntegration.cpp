@@ -55,10 +55,11 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
 
 
   // -------------------------------------------------------------------
-  // account for potential Neuman inflow terms if required
+  // flag for potential nonlinear boundary conditions
   // -------------------------------------------------------------------
-  neumanninflow_ = false;
-  if (params_->get<std::string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+  nonlinearbc_ = false;
+  if (params_->get<std::string>("Nonlinear boundary conditions","no") == "yes")
+    nonlinearbc_ = true;
 
   // -------------------------------------------------------------------
   // care for periodic boundary conditions
@@ -448,7 +449,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         //----------------------------------------------------------------------
         // account for potential Neumann inflow terms
         //----------------------------------------------------------------------
-        if (neumanninflow_)
+        if (nonlinearbc_)
         {
           // create parameter list
           Teuchos::ParameterList condparams;

@@ -58,7 +58,6 @@ PREDICTOR                       steady_state
 MAXTIME                         1
 NUMSTEP                         1
 TIMESTEP                        0.01
-NEUMANNINFLOW                   no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -76,7 +75,6 @@ TIMEINTEGR                      Stationary
 TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 ALPHA_F                         0.5

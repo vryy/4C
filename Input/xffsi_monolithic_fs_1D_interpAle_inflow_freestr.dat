@@ -63,7 +63,7 @@ STEADYTOL                       1e-6
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1
-NEUMANNINFLOW                   no
+NONLINEARBC                   no
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta

@@ -578,8 +578,8 @@ protected:
   int totalitnumFRS_; // total number of frs iterations in time step
   int curritnumFRS_; // number of frs iterations in fgi
 
-  /// flag for potential Neumann inflow
-  bool neumanninflow_;
+  /// flag for potential nonlinear boundary conditions
+  bool nonlinearbc_;
 
   //! @name restart variables
   const int writestresses_;

@@ -105,7 +105,6 @@ PREDICTOR                       steady_state
 MAXTIME                         1.0
 NUMSTEP                         10
 TIMESTEP                        0.01
-NEUMANNINFLOW                   no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -129,7 +128,6 @@ TIMEINTEGR                      One_Step_Theta                  // Taylor_Galerk
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       No
 UPRES                           1
 ALPHA_F                         0.5

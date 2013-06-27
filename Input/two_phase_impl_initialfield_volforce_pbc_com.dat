@@ -104,7 +104,6 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 ALPHA_F                         0.5

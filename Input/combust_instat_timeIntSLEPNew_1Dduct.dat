@@ -94,7 +94,6 @@ PREDICTOR                       steady_state
 MAXTIME                         0.36
 NUMSTEP                         18
 TIMESTEP                        0.02
-NEUMANNINFLOW                   no
 GMSH_OUTPUT                     yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins
@@ -120,7 +119,6 @@ TIMEINTEGR                      One_Step_Theta                  // Taylor_Galerk
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-NEUMANNINFLOW                   no
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 ALPHA_F                         0.5

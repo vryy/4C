@@ -2578,15 +2578,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("NEUMANNINFLOW",
+  setStringToIntegralParameter<int>("NONLINEARBC",
                                "no",
-                               "Flag to (de)activate potential Neumann inflow term(s)",
+                               "Flag to activate check for potential nonlinear boundary conditions",
                                tuple<std::string>(
                                  "no",
                                  "yes"),
                                tuple<std::string>(
-                                 "No Neumann inflow term(s)",
-                                 "Neumann inflow term(s) might occur"),
+                                 "no nonlinear boundary conditions",
+                                 "nonlinear boundary conditions might be present"),
                                tuple<int>(0,1),
                                &fdyn);
 

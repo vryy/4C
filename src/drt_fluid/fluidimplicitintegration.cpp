@@ -167,10 +167,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
      dserror("conservative formulation currently not supported for low-Mach-number flow within generalized-alpha time-integration scheme");
 
   // -------------------------------------------------------------------
-  // account for potential Neumann inflow terms if required
+  // flag for potential nonlinear boundary conditions
   // -------------------------------------------------------------------
-  neumanninflow_ = false;
-  if (params_->get<std::string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+  nonlinearbc_ = false;
+  if (params_->get<std::string>("Nonlinear boundary conditions","no") == "yes")
+    nonlinearbc_ = true;
 
   // -------------------------------------------------------------------
   // care for periodic boundary conditions
@@ -1372,8 +1373,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   residual_->Update(1.0,*trac_residual_,1.0);
   discret_->ClearState();
 
-
-
   //----------------------------------------------------------------------
   // apply filter for turbulence models (only if required)
   //----------------------------------------------------------------------
@@ -1489,47 +1488,17 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   AssembleEdgeBasedMatandRHS();
 
   //----------------------------------------------------------------------
-  // account for potential Neumann inflow terms
+  // application of nonlinear boundary conditions to system
   //----------------------------------------------------------------------
-  if (neumanninflow_)
-  {
-    // create parameter list
-    Teuchos::ParameterList condparams;
-
-    // action for elements
-    condparams.set<int>("action",FLD::calc_Neumann_inflow);
-
-    // set thermodynamic pressure
-    condparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("scaaf",scaaf_);
-    // set scheme-specific element parameters and vector values
-    if (is_genalpha_)
-      discret_->SetState("velaf",velaf_);
-      // there is't any contribution of the pressure or the continuity equation
-      // in the case of Neumann inflow
-      // -> there is no difference between af_genalpha and np_genalpha
-    else discret_->SetState("velaf",velnp_);
-
-    std::string condstring("FluidNeumannInflow");
-    discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
-    discret_->ClearState();
-  }
-
-  // scaling to get true residual vector
-  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
-  //----------------------------------------------------------------------
-  // account for potential weak or mixed hybrid Drichlet boundary conditions
-  //----------------------------------------------------------------------
-  ApplyWeakOrMixedHybridDirichletToSystem();
+  if (nonlinearbc_) ApplyNonlinearBoundaryConditions();
 
   //----------------------------------------------------------------------
   // update surface tension (free surface flow only)
   //----------------------------------------------------------------------
   FreeSurfaceFlowSurfaceTensionUpdate();
+
+  // scaling to get true residual vector
+  trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   // finalize the complete matrix
   sysmat_->Complete();
@@ -1541,107 +1510,141 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
 
 /*----------------------------------------------------------------------*
- | application of weak or mixed hybrid Dirichlet boundary conditions    |
- | to system                                            rasthofer 06/13 |
+ | application of nonlinear boundary conditions to system, such as      |
+ | 1) Neumann inflow boundary conditions                                |
+ | 2) weak Dirichlet boundary conditions                                |
+ | 3) mixed/hybrid Dirichlet boundary conditions                        |
+ |                                                             vg 06/13 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::ApplyWeakOrMixedHybridDirichletToSystem()
+void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 {
   //----------------------------------------------------------------------
-  // apply weak Dirichlet boundary conditions to sysmat_ and residual_
+  // 1) Neumann inflow boundary conditions
   //----------------------------------------------------------------------
+  // check whether there are Neumann inflow boundary conditions
+  std::vector<DRT::Condition*> neumanninflow;
+  discret_->GetCondition("FluidNeumannInflow",neumanninflow);
+
+  if (neumanninflow.size() != 0)
   {
-    // vector containing weak dirichlet loads
+    // create parameter list
+    Teuchos::ParameterList neuminparams;
 
-    RCP<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    // set action for elements
+    neuminparams.set<int>("action",FLD::calc_Neumann_inflow);
 
+    // set thermodynamic pressure
+    neuminparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
+
+    // set required state vectors
+    // (no contribution due to pressure or continuity equation for Neumann inflow
+    // -> no difference between af_genalpha and np_genalpha)
+    discret_->ClearState();
+    discret_->SetState("scaaf",scaaf_);
+    if (is_genalpha_)
+      discret_->SetState("velaf",velaf_);
+    else discret_->SetState("velaf",velnp_);
+    if (alefluid_) discret_->SetState("dispnp",dispnp_);
+
+    // evaluate all Neumann inflow boundary conditions
+    discret_->EvaluateCondition(neuminparams,sysmat_,Teuchos::null,
+                                residual_,Teuchos::null,Teuchos::null,
+                                "FluidNeumannInflow");
+
+    // clear state
+    discret_->ClearState();
+  }
+
+  //----------------------------------------------------------------------
+  // 2) weak Dirichlet boundary conditions
+  //----------------------------------------------------------------------
+  // check whether there are weak Dirichlet boundary conditions
+  std::vector<DRT::Condition*> weakdbcline;
+  discret_->GetCondition("LineWeakDirichlet",weakdbcline);
+  std::vector<DRT::Condition*> weakdbcsurf;
+  discret_->GetCondition("SurfaceWeakDirichlet",weakdbcsurf);
+
+  if (weakdbcline.size() != 0 or weakdbcsurf.size() != 0)
+  {
+    // create parameter list
     Teuchos::ParameterList weakdbcparams;
 
     // set action for elements
     weakdbcparams.set<int>("action", FLD::enforce_weak_dbc);
-    //weakdbcparams.set("gdt"       ,gamma_*dta_        );
-    //weakdbcparams.set("afgdt"     ,alphaF_*gamma_*dta_);
-     //weakdbcparams.set("total time",time_             );
 
-    // set the only required state vectors
+    // set required state vectors
     if (is_genalpha_)
     {
-      discret_->SetState("velaf", velaf_);
+      discret_->SetState("velaf",velaf_);
       if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
-        discret_->SetState("velnp", velnp_);
+        discret_->SetState("velnp",velnp_);
     }
-    else
-      discret_->SetState("velaf", velnp_);
-
+    else discret_->SetState("velaf",velnp_);
     if (alefluid_)
     {
-      discret_->SetState("dispnp", dispnp_);
-      discret_->SetState("gridvelaf", gridv_);
+      discret_->SetState("dispnp",dispnp_);
+      discret_->SetState("gridvelaf",gridv_);
     }
 
     // evaluate all line weak Dirichlet boundary conditions
-    discret_->EvaluateCondition(weakdbcparams, sysmat_, Teuchos::null,
-                                wdbcloads, Teuchos::null, Teuchos::null, "LineWeakDirichlet");
+    discret_->EvaluateCondition(weakdbcparams,sysmat_,Teuchos::null,
+                                residual_,Teuchos::null,Teuchos::null, "LineWeakDirichlet");
 
     // evaluate all surface weak Dirichlet boundary conditions
     discret_->EvaluateCondition(weakdbcparams, sysmat_, Teuchos::null,
-                               wdbcloads, Teuchos::null, Teuchos::null,
-                              "SurfaceWeakDirichlet");
+                               residual_, Teuchos::null, Teuchos::null,
+                               "SurfaceWeakDirichlet");
 
     // clear state
     discret_->ClearState();
-
-    // update the residual
-    residual_->Update(1.0, *wdbcloads, 1.0);
   }
 
   //----------------------------------------------------------------------
-  // apply mixed/hybrid Dirichlet boundary conditions
+  // 3) mixed/hybrid Dirichlet boundary conditions
   //----------------------------------------------------------------------
-  std::vector<DRT::Condition*> MHDcndSurf;
-  discret_->GetCondition("SurfaceMixHybDirichlet", MHDcndSurf);
-  std::vector<DRT::Condition*> MHDcndLine;
-  discret_->GetCondition("LineMixHybDirichlet", MHDcndLine);
+  // check whether there are mixed/hybrid Dirichlet boundary conditions
+  std::vector<DRT::Condition*> mhdbcline;
+  discret_->GetCondition("LineMixHybDirichlet",mhdbcline);
+  std::vector<DRT::Condition*> mhdbcsurf;
+  discret_->GetCondition("SurfaceMixHybDirichlet",mhdbcsurf);
 
-   if (MHDcndSurf.size() != 0 or MHDcndLine.size() != 0)
-   {
-     Teuchos::ParameterList mhdbcparams;
+  if (mhdbcline.size() != 0 or mhdbcsurf.size() != 0)
+  {
+    // create parameter list
+    Teuchos::ParameterList mhdbcparams;
 
      // set action for elements
      mhdbcparams.set<int>("action", FLD::mixed_hybrid_dbc);
 
-     // set the only required state vectors
+     // set required state vectors
      if (is_genalpha_)
      {
-       discret_->SetState("velaf", velaf_);
+       discret_->SetState("velaf",velaf_);
        if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
-         discret_->SetState("velnp", velnp_);
+         discret_->SetState("velnp",velnp_);
      }
-     else
-       discret_->SetState("velaf", velnp_);
+     else discret_->SetState("velaf",velnp_);
 
-    // evaluate all mixed hybrid Dirichlet boundary conditions
+    // evaluate all line mixed/hybrid Dirichlet boundary conditions
     discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null,
                                 residual_, Teuchos::null, Teuchos::null, "LineMixHybDirichlet");
 
+    // evaluate all surface mixed/hybrid Dirichlet boundary conditions
+    // with checking of parallel redistribution of boundary elements
     if (MHD_evaluator_ != Teuchos::null)
     {
       dserror("Redistributed MHD evaluation needs to be verified");
       MHD_evaluator_->BoundaryElementLoop(mhdbcparams, velaf_, velnp_,
                                           residual_, SystemMatrix());
     }
-    else
-    {
-      // the classical way without parallel redistribution
-      // of boundary elements
-      discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null,
-                                  residual_, Teuchos::null, Teuchos::null,
-                                  "SurfaceMixHybDirichlet");
-    }
+    else discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null,
+                                     residual_, Teuchos::null, Teuchos::null,
+                                     "SurfaceMixHybDirichlet");
 
     // clear state
     discret_->ClearState();
-
   }
+
   return;
 }
 
