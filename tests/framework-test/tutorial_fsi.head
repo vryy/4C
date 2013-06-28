@@ -164,9 +164,9 @@ MAXTIME                         1000
 //                              Coupling_ionTransport_Laplace
 MESHTYING                       no
 //
-// Flag to (de)activate potential Neumann inflow term(s)
+// Flag to activate check for potential nonlinear boundary conditions
 //                              no,yes
-NEUMANNINFLOW                   no
+NONLINEARBC                     no
 //
 // Nonlinear iteration scheme
 //                              fixed_point_like,Newton
