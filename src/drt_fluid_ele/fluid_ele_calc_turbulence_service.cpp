@@ -114,7 +114,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
       ycenter/=nen_;
       zcenter/=nen_;
 
-      if (homdir == "xy" or homdir == "xz" or homdir == "yz")
+      if (homdir == "xyz")
+      {
+        nlayer = 0;
+      }
+      else if (homdir == "xy" or homdir == "xz" or homdir == "yz")
       {
         Teuchos::RCP<std::vector<double> > planecoords = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("planecoords_");
         // get center
@@ -199,7 +203,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else
-        dserror("More than two homogeneous directions not supported!");
+        dserror("Homogeneous directions not supported!");
 
       // Cs_delta_sq is set by the averaged quantities
       if ((*averaged_MijMij)[nlayer] > 1E-16)

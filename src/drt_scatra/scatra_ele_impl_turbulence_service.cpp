@@ -320,7 +320,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMeanPrtOfHomogenousDirection(
     zcenter/=nen_;
 
     // determine the layer
-    if (homdir == "xy" or homdir == "xz" or homdir == "yz")
+    if (homdir == "xyz")
+    {
+      nlayer = 0;
+    }
+    else if (homdir == "xy" or homdir == "xz" or homdir == "yz")
     {
       RCP<std::vector<double> > planecoords = turbmodelparams.get<RCP<std::vector<double> > >("planecoords_");
       // get center
@@ -405,7 +409,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMeanPrtOfHomogenousDirection(
       nlayer = numdir1layer * n2layer + n1layer;
     }
     else
-      dserror("More than two homogeneous directions not supported!");
+      dserror("Homogeneous directions not supported!");
 
     // (Cs*Delta)^2/Prt is set by the averaged quantities
     if ((*averaged_MkMk)[nlayer] < 1E-16)

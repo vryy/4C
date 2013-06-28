@@ -354,7 +354,11 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   if(homdir_)
   {
-    if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
+    if (special_flow_homdir_ == "xyz")
+    {
+      numlayers = 1;
+    }
+    else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
     {
       // get planecoordinates
       Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
@@ -398,7 +402,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
       numlayers = ((*dir1coords_).size()-1) * ((*dir2coords_).size()-1);
     }
     else
-      dserror("More than two homogeneous directions not supported!");
+      dserror("Homogeneous directions not supported!");
 
     count_for_average      .resize(numlayers);
     local_count_for_average.resize(numlayers);
@@ -503,7 +507,11 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
       // add result into result vector
 
       int  nlayer = 0;
-      if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
+      if (special_flow_homdir_ == "xyz")
+      {
+        nlayer = 0;
+      }
+      else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
         // get center
         double center = 0.0;
@@ -587,7 +595,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else
-        dserror("More than two homogeneous directions not supported!");
+        dserror("Homogeneous directions not supported!");
 
       // add it up
       local_ele_sum_LijMij[nlayer] += LijMij;
@@ -673,7 +681,11 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
         modelparams->set<RCP<std::vector<double> > >("averaged_CI_numerator_",averaged_CI_numerator);
         modelparams->set<RCP<std::vector<double> > >("averaged_CI_denominator_",averaged_CI_denominator);
       }
-      if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
+      if (special_flow_homdir_ == "xyz")
+      {
+        // nothing to do
+      }
+      else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
         modelparams->set<RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
       }
@@ -721,7 +733,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
 
   if(homdir_)
   {
-    if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
+    if (special_flow_homdir_ == "xyz")
+    {
+      numlayers = 1;
+    }
+    else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
     {
       // get planecoordinates
       Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
@@ -765,7 +781,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
       numlayers = ((*dir1coords_).size()-1) * ((*dir2coords_).size()-1);
     }
     else
-      dserror("More than two homogeneous directions not supported!");
+      dserror("Homogeneous directions not supported!");
 
     count_for_average      .resize(numlayers);
     local_count_for_average.resize(numlayers);
@@ -851,7 +867,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
       // add result into result vector
 
       int  nlayer = 0;
-      if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
+      if (special_flow_homdir_ == "xyz")
+      {
+          nlayer = 0;
+      }
+      else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
         // get center
         double center = 0.0;
@@ -935,7 +955,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
         nlayer = numdir1layer * n2layer + n1layer;
       }
       else
-        dserror("More than two homogeneous directions not supported!");
+        dserror("Homogeneous directions not supported!");
 
       // add it up
       local_ele_sum_LkMk[nlayer] += LkMk;
@@ -992,7 +1012,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     {
       modelparams->set<RCP<std::vector<double> > >("averaged_LkMk_",averaged_LkMk);
       modelparams->set<RCP<std::vector<double> > >("averaged_MkMk_",averaged_MkMk);
-      if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
+      if (special_flow_homdir_ == "xyz")
+      {
+        // nothing to do
+      }
+      else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
         modelparams->set<RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
         // channel flow only
