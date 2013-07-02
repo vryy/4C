@@ -153,7 +153,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // surface inner
-E 3 - 1 0 0 1 0 0 0 0.0 0.0 5.0 0.0 0.0 0.0 live mid
+E 3 - 1 0 0 1 0 0 0 0.0 0.0 5.0 0.0 0.0 0.0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
