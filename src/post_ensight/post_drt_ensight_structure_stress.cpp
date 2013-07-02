@@ -534,7 +534,7 @@ void StructureEnsightWriter::WriteNodalEigenStress(const std::string groupname,
     name[5]="nodal_cauchy_stresses_eigenvec3";
     out="principal Cauchy stresses";
   }
-  if (groupname=="gauss_2PK_coupling_stresses_xyz")
+  else if (groupname=="gauss_2PK_coupling_stresses_xyz")
   {
     name[0]="nodal_2PK_coupling_stresses_eigenval1";
     name[1]="nodal_2PK_coupling_stresses_eigenval2";
