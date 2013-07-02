@@ -150,17 +150,18 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // additional exception: turbulent passive scalar transport: only for this case and loma
   // vectors and variables for turbulence models are provided
   PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
-  if ( (prbtype == prb_scatra) and (scatratype_ == INPAR::SCATRA::scatratype_undefined))
-  {
-    dserror("Please define SCATRATYPE in datfile!");
-  }
+
   if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or
      ((prbtype != prb_elch) and (scatratype_ != INPAR::SCATRA::scatratype_turbpassivesca)))
   {
     if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
     else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
-    else if (prbtype == prb_scatra)      ; // DO NOTHING, SEE IF BEFORE
+    else if (prbtype == prb_scatra)
+    {
+      if(scatratype_ == INPAR::SCATRA::scatratype_undefined)
+        dserror("Please define SCATRATYPE in datfile!");
+    }
     else if (prbtype == prb_gas_fsi)      scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype == prb_biofilm_fsi)  scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype == prb_thermo_fsi)   scatratype_ = INPAR::SCATRA::scatratype_loma;
