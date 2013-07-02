@@ -68,6 +68,7 @@ INITIALFIELD                    zero_field
 VELOCITYFIELD                   function
 VELFUNCNO                       1
 WRITEFLUX                       No
+SCATRATYPE                      ConvectionDiffusion
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

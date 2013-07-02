@@ -157,7 +157,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or
      ((prbtype != prb_elch) and (scatratype_ != INPAR::SCATRA::scatratype_turbpassivesca)))
   {
-    if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
+    if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
+    else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
     else if (prbtype == prb_scatra)      ; // DO NOTHING, SEE IF BEFORE
     else if (prbtype == prb_gas_fsi)      scatratype_ = INPAR::SCATRA::scatratype_condif;

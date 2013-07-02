@@ -58,6 +58,7 @@ INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
 WRITEFLUX convectiveflux_boundary// totalflux_boundary
+SCATRATYPE                      ConvectionDiffusion
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
