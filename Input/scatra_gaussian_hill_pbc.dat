@@ -62,6 +62,7 @@ INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       totalflux_boundary
 MATID                           4
+SCATRATYPE                      ConvectionDiffusion
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION

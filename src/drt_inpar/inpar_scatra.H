@@ -179,7 +179,8 @@ namespace INPAR
       scatratype_elch_laplace,
       scatratype_levelset,
       scatratype_turbpassivesca,
-      scatratype_poro
+      scatratype_poro,
+      scatratype_cardio_monodomain
     };
 
     /// type of reinitialization strategy for level set function

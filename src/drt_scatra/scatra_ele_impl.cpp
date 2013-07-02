@@ -390,6 +390,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
   // the type of scalar transport problem has to be provided for all actions!
   const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
+
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Set parameter SCATRATYPE in your input file!");
 
@@ -3056,6 +3057,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::Myocard>& actmat
       = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
+
+    if (scatratype != INPAR::SCATRA::scatratype_cardio_monodomain){
+      dserror("ScatraType not compatible with myocard material. Change ScatraType to some Cardio_* type.");
+    }
 
     dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
 

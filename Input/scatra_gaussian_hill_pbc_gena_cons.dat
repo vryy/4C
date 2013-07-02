@@ -66,6 +66,7 @@ FSSUGRDIFF                      No
 WRITEFLUX                       No
 CONVFORM                        conservative
 MATID                           4
+SCATRATYPE                      ConvectionDiffusion
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC

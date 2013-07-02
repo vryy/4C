@@ -3849,7 +3849,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Elch_Laplace",
                                  "LevelSet",
                                  "TurbulentPassiveScalar",
-                                 "Poroscatra"),
+                                 "Poroscatra",
+                                 "Cardio_Monodomain"),
                                tuple<int>(
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
@@ -3861,7 +3862,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_elch_laplace,
                                  INPAR::SCATRA::scatratype_levelset,
                                  INPAR::SCATRA::scatratype_turbpassivesca,
-                                 INPAR::SCATRA::scatratype_poro),
+                                 INPAR::SCATRA::scatratype_poro,
+                                 INPAR::SCATRA::scatratype_cardio_monodomain),
                                  &scatradyn);
 
   setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",

@@ -44,6 +44,7 @@ FSSUGRDIFF                      No
 WRITEFLUX                       totalflux_boundary
 MATID                           1
 SKIPINITDER                     yes
+SCATRATYPE                      Cardio_Monodomain
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

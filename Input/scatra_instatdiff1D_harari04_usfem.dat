@@ -44,6 +44,7 @@ VELOCITYFIELD                   zero
 VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
+SCATRATYPE                      ConvectionDiffusion
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        USFEM
 DEFINITION_TAU                  Franca_Valentin

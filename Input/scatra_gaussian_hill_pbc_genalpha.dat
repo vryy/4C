@@ -63,6 +63,7 @@ INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           4
+SCATRATYPE                      ConvectionDiffusion
 SKIPINITDER no //yes //no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE SUPG //SUPG //no_stabilization

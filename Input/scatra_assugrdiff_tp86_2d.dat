@@ -33,6 +33,7 @@ VELOCITYFIELD                   function
 VELFUNCNO                       1
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
+SCATRATYPE                      ConvectionDiffusion
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-14
 ADAPTCONV                       yes

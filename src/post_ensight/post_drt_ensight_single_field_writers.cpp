@@ -245,8 +245,6 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   //compute number of dofs per node (ask the first node)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
-  EnsightWriter::WriteResult("activation_time_np","activation_time",dofbased,1);
-
   // write results for each transported scalar
   if (numdofpernode == 1)
   {
@@ -255,6 +253,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
     EnsightWriter::WriteResult("normalflux","normalflux",dofbased,1);
     // write flux vectors (always 3D)
     EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
+    EnsightWriter::WriteResult("activation_time_np","activation_time",dofbased,1);
   }
   else
   {
