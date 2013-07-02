@@ -90,6 +90,7 @@ VELFUNCNO                       -1
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
+SCATRATYPE                      ConvectionDiffusion
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1.0e-6
 ITEMAX                          10
