@@ -185,9 +185,9 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2//6
 // surface top
-E 1 - none 1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Mid 0 4 0 0 0 0
+E 1 - none 1 1 1 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live Mid 0 4 0 0 0 0
 // surface outflow
-E 4 - none 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid 3 0 0 0 0 0
+E 4 - none 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 3 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 // body force
