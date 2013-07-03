@@ -28,7 +28,12 @@ UNUSED_PARAMS_TO_KEEP = [
 			'INPAR::STR::control_arc1',
 			'INPAR::STR::control_arc2',
 			'INPAR::STR::control_dis',
-			'INPAR::STR::control_load'
+			'INPAR::STR::control_load',
+			# Paramters are actually used but could be replaced by a true/false flag
+			'INPAR::SCATRA::evalmat_element_center',
+			'INPAR::SCATRA::evaltau_element_center',
+			'INPAR::SCATRA::penalty_method_no',
+			'INPAR::ELCH::elch_mov_bndry_fully_trans'
 			]
 
 if __name__=='__main__':
