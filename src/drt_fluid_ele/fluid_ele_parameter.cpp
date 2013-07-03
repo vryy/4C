@@ -483,8 +483,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTimeParameter( Teuchos::Paramet
     //----------------------------------------------------------------------
     // NP GA | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM | gamma*dt/alphaM |
     //-----------------------------------------------------------------------
-    //   GA  |      alphaF*gamma*dt     |    gamma*dt     |        1        |
-    //-----------------------------------------------------------------------
 
     timefac_ = theta_*dt_;
 
