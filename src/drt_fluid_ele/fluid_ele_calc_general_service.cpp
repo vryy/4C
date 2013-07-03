@@ -424,6 +424,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     LINALG::Matrix<nsd_,1> xyzint(true);
     xyzint.Multiply(xyze_,funct_);
 
+    //  the error is evaluated at the specific time of the used time integration scheme
+    //  n+alpha_F for generalized-alpha scheme
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
     const double t = fldpara_->Time();
 
     // Compute analytical solution
