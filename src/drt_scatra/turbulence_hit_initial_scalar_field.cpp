@@ -63,6 +63,11 @@ HomIsoTurbInitialScalarField::HomIsoTurbInitialScalarField(
       nummodes_ = 32;
       break;
     }
+    case 110592:
+    {
+      nummodes_ = 48;
+      break;
+    }
     case 262144:
     {
       nummodes_ = 64;
@@ -88,6 +93,7 @@ HomIsoTurbInitialScalarField::HomIsoTurbInitialScalarField(
     if ((node->X()[1]<2e-9 && node->X()[1]>-2e-9) and (node->X()[2]<2e-9 && node->X()[2]>-2e-9))
     coords.insert(node->X()[0]);
   }
+
   // communicate coordinates to all procs via round Robin loop
   {
 #ifdef PARALLEL
@@ -222,16 +228,16 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
         if (k_1 == (-nummodes_/2) or k_2 == (-nummodes_/2) or k_3 == (-nummodes_/2))
         {
           // odd-ball wave numbers are set to zero to ensure that solution is real function
-          (*phi_hat)[pos].real(0.0);
+          ((*phi_hat)[pos]).real(0.0);
           // this is important to have here
-          (*phi_hat)[pos].imag(0.0);
+          ((*phi_hat)[pos]).imag(0.0);
         }
         else if (k_1 == 0 and k_2 == 0 and k_3 == 0)
         {
           // likewise set to zero since there will not be any conjugate complex
-          (*phi_hat)[pos].real(0.0);
+          ((*phi_hat)[pos]).real(0.0);
           // this is important to have here
-          (*phi_hat)[pos].imag(0.0);
+          ((*phi_hat)[pos]).imag(0.0);
         }
         else
         {
@@ -280,17 +286,13 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
               dserror("Negative energy!");
             }
 
-            // TODO: klaeren: mit collis schaut anfangsspektrum am besten aus, aber zu niedrig
             // remark on the literature:
             // Collis 2002: sqrt(energy/(2*PI*k))
             const double fac = sqrt(energy/(2*PI*k*k));
             // Rogallo 1981: sqrt(energy/(4*PI*k*k))
-//            const double fac = sqrt(energy/(4*PI*k*k));
-            // Mansour & Wary 1993: energy/(4*PI*k*k)
-            // seems not to make sense: too low energy spectra
-//            const double fac = energy/(4*PI*k*k);
-            // doing own calculations, I came up with the value given in Rogallo 1981
-
+            // the missing factor 1/2 of Collis version compared to Rogallo version
+            // is related to the definition of E from phi
+            // here, we have E = 1/2 * phi * phi (see statistics manager)
 
             // real part, imaginary part
             std::complex<double> alpha(fac * cos(2*PI*random_theta),fac * sin(2*PI*random_theta));
@@ -300,7 +302,6 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
           {
             (*phi_hat)[pos] = conj((*phi_hat)[pos_conj]);
           }
-//          std::cout << "real  " << real((*phi_hat)[pos]) << "    imag  " << imag((*phi_hat)[pos]) << std::endl;
         }
       }
     }
@@ -386,6 +387,7 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
   //----------------------------------------
   // fast Fourier transformation using FFTW
   //----------------------------------------
+
   // set-up
   fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
                                        (reinterpret_cast<fftw_complex*>(&((*phi_hat_fftw)[0]))),
@@ -463,16 +465,16 @@ double HomIsoTurbInitialScalarField::CalculateEnergyFromSpectrum(double k)
   if (type_ == INPAR::SCATRA::initialfield_forced_hit_low_Sc)
   {
     if (k > 2.0)
-      energy = pow(2.0,5.0/3.0) * pow(k,-5.0/3.0);
+      energy = 0.1 * pow(2.0,5.0/3.0) * pow(k,-5.0/3.0);
     else
-      energy = 1.0;
+      energy = 0.1 * 1.0;
   }
   else if (type_ == INPAR::SCATRA::initialfield_forced_hit_high_Sc)
   {
     if (k > 2.0)
-      energy = 2.0 * pow(k,-1.0);
+      energy = 0.1 * 2.0 * pow(k,-1.0);
     else
-      energy = 1.0;
+      energy = 0.1 * 1.0;
   }
   else
     dserror("Unkown initial field!");

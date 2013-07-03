@@ -76,6 +76,11 @@ HomIsoTurbForcing::HomIsoTurbForcing(
       nummodes_ = 32;
       break;
     }
+    case 110592:
+    {
+      nummodes_ = 48;
+      break;
+    }
     case 262144:
     {
       nummodes_ = 64;
@@ -204,21 +209,6 @@ HomIsoTurbForcing::HomIsoTurbForcing(
   // create set of wave numbers
   //-------------------------------------------------
 
-  // the criterion allows differences in coordinates by 1e-9
-  std::set<double,LineSortCriterion> wavenum;
-  // loop all wave vectors and store wave number
-  for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
-  {
-    for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
-    {
-      for (int k_3 = (-nummodes_/2); k_3 <= 0; k_3++)
-      {
-        const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
-        wavenum.insert(k);
-      }
-    }
-  }
-
   // push wave numbers in vector
   {
     wavenumbers_ = Teuchos::rcp(new std::vector<double> );
@@ -271,9 +261,9 @@ void HomIsoTurbForcing::SetInitialSpectrum(INPAR::FLUID::InitialField init_field
       for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
       {
         if ((*wavenumbers_)[rr] > 0.0 and (*wavenumbers_)[rr] <= 2.0)
-         (*energyspectrum_n_)[rr] = 1.0;
+         (*energyspectrum_n_)[rr] = 0.1 * 1.0;
         else
-         (*energyspectrum_n_)[rr] = pow(2.0,5.0/3.0) * pow((*wavenumbers_)[rr],-5.0/3.0);
+         (*energyspectrum_n_)[rr] = 0.1 * pow(2.0,5.0/3.0) * pow((*wavenumbers_)[rr],-5.0/3.0);
       }
     }
     else if (init_field_type == INPAR::FLUID::initialfield_hit_comte_bellot_corrsin)
@@ -390,21 +380,6 @@ void HomIsoTurbForcing::SetInitialSpectrum(INPAR::FLUID::InitialField init_field
     }
     else
       dserror("Other initial spectra than simple algebraic spectrum not yet implemented!");
-
-
-//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-//  {
-//    if (init_field_type == INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum)
-//    {
-//      if ((*wavenumbers_)[rr]>0.0)
-//        (*energyspectrum_n_)[rr] = 0.5 * pow((*wavenumbers_)[rr],-5.0/3.0);
-//      else
-//        (*energyspectrum_n_)[rr] = 0.0;
-//    }
-//    else
-//      dserror("Other initial spectra than simple algebraic spectrum not yet implemented!");
-//  }
-
 
 //  for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
 //    std::cout << "k  "<< (*wavenumbers_)[rr] << "  " << (*energyspectrum_n_)[rr] << std::endl;
@@ -585,21 +560,17 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
     // k_3: [-nummodes_/2,0]
     // using peridocity and conjugate symmetry allows for setting
     // the Fourier coefficients in the required interval
-//    Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-//    Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-//    Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
 
     // reset energy spectrum at time n+1/n+af
-    for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
+    for (std::size_t rr = 0; rr < energyspectrum_np_->size(); rr++)
       (*energyspectrum_np_)[rr] = 0.0;
-
-    // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
-    // the complete number of modes is required here
-    // hence, we have k_3: [0,(nummodes_-1)]
 
     // reset (just to be sure)
     E_kf_ = 0.0;
 
+    // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
+    // the complete number of modes is required here
+    // hence, we have k_3: [0,(nummodes_-1)]
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
     {
       for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
@@ -647,9 +618,9 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
                    and (intermediate_fftw_2 >= 0 and intermediate_fftw_2 <= (nummodes_-1))
                    and (intermediate_fftw_3 >= 0 and intermediate_fftw_3 <= (nummodes_/2)))
               {
-                 pos_fftw_k_1 = intermediate_fftw_1;
-                 pos_fftw_k_2 = intermediate_fftw_2;
-                 pos_fftw_k_3 = intermediate_fftw_3;
+                pos_fftw_k_1 = intermediate_fftw_1;
+                pos_fftw_k_2 = intermediate_fftw_2;
+                pos_fftw_k_3 = intermediate_fftw_3;
               }
               else
               {
@@ -725,7 +696,7 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
           }
           else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
           {
-            if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_2 < threshold_wavenumber_)
+            if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_3 < threshold_wavenumber_)
                 and ((k_1*k_1 + k_2*k_2 + k_3*k_3) > 0))
               E_kf_ += energy;
           }
@@ -838,7 +809,7 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
               // note: we have "-" here, since we take -fac*u in the function below
               const double fac = -Pin_/(2.0*E_kf_);
 
-              if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_2 < threshold_wavenumber_)
+              if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_3 < threshold_wavenumber_)
                   and ((k_1*k_1 + k_2*k_2 + k_3*k_3) > 0))
               {
                 // get position in fac-vector
@@ -1023,9 +994,9 @@ void HomIsoTurbForcing::UpdateForcing(const int step)
 
     for (int rr = 0; rr < (nummodes_*nummodes_*(nummodes_/2+1)); rr++)
     {
-      (*f1_hat)[rr] = -(*force_fac_)(rr) * (*u1_hat)[rr];
-      (*f2_hat)[rr] = -(*force_fac_)(rr) * (*u2_hat)[rr];
-      (*f3_hat)[rr] = -(*force_fac_)(rr) * (*u3_hat)[rr];
+      (*f1_hat)[rr] = -((*force_fac_)(rr)) * ((*u1_hat)[rr]);
+      (*f2_hat)[rr] = -((*force_fac_)(rr)) * ((*u2_hat)[rr]);
+      (*f3_hat)[rr] = -((*force_fac_)(rr)) * ((*u3_hat)[rr]);
     }
 
     //----------------------------------------

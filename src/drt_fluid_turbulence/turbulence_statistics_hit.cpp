@@ -85,6 +85,11 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
       nummodes_ = 32;
       break;
     }
+    case 110592:
+    {
+      nummodes_ = 48;
+      break;
+    }
     case 262144:
     {
       nummodes_ = 64;
@@ -110,6 +115,7 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
     if ((node->X()[1]<2e-9 && node->X()[1]>-2e-9) and (node->X()[2]<2e-9 && node->X()[2]>-2e-9))
     coords.insert(node->X()[0]);
   }
+
   // communicate coordinates to all procs via round Robin loop
   {
 #ifdef PARALLEL
@@ -214,38 +220,13 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
   // create set of wave numbers
   //-------------------------------------------------
 
-  // the criterion allows differences in coordinates by 1e-9
-  std::set<double,LineSortCriterion> wavenum;
-  // loop all wave vectors and store wave number
-  for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
-  {
-    for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
-    {
-      for (int k_3 = (-nummodes_/2); k_3 <= 0; k_3++)
-      {
-        const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
-        wavenum.insert(k);
-      }
-    }
-  }
-
   // push wave numbers in vector
   {
     wavenumbers_ = Teuchos::rcp(new std::vector<double> );
 
-//    for(std::set<double,LineSortCriterion>::iterator waven1 = wavenum.begin();
-//        waven1 != wavenum.end();
-//        ++waven1)
-//    {
-//      wavenumbers_->push_back(*waven1);
-//    }
-
-    //TODO: das scheint richtig zu sein
-    //wavenumbers_->clear();
     wavenumbers_->resize((std::size_t) nummodes_);
     for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
       (*wavenumbers_)[rr] = rr;
-
   }
 
   // set size of energy-spectrum vector
@@ -277,7 +258,7 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
   sumvel_ = Teuchos::rcp(new std::vector<double> );
   sumvel_->resize(3);
 
-  // sum over squares of velocity vector componetnts
+  // sum over squares of velocity vector components
   sumvelvel_ = Teuchos::rcp(new std::vector<double> );
   sumvelvel_->resize(3);
 
@@ -293,8 +274,7 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
   // time-step size
   dt_ = params_.get<double>("time step size");
 
-  // get fluid viscosity from material definition --- for computation
-  // of ltau
+  // get fluid viscosity from material definition
   int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
   if (id==-1)
     dserror("Could not find Newtonian fluid material");
@@ -337,15 +317,8 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
   outsteps_->push_back(num_forcing_steps);
   for (std::size_t rr = 0; rr < times_exp.size(); rr++)
   {
-    //(*outsteps_)[rr] = (int)(times_exp[rr]/dt_);
     outsteps_->push_back((int)(times_exp[rr]/dt_) + (double) num_forcing_steps);
   }
-
-//  std::cout << "Remove" << std::endl;
-//  outsteps_->clear();
-//  outsteps_->resize(101);
-//  for (std::size_t rr = 0; rr < outsteps_->size(); rr ++)
-//      (*outsteps_)[rr] = rr;
 
   //-------------------------------------------------------------------------
   // initialize output and initially open respective statistics output file
@@ -484,12 +457,6 @@ void TurbulenceStatisticsHit::DoTimeSample(
                           &((*global_u3)[0]),
                           countallnodes);
 
-//  if (discret_->Comm().MyPID() == 0){
-//  std::cout << "u1 " << std::endl;
-//  for (int i=0; i< global_u1->size(); i++)
-//    std::cout << (*global_u1)[i] << std::endl;
-//  }
-
   //----------------------------------------
   // fast Fourier transformation using FFTW
   //----------------------------------------
@@ -524,11 +491,6 @@ void TurbulenceStatisticsHit::DoTimeSample(
     (*u3_hat)[i] /= nummodes_*nummodes_*nummodes_;
   }
 
-//  std::cout << "u1_hat_fftw " << std::endl;
-//  for (int i=0; i< u1_hat->size(); i++)
-//    std::cout << "real  " << real((*u1_hat)[i]) << "    imag  " << imag((*u1_hat)[i]) << std::endl;
-  //dserror("ENDE!");
-
   //----------------------------------------
   // compute energy spectrum
   //----------------------------------------
@@ -544,17 +506,10 @@ void TurbulenceStatisticsHit::DoTimeSample(
   // k_3: [-nummodes_/2,0]
   // using peridocity and conjugate symmetry allows for setting
   // the Fourier coefficients in the required interval
-  Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-  Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-  Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
 
   // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
   // the complete number of modes is required here
   // hence, we have k_3: [0,(nummodes_-1)]
-  std::vector<double> counter(wavenumbers_->size());
-  for (std::size_t rr = 0; rr < counter.size(); rr++)
-    counter[rr] = 0.0;
-
   for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
   {
     for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
@@ -650,13 +605,6 @@ void TurbulenceStatisticsHit::DoTimeSample(
           }
         }
 
-//        if (fftw_k_3 > nummodes_/2)
-//        {
-//          std::cout << "fftw_k_1 " << fftw_k_1 << "pos_fftw_k_1 " << pos_fftw_k_1 << " k_1 " << k_1 << std::endl;
-//          std::cout << "fftw_k_2 " << fftw_k_2 << "pos_fftw_k_2 " << pos_fftw_k_2 << " k_2 " << k_2 << std::endl;
-//          std::cout << "fftw_k_3 " << fftw_k_3 << "pos_fftw_k_3 " << pos_fftw_k_3 << " k_3 " << k_3 << std::endl;
-//        }
-
         // get position in u1_hat
         const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
 
@@ -671,55 +619,21 @@ void TurbulenceStatisticsHit::DoTimeSample(
         //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
         // instead
         const double energy = 0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
-//        const double energy = 2*PI*k*k * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
-//        const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
-//        if (k >= (4.2426-2e-3) and k<= (4.2426+2e-3))
-//        if (k >= (1-2e-3) and k<= (1+2e-3))
-//        {
-//          std::cout << "k_1 " << k_1 << std::endl;
-//          std::cout << "k_2 " << k_2 << std::endl;
-//          std::cout << "k_3 " << k_3 << std::endl;
-//        std::cout << "k " << k << " energy  " << energy << std::endl;
-//        }
-        //const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
 
         // insert into sampling vector
         // find position via k
         for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
         {
-//          if (k >= ((*wavenumbers_)[rr]-2e-9) and k<= ((*wavenumbers_)[rr]+2e-9))
           if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
           {
             (*energyspectrum_)[rr] += energy;
-            // TODO: klaeren
-            (*dissipationspectrum_)[rr] += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*energy);
-            counter[rr] += 1;
+            // also compute the dissipation spectrum (not yet carefully validated)
+            (*dissipationspectrum_)[rr] += (((*wavenumbers_)[rr])*((*wavenumbers_)[rr])*energy);
           }
         }
       }
     }
   }
-
-//  std::cout << "wavenumbers" << std::endl;
-//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-//    std::cout << "k " << (*wavenumbers_)[rr] << " counter "<< counter[rr] << std::endl;
-//
-//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
-//  {
-//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr]/counter[rr];
-//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr] * 2 * PI * (*wavenumbers_)[rr] * (*wavenumbers_)[rr];
-////      std::cout << (*wavenumbers_)[rr] << std::endl;
-////      if ((*wavenumbers_)[rr] >= (3-2e-9) and (*wavenumbers_)[rr]<= (3+2e-9))
-////          std::cout << "k " << (*wavenumbers_)[rr] << " energy  " << (*energyspectrum_)[rr] << std::endl;
-//  }
-//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-//      std::cout << "k " << (*wavenumbers_)[rr] << std::endl;
-//  dserror("ENDE");
-
-//  std::cout << "STATISTICS " << std::endl;
-//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
-//      std::cout << (*wavenumbers_)[rr] << "   "<< (*energyspectrum_)[rr] << std::endl;
-
 
   //-------------------------------------------------------------------------------------------------
   // calculate means in physical space
@@ -786,9 +700,6 @@ void TurbulenceStatisticsHit::DoTimeSample(
   (*sumvelvel_)[0] = uu/countallnodes;
   (*sumvelvel_)[1] = vv/countallnodes;
   (*sumvelvel_)[2] = ww/countallnodes;
-
-//  std::cout << (*sumvel_)[0] << "  " << (*sumvel_)[1] << "  " << (*sumvel_)[2] << std::endl;
-//  std::cout << (*sumvelvel_)[0] << "  " << (*sumvelvel_)[1] << "  " << (*sumvelvel_)[2] << std::endl;
 
   //----------------------------------------------------------------------
   // increase sample counter
@@ -951,12 +862,6 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
                           &((*global_phi)[0]),
                           countallnodes);
 
-//  if (discret_->Comm().MyPID() == 0){
-//  std::cout << "u1 " << std::endl;
-//  for (int i=0; i< global_u1->size(); i++)
-//    std::cout << (*global_u1)[i] << std::endl;
-//  }
-
   //----------------------------------------
   // fast Fourier transformation using FFTW
   //----------------------------------------
@@ -998,11 +903,6 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
     (*phi_hat)[i] /= nummodes_*nummodes_*nummodes_;
   }
 
-//  std::cout << "u1_hat_fftw " << std::endl;
-//  for (int i=0; i< u1_hat->size(); i++)
-//    std::cout << "real  " << real((*u1_hat)[i]) << "    imag  " << imag((*u1_hat)[i]) << std::endl;
-//  dserror("ENDE!");
-
   //----------------------------------------
   // compute energy spectrum
   //----------------------------------------
@@ -1018,17 +918,10 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
   // k_3: [-nummodes_/2,0]
   // using peridocity and conjugate symmetry allows for setting
   // the Fourier coefficients in the required interval
-  Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-  Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-  Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
 
   // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
   // the complete number of modes is required here
   // hence, we have k_3: [0,(nummodes_-1)]
-  std::vector<double> counter(wavenumbers_->size());
-  for (std::size_t rr = 0; rr < counter.size(); rr++)
-    counter[rr] = 0.0;
-
   for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
   {
     for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
@@ -1124,13 +1017,6 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
           }
         }
 
-//        if (fftw_k_3 > nummodes_/2)
-//        {
-//          std::cout << "fftw_k_1 " << fftw_k_1 << "pos_fftw_k_1 " << pos_fftw_k_1 << " k_1 " << k_1 << std::endl;
-//          std::cout << "fftw_k_2 " << fftw_k_2 << "pos_fftw_k_2 " << pos_fftw_k_2 << " k_2 " << k_2 << std::endl;
-//          std::cout << "fftw_k_3 " << fftw_k_3 << "pos_fftw_k_3 " << pos_fftw_k_3 << " k_3 " << k_3 << std::endl;
-//        }
-
         // get position in u1_hat
         const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
 
@@ -1146,62 +1032,28 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
         // instead
         const double energy = 0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
         const double variance = 0.5 * norm((*phi_hat)[pos]);
-//        const double energy = 2*PI*k*k * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
-//        const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
-//        if (k >= (4.2426-2e-3) and k<= (4.2426+2e-3))
-//        if (k >= (1-2e-3) and k<= (1+2e-3))
-//        {
-//          std::cout << "k_1 " << k_1 << std::endl;
-//          std::cout << "k_2 " << k_2 << std::endl;
-//          std::cout << "k_3 " << k_3 << std::endl;
-//        std::cout << "k " << k << " energy  " << energy << std::endl;
-//        }
-        //const double energy = (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
 
         // insert into sampling vector
         // find position via k
         for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
         {
-//          if (k >= ((*wavenumbers_)[rr]-2e-9) and k<= ((*wavenumbers_)[rr]+2e-9))
           if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
           {
             (*energyspectrum_)[rr] += energy;
             (*scalarvariancespectrum_)[rr] += variance;
-            // TODO: klaeren
+            // also compute the dissipation spectrum (not yet carefully validated)
             (*dissipationspectrum_)[rr] += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*energy);
-            counter[rr] += 1;
           }
         }
       }
     }
   }
 
-//  std::cout << "wavenumbers" << std::endl;
-//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-//    std::cout << "k " << (*wavenumbers_)[rr] << " counter "<< counter[rr] << std::endl;
-//
-//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
-//  {
-//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr]/counter[rr];
-//      (*energyspectrum_)[rr] = (*energyspectrum_)[rr] * 2 * PI * (*wavenumbers_)[rr] * (*wavenumbers_)[rr];
-////      std::cout << (*wavenumbers_)[rr] << std::endl;
-////      if ((*wavenumbers_)[rr] >= (3-2e-9) and (*wavenumbers_)[rr]<= (3+2e-9))
-////          std::cout << "k " << (*wavenumbers_)[rr] << " energy  " << (*energyspectrum_)[rr] << std::endl;
-//  }
-//  for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-//      std::cout << "k " << (*wavenumbers_)[rr] << std::endl;
-//  dserror("ENDE");
-
-//  std::cout << "STATISTICS " << std::endl;
-//  for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++)
-//      std::cout << (*wavenumbers_)[rr] << "   "<< (*energyspectrum_)[rr] << std::endl;
-
-
   //-------------------------------------------------------------------------------------------------
   // calculate means in physical space
   //-------------------------------------------------------------------------------------------------
 
-  // TODO: scalar field
+  // add scalar field field here if required
 
   //----------------------------------
   // initialize toggle vectors
@@ -1265,9 +1117,6 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
   (*sumvelvel_)[1] = vv/countallnodes;
   (*sumvelvel_)[2] = ww/countallnodes;
 
-//  std::cout << (*sumvel_)[0] << "  " << (*sumvel_)[1] << "  " << (*sumvel_)[2] << std::endl;
-//  std::cout << (*sumvelvel_)[0] << "  " << (*sumvelvel_)[1] << "  " << (*sumvelvel_)[2] << std::endl;
-
   //----------------------------------------------------------------------
   // increase sample counter
   //----------------------------------------------------------------------
@@ -1285,159 +1134,7 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
 void TurbulenceStatisticsHit::EvaluateResiduals(
   std::map<std::string,RCP<Epetra_Vector> > statevecs)
 {
-#if 0
-  // parameterlist for the element call
-  Teuchos::ParameterList eleparams;
-
-  // action for elements
-  eleparams.set<int>("action",FLD::calc_dissipation);
-
-  // parameters for a turbulence model
-  {
-    eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-    if ((params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL")=="Scale_Similarity"))
-      dserror("Scale-similarity model not supported");
-  }
-
-  // TODO: add comment
-  RCP<std::vector<double> > local_incrvol           = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrhk            = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrhbazilevs     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrstrle         = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrgradle        = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-
-  RCP<std::vector<double> > local_incrtauC          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrtauM          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-
-  RCP<std::vector<double> > local_incrres           = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
-  RCP<std::vector<double> > local_incrres_sq        = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
-  RCP<std::vector<double> > local_incrabsres        = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-
-  RCP<std::vector<double> > local_incrtauinvsvel    = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1)  ,0.0));
-
-  RCP<std::vector<double> > local_incrsvelaf        = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
-  RCP<std::vector<double> > local_incrsvelaf_sq     = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
-  RCP<std::vector<double> > local_incrabssvelaf     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-
-  RCP<std::vector<double> > local_incrresC          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrresC_sq       = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrspressnp      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incrspressnp_sq   = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-
-  RCP<std::vector<double> > local_incr_eps_pspg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_graddiv    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-  RCP<std::vector<double> > local_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-
-  RCP<std::vector<double> > local_incrcrossstress   = Teuchos::rcp(new std::vector<double> (6*(nodeplanes_->size()-1),0.0));
-  RCP<std::vector<double> > local_incrreystress     = Teuchos::rcp(new std::vector<double> (6*(nodeplanes_->size()-1),0.0));
-
-  // pass variables for local sum to the element
-  eleparams.set<double>("incrvol"          ,local_incrvol         );
-  eleparams.set<double>("incrhk"           ,local_incrhk          );
-  eleparams.set<double>("incrhbazilevs"    ,local_incrhbazilevs   );
-  eleparams.set<double>("incrstrle"        ,local_incrstrle       );
-  eleparams.set<double>("incrgradle"       ,local_incrgradle      );
-
-  eleparams.set<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
-  eleparams.set<double>("incrtauC"         ,local_incrtauC        );
-  eleparams.set<double>("incrtauM"         ,local_incrtauM        );
-  eleparams.set<double>("incrres"          ,local_incrres         );
-  eleparams.set<double>("incrres_sq"       ,local_incrres_sq      );
-  eleparams.set<double>("incrabsres"       ,local_incrabsres      );
-  eleparams.set<double>("incrtauinvsvel"   ,local_incrtauinvsvel  );
-  eleparams.set<double>("incrsvelaf"       ,local_incrsvelaf      );
-  eleparams.set<double>("incrsvelaf_sq"    ,local_incrsvelaf_sq   );
-  eleparams.set<double>("incrabssvelaf"    ,local_incrabssvelaf   );
-  eleparams.set<double>("incrresC"         ,local_incrresC        );
-  eleparams.set<double>("incrresC_sq"      ,local_incrresC_sq     );
-  eleparams.set<double>("incrspressnp"     ,local_incrspressnp    );
-  eleparams.set<double>("incrspressnp_sq"  ,local_incrspressnp_sq );
-
-  eleparams.set<double>("incr_eps_pspg"    ,local_incr_eps_pspg    );
-  eleparams.set<double>("incr_eps_supg"    ,local_incr_eps_supg    );
-  eleparams.set<double>("incr_eps_cross"   ,local_incr_eps_cross   );
-  eleparams.set<double>("incr_eps_rey"     ,local_incr_eps_rey     );
-  eleparams.set<double>("incr_eps_graddiv"   ,local_incr_eps_graddiv   );
-  eleparams.set<double>("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
-  eleparams.set<double>("incr_eps_visc"    ,local_incr_eps_visc    );
-  eleparams.set<double>("incr_eps_conv"    ,local_incr_eps_conv    );
-  eleparams.set<double>("incr_eps_mfs"     ,local_incr_eps_mfs     );
-  eleparams.set<double>("incr_eps_mfscross",local_incr_eps_mfscross);
-  eleparams.set<double>("incr_eps_mfsrey"  ,local_incr_eps_mfsrey  );
-  eleparams.set<double>("incr_eps_avm3"    ,local_incr_eps_avm3    );
-
-  eleparams.set<double>("incrcrossstress"  ,local_incrcrossstress  );
-  eleparams.set<double>("incrreystress"    ,local_incrreystress    );
-
-  // set loma parameters to zero, since loma is not intended here
-  eleparams.set<double>("thermpress at n+alpha_F/n+1",0.0);
-  eleparams.set<double>("thermpress at n+alpha_M/n",0.0);
-  eleparams.set<double>("thermpressderiv at n+alpha_F/n+1",0.0);
-  eleparams.set<double>("thermpressderiv at n+alpha_M/n+1",0.0);
-
-  // set state vectors for element call
-  for(std::map<std::string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
-                                                state!=statevecs.end()  ;
-                                                ++state                 )
-  {
-    discret_->SetState(state->first,state->second);
-  }
-
-  // call loop over elements to compute means
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  discret_->ClearState();
-
-  // variables to sum over all processors
-  double global_incrvol           = 0.0;
-  double global_incrhk            = 0.0;
-  double global_incrhbazilevs     = 0.0;
-  double global_incrstrle         = 0.0;
-  double global_incrgradle        = 0.0;
-
-  double global_incrtauC          = 0.0;
-  double global_incrtauM          = 0.0;
-
-  double global_incrres           = 0.0;
-  double global_incrres_sq        = 0.0;
-  double global_incrabsres        = 0.0;
-
-  double global_incrtauinvsvel    = 0.0;
-
-  double global_incrsvelaf        = 0.0;
-  double global_incrsvelaf_sq     = 0.0;
-  double global_incrabssvelaf     = 0.0;
-
-  double global_incrresC          = 0.0;
-  double global_incrresC_sq       = 0.0;
-  double global_incrspressnp      = 0.0;
-  double global_incrspressnp_sq   = 0.0;
-
-  double global_incr_eps_pspg     = 0.0;
-  double global_incr_eps_supg     = 0.0;
-  double global_incr_eps_cross    = 0.0;
-  double global_incr_eps_rey      = 0.0;
-  double global_incr_eps_graddiv  = 0.0;
-  double global_incr_eps_eddyvisc = 0.0;
-  double global_incr_eps_visc     = 0.0;
-  double global_incr_eps_conv     = 0.0;
-  double global_incr_eps_mfs      = 0.0;
-  double global_incr_eps_mfscross = 0.0;
-  double global_incr_eps_mfsrey   = 0.0;
-  double global_incr_eps_avm3     = 0.0;
-
-  double global_incrcrossstress   = 0.0;
-  double global_incrreystress     = 0.0;
-#endif
+  dserror("EvaluateResiduals() not yet implemented for hit!");
   return;
 }
 
@@ -1471,14 +1168,12 @@ void TurbulenceStatisticsHit::DumpStatistics(
 
   if (type_ == decaying_homogeneous_isotropic_turbulence)
   {
-    //TODO sollte so passen
+    // start for k=1 not k=0, see Diss Hickel
     for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
-       //q_E += (*energyspectrum_)[rr];
-       //q_E +=IntegrateTrapezoidalRule((*wavenumbers_)[rr-1], (*wavenumbers_)[rr], (*energyspectrum_)[rr-1], (*energyspectrum_)[rr]);
     {
+      // build sum up to cut-off wave number
       if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
         q_E += (*energyspectrum_)[rr];
-        //q_E +=IntegrateTrapezoidalRule((*wavenumbers_)[rr-1], (*wavenumbers_)[rr], (*energyspectrum_)[rr-1], (*energyspectrum_)[rr]);
     }
 
     for (int rr = 0; rr < 3; rr++)
@@ -1490,14 +1185,15 @@ void TurbulenceStatisticsHit::DumpStatistics(
 
   if (type_ == forced_homogeneous_isotropic_turbulence)
   {
+    // start for k=1 not k=0, see Diss Hickel
     for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
     {
       if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
       {
-        q_E += ((*energyspectrum_)[rr]/numsamp_);
-        // TODO: klaeren
+        q_E += (((*energyspectrum_)[rr])/numsamp_);
+        // is this the same? yes, it is!
         //diss += ((*dissipationspectrum_)[rr]/numsamp_);
-        diss += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*((*energyspectrum_)[rr]/numsamp_));
+        diss += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*(((*energyspectrum_)[rr])/numsamp_));
       }
     }
 
@@ -1635,10 +1331,6 @@ void TurbulenceStatisticsHit::DumpScatraStatistics(
 
   // resolved turbulent kinetic energy from energy spectrum per unit mass
   double q_E = 0.0;
-//  // resolved turbulent kinetic energy from velocity fluctuations per unit mass
-//  double q_u = 0.0;
-//  // mean-flow kinetic energy  per unit mass
-//  double mke = 0.0;
   // velocity fluctuations
   double u_prime = 0.0;
   // Taylor scale
@@ -1655,7 +1347,7 @@ void TurbulenceStatisticsHit::DumpScatraStatistics(
       if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
       {
         q_E += ((*energyspectrum_)[rr]/numsamp_);
-        // TODO: klaeren
+        // is this the same? yes, it is!
         //diss += ((*dissipationspectrum_)[rr]/numsamp_);
         diss += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*((*energyspectrum_)[rr]/numsamp_));
       }
@@ -1721,6 +1413,7 @@ void TurbulenceStatisticsHit::ClearStatistics()
   {
     (*energyspectrum_)[rr] = 0.0;
     (*dissipationspectrum_)[rr] = 0.0;
+    (*scalarvariancespectrum_)[rr] = 0.0;
   }
 
   for (std::size_t rr = 0; rr < sumvel_->size(); rr++)
@@ -2058,13 +1751,6 @@ void TurbulenceStatisticsHit::CalculateResolvedEnergyDecayingTurbulence()
     (*log) << "\n\n\n";
     log->flush();
   }
-
-//  double test = 0.0;
-//  for (std::size_t rr = 0; rr < E_exp_1.size(); rr++)
-//  {
-//    test += E_exp_1[rr];
-//  }
-//  std::cout << "test  " << test << std::endl;
 
   return;
 }

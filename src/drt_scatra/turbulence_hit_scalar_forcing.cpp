@@ -73,6 +73,11 @@ HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(
       nummodes_ = 32;
       break;
     }
+    case 110592:
+    {
+      nummodes_ = 48;
+      break;
+    }
     case 262144:
     {
       nummodes_ = 64;
@@ -98,6 +103,7 @@ HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(
     if ((node->X()[1]<2e-9 && node->X()[1]>-2e-9) and (node->X()[2]<2e-9 && node->X()[2]>-2e-9))
     coords.insert(node->X()[0]);
   }
+
   // communicate coordinates to all procs via round Robin loop
   {
 #ifdef PARALLEL
@@ -201,33 +207,10 @@ HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(
   // create set of wave numbers
   //-------------------------------------------------
 
-  // the criterion allows differences in coordinates by 1e-9
-  std::set<double,LineSortCriterion> wavenum;
-  // loop all wave vectors and store wave number
-  for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
-  {
-    for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
-    {
-      for (int k_3 = (-nummodes_/2); k_3 <= 0; k_3++)
-      {
-        const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
-        wavenum.insert(k);
-      }
-    }
-  }
-
   // push wave numbers in vector
   {
     wavenumbers_ = Teuchos::rcp(new std::vector<double> );
 
-//    for(std::set<double,LineSortCriterion>::iterator waven1 = wavenum.begin();
-//        waven1 != wavenum.end();
-//        ++waven1)
-//    {
-//      wavenumbers_->push_back(*waven1);
-//    }
-
-    //TODO: das scheint so richtig
     wavenumbers_->resize((std::size_t) nummodes_);
     for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
       (*wavenumbers_)[rr] = rr;
@@ -245,25 +228,11 @@ HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(
     (*scalarvariancespectrum_np_)[rr] = 0.0;
   }
 
-  //TODO: update comment
-  // linear compensation factor
+  // linear compensation factor for isotropic forcing
   force_fac_ = Teuchos::rcp(new Epetra_SerialDenseVector(nummodes_*nummodes_*(nummodes_/2+1)));
 
   return;
 }
-
-
-///*--------------------------------------------------------------*
-// | initialize w.r.t gen-alpha                   rasthofer 05/13 |
-// *--------------------------------------------------------------*/
-//void HomIsoTurbScalarForcing::SetTimeIntSpecificVectors(
-//       Teuchos::RCP<Epetra_Vector> phiaf,
-//       bool gen_alpha)
-//{
-//  phiaf_ = phiaf;
-//  is_genalpha_ = gen_alpha;
-//  return;
-//}
 
 
 /*--------------------------------------------------------------*
@@ -277,32 +246,21 @@ void HomIsoTurbScalarForcing::SetInitialSpectrum(INPAR::SCATRA::InitialField ini
   {
     if (init_field_type == INPAR::SCATRA::initialfield_forced_hit_low_Sc)
     {
-//      if ((*wavenumbers_)[rr]>0.0)
-//        (*scalarvariancespectrum_n_)[rr] = 0.5 * pow((*wavenumbers_)[rr],-5.0/3.0);
-//      else
-//        (*scalarvariancespectrum_n_)[rr] = 0.0;
       if ((*wavenumbers_)[rr]>0.0 and (*wavenumbers_)[rr]<=2.0)
-        (*scalarvariancespectrum_n_)[rr] = 1.0;
+        (*scalarvariancespectrum_n_)[rr] = 0.1 * 1.0;
       else
-        (*scalarvariancespectrum_n_)[rr] = pow(2.0,5.0/3.0) * pow((*wavenumbers_)[rr],-5.0/3.0);
-        //(*scalarvariancespectrum_n_)[rr] = pow(2.0,2.0) * pow((*wavenumbers_)[rr],-2.0);
+        (*scalarvariancespectrum_n_)[rr] = 0.1 * pow(2.0,5.0/3.0) * pow((*wavenumbers_)[rr],-5.0/3.0);
     }
     else if (init_field_type == INPAR::SCATRA::initialfield_forced_hit_high_Sc)
     {
-//      if ((*wavenumbers_)[rr]>0.0)
-//        (*scalarvariancespectrum_n_)[rr] = 0.5 * pow((*wavenumbers_)[rr],-1.0);
-//      else
-//        (*scalarvariancespectrum_n_)[rr] = 0.0;
       if ((*wavenumbers_)[rr]>0.0 and (*wavenumbers_)[rr]<=2.0)
-        (*scalarvariancespectrum_n_)[rr] = 1.0;
+        (*scalarvariancespectrum_n_)[rr] = 0.1 * 1.0;
       else
-        (*scalarvariancespectrum_n_)[rr] = 2.0 * pow((*wavenumbers_)[rr],-1.0);
+        (*scalarvariancespectrum_n_)[rr] = 0.1 * 2.0 * pow((*wavenumbers_)[rr],-1.0);
     }
     else
       dserror("Other initial spectra than simple algebraic spectrum not yet implemented!");
   }
-//  for (std::size_t rr = 0; rr < scalarvariancespectrum_n_->size(); rr++)
-//    std::cout << "k  "<< (*wavenumbers_)[rr] << "  " << (*scalarvariancespectrum_n_)[rr] << std::endl;
 #else
   CalculateForcing(0);
   if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
@@ -327,365 +285,335 @@ void HomIsoTurbScalarForcing::ActivateForcing(const bool activate)
  *--------------------------------------------------------------*/
 void HomIsoTurbScalarForcing::CalculateForcing(const int step)
 {
-  // check if forcing is selected
-  //TODO: remove time if not required
-//  if (flow_type_ == scatra_forced_homogeneous_isotropic_turbulence
-//      or (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_))
+  //-------------------------------------------------------------------------------
+  // calculate Fourier transformation of velocity
+  //-------------------------------------------------------------------------------
+
+  // set and initialize working arrays
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > phi_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <double> > local_phi = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > global_phi = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  //-----------------------------------
+  // prepare Fourier transformation
+  //-----------------------------------
+
+  // set solution in local vectors for phi
+
+  for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
   {
-    //-------------------------------------------------------------------------------
-    // calculate Fourier transformation of velocity
-    //-------------------------------------------------------------------------------
+    // get node
+    DRT::Node* node = discret_->lRowNode(inode);
 
-    // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array <std::complex<double> > > phi_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
-    Teuchos::RCP<Teuchos::Array <double> > local_phi = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-    Teuchos::RCP<Teuchos::Array <double> > global_phi = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+    // get coordinates
+    LINALG::Matrix<3,1> xyz(true);
+    for (int idim = 0; idim < 3; idim++)
+      xyz(idim,0) = node->X()[idim];
 
-    //-----------------------------------
-    // prepare Fourier transformation
-    //-----------------------------------
+    // get global ids of all dofs of the node
+    std::vector<int> dofs = discret_->Dof(node);
 
-    // set solution in local vectors for velocity
-
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    // determine position
+    std::vector<int> loc(3);
+    for (int idim = 0; idim < 3; idim++)
     {
-      // get node
-      DRT::Node* node = discret_->lRowNode(inode);
-
-      // get coordinates
-      LINALG::Matrix<3,1> xyz(true);
-      for (int idim = 0; idim < 3; idim++)
-          xyz(idim,0) = node->X()[idim];
-
-      // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(node);
-
-      // determine position
-      std::vector<int> loc(3);
-      for (int idim = 0; idim < 3; idim++)
+      for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
       {
-        for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+        if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
         {
-          if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
-          {
-            // due to periodic boundary conditions,
-            // the value at the last node is equal to the one at the first node
-            // using this strategy, no special care is required for slave nodes
-            if ((int) rr < nummodes_)
-             loc[idim] = rr;
-            else
-             loc[idim] = 0;
+          // due to periodic boundary conditions,
+          // the value at the last node is equal to the one at the first node
+          // using this strategy, no special care is required for slave nodes
+          if ((int) rr < nummodes_)
+           loc[idim] = rr;
+          else
+           loc[idim] = 0;
 
-            break;
-          }
+          break;
         }
       }
-
-      // get position in velocity vectors local_u_1, local_u_2 and local_u_3
-      const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
-
-      // get local dof id corresponding to the global id
-      int lid = discret_->DofRowMap()->LID(dofs[0]);
-      // set value
-      // TODO: gen-alpha klaeren
-      if (true) //(not is_genalpha_)
-      {
-        (*local_phi)[pos] = (*phinp_)[lid];
-      }
-      else
-      {
-        (*local_phi)[pos] = (*phiaf_)[lid];
-      }
     }
 
-    // get values from all processors
-    // number of nodes without slave nodes
-    const int countallnodes = nummodes_*nummodes_*nummodes_;
-    discret_->Comm().SumAll(&((*local_phi)[0]),
-                            &((*global_phi)[0]),
-                            countallnodes);
+    // get position in velocity vectors local_u_1, local_u_2 and local_u_3
+    const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
-    //----------------------------------------
-    // fast Fourier transformation using FFTW
-    //----------------------------------------
+    // get local dof id corresponding to the global id
+    int lid = discret_->DofRowMap()->LID(dofs[0]);
+    // set value
+    // since we are interested at E at n+1, we use phi at n+1 also for gen-alpha
+    (*local_phi)[pos] = (*phinp_)[lid];
+  }
 
-    // note: this is not very efficient, since each
-    // processor does the fft and there is no communication
+  // get values from all processors
+  // number of nodes without slave nodes
+  const int countallnodes = nummodes_*nummodes_*nummodes_;
+  discret_->Comm().SumAll(&((*local_phi)[0]),
+                          &((*global_phi)[0]),
+                          countallnodes);
 
-    // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
-                                         &((*global_phi)[0]),
-                                         (reinterpret_cast<fftw_complex*>(&((*phi_hat)[0]))),
-                                         FFTW_ESTIMATE);
-    // fft
-    fftw_execute(fft);
+  //----------------------------------------
+  // fast Fourier transformation using FFTW
+  //----------------------------------------
 
-    // scale solution (not done in the fftw routine)
-    for (int i=0; i< phi_hat->size(); i++)
+  // note: this is not very efficient, since each
+  // processor does the fft and there is no communication
+
+  // set-up
+  fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                       &((*global_phi)[0]),
+                                       (reinterpret_cast<fftw_complex*>(&((*phi_hat)[0]))),
+                                       FFTW_ESTIMATE);
+  // fft
+  fftw_execute(fft);
+
+  // scale solution (not done in the fftw routine)
+  for (int i=0; i< phi_hat->size(); i++)
+  {
+    (*phi_hat)[i] /= nummodes_*nummodes_*nummodes_;
+  }
+
+  //----------------------------------------
+  // compute energy spectrum
+  //----------------------------------------
+
+  // transfer from FFTW structure to intervals around zero
+  // FFTW assumes wave numbers in the following intervals
+  // k_1: [0,(nummodes_-1)]
+  // k_2: [0,(nummodes_-1)]
+  // k_3: [0,nummodes_/2]
+  // here, we would like to have
+  // k_1: [-nummodes_/2,(nummodes_/2-1)]
+  // k_2: [-nummodes_/2,(nummodes_/2-1)]
+  // k_3: [-nummodes_/2,0]
+  // using peridocity and conjugate symmetry allows for setting
+  // the Fourier coefficients in the required interval
+
+  // reset energy spectrum at time n+1
+  for (std::size_t rr = 0; rr < scalarvariancespectrum_np_->size(); rr++)
+    (*scalarvariancespectrum_np_)[rr] = 0.0;
+
+  // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
+  // the complete number of modes is required here
+  // hence, we have k_3: [0,(nummodes_-1)]
+  for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+  {
+    for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
     {
-      (*phi_hat)[i] /= nummodes_*nummodes_*nummodes_;
-    }
-
-    //----------------------------------------
-    // compute energy spectrum
-    //----------------------------------------
-
-    // transfer from FFTW structure to intervals around zero
-    // FFTW assumes wave numbers in the following intervals
-    // k_1: [0,(nummodes_-1)]
-    // k_2: [0,(nummodes_-1)]
-    // k_3: [0,nummodes_/2]
-    // here, we would like to have
-    // k_1: [-nummodes_/2,(nummodes_/2-1)]
-    // k_2: [-nummodes_/2,(nummodes_/2-1)]
-    // k_3: [-nummodes_/2,0]
-    // using peridocity and conjugate symmetry allows for setting
-    // the Fourier coefficients in the required interval
-//    Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-//    Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-//    Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-
-    // reset energy spectrum at time n+1/n+af
-    for (std::size_t rr = 0; rr < scalarvariancespectrum_n_->size(); rr++)
-      (*scalarvariancespectrum_np_)[rr] = 0.0;
-
-    // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
-    // the complete number of modes is required here
-    // hence, we have k_3: [0,(nummodes_-1)]
-    for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
-    {
-      for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+      for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_-1); fftw_k_3++)
       {
-        for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_-1); fftw_k_3++)
+
+        int pos_fftw_k_1 = -999;
+        int pos_fftw_k_2 = -999;
+        int pos_fftw_k_3 = -999;
+
+        int k_1 = -999;
+        int k_2 = -999;
+        int k_3 = -999;
+
+        if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
+            (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
+            fftw_k_3 == 0)
         {
+          // wave number vector is part of construction domain
+          // and this value is taken
+          k_1 = fftw_k_1;
+          k_2 = fftw_k_2;
+          k_3 = fftw_k_3;
 
-          int pos_fftw_k_1 = -999;
-          int pos_fftw_k_2 = -999;
-          int pos_fftw_k_3 = -999;
-
-          int k_1 = -999;
-          int k_2 = -999;
-          int k_3 = -999;
-
-          if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
-              (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
-              fftw_k_3 == 0)
+          pos_fftw_k_1 = fftw_k_1;
+          pos_fftw_k_2 = fftw_k_2;
+          pos_fftw_k_3 = fftw_k_3;
+        }
+        else
+        {
+          // check if current wave vector is in the domain of fftw
+          // if not shift to domain using periodicity and conjugate symmetry
+          if (fftw_k_3 > (nummodes_/2))
           {
-            // wave number vector is part of construction domain
-            // and this value is taken
-            k_1 = fftw_k_1;
-            k_2 = fftw_k_2;
-            k_3 = fftw_k_3;
+            // find corresponding value in fftw-range first
+            int intermediate_fftw_3 = fftw_k_3 - nummodes_;
+            // since intermediate_fftw_3 is still outside of domain,
+            // get position of conjugate complex
+            intermediate_fftw_3 *= -1;
+            int intermediate_fftw_1 = -fftw_k_1;
+            int intermediate_fftw_2 = -fftw_k_2;
+            // check if this position is inside intervals
+            if ((intermediate_fftw_1 >= 0 and intermediate_fftw_1 <= (nummodes_-1))
+                 and (intermediate_fftw_2 >= 0 and intermediate_fftw_2 <= (nummodes_-1))
+                 and (intermediate_fftw_3 >= 0 and intermediate_fftw_3 <= (nummodes_/2)))
+            {
+               pos_fftw_k_1 = intermediate_fftw_1;
+               pos_fftw_k_2 = intermediate_fftw_2;
+               pos_fftw_k_3 = intermediate_fftw_3;
+            }
+            else
+            {
+              // shift intermediate_fftw_1 and intermediate_fftw_2 into fftw interval
+              // intermediate_fftw_3 always lies within the fftw interval
+              if (intermediate_fftw_1 < 0)
+                intermediate_fftw_1 += nummodes_;
+              if (intermediate_fftw_2 < 0)
+                intermediate_fftw_2 += nummodes_;
 
+              pos_fftw_k_1 = intermediate_fftw_1;
+              pos_fftw_k_2 = intermediate_fftw_2;
+              pos_fftw_k_3 = intermediate_fftw_3;
+            }
+          }
+          else
+          {
             pos_fftw_k_1 = fftw_k_1;
             pos_fftw_k_2 = fftw_k_2;
             pos_fftw_k_3 = fftw_k_3;
           }
+
+          // see whether the negative wave vector is in the construction domain
+          k_1 = -pos_fftw_k_1;
+          k_2 = -pos_fftw_k_2;
+          k_3 = -pos_fftw_k_3;
+          if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
+              (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
+              (k_3 >= (-nummodes_/2) and k_3 <= 0))
+          {
+
+          }
           else
           {
-            // check if current wave vector is in the domain of fftw
-            // if not shift to domain using periodicity and conjugate symmetry
-            if (fftw_k_3 > (nummodes_/2))
-            {
-              // find corresponding value in fftw-range first
-              int intermediate_fftw_3 = fftw_k_3 - nummodes_;
-              // since intermediate_fftw_3 is still outside of domain,
-              // get position of conjugate complex
-              intermediate_fftw_3 *= -1;
-              int intermediate_fftw_1 = -fftw_k_1;
-              int intermediate_fftw_2 = -fftw_k_2;
-              // check if this position is inside intervals
-              if ((intermediate_fftw_1 >= 0 and intermediate_fftw_1 <= (nummodes_-1))
-                   and (intermediate_fftw_2 >= 0 and intermediate_fftw_2 <= (nummodes_-1))
-                   and (intermediate_fftw_3 >= 0 and intermediate_fftw_3 <= (nummodes_/2)))
-              {
-                 pos_fftw_k_1 = intermediate_fftw_1;
-                 pos_fftw_k_2 = intermediate_fftw_2;
-                 pos_fftw_k_3 = intermediate_fftw_3;
-              }
-              else
-              {
-                // shift intermediate_fftw_1 and intermediate_fftw_2 into fftw interval
-                // intermediate_fftw_3 always lies within the fftw interval
-                if (intermediate_fftw_1 < 0)
-                  intermediate_fftw_1 += nummodes_;
-                if (intermediate_fftw_2 < 0)
-                  intermediate_fftw_2 += nummodes_;
+            // if negative wave vector is not in the construction domain
+            // we have to shift it into the domain using the periodicity of the
+            // wave number field
+            // -k_3 always lies within the construction domain!
+            if (k_1 < (-nummodes_/2))
+               k_1 += nummodes_;
+            if (k_2 < (-nummodes_/2))
+              k_2 += nummodes_;
+          }
+        }
 
-                pos_fftw_k_1 = intermediate_fftw_1;
-                pos_fftw_k_2 = intermediate_fftw_2;
-                pos_fftw_k_3 = intermediate_fftw_3;
-              }
-            }
-            else
-            {
-              pos_fftw_k_1 = fftw_k_1;
-              pos_fftw_k_2 = fftw_k_2;
-              pos_fftw_k_3 = fftw_k_3;
-            }
+        // get position in phi_hat
+        const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
 
-            // see whether the negative wave vector is in the construction domain
-            k_1 = -pos_fftw_k_1;
-            k_2 = -pos_fftw_k_2;
-            k_3 = -pos_fftw_k_3;
-            if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
-                (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
-                (k_3 >= (-nummodes_/2) and k_3 <= 0))
-            {
+        // calculate energy
+        // E = 1/2 * u_i * conj(u_i)
+        // u_i * conj(u_i) = real(u_i)^2 + imag(u_i)^2
+        // const std::complex<double> energy = 0.5 * ((*phi_hat)[pos] * conj((*phi_hat)[pos]);
+        // instead
+        const double scalarvariance = 0.5 * norm((*phi_hat)[pos]);
 
-            }
-            else
+        if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+        {
+
+          // get wave number
+          const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+
+          // insert into sampling vector
+          // find position via k
+          for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
+          {
+            if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
             {
-              // if negative wave vector is not in the construction domain
-              // we have to shift it into the domain using the periodicity of the
-              // wave number field
-              // -k_3 always lies within the construction domain!
-              if (k_1 < (-nummodes_/2))
-                 k_1 += nummodes_;
-              if (k_2 < (-nummodes_/2))
-                k_2 += nummodes_;
+              (*scalarvariancespectrum_np_)[rr] += scalarvariance;
             }
           }
+        }
+        else
+          dserror("Unknown forcing type!");
+      }
+    }
+  }
 
-          // get position in phi_hat
-          const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
+  //--------------------------------------------------------
+  // forcing factor from energy spectrum
+  //--------------------------------------------------------
 
-          // calculate energy
-          // E = 1/2 * u_i * conj(u_i)
-          // u_i * conj(u_i) = real(u_i)^2 + imag(u_i)^2
-          // const std::complex<double> energy = 0.5 * ((*phi_hat)[pos] * conj((*phi_hat)[pos])
-          //                                          + (*u2_hat)[pos] * conj((*u2_hat)[pos])
-          //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
-          // instead
-          //TODO: factor 0.5 correct here?
-          const double scalarvariance = 0.5 * norm((*phi_hat)[pos]);
+  for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+  {
+    for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+    {
+      for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_/2+1); fftw_k_3++)
+      {
+        int k_1 = -999;
+        int k_2 = -999;
+        int k_3 = -999;
 
-          if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+        if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
+            (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
+             fftw_k_3 == 0)
+        {
+          // wave number vector is part of construction domain
+          // and this value is taken
+          k_1 = fftw_k_1;
+          k_2 = fftw_k_2;
+          k_3 = fftw_k_3;
+        }
+        else
+        {
+          // see whether the negative wave vector is in the construction domain
+          k_1 = -fftw_k_1;
+          k_2 = -fftw_k_2;
+          k_3 = -fftw_k_3;
+          if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
+              (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
+              (k_3 >= (-nummodes_/2) and k_3 <= 0))
           {
 
-            // get wave number
-            const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+          }
+          else
+          {
+            // if negative wave vector is not in the construction domain
+            // we have to shift it into the domain using the periodicity of the
+            // wave number field
+            // -k_3 always lies within the construction domain!
+            if (k_1 < (-nummodes_/2))
+              k_1 += nummodes_;
+            if (k_2 < (-nummodes_/2))
+              k_2 += nummodes_;
+          }
+        }
 
-            // insert into sampling vector
-            // find position via k
+        if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+        {
+          // compute linear compensation factor from energy spectrum
+
+          // following Hickel 2007
+          //         (1/(2*E))* dE/dt if k <= k_t
+          // C(k) =
+          //         0                else
+          // threshold wave number k_t
+          // E intermediate energy spectrum, i.e. solution without forcing
+
+          // get wave number
+          double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+          if (k <= threshold_wavenumber_ and k > 0)
+          {
+            int rr_k = 0;
             for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
             {
-  //            if (k >= ((*wavenumbers_)[rr]-2e-9) and k<= ((*wavenumbers_)[rr]+2e-9))
-               if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
+              if ((*wavenumbers_)[rr] > k)
               {
-                (*scalarvariancespectrum_np_)[rr] += scalarvariance;
+                rr_k = rr;
+                break;
               }
             }
+
+            // interpolate spectrum to wave number
+            double E_n = Interpolate(k, (*wavenumbers_)[rr_k-1], (*wavenumbers_)[rr_k], (*scalarvariancespectrum_n_)[rr_k-1], (*scalarvariancespectrum_n_)[rr_k]);
+            double E_np = Interpolate(k, (*wavenumbers_)[rr_k-1], (*wavenumbers_)[rr_k], (*scalarvariancespectrum_np_)[rr_k-1], (*scalarvariancespectrum_np_)[rr_k]);
+
+            // get position in fac-vector
+            const int pos = fftw_k_3 + (nummodes_/2+1) * (fftw_k_2 + nummodes_ * fftw_k_1);
+
+            // calculate C
+            (*force_fac_)(pos) = (1.0/(2.0 * E_np)) * (E_np - E_n)/dt_;
           }
-          else
-            dserror("Unknown forcing type!");
-        }
-      }
-    }
-
-//    std::cout << "FORCING " << std::endl;
-//    for (std::size_t rr = 0; rr < energyspectrum_np_->size(); rr++)
-//        std::cout << (*wavenumbers_)[rr] << "   " << (*energyspectrum_np_)[rr] << std::endl;
-
-    //--------------------------------------------------------
-    // forcing factor from energy spectrum
-    //--------------------------------------------------------
-
-    for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
-    {
-      for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
-      {
-        for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_/2+1); fftw_k_3++)
-        {
-            int k_1 = -999;
-            int k_2 = -999;
-            int k_3 = -999;
-
-            if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
-                (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
-                fftw_k_3 == 0)
-            {
-              // wave number vector is part of construction domain
-              // and this value is taken
-              k_1 = fftw_k_1;
-              k_2 = fftw_k_2;
-              k_3 = fftw_k_3;
-            }
-            else
-            {
-              // see whether the negative wave vector is in the construction domain
-              k_1 = -fftw_k_1;
-              k_2 = -fftw_k_2;
-              k_3 = -fftw_k_3;
-              if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
-                  (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
-                  (k_3 >= (-nummodes_/2) and k_3 <= 0))
-              {
-
-              }
-              else
-              {
-                // if negative wave vector is not in the construction domain
-                // we have to shift it into the domain using the periodicity of the
-                // wave number field
-                // -k_3 always lies within the construction domain!
-                if (k_1 < (-nummodes_/2))
-                   k_1 += nummodes_;
-                if (k_2 < (-nummodes_/2))
-                  k_2 += nummodes_;
-              }
-            }
-
-            if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
-            {
-              // compute linear compensation factor from energy spectrum
-
-              // following Hickel 2007
-              //         (1/(2*E))* dE/dt if k <= k_t
-              // C(k) =
-              //         0                else
-              // threshold wave number k_t
-              // E intermediate energy spectrum, i.e. solution without forcing
-
-              // get wave number
-              double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
-              if (k <= threshold_wavenumber_ and k > 0)
-              {
-//                std::cout << "k_c " << threshold_wavenumber_ << "k " << k << std::endl;
-                int rr_k = 0;
-                for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-                {
-                  if ((*wavenumbers_)[rr] > k)
-                  {
-                    rr_k = rr;
-                    break;
-                  }
-                }
-
-                // interpolate spectrum to wave number
-                double E_n = Interpolate(k, (*wavenumbers_)[rr_k-1], (*wavenumbers_)[rr_k], (*scalarvariancespectrum_n_)[rr_k-1], (*scalarvariancespectrum_n_)[rr_k]);
-                double E_np = Interpolate(k, (*wavenumbers_)[rr_k-1], (*wavenumbers_)[rr_k], (*scalarvariancespectrum_np_)[rr_k-1], (*scalarvariancespectrum_np_)[rr_k]);
-
-                // get position in fac-vector
-                const int pos = fftw_k_3 + (nummodes_/2+1) * (fftw_k_2 + nummodes_ * fftw_k_1);
-
-                // calculate C
-                (*force_fac_)(pos) = (1.0/(2.0 * E_np)) * (E_np - E_n)/dt_;
-              }
-
-            }
-            else
-              dserror("Unknown forcing type!");
 
         }
+        else
+          dserror("Unknown forcing type!");
+
       }
     }
-    //force_fac_->Print(std::cout);
   }
-  //TODO: das kann raus
-//  else
-//   // set force to zero
-//   forcing_->PutScalar(0.0);
 
   return;
 }
@@ -696,13 +624,8 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
  *--------------------------------------------------------------*/
 void HomIsoTurbScalarForcing::UpdateForcing(const int step)
 {
-  //std::cout << "UpdateForcing " << std::endl;
-  //std::cout << "step: " << step << std::endl;
-  //std::cout << "type: " << flow_type_ << std::endl;
-  //forcing_->Print(std::cout);
   // check if forcing is selected
-  if (activate_) // and (flow_type_ == forced_homogeneous_isotropic_turbulence
-      //or (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_)))
+  if (activate_)
   {
     //-------------------------------------------------------------------------------
     // calculate Fourier transformation of velocity
@@ -810,7 +733,7 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
 
     for (int rr = 0; rr < (nummodes_*nummodes_*(nummodes_/2+1)); rr++)
     {
-      (*fphi_hat)[rr] = -(*force_fac_)(rr) * (*phi_hat)[rr];
+      (*fphi_hat)[rr] = -((*force_fac_)(rr)) * ((*phi_hat)[rr]);
     }
 
     //----------------------------------------
@@ -876,8 +799,6 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
   else
    // set force to zero
    forcing_->PutScalar(0.0);
-
-//  forcing_->Print(std::cout);
 
   return;
 }

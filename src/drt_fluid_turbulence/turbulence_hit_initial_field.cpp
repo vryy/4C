@@ -24,12 +24,6 @@ Maintainer: Ursula Rasthofer
 
 #include"fftw3.h"
 
-//#ifdef PARALLEL
-//#include "Epetra_MpiComm.h"
-//#else
-//#include "Epetra_SerialComm.h"
-//#endif
-
 #include "turbulence_hit_initial_field.H"
 
 #include "../drt_fluid/fluidimplicitintegration.H"
@@ -67,6 +61,11 @@ HomIsoTurbInitialField::HomIsoTurbInitialField(
     case 32768:
     {
       nummodes_ = 32;
+      break;
+    }
+    case 110592:
+    {
+      nummodes_ = 48;
       break;
     }
     case 262144:
@@ -249,7 +248,7 @@ void HomIsoTurbInitialField::CalculateInitialField()
 
   // backward
   Teuchos::RCP<Teuchos::Array <double> > u1_back = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
-  fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_, //(nummodes_/2+1), TODO: diese Aenderung ist wichtig
+  fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_, //instead of (nummodes_/2+1): this is important to have here
                              (reinterpret_cast<fftw_complex*>(&((*u1_hat)[0]))),
                              &((*u1_back)[0]),
                              FFTW_ESTIMATE);
@@ -301,27 +300,27 @@ void HomIsoTurbInitialField::CalculateInitialField()
 
         if (k_1 == (-nummodes_/2) or k_2 == (-nummodes_/2) or k_3 == (-nummodes_/2))
         {
-          // odd-ball wave numbers are set to zero to ensure that solution is real function
-          (*u1_hat)[pos].real(0.0);
+          // odd-ball wave numbers are set to zero to ensure that solution is a real function
+          ((*u1_hat)[pos]).real(0.0);
           // this is important to have here
-          (*u1_hat)[pos].imag(0.0);
+          ((*u1_hat)[pos]).imag(0.0);
           // remaining analogously
-          (*u2_hat)[pos].real(0.0);
-          (*u2_hat)[pos].imag(0.0);
-          (*u3_hat)[pos].real(0.0);
-          (*u3_hat)[pos].imag(0.0);
+          ((*u2_hat)[pos]).real(0.0);
+          ((*u2_hat)[pos]).imag(0.0);
+          ((*u3_hat)[pos]).real(0.0);
+          ((*u3_hat)[pos]).imag(0.0);
         }
         else if (k_1 == 0 and k_2 == 0 and k_3 == 0)
         {
           // likewise set to zero since there will not be any conjugate complex
-          (*u1_hat)[pos].real(0.0);
+          ((*u1_hat)[pos]).real(0.0);
           // this is important to have here
-          (*u1_hat)[pos].imag(0.0);
+          ((*u1_hat)[pos]).imag(0.0);
           // remaining analogously
-          (*u2_hat)[pos].real(0.0);
-          (*u2_hat)[pos].imag(0.0);
-          (*u3_hat)[pos].real(0.0);
-          (*u3_hat)[pos].imag(0.0);
+          ((*u2_hat)[pos]).real(0.0);
+          ((*u2_hat)[pos]).imag(0.0);
+          ((*u3_hat)[pos]).real(0.0);
+          ((*u3_hat)[pos]).imag(0.0);
         }
         else
         {
@@ -354,10 +353,13 @@ void HomIsoTurbInitialField::CalculateInitialField()
             {
               DRT::UTILS::Random* random = DRT::Problem::Instance()->Random();
               // set range [0;1] (default: [-1;1])
-              random->SetRandRange(0.0,1.0);
-              random_theta1 = random->Uni();
-              random_theta2 = random->Uni();
-              random_phi = random->Uni();
+//              random->SetRandRange(0.0,1.0);
+//              random_theta1 = random->Uni();
+//              random_theta2 = random->Uni();
+//              random_phi = random->Uni();
+              random_theta1 = 0.5*random->Uni()+0.5;
+              random_theta2 = 0.5*random->Uni()+0.5;
+              random_phi = 0.5*random->Uni()+0.5;
             }
             discret_->Comm().Broadcast(&random_theta1,1,0);
             discret_->Comm().Broadcast(&random_theta2,1,0);
@@ -399,13 +401,13 @@ void HomIsoTurbInitialField::CalculateInitialField()
               if (k_3 == 0)
                 (*u3_hat)[pos] = -beta * k_12 / k;
               else
-                (*u3_hat)[pos] = -(((double)k_1) * (*u1_hat)[pos] + ((double)k_2) * (*u2_hat)[pos]) / ((double)k_3);
+                (*u3_hat)[pos] = -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) / ((double)k_3);
             }
             else
             {
               (*u1_hat)[pos] = alpha;
               (*u2_hat)[pos] = beta;
-              (*u3_hat)[pos] = -(((double)k_1) * (*u1_hat)[pos] + ((double)k_2) * (*u2_hat)[pos]) / ((double)k_3);
+              (*u3_hat)[pos] = -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) / ((double)k_3);
             }
           }
           else
@@ -728,9 +730,9 @@ double HomIsoTurbInitialField::CalculateEnergyFromSpectrum(double k)
   else if (type_ == INPAR::FLUID::initialfield_passive_hit_const_input)
   {
     if (k <=2)
-      energy = 1.0;
+      energy = 0.1 * 1.0;
     else
-      energy = pow(2.0,5.0/3.0) * pow(k,-5.0/3.0);
+      energy = 0.1 * pow(2.0,5.0/3.0) * pow(k,-5.0/3.0);
   }
   else if (type_ == INPAR::FLUID::initialfield_forced_hit_numeric_spectrum)
   {
