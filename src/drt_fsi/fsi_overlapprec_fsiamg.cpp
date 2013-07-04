@@ -98,7 +98,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     dserror("No nested parallelism for AMG FSI. See comments in FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()!");
   // Attention: No nested parallelism for AMG FSI due to MLAPI incompatibility
   // MLAPI::Space::Reshape constructs an ML_RowMatrix object using a hard coded MPI_COMM_WORLD in MLAPI_Operator.h
-  // Fixing this needs major changes in Trilinos/MLAPI which is not desirable
+  // Fixing this needs major changes in Trilinos/MLAPI which is not desirable.
 
   // MLAPI::Init() without arguments uses internally MPI_COMM_WOLRD
   MLAPI::Init();
@@ -121,7 +121,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (constalesolver_==Teuchos::null)
     alesolver_->Setup(aleInnerOp.EpetraMatrix());
 
-  // get the ml_MultiLevelPreconditioner class from within struct/fluid solver
+  // get the ml_MultiLevelPreconditioner class from within struct/fluid/ale solver
   Teuchos::RCP<Epetra_Operator> sprec = structuresolver_->EpetraOperator();
   Teuchos::RCP<Epetra_Operator> fprec = fluidsolver_->EpetraOperator();
   Teuchos::RCP<Epetra_Operator> aprec = alesolver_->EpetraOperator();

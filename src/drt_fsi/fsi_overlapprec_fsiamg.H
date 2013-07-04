@@ -587,12 +587,12 @@ namespace FSI
     int                                  frun_;
     int                                  arun_;
     
-    int                                  minnlevel_; /// min of the below nlevel_
-    int                                  maxnlevel_; /// max of the below nlevel_
-    int                                  analyze_;   /// run analysis of FSIAMG
-    INPAR::FSI::LinearBlockSolver        strategy_; /// type of preocnidtioner  to run: BGS(AMG) or AMG(BGS)
-    std::vector<std::string>             blocksmoother_; /// type of inter-field block smoother
-    std::vector<double>                  schuromega_; /// damping factor for construction of Schur complement
+    int                                  minnlevel_; ///< min of the below nlevel_
+    int                                  maxnlevel_; ///< max of the below nlevel_
+    int                                  analyze_;   ///< run analysis of FSIAMG
+    INPAR::FSI::LinearBlockSolver        strategy_; ///< type of preocnidtioner  to run: BGS(AMG) or AMG(BGS)
+    std::vector<std::string>             blocksmoother_; ///< type of inter-field block smoother
+    std::vector<double>                  schuromega_; ///< damping factor for construction of Schur complement
     std::vector<double>                  pcomega_;
     std::vector<int>                     pciter_;
     std::vector<double>                  somega_;
@@ -602,14 +602,14 @@ namespace FSI
     std::vector<double>                  aomega_;
     std::vector<int>                     aiterations_;
 
-    int                                  snlevel_;   /// num level in structure AMG
+    int                                  snlevel_;   ///< num level in structure AMG
     Teuchos::ParameterList               sparams_;
     mutable std::vector<MLAPI::Operator> Ass_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sss_;
     std::vector<MLAPI::Operator>         Pss_;
     std::vector<MLAPI::Operator>         Rss_;
 
-    int                                  fnlevel_;   /// num level in fluid AMG
+    int                                  fnlevel_;   ///< num level in fluid AMG
     Teuchos::ParameterList               fparams_;
     mutable std::vector<MLAPI::Operator> Aff_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sff_;
@@ -617,7 +617,7 @@ namespace FSI
     std::vector<MLAPI::Operator>         Pff_;
     std::vector<MLAPI::Operator>         Rff_;
 
-    int                                  anlevel_;   /// num level in ale AMG
+    int                                  anlevel_;   ///< num level in ale AMG
     Teuchos::ParameterList               aparams_;
     mutable std::vector<MLAPI::Operator> Aaa_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Saa_;
