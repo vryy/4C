@@ -940,8 +940,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::damp_material,
                                  INPAR::STR::damp_brownianmotion),
                                &sdyn);
-  DoubleParameter("M_DAMP",0.5,"",&sdyn);
-  DoubleParameter("K_DAMP",0.5,"",&sdyn);
+  DoubleParameter("M_DAMP",-1.0,"",&sdyn);
+  DoubleParameter("K_DAMP",-1.0,"",&sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,
                   "tolerance in the displacement norm for the newton iteration",

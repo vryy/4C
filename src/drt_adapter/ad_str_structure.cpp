@@ -168,6 +168,19 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     sdyn.set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
 
+  // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat file
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdyn,"DAMPING") == INPAR::STR::damp_rayleigh)
+    {
+  		if (sdyn.get<double>("K_DAMP") < 0.0)
+  		  {
+  		    dserror("Rayleigh damping parameter K_DAMP not explicitly given.");
+  		  }
+  		if (sdyn.get<double>("M_DAMP") < 0.0)
+      {
+         dserror("Rayleigh damping parameter M_DAMP not explicitly given.");
+       }
+    }
+
   // create a solver
   Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis, sdyn);
 
