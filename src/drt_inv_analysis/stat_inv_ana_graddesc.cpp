@@ -44,8 +44,9 @@ STR::INVANA::StatInvAnaGradDesc::StatInvAnaGradDesc(Teuchos::RCP<DRT::Discretiza
 stepsize_(0.0),
 maxiter_(0)
 {
-  //const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& invap = DRT::Problem::Instance()->StatInverseAnalysisParams();
+
+  // max number of iterations
   maxiter_ = invap.get<int>("MAXITER");
 
   //set stepsize for gradient scheme
@@ -57,55 +58,81 @@ maxiter_(0)
 /* decide for an optimization algorithm*/
 void STR::INVANA::StatInvAnaGradDesc::Optimize()
 {
-  for (int i=0; i<maxiter_; i++)
+
+  objgrad_o_->Scale(0.0);
+
+  SolveForwardProblem();
+
+  SolveAdjointProblem();
+
+  EvaluateGradient();
+
+
+
+  Epetra_SerialDenseVector vnorm(matman_->GetParams()->NumVectors());
+  for (int i=0; i<matman_->GetParams()->NumVectors(); i++)
+    vnorm(i) = 1.0e16;
+
+
+  int i=0;
+
+  while (vnorm.Norm1() > 1.0e-10 && i<maxiter_)
   {
-    Epetra_MultiVector objgrad(*params_);
+    UpdateOptStep();
 
-    matman_->UpdateParams(params_);
+    // summary
+    objgrad_->NormInf(vnorm.Values());
 
-    SolveForwardProblem();
+    cout << "this steps optimality evaluation: ERROR: " << objval_ << "   GRADNORM: " << vnorm.Norm1() << " -> next stepsize: " << stepsize_ << endl;
 
-    SolveAdjointProblem();
+    cout << "************************** END OF STEP " << i << " *******************************" << endl;
 
-    EvaluateGradient(&objgrad);
-
-    UpdateOptStep(&objgrad,i);
+    i=i+1;
   }
 
+  //cout << "************************** FINAL SET OF MATERIAL PARAMETERS **************************" << endl;
+  //cout << *(matman_->GetParams()) << endl;
   return;
+
 }
 
 /*----------------------------------------------------------------------*/
 /* do the update of the parameter vector */
-void STR::INVANA::StatInvAnaGradDesc::UpdateOptStep(Epetra_MultiVector* objgrad, int nstep)
+void STR::INVANA::StatInvAnaGradDesc::UpdateOptStep()
 {
+  objgrad_o_->Scale(1.0, *objgrad_);
 
-  objval_o_ = objval_;
+  //scale the gradient
+  double normgrad;
+  objgrad_->Norm1(&normgrad);
+
+  objgrad_->Scale(-1.0/normgrad*stepsize_);
+
+  matman_->UpdateParams(objgrad_);
+
+  SolveForwardProblem();
+
   //get actual value of the objective
-  objfunct_->Evaluate(dis_,&objval_);
-
-  if (nstep == 0)
-    return;
+  objval_ = objfunct_->Evaluate(dis_,matman_);
 
   //this is an extremly simple timeadaptive gradient descent scheme
-  if (objval_ <= objval_o_)
+  if (objval_ < objval_o_)
   {
-    //scale the gradient
-    Epetra_SerialDenseVector normvec(objgrad->NumVectors());
-    objgrad->NormInf(normvec.Values());
-    double normgrad = normvec.NormInf();
-    cout << "gradnorm: " << normgrad << endl;
-    objgrad->Scale(-1.0/normgrad);
+    if (stepsize_ < 1.0e4) stepsize_ = stepsize_*1.2;
 
-    params_->Update(stepsize_,*objgrad,1.0);
-    stepsize_ = stepsize_*1.2;
+    objval_o_ = objval_;
+
+    SolveAdjointProblem();
+    EvaluateGradient();
   }
   else
   {
-    stepsize_ = stepsize_*0.5;
+    matman_->ResetParams();
+    if (stepsize_ > 1.0e-4) stepsize_ = stepsize_*0.5;
+    objgrad_->Scale(1.0,*objgrad_o_);
+
   }
 
-  cout << "this steps optimality evaluation: " << objval_ << " step: " << stepsize_ << endl;
-  cout << *params_ << endl;
+  return;
 
 }

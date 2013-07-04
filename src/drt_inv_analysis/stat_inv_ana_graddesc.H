@@ -25,7 +25,7 @@ class StatInvAnaGradDesc : public StatInvAnalysis
 private:
 
   //! do the update on the parameter vector
-  void UpdateOptStep(Epetra_MultiVector* objgrad, int nstep);
+  void UpdateOptStep();
 
   //! step size for the gradient scheme
   double stepsize_;
@@ -38,6 +38,8 @@ public:
 
   //! standard constructor
   StatInvAnaGradDesc(Teuchos::RCP<DRT::Discretization> dis);
+
+  ~StatInvAnaGradDesc() {};
 
   //! start the optimization routine
   void Optimize();

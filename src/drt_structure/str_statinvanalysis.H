@@ -16,11 +16,8 @@ Maintainer: Sebastian Kehl
 #ifndef STR_STATINVANALYSIS_H
 #define STR_STATINVANALYSIS_H
 
-#ifdef PARALLEL
+
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif
 #include "Epetra_Time.h"
 #include "Teuchos_RCP.hpp"
 

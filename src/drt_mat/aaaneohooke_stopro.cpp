@@ -83,7 +83,9 @@ isinit_youngs_(false)
  *----------------------------------------------------------------------*/
 MAT::AAAneohooke_stopro::AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params):
 params_(params),
+beta_(0.0),
 isinit_beta_(false),
+youngs_(0.0),
 isinit_youngs_(false)
 {
 }

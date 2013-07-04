@@ -16,6 +16,8 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_globalproblem.H"
 #include "Epetra_MultiVector.h"
 
+#include "matpar_manager.H"
+
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
@@ -24,8 +26,7 @@ STR::INVANA::ObjectiveFunct::ObjectiveFunct(Teuchos::RCP<DRT::Discretization> di
                                             Teuchos::RCP<std::vector<double> > timesteps):
 discret_(discret),
 timesteps_(timesteps),
-msteps_(steps),
-objval_(0)
+msteps_(steps)
 {
   const Teuchos::ParameterList& invap = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
@@ -36,7 +37,6 @@ objval_(0)
 
   // initialize vectors
   mdisp_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
-  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
   //mask_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
   mask_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
 
@@ -157,8 +157,11 @@ void STR::INVANA::ObjectiveFunct::ReadMonitor(string filename)
 
 /*----------------------------------------------------------------------*/
 /* Evaluate value of the objective function */
-void STR::INVANA::ObjectiveFunct::Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double* val)
+double STR::INVANA::ObjectiveFunct::Evaluate(Teuchos::RCP<Epetra_MultiVector> disp,
+                                           Teuchos::RCP<MatParManager> matman)
 {
+  double val;
+
   Epetra_SerialDenseVector normvec(disp->NumVectors());
 
   Epetra_MultiVector tmpvec = Epetra_MultiVector(*dofrowmap_,msteps_,true);
@@ -171,18 +174,31 @@ void STR::INVANA::ObjectiveFunct::Evaluate(Teuchos::RCP<Epetra_MultiVector> disp
   // sum over every vector in the multivector
   tmpvec.Norm1(normvec.Values());
   // sum every entry
-  *val = 0.5*normvec.Norm1();
+  val = 0.5*normvec.Norm1();
 
   //cout << "mdisp: " << *mdisp_ << endl;
   //cout << "disp: " << *disp << endl;
   //cout << "mask: " << *mask_ << endl;
 
-  return;
+  //add Thikonov regularization on the parameter vector:
+  normvec.Scale(0.0);
+  Epetra_MultiVector tmpvec2 = Epetra_MultiVector(*matman->GetInitialGuess());
+  cout << *matman->GetParams() << endl;
+  cout << tmpvec2 << endl;
+  tmpvec2.Update(1.0,*(matman->GetParams()),-1.0);
+  cout << tmpvec2 << endl;
+  tmpvec2.Multiply(1.0,tmpvec2,tmpvec2,0.0);
+  cout << tmpvec2 << endl;
+  tmpvec2.Norm1(normvec.Values());
+  val += 0.5*(matman->GetRegWeight())*normvec.Norm1();
+
+  return val;
 }
 
 /*----------------------------------------------------------------------*/
 /* Evaluate the gradient of the objective function w.r.t the displacements */
-void STR::INVANA::ObjectiveFunct::EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<Epetra_MultiVector> gradient)
+void STR::INVANA::ObjectiveFunct::EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp,
+                                                   Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   Epetra_MultiVector tmpvec = Epetra_MultiVector(*dofrowmap_,msteps_,true);
   tmpvec.Update(1.0,*mdisp_,0.0);

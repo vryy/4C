@@ -1244,6 +1244,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::STR::stat_inv_mc),
                                 &statinvp);
 
+  // decide which parametrization of material parameters to use
+  setStringToIntegralParameter<int>("PARAMETRIZATION","none",
+                                      "how to parametrize the parameter field",
+                                    tuple<std::string>(
+                                      "none",
+                                      "kernelsmoothing",
+                                      "elementwise"),
+                                    tuple<int>(
+                                      INPAR::STR::stat_inv_mp_none,
+                                      INPAR::STR::stat_inv_mp_smoothkernel,
+                                      INPAR::STR::stat_inv_mp_elementwise),
+                                    &statinvp);
+
+  // list of materials to be optimized
+  setNumericStringParameter("NUM_KERNEL","-1",
+                            "number of kernel functions per dimension",
+                            &statinvp);
+
   // monitorfile to provide measurements
   StringParameter("MONITORFILE","none.monitor",
                   "filename of file containing measured displacements",
@@ -1269,6 +1287,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // stepsize for deterministic gradient based schemes
   DoubleParameter("STEPSIZE",1.0,"stepsize for the gradient descent scheme",&statinvp);
+
+  // Width of the kernels used to represent the parameter field
+  DoubleParameter("KERNEL_WIDTH",1.0,"width of the kernel for parametric field representation",&statinvp);
+
+  // Width of the kernels used to represent the parameter field
+  DoubleParameter("REG_WEIGHT",0.1,"weight of the regularization",&statinvp);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");

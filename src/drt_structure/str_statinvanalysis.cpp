@@ -44,8 +44,8 @@ void STR::statinvanalysis()
   {
     case INPAR::STR::stat_inv_graddesc:
     {
-      STR::INVANA::StatInvAnaGradDesc ia(actdis);
-      ia.Optimize();
+      Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaGradDesc(actdis));
+      ia->Optimize();
     }
     break;
     case INPAR::STR::stat_inv_mc:

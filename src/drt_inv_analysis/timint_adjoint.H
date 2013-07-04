@@ -115,6 +115,9 @@ namespace STR
     // DBC Map
     void GetDBCMap();
 
+    //! print information of time steps to screen
+    int printtoscreen_;
+
     //! some funny stuff
     Teuchos::RCP<DRT::Discretization> discret_;
 

@@ -186,7 +186,7 @@ namespace MAT
     MAT::PAR::AAAneohooke_stopro* params_;
 
     // stochastic beta
-    // put beta not in params because it will not be initialized with constructor
+    // put beta and youngs not in params because it will be elementspecific
     double beta_;
     /// init flag for stochastic beta
     bool isinit_beta_;

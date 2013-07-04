@@ -22,6 +22,12 @@ namespace INPAR
   /// Input parameters for Inverse Analysis
   namespace STR
   {
+    enum StatInvMatParametrization
+    {
+      stat_inv_mp_none,                  // nothing defined
+      stat_inv_mp_smoothkernel,          // smooth kernel approximation
+      stat_inv_mp_elementwise            // parameters per element
+    };
 
     /// Type of Inverse Analysis
     enum StatInvAnalysisType

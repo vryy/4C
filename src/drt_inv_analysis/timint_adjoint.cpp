@@ -51,6 +51,9 @@ isinit_(false)
   PrintLogo();
 
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& io = DRT::Problem::Instance()->IOParams();
+
+  printtoscreen_ = io.get<int>("STDOUTEVRY");
 
   if (not discret_->Filled() || not discret_->HaveDofs())
     dserror("Discretisation is not complete or has no dofs!");
@@ -182,7 +185,8 @@ void STR::TimIntAdjoint::UpdateStep()
 {
   (*disdual_)(stepn_)->Update(1.0,*disdualn_,0.0);
 
-  cout << "Finalized step " << stepn_+1 << " / " << msteps_ << endl;
+  if ( printtoscreen_ and stepn_%printtoscreen_==0 )
+    cout << "Finalized step " << stepn_+1 << " / " << msteps_ << endl;
 
   return;
 }
@@ -220,7 +224,7 @@ void STR::TimIntAdjoint::GetDBCMap()
 /* UPrint Logo */
 void STR::TimIntAdjoint::PrintLogo()
 {
-  cout << "--------------------------------------------------" << endl;
-  cout << "--   Welcome to the adjoint time integration    --" << endl;
-  cout << "--------------------------------------------------" << endl;
+  IO::cout << "--------------------------------------------------" << IO::endl;
+  IO::cout << "--   Welcome to the adjoint time integration    --" << IO::endl;
+  IO::cout << "--------------------------------------------------" << IO::endl;
 }

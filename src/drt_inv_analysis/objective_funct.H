@@ -31,6 +31,8 @@ namespace STR
 namespace INVANA
 {
 
+class MatParManager;
+
 class ObjectiveFunct {
 
 private:
@@ -55,13 +57,6 @@ private:
   // number of vectors in MultiVectors mdisp_ and disp
   int msteps_;
 
-  // value of the objective function
-  double objval_;
-
-  // gradient of the objective function w.r.t displacements
-  Teuchos::RCP<Epetra_MultiVector> objgrad_;
-
-
 
 public:
 
@@ -72,7 +67,7 @@ public:
   ~ObjectiveFunct(){};
 
   //! evaluate difference measure
-  void Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double* val);
+  double Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<MatParManager> matman);
 
   //! evaluate gradient of objective function
   void EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<Epetra_MultiVector> gradient);

@@ -64,9 +64,6 @@ protected:
   //! a dofrowmap of the discretization
   const Epetra_Map* dofrowmap_;
 
-  /// context for output and restart
-  //Teuchos::RCP<IO::DiscretizationWriter> output_;
-
   //! primal variables (displacements)
   Teuchos::RCP<Epetra_MultiVector> dis_;
 
@@ -82,17 +79,20 @@ protected:
   //! Handler for calls to material routines
   Teuchos::RCP<STR::INVANA::MatParManager> matman_;
 
-  //! vector to hold the parameters to be optimized
-  Teuchos::RCP<Epetra_MultiVector> params_;
-
   //! number of simulation steps in the primal problem
   int msteps_;
 
   //! value of the objective function
-  double objval_;
+  double  objval_;
 
   //! value of the objective function of the prevous step
   double objval_o_;
+
+  //! gradient of the objective function
+  Teuchos::RCP<Epetra_MultiVector> objgrad_;
+
+  //! previous gradient of the objective function
+  Teuchos::RCP<Epetra_MultiVector> objgrad_o_;
 
   //! outputer
   Teuchos::RCP<IO::DiscretizationWriter> output_;
@@ -104,7 +104,7 @@ protected:
   void SolveAdjointProblem();
 
   //! Evaluate the objective functions gradient w.r.t the design parameters
-  void EvaluateGradient(Epetra_MultiVector* objgrad);
+  void EvaluateGradient();
 
   //! MStep EpetraVector to EpetraMultiVector
   void MStepEpetraToEpetraMulti(Teuchos::RCP<TimIntMStep<Epetra_Vector> > mstepvec,
@@ -115,21 +115,18 @@ protected:
                        Teuchos::RCP<std::vector<double> > stdvec);
 
   //! do the update on the parameter vector
-  virtual void UpdateOptStep(Epetra_MultiVector* objgrad, int nstep) {dserror("must be implemented in the specific routine");};
+  virtual void UpdateOptStep() {dserror("must be implemented in the specific routine");};
 
 
 public:
 
   //! standard constructor
-  StatInvAnalysis(
-    Teuchos::RCP<DRT::Discretization> dis  ///< the discretisation
-    //Teuchos::RCP<IO::DiscretizationWriter> output  ///< outputer
-    );
+  StatInvAnalysis(Teuchos::RCP<DRT::Discretization> dis);
 
   //! destructor
-  virtual ~StatInvAnalysis() { ; }
+  virtual ~StatInvAnalysis() {};
 
-  //! decide which optimization to use
+  //! use some specific optimization routine
   virtual void Optimize() = 0;
 
 
