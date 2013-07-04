@@ -1303,7 +1303,6 @@ void STR::TimInt::OutputRestart
   // owner of elements is just written once because it does not change during simulation (so far)
   firstoutputofrun_ = false;
 
-
   // surface stress
   if (surfstressman_->HaveSurfStress())
   {
@@ -1344,7 +1343,7 @@ void STR::TimInt::OutputRestart
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
-	 IO::cout <<"====== Restart written in step " << step_ << IO::endl;
+    IO::cout << "====== Restart written in step " << step_ << IO::endl;
   }
 
   // info dedicated to processor error file

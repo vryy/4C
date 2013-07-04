@@ -320,7 +320,6 @@ void STR::TimIntStatics::UpdateStepElement()
   if( (dism_!=Teuchos::null))
     discret_->SetState("material_displacement",(*dism_)(0));
 
-
   discret_->Evaluate(p, null, null, null, null,Teuchos::null);
   discret_->ClearState();
 }

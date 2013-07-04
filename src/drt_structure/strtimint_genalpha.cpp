@@ -107,7 +107,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   finertn_(Teuchos::null),
   fviscm_(Teuchos::null)
 {
-  // info to userxs
+  // info to users
   if (myrank_ == 0)
   {
     IO::cout << "with generalised-alpha" << IO::endl;
