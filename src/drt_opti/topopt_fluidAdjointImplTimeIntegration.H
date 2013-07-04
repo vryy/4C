@@ -138,7 +138,7 @@ public:
   */
   void SetTopOptData(
       Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
-      Teuchos::RCP<const Epetra_Vector> porosity,
+      Teuchos::RCP<const Epetra_Vector> density,
       Teuchos::RCP<TOPOPT::Optimizer>& optimizer
   );
 
@@ -235,7 +235,7 @@ protected:
   Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > fluid_vels_;
 
   /// density in topology optimization
-  Teuchos::RCP<const Epetra_Vector>    topopt_porosity_;
+  Teuchos::RCP<const Epetra_Vector>    topopt_density_;
 
   /// optimizer for topology optimization
   Teuchos::RCP<TOPOPT::Optimizer> optimizer_;

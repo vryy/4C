@@ -258,19 +258,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   else                            eaccam.Clear();
 
   LINALG::Matrix<nen_,1> eporo(true);
-  if ((params.getEntryPtr("topopt_porosity") != NULL) and // parameter exists and ...
-      (params.get<RCP<const Epetra_Vector> >("topopt_porosity") !=Teuchos::null)) // ... according vector is filled
+  if ((params.getEntryPtr("topopt_density") != NULL) and // parameter exists and ...
+      (params.get<RCP<const Epetra_Vector> >("topopt_density") !=Teuchos::null)) // ... according vector is filled
   {
-    // activate reaction terms
-    //f3Parameter_->reaction_topopt_ = true;
-    //f3Parameter_->reaction_ = true;
-
     // read nodal values from global vector
-    RCP<const Epetra_Vector> topopt_porosity = params.get<RCP<const Epetra_Vector> >("topopt_porosity");
+    RCP<const Epetra_Vector> topopt_density = params.get<RCP<const Epetra_Vector> >("topopt_density");
     for (int nn=0;nn<nen_;++nn)
     {
       int lid = (ele->Nodes()[nn])->LID();
-      eporo(nn,0) = (*topopt_porosity)[lid];
+      eporo(nn,0) = (*topopt_density)[lid];
     }
   }
 
@@ -870,10 +866,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     }
     
     // get reaction coefficient due to porosity for topology optimization
-    // !do this only at gauss point!
-    // TODO does it make problems to evaluate at element center? (i think it should, winklmaier)
+    // !do this only at gauss point since this is nonlinear!
     if (fldpara_->ReactionTopopt())
-      reacoeff_ = funct_.Dot(eporo);
+    {
+      // the eporo actually has density values here
+      double densint = funct_.Dot(eporo);
+      const double* params = fldpara_->TopoptParams();
+      reacoeff_ = params[1] + (params[0]-params[1])*densint*(1+params[2])/(densint+params[2]);
+    }
 
     // calculate stabilization parameter at integration point
     if (fldpara_->TauGp() and fldpara_->StabType()==INPAR::FLUID::stabtype_residualbased)
@@ -1202,9 +1202,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // if ConvDivStab for XFEM
 //    {
 //      ConvDivStab(estif_u,
-//                  velforce,
-//                  timefacfac,
-//                  rhsfac);
+//           velforce,
+//           timefacfac,
+//           rhsfac);
 //    }
 
 
@@ -3368,7 +3368,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
         momres_old_(rr) = ((densaf_*velint_(rr)/fldpara_->Dt()
                          +fldpara_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
                          -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)))/fldpara_->Theta())-rhsmom_(rr);
-     }
+      }
     }
     else
     {
@@ -3568,15 +3568,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
 
   const double timefacfac_densaf=timefacfac*densaf_;
 
-  for (int ui=0; ui<nen_; ++ui)
-  {
+    for (int ui=0; ui<nen_; ++ui)
+    {
     const double v=timefacfac_densaf*conv_c_(ui);
 
-    for (int idim = 0; idim <nsd_; ++idim)
-    {
-      lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+      }
     }
-  }
 
   if(fldpara_->IsNewton())
   {

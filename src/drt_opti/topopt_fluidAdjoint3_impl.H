@@ -148,7 +148,7 @@ public:
       const LINALG::Matrix<nsd_,nen_> &              efluidvelnp,
       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
       LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
-      const LINALG::Matrix<nen_,1> &                 eporo,
+      const LINALG::Matrix<nen_,1> &                 edens,
       Teuchos::RCP<const MAT::Material>              material,
       const DRT::UTILS::GaussIntegration &           intpoints);
 
@@ -469,7 +469,7 @@ private:
   bool is_higher_order_ele_;
 
   //! pointer to parameter list
-  Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fluidAdjoint3Parameter_;
+  Teuchos::RCP<DRT::ELEMENTS::FluidAdjoint3ImplParameter> fldAdPara_;
 };
 }
 }

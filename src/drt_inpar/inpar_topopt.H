@@ -47,6 +47,13 @@ namespace INPAR
       opti_step
     };
 
+    /// method for gradient computation
+    enum GradientType
+    {
+      gradientByAdjoints,
+      gradientByFD1
+    };
+
     /// type of adjoint equations
     enum AdjointType
     {

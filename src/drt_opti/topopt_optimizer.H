@@ -18,7 +18,7 @@ Maintainer: Martin Winklmaier
 
 #include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_topopt.H"
-
+#include <Epetra_MultiVector.h>
 
 /// forward declarations
 class Epetra_Map;
@@ -98,11 +98,14 @@ namespace TOPOPT
     /// desctructor
     virtual ~Optimizer(){};
 
-    /// compute the value of the objective funtion
-    void ComputeValues();
+    /// setting of objective function and constraints
+    void Values() { ComputeValues(obj_,constr_); };
 
-    /// compute the gradient of the objective function
-    void ComputeGradients();
+    /// setting of gradients of objective function and constraints
+    void Gradients() {ComputeGradients(obj_der_,constr_der_); };
+
+    /// compute the gradient of the objective function in one direction
+    void ComputeGradientDirectionForFD(const double value, const int GID);
 
     /// write output
     void Output();
@@ -121,7 +124,7 @@ namespace TOPOPT
     {
       fluidvel_->clear();
       adjointvel_->clear();
-    }
+    };
 
     /// perform one optimization iteration
     void Iterate(
@@ -145,24 +148,34 @@ namespace TOPOPT
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportAdjointData() const {return adjointvel_;} /// fluid velocity
     Teuchos::RCP<const Epetra_Vector> Density() const {return dens_;}
-    const double ObjectiveValue(bool compute = false)
-    {
-      if (compute) ComputeValues();
-      return obj_;
-    }
-    const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(bool compute = false)
-    {
-      if (compute) ComputeGradients();
-      return obj_der_;
-    }
+
+    const double ObjectiveValue(){return obj_;};
+    const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(){return obj_der_;};
+    const Teuchos::RCP<const Epetra_SerialDenseVector> ConstraintValues(){return constr_;};
+    const Teuchos::RCP<const Epetra_MultiVector> ConstraintGradients(){return constr_der_;};
+
     const Epetra_Map* RowMap();
     const Epetra_Map* ColMap();
+
+    void AdoptDensityForFD(const double value, const int GID);
 
     const int Iter() const;
 
     void ReadRestart(const int step);
 
   protected:
+
+    /// computation of objective function and constraints
+    void ComputeValues(
+        double& objective,
+        Teuchos::RCP<Epetra_SerialDenseVector>& constraints
+    );
+
+    /// computation of gradients of objective function and constraints
+    void ComputeGradients(
+        Teuchos::RCP<Epetra_Vector> obj_der,
+        Teuchos::RCP<Epetra_MultiVector> constr_der
+    );
 
     /// set the initial density field of the optimization variable
     void SetInitialDensityField(const INPAR::TOPOPT::InitialDensityField init,const int startfuncno);
@@ -176,6 +189,7 @@ namespace TOPOPT
     Teuchos::RCP<DRT::Discretization> optidis_; /// discretization of optimization field
     Teuchos::RCP<DRT::Discretization> fluiddis_; /// discretization of optimization field
     const Teuchos::ParameterList& params_; /// parameters
+    INPAR::TOPOPT::GradientType gradienttype_; /// type of gradient computation
     Teuchos::RCP<Teuchos::ParameterList> fluidParams_; /// fluid parameters
 
     //@}

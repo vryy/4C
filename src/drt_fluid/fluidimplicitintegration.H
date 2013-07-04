@@ -278,7 +278,7 @@ public:
 
   */
   void SetTopOptData(
-      Teuchos::RCP<const Epetra_Vector> porosity,
+      Teuchos::RCP<const Epetra_Vector> density,
       Teuchos::RCP<TOPOPT::Optimizer>& optimizer
   );
 
@@ -856,7 +856,7 @@ protected:
       //! @name optimization data
 
   /// density in topology optimization
-  Teuchos::RCP<const Epetra_Vector>    topopt_porosity_;
+  Teuchos::RCP<const Epetra_Vector>    topopt_density_;
 
   /// optimizer for topology optimization
   Teuchos::RCP<TOPOPT::Optimizer> optimizer_;
@@ -1044,6 +1044,16 @@ private:
 
   */
   void SetElementPoroParameter();
+
+  //! @name Set general parameter in class f3Parameter for topology optimization problems
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetElementTopoptParameter();
 
   //! @name Special method for turbulent variable-density flow at low Mach number with multifractal subgrid-scale modeling
   /*!

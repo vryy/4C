@@ -4224,6 +4224,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&topoptcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&topoptcontrol);
 
+  setStringToIntegralParameter<int>("GRADIENT_TYPE","adjoints","basic type of adjoint equations",
+      tuple<std::string>(
+          "adjoints",
+          "FD1"),
+          tuple<int>(
+              INPAR::TOPOPT::gradientByAdjoints,
+              INPAR::TOPOPT::gradientByFD1),
+              &topoptcontrol);
+
   setStringToIntegralParameter<int>("RESTART_ACTION","Finished_Optimization_Step","Startint field of Restart",
       tuple<std::string>(
           "Fluid_Time_Step",

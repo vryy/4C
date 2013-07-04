@@ -25,6 +25,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_io/io.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/optimization_density.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_opti/topopt_optimizer.H"
@@ -153,7 +154,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   incvel_ = LINALG::CreateVector(*dofrowmap,true);
 
   // initialize pseudo-porosity vector for topology optimization as null
-  topopt_porosity_ = Teuchos::null;
+  topopt_density_ = Teuchos::null;
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
@@ -429,7 +430,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       eleparams.set<int>("action",FLD::calc_adjoint_systemmat_and_residual);
 
       //set additional pseudo-porosity field for topology optimization
-      eleparams.set("topopt_porosity",topopt_porosity_);
+      eleparams.set("topopt_density",topopt_density_);
 
       discret_->ClearState();
 
@@ -709,7 +710,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
     output_->WriteVector("adjoint_velnm",velnm_);
   }
 
-  if (topopt_porosity_!=Teuchos::null)
+  if (topopt_density_!=Teuchos::null)
   {
     if (timealgo_==INPAR::FLUID::timeint_stationary)
       optimizer_->ImportAdjointFluidData(velnp_,1);
@@ -852,12 +853,12 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
  *----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::ImplicitTimeInt::SetTopOptData(
     Teuchos::RCP<const std::map<int,RCP<Epetra_Vector> > > fluidvelocities,
-    RCP<const Epetra_Vector> porosity,
+    RCP<const Epetra_Vector> density,
     RCP<TOPOPT::Optimizer>& optimizer
 )
 {
   fluid_vels_= fluidvelocities;
-  topopt_porosity_ = porosity;
+  topopt_density_ = density;
   optimizer_=optimizer;
 }
 
@@ -1031,40 +1032,52 @@ Teuchos::RCP<const LINALG::BlockSparseMatrixBase> TOPOPT::ADJOINT::ImplicitTimeI
 
 void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
 {
-  // get the optimization material
-  const MAT::PAR::NewtonianFluid* mat = NULL;
-  const int nummat = DRT::Problem::Instance()->Materials()->Num();
-  for (int id = 1; id-1 < nummat; ++id)
-  {
-    Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
-
-    if (imat == Teuchos::null)
-      dserror("Could not find material Id %d", id);
-    else
-    {
-      if (imat->Type() == INPAR::MAT::m_fluid)
-      {
-        const MAT::PAR::Parameter* matparam = imat->Parameter();
-        mat = static_cast<const MAT::PAR::NewtonianFluid* >(matparam);
-        break;
-      }
-    }
-  }
-  if (mat==NULL)
-    dserror("optimization material not found");
-
-  // and then the material parameters
-  const double density = mat->density_;
-  const double viscosity = mat->viscosity_;
-
-
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_general_adjoint_parameter);
 
-  // set material parameters
-  eleparams.set<double>("density" ,density);
-  eleparams.set<double>("viscosity" ,viscosity);
+  // set material parameters of fluid and optimization material
+  {
+    // get the material
+    const int nummat = DRT::Problem::Instance()->Materials()->Num();
+    for (int id = 1; id-1 < nummat; ++id)
+    {
+      Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
+
+      if (imat == Teuchos::null)
+        dserror("Could not find material Id %d", id);
+      else
+      {
+        switch (imat->Type())
+        {
+        case INPAR::MAT::m_fluid:
+        {
+          const MAT::PAR::Parameter* matparam = imat->Parameter();
+          const MAT::PAR::NewtonianFluid* mat = static_cast<const MAT::PAR::NewtonianFluid* >(matparam);
+
+          eleparams.set("density",mat->density_);
+          eleparams.set("viscosity",mat->viscosity_);
+          break;
+        }
+        case INPAR::MAT::m_opti_dens:
+        {
+          const MAT::PAR::Parameter* matparam = imat->Parameter();
+          const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
+
+          eleparams.set("MIN_PORO",mat->poro_bd_down_);
+          eleparams.set("MAX_PORO",mat->poro_bd_up_);
+          eleparams.set("SMEAR_FAC",mat->smear_fac_);
+          break;
+        }
+        default:
+        {
+          dserror("unknown material %s",imat->Name().c_str());
+          break;
+        }
+        }
+      }
+    }
+  }
 
   // set if objective contains dissipation
   eleparams.set<bool>("dissipation",params_->get<bool>("OBJECTIVE_DISSIPATION"));

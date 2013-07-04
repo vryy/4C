@@ -83,6 +83,9 @@ namespace TOPOPT
     /// solve adjoint equations
     void DoAdjointField();
 
+    /// compute gradient by finite differences
+    void FDGradient();
+
     /// evaluate the gradient of the objective
     void PrepareOptimizationStep();
 
@@ -91,9 +94,6 @@ namespace TOPOPT
 
     /// finish one optimization step
     void FinishOptimizationStep();
-
-    /// update the porosity field
-    void UpdatePorosity();
 
     /// write output
     void Output();
@@ -106,11 +106,11 @@ namespace TOPOPT
     /// topology optimization input parameter list
     const Teuchos::ParameterList& topopt_;
 
-    /// pseudo-porosity function for topology optimization
-    Teuchos::RCP<Epetra_Vector> poro_;
+    /// optimization algorithm
     Teuchos::RCP<TOPOPT::Optimizer>& optimizer_;
 
     bool doGradient_; /// compute gradient(s) in current optimization step
+    INPAR::TOPOPT::GradientType gradienttype_; /// type of gradient computation
     INPAR::TOPOPT::Restart restarttype_; /// type of restart
   };
 

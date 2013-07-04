@@ -760,6 +760,19 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementPoroParameter( Teuchos::Paramet
 }
 
 
+//----------------------------------------------------------------------*
+//  set topopt parameters                               winklmaier 07/13|
+//----------------------------------------------------------------------*/
+void DRT::ELEMENTS::FluidEleParameter::SetElementTopoptParameter( Teuchos::ParameterList& params )
+{
+  topopt_params_[0] = params.get<double>("MIN_PORO");
+  topopt_params_[1] = params.get<double>("MAX_PORO");
+  topopt_params_[2] = params.get<double>("SMEAR_FAC");
+
+  return;
+}
+
+
 //----------------------------------------------------------------------*/
 // print fluid parameter to screen (AE 01-11)
 //----------------------------------------------------------------------*/
@@ -788,6 +801,9 @@ void DRT::ELEMENTS::FluidEleParameter::PrintFluidParameter()
     std::cout << "|    darcy equation:    " << darcy_ << std::endl;
     //! flag to (de)aktivate reaction due to topology optimization
     std::cout << "|    reaction term due to topology optimization:    " << reaction_topopt_ << std::endl;
+    //! matrix with values for computation of porosity with respect to topopt density
+    std::cout << "|    topology optimization porosity parameter: " << topopt_params_[0]
+        << " " << topopt_params_[1] << " " << topopt_params_[2] << std::endl;
     //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
     std::cout << "|    physical type:    "<< physicaltype_ << std::endl;
     //! Flag to (de)activate time-dependent subgrid stabilization

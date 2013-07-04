@@ -176,6 +176,10 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementGeneralAdjointParamete
   dens_ = params.get<double>("density");
   visc_ = params.get<double>("viscosity");
 
+  topopt_params_[0] = params.get<double>("MIN_PORO");
+  topopt_params_[1] = params.get<double>("MAX_PORO");
+  topopt_params_[2] = params.get<double>("SMEAR_FAC");
+
   // set flag for test cases
   testcase_ = params.get<INPAR::TOPOPT::AdjointCase>("special test case");
 }
@@ -273,6 +277,9 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
   std::cout << "|    physical density:    " << dens_ << std::endl;
   //! value of physical viscosity
   std::cout << "|    physical viscosity:    " << visc_ << std::endl;
+  //! matrix with values for computation of porosity with respect to topopt density
+  std::cout << "|    topology optimization porosity parameter: " << topopt_params_[0]
+      << " " << topopt_params_[1] << " " << topopt_params_[2] << std::endl;
   /// enumeration of testcase
   std::cout << "|    academical testcase:    " << testcase_ << std::endl;
   std::cout << "|---------------------------------------------------------------------------" << std::endl;

@@ -60,6 +60,10 @@ public:
   void SetElementPoroParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
+  //! poro parameters are set
+  void SetElementTopoptParameter(Teuchos::ParameterList& params    //> parameter list
+      );
+
   //! print parameter to screen
   void PrintFluidParameter();
 
@@ -82,6 +86,8 @@ public:
   bool Darcy(){return darcy_;};
   //! flag to (de)aktivate reaction due to topology optimization
   bool ReactionTopopt(){return reaction_topopt_;};
+  //! flag to (de)aktivate reaction due to topology optimization
+  const double* TopoptParams(){return (double*)topopt_params_;};
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
   INPAR::FLUID::PhysicalType PhysicalType(){return physicaltype_;};
   //! get the stabtype
@@ -237,6 +243,8 @@ private:
   bool darcy_;
   //! flag to (de)aktivate reaction due to topology optimization
   bool reaction_topopt_;
+  //! matrix with values for computation of porosity with respect to topopt density
+  double topopt_params_[3];
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
   INPAR::FLUID::PhysicalType physicaltype_;
 

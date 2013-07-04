@@ -126,7 +126,7 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::FluidAdjoint3BoundaryImpl()
     dens_(1.0)
 {
   // pointer to class FluidImplParameter (access to the general parameter)
-  fluidAdjoint3Parameter_ = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
+  fldAdPara_ = DRT::ELEMENTS::FluidAdjoint3ImplParameter::Instance();
 
   return;
 }
@@ -175,8 +175,8 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
   const std::vector<int>*    onoff = condition->Get<std::vector<int> >   ("onoff");
 
   // get time factor for Neumann term
-  const double timefac = fluidAdjoint3Parameter_->Timefac();
-  const double timefacrhs = fluidAdjoint3Parameter_->TimefacRhs();
+  const double timefac = fldAdPara_->Timefac();
+  const double timefacrhs = fldAdPara_->TimefacRhs();
 
   // get Gaussrule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -246,33 +246,33 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
       }
       case INPAR::TOPOPT::adjointtest_instat_varying_theta:
       {
-        double t = fluidAdjoint3Parameter_->Time();
+        double t = fldAdPara_->Time();
         values(0) = 3*x - 3*t + 4 - 5*x*t + 10*y*t;
         values(1) = -3*y + 6*t;
 
-        t += fluidAdjoint3Parameter_->Dt(); // old time = t + dt
+        t += fldAdPara_->Dt(); // old time = t + dt
         values_old(0) = 3*x - 3*t + 4 - 5*x*t + 10*y*t;
         values_old(1) = -3*y + 6*t;
         break;
       }
       case INPAR::TOPOPT::adjointtest_instat_all_terms_all_constants:
       {
-        double t = fluidAdjoint3Parameter_->Time();
+        double t = fldAdPara_->Time();
         values(0) = 2*x*x*x + 4*x*x*y + 2*x*x*y*t + 4*x*y*y*t + 18*y + 3*y*t - 24*y*t*t;
         values(1) = - 6*x*x*x - 12*x*x*y + 4*x*y*y*t*t + 8*y*y*y*t*t - 18*x + 3*x*t;
 
-        t += fluidAdjoint3Parameter_->Dt(); // old time = t + dt
+        t += fldAdPara_->Dt(); // old time = t + dt
         values_old(0) = 2*x*x*x + 4*x*x*y + 2*x*x*y*t + 4*x*y*y*t + 18*y + 3*y*t - 24*y*t*t;
         values_old(1) = - 6*x*x*x - 12*x*x*y + 4*x*y*y*t*t + 8*y*y*y*t*t - 18*x + 3*x*t;
         break;
       }
       case INPAR::TOPOPT::adjointtest_instat_primal_and_dual:
       {
-        double t = fluidAdjoint3Parameter_->Time();
+        double t = fldAdPara_->Time();
         values(0) = 3*x*y*t*t + 3*x*x*y*t + 5.5*x*x + 6*x*y*y*t + 6*x*y + 2*y*t + 4 - 1.5*y*y + 3*y*t*t + 5.5*y*y*t;
         values(1) = 3*y*t*t - 3*x*t*t + 6*y*y*t - 3*x*y*t - 2*t + 2*x*t - 3*x*x*t;
 
-        t += fluidAdjoint3Parameter_->Dt(); // old time = t + dt
+        t += fldAdPara_->Dt(); // old time = t + dt
         values_old(0) = 3*x*y*t*t + 3*x*x*y*t + 5.5*x*x + 6*x*y*y*t + 6*x*y + 2*y*t + 4 - 1.5*y*y + 3*y*t*t + 5.5*y*y*t;
         values_old(1) = 3*y*t*t - 3*x*t*t + 6*y*y*t - 3*x*y*t - 2*t + 2*x*t - 3*x*x*t;
         break;
@@ -298,7 +298,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
             elevec(vi*numdofpernode_+jdim) += funct_(vi)*functval;
           }
 
-          if (not fluidAdjoint3Parameter_->IsStationary())
+          if (not fldAdPara_->IsStationary())
           {
             const double functval_old = timefacfacrhs*values_old(jdim);
 

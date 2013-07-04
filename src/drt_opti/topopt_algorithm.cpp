@@ -16,10 +16,8 @@ Maintainer: Martin Winklmaier
 #include "topopt_fluidAdjoint_timeint.H"
 #include "topopt_optimizer.H"
 
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/optimization_density.H"
-#include "../linalg/linalg_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -35,11 +33,9 @@ TOPOPT::Algorithm::Algorithm(
   topopt_(topopt),
   optimizer_(Optimizer()),
   doGradient_(true),
+  gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(topopt_,"GRADIENT_TYPE")),
   restarttype_(INPAR::TOPOPT::no_restart)
 {
-  // initialize system vector (without values)
-  poro_ = Teuchos::rcp(new Epetra_Vector(*optimizer_->OptiDis()->NodeColMap(),false));
-
   return;
 }
 
@@ -63,7 +59,7 @@ void TOPOPT::Algorithm::OptimizationLoop()
   // solve the primary field
   DoFluidField();
 
-  // required when restart is called
+  // required when restart is called, otherwise only objective value required
   FinishOptimizationStep();
 
   // optimization process has not yet finished
@@ -71,11 +67,18 @@ void TOPOPT::Algorithm::OptimizationLoop()
   {
     if (doGradient_)
     {
-      // Transfer data from primary field to adjoint field
-      PrepareAdjointField();
+      if (gradienttype_==INPAR::TOPOPT::gradientByAdjoints)
+      {
+        // Transfer data from primary field to adjoint field
+        PrepareAdjointField();
 
-      // solve the adjoint equations
-      DoAdjointField();
+        // solve the adjoint equations
+        DoAdjointField();
+      }
+      else if (gradienttype_==INPAR::TOPOPT::gradientByFD1)
+      {
+        FDGradient();
+      }
     }
 
     if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")!=INPAR::TOPOPT::adjointtest_no)
@@ -114,8 +117,6 @@ void TOPOPT::Algorithm::PrepareOptimization()
   // set parameter required by optimizer, belonging to fluid field(s)
   optimizer_->ImportFlowParams(AdjointFluidField()->AdjointParams());
 
-  UpdatePorosity();
-
   return;
 }
 
@@ -152,7 +153,9 @@ bool TOPOPT::Algorithm::OptimizationFinished()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareFluidField()
 {
-  FluidField().SetTopOptData(poro_,optimizer_);
+  FluidField().SetTopOptData(
+      Optimizer()->Density(),
+      optimizer_);
 
   // reset initial field
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
@@ -195,7 +198,10 @@ void TOPOPT::Algorithm::DoFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareAdjointField()
 {
-  AdjointFluidField()->SetTopOptData(optimizer_->ExportFluidData(),poro_,optimizer_);
+  AdjointFluidField()->SetTopOptData(
+      Optimizer()->ExportFluidData(),
+      Optimizer()->Density(),
+      optimizer_);
 
   // reset initial field
   const Teuchos::ParameterList& adjointfdyn = DRT::Problem::Instance()->OptimizationControlParams().sublist("TOPOLOGY ADJOINT FLUID");
@@ -229,15 +235,52 @@ void TOPOPT::Algorithm::DoAdjointField()
 
 
 /*------------------------------------------------------------------------------------------------*
+ | compute gradient by finite differences                                        winklmaier 06/13 |
+ *------------------------------------------------------------------------------------------------*/
+void TOPOPT::Algorithm::FDGradient()
+{
+  Teuchos::RCP<const Epetra_Vector> density = Optimizer()->Density();
+
+  if (density->GlobalLength()>1000) dserror("really that much fluid solutions for gradient computation???");
+
+  const double c = 1.0e-7; /// good step size for gradient approximation (low discretization and round-off error)
+  for (int i=0;i<density->GlobalLength();i++)
+  {
+    // change optimization variable in current direction
+    Optimizer()->AdoptDensityForFD(c,i);
+
+    // adapt porosity field and clear no more required fluid data
+    Update();
+
+    // data of primal (fluid) problem no more required
+    FluidField().Reset(
+        true,
+        DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+        Optimizer()->Iter()+2);
+
+    // prepare data for new optimization iteration
+    PrepareFluidField();
+
+    // solve the primary field
+    DoFluidField();
+
+    // compute gradient in this direction
+    Optimizer()->ComputeGradientDirectionForFD(c,i);
+
+    // remove change in order to recover original optimization variable
+    Optimizer()->AdoptDensityForFD(-c,i);
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
  | protected: evaluate the gradient of the optimization objectives               winklmaier 12/11 |
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareOptimizationStep()
 {
-  if (optimizer_->Iter()==0)
-    optimizer_->ComputeValues();
-
-  if (doGradient_)
-    optimizer_->ComputeGradients();
+  if (doGradient_ and gradienttype_==INPAR::TOPOPT::gradientByAdjoints)
+    optimizer_->Gradients();
 
   // data of primal (fluid) problem no more required
   FluidField().Reset(
@@ -266,7 +309,7 @@ void TOPOPT::Algorithm::DoOptimizationStep()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::FinishOptimizationStep()
 {
-  optimizer_->ComputeValues();
+  optimizer_->Values();
 
   optimizer_->FinishIteration(doGradient_);
 
@@ -277,69 +320,6 @@ void TOPOPT::Algorithm::FinishOptimizationStep()
         Optimizer()->Iter()+1);
 
   return;
-}
-
-/*------------------------------------------------------------------------------------------------*
- | protected: update the porosity field                                          winklmaier 12/11 |
- *------------------------------------------------------------------------------------------------*/
-void TOPOPT::Algorithm::UpdatePorosity()
-{
-  /* The density field is a row vector with own discretization (possibly different
-   * than the fluid discretization.
-   *
-   * Currently the discretizations have to fit. The fluid requires the porosity
-   * in dofcolmap. Thus the following steps are required in general:
-   *
-   * 1) opti-density -> opti-porosity (row maps)
-   * 2) opti-porosity -> fluid-porosity (row maps)
-   * 3) row fluid-porosity -> col fluid-porosity
-   *
-   * According to the above description, step 2 is not required currently
-   * due to matching discretizations.
-   *
-   * winklmaier 12/11
-   * */
-  RCP<const Epetra_Vector> density = optimizer_->Density();
-
-  // get the optimization material
-  const MAT::PAR::TopOptDens* mat = NULL;
-  const int nummat = DRT::Problem::Instance()->Materials()->Num();
-  for (int id = 1; id-1 < nummat; ++id)
-  {
-    Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
-
-    if (imat == Teuchos::null)
-      dserror("Could not find material Id %d", id);
-    else
-    {
-      if (imat->Type() == INPAR::MAT::m_opti_dens)
-      {
-        const MAT::PAR::Parameter* matparam = imat->Parameter();
-        mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
-        break;
-      }
-    }
-  }
-  if (mat==NULL)
-    dserror("optimization material not found");
-
-  // and then the material parameters
-  const double poro_bd_down = mat->poro_bd_down_;
-  const double poro_bd_up = mat->poro_bd_up_;
-  const double fac = mat->smear_fac_;
-
-  const double poro_diff = poro_bd_down - poro_bd_up;
-
-  // evaluate porosity due to density
-  Epetra_Vector poro_row(density->Map(),false);
-  for (int lnodeid=0; lnodeid<optimizer_->OptiDis()->NumMyRowNodes(); lnodeid++)  // loop over processor nodes
-  {
-    const double dens = (*density)[lnodeid];
-    (poro_row)[lnodeid] = poro_bd_up + poro_diff*dens*(1+fac)/(dens+fac);
-  }
-
-  // density always in rowmap -> porosity for fluid evaluation in col map required
-  LINALG::Export(poro_row,*poro_);
 }
 
 
@@ -362,19 +342,8 @@ void TOPOPT::Algorithm::Output()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::Update()
 {
-  INPAR::TOPOPT::AdjointCase testcase =
-      DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
-          AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE");
-
-  if (testcase!=INPAR::TOPOPT::adjointtest_no)
-    return; // don't delete results for test cases -> resulttest
-
   // clear the field data of the primal and the dual equations
   optimizer_->ClearFieldData();
-
-  // update porosity field
-  UpdatePorosity();
-
 
   return;
 }

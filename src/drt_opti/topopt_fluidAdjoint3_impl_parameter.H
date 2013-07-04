@@ -78,6 +78,7 @@ public:
 
   double Density() {return dens_;}
   double Viscosity() {return visc_;}
+  const double* TopoptParams(){return (double*)topopt_params_;}
 
   INPAR::TOPOPT::AdjointCase TestCase() {return testcase_;}
 
@@ -150,6 +151,9 @@ private:
   double dens_;
   /// physical viscosity
   double visc_;
+
+  //! matrix with values for computation of porosity with respect to topopt density
+  double topopt_params_[3];
 
   //! special test case
   INPAR::TOPOPT::AdjointCase testcase_;

@@ -60,6 +60,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/optimization_density.H"
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -687,7 +688,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   }
 
   // initialize pseudo-porosity vector for topology optimization as null
-  topopt_porosity_ = Teuchos::null;
+  topopt_density_ = Teuchos::null;
 
   // initialize all thermodynamic pressure values and its time derivatives
   // to one or zero, respectively
@@ -727,6 +728,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     SetElementLomaParameter();
   if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
     SetElementPoroParameter();
+  if (physicaltype_ == INPAR::FLUID::topopt)
+    SetElementTopoptParameter();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -1442,7 +1445,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
   //set additional pseudo-porosity field for topology optimization
-  eleparams.set("topopt_porosity",topopt_porosity_);
+  eleparams.set("topopt_density",topopt_density_);
 
   // set general vector values needed by elements
   discret_->ClearState();
@@ -3587,7 +3590,7 @@ void FLD::FluidImplicitTimeInt::Output()
   }
 #endif //PRINTALEDEFORMEDNODECOORDS
 
-  if (topopt_porosity_!=Teuchos::null)
+  if (topopt_density_!=Teuchos::null)
   {
     optimizer_->ImportFluidData(velnp_,step_);
 
@@ -4714,14 +4717,14 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractPressurePart
  | sent density field for topology optimization         winklmaier 12/11|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetTopOptData(
-    RCP<const Epetra_Vector> porosity,
+    RCP<const Epetra_Vector> density,
     RCP<TOPOPT::Optimizer>& optimizer
 )
 {
   // currently the maps have to fit and, thus, this works
   // in the future this simple procedure may have to be altered,
   // see setiterlomafields or settimelomafields for examples
-  topopt_porosity_ = porosity;
+  topopt_density_ = density;
   optimizer_=optimizer;
 }
 
@@ -6017,6 +6020,7 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
   return;
 }
 
+
 // -------------------------------------------------------------------
 // set poro parameters                               vuong  11/2012
 // -------------------------------------------------------------------
@@ -6033,6 +6037,53 @@ void FLD::FluidImplicitTimeInt::SetElementPoroParameter()
   return;
 }
 
+
+// -------------------------------------------------------------------
+// set topopt parameters                           winklmaier  07/2013
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::SetElementTopoptParameter()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",FLD::set_topopt_parameter);
+
+  // get the material
+  const int nummat = DRT::Problem::Instance()->Materials()->Num();
+  for (int id = 1; id-1 < nummat; ++id)
+  {
+    Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
+
+    if (imat == Teuchos::null)
+      dserror("Could not find material Id %d", id);
+    else
+    {
+      switch (imat->Type())
+      {
+      case INPAR::MAT::m_fluid:
+        break;
+      case INPAR::MAT::m_opti_dens:
+      {
+        const MAT::PAR::Parameter* matparam = imat->Parameter();
+        const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
+
+        eleparams.set("MIN_PORO",mat->poro_bd_down_);
+        eleparams.set("MAX_PORO",mat->poro_bd_up_);
+        eleparams.set("SMEAR_FAC",mat->smear_fac_);
+        break;
+      }
+      default:
+      {
+        dserror("unknown material %s",imat->Name().c_str());
+        break;
+      }
+      }
+    }
+  }
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  set initial field for porosity                                      |

@@ -39,7 +39,8 @@ TOPOPT::Optimizer::Optimizer(
 ) :
 optidis_(optidis),
 fluiddis_(fluiddis),
-params_(params)
+params_(params),
+gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GRADIENT_TYPE"))
 {
   const Teuchos::ParameterList& optimizer_params = params_.sublist("TOPOLOGY OPTIMIZER");
 
@@ -48,7 +49,7 @@ params_(params)
   adjointvel_ = Teuchos::rcp(new std::map<int,Teuchos::RCP<Epetra_Vector> >);
 
   // topology density fields
-  dens_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));
+  dens_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeColMap(),false));
 
   // value of the objective function
   obj_ = 0.0;
@@ -86,12 +87,15 @@ params_(params)
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
 
+  Teuchos::RCP<Epetra_Vector> dens = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
+  LINALG::Export(*dens_,*dens);
+
   if (1==1) // use this when different optimizers are present
   {
     optimizer_ = Teuchos::rcp(new OPTI::GCMMA(
         optidis_,
         params_,
-        dens_,
+        dens,
         num_constr_,
         Teuchos::null,
         Teuchos::null,
@@ -109,7 +113,10 @@ params_(params)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TOPOPT::Optimizer::ComputeValues()
+void TOPOPT::Optimizer::ComputeValues(
+    double& objective,
+    Teuchos::RCP<Epetra_SerialDenseVector>& constraints
+)
 {
   // initialize local values processor-wise
   double loc_obj = 0.0;
@@ -141,8 +148,8 @@ void TOPOPT::Optimizer::ComputeValues()
   optidis_->ClearState();
 
   // communicate local values over processors
-  optidis_->Comm().SumAll(&loc_obj,&obj_,1);
-  optidis_->Comm().SumAll(loc_constr.Values(),constr_->Values(),num_constr_);
+  optidis_->Comm().SumAll(&loc_obj,&objective,1);
+  optidis_->Comm().SumAll(loc_constr.Values(),constraints->Values(),num_constr_);
 
   // Re-Transform fluid field to rowmap
   TransformFlowFields(doAdjoint,false); // TODO is this required (back-mapping + 2nd argument)
@@ -152,13 +159,19 @@ void TOPOPT::Optimizer::ComputeValues()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TOPOPT::Optimizer::ComputeGradients()
+void TOPOPT::Optimizer::ComputeGradients(
+    Teuchos::RCP<Epetra_Vector> obj_der,
+    Teuchos::RCP<Epetra_MultiVector> constr_der
+)
 {
   TEUCHOS_FUNC_TIME_MONITOR(" evaluate objective gradient");
-  obj_der_->PutScalar(0.0);
-  constr_der_->PutScalar(0.0);
+  obj_der->PutScalar(0.0);
+  constr_der->PutScalar(0.0);
 
-  const bool doAdjoint = true;
+  bool doAdjoint = true;
+  if (gradienttype_==INPAR::TOPOPT::gradientByAdjoints) doAdjoint = true;
+  else if (gradienttype_==INPAR::TOPOPT::gradientByFD1) doAdjoint = false;
+  else dserror("unknown type of gradient computation");
 
   // check if all data is present
   CheckData(doAdjoint);
@@ -170,7 +183,7 @@ void TOPOPT::Optimizer::ComputeGradients()
 
   params.set("action","compute_gradients");
 
-  params.set("constraints_derivations",constr_der_);
+  params.set("constraints_derivations",constr_der);
 
   params.set("fluidvel",fluidvel_);
   params.set("adjointvel",adjointvel_);
@@ -187,12 +200,32 @@ void TOPOPT::Optimizer::ComputeGradients()
 
   optidis_->SetState("density",dens_);
 
-  optidis_->Evaluate(params,Teuchos::null,obj_der_);
+  optidis_->Evaluate(params,Teuchos::null,obj_der);
 
   optidis_->ClearState();
 
   // Re-Transform fluid field to rowmap
   TransformFlowFields(doAdjoint,false); // TODO is this required (back-mapping + 2nd argument)
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TOPOPT::Optimizer::ComputeGradientDirectionForFD(const double value, const int GID)
+{
+  double objective = 0.0;
+  Teuchos::RCP<Epetra_SerialDenseVector> constraints = Teuchos::rcp(new Epetra_SerialDenseVector(num_constr_));
+
+  ComputeValues(objective,constraints);
+
+  if (dens_->Map().MyGID(GID))
+  {
+    obj_der_->ReplaceGlobalValue(GID,0,(objective-obj_)/value);
+
+    for (int i=0;i<constraints->Length();i++)
+      constr_der_->ReplaceGlobalValue(GID,i,((*constraints)(i)-(*constr_)(i))/value);
+  }
 }
 
 
@@ -224,10 +257,10 @@ void TOPOPT::Optimizer::SetInitialDensityField(
   case INPAR::TOPOPT::initdensfield_field_by_function:
   {
     // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<optidis_->NumMyRowNodes();lnodeid++)
+    for(int lnodeid=0;lnodeid<optidis_->NumMyColNodes();lnodeid++)
     {
       // get the processor local node
-      DRT::Node*  lnode      = optidis_->lRowNode(lnodeid);
+      DRT::Node*  lnode      = optidis_->lColNode(lnodeid);
 
       // evaluate component k of spatial function
       double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL); // scalar
@@ -367,9 +400,11 @@ void TOPOPT::Optimizer::Iterate(
     bool& doGradient
 )
 {
+  Teuchos::RCP<Epetra_Vector> dens = Teuchos::null;
+
   if (doGradient)
   {
-    dens_ = optimizer_->Iterate(
+    dens = optimizer_->Iterate(
         obj_,
         obj_der_,
         constr_,
@@ -378,13 +413,15 @@ void TOPOPT::Optimizer::Iterate(
   }
   else
   {
-    dens_ = optimizer_->Iterate(
+    dens = optimizer_->Iterate(
         obj_,
         Teuchos::null,
         constr_,
         Teuchos::null
     );
   }
+
+  LINALG::Export(*dens,*dens_);
 }
 
 
@@ -529,6 +566,15 @@ Teuchos::RCP<DRT::ResultTest> TOPOPT::Optimizer::CreateFieldTest()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void TOPOPT::Optimizer::AdoptDensityForFD(const double value, const int GID)
+{
+  if (dens_->Map().MyGID(GID))
+    dens_->SumIntoGlobalValue(GID,0,value);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 const int TOPOPT::Optimizer::Iter() const
 {
   return optimizer_->Iter();
@@ -542,7 +588,8 @@ void TOPOPT::Optimizer::ReadRestart(const int step)
   // required here for objective derivation
   Teuchos::RCP<IO::DiscretizationReader> reader = optimizer_->ReadRestart(step);
 
-  dens_ = optimizer_->X();
+  Teuchos::RCP<Epetra_Vector> dens = optimizer_->X();
+  LINALG::Export(*dens,*dens_);
   reader->ReadVector(obj_der_,"obj_der");
 
   return;

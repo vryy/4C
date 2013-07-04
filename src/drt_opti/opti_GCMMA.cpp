@@ -259,7 +259,6 @@ void OPTI::GCMMA::InitIter(
     *x_mma_ = *x_;
   }
 
-
   // reset of objective function, constraints and their derivatives for test cases
   if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
       (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
@@ -364,7 +363,6 @@ void OPTI::GCMMA::InitIter(
       }
     }
   }
-
 
   // update counters
   inner_iter_++;
@@ -1072,7 +1070,7 @@ bool OPTI::GCMMA::InnerConvergence(
   for (int i=0;i<m_;i++)
   {
 //    cout << "constr: diff is " << *constr-*constr_appr-tol_sub_ << endl;
-//    cout << "constraint is " << *constraints << endl;
+//    cout << "constraint is " << (*constraints)(0) << endl;
 //    cout << "approximated constraint is " << *constr_appr << endl;
 
     if (*constr_appr + tol_sub_ < *constr)
