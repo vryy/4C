@@ -85,7 +85,7 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1 FACTOR 1 0.98
 ----------------------------------------------------------------------FUNCT6
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           1
-E 4 - 1 2 0.0 0.001 0.15
+E 4 - 1 2 0.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3

@@ -151,9 +151,9 @@ NDVOL                           5
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            2
 //                              fluid_1_volume
-E 1 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Mid 1 1 1 0 0 0
+E 1 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Live Mid 1 1 1 0 0 0
 //                              fluid_2_volume
-E 2 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Mid 1 1 1 0 0 0
+E 2 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Live Mid 1 1 1 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              pressure_point

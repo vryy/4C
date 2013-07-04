@@ -118,7 +118,7 @@ DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
 DPOINT                          1
-E 4 - 1 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Mid 0 0 0 0 0 0
+E 4 - 1 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           0

@@ -142,7 +142,7 @@ NDVOL                           2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              fluid_volume
-E 1 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Mid 1 1 1 0 0 0
+E 1 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Live Mid 1 1 1 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              corner_nodes

@@ -144,7 +144,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // Fluid 1 outflow
-E 4 - none 1 1 1 0 0 0 -9.0 1.0 0.0 0.0 0.0 0.0 Mid 0 0 0 0 0 0
+E 4 - none 1 1 1 0 0 0 -9.0 1.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // Fluid 1 upper surface

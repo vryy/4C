@@ -106,7 +106,7 @@ E 4 - 3 1.0 0.0 0.0 none none none 0 0 0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           0
 //DSURF                         1
-//E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Mid
+//E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 88 DNODE 2
