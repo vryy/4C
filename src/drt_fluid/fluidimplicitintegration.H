@@ -842,7 +842,18 @@ protected:
   Teuchos::RCP<Epetra_Vector>    dispnm_;
   //@}
 
-  //! @name optimization data
+  //! @name flow rate and volume at time n+1 (i+1), n+1 (i), n and n-1 for flow-dependent pressure boundary conditions
+  LINALG::Matrix<4,1> flowratenp_;
+  LINALG::Matrix<4,1> flowratenpi_;
+  LINALG::Matrix<4,1> flowraten_;
+  LINALG::Matrix<4,1> flowratenm_;
+
+  LINALG::Matrix<4,1> flowvolumenp_;
+  LINALG::Matrix<4,1> flowvolumenpi_;
+  LINALG::Matrix<4,1> flowvolumen_;
+  LINALG::Matrix<4,1> flowvolumenm_;
+
+      //! @name optimization data
 
   /// density in topology optimization
   Teuchos::RCP<const Epetra_Vector>    topopt_porosity_;

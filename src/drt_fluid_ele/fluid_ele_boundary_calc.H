@@ -140,6 +140,15 @@ public:
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
+  virtual void FlowDepPressureBC(
+      DRT::ELEMENTS::FluidBoundary*  ele1,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
   virtual void ConservativeOutflowConsistency(
       DRT::ELEMENTS::FluidBoundary*  ele1,
       Teuchos::ParameterList&         params,
@@ -544,6 +553,25 @@ public:
       Epetra_SerialDenseVector&  elevec1);
 
     /*!
+    \brief Evaluate boundary and parent element for flow-dependent pressure boundary
+           conditions
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element.
+    \param elevec1 (out)      : vector to be filled by element.
+
+    */
+  void  FlowDepPressureBC(
+      DRT::ELEMENTS::FluidBoundary*  surfele,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseMatrix&       elemat,
+      Epetra_SerialDenseVector&       elevec);
+
+    /*!
     \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
 
     \param params (in)        : ParameterList for communication between control routine
@@ -636,6 +664,27 @@ private:
 
   void CreateLinesQuad(const int& nline,
       const int& nnode);
+
+    /*!
+    \brief Evaluate boundary and parent element for flow-dependent pressure boundary
+           conditions
+
+    \param params (in)        : ParameterList for communication between control routine
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elemat1 (out)      : matrix to be filled by element.
+    \param elevec1 (out)      : vector to be filled by element.
+
+    */
+  template <DRT::Element::DiscretizationType bndydistype,
+            DRT::Element::DiscretizationType pdistype>
+  void FlowDepPressureBC(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseMatrix&       elemat,
+      Epetra_SerialDenseVector&       elevec);
 
     /*!
     \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
@@ -854,11 +903,51 @@ private:
     }
 
 
-  //! get material parameters
-  void GetMaterialParams(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
-                         const LINALG::Matrix<bdrynen_,1>& escaaf,    ///< scalar at time n+alpha_f / n+1
-                         const double                      thermpressaf    ///< thermodynamic pressure at time n+alpha_f / n+1
-                         );
+  //! get density
+  void GetDensity(Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material
+                  const LINALG::Matrix<bdrynen_,1>& escaaf,        ///< scalar at time n+alpha_f / n+1  
+                  const double                      thermpressaf); ///< thermodynamic pressure at time n+alpha_f / n+1
+
+  //! get viscosity
+  void GetViscosity(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
+                    const LINALG::Matrix<nsd_,nsd_>&  vderxy);   ///< velocity derivatives at time n+alpha_f / n+1
+
+  //-----------------------------------------------------------------
+  // evaluate measure for rate of strain          (private) vg 06/13
+  //
+  //          +-                                 -+ 1
+  //          |          /   \           /   \    | -
+  //          | 2 * eps | vel |   * eps | vel |   | 2
+  //          |          \   / ij        \   / ij |
+  //          +-                                 -+
+  //
+  //-----------------------------------------------------------------
+  double GetStrainRate(const LINALG::Matrix<nsd_,nsd_>& vderxy)
+  {
+    double rateofstrain=0.0;
+
+    // compute (two times) strain-rate tensor
+    LINALG::Matrix<nsd_,nsd_> two_epsilon;
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        two_epsilon(rr,mm) = vderxy(rr,mm) + vderxy(mm,rr);
+      }
+    }
+
+    // compute product of (two times) strain-rate tensor with itself
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
+      }
+    }
+
+    // return square-root of (two times) product 
+    return(sqrt(rateofstrain/2.0));
+  }
 
   //! pointer to parameter list
   Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;

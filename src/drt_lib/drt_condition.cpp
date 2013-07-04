@@ -171,6 +171,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==VanDerWaals_Potential_Line)    os << "Van der Waals potential on a line: ";
   else if (Type()==ElectroRepulsion_Potential_Surface) os << "Electro repulsion potential on a surface: ";
   else if (Type()==ElectroRepulsion_Potential_Line)    os << "Electro repulsion potential on a line: ";
+  else if (Type()==LineFlowDepPressure)             os << "line flow-dependent pressure condition: ";
+  else if (Type()==SurfaceFlowDepPressure)          os << "surface flow-dependent pressure condition: ";
   else if (Type()==LineWeakDirichlet)             os << "line weak Dirichlet condition: ";
   else if (Type()==SurfaceWeakDirichlet)          os << "surface weak Dirichlet condition: ";
   else if (Type()==LinePeriodic)                  os << "line periodic boundary condition: ";

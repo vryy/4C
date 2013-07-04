@@ -944,7 +944,67 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(blendmaterial);
 
    /*--------------------------------------------------------------------*/
-  // weak Dirichlet
+  // flow-dependent pressure conditions
+
+  std::vector<Teuchos::RCP<ConditionComponent> > flowdeppressurecomponents;
+
+  // flow-dependent pressure conditions can be imposed either based on
+  // (out)flow rate or (out)flow volume (e.g., for air-cushion condition)  
+  flowdeppressurecomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "type of flow dependence","flow_rate",
+        Teuchos::tuple<std::string>("flow_rate","flow_volume","fixed_pressure"),
+        Teuchos::tuple<std::string>("flow_rate","flow_volume","fixed_pressure"))));
+
+  // constant coefficient for (linear) flow-rate-based condition
+  // and constant fixed pressure
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new RealConditionComponent("ConstCoeff")));
+
+  // linear coefficient for (linear) flow-rate-based condition
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new RealConditionComponent("LinCoeff")));
+
+  // initial (air-cushion) volume outside of boundary
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new RealConditionComponent("InitialVolume")));
+
+  // reference pressure outside of boundary
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new RealConditionComponent("ReferencePressure")));
+
+  // adiabatic exponent
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new RealConditionComponent("AdiabaticExponent")));
+
+  
+  Teuchos::RCP<ConditionDefinition> lineflowdeppressure
+    =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS",
+                                         "LineFlowDepPressure",
+                                         "LineFlowDepPressure",
+                                         DRT::Condition::LineFlowDepPressure,
+                                         true,
+                                         DRT::Condition::Line));
+
+  Teuchos::RCP<ConditionDefinition> surfflowdeppressure
+    =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE FLOW-DEPENDENT PRESSURE CONDITIONS",
+                                         "SurfaceFlowDepPressure",
+                                         "SurfaceFlowDepPressure",
+                                         DRT::Condition::SurfaceFlowDepPressure,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  // we attach all the components of this condition to this weak line DBC
+  for (unsigned i=0; i<flowdeppressurecomponents.size(); ++i)
+  {
+    lineflowdeppressure->AddComponent(flowdeppressurecomponents[i]);
+    surfflowdeppressure->AddComponent(flowdeppressurecomponents[i]);
+  }
+
+  // and append it to the list of all conditions
+  condlist.push_back(lineflowdeppressure);
+  condlist.push_back(surfflowdeppressure);
+
+   /*--------------------------------------------------------------------*/
+  // weak Dirichlet conditions
 
   std::vector<Teuchos::RCP<ConditionComponent> > weakDirichletcomponents;
 
@@ -1031,7 +1091,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfweakdirichlet);
 
   /*--------------------------------------------------------------------*/
-  // mixed/hybrid Dirichlet formulation
+  // mixed/hybrid Dirichlet conditions
 
   std::vector<Teuchos::RCP<ConditionComponent> > mixhybDirichletcomponents;
 

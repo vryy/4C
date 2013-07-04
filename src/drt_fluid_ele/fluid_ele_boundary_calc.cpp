@@ -31,16 +31,18 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
 #include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/carreauyasuda.H"
-#include "../drt_mat/modpowerlaw.H"
-#include "../drt_mat/herschelbulkley.H"
-#include "../drt_mat/permeablefluid.H"
+#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/fluidporo.H"
+#include "../drt_mat/herschelbulkley.H"
+#include "../drt_mat/mixfrac.H"
+#include "../drt_mat/modpowerlaw.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/permeablefluid.H"
+#include "../drt_mat/sutherland.H"
+#include "../drt_mat/yoghurt.H"
+
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_so3/so_poro_interface.H"
@@ -253,9 +255,9 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
     // get the required material information
     Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
 
-    // get material parameters
+    // get density
     // (evaluation always at integration point, in contrast to parent element)
-    GetMaterialParams(material,escaaf,thermpressaf);
+    GetDensity(material,escaaf,thermpressaf);
 
     //    cout<<"Dens: "<<densaf_<<endl;
     const double fac_curve_time_dens = fac_*curvefac*timefac*densfac_;
@@ -680,9 +682,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
       // get the required material information
       Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
 
-      // get material parameters
+      // get density
       // (evaluation always at integration point, in contrast to parent element)
-      GetMaterialParams(material,escaaf,thermpressaf);
+      GetDensity(material,escaaf,thermpressaf);
 
       // extended integration factors for left- and right-hand side, respectively
       const double lhsfac = densaf_*normvel*timefac*fac_;
@@ -2054,10 +2056,10 @@ bool DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs(
 
 
 /*----------------------------------------------------------------------*
- |  compute material parameters                                vg 01/11 |
+ |  get density                                                vg 06/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetMaterialParams(
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
   Teuchos::RCP<const MAT::Material>    material,
   const LINALG::Matrix<bdrynen_,1>&    escaaf,
   const double                         thermpressaf
@@ -2072,9 +2074,6 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
 {
   const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
 
-  // get constant viscosity
-  visc_ = actmat->Viscosity();
-
   // varying density
   if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
     densaf_ = funct_.Dot(escaaf);
@@ -2084,15 +2083,37 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
   else
     densaf_ = actmat->Density();
 }
+else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
+{
+  const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+  densaf_ = actmat->Density();
+}
+else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
+{
+  const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+
+  densaf_ = actmat->Density();
+}
+else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+{
+  const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
+
+  densaf_ = actmat->Density();
+}
+else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+{
+  const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+  // get constant density
+  densaf_ = actmat->Density();
+}
 else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {
   const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
   // compute mixture fraction at n+alpha_F or n+1
   const double mixfracaf = funct_.Dot(escaaf);
-
-  // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
-  visc_ = actmat->ComputeViscosity(mixfracaf);
 
   // compute density at n+alpha_F or n+1 based on mixture fraction
   densaf_ = actmat->ComputeDensity(mixfracaf);
@@ -2106,9 +2127,6 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 
   // compute temperature at n+alpha_F or n+1
   const double tempaf = funct_.Dot(escaaf);
-
-  // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempaf);
 
   // compute density at n+alpha_F or n+1 based on temperature
   // and thermodynamic pressure
@@ -2124,12 +2142,6 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   // get progress variable at n+alpha_F or n+1
   const double provaraf = funct_.Dot(escaaf);
 
-  // compute temperature based on progress variable at n+alpha_F or n+1
-  const double tempaf = actmat->ComputeTemperature(provaraf);
-
-  // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempaf);
-
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
 
@@ -2143,12 +2155,6 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   // get progress variable at n+alpha_F or n+1
   const double provaraf = funct_.Dot(escaaf);
 
-  // compute temperature based on progress variable at n+alpha_F or n+1
-  const double tempaf = actmat->ComputeTemperature(provaraf);
-
-  // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempaf);
-
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
 
@@ -2159,25 +2165,494 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
 {
   const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
 
-  // get constant viscosity
-  visc_ = actmat->SetViscosity();
+  densaf_ = actmat->Density();
 }
 else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
 {
-	const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
+  const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
 
-  // get constant viscosity
-  visc_ = actmat->Viscosity();
+  densaf_ = actmat->Density();
 }
-else dserror("Material type is not supported for boundary element!");
+else dserror("Material type is not supported for density evaluation for boundary element!");
 
-// check whether there is zero or negative (physical) viscosity
-if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
+// check whether there is zero or negative density
+if (densaf_ < EPS15) dserror("zero or negative density!");
 
 return;
-} // FluidBoundaryImpl::GetMaterialParams
+} // FluidBoundaryImpl::GetDensity
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+   void  DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowDepPressureBC(
+     DRT::ELEMENTS::FluidBoundary*  surfele,
+     Teuchos::ParameterList&        params,
+     DRT::Discretization&           discretization,
+     std::vector<int>&              lm,
+     Epetra_SerialDenseMatrix&      elemat,
+     Epetra_SerialDenseVector&      elevec)
+{
+  switch (surfele->Shape())
+  {
+  // 2D:
+  case DRT::Element::line2:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::quad4)
+    {
+      FlowDepPressureBC<DRT::Element::line2,DRT::Element::quad4>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination line2/quad4 for surface/parent pair");
+    break;
+  }
+  // 3D:
+  case DRT::Element::quad4:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::hex8)
+    {
+      FlowDepPressureBC<DRT::Element::quad4,DRT::Element::hex8>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination quad4/hex8 for surface/parent pair");
+    break;
+  }
+  default:
+  {
+    dserror("not implemented yet\n");
+    break;
+  }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType bndydistype,
+          DRT::Element::DiscretizationType pdistype>
+   void  DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowDepPressureBC(
+     DRT::ELEMENTS::FluidBoundary*  surfele,
+     Teuchos::ParameterList&        params,
+     DRT::Discretization&           discretization,
+     std::vector<int>&              plm,
+     Epetra_SerialDenseMatrix&      elemat_epetra,
+     Epetra_SerialDenseVector&      elevec_epetra)
+{
+  // initialize pressure value at boundary
+  double pressure = 0.0;
+
+  //--------------------------------------------------
+  // get condition information
+  //--------------------------------------------------
+  RCP<DRT::Condition> fdp_cond = params.get<RCP<DRT::Condition> >("condition");
+
+  // decide on whether it is a flow-rate- or flow-volume-based condition
+  const string* condtype = (*fdp_cond).Get<string>("type of flow dependence");
+
+  // flow-rate-based condition
+  if (*condtype == "flow_rate")
+  {
+    // get flow rate in this case
+    const double flowrate = params.get<double>("flow rate or flow volume");
+
+    // get constant and linear coefficient for linear flow rate - pressure relation 
+    // and compute pressure accordingly
+    const double const_coeff = (*fdp_cond).GetDouble("ConstCoeff");
+    const double lin_coeff   = (*fdp_cond).GetDouble("LinCoeff");
+    pressure = const_coeff + lin_coeff*flowrate;
+  }
+  // flow-volume-based condition
+  else if (*condtype == "flow_volume")
+  {
+    // get flow volume in this case
+    const double flow_volume = params.get<double>("flow rate or flow volume");
+
+    // get initial volume, reference pressure and adiabatic exponent
+    const double vol0    = (*fdp_cond).GetDouble("InitialVolume");
+    const double ref_pre = (*fdp_cond).GetDouble("ReferencePressure");
+    const double kappa   = (*fdp_cond).GetDouble("AdiabaticExponent");
+
+    // compute rise in pressure due to volume reduction at boundary
+    pressure = ref_pre*pow((vol0/(vol0-flow_volume)),kappa);
+
+    // subtract reference pressure for usual case of zero ambient pressure
+    pressure -= ref_pre;          
+  }
+  // fixed-pressure condition
+  else if (*condtype == "fixed_pressure")
+  {
+    pressure = (*fdp_cond).GetDouble("ConstCoeff");
+  }
+  else dserror("Unknown type of flow-dependent pressure condition: %s",(*condtype).c_str());
+  
+  //---------------------------------------------------------------------
+  // get time-integration parameters
+  //---------------------------------------------------------------------
+  const double timefac    = fldpara_->TimeFac();
+  const double timefacrhs = fldpara_->TimeFacRhs();
+
+  //---------------------------------------------------------------------
+  // get parent element data
+  //---------------------------------------------------------------------
+  DRT::Element* parent = surfele->ParentElement();
+
+  // number of parent spatial dimensions
+  static const int nsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+  // number of parent element nodes
+  static const int piel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+  // reshape element matrices and vectors and init to zero, construct views
+  const int peledim = (nsd +1)*piel;
+  elemat_epetra.Shape(peledim,peledim);
+  elevec_epetra.Size (peledim);
+  LINALG::Matrix<peledim,peledim> elemat(elemat_epetra.A(),true);
+  LINALG::Matrix<peledim,      1> elevec(elevec_epetra.A(),true);
+
+  // get local node coordinates
+  LINALG::Matrix<nsd,piel> pxyze(true);
+  GEO::fillInitialPositionArray<pdistype,nsd,LINALG::Matrix<nsd,piel> >(parent,pxyze);
+
+  // get Gaussian integration points
+  const DRT::UTILS::IntPointsAndWeights<nsd>
+      pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+
+  //---------------------------------------------------------------------
+  // extract (parent) velocities from global distributed vectors
+  //---------------------------------------------------------------------
+  RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  if (velaf==Teuchos::null) dserror("Cannot get state vector 'velaf'");
+
+  std::vector<double> mypvelaf(plm.size());
+  DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,plm);
+
+  LINALG::Matrix<nsd,piel> pevelaf(true);
+  for (int inode=0;inode<piel;++inode)
+  {
+    for (int idim=0; idim<nsd ; ++idim)
+    {
+      pevelaf(idim,inode) = mypvelaf[(nsd +1)*inode+idim];
+    }
+  }
+
+  //---------------------------------------------------------------------
+  // get boundary element data
+  //---------------------------------------------------------------------
+  // local surface id
+  int surfaceid = surfele->SurfaceNumber();
+
+  // number of boundary spatial dimensions
+  static const int bndynsd = DRT::UTILS::DisTypeToDim<bndydistype>::dim;
+
+  // number of boundary element nodes
+  static const int siel = DRT::UTILS::DisTypeToNumNodePerEle<bndydistype>::numNodePerElement;
+
+  // get local node coordinates
+  LINALG::Matrix<nsd,siel> xyze(true);
+  GEO::fillInitialPositionArray<bndydistype,nsd,LINALG::Matrix<nsd,siel> >(surfele,xyze);
+
+  // get Gaussian integration points
+  const DRT::UTILS::IntPointsAndWeights<bndynsd>
+      intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<bndydistype>::rule);
+
+  //---------------------------------------------------------------------
+  // map Gaussian integration points to parent element for one-sided
+  // derivatives on boundary
+  //---------------------------------------------------------------------
+  // coordinates of current integration point
+  Epetra_SerialDenseMatrix gps(intpoints.IP().nquad,bndynsd);
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double* gpcoord = (intpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<bndynsd ;idim++)
+    {
+      gps(iquad,idim) = gpcoord[idim];
+    }
+  }
+
+  // distinguish 2- and 3-D case
+  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
+  if (nsd==2)
+    DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bndydistype,surfaceid);
+  else if(nsd==3) 
+    DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bndydistype,surfaceid);
+
+  //---------------------------------------------------------------------
+  // definitions and initializations for parent and boundary element 
+  //---------------------------------------------------------------------
+  LINALG::Matrix<nsd,1>    pxsi(true);
+  LINALG::Matrix<piel,1>   pfunct(true);
+  LINALG::Matrix<nsd,piel> pderiv(true);
+  LINALG::Matrix<nsd,nsd>  pxjm(true);
+  LINALG::Matrix<nsd,nsd>  pxji(true);
+  LINALG::Matrix<nsd,1>    unitnormal(true);
+  LINALG::Matrix<nsd,piel> pderxy(true);
+  LINALG::Matrix<nsd,nsd>  pvderxyaf(true);
+
+  LINALG::Matrix<bndynsd,1>    xsi(true);
+  LINALG::Matrix<siel,1>       funct(true);
+  LINALG::Matrix<bndynsd,siel> deriv(true);
+
+  //---------------------------------------------------------------------
+  // integration loop
+  //---------------------------------------------------------------------
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // coordinates of integration point w.r.t. parent element
+    for (int idim=0;idim<nsd;idim++)
+    {
+      pxsi(idim) = pqxg(iquad,idim);
+    }
+
+    // coordinates of integration point w.r.t. boundary element
+    for (int idim=0;idim<bndynsd ;idim++)
+    {
+      xsi(idim) = gps(iquad,idim);
+    }
+
+    // shape functions and derivatives of parent element at integration point
+    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+    // shape functions and derivatives of boundary element at integration point
+    DRT::UTILS::shape_function       <bndydistype>(xsi,funct);
+    DRT::UTILS::shape_function_deriv1<bndydistype>(xsi,deriv);
+
+    // compute (inverse of) Jacobian matrix and determinant for parent element
+    // and check its value
+    pxjm.MultiplyNT(pderiv,pxyze);
+    const double pdet = pxji.Invert(pxjm);
+    if (pdet < 1E-16) dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",parent->Id(),pdet);
+
+    // compute measure tensor, infinitesimal area and outward unit normal
+    // for boundary element
+    double drs = 0.0;
+    LINALG::Matrix<bndynsd,bndynsd> metrictensor(true);
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<bndydistype>(xyze,deriv,metrictensor,drs,&unitnormal);
+
+    // compute integration factor for boundary element
+    const double fac = intpoints.IP().qwgt[iquad]*drs;
+
+    // compute global first derivates for parent element
+    pderxy.Multiply(pxji,pderiv);
+
+    // get velocity derivatives at integration point
+    pvderxyaf.MultiplyNT(pevelaf,pderxy);
+
+    //-------------------------------------------------------------------
+    // compute measure for rate of strain at n+alpha_F or n+1 required
+    // for non-Newtonian fluid
+    //
+    //          +-                                 -+ 1
+    //          |          /   \           /   \    | -
+    //          | 2 * eps | vel |   * eps | vel |   | 2
+    //          |          \   / ij        \   / ij |
+    //          +-                                 -+
+    //
+    //-------------------------------------------------------------------
+    // compute (two times) strain-rate tensor
+    LINALG::Matrix<nsd_,nsd_> two_epsilon;
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        two_epsilon(rr,mm) = pvderxyaf(rr,mm) + pvderxyaf(mm,rr);
+      }
+    }
+
+    // compute product of (two times) strain-rate tensor with itself
+    double rateofstrain=0.0;
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
+      }
+    }
+    
+    // compute square-root of (two times) product 
+    rateofstrain = sqrt(rateofstrain/2.0);
+
+    // get viscosity at integration point
+    Teuchos::RCP<MAT::Material> material = parent->Material();
+    if (material->MaterialType() == INPAR::MAT::m_fluid)
+    {
+      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+
+      // get constant viscosity
+      visc_ = actmat->Viscosity();
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
+    {
+      const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+      double nu_0   = actmat->Nu0();    // parameter for zero-shear viscosity
+      double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
+      double lambda = actmat->Lambda();  // parameter for characteristic time
+      double a      = actmat->AParam(); // constant parameter
+      double b      = actmat->BParam(); // constant parameter
+
+      // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+      // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+      const double tmp = std::pow(lambda*rateofstrain,b);
+      // kinematic viscosity
+      visc_ = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
+      // dynamic viscosity
+      visc_ *= densaf_;
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
+    {
+      const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+
+      // get material parameters
+      double m     = actmat->MCons();     // consistency constant
+      double delta = actmat->Delta();      // safety factor
+      double a     = actmat->AExp();      // exponent
+
+      // compute viscosity according to a modified power law model for shear-thinning fluids
+      // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+      // kinematic viscosity
+      visc_ = m * pow((delta + rateofstrain), (-1)*a);
+      // dynamic viscosity
+      visc_ *= densaf_;
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+    {
+      const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
+
+      double tau0           = actmat->Tau0();            // yield stress
+      double kfac           = actmat->KFac();            // constant factor
+      double nexp           = actmat->NExp();            // exponent
+      double mexp           = actmat->MExp();            // exponent
+      double uplimshearrate = actmat->UpLimShearRate();  // upper limit of shear rate
+      double lolimshearrate = actmat->LoLimShearRate();  // lower limit of shear rate
+
+      // calculate dynamic viscosity according to Herschel-Bulkley model
+      // (within lower and upper limit of shear rate)
+      if (rateofstrain < lolimshearrate)
+        visc_ = tau0*((1.0-exp(-mexp*lolimshearrate))/lolimshearrate) + kfac*pow(lolimshearrate,(nexp-1.0));
+      else if (rateofstrain > uplimshearrate)
+        visc_ = tau0*((1.0-exp(-mexp*uplimshearrate))/uplimshearrate) + kfac*pow(uplimshearrate,(nexp-1.0));
+      else
+        visc_ = tau0*((1.0-exp(-mexp*rateofstrain))/rateofstrain) + kfac*pow(rateofstrain,(nexp-1.0));
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+    {
+      const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+      // get constant viscosity
+      visc_ = actmat->SetViscosity();
+    }
+    else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
+    {
+      const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
+
+      // get constant viscosity
+      visc_ = actmat->Viscosity();
+    }
+    else dserror("Material type is not supported for viscosity evaluation for boundary element!");
+
+    // check whether there is zero or negative (physical) viscosity
+    if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity!");
+
+    //---------------------------------------------------------------------
+    // contributions to element matrix and element vector
+    //---------------------------------------------------------------------
+    // contribution to element matrix on left-hand side
+    /*
+    //    /                   \
+    //   |           s         |
+    // - |  v , nabla  Du * n  |
+    //   |                     |
+    //    \                   / boundaryele
+    //
+    */
+    const double timefacmu=timefac*fac*2.0*visc_;
+
+    for (int ui=0; ui<piel; ++ui)
+    {
+      double nabla_u_o_n_lin[3][3];
+
+      nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal_(0)+
+                                       0.5*pderxy(1,ui)*unitnormal_(1)+
+                                       0.5*pderxy(2,ui)*unitnormal_(2));
+      nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal_(1));
+      nabla_u_o_n_lin[0][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal_(2));
+
+      nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal_(0));
+      nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal_(0)+
+                                           pderxy(1,ui)*unitnormal_(1)+
+                                       0.5*pderxy(2,ui)*unitnormal_(2));
+      nabla_u_o_n_lin[1][2]=timefacmu*(0.5*pderxy(1,ui)*unitnormal_(2));
+
+      nabla_u_o_n_lin[2][0]=timefacmu*(0.5*pderxy(2,ui)*unitnormal_(0));
+      nabla_u_o_n_lin[2][1]=timefacmu*(0.5*pderxy(2,ui)*unitnormal_(1));
+      nabla_u_o_n_lin[2][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal_(0)+
+                                       0.5*pderxy(1,ui)*unitnormal_(1)+
+                                           pderxy(2,ui)*unitnormal_(2));
+
+      for (int vi=0; vi<piel; ++vi)
+      {
+        elemat(vi*4    ,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[0][0];
+        elemat(vi*4    ,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[0][1];
+        elemat(vi*4    ,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[0][2];
+
+        elemat(vi*4 + 1,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[1][0];
+        elemat(vi*4 + 1,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[1][1];
+        elemat(vi*4 + 1,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[1][2];
+
+        elemat(vi*4 + 2,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[2][0];
+        elemat(vi*4 + 2,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[2][1];
+        elemat(vi*4 + 2,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[2][2];
+      }
+    }
+
+    // contribution to element vector on right-hand side
+    /*
+    //    /                             \
+    //   |                   s  n+af     |
+    // + |  v , - p n + nabla  u    * n  |
+    //   |                               |
+    //    \                             / boundaryele
+    //
+    */
+    const double timefacmurhs=timefacrhs*fac*2.0*visc_;
+    const double timefacprhs =timefacrhs*fac*pressure;
+
+    double nabla_u_o_n[3];
+    nabla_u_o_n[0]=timefacmurhs*(                    pvderxyaf(0,0) *unitnormal_(0)
+                                +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal_(1)
+                                +0.5*(pvderxyaf(0,2)+pvderxyaf(2,0))*unitnormal_(2));
+    nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal_(0)
+                                                    +pvderxyaf(1,1) *unitnormal_(1)
+                                +0.5*(pvderxyaf(1,2)+pvderxyaf(2,1))*unitnormal_(2));
+    nabla_u_o_n[2]=timefacmurhs*(0.5*(pvderxyaf(2,0)+pvderxyaf(0,2))*unitnormal_(0)
+                                +0.5*(pvderxyaf(2,1)+pvderxyaf(1,2))*unitnormal_(1)
+                                                    +pvderxyaf(2,2) *unitnormal_(2));
+
+    for (int vi=0; vi<piel; ++vi)
+    {
+      elevec(vi*4    ) += pfunct(vi)*(-timefacprhs*unitnormal_(0)+nabla_u_o_n[0]);
+      elevec(vi*4 + 1) += pfunct(vi)*(-timefacprhs*unitnormal_(1)+nabla_u_o_n[1]);
+      elevec(vi*4 + 2) += pfunct(vi)*(-timefacprhs*unitnormal_(2)+nabla_u_o_n[2]);
+    }
+  } // end of integration loop
+
+  return;
+} //DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowDepPressureBC
+
+  
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -2204,10 +2679,7 @@ template <DRT::Element::DiscretizationType distype>
           elemat,
           elevec);
     }
-    else
-    {
-      dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
-    }
+    else dserror("expected combination line2/quad4 for surface/parent pair");
     break;
   }
   // 3D:
@@ -2223,10 +2695,7 @@ template <DRT::Element::DiscretizationType distype>
           elemat,
           elevec);
     }
-    else
-    {
-      dserror("expected combination quad4/hex8 for surface/parent pair");
-    }
+    else dserror("expected combination quad4/hex8 for surface/parent pair");
     break;
   }
   default:
@@ -2234,7 +2703,6 @@ template <DRT::Element::DiscretizationType distype>
     dserror("not implemented yet\n");
     break;
   }
-
   }
 }
 
@@ -2255,7 +2723,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   // get my parent element
   DRT::Element* parent=surfele->ParentElement();
 
-  // get the required material information
+  // get kinematic viscosity required in the following
   Teuchos::RCP<MAT::Material> mat = parent->Material();
 
   if( mat->MaterialType() != INPAR::MAT::m_carreauyasuda
@@ -2268,7 +2736,6 @@ template <DRT::Element::DiscretizationType bndydistype,
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    // we need the kinematic viscosity here
     visc_ = actmat->Viscosity()/actmat->Density();
     if (actmat->Density() != 1.0)
       dserror("density 1.0 expected");
@@ -3713,7 +4180,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   }
 
   return;
-}
+} //DRT::ELEMENTS::FluidBoundaryImpl<distype>::MixHybDirichlet
 
 /*----------------------------------------------------------------------*
  |  Evaluating the velocity component of the traction      ismail 05/11 |

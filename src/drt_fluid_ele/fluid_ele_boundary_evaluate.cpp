@@ -197,18 +197,29 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   }
   case FLD::evaluate_nitsche_par:
   {
-	    return DRT::ELEMENTS::FluidBoundaryWeakDBCInterface::Impl(this)->EvaluateNitschePar(
-	        this,
-	        params,
-	        discretization,
-	        lm,
-	        elemat1,
-	        elemat2);
-	    break;
+    return DRT::ELEMENTS::FluidBoundaryWeakDBCInterface::Impl(this)->EvaluateNitschePar(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elemat2);
+    break;
   }
   case FLD::mixed_hybrid_dbc:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->MixHybDirichlet(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+    break;
+  }
+  case FLD::flow_dep_pressure_bc:
+  {
+    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->FlowDepPressureBC(
         this,
         params,
         discretization,
@@ -404,6 +415,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
   case FLD::enforce_weak_dbc:
   case FLD::poro_boundary:
   case FLD::mixed_hybrid_dbc:
+  case FLD::flow_dep_pressure_bc:
     // special cases: the boundary element assembles also into
     // the inner dofs of its parent element
     // note: using these actions, the element will get the parent location vector

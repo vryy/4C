@@ -70,6 +70,7 @@ enum BoundaryAction {
     enforce_weak_dbc,
     evaluate_nitsche_par,
     mixed_hybrid_dbc,
+    flow_dep_pressure_bc,
     conservative_outflow_bc,
     calc_Neumann_inflow,
     calc_pressure_bou_int,

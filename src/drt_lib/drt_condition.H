@@ -133,6 +133,8 @@ public:
     TransferTurbulentInflow,
     TurbulentInflowSection,
     BlendMaterial,
+    LineFlowDepPressure,
+    SurfaceFlowDepPressure,
     LineWeakDirichlet,
     SurfaceWeakDirichlet,
     LineMixHybDirichlet,

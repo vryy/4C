@@ -289,6 +289,34 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       gridvn_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
+  // initialize flow-rate and flow-volume vectors (fixed to length of four, 
+  // for the time being) in case of flow-dependent pressure boundary conditions,
+  // including check of respective conditions
+  if (nonlinearbc_)
+  {
+    std::vector<DRT::Condition*> flowdeppressureline;
+    discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+    std::vector<DRT::Condition*> flowdeppressuresurf;
+    discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+    if (flowdeppressureline.size() > 4 or flowdeppressuresurf.size() > 4)
+    {
+      // check number of boundary conditions
+      dserror("More than four flow-dependent pressure line or surface conditions assigned -> correction required!");
+
+      // initialize vectors for flow rate and volume
+      flowratenp_(true);
+      flowratenpi_(true);
+      flowraten_(true);
+      flowratenm_(true);
+
+      flowvolumenp_(true);
+      flowvolumenpi_(true);
+      flowvolumen_(true);
+      flowvolumenm_(true);      
+    }
+  }
+
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
@@ -1488,7 +1516,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   AssembleEdgeBasedMatandRHS();
 
   //----------------------------------------------------------------------
-  // application of nonlinear boundary conditions to system
+  // application of potential nonlinear boundary conditions to system
   //----------------------------------------------------------------------
   if (nonlinearbc_) ApplyNonlinearBoundaryConditions();
 
@@ -1556,7 +1584,255 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //----------------------------------------------------------------------
-  // 2) weak Dirichlet boundary conditions
+  // 2) flow-dependent pressure boundary conditions
+  //    (either based on (out)flow rate or on (out)flow volume (e.g.,
+  //     for air cushion outside of boundary))
+  //----------------------------------------------------------------------
+  // check whether there are flow-dependent pressure boundary conditions
+  std::vector<DRT::Condition*> flowdeppressureline;
+  discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+  std::vector<DRT::Condition*> flowdeppressuresurf;
+  discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+  if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
+  {
+    // get a vector layout from the discretization to construct matching
+    // vectors and matrices local <-> global dof numbering
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // decide on whether it is a line or a surface condition and
+    // set condition name accordingly
+    std::string fdpcondname;
+    if (flowdeppressureline.size() != 0)      fdpcondname = "LineFlowDepPressure";
+    else if (flowdeppressuresurf.size() != 0) fdpcondname = "SurfaceFlowDepPressure";
+    else dserror("Line and surface flow-dependent pressure boundary conditions simultaneously prescribed!");
+
+    // get condition vector
+    std::vector<DRT::Condition*> fdpcond;
+    discret_->GetCondition(fdpcondname,fdpcond);
+
+    // assign ID to all conditions
+    for (int fdpcondid = 0; fdpcondid < (int) fdpcond.size(); fdpcondid++)
+    {
+      // check for already existing ID and add ID
+      const std::vector<int>* fdpcondidvec = fdpcond[fdpcondid]->Get<std::vector<int> >("ConditionID");
+      if (fdpcondidvec)
+      {
+        if ((*fdpcondidvec)[0] != fdpcondid) dserror("Flow-dependent pressure condition %s has non-matching ID",fdpcondname.c_str());
+      }
+      else fdpcond[fdpcondid]->Add("ConditionID",fdpcondid);
+    }
+
+    // create or append to output file
+    if (myrank_ == 0)
+    {
+      const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
+      
+      std::ofstream f1;
+
+      // create file for output in first time step or append to existing file
+      // in subsequent time steps
+      if (step_ <= 1)
+      {
+        f1.open(fname1.c_str(),std::fstream::trunc);
+        f1 << "#| Step | Time |";
+        for (int fdpcondid = 0; fdpcondid < (int) fdpcond.size(); fdpcondid++)
+        {
+          f1 << " Flow rate " << fdpcondid << " | Flow volume " << fdpcondid << " | Mean pressure " << fdpcondid << " |";
+        }
+        f1 <<"\n";
+      }
+      else f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
+
+      // write step number and time
+      f1 << step_ << " " << time_ << " ";
+    }
+
+    //----------------------------------------------------------------------
+    // compute
+    // 1) flow rate
+    // 2) flow volume
+    // 3) surface area,
+    // 4) pressure integral, and
+    // 5) mean pressure
+    // for each flow-dependent pressure boundary condition
+    //----------------------------------------------------------------------
+    // create parameter list
+    Teuchos::ParameterList flowdeppressureparams;
+
+    for (int fdpcondid = 0; fdpcondid < (int) fdpcond.size(); fdpcondid++)
+    {
+      //--------------------------------------------------------------------
+      // 1) flow rate
+      //--------------------------------------------------------------------
+      // set action for elements
+      flowdeppressureparams.set<int>("action",FLD::calc_flowrate);
+
+      // create vector and initialize with zeros
+      Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+
+      // set required state vectors (no ALE so far)
+      discret_->ClearState();
+      if (is_genalpha_) discret_->SetState("velnp",velaf_);
+      else              discret_->SetState("velnp",velnp_);
+      //if (alefluid_) discret_->SetState("dispnp",dispnp_);
+
+      // evaluate flow rate
+      discret_->EvaluateCondition(flowdeppressureparams,flowrates,fdpcondname,fdpcondid);
+
+      // sum up local flow rate on this processor
+      double local_flowrate = 0.0;
+      for (int i=0; i < dofrowmap->NumMyElements(); i++)
+      {
+        local_flowrate +=((*flowrates)[i]);
+      }
+
+      // sum up global flow rate over all processors and set to global value
+      double flowrate = 0.0;
+      dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
+      flowratenp_(fdpcondid) = flowrate;
+
+      // clear state
+      discret_->ClearState();
+      
+      //--------------------------------------------------------------------
+      // 2) flow volume
+      //--------------------------------------------------------------------
+      // compute flow volume as integral of flow rate according to
+      // trapezoidal rule
+      flowvolumenp_(fdpcondid) = flowvolumen_(fdpcondid) + 0.5*dta_*(flowratenp_(fdpcondid)+flowraten_(fdpcondid));
+      
+      // set flow volume to zero if value smaller than zero,
+      // meaning that no flow volume may be sucked in from outside
+      if (flowvolumenp_(fdpcondid) < 0.0) flowvolumenp_(fdpcondid) = 0.0;
+
+      //--------------------------------------------------------------------
+      // 3) surface area
+      //--------------------------------------------------------------------
+      // set action and parameter for elements
+      flowdeppressureparams.set<int>("action",FLD::calc_area);
+      flowdeppressureparams.set<double>("area",0.0);
+
+      // set required state vectors (no ALE so far)
+      //if (alefluid_) discret_->SetState("dispnp",dispnp_);
+
+      // evaluate surface area
+      discret_->EvaluateCondition(flowdeppressureparams,fdpcondname,fdpcondid);
+
+      // sum up local surface area on this processor
+      double localarea = flowdeppressureparams.get<double>("area");
+
+      // sum up global surface area over all processors
+      double area = 0.0;
+      discret_->Comm().SumAll(&localarea,&area,1);
+
+      // clear state
+      discret_->ClearState();
+
+      //--------------------------------------------------------------------
+      // 4) pressure integral
+      //--------------------------------------------------------------------
+      // set action for elements
+      flowdeppressureparams.set<int>("action",FLD::calc_pressure_bou_int);
+      flowdeppressureparams.set<double>("pressure boundary integral",0.0);
+
+      // set required state vectors (no ALE so far)
+      discret_->ClearState();
+      if (is_genalpha_) discret_->SetState("velnp",velaf_);
+      else              discret_->SetState("velnp",velnp_);
+      //if (alefluid_) discret_->SetState("dispnp",dispnp_);
+
+      // evaluate pressure integral
+      discret_->EvaluateCondition(flowdeppressureparams,fdpcondname,fdpcondid);
+
+      // sum up local pressure integral on this processor
+      double localpressint = flowdeppressureparams.get<double>("pressure boundary integral");
+
+      // sum up global pressure integral over all processors
+      double pressint = 0.0;
+      discret_->Comm().SumAll(&localpressint,&pressint,1);
+
+      // clear state
+      discret_->ClearState();
+
+      //--------------------------------------------------------------------
+      // 5) mean pressure
+      //--------------------------------------------------------------------
+      const double meanpressure = pressint/area;
+
+      // append values to output file
+      if (myrank_ == 0)
+      {
+        const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
+      
+        std::ofstream f1;
+        f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
+
+        f1 << flowratenp_(fdpcondid) << " " << flowvolumenp_(fdpcondid) << " " << meanpressure << " ";
+        f1 << "\n";
+        f1.flush();
+        f1.close();
+      }
+    }
+
+    //----------------------------------------------------------------------
+    // evaluate flow-dependent pressure boundary conditions
+    // (proceeds in separate loop to enable, e.g., implementation of
+    //  flow-rate sums of more than one condition in between)
+    //----------------------------------------------------------------------
+    for (int fdpcondid = 0; fdpcondid < (int) fdpcond.size(); fdpcondid++)
+    {
+      // set action for elements
+      flowdeppressureparams.set<int>("action", FLD::flow_dep_pressure_bc);
+
+      // initialize time factor to value for one-step-theta/BDF2
+      double timefac = 1.0;
+      
+      // set required state vectors (no ALE so far)
+      if (is_genalpha_)
+      {
+        discret_->SetState("velaf",velaf_);
+        if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
+          discret_->SetState("velnp",velnp_);
+
+        // modify time factor to alpha_F for generalized-alpha scheme
+        timefac = alphaF_;
+      }
+      else discret_->SetState("velaf",velnp_);
+      /*if (alefluid_)
+      {
+        discret_->SetState("dispnp",dispnp_);
+        discret_->SetState("gridvelaf",gridv_);
+      }*/
+
+      // compute flow-rate or flow-volume value for evaluation of boundary condition 
+      // according to time-integration scheme and potential relaxation within
+      // nonlinear iteration loop (relaxation parameter 0.5, for the time being)
+      double flowvaluerel = 0.0;
+      const double relaxpara = 0.5;
+      if (*fdpcond[fdpcondid]->Get<string>("type of flow dependence") == "flow_rate")
+        flowvaluerel = (1.0-timefac)*flowraten_(fdpcondid) + timefac*((1.0-relaxpara)*flowratenpi_(fdpcondid) + relaxpara*flowratenp_(fdpcondid));
+      else if (*fdpcond[fdpcondid]->Get<string>("type of flow dependence") == "flow_volume")
+        flowvaluerel = (1.0-timefac)*flowvolumen_(fdpcondid) + timefac*((1.0-relaxpara)*flowvolumenpi_(fdpcondid) + relaxpara*flowvolumenp_(fdpcondid));
+
+      // set value for elements
+      flowdeppressureparams.set("flow rate or flow volume",flowvaluerel);
+
+      // evaluate all flow-dependent pressure boundary conditions
+      discret_->EvaluateCondition(flowdeppressureparams,sysmat_,Teuchos::null,
+                                  residual_,Teuchos::null,Teuchos::null,fdpcondname);
+  
+      // clear state
+      discret_->ClearState();
+
+      // update iteration values
+      flowratenpi_(fdpcondid)   = flowratenp_(fdpcondid);
+      flowvolumenpi_(fdpcondid) = flowvolumenp_(fdpcondid);      
+    }
+  }
+
+  //----------------------------------------------------------------------
+  // 3) weak Dirichlet boundary conditions
   //----------------------------------------------------------------------
   // check whether there are weak Dirichlet boundary conditions
   std::vector<DRT::Condition*> weakdbcline;
@@ -1600,7 +1876,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //----------------------------------------------------------------------
-  // 3) mixed/hybrid Dirichlet boundary conditions
+  // 4) mixed/hybrid Dirichlet boundary conditions
   //----------------------------------------------------------------------
   // check whether there are mixed/hybrid Dirichlet boundary conditions
   std::vector<DRT::Condition*> mhdbcline;
@@ -2468,26 +2744,15 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
-  //---------------------------surface tension update
-  if (alefluid_ and surfacesplitter_->FSCondRelevant())
-  {
-    // employs the divergence theorem acc. to Saksono eq. (24) and does not
-    // require second derivatives.
+  //----------------------------------------------------------------------
+  // application of potential nonlinear boundary conditions to system
+  //----------------------------------------------------------------------
+  if (nonlinearbc_) ApplyNonlinearBoundaryConditions();
 
-    // select free surface elements
-    std::string condname = "FREESURFCoupling";
-
-    ParameterList eleparams;
-
-    // set action for elements
-    eleparams.set<int>("action",FLD::calc_surface_tension);
-
-    discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
-    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
-    discret_->ClearState();
-  }
-  //---------------------------end of surface tension update
+  //----------------------------------------------------------------------
+  // update surface tension (free surface flow only)
+  //----------------------------------------------------------------------
+  FreeSurfaceFlowSurfaceTensionUpdate();
 
   //---------------------------
   if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
@@ -2707,6 +2972,40 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   {
     dispnm_->Update(1.0,*dispn_,0.0);
     dispn_ ->Update(1.0,*dispnp_,0.0);
+  }
+
+  // update flow-rate and flow-volume vectors in case of flow-dependent pressure
+  // boundary conditions,
+  if (nonlinearbc_)
+  {
+    std::vector<DRT::Condition*> flowdeppressureline;
+    discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+    std::vector<DRT::Condition*> flowdeppressuresurf;
+    discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+    if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
+    {
+      for (int i = 0; i < 4; i++)
+      {
+        flowratenm_(i) = flowraten_(i);
+        flowraten_(i)  = flowratenp_(i);
+
+        flowvolumenm_(i) = flowvolumen_(i);
+        flowvolumen_(i)  = flowvolumenp_(i);
+      }
+
+      // close this time step also in output file
+      if (myrank_ == 0)
+      {
+        const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
+        std::ofstream f1;
+        f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
+
+        f1 << "\n";
+        f1.flush();
+        f1.close();
+      }      
+    }
   }
 
   // call time update of forcing routine
@@ -3071,6 +3370,44 @@ void FLD::FluidImplicitTimeInt::Output()
         output_->WriteVector("dispnm",dispnm_);
       }
 
+      // flow rate and flow volume in case of flow-dependent pressure bc
+      if (nonlinearbc_)
+      {
+        std::vector<DRT::Condition*> flowdeppressureline;
+        discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+        std::vector<DRT::Condition*> flowdeppressuresurf;
+        discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+        if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
+        {
+          output_->WriteDouble("flowratenp0",flowratenp_(0));
+          output_->WriteDouble("flowratenp1",flowratenp_(1));
+          output_->WriteDouble("flowratenp2",flowratenp_(2));
+          output_->WriteDouble("flowratenp3",flowratenp_(3));
+          output_->WriteDouble("flowraten0", flowraten_(0));
+          output_->WriteDouble("flowraten1", flowraten_(1));
+          output_->WriteDouble("flowraten2", flowraten_(2));
+          output_->WriteDouble("flowraten3", flowraten_(3));
+          output_->WriteDouble("flowratenm0",flowratenm_(0));
+          output_->WriteDouble("flowratenm1",flowratenm_(1));
+          output_->WriteDouble("flowratenm2",flowratenm_(2));
+          output_->WriteDouble("flowratenm3",flowratenm_(3));
+
+          output_->WriteDouble("flowvolumenp0",flowvolumenp_(0));
+          output_->WriteDouble("flowvolumenp1",flowvolumenp_(1));
+          output_->WriteDouble("flowvolumenp2",flowvolumenp_(2));
+          output_->WriteDouble("flowvolumenp3",flowvolumenp_(3));
+          output_->WriteDouble("flowvolumen0", flowvolumen_(0));
+          output_->WriteDouble("flowvolumen1", flowvolumen_(1));
+          output_->WriteDouble("flowvolumen2", flowvolumen_(2));
+          output_->WriteDouble("flowvolumen3", flowvolumen_(3));
+          output_->WriteDouble("flowvolumenm0",flowvolumenm_(0));
+          output_->WriteDouble("flowvolumenm1",flowvolumenm_(1));
+          output_->WriteDouble("flowvolumenm2",flowvolumenm_(2));
+          output_->WriteDouble("flowvolumenm3",flowvolumenm_(3));
+        }
+      }
+
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
       // But never do this for step 0 (visualization of initial field) since
@@ -3148,6 +3485,44 @@ void FLD::FluidImplicitTimeInt::Output()
     output_->WriteVector("accn", accn_);
     output_->WriteVector("veln", veln_);
     output_->WriteVector("velnm",velnm_);
+
+    // flow rate and flow volume in case of flow-dependent pressure bc
+    if (nonlinearbc_)
+    {
+      std::vector<DRT::Condition*> flowdeppressureline;
+      discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+      std::vector<DRT::Condition*> flowdeppressuresurf;
+      discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+      if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
+      {
+        output_->WriteDouble("flowratenp0",flowratenp_(0));
+        output_->WriteDouble("flowratenp1",flowratenp_(1));
+        output_->WriteDouble("flowratenp2",flowratenp_(2));
+        output_->WriteDouble("flowratenp3",flowratenp_(3));
+        output_->WriteDouble("flowraten0", flowraten_(0));
+        output_->WriteDouble("flowraten1", flowraten_(1));
+        output_->WriteDouble("flowraten2", flowraten_(2));
+        output_->WriteDouble("flowraten3", flowraten_(3));
+        output_->WriteDouble("flowratenm0",flowratenm_(0));
+        output_->WriteDouble("flowratenm1",flowratenm_(1));
+        output_->WriteDouble("flowratenm2",flowratenm_(2));
+        output_->WriteDouble("flowratenm3",flowratenm_(3));
+
+        output_->WriteDouble("flowvolumenp0",flowvolumenp_(0));
+        output_->WriteDouble("flowvolumenp1",flowvolumenp_(1));
+        output_->WriteDouble("flowvolumenp2",flowvolumenp_(2));
+        output_->WriteDouble("flowvolumenp3",flowvolumenp_(3));
+        output_->WriteDouble("flowvolumen0", flowvolumen_(0));
+        output_->WriteDouble("flowvolumen1", flowvolumen_(1));
+        output_->WriteDouble("flowvolumen2", flowvolumen_(2));
+        output_->WriteDouble("flowvolumen3", flowvolumen_(3));
+        output_->WriteDouble("flowvolumenm0",flowvolumenm_(0));
+        output_->WriteDouble("flowvolumenm1",flowvolumenm_(1));
+        output_->WriteDouble("flowvolumenm2",flowvolumenm_(2));
+        output_->WriteDouble("flowvolumenm3",flowvolumenm_(3));
+      }
+    }
 
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
@@ -3352,6 +3727,44 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
       reader.ReadVector(gridv_,"gridv");
     if(physicaltype_ == INPAR::FLUID::poro_p1)
       reader.ReadVector(gridvn_,"gridvn");
+  }
+
+  // flow rate and flow volume in case of flow-dependent pressure bc
+  if (nonlinearbc_)
+  {
+    std::vector<DRT::Condition*> flowdeppressureline;
+    discret_->GetCondition("LineFlowDepPressure",flowdeppressureline);
+    std::vector<DRT::Condition*> flowdeppressuresurf;
+    discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
+
+    if (flowdeppressureline.size() != 0 or flowdeppressuresurf.size() != 0)
+    {
+      flowratenp_(0) = reader.ReadDouble("flowratenp0");
+      flowratenp_(1) = reader.ReadDouble("flowratenp1");
+      flowratenp_(2) = reader.ReadDouble("flowratenp2");
+      flowratenp_(3) = reader.ReadDouble("flowratenp3");
+      flowraten_(0)  = reader.ReadDouble("flowraten0");
+      flowraten_(1)  = reader.ReadDouble("flowraten1");
+      flowraten_(2)  = reader.ReadDouble("flowraten2");
+      flowraten_(3)  = reader.ReadDouble("flowraten3");
+      flowratenm_(0) = reader.ReadDouble("flowratenm0");
+      flowratenm_(1) = reader.ReadDouble("flowratenm1");
+      flowratenm_(2) = reader.ReadDouble("flowratenm2");
+      flowratenm_(3) = reader.ReadDouble("flowratenm3");
+
+      flowvolumenp_(0) = reader.ReadDouble("flowvolumenp0");
+      flowvolumenp_(1) = reader.ReadDouble("flowvolumenp1");
+      flowvolumenp_(2) = reader.ReadDouble("flowvolumenp2");
+      flowvolumenp_(3) = reader.ReadDouble("flowvolumenp3");
+      flowvolumen_(0)  = reader.ReadDouble("flowvolumen0");
+      flowvolumen_(1)  = reader.ReadDouble("flowvolumen1");
+      flowvolumen_(2)  = reader.ReadDouble("flowvolumen2");
+      flowvolumen_(3)  = reader.ReadDouble("flowvolumen3");
+      flowvolumenm_(0) = reader.ReadDouble("flowvolumenm0");
+      flowvolumenm_(1) = reader.ReadDouble("flowvolumenm1");
+      flowvolumenm_(2) = reader.ReadDouble("flowvolumenm2");
+      flowvolumenm_(3) = reader.ReadDouble("flowvolumenm3");
+    }
   }
 
   // read the previously written elements including the history data
