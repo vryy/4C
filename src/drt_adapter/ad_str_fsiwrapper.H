@@ -17,8 +17,6 @@ Maintainer: Georg Hammerl
 #define FSI_STRUCTURE_WRAPPER_H
 
 #include "ad_str_wrapper.H"
-#include "../drt_structure/stru_aux.H"
-
 
 // forward declarations
 namespace STR

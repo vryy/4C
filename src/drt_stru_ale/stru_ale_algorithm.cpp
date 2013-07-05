@@ -30,6 +30,7 @@ Maintainer: Markus Gitterle
 #include "../drt_ale/ale.H"
 #include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_node.H"
+#include "../drt_structure/stru_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

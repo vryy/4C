@@ -24,9 +24,6 @@ Maintainer: Georg Hammerl
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_structure.H"
-#include "../drt_lib/drt_dserror.H"
-
-#include "../drt_structure/strtimint_mstep.H"
 
 // forward declarations:
 namespace DRT
