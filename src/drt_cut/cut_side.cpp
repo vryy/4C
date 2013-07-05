@@ -1024,6 +1024,103 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad4>::Normal( const LINALG::Matrix<2
   normal.Scale( 1./norm );
 }
 
+/*--------------------------------------------------------------------*
+ * get global coordinates of the center of the side
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::tri3>::BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n )
+{
+  LINALG::Matrix<2,1> center_rs(DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::tri3));
+  Basis(center_rs, t1, t2, n);
+}
+
+/*--------------------------------------------------------------------*
+ * get global coordinates of the center of the side
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::quad4>::BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n )
+{
+  LINALG::Matrix<2,1> center_rs(DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::quad4));
+  Basis(center_rs, t1, t2, n);
+}
+
+/*--------------------------------------------------------------------*
+ * Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::tri3>::Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n )
+{
+  // get derivatives at pos
+  LINALG::Matrix<3,3> side_xyze( true );
+  this->Coordinates(side_xyze);
+
+  LINALG::Matrix<2,3> deriv(true);
+  LINALG::Matrix<2,3> A(true);
+
+  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::tri3);
+  A.MultiplyNT( deriv, side_xyze );
+
+  // set the first tangential vector
+  t1(0)=A(0,0);
+  t1(1)=A(0,1);
+  t1(2)=A(0,2);
+
+  t1.Scale(1./t1.Norm2());
+
+  // set the second tangential vector
+  t2(0)=A(1,0);
+  t2(1)=A(1,1);
+  t2(2)=A(1,2);
+
+  t2.Scale(1./t2.Norm2());
+
+  // cross product to get the normal at the point
+  n( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
+  n( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
+  n( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
+
+  double norm = n.Norm2();
+  n.Scale( 1./norm );
+}
+
+
+/*--------------------------------------------------------------------*
+ * Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::quad4>::Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n )
+{
+  // get derivatives at pos
+  LINALG::Matrix<3,4> side_xyze( true );
+  this->Coordinates(side_xyze);
+
+  LINALG::Matrix<2,4> deriv(true);
+  LINALG::Matrix<2,3> A(true);
+
+  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::tri3);
+  A.MultiplyNT( deriv, side_xyze );
+
+  // set the first tangential vector
+  t1(0)=A(0,0);
+  t1(1)=A(0,1);
+  t1(2)=A(0,2);
+
+  t1.Scale(1./t1.Norm2());
+
+  // set the second tangential vector
+  t2(0)=A(1,0);
+  t2(1)=A(1,1);
+  t2(2)=A(1,2);
+
+  t2.Scale(1./t2.Norm2());
+
+  // cross product to get the normal at the point
+  n( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
+  n( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
+  n( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
+
+  double norm = n.Norm2();
+  n.Scale( 1./norm );
+}
+
+
+
 std::ostream & operator<<( std::ostream & stream, GEO::CUT::Side & s )
 {
   stream << "side: {";

@@ -25,7 +25,6 @@ void GEO::CUT::LevelSetSide::PointAt( double r, double s, LINALG::Matrix<3,1> & 
 void GEO::CUT::LevelSetSide::SideCenter( LINALG::Matrix<3,1> & midpoint )
 {
   throw std::runtime_error( "no SideCenter on level set cut surface defined" );
-
 }
 
 bool GEO::CUT::LevelSetSide::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol )
@@ -46,6 +45,16 @@ bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, 
 void GEO::CUT::LevelSetSide::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal )
 {
   throw std::runtime_error( "no normal vector on level set cut surface implemented" );
+}
+
+void GEO::CUT::LevelSetSide::BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n )
+{
+  throw std::runtime_error( "no BasisAtCenter on level set cut surface implemented" );
+}
+
+void GEO::CUT::LevelSetSide::Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n )
+{
+  throw std::runtime_error( "no Basis on level set cut surface implemented" );
 }
 
 void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets )

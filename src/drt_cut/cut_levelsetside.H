@@ -48,6 +48,10 @@ public:
 
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal );
 
+  virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+
+  virtual void Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+
   virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 
 //   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, plain_facet_set & facets );

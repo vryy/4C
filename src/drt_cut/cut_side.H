@@ -122,6 +122,16 @@ public:
    */
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) = 0;
 
+  /*
+   \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+   */
+  virtual void Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n ) = 0;
+
+  /*
+   \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+   */
+  virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n ) = 0;
+
   /*!
   \brief Returns the global coordinates of the nodes of this side
    */
@@ -363,6 +373,12 @@ public:
   /// Calculates the normal vector with respect to the element shape at local coordinates xsi
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal );
 
+  /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+  virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+
+  /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+  virtual void Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+
   /// get coordinates of side
   void Coordinates( LINALG::Matrix<3, 3> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
@@ -428,6 +444,12 @@ public:
 
   /// Calculates the normal vector with respect to the element shape at local coordinates xsi
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal );
+
+  /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+  virtual void BasisAtCenter( LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
+
+  /// Calculates a Basis of two tangential vectors (non-orthogonal!) and the normal vector with respect to the element shape at local coordinates xsi, basis vectors have norm=1
+  virtual void Basis( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & t1, LINALG::Matrix<3,1> & t2, LINALG::Matrix<3,1> & n );
 
   /// get coordinates of side
   void Coordinates( LINALG::Matrix<3, 4> & xyze_surfaceElement )
