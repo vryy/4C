@@ -28,7 +28,16 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
     refFacet_ = *IteratorRefFacet;
 
   if( facetIterator.size()==0 )
+  {
+    const plain_facet_set & facete = volcell_->Facets();
+
+    std::cout << "number of facets: " << facete.size() << std::endl;
+    for(int j=0; j< facete.size(); j++)
+      facete[j]->Print(std::cout);
+
     dserror( "x-component normal is zero on all the facets? It should not be." );
+
+  }
 
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
 
@@ -82,6 +91,14 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     {
       warpFac.push_back(i);
       std::cout<<"encountered a WARPED side\n";
+
+      std::cout << "side-Id() "<< fe->SideId() << std::endl;
+
+      std::cout << "the side has " << corn.size() << " points" << std::endl;
+
+      for(int j=0; j< corn.size(); j++)
+        corn[j]->Print(std::cout);
+
     }
   }
 
@@ -359,10 +376,11 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
     {
       isNeg = true;
       volcell_->SetVolume(0.0);
-      std::cout<<"----WARNING:::negligible volumecell---------------\n";
+      std::cout<<"----WARNING:::negligible volumecell---------------" << std::endl;
+      std::cout<<"volume in local coordinates = "<< TotalInteg<<"\t volume in global coordinates = "<<volGlobal<< std::endl;
+
       return;
     }
-    std::cout<<"volume in local coordinates = "<<TotalInteg<<"\t volume in global coordinates = "<<volGlobal<<"\n";
     dserror("negative volume predicted by the DirectDivergence integration rule");
   }
 
