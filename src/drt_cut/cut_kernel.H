@@ -361,6 +361,16 @@ namespace GEO
         bool TestConverged( int iter )
         {
           double residual = b_.Norm2();
+
+          if ( debug )
+          {
+            std::cout << " residual " << residual
+                      << "\n"
+                      << " xsi " << xsi_
+                      << " increment " << dx_
+                      << " rhs b " << b_;
+          }
+
           return fabs( residual ) < TOLERANCE;
         }
 

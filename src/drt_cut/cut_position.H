@@ -104,7 +104,9 @@ template <DRT::Element::DiscretizationType elementtype,
 >
 bool Position<elementtype,numNodesElement>::Compute()
 {
+//  KERNEL::DebugComputePosition<elementtype> cp( xsi_ );
   KERNEL::ComputePosition<elementtype> cp( xsi_ );
+
   if ( cp( xyze_, px_ ) )
   {
     return WithinLimits();
@@ -118,6 +120,7 @@ template <DRT::Element::DiscretizationType elementtype,
 >
 bool Position<elementtype,numNodesElement>::ComputeTol(double Tol)
 {
+//  KERNEL::DebugComputePosition<elementtype> cp( xsi_ );
   KERNEL::ComputePosition<elementtype> cp( xsi_ );
   if ( cp( xyze_, px_ ) )
   {
