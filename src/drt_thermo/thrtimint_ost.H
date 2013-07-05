@@ -3,10 +3,10 @@
 \file thrtimint_ost.H
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 
 </pre>
 */
@@ -131,6 +131,10 @@ namespace THR
 
   public:
 
+    //! verify if given coefficients are in admissable range
+    //! prints also info to STDOUT
+    void VerifyCoeff();
+
     //! @name Construction
     //@{
 
@@ -168,7 +172,7 @@ namespace THR
     //! Give local order of accuracy of temperature part
     int MethodOrderOfAccuracy()
     {
-      return fabs(1./2.-theta_)<EPS10 ? 2 : 1;
+      return fabs(1./2. - theta_) < EPS10 ? 2 : 1;
     }
 
     //! Return linear error coefficient
@@ -187,7 +191,7 @@ namespace THR
       const double dt,  //!< step size
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-      Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
+      Teuchos::RCP<Epetra_Vector> fcap,  //!< capacity force
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
       );
@@ -213,10 +217,6 @@ namespace THR
 
     //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
-
-    //! Evaluate/define the residual force vector #fres_ for
-    //! relaxation solution with SolveRelaxationLinear
-    // void EvaluateForceTangResidualRelax();
 
     //! Determine characteristic norm for temperatures
     //! \author lw (originally)
@@ -247,8 +247,15 @@ namespace THR
     //! Update step
     void UpdateStepState();
 
+    //! Update element
+    void UpdateStepElement();
+
     //! Read and set restart for forces
     void ReadRestartForce();
+
+    //! Write internal and external forces for restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+
     //@}
 
     //! @name Access methods
@@ -304,8 +311,8 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fcap_;  //!< stored force \f$C\cdot\Theta_n\f$ at \f$t_n\f$
-    Teuchos::RCP<Epetra_Vector> fcapn_;  //!< stored force \f$C\cdot\Theta_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fcap_;  //!< capacity force \f$C\cdot\Theta_n\f$ at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fcapn_;  //!< capacity force \f$C\cdot\Theta_{n+1}\f$ at \f$t_{n+1}\f$
 
     Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$

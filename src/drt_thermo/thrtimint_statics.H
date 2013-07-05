@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file thrtimint_statics.H
+\brief Statics analysis, i.e. no capacity terms
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 </pre>
 */
 
@@ -166,8 +167,15 @@ namespace THR
     //! Update step
     void UpdateStepState();
 
+    //! Update element
+    void UpdateStepElement();
+
     //! Read and set restart for forces
     void ReadRestartForce();
+
+    //! Write internal and external forces for restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+
     //@}
 
     //! @name Access methods

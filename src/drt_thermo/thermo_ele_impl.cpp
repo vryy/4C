@@ -197,7 +197,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // (action == "calc_thermo_fint")
   // (action == "calc_thermo_fintcapa")
   // (action == "calc_thermo_finttang")
-  // (action == "proc_thermo_heatflux")
+  // (action == "calc_thermo_heatflux")
   // (action == "postproc_thermo_heatflux")
   // (action == "integrate_shape_functions")
   // (action == "calc_thermo_update_istep")
@@ -256,6 +256,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
     // call ThermoStVenantKirchhoff material and get the temperature dependent
     // tangent ctemp
+    plasticmat_ = false;
     Teuchos::RCP<MAT::Material> structmat = structele->Material();
     if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
       plasticmat_ = true;
@@ -748,8 +749,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     if (ecapa.A() != NULL) ecapa.Update(ecapa_);
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
+    // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
-    // K_T = 1/dt . C + theta . K
+    // K_T = fac_capa . C + fac_cond . K
     const INPAR::THR::DynamicType timint
       = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
     switch (timint)
@@ -763,15 +765,29 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     {
       const double theta = params.get<double>("theta");
       const double stepsize = params.get<double>("delta time");
-      // combined tangent and conductivity matrix to one global matrix
-      // etang = 1/Dt . ecapa + theta . etang
+      // combine capacity and conductivity matrix to one global tangent matrix
+      // etang = 1/Dt . ecapa + theta . econd
+      // fac_capa = 1/Dt
+      // fac_cond = theta
       etang.Update(1.0/stepsize,ecapa_,theta);
       efcap.Multiply(ecapa_,etemp_);
       break;
     }
     case INPAR::THR::dyna_genalpha :
     {
-      dserror("Genalpha not yet implemented");
+      const double alpha_f = params.get<double>("alphaf");
+      const double alpha_m = params.get<double>("alphaf");
+      const double gamma = params.get<double>("gamma");
+      const double stepsize = params.get<double>("delta time");
+      // combined tangent and conductivity matrix to one global matrix
+      // etang = alpha_m/(gamma . Dt) . ecapa + alpha_f . econd
+      // fac_capa = alpha_m/(gamma . Dt)
+      // fac_cond = alpha_f
+      double fac_capa = alpha_m/(gamma * stepsize);
+      etang.Update(fac_capa,ecapa_,alpha_f);
+      // efcap = fac_capa . ecapa . T_{n+1}
+      // TODO 20130-07-05
+      efcap.Multiply(ecapa_,etemp_);
       break;
     }
     case INPAR::THR::dyna_undefined :
@@ -786,7 +802,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //============================================================================
   // Calculate/ evaluate heatflux q and temperature gradients gradtemp at
   // gauss points
-  else if (action == "proc_thermo_heatflux")
+  else if (action == "calc_thermo_heatflux")
   {
     // set views
     // efext, efcap not needed for this action, elemat1+2,elevec1-3 are not used anyway
@@ -885,7 +901,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     ParObject::AddtoPack(tgdata, etempgrad);
     std::copy(tgdata().begin(),tgdata().end(),std::back_inserter(*tempgraddata));
 
-  }  // action == "proc_thermo_heatflux"
+  }  // action == "calc_thermo_heatflux"
 
   //============================================================================
   // Calculate heatflux q and temperature gradients gradtemp at gauss points
@@ -1602,7 +1618,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     double theta = params.get<double>("theta");
     // initialise time_fac of velocity discretisation w.r.t. displacements
     double str_theta = params.get<double>("str_THETA");
-    timefac = theta/(stepsize*str_theta);
+    timefac = theta/(stepsize * str_theta);
     break;
   }
   case INPAR::THR::dyna_genalpha :
@@ -2039,7 +2055,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // m_capa corresponds to the mass matrix of the structural field
     if (ecapa != NULL)
     {
-      // m_capa = m_capa + ( N_T^T .  (rho * C_V) . N_T ) * detJ * w(gp)
+      // m_capa = m_capa + ( N_T^T .  (rho_0 * C_V) . N_T ) * detJ * w(gp)
       //           (8x8)     (8x1)                 (1x8)
       // caution: funct_ implemented as (8,1)--> use transposed in code for
       // theoretic part
@@ -2449,6 +2465,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
 
     // Dmech += Hiso . strainbar^p . Dgamma
     double Dmech = thrpllinelast->MechanicalKinematicDissipation(iquad);
+
     // CAUTION: (tr(strain^p) == 0) and sigma_T(i,i)=const.
     // --> neglect: Dmech = -sigma_{T,n+1} : strain^p_{n+1}' == 0: (vol:dev == 0)
     // --> no additional terms for fint, nor for econd!
@@ -2515,26 +2532,26 @@ std::cout << "edisp\n" << edisp << std::endl;
   double timefac = 0.0;
   switch (timint)
   {
-    case INPAR::THR::dyna_statics :
-    {
-      // evolution equation of plastic material use implicit Euler
-      // put str_timefac = 1.0
-      timefac = 1.0/stepsize;
-      break;
-    }
-    case INPAR::THR::dyna_onesteptheta :
-    {
-      // k_Td = theta . k_Td^e * time_fac_d' = theta . k_Td / Dt
-      double theta = params.get<double>("theta");
-      timefac = theta * timefac / stepsize;
-      break;
-    }
-    case INPAR::THR::dyna_undefined :
-    default :
-    {
-      dserror("Add correct temporal coefficent here!");
-      break;
-    }
+  case INPAR::THR::dyna_statics :
+  {
+    // evolution equation of plastic material use implicit Euler
+    // put str_timefac = 1.0
+    timefac = 1.0/stepsize;
+    break;
+  }
+  case INPAR::THR::dyna_onesteptheta :
+  {
+    // k_Td = theta . k_Td^e * time_fac_d' = theta . k_Td / Dt
+    double theta = params.get<double>("theta");
+    timefac = theta * timefac / stepsize;
+    break;
+  }
+  case INPAR::THR::dyna_undefined :
+  default :
+  {
+    dserror("Add correct temporal coefficent here!");
+    break;
+  }
   }  // end of switch(timint)
 
   // ----------------------------------- integration loop for one element
@@ -2625,7 +2642,7 @@ std::cout << "edisp\n" << edisp << std::endl;
     std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"<< *etangcoupl << std::endl;
 #endif  // THRASOUTPUT
 
-}  // CalculateCouplDissipationCond
+}  // CalculateCouplDissipationCond()
 
 
 /*----------------------------------------------------------------------*
@@ -2728,7 +2745,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
   }
   return;
 
-} //TemperImpl::Radiation
+}  // Radiation()
 
 
 /*----------------------------------------------------------------------*

@@ -4,47 +4,48 @@
 \brief Explicit time integration for thermal dynamics
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15253
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 01/12 |
+ *----------------------------------------------------------------------*/
 #include <sstream>
 
 #include "thrtimint.H"
 #include "thrtimint_expl.H"
 #include "../linalg/linalg_utils.H"
 
-/*----------------------------------------------------------------------*/
-/* constructor */
-THR::TimIntExpl:: TimIntExpl
-(
+
+/*----------------------------------------------------------------------*
+ | constructor                                               dano 01/12 |
+ *----------------------------------------------------------------------*/
+THR::TimIntExpl::TimIntExpl(
   const Teuchos::ParameterList& ioparams,  //!< ioflags
   const Teuchos::ParameterList& tdynparams,  //!< input parameters
   const Teuchos::ParameterList& xparams,  //!< extra flags
   Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
   Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
   Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-)
-: TimInt
-  (
+  )
+: TimInt(
     ioparams,
     tdynparams,
     xparams,
     actdis,
     solver,
     output
-  )
+    )
 {
   // get away
   return;
-}
+}  // TimIntExplEuler()
+
 
 /*----------------------------------------------------------------------*
  | update time step                                          dano 01/12 |
@@ -59,14 +60,17 @@ void THR::TimIntExpl::Update()
   // currently nothing, can include history dependency of materials
   UpdateStepElement();
   return;
-}
 
-/*----------------------------------------------------------------------*/
-/* print step summary */
+}  // Update()
+
+
+/*----------------------------------------------------------------------*
+ | print step summary                                        dano 01/12 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntExpl::PrintStep()
 {
   // print out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_ == 0) )
   {
     PrintStepText(stdout);
   }
@@ -78,14 +82,14 @@ void THR::TimIntExpl::PrintStep()
 
   // fall asleep
   return;
-}
 
-/*----------------------------------------------------------------------*/
-/* print step summary */
-void THR::TimIntExpl::PrintStepText
-(
-  FILE* ofile
-)
+}  // PrintStep()
+
+
+/*----------------------------------------------------------------------*
+ | print step summary                                        dano 01/12 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntExpl::PrintStepText(FILE* ofile)
 {
   fprintf(ofile,
           "Finalised: step %6d"
@@ -97,6 +101,7 @@ void THR::TimIntExpl::PrintStepText
           step_, stepmax_, (*time_)[0], (*dt_)[0], 0
    //       timer_->ElapsedTime()
    );
+
   // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
           "--------------------------------------------------------------"
@@ -106,6 +111,8 @@ void THR::TimIntExpl::PrintStepText
 
   // fall asleep
   return;
-}
+
+}  // PrintStepText()
+
 
 /*----------------------------------------------------------------------*/

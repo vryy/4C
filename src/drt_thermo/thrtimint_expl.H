@@ -207,6 +207,8 @@ namespace THR
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
 
+    //! Write internal and external forces for restart
+    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 
     //@}
 

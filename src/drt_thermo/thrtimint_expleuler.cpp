@@ -7,29 +7,31 @@
 Maintainer: Caroline Danowski
             danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289- 15253
 </pre>
 */
 
 
-/*----------------------------------------------------------------------*/
-/* headers */
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 01/12 |
+ *----------------------------------------------------------------------*/
 #include "thrtimint_expleuler.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 
-/*----------------------------------------------------------------------*/
-/* Constructor */
-THR::TimIntExplEuler::TimIntExplEuler
-(
+
+/*----------------------------------------------------------------------*
+ | constructor                                               dano 01/12 |
+ *----------------------------------------------------------------------*/
+THR::TimIntExplEuler::TimIntExplEuler(
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& tdynparams,
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
   Teuchos::RCP<IO::DiscretizationWriter> output
-)
+  )
 : TimIntExpl(
     ioparams,
     tdynparams,
@@ -58,10 +60,13 @@ THR::TimIntExplEuler::TimIntExplEuler
 
   // let it rain
   return;
-}
 
-/*----------------------------------------------------------------------*/
-/* Integrate step */
+}  // TimIntExplEuler()
+
+
+/*----------------------------------------------------------------------*
+ | integrate step                                            dano 01/12 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntExplEuler::IntegrateStep()
 {
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
@@ -133,10 +138,13 @@ void THR::TimIntExplEuler::IntegrateStep()
 
   // wassup?
   return;
-}
 
-/*----------------------------------------------------------------------*/
-/* Update step */
+}  // IntegrateStep()
+
+
+/*----------------------------------------------------------------------*
+ | update step                                               dano 01/12 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntExplEuler::UpdateStepState()
 {
   // new temperatures at t_{n+1} -> t_n
@@ -148,11 +156,13 @@ void THR::TimIntExplEuler::UpdateStepState()
 
   // bye
   return;
-}
+}  // UpdateStepState()
 
-/*----------------------------------------------------------------------*/
-/* update after time step after output on element level*/
-// update anything that needs to be updated at the element level
+
+/*----------------------------------------------------------------------*
+ | update after time step after output on element level      dano 01/12 |
+ | update anything that needs to be updated at the element level        |
+ *----------------------------------------------------------------------*/
 void THR::TimIntExplEuler::UpdateStepElement()
 {
   // create the parameters for the discretization
@@ -166,14 +176,32 @@ void THR::TimIntExplEuler::UpdateStepElement()
   // go to elements and do nothing
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
-}
 
-/*----------------------------------------------------------------------*/
-/* read restart forces */
+}  // UpdateStepElement()
+
+
+/*----------------------------------------------------------------------*
+ | read restart forces                                       dano 01/12 |
+ *----------------------------------------------------------------------*/
 void THR::TimIntExplEuler::ReadRestartForce()
 {
   // do nothing
   return;
-}
+
+}  // ReadRestartForce
+
+
+/*----------------------------------------------------------------------*
+ | read restart forces                                       dano 07/13 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntExplEuler::WriteRestartForce(
+  Teuchos::RCP<IO::DiscretizationWriter> output
+  )
+{
+  // do nothing
+  return;
+
+}  // WriteRestartForce()
+
 
 /*----------------------------------------------------------------------*/

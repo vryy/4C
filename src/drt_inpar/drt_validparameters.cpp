@@ -2127,10 +2127,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &tgenalpha
     );
 
-  DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&tgenalpha);
+  // default values correspond to midpoint-rule
   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&tgenalpha);
-  DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
-  DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&tgenalpha);
+  DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0.5,1)",&tgenalpha);
+  DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0.5,1)",&tgenalpha);
 
   /*----------------------------------------------------------------------*/
   /* parameters for one-step-theta thermal integrator */
@@ -2140,10 +2140,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tsidyn = list->sublist(
-   "TSI DYNAMIC",false,
-   "Thermo Structure Interaction\n"
-   "Dynamic section for TSI solver with various coupling methods"
-   );
+    "TSI DYNAMIC",false,
+    "Thermo Structure Interaction\n"
+    "Dynamic section for TSI solver with various coupling methods"
+     );
 
   // Coupling strategy for (partitioned and monolithic) TSI solvers
   setStringToIntegralParameter<int>("COUPALGO","tsi_monolithic",

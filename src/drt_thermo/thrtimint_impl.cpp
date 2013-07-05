@@ -5,10 +5,10 @@
        thermal dynamics
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 </pre>
 */
 
@@ -642,9 +642,12 @@ void THR::TimIntImpl::Update()
   // update temperature and temperature rate
   // after this call we will have tempn_ == temp_ (temp_{n+1} == temp_n), etc.
   UpdateStepState();
+  // update everything on the element level
+  UpdateStepElement();
   // update time and step
   UpdateStepTime();
   return;
+
 }  // Update()
 
 
@@ -659,8 +662,8 @@ void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
   // the sum of increments we get from NOX and apply the latest
   // increment only.
   UpdateIterIncrementally(tempi);
-
   return;
+
 }  // UpdateNewton()
 
 
@@ -705,6 +708,7 @@ void THR::TimIntImpl::PrintPredictor()
 
   // leave your hat on
   return;
+
 }  // PrintPredictor()
 
 
@@ -732,6 +736,7 @@ void THR::TimIntImpl::PrintNewtonIter()
 
   // see you
   return;
+
 }  // PrintNewtonIter()
 
 

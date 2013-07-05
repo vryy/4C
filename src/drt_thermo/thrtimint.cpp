@@ -4,10 +4,10 @@
 \brief Time integration for spatially discretised thermal dynamics
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 
 </pre>
 */
@@ -352,6 +352,7 @@ void THR::TimInt::ReadRestart(const int step)
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   dofrowmap_ = discret_->DofRowMap();
+
 }  // ReadRestart()
 
 
@@ -367,6 +368,7 @@ void THR::TimInt::ReadRestartState()
   rate_->UpdateSteps(*raten_);
   reader.ReadMesh(step_);
   return;
+
 }  // ReadRestartState()
 
 
@@ -428,19 +430,19 @@ void THR::TimInt::OutputRestart(bool& datawritten)
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("temperature", (*temp_)(0));
   output_->WriteVector("rate", (*rate_)(0));
-  output_->WriteVector("fexternal", Fext());
-
+  // write all force vectors which are later read in restart
+  WriteRestartForce(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
   output_->WriteElementData(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_ == 0) )
   {
     printf("====== Restart written in step %d\n", step_);
     // print a beautiful line made exactly of 80 dashes
     printf("--------------------------------------------------------------"
-            "------------------\n");
+           "------------------\n");
     fflush(stdout);
   }
 
@@ -477,6 +479,7 @@ void THR::TimInt::OutputState(bool& datawritten)
 
   // leave for good
   return;
+
 }  // OutputState()
 
 
@@ -489,7 +492,7 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  p.set("action", "proc_thermo_heatflux");
+  p.set("action", "calc_thermo_heatflux");
   // other parameters that might be needed by the elements
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
@@ -572,6 +575,7 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
 
   // leave me alone
   return;
+
 }  // OutputHeatfluxTempgrad()
 
 
@@ -632,6 +636,7 @@ void THR::TimInt::OutputEnergy()
 
   // in God we trust
   return;
+
 }  // OutputEnergy()
 
 
@@ -641,6 +646,7 @@ void THR::TimInt::OutputEnergy()
 Teuchos::RCP<DRT::ResultTest> THR::TimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new THR::ResultTest(*this));
+
 }  // CreateFieldTest()
 
 
@@ -672,6 +678,7 @@ void THR::TimInt::ApplyForceExternal(
 
   // go away
   return;
+
 }  // ApplyForceExternal()
 
 
@@ -721,6 +728,7 @@ void THR::TimInt::ApplyForceExternalConv(
 
   // go away
   return;
+
 }  // ApplyForceExternalConv()
 
 
@@ -765,6 +773,7 @@ void THR::TimInt::ApplyForceTangInternal(
 
   // that's it
   return;
+
 }  // ApplyForceTangInternal()
 
 
@@ -778,7 +787,7 @@ void THR::TimInt::ApplyForceTangInternal(
   const double dt,
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperature
-  Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
+  Teuchos::RCP<Epetra_Vector> fcap,  //!< capacity force
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
   Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
   )
@@ -812,6 +821,7 @@ void THR::TimInt::ApplyForceTangInternal(
 
   // that's it
   return;
+
 }  // ApplyForceTangInternal()
 
 
@@ -857,6 +867,7 @@ void THR::TimInt::ApplyForceInternal(
 
   // where the fun starts
   return;
+
 }  // ApplyForceTangInternal()
 
 
@@ -1005,6 +1016,7 @@ void THR::TimInt::SetInitialField(
   } // switch(init)
 
   return;
+
 }  // SetInitialField()
 
 

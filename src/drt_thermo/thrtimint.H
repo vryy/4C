@@ -156,6 +156,12 @@ namespace THR
     //! time step.
     virtual void UpdateStepState() = 0;
 
+    //! Update everything on element level after time step and after output
+    //!
+    //! Thus the 'last' converged is lost and a reset of the time step
+    //! becomes impossible. We are ready and keen awating the next time step.
+    virtual void UpdateStepElement() = 0;
+
     //! Update time and step counter
     void UpdateStepTime();
 
@@ -223,6 +229,9 @@ namespace THR
     //! Energy output
     void OutputEnergy();
 
+    //! Write internal and external forces (if necessary for restart)
+    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
     {
@@ -268,7 +277,6 @@ namespace THR
 
     //! Apply external force
     void ApplyForceExternal(
-//      Teuchos::ParameterList& p,  //!< parameter list handed down to elements
       const double time,  //!< evaluation time
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       Teuchos::RCP<Epetra_Vector>& fext  //!< external force
@@ -302,7 +310,7 @@ namespace THR
       const double dt,  //!< step size
       const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
       const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-      Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force
+      Teuchos::RCP<Epetra_Vector> fcap,  //!< capacity force
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
       );

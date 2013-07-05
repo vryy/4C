@@ -240,22 +240,29 @@ void THR::TimIntStatics::UpdateStepState()
   //!    F_{int;n} := F_{int;n+1}
   fint_->Update(1.0, *fintn_, 0.0);
 
-  //! update anything that needs to be updated at the element level
-  {
-    //! create the parameters for the discretization
-    Teuchos::ParameterList p;
-    //! other parameters that might be needed by the elements
-    p.set("total time", timen_);
-    p.set("delta time", (*dt_)[0]);
-    //! action for elements
-    p.set("action", "calc_thermo_update_istep");
-    //! go to elements
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  }
-
   //! look out
   return;
 }  // UpdateStepState()
+
+
+/*----------------------------------------------------------------------*
+ | update after time step after output on element level      dano 05/13 |
+ | update anything that needs to be updated at the element level        |
+ *----------------------------------------------------------------------*/
+void THR::TimIntStatics::UpdateStepElement()
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // other parameters that might be needed by the elements
+  p.set("total time", timen_);
+  p.set("delta time", (*dt_)[0]);
+  // action for elements
+  p.set("action", "calc_thermo_update_istep");
+  // go to elements
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                     Teuchos::null, Teuchos::null, Teuchos::null);
+
+}  // UpdateStepElement()
 
 
 /*----------------------------------------------------------------------*
@@ -263,15 +270,23 @@ void THR::TimIntStatics::UpdateStepState()
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, step_);
-  //! set 'initial' external force
-  reader.ReadVector(fext_, "fexternal");
-  //! set 'initial' internal force vector
-  //! Set dt to 0, since we do not propagate in time.
-  ApplyForceInternal((*time_)[0], 0.0, (*temp_)(0), zeros_, fint_);
-
+  // do nothing
   return;
+
 }  // ReadRestartForce()
+
+
+/*----------------------------------------------------------------------*
+ | write internal and external forces for restart            dano 07/13 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntStatics::WriteRestartForce(
+  Teuchos::RCP<IO::DiscretizationWriter> output
+  )
+{
+  // do nothing
+  return;
+
+}  // WriteRestartForce()
 
 
 /*----------------------------------------------------------------------*
@@ -294,6 +309,7 @@ void THR::TimIntStatics::ApplyForceTangInternal(
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fint,tang);
   //! finish
   return;
+
 }  // ApplyForceTangInternal()
 
 
@@ -316,6 +332,7 @@ void THR::TimIntStatics::ApplyForceInternal(
   TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
   //! finish
   return;
+
 }  // ApplyForceTangInternal()
 
 
@@ -338,6 +355,7 @@ void THR::TimIntStatics::ApplyForceExternalConv(
   TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
   // finish
   return;
+
 }  // ApplyForceExternalConv()
 
 

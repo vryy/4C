@@ -4,10 +4,10 @@
 \brief Thermal time integration with one-step-theta
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 
 </pre>
 */
@@ -17,6 +17,21 @@ Maintainer: Burkhard Bornemann
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_ost.H"
+
+/*----------------------------------------------------------------------*
+ | constructor                                               dano 06/13 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntOneStepTheta::VerifyCoeff()
+{
+  // theta
+  if ( (theta_ <= 0.0) or (theta_ > 1.0) )
+    dserror("theta out of range (0.0,1.0]");
+
+  // done
+  return;
+
+}  // VerifyCoeff()
+
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 08/09 |
@@ -50,6 +65,8 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // info to user
   if (myrank_ == 0)
   {
+    // check if coefficient has an admissible value
+    VerifyCoeff();
     std::cout << "with one-step-theta" << std::endl
               << "   theta = " << theta_ << std::endl
               << std::endl;
@@ -76,14 +93,13 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // set initial internal force vector
   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0),zeros_,fcap_,
                          fint_, tang_);
+
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
-
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
-
   // set initial external force vector of convective heat transfer boundary
   // conditions
   ApplyForceExternalConv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
@@ -106,11 +122,9 @@ void THR::TimIntOneStepTheta::PredictConstTempConsistRate()
   tempn_->Update(1.0, *(*temp_)(0), 0.0);
 
   // new end-point temperature rates
-  raten_->Update(1.0/(theta_*dt), *tempn_,
-                -1.0/(theta_*dt), *(*temp_)(0),
-                0.0);
-  raten_->Update(-(1.0-theta_)/theta_, *(*rate_)(0),
-                1.0);
+  // R_{n+1}^{i+1} = -(1 - theta)/theta . R_n + 1/(theta . dt) . (T_{n+1}^{i+1} - T_n)
+  raten_->Update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
+  raten_->Update(-(1.0-theta_)/theta_, *(*rate_)(0), 1.0/(theta_*dt));
 
   // watch out
   return;
@@ -156,10 +170,10 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_,
                          tang_);
 
-  // build residual  Res = C . R_{n+theta}
+  // build residual  Res = R_{n+theta}
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
-  // with R_{n+theta}     = C . ( T_{n+1} - T_n ) / dt
+  // with R_{n+theta}     = M_cap . ( T_{n+1} - T_n ) / dt = fcapn_ - fcap_
   //      F_{int;n+theta} = theta * F_{int;n+1} + (1 - theta) * F_{int;n}
   //      F_{ext;n+theta} = - theta * F_{ext;n+1} - (1 - theta) * F_{ext;n}
   fres_->Update(1.0, *fcapn_, -1.0, *fcap_, 0.0);
@@ -177,6 +191,8 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
     fres_->Scale(-1);
   }
 
+  // no further modification on tang_ required
+  // tang_ is already effective dynamic tangent matrix
   tang_->Complete();  // close tangent matrix
 
   // hallelujah
@@ -243,13 +259,13 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
   double fextnorm = 0.0;
   fextnorm = THR::AUX::CalculateVectorNorm(iternorm_, fextn_);
 
+  // norm of the capacity forces
+  double fcapnorm = 0.0;
+  fcapnorm = THR::AUX::CalculateVectorNorm(iternorm_, fcapn_);
+
   // norm of reaction forces
   double freactnorm = 0.0;
   freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
-
-  // norm of stored forces
-  double fcapnorm = 0.0;
-  fcapnorm = THR::AUX::CalculateVectorNorm(iternorm_, fcap_);
 
   // return char norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
@@ -266,19 +282,16 @@ void THR::TimIntOneStepTheta::UpdateIterIncrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux
-      = LINALG::CreateVector(*dofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*dofrowmap_, false);
 
   // new end-point temperatures
-  // T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}
+  // T_{n+1}^{i+1} := T_{n+1}^{<k>} + IncT_{n+1}^{i}
   tempn_->Update(1.0, *tempi_, 1.0);
 
   // new end-point temperature rates
-  // aux = 1/(theta . Dt) T_n+1^k+1 - 1/(theta . Dt) T_n+1^k - (1-theta)/theta T'_n+1^k
-  aux->Update(1.0/(theta_*(*dt_)[0]), *tempn_,
-               -1.0/(theta_*(*dt_)[0]), *(*temp_)(0),
-               0.0);
-  aux->Update(-(1.0-theta_)/theta_, *(*rate_)(0), 1.0);
+  // aux = - (1-theta)/theta R_n + 1/(theta . dt) (T_{n+1}^{i+1} - T_{n+1}^i)
+  aux->Update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
+  aux->Update(-(1.0-theta_)/theta_, *(*rate_)(0), 1.0/(theta_*(*dt_)[0]));
   // put only to free/non-DBC DOFs
   dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), raten_);
 
@@ -297,6 +310,7 @@ void THR::TimIntOneStepTheta::UpdateIterIteratively()
   tempn_->Update(1.0, *tempi_, 1.0);
 
   // new end-point temperature rates
+  // R_{n+1}^{<k+1>} := R_{n+1}^{<k>} + 1/(theta . dt)IncT_{n+1}^{<k>}
   raten_->Update(1.0/(theta_*(*dt_)[0]), *tempi_, 1.0);
 
   // bye
@@ -325,28 +339,33 @@ void THR::TimIntOneStepTheta::UpdateStepState()
   //    F_{int;n} := F_{int;n+1}
   fint_->Update(1.0, *fintn_, 0.0);
 
-  // update new stored force
-  //    F_{transient;n} := F_{transient;n+1}
+  // update new stored transient force
+  //    F_{cap;n} := F_{cap;n+1}
   fcap_->Update(1.0, *fcapn_, 0.0);
-
-  // update anything that needs to be updated at the element level
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList p;
-    // other parameters that might be needed by the elements
-    p.set("total time", timen_);
-    p.set("delta time", (*dt_)[0]);
-    //p.set("alpha f", theta_);
-    // action for elements
-    p.set("action", "calc_thermo_update_istep");
-    // go to elements
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                       Teuchos::null, Teuchos::null, Teuchos::null);
-  }
 
   // look out
   return;
 }  // UpdateStepState()
+
+
+/*----------------------------------------------------------------------*
+ | update after time step after output on element level      dano 05/13 |
+ | update anything that needs to be updated at the element level        |
+ *----------------------------------------------------------------------*/
+void THR::TimIntOneStepTheta::UpdateStepElement()
+{
+  // create the parameters for the discretization
+  Teuchos::ParameterList p;
+  // other parameters that might be needed by the elements
+  p.set("total time", timen_);
+  p.set("delta time", (*dt_)[0]);
+  // action for elements
+  p.set("action", "calc_thermo_update_istep");
+  // go to elements
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                     Teuchos::null, Teuchos::null, Teuchos::null);
+
+}  // UpdateStepElement()
 
 
 /*----------------------------------------------------------------------*
@@ -355,19 +374,27 @@ void THR::TimIntOneStepTheta::UpdateStepState()
 void THR::TimIntOneStepTheta::ReadRestartForce()
 {
   IO::DiscretizationReader reader(discret_, step_);
-  // set 'initial' external force
   reader.ReadVector(fext_, "fexternal");
-  tang_->Zero();
-  fint_->PutScalar(0.0);
-  fcap_->PutScalar(0.0);
-  // set 'initial' internal force vector and capacity
-  // Set dt to 0, since we do not propagate in time.
-  ApplyForceTangInternal(timen_, 0.0, tempn_, zeros_, fcap_, fint_,
-                         tang_);
-  tang_->Reset();
-  
+  reader.ReadVector(fint_, "fint");
+  reader.ReadVector(fcap_, "fcap");
+
   return;
 }  // ReadRestartForce()
+
+
+/*----------------------------------------------------------------------*
+ | write internal and external forces for restart            dano 07/13 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntOneStepTheta::WriteRestartForce(
+  Teuchos::RCP<IO::DiscretizationWriter> output
+  )
+{
+  output->WriteVector("fexternal",fext_);
+  output->WriteVector("fint",fint_);
+  output->WriteVector("fcap",fcap_);
+
+  return;
+}  // WriteRestartForce()
 
 
 /*----------------------------------------------------------------------*
@@ -378,7 +405,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   const double dt,  //!< step size
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-  Teuchos::RCP<Epetra_Vector> fcap,  //!< stored force (like inertial force in STR)
+  Teuchos::RCP<Epetra_Vector> fcap,  //!< capacity force
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
   Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
   )

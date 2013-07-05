@@ -3,10 +3,10 @@
 \file thrtimint_impl.H
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 </pre>
 */
 
@@ -223,6 +223,9 @@ namespace THR
     //! We are ready and keen awaiting the next time step.
     virtual void UpdateStepState() = 0;
 
+    //! Update Element
+    virtual void UpdateStepElement() = 0;
+
     //! update time step
     virtual void Update();
 
@@ -311,6 +314,9 @@ namespace THR
 
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
+
+    //! Write internal and external forces for restart
+    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 
     //! Return residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
     Teuchos::RCP<const Epetra_Vector> TempRes() const { return tempi_; }

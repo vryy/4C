@@ -11,19 +11,24 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | definitions                                               dano 01/12 |
+ *----------------------------------------------------------------------*/
 #ifndef THRTIMINT_EXPLEULER_H
 #define THRTIMINT_EXPLEULER_H
 
-/*----------------------------------------------------------------------*/
-/* headers */
+
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 01/12 |
+ *----------------------------------------------------------------------*/
 #include "thrtimint_expl.H"
 
-/*----------------------------------------------------------------------*/
-/* belongs to thermal dynamics namespace */
+
+/*----------------------------------------------------------------------*
+ | belongs to thermal dynamics namespace                    bborn 01/12 |
+ *----------------------------------------------------------------------*/
 namespace THR
 {
-
   /*====================================================================*/
   /*!
    * \brief Forward Euler
@@ -40,15 +45,14 @@ namespace THR
     //@{
 
     //! Constructor
-    TimIntExplEuler
-    (
+    TimIntExplEuler(
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& tdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
-    );
+      );
 
     //! Destructor
     // ....
@@ -125,8 +129,10 @@ namespace THR
     //! Read and set restart for forces
     void ReadRestartForce();
 
-    //@}
+    //! Write internal and external forces for restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
 
+    //@}
 
   protected:
 
