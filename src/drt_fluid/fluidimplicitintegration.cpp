@@ -1614,6 +1614,16 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     std::vector<DRT::Condition*> fdpcond;
     discret_->GetCondition(fdpcondname,fdpcond);
 
+    // define vectors for flow rate and volume for actual evaluation of boundary 
+    // conditions according to time-integration scheme and potential relaxation 
+    // within nonlinear iteration loop
+    // (relaxation parameter 0.5, for the time being)
+    LINALG::Matrix<4,1> flowraterel(true);
+    LINALG::Matrix<4,1> flowvolumerel(true);
+    const double relaxpara = 0.5;
+    double timefac = 1.0;
+    if (is_genalpha_) timefac = alphaF_;
+
     // assign ID to all conditions
     for (int fdpcondid = 0; fdpcondid < (int) fdpcond.size(); fdpcondid++)
     {
@@ -1653,20 +1663,20 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
     //----------------------------------------------------------------------
     // compute
-    // 1) flow rate
-    // 2) flow volume
-    // 3) surface area,
-    // 4) pressure integral, and
-    // 5) mean pressure
+    // a) flow rate (current value and value used for evaluation of bc)
+    // b) flow volume (current value and value used for evaluation of bc)
+    // c) surface area,
+    // d) pressure integral, and
+    // e) mean pressure
     // for each flow-dependent pressure boundary condition
     //----------------------------------------------------------------------
-    // create parameter list
-    Teuchos::ParameterList flowdeppressureparams;
-
     for (int fdpcondid = 0; fdpcondid < (int) fdpcond.size(); fdpcondid++)
     {
+      // create parameter list
+      Teuchos::ParameterList flowdeppressureparams;
+
       //--------------------------------------------------------------------
-      // 1) flow rate
+      // a) flow rate
       //--------------------------------------------------------------------
       // set action for elements
       flowdeppressureparams.set<int>("action",FLD::calc_flowrate);
@@ -1693,24 +1703,32 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       // sum up global flow rate over all processors and set to global value
       double flowrate = 0.0;
       dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
+
+      // set current flow rate
       flowratenp_(fdpcondid) = flowrate;
+
+      // compute flow rate used for evaluation of boundary condition below
+      flowraterel(fdpcondid) = (1.0-timefac)*flowraten_(fdpcondid) + timefac*((1.0-relaxpara)*flowratenpi_(fdpcondid) + relaxpara*flowratenp_(fdpcondid));
 
       // clear state
       discret_->ClearState();
       
       //--------------------------------------------------------------------
-      // 2) flow volume
+      // b) flow volume
       //--------------------------------------------------------------------
-      // compute flow volume as integral of flow rate according to
+      // compute current flow volume as integral of flow rate according to
       // trapezoidal rule
       flowvolumenp_(fdpcondid) = flowvolumen_(fdpcondid) + 0.5*dta_*(flowratenp_(fdpcondid)+flowraten_(fdpcondid));
       
-      // set flow volume to zero if value smaller than zero,
+      // set current flow volume to zero if value smaller than zero,
       // meaning that no flow volume may be sucked in from outside
       if (flowvolumenp_(fdpcondid) < 0.0) flowvolumenp_(fdpcondid) = 0.0;
 
+      // compute flow volume used for evaluation of boundary condition below
+      flowvolumerel(fdpcondid) = (1.0-timefac)*flowvolumen_(fdpcondid) + timefac*((1.0-relaxpara)*flowvolumenpi_(fdpcondid) + relaxpara*flowvolumenp_(fdpcondid));
+
       //--------------------------------------------------------------------
-      // 3) surface area
+      // c) surface area
       //--------------------------------------------------------------------
       // set action and parameter for elements
       flowdeppressureparams.set<int>("action",FLD::calc_area);
@@ -1733,7 +1751,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->ClearState();
 
       //--------------------------------------------------------------------
-      // 4) pressure integral
+      // d) pressure integral
       //--------------------------------------------------------------------
       // set action for elements
       flowdeppressureparams.set<int>("action",FLD::calc_pressure_bou_int);
@@ -1759,7 +1777,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->ClearState();
 
       //--------------------------------------------------------------------
-      // 5) mean pressure
+      // e) mean pressure
       //--------------------------------------------------------------------
       const double meanpressure = pressint/area;
 
@@ -1771,11 +1789,21 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
         std::ofstream f1;
         f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
 
-        f1 << flowratenp_(fdpcondid) << " " << flowvolumenp_(fdpcondid) << " " << meanpressure << " ";
-        f1 << "\n";
-        f1.flush();
-        f1.close();
+        f1 << flowratenp_(fdpcondid) << " " << flowvolumenp_(fdpcondid) << " " << meanpressure << "   ";
       }
+    }
+
+    // append values to output file
+    if (myrank_ == 0)
+    {
+      const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
+      
+      std::ofstream f1;
+      f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
+
+      f1 << "\n";
+      f1.flush();
+      f1.close();
     }
 
     //----------------------------------------------------------------------
@@ -1785,21 +1813,18 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     //----------------------------------------------------------------------
     for (int fdpcondid = 0; fdpcondid < (int) fdpcond.size(); fdpcondid++)
     {
-      // set action for elements
-      flowdeppressureparams.set<int>("action", FLD::flow_dep_pressure_bc);
+      // create parameter list
+      Teuchos::ParameterList flowdeppressureparams;
 
-      // initialize time factor to value for one-step-theta/BDF2
-      double timefac = 1.0;
-      
+      // set action for elements
+      flowdeppressureparams.set<int>("action",FLD::flow_dep_pressure_bc);
+
       // set required state vectors (no ALE so far)
       if (is_genalpha_)
       {
         discret_->SetState("velaf",velaf_);
         if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
           discret_->SetState("velnp",velnp_);
-
-        // modify time factor to alpha_F for generalized-alpha scheme
-        timefac = alphaF_;
       }
       else discret_->SetState("velaf",velnp_);
       /*if (alefluid_)
@@ -1808,22 +1833,14 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
         discret_->SetState("gridvelaf",gridv_);
       }*/
 
-      // compute flow-rate or flow-volume value for evaluation of boundary condition 
-      // according to time-integration scheme and potential relaxation within
-      // nonlinear iteration loop (relaxation parameter 0.5, for the time being)
-      double flowvaluerel = 0.0;
-      const double relaxpara = 0.5;
-      if (*fdpcond[fdpcondid]->Get<string>("type of flow dependence") == "flow_rate")
-        flowvaluerel = (1.0-timefac)*flowraten_(fdpcondid) + timefac*((1.0-relaxpara)*flowratenpi_(fdpcondid) + relaxpara*flowratenp_(fdpcondid));
-      else if (*fdpcond[fdpcondid]->Get<string>("type of flow dependence") == "flow_volume")
-        flowvaluerel = (1.0-timefac)*flowvolumen_(fdpcondid) + timefac*((1.0-relaxpara)*flowvolumenpi_(fdpcondid) + relaxpara*flowvolumenp_(fdpcondid));
-
-      // set value for elements
-      flowdeppressureparams.set("flow rate or flow volume",flowvaluerel);
+      // set values for elements
+      flowdeppressureparams.set<LINALG::Matrix<4,1> >("flow rate",flowraterel);
+      flowdeppressureparams.set<LINALG::Matrix<4,1> >("flow volume",flowvolumerel);
 
       // evaluate all flow-dependent pressure boundary conditions
       discret_->EvaluateCondition(flowdeppressureparams,sysmat_,Teuchos::null,
-                                  residual_,Teuchos::null,Teuchos::null,fdpcondname);
+                                  residual_,Teuchos::null,Teuchos::null,
+                                  fdpcondname,fdpcondid);
   
       // clear state
       discret_->ClearState();

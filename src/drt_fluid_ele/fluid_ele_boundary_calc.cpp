@@ -2253,9 +2253,10 @@ template <DRT::Element::DiscretizationType bndydistype,
   double pressure = 0.0;
 
   //--------------------------------------------------
-  // get condition information
+  // get condition information and ID
   //--------------------------------------------------
   RCP<DRT::Condition> fdp_cond = params.get<RCP<DRT::Condition> >("condition");
+  int fdp_cond_id = params.get<int>("ConditionID");
 
   // decide on whether it is a flow-rate- or flow-volume-based condition
   const string* condtype = (*fdp_cond).Get<string>("type of flow dependence");
@@ -2264,19 +2265,19 @@ template <DRT::Element::DiscretizationType bndydistype,
   if (*condtype == "flow_rate")
   {
     // get flow rate in this case
-    const double flowrate = params.get<double>("flow rate or flow volume");
+    LINALG::Matrix<4,1> flowrate = params.get<LINALG::Matrix<4,1> >("flow rate");
 
     // get constant and linear coefficient for linear flow rate - pressure relation 
     // and compute pressure accordingly
     const double const_coeff = (*fdp_cond).GetDouble("ConstCoeff");
     const double lin_coeff   = (*fdp_cond).GetDouble("LinCoeff");
-    pressure = const_coeff + lin_coeff*flowrate;
+    pressure = const_coeff + lin_coeff*flowrate(fdp_cond_id);
   }
   // flow-volume-based condition
   else if (*condtype == "flow_volume")
   {
     // get flow volume in this case
-    const double flow_volume = params.get<double>("flow rate or flow volume");
+    LINALG::Matrix<4,1> flow_volume = params.get<LINALG::Matrix<4,1> >("flow volume");
 
     // get initial volume, reference pressure and adiabatic exponent
     const double vol0    = (*fdp_cond).GetDouble("InitialVolume");
@@ -2284,8 +2285,8 @@ template <DRT::Element::DiscretizationType bndydistype,
     const double kappa   = (*fdp_cond).GetDouble("AdiabaticExponent");
 
     // compute rise in pressure due to volume reduction at boundary
-    pressure = ref_pre*pow((vol0/(vol0-flow_volume)),kappa);
-
+    pressure = ref_pre*pow((vol0/(vol0-flow_volume(fdp_cond_id))),kappa);
+    
     // subtract reference pressure for usual case of zero ambient pressure
     pressure -= ref_pre;          
   }
