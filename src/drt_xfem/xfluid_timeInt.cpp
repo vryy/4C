@@ -702,12 +702,13 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
           {
             // copy values, should be reasonable since dofsets identified
             CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
-//            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GhostPenalty,dbcgids);
+//            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
           }
           else if(!is_std_set_np and !is_std_set_n)
           {
             // copy values, should be reasonable since dofsets identified
             CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_GHOST, newRowStateVectors, oldRowStateVectors,dbcgids);
+//            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
           }
         } // end found set at t^n
 
@@ -928,10 +929,14 @@ void XFEM::XFluidTimeInt::MarkDofs(
         if(dis_->NodeRowMap()->LID(nid) != -1)
         {
           DRT::Node* n = dis_->gNode(nid);
+          // TODO:
+          // uncomment when no ghost-values shall be copied instead of reconstructed
           MarkDofs(n, dofset, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
         }
         else
         {
+          //TODO:
+          // uncomment when no ghost-values shall be copied instead of reconstructed
           MarkDofsForExport(nid, dofset, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP);
         }
       }
@@ -1562,23 +1567,20 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 
   if(!successful_check) return successful_check;
 
-  LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t space time element (r,s,t !!!)
 
   GEO::CUT::Position<space_time_distype> pos( xyze_st, n_coord );
-  pos.Compute();
-
-  rst = pos.LocalCoordinates();
-
-  within_space_time_side = false;
-
-  if(pos.WithinLimits())
-  {
-    within_space_time_side=true;
+  within_space_time_side = pos.Compute();
 
 #ifdef DEBUG_TIMINT
-    IO::cout << "\t\t\t changing side found!" << xyze_new << " \n local coords " << rst << IO::endl;
-#endif
+  LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t space time element (r,s,t !!!)
+  rst = pos.LocalCoordinates();
+
+  if(within_space_time_side)
+  {
+    IO::cout << "rst " << rst << IO::endl;
+    IO::cout << "\t\t\t changing side found!" << "new: " << xyze_new <<  " old: " << xyze_old << " \n global coords " << n_coord << " \n local coords " << rst << IO::endl;
   }
+#endif
 
   return successful_check;
 }

@@ -78,19 +78,19 @@ void XFEM::XFLUID_SemiLagrange::compute(
   {
   case FRS1FGI1_:
   {
-    IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_" << IO::endl;
+    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_" << IO::endl;
     resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
     break;
   }
   case FRSNot1_:
   {
-    IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_" << IO::endl;
+    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_" << IO::endl;
     resetState(TimeIntData::doneStd_,TimeIntData::currSL_);
     break;
   }
   case FRS1FGINot1_:
   {
-    IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_" << IO::endl;
+    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_" << IO::endl;
     reinitializeData();
     resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
     resetState(TimeIntData::doneStd_,TimeIntData::currSL_);
@@ -165,6 +165,20 @@ void XFEM::XFLUID_SemiLagrange::compute(
           }
           else
           {
+            // check if the initial point lies in the fluid domain
+            //----------------------------------------------
+            // get dofset w.r.t to old interface position
+            bool step_np = false;
+            std::vector<int> nds_curr;
+            getNodalDofSet(initial_ele, data->initialpoint_,nds_curr, data->last_valid_vc_, step_np);
+
+            if(nds_curr.size() == 0) dserror("no valid nds-vector for initial point found");
+            if(data->last_valid_vc_ != NULL and // not an uncut element
+               data->last_valid_vc_->Position() != GEO::CUT::Point::outside)
+            {
+              dserror("initial point does not lie in the fluid");
+            }
+
             data->initial_eid_ = initial_ele->Id();
             data->startpoint_ = data->initialpoint_; // start with the initial point as startpoint approximation
             data->initial_ele_owner_ = myrank_;
@@ -208,11 +222,10 @@ void XFEM::XFLUID_SemiLagrange::compute(
             DRT::Element * initial_ele = NULL;
 
             if( !discret_->HaveGlobalElement(data->initial_eid_))
-            {
-              //TODO: modify the ChangedSide check for intersections with all sides in the boundary-dis
-              // this is not so efficient but should not be called not so often
+            { 
+              // ChangedSide check for intersections with all sides in the boundary-dis
+              // this is not so efficient but should not be called so often
               // the check itself does not need information about the background elements
-//              dserror("element where initial point lies in not available on proc %d, no ChangedSide comparison possible", myrank_);
             }
             else
             {
@@ -244,6 +257,17 @@ void XFEM::XFLUID_SemiLagrange::compute(
               data->nds_ = nds_curr;
             }
 
+            if(data->changedside_ == false and nds_curr.size() == 0)
+            {
+              //cout << "node" << data->node_.Id() << endl;
+              //cout << "initial point " << data->initialpoint_ << endl;
+              //cout << "current startpoint " << data->startpoint_ << endl;
+              //cout << "initial element Id " << data->initial_eid_ << endl;
+              //cout << "initial element owner " << data->initial_ele_owner_ << endl;
+
+              dserror("point did not change the side, but nds = empty?!.");
+            }
+
             //-------------------------------------------------
             // Newton loop just for sensible points
             //-------------------------------------------------
@@ -254,7 +278,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
             double pres = 0.0;                           // dummy variable for pressure
             LINALG::Matrix<1,nsd>   pres_deriv(true);    // dummy matrix for the pressure derivatives
 
-            getGPValues(ele, xi, data->nds_, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
+            getGPValues(ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 #ifdef DEBUG_SEMILAGRANGE
             IO::cout << "\n\t\t\t ... computed velocity at start point approximation: " << vel;
@@ -538,7 +562,7 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(
       double pres = 0.0;                           // dummy variable for pressure
       LINALG::Matrix<1,nsd>   pres_deriv(true);    // dummy matrix for the pressure derivatives
 
-      getGPValues(ele, xi, data->nds_, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
+      getGPValues(ele, xi, nds_curr, *dofset_old_, vel, vel_deriv, pres, pres_deriv, veln_, false);
 
 
 #ifdef DEBUG_SEMILAGRANGE
@@ -811,9 +835,9 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
     if (data->state_==TimeIntData::failedSL_)
     {
 #ifdef DEBUG_SEMILAGRANGE
-      IO::cout << "WARNING: failedSL -> alternative algo!" << IO::endl;
-      IO::cout << "node " << data->node_.Id() << IO::endl;
-      IO::cout << "use initial point: " << data->initialpoint_ << IO::endl;
+      IO::cout << "P " << myrank_ << " WARNING: failedSL -> alternative algo!" << IO::endl;
+      IO::cout << "P " << myrank_ << " node " << data->node_.Id() << IO::endl;
+      IO::cout << "P " << myrank_ << " use initial point: " << data->initialpoint_ << IO::endl;
 #endif
 
       // Initialization
@@ -1323,10 +1347,10 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
 
     if(n!=NULL)
     {
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_new = n->DofCellSets();
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_old = n->DofCellSets();
 
       // get the nodal dofset w.r.t the Lagrangean origin
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets_new[data->nds_[inode]];
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets_old[data->nds_[inode]];
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent element is used for the reconstruction
       // REMARK: adjacent elements for that no elementhandle exists in the cut won't be found here
@@ -1507,6 +1531,8 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 #endif
         nds = cell->NodalDofSet();
 
+        if((int)nds.size() != ele->NumNode()) dserror(" size of nds-vector != number of element nodes, why does the vc does not have nodal dofsets?!");
+
         vc = cell;
 
 #ifdef DEBUG_SEMILAGRANGE
@@ -1538,6 +1564,21 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 //        IO::cout << "\n\t\t\t -> Position of cell " << cell->Position() << " and IsThisPointInside "<< cell->IsThisPointInside(x) << IO::endl;
 //#endif
       }
+    }
+
+    if(!inside_structure and (int)(nds.size()) !=ele->NumNode())
+    {
+      GEO::CUT::plain_volumecell_set cells;
+      e->VolumeCells(cells);
+
+      IO::cout << "point: " << x << IO::endl;
+      for(GEO::CUT::plain_volumecell_set::iterator cell_it=cells.begin(); cell_it!=cells.end(); cell_it++)
+      {
+        GEO::CUT::VolumeCell* cell = *cell_it;
+        IO::cout << "vc-pos: " << cell->Position() << IO::endl;
+      }
+
+      dserror("no valid nds-vector could be determined and point does not lie within the structure!");
     }
 
     // return if the structural volume cell is the only one which was found

@@ -165,15 +165,15 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
 
   std::set<int> cut_sides;
 
+  std::set<int> eids;
+  std::set<int> common_nodes;
+
   if(ele1 == NULL or ele2 == NULL)
   {
     check_allsides = true; // no efficient search possible
   }
   else
   {
-    std::set<int> eids;
-    std::set<int> common_nodes;
-
 
     if(ele1->Id() == ele2->Id()) // line within one element
     {
@@ -228,81 +228,81 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
 
 #ifdef DEBUG_TIMINT_STD
       IO::cout << "\n\t\t\t\t\t all sides on boundary discretization have to be check, ele1 = " << ele1->Id()
-                 << " and ele2 = " << ele2->Id()
-                 << " are not Neighbors" << IO::endl;
+                     << " and ele2 = " << ele2->Id()
+                     << " are not Neighbors" << IO::endl;
 #endif
 
-    }
-
-    //-----------------------------------------------------------------------
-    //-----------------------------------------------------------------------
-    // second: find all boundary sides involved in cutting the determined background elements
-
-
-#ifdef DEBUG_TIMINT_STD
-    IO::cout << "\n\t\t\t\t\t --------------------------------- ";
-    IO::cout << "\n\t\t\t\t\t Find involved sides with possible cuts between trace and side ";
-    IO::cout << "\n\t\t\t\t\t --------------------------------- " << IO::endl;
-#endif
-
-
-    // collect all cutting sides
-    if(check_allsides)
-    {
-      // add all sides of cut_discret to check
-      for(int i=0; i< boundarydis_->NumMyColElements(); i++)
-      {
-        cut_sides.insert(boundarydis_->ElementColMap()->GID(i));
-      }
-    }
-    else
-    {
-      //loop all found element
-      for(std::set<int>::iterator e_it=eids.begin(); e_it!=eids.end(); e_it++)
-      {
-        DRT::Element* ele = discret_->gElement(*e_it);
-
-        GEO::CUT::ElementHandle* eh = wizard->GetElement(ele);
-
-        // no cutsides within this element, then no side changing possible
-        if(eh == NULL)
-        {
-          continue; // next element
-        }
-
-        //--------------------------------------------------------
-        // get involved side ids
-        GEO::CUT::plain_element_set elements;
-        eh->CollectElements( elements );
-
-        // get all side-ids
-        for(GEO::CUT::plain_element_set::iterator eles = elements.begin(); eles!=elements.end(); eles++)
-        {
-          GEO::CUT::Element* sub_ele = *eles;
-
-          GEO::CUT::plain_facet_set facets = sub_ele->Facets();
-
-          for(GEO::CUT::plain_facet_set::const_iterator facet_it = facets.begin(); facet_it!=facets.end(); facet_it++)
-          {
-            GEO::CUT::Facet* facet = *facet_it;
-
-            GEO::CUT::Side* parent_side = facet->ParentSide();
-
-            bool is_elements_side = sub_ele->OwnedSide(parent_side);
-
-            if(!is_elements_side) // is a cutting side
-            {
-              cut_sides.insert(parent_side->Id());
-
-#ifdef DEBUG_TIMINT_STD
-              IO::cout << "\n\t\t\t\t\t add side with Id=" << parent_side->Id() << IO::endl;
-#endif
-            } // !element's side
-          } //facets
-        }//sub elements
-      }
     }
   }
+  //-----------------------------------------------------------------------
+  //-----------------------------------------------------------------------
+  // second: find all boundary sides involved in cutting the determined background elements
+
+
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t\t\t\t\t --------------------------------- ";
+  IO::cout << "\n\t\t\t\t\t Find involved sides with possible cuts between trace and side ";
+  IO::cout << "\n\t\t\t\t\t --------------------------------- " << IO::endl;
+#endif
+
+
+  // collect all cutting sides
+  if(check_allsides)
+  {
+    // add all sides of cut_discret to check
+    for(int i=0; i< boundarydis_->NumMyColElements(); i++)
+    {
+      cut_sides.insert(boundarydis_->ElementColMap()->GID(i));
+    }
+  }
+  else
+  {
+    //loop all found element
+    for(std::set<int>::iterator e_it=eids.begin(); e_it!=eids.end(); e_it++)
+    {
+      DRT::Element* ele = discret_->gElement(*e_it);
+
+      GEO::CUT::ElementHandle* eh = wizard->GetElement(ele);
+
+      // no cutsides within this element, then no side changing possible
+      if(eh == NULL)
+      {
+        continue; // next element
+      }
+
+      //--------------------------------------------------------
+      // get involved side ids
+      GEO::CUT::plain_element_set elements;
+      eh->CollectElements( elements );
+
+      // get all side-ids
+      for(GEO::CUT::plain_element_set::iterator eles = elements.begin(); eles!=elements.end(); eles++)
+      {
+        GEO::CUT::Element* sub_ele = *eles;
+
+        GEO::CUT::plain_facet_set facets = sub_ele->Facets();
+
+        for(GEO::CUT::plain_facet_set::const_iterator facet_it = facets.begin(); facet_it!=facets.end(); facet_it++)
+        {
+          GEO::CUT::Facet* facet = *facet_it;
+
+          GEO::CUT::Side* parent_side = facet->ParentSide();
+
+          bool is_elements_side = sub_ele->OwnedSide(parent_side);
+
+          if(!is_elements_side) // is a cutting side
+          {
+            cut_sides.insert(parent_side->Id());
+
+#ifdef DEBUG_TIMINT_STD
+            IO::cout << "\n\t\t\t\t\t add side with Id=" << parent_side->Id() << IO::endl;
+#endif
+          } // !element's side
+        } //facets
+      }//sub elements
+    }
+  }
+
 
   //-----------------------------------------------------------------------
   //-----------------------------------------------------------------------
