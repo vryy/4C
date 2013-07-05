@@ -172,7 +172,6 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
   }
   case INPAR::THR::dyna_genalpha :
   {
-    dserror("Sorry, GenAlpha not yet available");
     tmpthr = Teuchos::rcp(new THR::TimIntGenAlpha(*ioflags, *tdyn, *xparams,
                                                   actdis, solver, output));
     break;

@@ -44,7 +44,7 @@ namespace THR
     dyna_onesteptheta,  //!< one-step-theta time integrator (implicit)
     dyna_genalpha,  //!< generalised-alpha time integrator (implicit)
     dyna_expleuler  //!< forward Euler (explicit)
-  };
+  };  // DynamicType()
 
   //! Map time integrator to string
   static inline const std::string DynamicTypeString(
@@ -72,7 +72,7 @@ namespace THR
       dserror("Cannot make string for time integrator %d", name);
       return "";
     }
-  }
+  }  // DynamicTypeString()
 
   //! initial field for scalar transport problem
   enum InitialField
@@ -93,20 +93,19 @@ namespace THR
     midavg_imrlike,  //!< alphaf-mid-averaging is done IMR-like, i.e.
                      //!< \f$F_{int,m}\f$
                      //!< \f$= F_{int}(D_m)\f$
-                     //!< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
+                     //!< \f$= F_{int}(\alpha_f . D_{n+1} + (1-\alpha_f) . D_n)\f$
                      //!< (IMR means implicit mid-point rule.)
     midavg_trlike  //!< alphaf-mid-averaging is done TR-like, i.e.
                    //!< \f$F_{int,m}\f$
-                   //!< \f$= (1-\alpha_f)*F_{int,n+1} + \alpha_f*F_{int,n}\f$
-                   //!<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
+                   //!< \f$ = \alpha_f . F_{int,n+1} + (1-\alpha_f) . F_{int,n}\f$
+                   //!< \f$ = \alpha_f . F_{int}(\alpha_f . D_{n+1}) + (1-\alpha_f) . F_{int}(D_n)\f$
                    //!<  (TR means trapezoidal rule.)
-  };
+  };  // MidAverageEnum()
 
   /// Map mid-averaging to string
-  static inline const std::string MidAverageString
-  (
+  static inline const std::string MidAverageString(
     const enum MidAverageEnum name  ///< enum to convert
-  )
+    )
   {
     switch (name)
     {
@@ -121,8 +120,8 @@ namespace THR
     default :
       dserror("Cannot make string for time integrator %d", name);
       return "";
-    }
-  }
+    }  // end switch (name)
+  }  // MidAverageString
 
   //@}
 
@@ -182,8 +181,8 @@ namespace THR
       return "ConstTemp";
       break;
     case pred_consttemprate :
-            return "ConstTempRate";
-            break;
+      return "ConstTempRate";
+      break;
     case pred_tangtemp :
       return "TangTemp";
       break;
