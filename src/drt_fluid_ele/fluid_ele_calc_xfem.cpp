@@ -2156,7 +2156,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
 
   //----------------------------------------------------------------------------
-  //           build (G_sui + K_sui), (G_uis + K_uis) coupling matrices
+  //  build G_sui, G_uis coupling matrices and finally build condensed G_uis * K_ss^(-1) * G_sui
   //----------------------------------------------------------------------------
 
   if ( fluidfluidcoupling )
@@ -2191,8 +2191,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     }
 
     //--------------------------------------------
-    // add G_sui to K_sui => (G_sui+K_sui) and
-    // add G_uis to K_uis => (G_uis+K_uis)
+    // assemble Gsui and Guis
     //--------------------------------------------
     int ipatchsizesbefore = 0;
     for (std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator m=Cuiui_coupling.begin();
@@ -2224,7 +2223,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     }
 
     //----------------------------------------------------------------------------
-    //  build condensed   C_uiui=[ (G_sui + K_sui) * K_ss^(-1) * (G_uis + K_uis) ]
+    //  build condensed   C_uiui=[ G_uis * K_ss^(-1) * G_sui ]
     //----------------------------------------------------------------------------
 
     GuisInvKss.Multiply('N','N',1.0,Guis,InvKss,1.0);
@@ -2863,7 +2862,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         bool nitsche_evp = false;
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
-        		           params,
+                           params,
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
                            stabfac_conv,               // stabfac 2 for additional stabilization term to set
                            NIT_stab_fac,               // viscous Nitsche prefactor
@@ -3429,7 +3428,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
           gamma_press_coupling = params.get<double>("PRESSCOUPLING_INTERFACE_FAC");
 
         NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
-        		           params,
+                           params,
                            stabfac_visc,               // stabfac 1 for standard Nitsche term to set
                            stabfac_conv,               // stabfac 2 for additional stabilization term to set
                            NIT_stab_fac,               // viscous Nitsche prefactor

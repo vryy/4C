@@ -138,6 +138,10 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
     {
       return DefineProblemTypeXFEM<DRT::Element::hex20>(problem);
     }
+    //case DRT::Element::hex27:
+    //{
+    //  return DefineProblemTypeXFEM<DRT::Element::hex27>(problem);
+    //}
     default:
       dserror("Element shape %s not activated for XFEM problems. Just do it.",DRT::DistypeToString(distype).c_str());
     }
