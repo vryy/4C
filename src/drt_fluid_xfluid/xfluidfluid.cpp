@@ -205,7 +205,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
-  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_)
+  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
   //--------------------------------------------------------------------------------------
 }
@@ -1068,6 +1068,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     Teuchos::ParameterList faceparams;
 
     faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
+    faceparams.set("u_p_ghost_penalty_2nd",xfluid_.ghost_penalty_2ndorder_);
     faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
 
     //------------------------------------------------------------
@@ -1186,23 +1187,24 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   } // end of loop over embedded discretization
 
   // call edge stabilization
-  if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
+  if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
     Teuchos::ParameterList faceparams;
 
     faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
+    faceparams.set("u_p_ghost_penalty_2nd",xfluid_.ghost_penalty_2ndorder_);
     faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
 
     //------------------------------------------------------------
-    RCP<Epetra_Vector> ale_residual_col = LINALG::CreateVector(*alediscret.DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> ale_residual_col = LINALG::CreateVector(*alediscret.DofColMap(),true);
 
     //------------------------------------------------------------
     const Epetra_Map* rmap = NULL;
     //const Epetra_Map* dmap = NULL;
 
-    RCP<Epetra_FECrsMatrix> sysmat_FE;
+    Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
     if (xfluid_.alesysmat_ != Teuchos::null)
     {
       rmap = &(xfluid_.alesysmat_->OperatorRangeMap());
@@ -1211,12 +1213,12 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     }
     else dserror("alesysmat is NULL!");
 
-    RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
     //------------------------------------------------------------
     // loop over row faces
 
-    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.embdis_, true);
+    Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.embdis_, true);
 
     const int numrowintfaces = xdiscret->NumMyRowIntFaces();
 
@@ -2023,6 +2025,7 @@ FLD::XFluidFluid::XFluidFluid(
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
 
   ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
+  ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB");
   ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
 
   velgrad_interface_stab_ =  (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
@@ -2046,7 +2049,7 @@ FLD::XFluidFluid::XFluidFluid(
   gmsh_sol_out_          = (bool)params_xfem.get<int>("GMSH_SOL_OUT");
   gmsh_debug_out_        = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
   gmsh_debug_out_screen_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
+  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_));
   gmsh_discret_out_      = (bool)params_xfem.get<int>("GMSH_DISCRET_OUT");
   gmsh_step_diff_        = 500;
   gmsh_cut_out_          = (bool)params_xfem.get<int>("GMSH_CUT_OUT");
@@ -2224,7 +2227,7 @@ FLD::XFluidFluid::XFluidFluid(
 
   //-------------------------------------------------------------------
   // create internal faces extension for edge based stabilization
-  if(edge_based_ or ghost_penalty_)
+  if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
   {
     RCP<DRT::DiscretizationXFEM> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(embdis_, true);
     actembdis->CreateInternalFacesExtension();
@@ -2847,6 +2850,7 @@ void FLD::XFluidFluid::PrintStabilizationParams()
       IO::cout << "MSH_L2_PROJ                 : " << interfstabparams->get<string>("MSH_L2_PROJ") << "\n";
 
     IO::cout << "GHOST_PENALTY               : " << interfstabparams->get<string>("GHOST_PENALTY_STAB")    << IO::endl;
+    IO::cout << "GHOST_PENALTY_2nd_STAB      : " << interfstabparams->get<string>("GHOST_PENALTY_2nd_STAB") << IO::endl;
     IO::cout << "GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << IO::endl;
     IO::cout << "INFLOW_CONV_STAB_STRATEGY   : " << interfstabparams->get<string>("CONV_STAB_SCALING") << IO::endl;
     IO::cout << "INFLOW_CONV_STAB_FAC        : " << conv_stab_fac_ << IO::endl;
@@ -4106,7 +4110,7 @@ void FLD::XFluidFluid::Output()
     gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
 
-    if( xdiscret->FilledExtension() == true && ghost_penalty_ ) // stabilization output
+    if( xdiscret->FilledExtension() == true && (ghost_penalty_ or ghost_penalty_2ndorder_)) // stabilization output
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";

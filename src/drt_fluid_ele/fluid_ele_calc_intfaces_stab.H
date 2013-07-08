@@ -251,6 +251,20 @@ namespace DRT
           bool                                     use2ndderiv = false    ///< flag to use 2nd order derivatives
       );
 
+      //! Provid pressure and viscous u (EOS) ghost penalty stabilization for 2nd order derivatives
+      void GhostPenalty2nd(
+                  LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
+                  LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
+                  LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
+                  LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
+                  LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
+                  LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
+                  const double &                                                timefacfac,
+                  const double &                                                timefacfacpre,
+                  double &                                                      tau_u_2nd,
+                  double &                                                      tau_p_2nd
+                  );
+
       //! Provide pressure (EOS) stabilization assembly for fluid
       void pressureEOS(
           LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
@@ -938,6 +952,12 @@ namespace DRT
       LINALG::Matrix<nsd_,numderiv2_p> pvderxy2af_;
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
       LINALG::Matrix<nsd_,numderiv2_n> nvderxy2af_;
+
+      //! parent velocity (2nd) derivatives in gausspoint, time n+af
+      LINALG::Matrix<1,numderiv2_p> ppderxy2af_;
+      //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
+      LINALG::Matrix<1,numderiv2_n> npderxy2af_;
+
       //! pressure in gausspoint, time n+1
       double prenp_;
       //! parent pressure derivatives in gausspoint, time n+1

@@ -66,8 +66,8 @@ STABTYPE                        edge_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no
-SUPG                            no//yes
+PSPG                            no //yes
+SUPG                            no //yes
 VSTAB                           no_vstab
 GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
@@ -81,9 +81,9 @@ EOS_DEFINITION_TAU              Burman_Fernandez
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    No
-GMSH_DISCRET_OUT                No
-GMSH_CUT_OUT                    No
+GMSH_SOL_OUT                    no
+GMSH_DISCRET_OUT                no
+GMSH_CUT_OUT                    no
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
@@ -97,7 +97,8 @@ VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // con
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
 CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel // inflow // const // none
-GHOST_PENALTY_STAB              Yes //Yes
+GHOST_PENALTY_STAB              yes //Yes //Yes
+GHOST_PENALTY_2nd_STAB          yes //Yes
 GHOST_PENALTY_FAC               0.1                             // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
@@ -148,14 +149,14 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 3.46649828949062766e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1103 QUANTITY vely VALUE -7.79171393950176330e-03 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 3.46284597677281480e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY vely VALUE -7.77156642826276525e-03 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE -1.59420836375848407e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.58380078592200779e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY vely VALUE -2.34056035782456789e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE -1.59645087957904819e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.58256732056336591e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY vely VALUE -2.33352255309758921e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 803 QUANTITY pressure VALUE -8.21483030917723789e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY pressure VALUE -8.24216714908238890e-01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         34
 NDLINE                          57

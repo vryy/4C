@@ -648,8 +648,9 @@ namespace FLD
     /// edgebased stabilization
     bool edge_based_;
 
-    /// ghost penalty stabilization due to Nitsche's method
+    /// ghost penalty stabilization (1st order, 2nd order derivatives) due to Nitsche's method
     bool ghost_penalty_;
+    bool ghost_penalty_2ndorder_;
     double ghost_penalty_fac_;
 
     //! @name flags for gmsh output

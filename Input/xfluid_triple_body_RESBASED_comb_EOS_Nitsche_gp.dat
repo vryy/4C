@@ -77,7 +77,7 @@ EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_w
 SECONDORDER                     No
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    Yes
+GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation

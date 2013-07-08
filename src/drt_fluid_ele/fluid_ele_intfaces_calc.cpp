@@ -129,6 +129,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
   bool EOS_Div_vel_jump = false;
   bool EOS_Div_div_jump = false;
   bool GP_visc          = false;
+  bool GP_u_p_2nd       = false;
 
   if(face_type == INPAR::XFEM::face_type_std)
   {
@@ -139,6 +140,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
     EOS_Div_div_jump = (fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos);
 
     GP_visc          = false;
+    GP_u_p_2nd       = false;
   }
   else if(face_type == INPAR::XFEM::face_type_ghost_penalty)
   {
@@ -151,6 +153,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
                      or fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp);
 
     GP_visc          = faceparams.get<bool>("visc_ghost_penalty", false);
+    GP_u_p_2nd       = faceparams.get<bool>("u_p_ghost_penalty_2nd", false);
   }
   else if(face_type == INPAR::XFEM::face_type_ghost)
   {
@@ -160,6 +163,7 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
     EOS_Div_vel_jump = false;
     EOS_Div_div_jump = false;
     GP_visc          = false;
+    GP_u_p_2nd       = false;
   }
   else dserror("unknown face_type!!!");
 
@@ -181,6 +185,8 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
   stabparams.set<bool>("EOS_Div_vel_jump", EOS_Div_vel_jump);
   stabparams.set<bool>("EOS_Div_div_jump", EOS_Div_div_jump);
   stabparams.set<bool>("GP_visc",          GP_visc);
+  stabparams.set<bool>("GP_u_p_2nd",       GP_u_p_2nd);
+
 
   stabparams.set("ghost_penalty_reconstruct", faceparams.get<bool>("ghost_penalty_reconstruct", false) );
   stabparams.set("ghost_penalty_fac",         faceparams.get<double>("GHOST_PENALTY_FAC", 0.0));
@@ -193,7 +199,8 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
       !EOS_Conv_Cross and
       !EOS_Div_vel_jump and
       !EOS_Div_div_jump and
-      !GP_visc) return false;
+      !GP_visc and
+      !GP_u_p_2nd) return false;
 
   return true;
 }

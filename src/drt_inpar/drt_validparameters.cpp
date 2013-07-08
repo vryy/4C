@@ -5272,6 +5272,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("GHOST_PENALTY_STAB","no","switch on/off ghost penalty interface stabilization",&xfluid_stab);
 
+  BoolParameter("GHOST_PENALTY_2nd_STAB","no","switch on/off ghost penalty interface stabilization for 2nd order derivatives",&xfluid_stab);
+
   DoubleParameter("GHOST_PENALTY_FAC",       0.1, "define stabilization parameter ghost penalty interface stabilization",&xfluid_stab);
 
   BoolParameter("PRESSCOUPLING_INTERFACE_STAB","no","switch on/off pressure coupling interface stabilization",&xfluid_stab);

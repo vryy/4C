@@ -664,6 +664,7 @@ namespace FLD
 
     /// ghost penalty stabilization
     bool ghost_penalty_;
+    bool ghost_penalty_2ndorder_;
     double ghost_penalty_fac_;
 
     /// penalty term for pressure coupling at the interface

@@ -254,7 +254,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
-  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_)
+  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.discret_));
   //--------------------------------------------------------------------------------------
 
@@ -701,7 +701,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     }
 
     // call edge stabilization
-    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
+    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
     {
       TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -709,6 +709,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
       // set additional faceparams according to ghost-penalty terms due to Nitsche's method
       faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
+      faceparams.set("u_p_ghost_penalty_2nd",xfluid_.ghost_penalty_2ndorder_);
       faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
 
       //------------------------------------------------------------
@@ -1268,6 +1269,7 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
   {
   case DRT::Element::hex8:
   case DRT::Element::hex20:
+  case DRT::Element::hex27:
     vel_f << "VH(";
     press_f << "SH(";
     if(acc_output) acc_f << "VH(";
@@ -1484,6 +1486,21 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
             if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
             break;
           }
+          case DRT::Element::hex27:
+          {
+            // TODO: check the output for hex27
+            const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
+            LINALG::Matrix<numnodes,1> funct;
+            DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex27 );
+            LINALG::Matrix<3,numnodes> velocity( vel, true );
+            LINALG::Matrix<1,numnodes> pressure( press, true );
+            LINALG::Matrix<3,numnodes> acceleration( acc, true );
+
+            v.Multiply( 1, velocity, funct, 1 );
+            p.Multiply( 1, pressure, funct, 1 );
+            if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
+            break;
+          }
           default:
           {
             dserror( "unsupported shape" );
@@ -1589,6 +1606,21 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
           LINALG::Matrix<numnodes,1> funct;
           DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
+          LINALG::Matrix<3,numnodes> velocity( vel, true );
+          LINALG::Matrix<1,numnodes> pressure( press, true );
+          LINALG::Matrix<3,numnodes> acceleration( acc, true );
+
+          v.Multiply( 1, velocity, funct, 1 );
+          p.Multiply( 1, pressure, funct, 1 );
+          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
+          break;
+        }
+        case DRT::Element::hex27:
+        {
+          // TODO: check the output for hex27
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
+          LINALG::Matrix<numnodes,1> funct;
+          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex27 );
           LINALG::Matrix<3,numnodes> velocity( vel, true );
           LINALG::Matrix<1,numnodes> pressure( press, true );
           LINALG::Matrix<3,numnodes> acceleration( acc, true );
@@ -1837,7 +1869,7 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
     DRT::Element::LocationArray la( 1 );
 
     // call edge stabilization
-    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
+    if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ or xfluid_.ghost_penalty_2ndorder_)
     {
       TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -1973,8 +2005,9 @@ FLD::XFluid::XFluid(
                         or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
 
   // set flag if the viscous ghost-penalty stabiliation due to Nitsche's method has to be integrated
-  ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
-  ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
+  ghost_penalty_          = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
+  ghost_penalty_2ndorder_ = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB");
+  ghost_penalty_fac_      = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
 
   // get general XFEM specific parameters
   VolumeCellGaussPointBy_ = params_xfem.get<std::string>("VOLUME_GAUSS_POINTS_BY");
@@ -1990,7 +2023,7 @@ FLD::XFluid::XFluid(
   gmsh_sol_out_          = (bool)params_xfem.get<int>("GMSH_SOL_OUT");
   gmsh_debug_out_        = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
   gmsh_debug_out_screen_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
+  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_));
   gmsh_discret_out_      = (bool)params_xfem.get<int>("GMSH_DISCRET_OUT");
   gmsh_cut_out_          = (bool)params_xfem.get<int>("GMSH_CUT_OUT");
   gmsh_step_diff_        = 500;
@@ -2019,7 +2052,7 @@ FLD::XFluid::XFluid(
 
 
   // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
-  if(edge_based_ or ghost_penalty_)
+  if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
   {
     RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
     actdis->CreateInternalFacesExtension();
@@ -2788,6 +2821,7 @@ void FLD::XFluid::PrintStabilizationParams()
     }
 
     IO::cout << "GHOST_PENALTY_STAB:      " << interfstabparams->get<string>("GHOST_PENALTY_STAB") << "\n";
+    IO::cout << "GHOST_PENALTY_2nd_STAB:  " << interfstabparams->get<string>("GHOST_PENALTY_2nd_STAB") << "\n";
     IO::cout << "GHOST_PENALTY_FAC:       " << ghost_penalty_fac_ << "\n";
 
     IO::cout << "CONV_STAB_SCALING:       " << interfstabparams->get<string>("CONV_STAB_SCALING") << "\n";
@@ -4652,7 +4686,7 @@ void FLD::XFluid::OutputDiscret()
     gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
 
-    bool xdis_faces = (ghost_penalty_ or edge_based_);
+    bool xdis_faces = (ghost_penalty_ or ghost_penalty_2ndorder_ or edge_based_);
 
     disToStream(discret_,     "fld",     true, false, true, false, xdis_faces,  false, gmshfilecontent);
     disToStream(soliddis_,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
@@ -4742,7 +4776,7 @@ void FLD::XFluid::Output()
     gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
 
-    if( xdiscret->FilledExtension() == true && ghost_penalty_ ) // stabilization output
+    if( xdiscret->FilledExtension() == true && (ghost_penalty_ or ghost_penalty_2ndorder_) ) // stabilization output
     {
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
