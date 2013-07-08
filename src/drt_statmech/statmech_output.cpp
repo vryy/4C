@@ -4546,6 +4546,7 @@ void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringst
       fprintf(fp, elementfint.str().c_str());
       fclose(fp);
     }
+    discret_->Comm().Barrier();
   }
   return;
 }
@@ -4553,7 +4554,7 @@ void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringst
 
 /*------------------------------------------------------------------------------*                                                 |
  | output the coverage of crosslinker binding sites (nodes) and the distribution|
- |of bound crosslinkers                                  (private) mueller 5/12 |
+ | of bound crosslinkers                                 (private) mueller 5/12 |
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, bool coverageonly)
 {
