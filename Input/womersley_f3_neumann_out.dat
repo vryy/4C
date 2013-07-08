@@ -392,13 +392,13 @@ DSURF                           0
 DSURF                           0
 --------------------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
 DSURF                           1
-E 1 - 1 WOMERSLEY PREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 -1.0 1 self_evaluated_normal 0.0 0.0 0.0 self_evaluated_center_of_mass 0.0 0.0 0.0
+E 1 - 1 WOMERSLEY PREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 -1.0 1 self_evaluate_normal 0.0 0.0 0.0 self_evaluate_center_of_mass 0.0 0.0 0.0
 ------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
 DLINE                           1
 E 1 - 1
 ----------------------------DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS
 DSURF                           1
-E 3 - 1 WOMERSLEY PREBIASED OutFlow WithCorrection Period 1.0 Order 2 Harmonics 16 1.0 1 self_evaluated_normal 0.0 0.0 -1.0 self_evaluated_center_of_mass 0.0 0.0 -7.5
+E 3 - 1 WOMERSLEY PREBIASED OutFlow WithCorrection Period 1.0 Order 2 Harmonics 16 1.0 1 self_evaluate_normal 0.0 0.0 -1.0 self_evaluate_center_of_mass 0.0 0.0 -7.5
 --------------------------DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES
 DLINE                           1
 E 2 - 1
