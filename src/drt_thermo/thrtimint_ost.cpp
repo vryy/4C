@@ -65,8 +65,10 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // info to user
   if (myrank_ == 0)
   {
-    // check if coefficient has an admissible value
+    // check if coefficient has admissible value
     VerifyCoeff();
+
+    // print values of time integration parameters to screen
     std::cout << "with one-step-theta" << std::endl
               << "   theta = " << theta_ << std::endl
               << std::endl;
@@ -91,7 +93,7 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // stored force vector F_{transient;n+1} at new time
   fcapn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0),zeros_,fcap_,
+  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_,
                          fint_, tang_);
 
   // external force vector F_ext at last times
@@ -106,7 +108,8 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
 
   // have a nice day
   return;
-}
+
+}  // TimIntOneStepTheta()
 
 
 /*----------------------------------------------------------------------*
@@ -128,6 +131,7 @@ void THR::TimIntOneStepTheta::PredictConstTempConsistRate()
 
   // watch out
   return;
+
 }  // PredictConstTempConsistRate()
 
 
@@ -197,6 +201,7 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // hallelujah
   return;
+
 }  // EvaluateRhsTangResidual()
 
 
@@ -216,6 +221,7 @@ void THR::TimIntOneStepTheta::EvaluateMidState()
 
   // jump
   return;
+
 }  // EvaluateMidState()
 
 
@@ -236,6 +242,7 @@ double THR::TimIntOneStepTheta::CalcRefNormTemperature()
 
   // rise your hat
   return charnormtemp;
+
 }  // CalcRefNormTemperature()
 
 
@@ -259,16 +266,17 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
   double fextnorm = 0.0;
   fextnorm = THR::AUX::CalculateVectorNorm(iternorm_, fextn_);
 
-  // norm of the capacity forces
-  double fcapnorm = 0.0;
-  fcapnorm = THR::AUX::CalculateVectorNorm(iternorm_, fcapn_);
-
   // norm of reaction forces
   double freactnorm = 0.0;
   freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
+  // norm of stored forces
+  double fcapnorm = 0.0;
+  fcapnorm = THR::AUX::CalculateVectorNorm(iternorm_, fcap_);
+
   // return char norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
+
 }  // CalcRefNormForce()
 
 
@@ -297,6 +305,7 @@ void THR::TimIntOneStepTheta::UpdateIterIncrementally()
 
   // bye
   return;
+
 }  // UpdateIterIncrementally()
 
 
@@ -315,6 +324,7 @@ void THR::TimIntOneStepTheta::UpdateIterIteratively()
 
   // bye
   return;
+
 }  // UpdateIterIteratively()
 
 
@@ -345,6 +355,7 @@ void THR::TimIntOneStepTheta::UpdateStepState()
 
   // look out
   return;
+
 }  // UpdateStepState()
 
 
@@ -379,6 +390,7 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
   reader.ReadVector(fcap_, "fcap");
 
   return;
+
 }  // ReadRestartForce()
 
 
@@ -394,6 +406,7 @@ void THR::TimIntOneStepTheta::WriteRestartForce(
   output->WriteVector("fcap",fcap_);
 
   return;
+
 }  // WriteRestartForce()
 
 
@@ -418,6 +431,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fcap,fint,tang);
   // finish
   return;
+
 }  // ApplyForceTangInternal()
 
 
@@ -440,6 +454,7 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
   TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
   // finish
   return;
+
 }  // ApplyForceTangInternal()
 
 
@@ -462,6 +477,7 @@ void THR::TimIntOneStepTheta::ApplyForceExternalConv(
   TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
   // finish
   return;
+
 }  // ApplyForceExternalConv()
 
 

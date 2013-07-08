@@ -94,7 +94,7 @@ void THR::TimIntExplEuler::IntegrateStep()
 
   // ordinary internal force and conductivity matrix
   {
-    // displacement increment in step
+    // temperature increment in step
     Teuchos::RCP<Epetra_Vector> tempinc = Teuchos::rcp(new Epetra_Vector(*tempn_));
     tempinc->Update(-1.0, *(*temp_)(0), 1.0);
     // create an empty parameter list for the discretisation
@@ -103,8 +103,8 @@ void THR::TimIntExplEuler::IntegrateStep()
     ApplyForceInternal(p, timen_, dt, tempn_, tempinc, fintn_);
   }
 
-  // determine time derivative of linear momentum vector,
-  // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
+  // determine time derivative of capacity vector,
+  // ie \f$\dot{P} = M_capa \dot{T}_{n=1}\f$
   Teuchos::RCP<Epetra_Vector> frimpn = LINALG::CreateVector(*dofrowmap_, true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 

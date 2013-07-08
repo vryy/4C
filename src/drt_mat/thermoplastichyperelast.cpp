@@ -340,8 +340,8 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   // -------------------------------------------------- elastic predictor
 
   // elastic left Cauchy-Green (LCG) trial state (isochoric) (9.3.13)
-  // bbar_{n+1}^{e,trial} = Fbar_{n+1} (Cbar_{n+1}^{p-1})^{trial} . Fbar_{n+1}^T
-  //                      = fbar_{n+1} (bbar_{n}^{e,trial} . fbar_{n+1}^T
+  // bbar_{n+1}^{e,trial} = Fbar_{n+1} (Cbar_{n}^{p-1}) . Fbar_{n+1}^T
+  //                      = fbar_{n+1} (bbar_{n} . fbar_{n+1}^T
   LINALG::Matrix<3,3> bebar_trial(false);
   LINALG::Matrix<3,3> tmp;
   tmp.Multiply(defgrddeltabar,bebarlast_->at(gp));
@@ -351,6 +351,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
 
   // trial Kirchhoff stress deviator (9.3.9)
   // s_{n+1)^{trial} = G . dev(bbar_{n+1}^{e,trial}
+  // dev_bebar_trial = bebar_trial - volstrain^e = bebar_trial - 1/3 . tr( bebar_trial ) . Id
   LINALG::Matrix<3,3> devtau_trial(bebar_trial);
   for (int i=0; i<3; i++)
     devtau_trial(i,i) -= 1.0/3.0 * tracebebar;

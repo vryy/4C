@@ -356,34 +356,36 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
     switch (timint)
     {
-      case INPAR::THR::dyna_statics :
-      {
-        if (*tempstate == "Tempn")
-          dserror("Old temperature T_n is not allowed with static time integrator");
-        // continue
-        break;
-      }
-      case INPAR::THR::dyna_onesteptheta :
-      {
-        // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
-        // convective boundary condition is nonlinear and produces a term in the
-        // tangent, consider the factor theta here, too
-        const double theta = params.get<double>("theta");
-        // combined tangent and conductivity matrix to one global matrix
-        etang.Scale(theta);
-        break;
-      }
-      case INPAR::THR::dyna_genalpha :
-      {
-        dserror("Genalpha not yet implemented");
-        break;
-      }
-      case INPAR::THR::dyna_undefined :
-      default :
-      {
-        dserror("Don't know what to do...");
-        break;
-      }
+    case INPAR::THR::dyna_statics :
+    {
+      if (*tempstate == "Tempn")
+        dserror("Old temperature T_n is not allowed with static time integrator");
+      // continue
+      break;
+    }
+    case INPAR::THR::dyna_onesteptheta :
+    {
+      // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
+      // convective boundary condition is nonlinear and produces a term in the
+      // tangent, consider the factor theta here, too
+      const double theta = params.get<double>("theta");
+      // combined tangent and conductivity matrix to one global matrix
+      etang.Scale(theta);
+      break;
+    }
+    case INPAR::THR::dyna_genalpha :
+    {
+      const double alphaf = params.get<double>("alphaf");
+      // combined tangent and conductivity matrix to one global matrix
+      etang.Scale(alphaf);
+      break;
+    }
+    case INPAR::THR::dyna_undefined :
+    default :
+    {
+      dserror("Don't know what to do...");
+      break;
+    }
     }  // end of switch(timint)
   }  // calc_thermo_fextconvection
 

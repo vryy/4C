@@ -29,9 +29,9 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-THERM_HEATFLUX                  Initial                         // None, Current
+THERM_HEATFLUX                  Initial  // None, Current
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial                         // None, Current
+THERM_TEMPGRAD                  Initial  // None, Current
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo
 RESTART                         0
@@ -67,12 +67,7 @@ MAT 1 THERM_FourierIso CAPA 420 CONDUCT 52
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1000.0 FACTOR 0 1000
 ----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -100,8 +95,6 @@ DSURF                           1
 E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 13 DSURFACE 1
 NODE 14 DSURFACE 1
@@ -145,7 +138,6 @@ NODE 13 COORD 0.00000000e+00 0.00000000e+00 5.00000000e-01
 NODE 14 COORD 0.00000000e+00 1.00000000e+00 5.00000000e-01
 NODE 15 COORD 0.00000000e+00 1.00000000e+00 -5.00000000e-01
 NODE 16 COORD 0.00000000e+00 0.00000000e+00 -5.00000000e-01
-----------------------------------------------------------STRUCTURE ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 1 THERMO HEX8 1 2 3 4 5 6 7 8 MAT 1
 2 THERMO HEX8 5 6 7 8 9 10 11 12 MAT 1
@@ -153,4 +145,4 @@ NODE 16 COORD 0.00000000e+00 0.00000000e+00 -5.00000000e-01
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 3.3653846153846153e+01 TOLERANCE 1.0e-6
 -------------------------------------------------------------------------END
-//                              END
+//  END

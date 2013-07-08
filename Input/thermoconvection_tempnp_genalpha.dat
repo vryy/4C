@@ -13,8 +13,8 @@ General Data File CCARAT
 created by pre_exodus and jou2dat on Mi 26. Jan 17:24:36 CET 2011
 
 - Analytical example for heat convection boundary condition
-- use the old temperature
-T_n for the temperature on the heat convection boundary
+- Use the new temperature T_n+1 for the temperature on the heat convection
+boundary
 
 Begin:
 T=0 ------------- q_c=-1(T-5) with T=0, T_oo=5
@@ -40,9 +40,9 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-THERM_HEATFLUX                  Current  // None, Current, Initial
+THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Current  // None, Current, Initial
+THERM_TEMPGRAD                  Current
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo
 RESTART                         0
@@ -52,8 +52,8 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       No  // Yes,No,yes,no,YES,NO
-DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta,GenAlpha
-INITFUNCNO                      1  // -1
+DYNAMICTYP                      GenAlpha  // Statics,OneStepTheta
+INITFUNCNO                      1
 INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
 ITERNORM                        L2
 MAXITER                         50
@@ -71,6 +71,11 @@ RESTARTEVRY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-08
 TOLTEMP                         1e-10
+-------------------------------------------THERMAL DYNAMIC/GENALPHA
+ALPHA_F                         1 // 0.666666  //==2/3  // 1, 0.5
+ALPHA_M                         1 // 0.833333  //==5/6  // 1, 0.5
+GAMMA                           0.5  //==2/3  // 1, 0.5
+GENAVG                          TrLike
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
@@ -136,6 +141,7 @@ MAT 1 THERM_FourierIso CAPA 1 CONDUCT 1
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -185,7 +191,7 @@ DLINE                           0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 // right surf Neumann convection
-E 3 - Tempn coeff -1.0 surtemp 5.0 surtempcurve none curve -1
+E 3 - Tempnp coeff -1.0 surtemp 5.0 surtempcurve none curve -1
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 4 DSURFACE 1
@@ -223,7 +229,6 @@ NODE 66 DSURFACE 4
 NODE 87 DSURFACE 4
 NODE 88 DSURFACE 4
 NODE 99 DSURFACE 4
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000000e+00 0.0000000000000000e+00 -1.0000000000000000e+00
 NODE 2 COORD 4.0000000000000002e-01 0.0000000000000000e+00 -1.0000000000000000e+00

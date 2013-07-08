@@ -37,6 +37,7 @@ void THR::TimInt::Logo()
   std::cout << "      _______________________________" << std::endl;
   std::cout << "  ===(_________|_|_|_|_|_37°C_|_|____)" << std::endl;
   std::cout << std::endl;
+  
 }  // Logo()
 
 
@@ -199,12 +200,13 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     // SetState(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->SetState(0, "residual temperature", zeros_);
     discret_->SetState(0, "temperature", (*temp_)(0));
+    
     // set displacements for the coupled TSI problem
-    if(disn_!=Teuchos::null)
-    {
+    if (disn_ != Teuchos::null)
       discret_->SetState(1,"displacement",disn_);
+    if (veln_ != Teuchos::null)
       discret_->SetState(1,"velocity",veln_);
-    }
+    
     // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
     discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -329,6 +331,7 @@ void THR::TimInt::ResetStep()
 
   // I am gone
   return;
+
 }  // ResetStep()
 
 
@@ -390,18 +393,17 @@ void THR::TimInt::OutputStep()
   }
 
   // output results (not necessary if restart in same step)
-  if ( writeglob_
-       and writeglobevery_ and (step_%writeglobevery_ == 0)
-       and (not datawritten) )
+  if ( writeglob_ and writeglobevery_ and (step_%writeglobevery_ == 0)
+       and (not datawritten)
+     )
   {
     OutputState(datawritten);
   }
 
   // output heatflux & tempgrad
-  if ( writeglobevery_
-       and ( (writeheatflux_ != INPAR::THR::heatflux_none)
-             or (writetempgrad_ != INPAR::THR::tempgrad_none) )
-       and (step_%writeglobevery_ == 0) )
+  if ( writeglobevery_ and (step_%writeglobevery_ == 0)
+       and ( (writeheatflux_ != INPAR::THR::heatflux_none) or (writetempgrad_ != INPAR::THR::tempgrad_none) )
+     )
   {
     OutputHeatfluxTempgrad(datawritten);
   }
@@ -457,6 +459,7 @@ void THR::TimInt::OutputRestart(bool& datawritten)
 
   // we will say what we did
   return;
+
 }  // OutputRestart()
 
 
@@ -513,15 +516,13 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", zeros_);
   discret_->SetState(0, "temperature", (*temp_)(0));
+  
   // set displacements and velocities for the coupled TSI problem
-  if(disn_!=Teuchos::null)
-  {
+  if (disn_ != Teuchos::null)
     discret_->SetState(1,"displacement",disn_);
-  }
-  if(veln_!=Teuchos::null)
-  {
+  if (veln_ != Teuchos::null)
     discret_->SetState(1,"velocity",veln_);
-  }
+  
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -715,11 +716,11 @@ void THR::TimInt::ApplyForceExternalConv(
   discret_->ClearState();
   discret_->SetState(0,"old temperature", tempn);  // T_n (*temp_)(0)
   discret_->SetState(0,"temperature", temp);  // T_{n+1} tempn_
+
   // for geometrically nonlinear analysis the displacements are required
-  if(disn_!=Teuchos::null)
-  {
+  if (disn_ != Teuchos::null)
     discret_->SetState(1,"displacement", disn_);  // d_{n+1}
-  }
+
   // get load vector
   // use general version of EvaluateCondition(), following the example set by ScaTra::EvaluateElectrodeKinetics()
   std::string condstring("ThermoConvections");
@@ -759,15 +760,13 @@ void THR::TimInt::ApplyForceTangInternal(
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", tempi);
   discret_->SetState(0, "temperature", temp);
+
   // set displacements and velocities for the coupled TSI problem
-  if(disn_!=Teuchos::null)
-  {
+  if (disn_ != Teuchos::null)
     discret_->SetState(1,"displacement",disn_);
-  }
-  if(veln_!=Teuchos::null)
-  {
+  if (veln_ != Teuchos::null)
     discret_->SetState(1,"velocity",veln_);
-  }
+
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -806,15 +805,23 @@ void THR::TimInt::ApplyForceTangInternal(
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0,"residual temperature", tempi);
   discret_->SetState(0,"temperature", temp);
+
+  // in case of genalpha extract midpoint temperature rate R_{n+alpha_m}
+  // extract it after ClearState() is called.
+  if (MethodName() == INPAR::THR::dyna_genalpha)
+  {
+    Teuchos::RCP<const Epetra_Vector> ratem
+      = p.get<RCP<const Epetra_Vector> >("mid-temprate");
+    if (ratem != Teuchos::null)
+      discret_->SetState(0,"mid-temprate", ratem);
+  }
+
   // set displacements and velocities for the coupled TSI problem
-  if(disn_!=Teuchos::null)
-  {
+  if (disn_ != Teuchos::null)
     discret_->SetState(1,"displacement", disn_);
-  }
-  if(veln_!=Teuchos::null)
-  {
+  if (veln_ != Teuchos::null)
     discret_->SetState(1,"velocity", veln_);
-  }
+
   // call the element Evaluate()
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
   discret_->ClearState();
@@ -849,17 +856,15 @@ void THR::TimInt::ApplyForceInternal(
   // set vector values needed by elements
   discret_->ClearState();
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0, "residual temperature", tempi);  // these are incremental
+  discret_->SetState(0, "residual temperature", tempi);
   discret_->SetState(0, "temperature", temp);
+
   // set displacements and velocities for the coupled TSI problem
-  if(disn_!=Teuchos::null)
-  {
+  if (disn_ != Teuchos::null)
     discret_->SetState(1,"displacement", disn_);
-  }
-  if(veln_!=Teuchos::null)
-  {
+  if (veln_ != Teuchos::null)
     discret_->SetState(1,"velocity", veln_);
-  }
+
   // call the element Evaluate()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
@@ -884,7 +889,7 @@ void THR::TimInt::ApplyStructVariables(
   if (disn_ == Teuchos::null)
     disn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
 
-  if( (disp != Teuchos::null) && (disn_->Map().SameAs(disp->Map())) )
+  if( (disp != Teuchos::null) and (disn_->Map().SameAs(disp->Map())) )
   {
     // displacements D at chosen time t dependent on call in coupled algorithm
     disn_->Update(1.0, *disp, 0.0);
@@ -895,7 +900,7 @@ void THR::TimInt::ApplyStructVariables(
   if (veln_ == Teuchos::null)
     veln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
 
-  if( (vel != Teuchos::null) && (veln_->Map().SameAs(disp->Map())) )
+  if( (vel != Teuchos::null) and (veln_->Map().SameAs(disp->Map())) )
   {
     // velocities V at chosen time t dependent on call in coupled algorithm
     veln_->Update(1.0, *vel, 0.0);
@@ -932,7 +937,7 @@ void THR::TimInt::SetInitialField(
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
     // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    for (int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
     {
       // get the processor local node
       DRT::Node* lnode = discret_->lRowNode(lnodeid);
@@ -940,7 +945,7 @@ void THR::TimInt::SetInitialField(
       std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       int numdofs = nodedofset.size();
-      for (int k=0;k< numdofs;++k)
+      for (int k=0; k<numdofs; ++k)
       {
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
@@ -956,7 +961,7 @@ void THR::TimInt::SetInitialField(
         // starting with a zero vector)
         int err2 = tempn_->ReplaceMyValues(1,&initialval,&doflid);
         if (err2 != 0) dserror("dof not on proc");
-      }
+      }  // numdofs
     }
     break;
   }  // initfield_field_by_function
@@ -974,7 +979,7 @@ void THR::TimInt::SetInitialField(
       cout<<"Applied InitialField Condition "<<i<<endl;
 
       // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+      for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
         DRT::Node* lnode = discret_->lRowNode(lnodeid);
@@ -982,13 +987,13 @@ void THR::TimInt::SetInitialField(
         std::vector<DRT::Condition*> mycond;
         lnode->GetCondition("InitialField",mycond);
 
-        if (mycond.size()>0)
+        if (mycond.size() > 0)
         {
           // the set of degrees of freedom associated with the node
           std::vector<int> nodedofset = discret_->Dof(lnode);
 
           int numdofs = nodedofset.size();
-          for (int k=0;k< numdofs;++k)
+          for (int k=0; k<numdofs; ++k)
           {
             // set 1.0 as initial value if node belongs to condition
             double temp0 = 1.0;
@@ -1004,10 +1009,10 @@ void THR::TimInt::SetInitialField(
             // solution after the first time step (much better than starting with a zero vector)
             int err2 = tempn_->ReplaceMyValues(1,&temp0,&doflid);
             if (err2 != 0) dserror("dof not on proc");
-          }
-        }
-      }
-    }
+          }  // numdofs
+        }  // mycond.size
+      }  // loop nodes on proc
+    }  // cond.size
     break;
   }  // initfield_field_by_condition
 

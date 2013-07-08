@@ -28,28 +28,28 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
-THERM_HEATFLUX                  Initial                         // None, Current, Initial
+THERM_HEATFLUX                  Initial  // None, Current, Initial
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial                         // None, Current, Initial
+THERM_TEMPGRAD                  Initial  // None, Current, Initial
 FILESTEPS                       1000
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       No
-DYNAMICTYP                      Statics                         // Statics,OneStepTheta
-ITERNORM                        L2                              // L1,L2,Rms,Inf
+DYNAMICTYP                      Statics  // Statics,OneStepTheta
+ITERNORM                        L2  // L1,L2,Rms,Inf
 INITFUNCNO                      1
-INITIALFIELD                    zero_field                      // field_by_function, field_by_condition
+INITIALFIELD                    zero_field  // field_by_function, field_by_condition
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
 NLNSOL                          fullnewton
-NORMCOMBI_RESFTEMP              And                             // And,Or
-NORM_RESF                       Abs                             // Abs,Rel,Mix
-NORM_TEMP                       Abs                             // Abs,Rel,Mix
+NORMCOMBI_RESFTEMP              And  // And,Or
+NORM_RESF                       Abs  // Abs,Rel,Mix
+NORM_TEMP                       Abs  // Abs,Rel,Mix
 NUMSTEP                         1
-PREDICT                         ConstTemp                       // Vague,ConstTemp,ConstTempRateTangTemp
+PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRateTangTemp
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
@@ -105,8 +105,6 @@ NODE 8 DLINE 1
 NODE 9 DLINE 1
 NODE 10 DLINE 1
 NODE 11 DLINE 1
----------------------------------------------------------DSURF-NODE TOPOLOGY
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 1.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
@@ -119,7 +117,6 @@ NODE 8 COORD 7.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
 NODE 9 COORD 8.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
 NODE 10 COORD 9.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
 NODE 11 COORD 1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 1 THERMO LINE2 1 2 MAT 1
 2 THERMO LINE2 2 3 MAT 1

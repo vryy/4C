@@ -22,21 +22,15 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 void THR::TimIntGenAlpha::VerifyCoeff()
 {
+  // alpha_f
+  if ( (alphaf_ < 0.0) or (alphaf_ > 1.0) )
+    dserror("alpha_f out of range [0.0,1.0]");
+  // alpha_m
+  if ( (alpham_ < 0.0) or (alpham_ > 1.5) )
+    dserror("alpha_m out of range [0.0,1.0]");
   // gamma:
   if ( (gamma_ <= 0.0) or (gamma_ > 1.0) )
     dserror("gamma out of range (0.0,1.0]");
-  else
-    std::cout << "   gamma = " << gamma_ << std::endl;
-  // alpha_f
-  if ( (alphaf_ < 0.0) or (alphaf_ >= 1.0) )
-    dserror("alpha_f out of range [0.0,1.0)");
-  else
-    std::cout << "   alpha_f = " << alphaf_ << std::endl;
-  // alpha_m
-  if ( (alpham_ < 0.0) or (alpham_ >= 1.0) )
-    dserror("alpha_m out of range [0.0,1.0)");
-  else
-    std::cout << "   alpha_m = " << alpham_ << std::endl;
 
   // mid-averaging type
   // In principle, there exist two mid-averaging possibilities, namely TR-like and IMR-like,
@@ -49,11 +43,10 @@ void THR::TimIntGenAlpha::VerifyCoeff()
   // cumbersome extrapolation of history variables, etc. becomes obsolete.
   if (midavg_ != INPAR::THR::midavg_trlike)
     dserror("mid-averaging of internal forces only implemented TR-like");
-  else
-    std::cout << "   midavg = " << INPAR::THR::MidAverageString(midavg_)<< std::endl;
 
   // done
   return;
+
 }  // VerifyCoeff()
 
 
@@ -96,15 +89,17 @@ THR::TimIntGenAlpha::TimIntGenAlpha(
   // info to user
   if (myrank_ == 0)
   {
-    IO::cout << "with generalised-alpha" << IO::endl;
+    // check if coefficients have admissible values
     VerifyCoeff();
-    
-//TODO    std::cout << "   p_temp = " << MethodOrderOfAccuracyTemp() << std::endl
-//              << "   p_rate = " << MethodOrderOfAccuracyRate() << std::endl
 
-//    std::cout << "   p_temp = " << MethodOrderOfAccuracy() << std::endl
+    // print values of time integration parameters to screen
+    std::cout << "with generalised-alpha" << std::endl
+              << "   alpha_f = " << alphaf_ << std::endl
+              << "   alpha_m = " << alpham_ << std::endl
+              << "   gamma = " << gamma_ << std::endl
+              << "   midavg = " << INPAR::THR::MidAverageString(midavg_)
+              << std::endl;
 
-//              << std::endl;
   }
 
   // determine capacity and initial temperature rates
@@ -132,7 +127,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(
   // stored force vector F_{transient;n+1} at new time
   fcapn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0),zeros_,fcap_,
+  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_,
                          fint_, tang_);
 
   // external force vector F_ext at last times
@@ -149,6 +144,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(
 
   // have a nice day
   return;
+
 }  // TimIntGenAlpha()
 
 
@@ -171,6 +167,7 @@ void THR::TimIntGenAlpha::PredictConstTempConsistRate()
 
   // watch out
   return;
+
 }  // PredictConstTempConsistRate()
 
 
@@ -209,29 +206,31 @@ void THR::TimIntGenAlpha::EvaluateRhsTangResidual()
 
   // initialise internal forces
   fintn_->PutScalar(0.0);
-  fcapn_->PutScalar(0.0);
+  // total capacity mid-forces are calculated in the element
+  // F_{cap;n+alpha_m} := M_capa . R_{n+alpha_m}
+  fcapm_->PutScalar(0.0);
 
   // ordinary internal force and tangent
-  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_,
+  ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fcapm_, fintn_,
                          tang_);
 
   // total internal mid-forces F_{int;n+alpha_f} ----> TR-like
-  // F_{int;n+alpha_f} := alpha_f * F_{int;n+1} + (1. - alpha_f) * F_{int;n}
+  // F_{int;n+alpha_f} := alpha_f . F_{int;n+1} + (1. - alpha_f) . F_{int;n}
   fintm_->Update(alphaf_, *fintn_, (1.-alphaf_), *fint_, 0.0);
 
-  // total capacitiy mid-forces F_{cap;n+alpha_m}
-  // F_{cap;n+alpha_m} := alpha_m * F_{cap;n+1} + (1. - alpha_m) * F_{cap;n}
-  // with F_{cap;n+alpha_m} =  M_cap . R_{n+alpha_m} = M_capa
-  fcapm_->Update(alpham_, *fcapn_, (1.-alpham_), *fcap_, 0.0);
+  // total capacitiy forces F_{cap;n+1}
+  // F_{cap;n+1} := 1/alpha_m . F_{cap;n+alpha_m} + (1. - alpha_m)/alpha_m . F_{cap;n}
+  // using the interpolation to the midpoint
+  // F_{cap;n+alpha_m} := alpha_m . F_{cap;n+1} + (1. - alpha_m) . F_{cap;n}
+  fcapn_->Update((1./alpham_), *fcapm_, (1.-alpham_)/alpham_, *fcap_, 1.0);
 
   // build residual
   //    Res = F_{cap;n+alpha_m}
   //        + F_{int;n+alpha_f}
   //        - F_{ext;n+alpha_f}
-  //
-  fres_->Update(-1.0, *fextm_, 0.0);
+  fres_->Update(1.0, *fcapm_, 0.0);
   fres_->Update(1.0, *fintm_, 1.0);
-  fres_->Update(1.0, *fcapm_, 1.0);
+  fres_->Update(-1.0, *fextm_, 1.0);
 
   // no further modification on tang_ required
   // tang_ is already effective dynamic tangent matrix
@@ -239,6 +238,7 @@ void THR::TimIntGenAlpha::EvaluateRhsTangResidual()
 
   // hallelujah
   return;
+
 }  // EvaluateRhsTangResidual()
 
 
@@ -255,11 +255,13 @@ void THR::TimIntGenAlpha::EvaluateMidState()
   tempm_->Update(alphaf_, *tempn_, (1.-alphaf_), (*temp_)[0], 0.0);
 
   // mid-temperature rates R_{n+1-alpha_f} (ratem)
-  //    R_{n+alpha_m} := alpham * R_{n+1} + (1.-alpham) * R_{n}
+  // R_{n+alpha_m} := alpham * R_{n+1} + (1.-alpham) * R_{n}
+  // pass ratem_ to the element to calculate fcapm_
   ratem_->Update(alpham_, *raten_, (1.-alpham_), (*rate_)[0], 0.0);
 
   // jump
   return;
+
 }  // EvaluateMidState()
 
 
@@ -280,6 +282,7 @@ double THR::TimIntGenAlpha::CalcRefNormTemperature()
 
   // rise your hat
   return charnormtemp;
+
 }  // CalcRefNormTemperature()
 
 
@@ -313,6 +316,7 @@ double THR::TimIntGenAlpha::CalcRefNormForce()
  
   // determine worst value ==> charactersitic norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
+
 }  // CalcRefNormForce()
 
 
@@ -345,6 +349,7 @@ void THR::TimIntGenAlpha::UpdateIterIncrementally()
 
   // bye
   return;
+
 }  // UpdateIterIncrementally()
 
 
@@ -363,6 +368,7 @@ void THR::TimIntGenAlpha::UpdateIterIteratively()
 
   // bye
   return;
+
 }  // UpdateIterIteratively()
 
 
@@ -394,6 +400,7 @@ void THR::TimIntGenAlpha::UpdateStepState()
 
   // look out
   return;
+
 }  // UpdateStepState()
 
 
@@ -471,6 +478,9 @@ void THR::TimIntGenAlpha::ApplyForceTangInternal(
   p.set<double>("alphaf", alphaf_);
   p.set<double>("alpham", alpham_);
   p.set<double>("gamma", gamma_);
+  // set the mid-temperature rate R_{n+alpha_m} required for fcapm_
+  p.set<RCP<const Epetra_Vector> >("mid-temprate",ratem_);
+
   //! call the base function
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fcap,fint,tang);
   //! finish
@@ -518,10 +528,8 @@ void THR::TimIntGenAlpha::ApplyForceExternalConv(
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // set parameters
-  // TODO 2013-05-29 update the boundary condition
   p.set<double>("alphaf", alphaf_);
-  p.set<double>("alpham", alpham_);
-  p.set<double>("gamma", gamma_);
+
   // call the base function
   TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
   // finish

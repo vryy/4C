@@ -17,11 +17,12 @@ Maintainer: Caroline Danowski
 #ifndef THRTIMINT_GENALPHA_H
 #define THRTIMINT_GENALPHA_H
 
+
 /*----------------------------------------------------------------------*
  | headers                                                   dano 05/13 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_impl.H"
-#include "../drt_lib/standardtypes_cpp.H"  // TODO 2013-05-28
+
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                     dano 05/13 |
@@ -95,20 +96,15 @@ namespace THR
     //! Give linear order of accuracy of temperature part
     int MethodOrderOfAccuracy()
     {
-//      // TODO 2013-05-28: in thrtimint_ost enthalten, doch wie in genalpha Ueberpruefe diesen Term!!!!!!!!!!! 02.10.2009
-//      return fabs(1./2. - theta_) < EPS10 ? 2 : 1;
-      return 1./2.;
+      return (fabs(MethodLinErrCoeff()) < EPS6) ? 2 : 1;
     }
-    
-    //! return time integration factor
-    virtual double TimIntParam(){ return alphaf_; }
 
+    // TODO 2013-07-05 check the calculation of the factor again
     //! Return linear error coefficient of temperatures
     double MethodLinErrCoeff()
     {
-//TODO 2013-05-28      // Ueberpruefe diesen Term!!!!!!!!!!! 02.10.2009
-//      //return 1./2. - theta_;
-      return 1./2.;
+      // at least true for am<1/2 and large enough n->infty
+      return 1.0/2.0 - gamma_ + alphaf_ - alpham_;
     }
 
     //! Consistent predictor with constant temperatures
@@ -229,26 +225,25 @@ namespace THR
     //! Please note, to obtain a second-order accurate scheme, you need
     //! to follow the following formulas in which \f$\rho_\infty\f$ is the
     //! spectral radius.
-    //! \f[ \alpha_m = (2*\rho_\infty - 1)/(\rho_\infty + 1) \f]
-    //! \f[ \alpha_f = \rho_\infty/(\rho_\infty + 1) \f]
-    //! \f[ \gamma = 1/2 - \alpha_m + \alpha_f \f]
-    //! The spectral radius is responsible for the magnitude of
-    //! numerical dissipation introduced.
+    //! \f[ \alpha_m = 1/2 (3 - \rho_\infty)/(\rho_\infty + 1) \f]
+    //! \f[ \alpha_f = 1/(\rho_\infty + 1) \f]
+    //! \f[ \gamma = 1/2 + \alpha_m - \alpha_f \f]
+    //! The spectral radius is responsible for the magnitude of numerical
+    //! dissipation introduced.
     //! For instance
     //!
-    //! Without numerical dissipation at \f$\rho_\infty=1\f$
-    //! \f[ \beta=0.25, \gamma=0.5, \alpha_m=0.5, \alpha_f=0.5 \f]
+    //! Without numerical dissipation at \f$\rho_\infty=1\f$: 2nd order mid-point rule
+    //! \f[ \alpha_f=0.5, \alpha_m=0.5, \gamma=0.5 \f]
     //!
-    //! Medium dissipation at \f$\rho_\infty=0.8\f$
-    //! \f[ \beta=25/81, \gamma=11/18, \alpha_m=1/3, \alpha_f=4/9  \f]
+    //! Strong numerical dissipation at \f$\rho_\infty=0.5\f$: default
+    //! \f[ \alpha_f=2/3, \alpha_m=5/6, \gamma=2/3 \f]
     //!
-    //! Strong numerical dissipation at \f$\rho_\infty=0.5\f$
-    //! \f[ \beta=4/9, \gamma=10/12, \alpha_m=0, \alpha_f=1/3 \f]
-    //! TODO 2013-05-28 adapt value range for thermal field!!
+    //! Maximal numerical dissipation at \f$\rho_\infty=0.0\f$: BDF2
+    //! \f[ \alpha_f=1, \alpha_m=3/2, \gamma=1 \f]
     //@{
     double gamma_;  //!< factor (0,1]
-    double alphaf_;  //!< factor [0,1)
-    double alpham_;  //!< factor [0,1)
+    double alphaf_;  //!< factor [0,1]
+    double alpham_;  //!< factor [0,1.5]
     //@}
 
     //! @name Global mid-state vectors

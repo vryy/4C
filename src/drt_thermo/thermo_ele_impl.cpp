@@ -601,7 +601,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }  // TSI: (kintype_ == geo_nonlinear)
 
     // lumping
-    if(params.get<bool>("lump capa matrix"))
+    if (params.get<bool>("lump capa matrix"))
     {
       const INPAR::THR::DynamicType timint
         = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
@@ -630,8 +630,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   }  // action == "calc_thermo_fintcapa"
 
   //============================================================================
-  // called from overloaded function ApplyForceTangInternal(), exclusively for OST-timint
-  // calculate tangent matrix K and consistent capacity matrix C
+  // called from overloaded function ApplyForceTangInternal(), exclusively for
+  // dynamic-timint (as OST, GenAlpha)
+  // calculate effective dynamic tangent matrix K_{T, effdyn},
+  // i.e. sum consistent capacity matrix C and scaled conductivity matrix
   // --> for dynamic case
   else if (action == "calc_thermo_finttang")
   {
@@ -642,7 +644,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<nen_*numdofpernode_,1> efcap(elevec3_epetra.A(),true);  // view only!
     // efext not needed for this action
 
-    // etang: tangent of thermal problem == econd
+    // etang: effective dynamic tangent of thermal problem
+    // --> etang == k_{T,effdyn}^{(e)} = timefac_capa ecapa + timefac_cond econd
     // econd: conductivity matrix
     // ecapa: capacity matrix
     // --> If dynamic analysis, i.e. T' != 0 --> etang consists of econd AND ecapa
@@ -748,7 +751,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // copy capacity matrix if available
     if (ecapa.A() != NULL) ecapa.Update(ecapa_);
 
-    // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
+    // BUILD EFFECTIVE TANGENT AND RESIDUAL ACCORDING TO TIME INTEGRATOR
     // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
     // K_T = fac_capa . C + fac_cond . K
@@ -763,33 +766,57 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }
     case INPAR::THR::dyna_onesteptheta :
     {
+      // extract time values from parameter list
       const double theta = params.get<double>("theta");
       const double stepsize = params.get<double>("delta time");
+
+      // ---------------------------------------------------------- etang
       // combine capacity and conductivity matrix to one global tangent matrix
       // etang = 1/Dt . ecapa + theta . econd
       // fac_capa = 1/Dt
       // fac_cond = theta
       etang.Update(1.0/stepsize,ecapa_,theta);
+
+      // ---------------------------------------------------------- efcap
+      // fcapn = ecapa .  T_{n+1}
       efcap.Multiply(ecapa_,etemp_);
       break;
-    }
+    }  // ost
+
     case INPAR::THR::dyna_genalpha :
     {
+      // extract time values from parameter list
       const double alpha_f = params.get<double>("alphaf");
-      const double alpha_m = params.get<double>("alphaf");
+      const double alpha_m = params.get<double>("alpham");
       const double gamma = params.get<double>("gamma");
       const double stepsize = params.get<double>("delta time");
+
+      // ---------------------------------------------------------- etang
       // combined tangent and conductivity matrix to one global matrix
       // etang = alpha_m/(gamma . Dt) . ecapa + alpha_f . econd
       // fac_capa = alpha_m/(gamma . Dt)
       // fac_cond = alpha_f
       double fac_capa = alpha_m/(gamma * stepsize);
       etang.Update(fac_capa,ecapa_,alpha_f);
-      // efcap = fac_capa . ecapa . T_{n+1}
-      // TODO 20130-07-05
-      efcap.Multiply(ecapa_,etemp_);
+
+      // ---------------------------------------------------------- efcap
+      // efcap = ecapa * R_{n+alpha_m}
+      if (discretization.HasState(0,"mid-temprate"))
+      {
+        Teuchos::RCP<const Epetra_Vector> ratem
+          = discretization.GetState(0,"mid-temprate");
+        if (ratem == Teuchos::null)
+          dserror("Cannot get mid-temprate state vector for fcap");
+        std::vector<double> myratem((la[0].lm_).size());
+        // fill the vector myratem with the global values of ratem
+        DRT::UTILS::ExtractMyValues(*ratem,myratem,la[0].lm_);
+        // build the element mid-temperature rates
+        LINALG::Matrix<nen_*numdofpernode_,1> eratem(&(myratem[0]),true);  // view only!
+        efcap.Multiply(ecapa_,eratem);
+      }  // ratem != Teuchos::null
       break;
-    }
+
+    }  // genalpha
     case INPAR::THR::dyna_undefined :
     default :
     {
@@ -2638,7 +2665,7 @@ std::cout << "edisp\n" << edisp << std::endl;
   }  //---------------------------------- end loop over Gauss Points
 
 #ifdef THRASOUTPUT
-  if (etangcoupl != NULL && ele->Id()==0)
+  if (etangcoupl != NULL and ele->Id()==0)
     std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"<< *etangcoupl << std::endl;
 #endif  // THRASOUTPUT
 
