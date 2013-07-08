@@ -32,7 +32,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
     const plain_facet_set & facete = volcell_->Facets();
 
     std::cout << "number of facets: " << facete.size() << std::endl;
-    for(int j=0; j< facete.size(); j++)
+    for(unsigned j=0; j< facete.size(); j++)
       facete[j]->Print(std::cout);
 
     dserror( "x-component normal is zero on all the facets? It should not be." );
