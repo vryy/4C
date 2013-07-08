@@ -96,7 +96,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
 
       std::cout << "the side has " << corn.size() << " points" << std::endl;
 
-      for(int j=0; j< corn.size(); j++)
+      for(unsigned j=0; j< corn.size(); j++)
         corn[j]->Print(std::cout);
 
     }
