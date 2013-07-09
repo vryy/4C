@@ -1166,7 +1166,7 @@ bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
   //**********************************************************************
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
+  CONTACT::CoIntegrator integrator(icontact_,sele.Shape());
 
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
@@ -1232,7 +1232,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
     
     // create CoCoupling2dManager
-    CONTACT::CoCoupling2dManager coup(shapefcn_,Discret(),Dim(),quadratic,lmtype,inttype,sele,mele);
+    CONTACT::CoCoupling2dManager coup(Discret(),Dim(),quadratic,icontact_,sele,mele);
 
     // increase counter of slave/master integration pairs and intcells
     smintpairs_ += (int)mele.size();
@@ -1248,7 +1248,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     if (!quadratic)
     {
       // create CoCoupling3dManager
-      CONTACT::CoCoupling3dManager coup(shapefcn_,Discret(),Dim(),false,auxplane,inttype,sele,mele,lmtype);
+      CONTACT::CoCoupling3dManager coup(Discret(),Dim(),false,IParams(),sele,mele);
 
       // increase counter of slave/master integration pairs and intcells
       smintpairs_ += (int)mele.size();
@@ -1259,7 +1259,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     else
     {
       //create Coupling3dQuadManager
-      CONTACT::CoCoupling3dQuadManager coup(shapefcn_,Discret(),Dim(),false,auxplane,lmtype,inttype,sele,mele);
+      CONTACT::CoCoupling3dQuadManager coup(Discret(),Dim(),false,IParams(),sele,mele);
     } // quadratic
   } // 3D
   else
@@ -1314,7 +1314,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
+      CONTACT::CoIntegrator integrator(icontact_,sele.Shape());
       integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
 
       // do the assembly into the slave nodes
@@ -1331,8 +1331,8 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
         Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
         // create a CONTACT integrator instance with correct NumGP and Dim
-        CONTACT::CoIntegrator integrator(shapefcn_,sauxelements[i]->Shape());
-        integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg,lmtype);
+        CONTACT::CoIntegrator integrator(icontact_,sauxelements[i]->Shape());
+        integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg);
 
         // do the assembly into the slave nodes
         integrator.AssembleG(Comm(),*(sauxelements[i]),*gseg);
@@ -1353,7 +1353,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     // create a CONTACT integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(shapefcn_,sele.Shape());
+    CONTACT::CoIntegrator integrator(icontact_,sele.Shape());
     integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
 
     // do the assembly into the slave nodes

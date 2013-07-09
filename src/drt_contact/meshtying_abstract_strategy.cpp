@@ -410,8 +410,11 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
     dserror("ERROR: RestrictMeshtyingZone only implemented for first-order elements");
 
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  if (shapefcn == INPAR::MORTAR::shape_dual)
-    dserror("ERROR: RestrictMeshtyingZone only implemented for standard LM");
+  if (   (shapefcn == INPAR::MORTAR::shape_dual || shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+      && DRT::INPUT::IntegralValue<int>(Params(),"LM_DUAL_CONSISTENT")==false
+     )
+    dserror("ERROR: RestrictMeshtyingZone for dual shape functions "
+        "only implemented in combination with consistnent boundary modification");
 
   // Step 2: restrict slave node/dof sets of all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)

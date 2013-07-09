@@ -1927,7 +1927,7 @@ bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele)
   //**********************************************************************
 
   // create an integrator instance with correct NumGP and Dim
-  MORTAR::MortarIntegrator integrator(shapefcn_,sele.Shape());
+  MORTAR::MortarIntegrator integrator(icontact_,sele.Shape());
 
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
@@ -1990,7 +1990,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
 
     // create Coupling2dManager
-    MORTAR::Coupling2dManager coup(shapefcn_,Discret(),Dim(),quadratic,lmtype,inttype,sele,mele);
+    MORTAR::Coupling2dManager coup(Discret(),Dim(),quadratic,IParams(),sele,mele);
   }
   // ************************************************************** 3D ***
   else if (Dim()==3)
@@ -2002,14 +2002,14 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     if (!quadratic)
     {
       // create Coupling3dManager
-      MORTAR::Coupling3dManager coup(shapefcn_,Discret(),Dim(),false,auxplane,inttype,sele,mele);
+      MORTAR::Coupling3dManager coup(Discret(),Dim(),false,IParams(),sele,mele);
     }
 
     // ************************************************** quadratic 3D ***
     else
     {
       //create Coupling3dQuadManager
-      MORTAR::Coupling3dQuadManager coup(shapefcn_,Discret(),Dim(),false,auxplane,lmtype,inttype,sele,mele);
+      MORTAR::Coupling3dQuadManager coup(Discret(),Dim(),false,IParams(),sele,mele);
     } // quadratic
   } // 3D
   else

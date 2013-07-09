@@ -76,22 +76,6 @@ class Coupling2d
 public:
 
   /*!
-  \brief Standard constructor
-
-  Constructs an instance of this class.<br>
-  Note that this is \b not a collective call as coupling is
-  performed in parallel by individual processes.
-  
-  Note: This version of the constructor creates an Coupling2d instance with undefined type of shape functions.
-  As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
-  To be able to evaluate them, the Coupling2d have to be created with the alternative constructor (see below).
-
-  */
-  Coupling2d(DRT::Discretization& idiscret,
-             int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-             MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
-  
-  /*!
   \brief Constructor with shape function specification
   
   Constructs an instance of this class and enables custom shape function types.<br>
@@ -99,8 +83,8 @@ public:
   performed in parallel by individual processes.
   
   */  
-  Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
-             int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
+  Coupling2d(DRT::Discretization& idiscret,
+             int dim, bool quad, Teuchos::ParameterList& params,
              MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
@@ -151,7 +135,20 @@ public:
   \brief Return the LM interpolation / testing type for quadratic FE
 
   */
-  INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmtype_; }
+  INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD") ; }
+
+  /*!
+  \brief Return the LM shape fcn type
+
+  */
+  INPAR::MORTAR::ShapeFcn ShapeFcn()
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+
+  /*!
+  \brief Get interface contact parameter list
+
+  */
+  virtual Teuchos::ParameterList& IParams() {return icontact_;};
 
   /*!
   \brief Get projection status of the four end nodes
@@ -230,11 +227,10 @@ protected:
     Coupling2d operator = (const Coupling2d& old);
     Coupling2d(const Coupling2d& old);
     
-    const INPAR::MORTAR::ShapeFcn shapefcn_;  // employed type of shape function set
     DRT::Discretization&          idiscret_;  // discretization of the contact interface
     int                           dim_;       // problem dimension (here: 2D)
     bool                          quad_;      // flag indicating coupling type (true = quadratic)
-    INPAR::MORTAR::LagMultQuad    lmtype_;    // type of quadratic LM interpolation and testing
+    Teuchos::ParameterList&       icontact_;  // containing contact input parameters
     MORTAR::MortarElement&        sele_;      // slave element to perform coupling for
     MORTAR::MortarElement&        mele_;      // master element to perform coupling for
 
@@ -258,24 +254,6 @@ class Coupling2dManager{
 public:
 
   /*!
-  \brief Standard constructor
-
-  Constructs an instance of this class.<br>
-  Note that this is \b not a collective call as coupling is
-  performed in parallel by individual processes.
-
-  Note: This version of the constructor creates an Coupling2dManager instance with undefined type of
-  shape functions. As a result, no calls to functions relying on the evaluation of shape functions is
-  allowed. To be able to evaluate them, the Coupling2dManager have to be created with the alternative
-  constructor (see below).
-
-  */
-  Coupling2dManager(DRT::Discretization& idiscret,
-                    int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                    INPAR::MORTAR::IntType inttype,
-                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
-
-  /*!
   \brief Constructor with shape function specification
 
   Constructs an instance of this class and enables custom shape function types.<br>
@@ -283,9 +261,8 @@ public:
   performed in parallel by individual processes.
 
   */
-  Coupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
-                    int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                    INPAR::MORTAR::IntType inttype,
+  Coupling2dManager(DRT::Discretization& idiscret,
+                    int dim, bool quad,Teuchos::ParameterList& params ,
                     MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -322,13 +299,13 @@ public:
   \brief Get type of quadratic LM interpolation
 
   */
-  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmtype_; }
+  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD"); }
 
   /*!
   \brief Get integration type
 
   */
-  virtual INPAR::MORTAR::IntType IntType() { return inttype_; }
+  virtual INPAR::MORTAR::IntType IntType() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(icontact_,"INTTYPE"); }
 
   /*!
   \brief Evaluate coupling pairs
@@ -342,6 +319,20 @@ public:
   */
   virtual const bool& Quad() {return quad_;};
 
+  /*!
+  \brief Return the LM shape fcn type
+
+  */
+  INPAR::MORTAR::ShapeFcn ShapeFcn()
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+
+  /*!
+  \brief Calculate consistent dual shape functions in boundary elements
+
+  */
+  virtual void ConsistDualShape();
+
+
   //@}
 
 
@@ -351,12 +342,10 @@ protected:
     Coupling2dManager operator = (const Coupling2dManager& old);
     Coupling2dManager(const Coupling2dManager& old);
 
-    const INPAR::MORTAR::ShapeFcn           shapefcn_;  // employed type of shape function set
     DRT::Discretization&                    idiscret_;  // discretization of the contact interface
     int                                     dim_;       // problem dimension (here: 2D)
     bool                                    quad_;      // flag indicating coupling type (true = quadratic)
-    INPAR::MORTAR::LagMultQuad              lmtype_;    // type of quadratic LM interpolation and testing
-    INPAR::MORTAR::IntType                  inttype_;   // type of numerical integration scheme
+    Teuchos::ParameterList&                 icontact_;  // containing contact input parameters
     MORTAR::MortarElement*                  sele_;      // slave element
     std::vector<MORTAR::MortarElement*>     mele_;      // master elements
     std::vector<Teuchos::RCP<Coupling2d> >  coup_;      // coupling pairs

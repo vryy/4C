@@ -50,20 +50,11 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensematrix.H"
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 08/08|
- *----------------------------------------------------------------------*/
-MORTAR::MortarIntegrator::MortarIntegrator(DRT::Element::DiscretizationType eletype) :
-shapefcn_(INPAR::MORTAR::shape_undefined)
-{
-  InitializeGP(eletype);
-}
-
-/*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 07/09|
  *----------------------------------------------------------------------*/
-MORTAR::MortarIntegrator::MortarIntegrator(const INPAR::MORTAR::ShapeFcn shapefcn,
+MORTAR::MortarIntegrator::MortarIntegrator(Teuchos::ParameterList& params,
                                DRT::Element::DiscretizationType eletype) :
-shapefcn_(shapefcn)
+icontact_(params)
 {
   InitializeGP(eletype);
 }
@@ -397,11 +388,13 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
 void MORTAR::MortarIntegrator::FastIntegration(
        Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
        Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-       INPAR::MORTAR::LagMultQuad& lmtype,
        MORTAR::MortarElement& sele,
        std::vector<MORTAR::MortarElement*> meles,
        bool *boundary_ele)
 {
+  // get LMtype
+  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
@@ -459,9 +452,9 @@ void MORTAR::MortarIntegrator::FastIntegration(
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (linlm)
-      sele.EvaluateShapeLagMultLin(shapefcn_,sxi,lmval,lmderiv,nrow);//nrow
+      sele.EvaluateShapeLagMultLin(ShapeFcn(),sxi,lmval,lmderiv,nrow);//nrow
     else
-      sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+      sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
 
@@ -497,7 +490,7 @@ void MORTAR::MortarIntegrator::FastIntegration(
         //***************************
         // standard shape functions
         //***************************
-        if (shapefcn_ == INPAR::MORTAR::shape_standard)
+        if (ShapeFcn() == INPAR::MORTAR::shape_standard)
         {
           // loop over all mseg matrix entries
           // !!! nrow represents the slave Lagrange multipliers !!!
@@ -536,7 +529,7 @@ void MORTAR::MortarIntegrator::FastIntegration(
         //***********************
         // dual shape functions
         //***********************
-        else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+        else if (ShapeFcn() == INPAR::MORTAR::shape_dual)
         {
           //dserror("ERROR: noch nicht vervollständigt");
           // loop over all mseg matrix entries
@@ -615,7 +608,7 @@ void MORTAR::MortarIntegrator::FastIntegration(
     //**********************************************************
     //Dseg
     //**********************************************************
-    if (shapefcn_ == INPAR::MORTAR::shape_standard)
+    if (ShapeFcn() == INPAR::MORTAR::shape_standard)
     {
       if(is_on_mele==true)
       {
@@ -641,7 +634,7 @@ void MORTAR::MortarIntegrator::FastIntegration(
         }
       }
     }
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual)
     {
       if (is_on_mele==true)
       {
@@ -714,7 +707,7 @@ void MORTAR::MortarIntegrator::FastIntegration(
  |  Moreover, derivatives LinD are built and stored directly into the   |
  |  adajcent nodes. (Thus this method combines EVERYTHING before done   |
  |  aperarately in IntegrateD and DerivD!)                              |
- |  ********** modified version: responds to shapefcn_ ***    popp 05/09|
+ |  ********** modified version: responds to ShapeFcn() ***   popp 05/09|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
       MORTAR::MortarElement& sele, double* sxia, double* sxib,
@@ -725,7 +718,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
   //**********************************************************************
 
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSlave2D3D called without specific shape function defined!");
     
   //check input data
@@ -757,7 +750,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
 
     // evaluate trace space and Lagrange multiplier shape functions
     sele.EvaluateShape(eta,val,deriv,nrow);
-    sele.EvaluateShapeLagMult(shapefcn_,eta,lmval,lmderiv,nrow);
+    sele.EvaluateShapeLagMult(ShapeFcn(),eta,lmval,lmderiv,nrow);
 
     // evaluate the Jacobian det
     double dxdsxi = sele.Jacobian(eta);
@@ -801,13 +794,15 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
 void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
-     INPAR::MORTAR::LagMultQuad& lmtype,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 { 
+  // get LMtype
+  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
     
   //check for problem dimension
@@ -890,9 +885,9 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (linlm)
-      sele.EvaluateShapeLagMultLin(shapefcn_,sxi,lmval,lmderiv,nrow);
+      sele.EvaluateShapeLagMultLin(ShapeFcn(),sxi,lmval,lmderiv,nrow);
     else
-      sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+      sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -904,7 +899,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     
     // compute segment D/M matrix ****************************************
     // standard shape functions
-    if (shapefcn_ == INPAR::MORTAR::shape_standard)
+    if (ShapeFcn() == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -952,7 +947,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     }
     
     // dual shape functions
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual)
     { 
       // loop over all mseg matrix entries
       // nrow represents the slave Lagrange multipliers !!!
@@ -1015,7 +1010,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
           }
         }
       }
-    } // shapefcn_ switch
+    } // ShapeFcn() switch
     // compute segment D/M matrix ****************************************
   }
   //**********************************************************************
@@ -1173,7 +1168,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
      Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
     
   //check for problem dimension
@@ -1252,7 +1247,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+    sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -1264,7 +1259,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
 
     // compute cell D/M matrix *******************************************
     // standard shape functions
-    if (shapefcn_ == INPAR::MORTAR::shape_standard)
+    if (ShapeFcn() == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1306,7 +1301,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
     }
     
     // dual shape functions
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1356,7 +1351,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D_Fast(
      bool *boundary_ele)
 {
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
   //check for problem dimension
@@ -1452,7 +1447,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D_Fast(
         projactable_gp=true;
 
         // evaluate Lagrange multiplier shape functions (on slave element)
-        sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+        sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
         // evaluate trace space shape functions (on both elements)
         sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -1464,7 +1459,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D_Fast(
 
         // compute cell D/M matrix *******************************************
         // standard shape functions
-        if (shapefcn_ == INPAR::MORTAR::shape_standard)
+        if (ShapeFcn() == INPAR::MORTAR::shape_standard)
         {
           // loop over all mseg matrix entries
           // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1506,7 +1501,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D_Fast(
         }
 
         // dual shape functions
-        else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+        else if (ShapeFcn() == INPAR::MORTAR::shape_dual)
         {
           // loop over all mseg matrix entries
           // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1569,7 +1564,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
      Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
     
   //check for problem dimension
@@ -1668,7 +1663,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
     }
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+    sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -1679,7 +1674,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
 
     // compute cell D/M matrix *******************************************
     // standard shape functions
-    if (shapefcn_ == INPAR::MORTAR::shape_standard)
+    if (ShapeFcn() == INPAR::MORTAR::shape_standard)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1721,7 +1716,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
     }
     
     // dual shape functions
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual)
     {
       // loop over all mseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1752,7 +1747,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
           }
         }
       } // nrow*ndof loop
-    } // shapefcn_ switch
+    } // ShapeFcn() switch
     // compute cell D/M matrix *******************************************
   }
   //**********************************************************************
@@ -1770,14 +1765,15 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell,
-     INPAR::MORTAR::LagMultQuad& lmtype,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
+  // get LMtype
+  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
 
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DQuad called without specific shape function defined!");
 
   /*std::cout << endl;
@@ -1840,7 +1836,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
   // decide whether displacement shape fct. modification has to be considered or not
   // this is the case for dual quadratic and linear Lagrange multipliers on quad9/quad8/tri6 elements
   bool dualquad3d = false;
-  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) &&
+  if ( (ShapeFcn() == INPAR::MORTAR::shape_dual) &&
        (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin) &&
        (sele.Shape() == DRT::Element::quad9 || sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
   {
@@ -1909,11 +1905,11 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (bound)
-      sele.EvaluateShapeLagMultLin(shapefcn_,psxi,lmval,lmderiv,nrow);
+      sele.EvaluateShapeLagMultLin(ShapeFcn(),psxi,lmval,lmderiv,nrow);
     else
     {
-      sele.EvaluateShapeLagMult(shapefcn_,psxi,lmval,lmderiv,nrow);
-      sintele.EvaluateShapeLagMult(shapefcn_,sxi,lmintval,lmintderiv,nintrow);
+      sele.EvaluateShapeLagMult(ShapeFcn(),psxi,lmval,lmderiv,nrow);
+      sintele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmintval,lmintderiv,nintrow);
     }
 
     // evaluate trace space shape functions (on both elements)
@@ -1927,7 +1923,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
 
     // compute cell D/M matrix *******************************************
     // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
-    if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+    if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
         (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
     {
       // compute all mseg and dseg matrix entries
@@ -1967,7 +1963,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
     }
 
     // CASE 3: Standard LM shape functions and piecewise linear interpolation
-    else if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+    else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
              lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
       // compute all mseg (and dseg) matrix entries
@@ -2007,7 +2003,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
     }
 
     // CASE 4: Dual LM shape functions and quadratic interpolation
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual &&
              lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
       // compute all mseg (and dseg) matrix entries
@@ -2040,7 +2036,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
 
     // CASE 5: Dual LM shape functions and linear interpolation
     // (here, we must NOT ignore the small off-diagonal terms for accurate convergence)
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual &&
              lmtype == INPAR::MORTAR::lagmult_lin_lin)
     {
       // compute all mseg and dseg matrix entries
@@ -2101,14 +2097,15 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     INPAR::MORTAR::LagMultQuad& lmtype,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
+  // get LMtype
+  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
   
   // explicitely defined shapefunction type needed
-  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
   
   /*std::cout << endl;
@@ -2172,7 +2169,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   // decide whether displacement shape fct. modification has to be considered or not
   // this is the case for dual quadratic and linear Lagrange multipliers on quad9/quad8/tri6 elements
   bool dualquad3d = false;
-  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) &&
+  if ( (ShapeFcn() == INPAR::MORTAR::shape_dual) &&
        (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin) &&
        (sele.Shape() == DRT::Element::quad9 || sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
   {
@@ -2262,11 +2259,11 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
     // evaluate Lagrange multiplier shape functions (on slave element)  
     if (bound)
-      sele.EvaluateShapeLagMultLin(shapefcn_,psxi,lmval,lmderiv,nrow);
+      sele.EvaluateShapeLagMultLin(ShapeFcn(),psxi,lmval,lmderiv,nrow);
     else
     {
-      sele.EvaluateShapeLagMult(shapefcn_,psxi,lmval,lmderiv,nrow);
-      sintele.EvaluateShapeLagMult(shapefcn_,sxi,lmintval,lmintderiv,nintrow);
+      sele.EvaluateShapeLagMult(ShapeFcn(),psxi,lmval,lmderiv,nrow);
+      sintele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmintval,lmintderiv,nintrow);
     }
     
     // evaluate trace space shape functions (on both elements)
@@ -2278,7 +2275,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
     // compute cell D/M matrix *******************************************
     // CASE 1/2: Standard LM shape functions and quadratic or linear interpolation
-    if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+    if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
         (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
     {
       // compute all mseg and dseg matrix entries
@@ -2318,7 +2315,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     
     // CASE 3: Standard LM shape functions and piecewise linear interpolation
-    else if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+    else if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
              lmtype == INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
       // compute all mseg (and dseg) matrix entries
@@ -2358,7 +2355,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     }
     
     // CASE 4: Dual LM shape functions and quadratic interpolation
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual &&
              lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
       // compute all mseg (and dseg) matrix entries
@@ -2391,7 +2388,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
     // CASE 5: Dual LM shape functions and linear interpolation
     // (here, we must NOT ignore the small off-diagonal terms for accurate convergence)
-    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+    else if (ShapeFcn() == INPAR::MORTAR::shape_dual &&
              lmtype == INPAR::MORTAR::lagmult_lin_lin)
     {
       // compute all mseg and dseg matrix entries

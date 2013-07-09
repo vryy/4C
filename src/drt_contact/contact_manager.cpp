@@ -540,6 +540,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (mortar.get<int>("NUMGP_PER_DIM") > 0 && mortar.get<int>("NUMGP_PER_DIM")!=3 && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
     dserror("ERROR: Change of Gauss point number only allowed for FastIntegration!");
 
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier strategy.");
+
+
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
@@ -577,6 +582,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if(DRT::INPUT::IntegralValue<int>(contact,"INITCONTACTBYGAP")==true &&
      contact.get<double>("INITCONTACTGAPVALUE") == 0.0)
     dserror("ERROR: For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed."); 
+
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
+     DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") != INPAR::MORTAR::lagmult_undefined)
+    dserror("ERROR: Consistent dual shape functions in boundary elements only for linear shape functions.");
 
   // *********************************************************************
   // thermal-structure-interaction contact

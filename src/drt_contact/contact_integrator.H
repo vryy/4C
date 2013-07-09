@@ -67,23 +67,6 @@ class CoIntegrator : public MORTAR::MortarIntegrator
 public:
 
   /*!
-  \brief Standard constructor
-
-  Constructs an instance of this class.<br>
-  Note that this is \b not a collective call as overlaps are
-  integrated in parallel by individual processes.<br>
-  Note also that this constructor relies heavily on the
-  DRT::UTILS::IntegrationPoints structs to get Gauss points
-  and corresponding weights.
-  
-  Note: This version of the constructor creates a CoIntegrator instance with undefined type of shape functions.
-  As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
-  To be able to evaluate them, the CoIntegrator have to be created with the alternative constructor (see below). 
-
-  */
-  CoIntegrator(DRT::Element::DiscretizationType eletype);
-
-  /*!
   \brief Constructor  with shape function specification
   
   Constructs an instance of this class using a specific type of shape functions.<br>
@@ -94,7 +77,7 @@ public:
   and corresponding weights.
   
   */
-  CoIntegrator(const INPAR::MORTAR::ShapeFcn shapefcn,
+  CoIntegrator(Teuchos::ParameterList& params,
                DRT::Element::DiscretizationType eletype);
 
   /*!
@@ -127,7 +110,6 @@ public:
   void FastIntegration(
       MORTAR::MortarElement& sele,
       std::vector<MORTAR::MortarElement*> meles,
-      INPAR::MORTAR::LagMultQuad lmtype,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
@@ -142,7 +124,6 @@ public:
   void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
-      INPAR::MORTAR::LagMultQuad lmtype,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
@@ -202,7 +183,6 @@ public:
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     INPAR::MORTAR::LagMultQuad lmtype,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
@@ -223,8 +203,7 @@ public:
   void IntegrateKappaPenalty(MORTAR::MortarElement& sele,
                              MORTAR::IntElement& sintele,
                              double* sxia, double* sxib,
-                             Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-                             INPAR::MORTAR::LagMultQuad lmtype);
+                             Teuchos::RCP<Epetra_SerialDenseVector> gseg);
   
   //@}
 

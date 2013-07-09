@@ -148,6 +148,30 @@ public:
   */
   virtual std::vector<int>& SearchElements() {return searchelements_; }
 
+  /*!
+  \brief Return matrix of dual shape function coefficients
+
+  */
+  virtual Teuchos::RCP<LINALG::SerialDenseMatrix>& DualShape() {return dualshapecoeff_; }
+
+  /*!
+  \brief Return directional derivative of matrix of dual shape function coefficients
+
+  */
+  virtual Teuchos::RCP<std::vector<std::vector<std::map<int,double> > > >& DerivDualShape() {return derivdualshapecoeff_; }
+
+  /*!
+  \brief Reset matrix of dual shape function coefficients and free memory
+
+  */
+  virtual void ResetDualShape() { dualshapecoeff_ = Teuchos::null; return; }
+
+  /*!
+  \brief Reset directional derivative of matrix of dual shape function coefficients and free memory
+
+  */
+  virtual void ResetDerivDualShape() { derivdualshapecoeff_ = Teuchos::null; return; }
+
   //@}
 
 protected:
@@ -158,6 +182,12 @@ protected:
 
   double            area_;           // element length/area in current configuration
   std::vector<int>  searchelements_; // global ids of potentially contacting elements
+
+  // coefficient matrix for dual shape functions
+  Teuchos::RCP<LINALG::SerialDenseMatrix> dualshapecoeff_;
+
+  // derivative of coefficient matrix for dual shape functions
+  Teuchos::RCP<std::vector<std::vector<std::map<int,double> > > > derivdualshapecoeff_;
 
 }; // class MortarEleDataContainer
 

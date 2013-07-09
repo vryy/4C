@@ -79,6 +79,8 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
 {
   // initialize area
   Area()=0.0;
+  dualshapecoeff_=Teuchos::null;
+  derivdualshapecoeff_=Teuchos::null;
 
   return;
 }
@@ -109,6 +111,8 @@ void MORTAR::MortarEleDataContainer::Unpack(std::vector<char>::size_type& positi
   // searchelements_
   DRT::ParObject::ExtractfromPack(position,data,&searchelements_,(int)searchelements_.size());
 
+  dualshapecoeff_=Teuchos::null;
+  derivdualshapecoeff_=Teuchos::null;
   return;
 }
 

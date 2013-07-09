@@ -62,22 +62,6 @@ class CoCoupling2d : public MORTAR::Coupling2d
 public:
 
   /*!
-  \brief Standard constructor
-
-  Constructs an instance of this class.<br>
-  Note that this is \b not a collective call as coupling is
-  performed in parallel by individual processes.
-  
-  Note: This version of the constructor creates an CoCoupling2d instance with undefined type of shape functions.
-  As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
-  To be able to evaluate them, the CoCoupling2d have to be created with the alternative constructor (see below).
-
-  */
-  CoCoupling2d(DRT::Discretization& idiscret,
-               int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-               MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
-  
-  /*!
   \brief Constructor with shape function specification
   
   Constructs an instance of this class and enables custom shape function types.<br>
@@ -85,8 +69,8 @@ public:
   performed in parallel by individual processes.
   
   */  
-  CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
-               int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
+  CoCoupling2d(DRT::Discretization& idiscret,
+               int dim, bool quad, Teuchos::ParameterList& params,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
@@ -137,24 +121,6 @@ class CoCoupling2dManager
 public:
 
   /*!
-  \brief Standard constructor
-
-  Constructs an instance of this class.<br>
-  Note that this is \b not a collective call as coupling is
-  performed in parallel by individual processes.
-
-  Note: This version of the constructor creates an CoCoupling2dManager instance with undefined type of
-  shape functions. As a result, no calls to functions relying on the evaluation of shape functions is
-  allowed. To be able to evaluate them, the CoCoupling2dManager have to be created with the alternative
-  constructor (see below).
-
-  */
-  CoCoupling2dManager(DRT::Discretization& idiscret,
-                      int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                      INPAR::MORTAR::IntType inttype,
-                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
-
-  /*!
   \brief Constructor with shape function specification
 
   Constructs an instance of this class and enables custom shape function types.<br>
@@ -162,9 +128,8 @@ public:
   performed in parallel by individual processes.
 
   */
-  CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
-                      int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
-                      INPAR::MORTAR::IntType inttype,
+  CoCoupling2dManager(DRT::Discretization& idiscret,
+                      int dim, bool quad, Teuchos::ParameterList& params,
                       MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -201,13 +166,13 @@ public:
   \brief Get type of quadratic LM interpolation
 
   */
-  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmtype_; };
+  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD"); };
 
   /*!
   \brief Get type of integration scheme
 
   */
-  virtual INPAR::MORTAR::IntType IntType() { return inttype_; };
+  virtual INPAR::MORTAR::IntType IntType() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(icontact_,"INTTYPE"); };
 
   /*!
   \brief Get coupling type
@@ -228,10 +193,23 @@ public:
   virtual const int& Dim() {return dim_;}
 
   /*!
+  \brief Return the LM shape fcn type
+
+  */
+  INPAR::MORTAR::ShapeFcn ShapeFcn()
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+
+  /*!
   \brief Evaluate coupling pairs
 
   */
   virtual bool EvaluateCoupling();
+
+  /*!
+  \brief Calculate consistent dual shape functions in boundary elements
+
+  */
+  virtual void ConsistDualShape();
 
   //@}
 
@@ -242,12 +220,10 @@ protected:
     CoCoupling2dManager operator = (const CoCoupling2dManager& old);
     CoCoupling2dManager(const CoCoupling2dManager& old);
 
-    const INPAR::MORTAR::ShapeFcn             shapefcn_;  // employed type of shape function set
     DRT::Discretization&                      idiscret_;  // discretization of the contact interface
     int                                       dim_;       // problem dimension (here: 2D)
     bool                                      quad_;      // flag indicating coupling type (true = quadratic)
-    INPAR::MORTAR::LagMultQuad                lmtype_;    // type of quadratic LM interpolation and testing
-    INPAR::MORTAR::IntType                    inttype_;   // type of numerical integration scheme
+    Teuchos::ParameterList&                   icontact_;   // containing contact input parameters
     MORTAR::MortarElement*                    sele_;      // slave element
     std::vector<MORTAR::MortarElement*>       mele_;      // master elements
     std::vector<Teuchos::RCP<CoCoupling2d> >  coup_;      // coupling pairs

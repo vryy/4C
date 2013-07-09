@@ -44,32 +44,21 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../drt_mortar/mortar_projector.H"
+#include "contact_element.H"
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 11/08|
- *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2d::CoCoupling2d(DRT::Discretization& idiscret,
-                                    int dim, bool quad,
-                                    INPAR::MORTAR::LagMultQuad lmtype,
-                                    MORTAR::MortarElement& sele,
-                                    MORTAR::MortarElement& mele) :
-MORTAR::Coupling2d(idiscret,dim,quad,lmtype,sele,mele)
-{
-  // empty constructor
-  
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2d::CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn,
-                                    DRT::Discretization& idiscret,
+CONTACT::CoCoupling2d::CoCoupling2d(DRT::Discretization& idiscret,
                                     int dim, bool quad,
-                                    INPAR::MORTAR::LagMultQuad lmtype,
+                                    Teuchos::ParameterList& params,
                                     MORTAR::MortarElement& sele,
                                     MORTAR::MortarElement& mele) :
-MORTAR::Coupling2d(shapefcn,idiscret,dim,quad,lmtype,sele,mele)
+MORTAR::Coupling2d(idiscret,dim,quad,params,sele,mele)
 {
   // empty constructor
   
@@ -82,7 +71,7 @@ MORTAR::Coupling2d(shapefcn,idiscret,dim,quad,lmtype,sele,mele)
 bool CONTACT::CoCoupling2d::IntegrateOverlap()
 {
   // explicitely defined shapefunction type needed
-  if( shapefcn_ == INPAR::MORTAR::shape_undefined)
+  if( ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateOverlap called without specific shape function defined!");
   
   /**********************************************************************/
@@ -115,7 +104,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   double mxib = xiproj_[3];
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(shapefcn_,SlaveElement().Shape());
+  CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
 
   // *******************************************************************
   // different options for mortar integration
@@ -146,7 +135,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,lmtype,dseg,mseg,gseg,wseg);
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,mseg,gseg,wseg);
 
     // do the two assemblies into the slave nodes
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -179,47 +168,18 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   return true;
 }
 
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 11/08|
- *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
-                                                  int dim, bool quad,
-                                                  INPAR::MORTAR::LagMultQuad lmtype,
-                                                  INPAR::MORTAR::IntType inttype,
-                                                  MORTAR::MortarElement* sele,
-                                                  std::vector<MORTAR::MortarElement*> mele) :
-shapefcn_(INPAR::MORTAR::shape_undefined),
-idiscret_(idiscret),
-dim_(dim),
-quad_(quad),
-lmtype_(lmtype),
-inttype_(inttype),
-sele_(sele),
-mele_(mele)
-{
-  // evaluate coupling
-  EvaluateCoupling();
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling2dManager::CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
-                                                 DRT::Discretization& idiscret,
+CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
                                                  int dim, bool quad,
-                                                 INPAR::MORTAR::LagMultQuad lmtype,
-                                                 INPAR::MORTAR::IntType inttype,
+                                                 Teuchos::ParameterList& params,
                                                  MORTAR::MortarElement* sele,
                                                  std::vector<MORTAR::MortarElement*> mele) :
-shapefcn_(shapefcn),
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
-lmtype_(lmtype),
-inttype_(inttype),
+icontact_(params),
 sele_(sele),
 mele_(mele)
 {
@@ -249,20 +209,57 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   //**********************************************************************
   if (IntType()==INPAR::MORTAR::inttype_segments)
   {
-    // loop over all master elements associated with this slave element
-    for (int m=0;m<(int)MasterElements().size();++m)
+    // switch, if consistent boundary modification chosen
+    if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+        && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
+       )
     {
-      // create CoCoupling2d object and push back
-      Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+      // loop over all master elements associated with this slave element
+      for (int m=0;m<(int)MasterElements().size();++m)
+      {
+        // create Coupling2d object and push back
+        Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
+            idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
 
-      // project the element pair
-      Coupling()[m]->Project();
+        // project the element pair
+        Coupling()[m]->Project();
 
-      // check for element overlap
-      Coupling()[m]->DetectOverlap();
+        // check for element overlap
+        Coupling()[m]->DetectOverlap();
+      }
 
-      // integrate the element overlap
-      Coupling()[m]->IntegrateOverlap();
+      // calculate consistent dual shape functions for this element
+      ConsistDualShape();
+
+      // do mortar integration
+      for (int m=0;m<(int)MasterElements().size();++m)
+        Coupling()[m]->IntegrateOverlap();
+
+      // free memory of consistent dual shape function coefficient matrix
+      SlaveElement().MoData().ResetDualShape();
+      SlaveElement().MoData().ResetDerivDualShape();
+
+    }
+
+    // no consistent boundary modification
+    else
+    {
+      // loop over all master elements associated with this slave element
+      for (int m=0;m<(int)MasterElements().size();++m)
+      {
+        // create Coupling2d object and push back
+        Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
+            idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+
+        // project the element pair
+        Coupling()[m]->Project();
+
+        // check for element overlap
+        Coupling()[m]->DetectOverlap();
+
+        // integrate the element overlap
+        Coupling()[m]->IntegrateOverlap();
+      }
     }
   }
   //**********************************************************************
@@ -274,7 +271,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
         return false;
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(shapefcn_,SlaveElement().Shape());
+    CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
 
     // *******************************************************************
     // different options for mortar integration
@@ -298,7 +295,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       for (int m=0;m<(int)MasterElements().size();++m)
       {
         // create CoCoupling2d object and push back
-        Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+        Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
 
         // project the element pair
         Coupling()[m]->Project();
@@ -321,26 +318,61 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
         wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       //perform integration
-      integrator.FastIntegration(SlaveElement(),MasterElements(),lmtype,dseg,mseg,gseg,wseg,&boundary_ele);
+      integrator.FastIntegration(SlaveElement(),MasterElements(),dseg,mseg,gseg,wseg,&boundary_ele);
 
       if (IntType()==INPAR::MORTAR::inttype_fast_BS)
       {
         if (boundary_ele==true)
         {
-          // loop over all master elements associated with this slave element
-          for (int m=0;m<(int)MasterElements().size();++m)
+          // switch, if consistent boundary modification chosen
+          if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+              && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
+          )
           {
-            // create CoCoupling2d object and push back
-            Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+            // loop over all master elements associated with this slave element
+            for (int m=0;m<(int)MasterElements().size();++m)
+            {
+              // create Coupling2d object and push back
+              Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
+                  idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
 
-            // project the element pair
-            Coupling()[m]->Project();
+              // project the element pair
+              Coupling()[m]->Project();
 
-            // check for element overlap
-            Coupling()[m]->DetectOverlap();
+              // check for element overlap
+              Coupling()[m]->DetectOverlap();
+            }
 
-            // integrate the element overlap
-            Coupling()[m]->IntegrateOverlap();
+            // calculate consistent dual shape functions for this element
+//            std::cout << "consistent dual for element: " << SlaveElement().Id() << std::endl;
+            ConsistDualShape();
+
+            // do mortar integration
+            for (int m=0;m<(int)MasterElements().size();++m)
+              Coupling()[m]->IntegrateOverlap();
+
+            // free memory of consistent dual shape function coefficient matrix
+            SlaveElement().MoData().ResetDualShape();
+            SlaveElement().MoData().ResetDerivDualShape();
+          }
+
+          else
+          {
+            // loop over all master elements associated with this slave element
+            for (int m=0;m<(int)MasterElements().size();++m)
+            {
+              // create CoCoupling2d object and push back
+              Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+
+              // project the element pair
+              Coupling()[m]->Project();
+
+              // check for element overlap
+              Coupling()[m]->DetectOverlap();
+
+              // integrate the element overlap
+              Coupling()[m]->IntegrateOverlap();
+            }
           }
         }
         else
@@ -396,4 +428,244 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
 
   return true;
 }
+
+/*----------------------------------------------------------------------*
+ |  Calculate dual shape functions                           seitz 07/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoCoupling2dManager::ConsistDualShape()
+{
+  // For standard shape functions no modification is necessary
+  // A switch earlier in the process improves computational efficiency
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+    dserror("ConsistentDualShape() called for standard LM interpolation.");
+
+  // Consistent modification only for linear LM interpolation
+  if (Quad()==true && DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true)
+    dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
+
+  // you should not be here
+  if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
+    dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
+
+  // detect entire overlap
+  double ximin=1.0;
+  double ximax=-1.0;
+  std::map<int,double> dximin;
+  std::map<int,double> dximax;
+
+  // loop over all master elements associated with this slave element
+  for (int m=0;m<(int)Coupling().size();++m)
+  {
+    double sxia=Coupling()[m]->XiProj()[0];
+    double sxib=Coupling()[m]->XiProj()[1];
+    double mxia = Coupling()[m]->XiProj()[2];
+    double mxib = Coupling()[m]->XiProj()[3];
+
+    // no overlap for this slave-master pair --> continue with next pair
+    if (sxia==0. && sxib==0.) continue;
+
+    // for contact we need the derivatives as well
+  bool startslave = false;
+  bool endslave = false;
+
+  if (sxia==-1.0) startslave = true;
+  else            startslave = false;
+  if (sxib==1.0) endslave = true;
+  else           endslave = false;
+
+  // create an integrator for this segment
+  CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
+
+  std::vector<std::map<int,double> > ximaps(4);
+  // get directional derivatives of sxia, sxib, mxia, mxib
+    integrator.DerivXiAB2D(SlaveElement(),sxia,sxib,MasterElement(m),mxia,mxib,ximaps,startslave,endslave);
+
+    // get element contact integration area
+    // and for contact derivatives of beginning and end
+    if ((sxia!=0. || sxib!=0.) && (sxia>=-1. && sxia<=1.) && (sxib>=-1. && sxib<=1.))
+    {
+      if (sxia<ximin && sxia>=-1. && sxia<=1.)
+      {
+        ximin=sxia;
+        dximin=ximaps[0];
+      }
+      if (sxib>ximax && sxib>=-1. && sxib<=1.)
+      {
+        ximax=sxib;
+        dximax=ximaps[1];
+      }
+    }
+  }
+
+  // map iterator
+  typedef std::map<int,double>::const_iterator CI;
+
+  // no overlap: the applied dual shape functions don't matter, as the integration domain is void
+  if ((ximax==-1.0 && ximin==1.0) || (ximin==ximax))
+    return;
+
+  // fully projecting element: no modification necessary
+  if (ximin==-1. && ximax==1.)
+    return;
+
+  // calculate consistent dual schape functions (see e.g. Cichosz et.al.:
+  // Consistent treatment of boundaries with mortar contact formulations, CMAME 2010
+
+  // Dual shape functions coefficient matrix
+  int nnodes = SlaveElement().NumNode();
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+  std::vector<std::vector<std::map<int,double> > > derivae(nnodes,std::vector<std::map<int,double> >(nnodes));
+
+  // compute entries to bi-ortho matrices me/de with Gauss quadrature
+  MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
+
+  // prepare for calculation of dual shape functions
+  LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+  LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+  // two-dim arrays of maps for linearization of me/de
+  std::vector<std::vector<std::map<int,double> > > derivme(nnodes,std::vector<std::map<int,double> >(nnodes));
+  std::vector<std::vector<std::map<int,double> > > derivde(nnodes,std::vector<std::map<int,double> >(nnodes));
+
+  for (int gp=0;gp<integrator.nGP();++gp)
+  {
+    LINALG::SerialDenseVector sval(nnodes);
+    LINALG::SerialDenseMatrix sderiv(nnodes,1,true);
+    LINALG::SerialDenseMatrix ssecderiv(nnodes,1);
+
+     // coordinates and weight
+     double eta[2] = {integrator.Coordinate(gp,0), 0.0};
+     double wgt = integrator.Weight(gp);
+//
+     // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+     double sxi[2] = {0.0, 0.0};
+     sxi[0] = 0.5*(1-eta[0])*ximin + 0.5*(1+eta[0])*ximax;
+
+     // evaluate trace space shape functions
+     SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
+
+     // evaluate the two slave side Jacobians
+     double dxdsxi = SlaveElement().Jacobian(sxi);
+     double dsxideta = -0.5*ximin + 0.5*ximax;
+
+     // evaluate linearizations *******************************************
+     // evaluate the derivative dxdsxidsxi = Jac,xi
+     double djacdxi[2] = {0.0, 0.0};
+     static_cast<CONTACT::CoElement&> (SlaveElement()).DJacDXi(djacdxi,sxi,ssecderiv);
+     double dxdsxidsxi=djacdxi[0]; // only 2D here
+
+     // evalute the GP slave coordinate derivatives
+     std::map<int,double> dsxigp;
+     for (CI p=dximin.begin();p!=dximin.end();++p)
+       dsxigp[p->first] += 0.5*(1-eta[0])*(p->second);
+     for (CI p=dximax.begin();p!=dximax.end();++p)
+       dsxigp[p->first] += 0.5*(1+eta[0])*(p->second);
+
+     // evaluate the Jacobian derivative
+     std::map<int,double> derivjac;
+     SlaveElement().DerivJacobian(sxi,derivjac);
+
+     // integrate dual shape matrices de, me and their linearizations
+     for (int j=0; j<nnodes; ++j)
+     {
+       double fac;
+       // de and linearization
+       de(j,j) += wgt * sval[j] * dxdsxi*dsxideta;
+
+       // (1) linearization of slave gp coordinates in ansatz function j for derivative of de
+       fac=wgt * sderiv(j,0) * dxdsxi*dsxideta;
+       for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+         derivde[j][j][p->first] +=  fac*(p->second);
+
+       // (2) linearization dsxideta - segment end coordinates
+       fac=0.5*wgt*sval[j]*dxdsxi;
+       for (CI p=dximin.begin();p!=dximin.end();++p)
+         derivde[j][j][p->first] -= fac*(p->second);
+       fac=0.5*wgt*sval[j]*dxdsxi;
+       for (CI p=dximax.begin();p!=dximax.end();++p)
+         derivde[j][j][p->first] += fac*(p->second);
+
+       // (3) linearization dxdsxi - slave GP jacobian
+       fac=wgt*sval[j]*dsxideta;
+       for (CI p=derivjac.begin();p!=derivjac.end();++p)
+         derivde[j][j][p->first] += fac*(p->second);
+
+       // (4) linearization dxdsxi - slave GP coordinates
+       fac=wgt*sval[j]*dsxideta*dxdsxidsxi;
+       for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+         derivde[j][j][p->first] += fac*(p->second);
+
+       // me and linearization
+       for (int k=0; k<nnodes; ++k)
+       {
+         me(j,k) += wgt * sval[j] * sval[k] *dxdsxi*dsxideta;
+
+         // (1) linearization of slave gp coordinates in ansatz function for derivative of me
+         fac=wgt * sval [k] * dxdsxi*dsxideta * sderiv(j,0);
+         for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+         {
+           derivme[j][k][p->first] += fac*(p->second);
+           derivme[k][j][p->first] += fac*(p->second);
+         }
+
+         // (2) linearization dsxideta - segment end coordinates
+         fac=0.5*wgt*sval[j]*sval[k]*dxdsxi;
+         for (CI p=dximin.begin();p!=dximin.end();++p)
+           derivme[j][k][p->first] -= fac*(p->second);
+         fac=0.5*wgt*sval[j]*sval[k]*dxdsxi;
+         for (CI p=dximax.begin();p!=dximax.end();++p)
+           derivme[j][k][p->first] += fac*(p->second);
+
+         // (3) linearization dxdsxi - slave GP jacobian
+         fac=wgt*sval[j]*sval[k]*dsxideta;
+         for (CI p=derivjac.begin();p!=derivjac.end();++p)
+           derivme[j][k][p->first] += fac*(p->second);
+
+         // (4) linearization dxdsxi - slave GP coordinates
+         fac=wgt*sval[j]*sval[k]*dsxideta*dxdsxidsxi;
+         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+           derivme[j][k][p->first] += fac*(p->second);
+       }
+     }
+   }
+  // build ae matrix
+  // invert bi-ortho matrix me
+  LINALG::SymmetricInverse(me,nnodes);
+
+  // get solution matrix with dual parameters
+  ae.Multiply('N','N',1.0,de,me,0.0);
+
+  // build linearization of ae and store in derivdual
+  // (this is done according to a quite complex formula, which
+  // we get from the linearization of the biorthogonality condition:
+  // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+
+  // loop over all entries of ae (index i,j)
+  for (int i=0;i<nnodes;++i)
+  {
+    for (int j=0;j<nnodes;++j)
+    {
+      // compute Lin(Ae) according to formula above
+      for (int l=0;l<nnodes;++l) // loop over sum l
+      {
+        // part1: Lin(De)*Inv(Me)
+        for (CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
+          derivae[i][j][p->first] += me(l,j)*(p->second);
+
+        // part2: Ae*Lin(Me)*Inv(Me)
+        for (int k=0;k<nnodes;++k) // loop over sum k
+          for (CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
+            derivae[i][j][p->first] -= ae(i,k)*me(l,j)*(p->second);
+      }
+    }
+  }
+
+  // store ae matrix in slave element data container
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+//
+  // store derivae into element
+  SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<std::map<int,double> > >(derivae));
+
+  return;
+}
+
 

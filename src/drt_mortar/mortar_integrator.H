@@ -69,23 +69,6 @@ class MortarIntegrator
 public:
 
   /*!
-  \brief Standard constructor
-
-  Constructs an instance of this class.<br>
-  Note that this is \b not a collective call as overlaps are
-  integrated in parallel by individual processes.<br>
-  Note also that this constructor relies heavily on the
-  DRT::UTILS::IntegrationPoints structs to get Gauss points
-  and corresponding weights.
-  
-  Note: This version of the constructor creates a MortarIntegrator instance with undefined type of shape functions.
-  As a result, no calls to functions relying on the evaluation of shape functions is allowed. 
-  To be able to evaluate them, the MortarIntegrator have to be created with the alternative constructor (see below). 
-
-  */
-  MortarIntegrator(DRT::Element::DiscretizationType eletype);
-
-  /*!
   \brief Constructor  with shape function specification
   
   Constructs an instance of this class using a specific type of shape functions.<br>
@@ -96,7 +79,7 @@ public:
   and corresponding weights.
   
   */
-  MortarIntegrator(const INPAR::MORTAR::ShapeFcn shapefcn,
+  MortarIntegrator(Teuchos::ParameterList& params,
                    DRT::Element::DiscretizationType eletype);
 
   /*!
@@ -122,6 +105,19 @@ public:
 
   */
   virtual const int& Dim() {return dim_;};
+
+  /*!
+  \brief Return the LM shape fcn type
+
+  */
+  INPAR::MORTAR::ShapeFcn ShapeFcn()
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+
+  /*!
+  \brief Return the LM interpolation / testing type for quadratic FE
+
+  */
+  INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD") ; }
 
   /*!
   \brief Return number of Gauss points for this instance
@@ -164,7 +160,6 @@ public:
   virtual void FastIntegration(
          Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
          Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-         INPAR::MORTAR::LagMultQuad& lmtype,
          MORTAR::MortarElement& sele,
          std::vector<MORTAR::MortarElement*> meles,
          bool *boundary_ele);
@@ -177,7 +172,6 @@ public:
   virtual void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
-      INPAR::MORTAR::LagMultQuad& lmtype,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg);
@@ -244,7 +238,6 @@ public:
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell,
-     INPAR::MORTAR::LagMultQuad& lmtype,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
@@ -259,7 +252,6 @@ public:
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     INPAR::MORTAR::LagMultQuad& lmtype,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
@@ -331,7 +323,7 @@ protected:
     MortarIntegrator operator = (const MortarIntegrator& old);
     MortarIntegrator(const MortarIntegrator& old);
 
-    const INPAR::MORTAR::ShapeFcn shapefcn_;    // employed type of shape function set
+    Teuchos::ParameterList&       icontact_;    // containing contact input parameters
     int                           dim_;         // dimension of problem (2D or 3D)
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates

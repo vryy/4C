@@ -48,27 +48,16 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_mortar/mortar_projector.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling3d::CoCoupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-              bool auxplane, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
-MORTAR::Coupling3d(idiscret,dim,quad,auxplane,sele,mele)
-{
-  // empty constructor
-  
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 06/09|
- *----------------------------------------------------------------------*/
-CONTACT::CoCoupling3d::CoCoupling3d(const INPAR::MORTAR::ShapeFcn shapefcn,
-         DRT::Discretization& idiscret, int dim, bool quad, bool auxplane,
-         MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
-MORTAR::Coupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele)
+             Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
+MORTAR::Coupling3d(idiscret,dim,quad,params,sele,mele)
 {
   // empty constructor
   
@@ -129,9 +118,13 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
   /* the current integration cell of the slave / master element pair    */
   /**********************************************************************/
 
+  // do nothing if there are no cells
+  if (Cells().size()==0)
+    return false;
+
   // create a CONTACT integrator instance with correct NumGP and Dim
   // it is sufficient to do this once as all IntCells are triangles
-  CONTACT::CoIntegrator integrator(shapefcn_,Cells()[0]->Shape());
+  CONTACT::CoIntegrator integrator(icontact_,Cells()[0]->Shape());
 
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
@@ -247,12 +240,12 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
       // check for dual shape functions and linear LM interpolation
-      if ((shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin) &&
+      if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
           lmtype==INPAR::MORTAR::lagmult_lin_lin)
         dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
       // check for standard shape functions and quadratic LM interpolation
-      if (shapefcn_ == INPAR::MORTAR::shape_standard && lmtype==INPAR::MORTAR::lagmult_quad_quad
+      if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype==INPAR::MORTAR::lagmult_quad_quad
           && (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6))
         dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
 
@@ -272,7 +265,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // check whether aux. plane coupling or not
       if (CouplingInAuxPlane())
         integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+            Cells()[i],Auxn(),dseg,mseg,gseg);
       else /*(!CouplingInAuxPlane()*/
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
       
@@ -288,7 +281,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
     {
       // check for dual shape functions
-      if (shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
+      if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
         dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
 
       // prepare integration and linearization of M, g (and possibly D) on intcells
@@ -308,7 +301,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // check whether aux. plane coupling or not
       if (CouplingInAuxPlane())
         integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],Auxn(),lmtype,dseg,mseg,gseg);
+            Cells()[i],Auxn(),dseg,mseg,gseg);
       else /*(!CouplingInAuxPlane()*/
         dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
       
@@ -1322,15 +1315,13 @@ bool CONTACT::CoCoupling3d::CenterLinearization(const std::vector<std::vector<st
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(DRT::Discretization& idiscret,
-                                int dim, bool quad, bool auxplane,
+                                int dim, bool quad, Teuchos::ParameterList& params,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele,
-                                INPAR::MORTAR::LagMultQuad& lmtype) :
-CONTACT::CoCoupling3d(INPAR::MORTAR::shape_undefined,idiscret,dim,quad,auxplane,sele,mele),
+                                MORTAR::IntElement& mintele) :
+CONTACT::CoCoupling3d(idiscret,dim,quad,params,sele,mele),
 sintele_(sintele),
-mintele_(mintele),
-lmtype_(lmtype)
+mintele_(mintele)
 {
   // 3D quadratic coupling only for aux. plane case
   if (!CouplingInAuxPlane())
@@ -1340,32 +1331,6 @@ lmtype_(lmtype)
   if (!Quad())
     dserror("ERROR: CoCoupling3dQuad called for non-quadratic ansatz!");
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 06/09|
- *----------------------------------------------------------------------*/
-CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(const INPAR::MORTAR::ShapeFcn shapefcn,
-                                DRT::Discretization& idiscret,
-                                int dim, bool quad, bool auxplane,
-                                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-                                MORTAR::IntElement& sintele,
-                                MORTAR::IntElement& mintele,
-                                INPAR::MORTAR::LagMultQuad& lmtype) :
-CONTACT::CoCoupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele),
-sintele_(sintele),
-mintele_(mintele),
-lmtype_(lmtype)
-{
-  // 3D quadratic coupling only for aux. plane case
-  if (!CouplingInAuxPlane())
-    dserror("ERROR: CoCoupling3dQuad only for auxiliary plane case!");
-  
-  //  3D quadratic coupling only for quadratic ansatz type
-  if (!Quad())
-    dserror("ERROR: CoCoupling3dQuad called for non-quadratic ansatz!");
-  
   return;
 }
 
@@ -1381,45 +1346,15 @@ const Epetra_Comm& CONTACT::CoCoupling3dManager::Comm() const
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling3dManager::CoCoupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-                                                  bool auxplane, INPAR::MORTAR::IntType inttype,
+                                                  Teuchos::ParameterList& params,
                                                   MORTAR::MortarElement* sele,
-                                                  std::vector<MORTAR::MortarElement*> mele,
-                                                  INPAR::MORTAR::LagMultQuad lmtype) :
-shapefcn_(INPAR::MORTAR::shape_undefined),
+                                                  std::vector<MORTAR::MortarElement*> mele) :
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
-auxplane_(auxplane),
-inttype_(inttype),
+icontact_(params),
 sele_(sele),
-mele_(mele),
-lmtype_(lmtype)
-{
-  // evaluate coupling
-  EvaluateCoupling();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 06/09|
- *----------------------------------------------------------------------*/
-CONTACT::CoCoupling3dManager::CoCoupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
-                                                  DRT::Discretization& idiscret, int dim, bool quad,
-                                                  bool auxplane, INPAR::MORTAR::IntType inttype,
-                                                  MORTAR::MortarElement* sele,
-                                                  std::vector<MORTAR::MortarElement*> mele,
-                                                  INPAR::MORTAR::LagMultQuad lmtype) :
-shapefcn_(shapefcn),
-idiscret_(idiscret),
-dim_(dim),
-quad_(quad),
-auxplane_(auxplane),
-inttype_(inttype),
-sele_(sele),
-mele_(mele),
-lmtype_(lmtype),
-ncells_(0)
+mele_(mele)
 {
   // evaluate coupling
   EvaluateCoupling();
@@ -1430,13 +1365,11 @@ ncells_(0)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/13|
  *----------------------------------------------------------------------*/
-CONTACT::CoCoupling3dQuadManager::CoCoupling3dQuadManager(const INPAR::MORTAR::ShapeFcn shapefcn,
-                                                  DRT::Discretization& idiscret, int dim, bool quad,
-                                                  bool auxplane, INPAR::MORTAR::LagMultQuad lmtype,
-                                                  INPAR::MORTAR::IntType inttype,
+CONTACT::CoCoupling3dQuadManager::CoCoupling3dQuadManager(DRT::Discretization& idiscret, int dim, bool quad,
+                                                  Teuchos::ParameterList& params,
                                                   MORTAR::MortarElement* sele,
                                                   std::vector<MORTAR::MortarElement*> mele) :
-MORTAR::Coupling3dQuadManager(shapefcn,idiscret,dim,quad,auxplane,lmtype,inttype,sele,mele,true)
+MORTAR::Coupling3dQuadManager(idiscret,dim,quad,params,sele,mele,true)
 {
   // evaluate coupling
   EvaluateCoupling();
@@ -1456,18 +1389,54 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   //**********************************************************************
   if (IntType()==INPAR::MORTAR::inttype_segments)
   {
-    // loop over all master elements associated with this slave element
-    for (int m=0;m<(int)MasterElements().size();++m)
+    // switch, if consistent boundary modification chosen
+    if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+        && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
+       )
     {
-      // create CoCoupling3d object and push back
-      Coupling().push_back(Teuchos::rcp(new CoCoupling3d(shapefcn_,idiscret_,dim_,false,auxplane_,
-                                                SlaveElement(),MasterElement(m))));
+      // loop over all master elements associated with this slave element
+      for (int m=0;m<(int)MasterElements().size();++m)
+      {
+        // create CoCoupling3d object and push back
+        Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+            SlaveElement(),MasterElement(m))));
 
-      // do coupling
-      Coupling()[m]->EvaluateCoupling();
+        // do coupling
+        Coupling()[m]->EvaluateCoupling();
 
-      // store number of intcells
-      ncells_ += (int)(Coupling()[m]->Cells()).size();
+        // store number of intcells
+        ncells_ += (int)(Coupling()[m]->Cells()).size();
+      }
+
+      // special treatment of boundary elements
+      ConsistDualShape();
+
+      // integrate cells
+      for (int m=0;m<(int)MasterElements().size();++m)
+        Coupling()[m]->IntegrateCells();
+
+      // free memory of consistent dual shape function coefficient matrix
+      SlaveElement().MoData().ResetDualShape();
+      SlaveElement().MoData().ResetDerivDualShape();
+    }
+    else
+    {
+      // loop over all master elements associated with this slave element
+      for (int m=0;m<(int)MasterElements().size();++m)
+      {
+        // create CoCoupling3d object and push back
+        Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+            SlaveElement(),MasterElement(m))));
+
+        // do coupling
+        Coupling()[m]->EvaluateCoupling();
+
+        // integrate cells
+        Coupling()[m]->IntegrateCells();
+
+        // store number of intcells
+        ncells_ += (int)(Coupling()[m]->Cells()).size();
+      }
     }
   }
   //**********************************************************************
@@ -1490,7 +1459,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
       // create an integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(shapefcn_,SlaveElement().Shape());
+      CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
 
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
@@ -1500,23 +1469,60 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       bool proj=false;
 
       //Perform integration and linearization
-      integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,lmtype_,&boundary_ele, &proj);
+      integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
 
       if (IntType()==INPAR::MORTAR::inttype_fast_BS)
       {
         if (boundary_ele==true)
         {
-          for (int m=0;m<(int)MasterElements().size();++m)
+          // switch, if consistent boundary modification chosen
+          if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+              && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
+             )
           {
-            // create CoCoupling3d object and push back
-            Coupling().push_back(Teuchos::rcp(new CoCoupling3d(shapefcn_,idiscret_,dim_,false,auxplane_,
-                                                      SlaveElement(),MasterElement(m))));
+            // loop over all master elements associated with this slave element
+            for (int m=0;m<(int)MasterElements().size();++m)
+            {
+              // create CoCoupling3d object and push back
+              Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+                  SlaveElement(),MasterElement(m))));
 
-            // do coupling
-            Coupling()[m]->EvaluateCoupling();
+              // do coupling
+              Coupling()[m]->EvaluateCoupling();
 
             // store number of intcells
             ncells_ += (int)(Coupling()[m]->Cells()).size();
+            }
+
+            // special treatment of boundary elements
+            ConsistDualShape();
+
+            // integrate cells
+            for (int m=0;m<(int)MasterElements().size();++m)
+              Coupling()[m]->IntegrateCells();
+
+            // free memory of consistent dual shape function coefficient matrix
+            SlaveElement().MoData().ResetDualShape();
+            SlaveElement().MoData().ResetDerivDualShape();
+          }
+          else
+          {
+            // loop over all master elements associated with this slave element
+            for (int m=0;m<(int)MasterElements().size();++m)
+            {
+              // create CoCoupling3d object and push back
+              Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+                  SlaveElement(),MasterElement(m))));
+
+              // do coupling
+              Coupling()[m]->EvaluateCoupling();
+
+              // integrate cells
+              Coupling()[m]->IntegrateCells();
+
+              // store number of intcells
+              ncells_ += (int)(Coupling()[m]->Cells()).size();
+            }
           }
         }
       }
@@ -1577,10 +1583,13 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
         for (int j=0;j<(int)mauxelements.size();++j)
         {
           // create instance of coupling class
-          CoCoupling3dQuad coup(shapefcn_,idiscret_,dim_,true,auxplane_,
-              SlaveElement(),*MasterElements()[m],*sauxelements[i],*mauxelements[j],lmtype_);
+          CoCoupling3dQuad coup(idiscret_,dim_,true,icontact_,
+              SlaveElement(),*MasterElements()[m],*sauxelements[i],*mauxelements[j]);
           // do coupling
           coup.EvaluateCoupling();
+
+          // integrate cells
+          coup.IntegrateCells();
 
           // increase counter of slave/master integration pairs and intcells
           smintpairs_ += 1;
@@ -1595,7 +1604,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
   else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
   {
     // check for standard shape functions and quadratic LM interpolation
-    if (shapefcn_ == INPAR::MORTAR::shape_standard && lmtype_==INPAR::MORTAR::lagmult_quad_quad
+    if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad()==INPAR::MORTAR::lagmult_quad_quad
         && (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6))
       dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
       
@@ -1612,7 +1621,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(shapefcn_,SlaveElement().Shape());
+    CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
 
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
@@ -1622,7 +1631,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     bool proj=false;
 
     //Perform integration and linearization
-    integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,lmtype_,&boundary_ele, &proj);
+    integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
 
     if (IntType()==INPAR::MORTAR::inttype_fast_BS)
     {
@@ -1643,10 +1652,13 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
             for (int j=0;j<(int)mauxelements.size();++j)
             {
               // create instance of coupling class
-              CoCoupling3dQuad coup(shapefcn_,idiscret_,dim_,true,auxplane_,
-                  SlaveElement(),*MasterElements()[m],*sauxelements[i],*mauxelements[j],lmtype_);
+              CoCoupling3dQuad coup(idiscret_,dim_,true,icontact_,
+                  SlaveElement(),*MasterElements()[m],*sauxelements[i],*mauxelements[j]);
               // do coupling
               coup.EvaluateCoupling();
+
+              // integrate cells
+              coup.IntegrateCells();
 
               // increase counter of slave/master integration pairs and intcells
               smintpairs_ += 1;
@@ -1683,3 +1695,300 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
 
   return true;
 }
+
+/*----------------------------------------------------------------------*
+ |  Calculate dual shape functions                           seitz 07/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoCoupling3dManager::ConsistDualShape()
+{
+  // For standard shape functions no modification is necessary
+  // A switch earlier in the process improves computational efficiency
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+    dserror("ConsistentDualShape() called for standard LM interpolation.");
+
+  // Consistent modification only for linear LM interpolation
+  if (Quad()==true && DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true)
+    dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
+
+  // you should not be here
+  if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
+    dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
+
+  // check for boundary elements in segment-based integration
+  // (fast integration already has this check, so that ConsistDualShape()
+  // is only called for boundary elements)
+  if (IntType()==INPAR::MORTAR::inttype_segments)
+  {
+    // check, if slave element is fully projecting
+    // for convenience, we don't check each quadrature point
+    // but only the element nodes. This usually does the job.
+    bool boundary_ele=false;
+
+    DRT::Element::DiscretizationType dt_s = SlaveElement().Shape();
+
+    double sxi_test[2] = {0.0, 0.0};
+    double alpha_test=0.0;
+    bool proj_test=false;
+
+    DRT::Node** mynodes_test = SlaveElement().Nodes();
+    if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
+
+
+    if (dt_s==DRT::Element::quad4 )//|| dt_s==DRT::Element::quad8 || dt_s==DRT::Element::quad9)
+    {
+      for (int s_test=0;s_test<4;++s_test)
+      {
+        if (s_test==0) {sxi_test[0]=-1.0;sxi_test[1]=-1.0;}
+        else if (s_test==1){sxi_test[0]=-1.0;sxi_test[1]=1.0;}
+        else if (s_test==2){sxi_test[0]=1.0;sxi_test[1]=-1.0;}
+        else if (s_test==3){sxi_test[0]=1.0;sxi_test[1]=1.0;}
+
+        proj_test=false;
+        for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
+        {
+          double mxi_test[2] = {0.0, 0.0};
+          MORTAR::MortarProjector projector_test(3);
+          projector_test.ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+
+          DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
+          if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+          {
+            if (mxi_test[0]>=-1.0 && mxi_test[1]>=-1.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0)
+              proj_test=true;
+          }
+          else if(dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+          {
+            if (mxi_test[0]>=0.0 && mxi_test[1]>=0.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0 && mxi_test[0]+mxi_test[1]<=1.0)
+              proj_test=true;
+          }
+          else
+          {
+            dserror("Non valid element type for master discretization!");
+          }
+        }
+        if(proj_test==false) boundary_ele=true;
+      }
+    }
+
+    else if(dt_s==DRT::Element::tri3)
+    {
+      for (int s_test=0;s_test<3;++s_test)
+      {
+        if (s_test==0) {sxi_test[0]=0.0;sxi_test[1]=0.0;}
+        else if (s_test==1){sxi_test[0]=1.0;sxi_test[1]=0.0;}
+        else if (s_test==2){sxi_test[0]=0.0;sxi_test[1]=1.0;}
+
+
+        proj_test=false;
+        for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
+        {
+          double mxi_test[2] = {0.0, 0.0};
+          MORTAR::MortarProjector projector_test(3);
+          projector_test.ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+
+          DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
+          if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+          {
+            if (mxi_test[0]>=-1.0 && mxi_test[1]>=-1.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0)
+              proj_test=true;
+          }
+          else if(dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+          {
+            if (mxi_test[0]>=0.0 && mxi_test[1]>=0.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0 && mxi_test[0]+mxi_test[1]<=1.0)
+              proj_test=true;
+          }
+          else
+          {
+            dserror("Non valid element type for master discretization!");
+          }
+        }
+        if(proj_test==false) boundary_ele=true;
+      }
+    }
+
+    else
+      dserror("Calculation of consistent dual shape functions called for non-valid slave element shape.\n"
+          "Currently this is only supported for linear FE, i.e. quad4 and tri3. Sorry.");
+
+    if (boundary_ele==false)
+      return;
+  }
+
+  int nnodes = SlaveElement().NumNode();
+
+  // Dual shape functions coefficient matrix and linearization
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+  std::vector<std::vector<std::map<int,double> > > derivae(nnodes,std::vector<std::map<int,double> >(nnodes));
+
+  // various variables
+   double detg=0.0;
+   typedef std::map<int,double>::const_iterator CI;
+
+   // initialize matrices de and me
+   LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+   LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+   // two-dim arrays of maps for linearization of me/de
+   std::vector<std::vector<std::map<int,double> > > derivme(nnodes,std::vector<std::map<int,double> >(nnodes));
+   std::vector<std::vector<std::map<int,double> > > derivde(nnodes,std::vector<std::map<int,double> >(nnodes));
+
+   // loop over all master elements associated with this slave element
+   for (int m=0;m<(int)MasterElements().size();++m)
+   {
+     // loop over all integration cells
+     for (int c=0;c<(int)Coupling()[m]->Cells().size();++c)
+     {
+       RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
+
+       // create an integrator for this cell
+       CONTACT::CoIntegrator integrator(icontact_,currcell->Shape());
+       for (int gp=0;gp<integrator.nGP(); ++gp)
+       {
+         // coordinates and weight
+         double eta[2] = {integrator.Coordinate(gp,0), integrator.Coordinate(gp,1)};
+         double wgt = integrator.Weight(gp);
+
+         // get global Gauss point coordinates
+         double globgp[3] = {0.0, 0.0, 0.0};
+         currcell->LocalToGlobal(eta, globgp,0);
+
+         // project Gauss point onto slave integration element
+         double sxi[2] = {0.0, 0.0};
+         double sprojalpha = 0.0;
+         MORTAR::MortarProjector projector(3);
+         projector.ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
+
+         // create vector for shape function evaluation
+         LINALG::SerialDenseVector sval (nnodes);
+         LINALG::SerialDenseMatrix sderiv(nnodes,2,true);
+
+         // evaluate trace space shape functions at Gauss point
+         SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
+         detg=currcell->Jacobian(eta);
+
+        // additional data for contact calculation (i.e. incl. derivative of dual shape functions coefficient matrix)
+         // directional derivative of cell Jacobian
+         std::map<int,double> derivjaccell;
+         // GP slave coordinate derivatives
+         std::vector<std::map<int,double> > dsxigp(2);
+         // global GP coordinate derivative
+         std::vector<std::map<int,double> > lingp(3);
+
+         // compute directional derivative of cell Jacobian
+         currcell->DerivJacobian(eta, derivjaccell);
+
+         // compute global GP coordinate derivative
+         int nvcell = currcell->NumVertices();
+         LINALG::SerialDenseVector svalcell(nvcell);
+         LINALG::SerialDenseMatrix sderivcell(nvcell,2,true);
+         currcell->EvaluateShape(eta,svalcell,sderivcell);
+
+         for (int v=0;v<nvcell;++v)
+         {
+           for (CI p=(currcell->GetDerivVertex(v))[0].begin();p!=(currcell->GetDerivVertex(v))[0].end();++p)
+             lingp[0][p->first] += svalcell[v] * (p->second);
+           for (CI p=(currcell->GetDerivVertex(v))[1].begin();p!=(currcell->GetDerivVertex(v))[1].end();++p)
+             lingp[1][p->first] += svalcell[v] * (p->second);
+           for (CI p=(currcell->GetDerivVertex(v))[2].begin();p!=(currcell->GetDerivVertex(v))[2].end();++p)
+             lingp[2][p->first] += svalcell[v] * (p->second);
+         }
+
+         // compute GP slave coordinate derivatives
+         integrator.DerivXiGP3DAuxPlane(SlaveElement(),sxi,currcell->Auxn(),dsxigp,sprojalpha,currcell->GetDerivAuxn(),lingp);
+
+         // computing de, derivde and me, derivme and kappa, derivkappa
+         for (int j=0; j<nnodes; ++j)
+         {
+           double fac;
+           fac = sval[j]*wgt;
+           // computing de
+           de(j,j)+=fac*detg;
+
+           // linearization of de
+           // linearization of cell jacobian
+           for (CI p=derivjaccell.begin();p!=derivjaccell.end();++p)
+             derivde[j][j][p->first] += fac*(p->second);
+
+           // linearization of slave gp coordinates in ansatz function j for derivate of de
+           fac=wgt*sderiv(j,0)*detg;
+           for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+             derivde[j][j][p->first] += fac * (p->second);
+           fac=wgt*sderiv(j,1)*detg;
+           for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+             derivde[j][j][p->first] += fac*(p->second);
+
+           for (int k=0; k<nnodes; ++k)
+           {
+             // computing me
+             fac = wgt*sval[j]*sval[k];
+             me(j,k)+=fac*detg;
+
+             // linearization of me
+             // linearization of cell Jacobian
+             for (CI p=derivjaccell.begin(); p!=derivjaccell.end(); ++p)
+               derivme[j][k][p->first] += fac*(p->second);
+
+             // linearizaion of gp coordinates in ansatz function
+             fac=wgt*sderiv(j,0)*sval[k]*detg;
+             for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+             {
+               derivme[j][k][p->first] += fac*(p->second);
+               derivme[k][j][p->first] += fac*(p->second);
+             }
+
+             fac=wgt*sderiv(j,1)*sval[k]*detg;
+             for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+             {
+               derivme[j][k][p->first] += fac*(p->second);
+               derivme[k][j][p->first] += fac*(p->second);
+             }
+           }
+         }
+       }
+     } // cells
+   } // master elements
+
+   // in case of no overlap just return, as there is no integration area
+   // and therefore the consistent dual shape functions are not defined.
+   // This doesn't matter, as there is no associated integration domain anyway
+   if (me.Det_long()==0) return;
+
+   // invert bi-ortho matrix me
+   LINALG::SymmetricInverse(me,nnodes);
+   // get solution matrix with dual parameters
+   ae.Multiply('N','N',1.0,de,me,0.0);
+
+   // build linearization of ae and store in derivdual
+   // (this is done according to a quite complex formula, which
+   // we get from the linearization of the biorthogonality condition:
+   // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+
+   // loop over all entries of ae (index i,j)
+   for (int i=0;i<nnodes;++i)
+   {
+     for (int j=0;j<nnodes;++j)
+     {
+       // compute Lin(Ae) according to formula above
+       for (int l=0;l<nnodes;++l) // loop over sum l
+       {
+         // part1: Lin(De)*Inv(Me)
+         for (CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
+           derivae[i][j][p->first] += me(l,j)*(p->second);
+
+         // part2: Ae*Lin(Me)*Inv(Me)
+         for (int k=0;k<nnodes;++k) // loop over sum k
+           for (CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
+             derivae[i][j][p->first] -= ae(i,k)*me(l,j)*(p->second);
+       }
+     }
+   }
+
+  // store ae matrix in slave element data container
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+//
+  // store derivae into element
+  SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<std::map<int,double> > >(derivae));
+
+  return;
+}
+

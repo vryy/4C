@@ -1485,6 +1485,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
                                yesnotuple,yesnovalue,&mortar);
 
+  setStringToIntegralParameter<int>("LM_DUAL_CONSISTENT","Yes","If chosen consistent dual shape functions are calculated",
+                               yesnotuple,yesnovalue,&mortar);
+
+  setStringToIntegralParameter<int>("LM_NODAL_SCALE","Yes","If chosen a nodal scaling factor is calculated for each LM",
+                               yesnotuple,yesnovalue,&mortar);
+
+
   setStringToIntegralParameter<int>("REDUNDANT_STORAGE","Master","Type of redundancy in interface storage",
       tuple<std::string>("All","all",
                          "Master", "master",
