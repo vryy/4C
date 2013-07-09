@@ -4091,6 +4091,16 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
         && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
        )
     {
+      // loop over all master elements associated with this slave element
+      for (int m=0;m<(int)MasterElements().size();++m)
+      {
+        // create Coupling3d object and push back
+        Coupling().push_back(Teuchos::rcp(new Coupling3d(idiscret_,dim_,false,icontact_,
+            SlaveElement(),MasterElement(m))));
+        // do coupling
+        Coupling()[m]->EvaluateCoupling();
+      }
+
       // special treatment of boundary elements
       // calculate consistent dual shape functions for this element
       ConsistDualShape();
@@ -4365,18 +4375,11 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
+  if (Coupling().size()==0)
+    return;
+
   if (IntType()==INPAR::MORTAR::inttype_segments)
   {
-    // loop over all master elements associated with this slave element
-    for (int m=0;m<(int)MasterElements().size();++m)
-    {
-      // create Coupling3d object and push back
-      Coupling().push_back(Teuchos::rcp(new Coupling3d(idiscret_,dim_,false,icontact_,
-          SlaveElement(),MasterElement(m))));
-      // do coupling
-      Coupling()[m]->EvaluateCoupling();
-    }
-
     // check if fully projecting
     bool boundary_ele=false;
 

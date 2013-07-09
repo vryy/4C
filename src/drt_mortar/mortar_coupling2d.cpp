@@ -878,6 +878,10 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
+  // do nothing if there are no coupling pairs
+  if (Coupling().size()==0)
+    return;
+
   // detect entire overlap
   double ximin=1.0;
   double ximax=-1.0;

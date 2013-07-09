@@ -1714,6 +1714,10 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
+  // do nothing if there are no coupling pairs
+  if (Coupling().size()==0)
+    return;
+
   // check for boundary elements in segment-based integration
   // (fast integration already has this check, so that ConsistDualShape()
   // is only called for boundary elements)
