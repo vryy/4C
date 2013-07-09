@@ -4351,7 +4351,7 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
  |  Calculate dual shape functions                           seitz 07/13|
  *----------------------------------------------------------------------*/
 void MORTAR::Coupling3dManager::ConsistDualShape()
-{std::cout << "consistent treatment of element: " << SlaveElement().Id() << std::endl;
+{
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
   if (ShapeFcn() == INPAR::MORTAR::shape_standard)
@@ -4524,6 +4524,5 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
    // store ae matrix in slave element data container
    SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
 
-   std::cout << "SlaveElement: " << SlaveElement().Id() << " ae: " << ae << std::endl;
    return;
 }
