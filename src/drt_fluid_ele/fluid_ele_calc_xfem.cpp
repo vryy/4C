@@ -1073,25 +1073,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         double press = my::funct_.Dot(epreaf);
 
-//        //--------------------------------------------
-//        // compute stabilization factors
-//
-//        double stabfac_visc = 0.0;
-//        double stabfac_conv = 0.0;
-//        double velgrad_interface_fac = 0.0;
-//        double gamma_ghost_penalty = 0.0;
-//
-//        NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
-//                           stabfac_visc,               // stabfac 1 for standard Nitsche term to set
-//                           stabfac_conv,               // stabfac 2 for additional stabilization term to set
-//                           NIT_stab_fac,               // viscous Nitsche prefactor
-//                           conv_stab_scaling,          // type of scaling for convective stabilization term
-//                           nitsche_stab_conv,              // stabilization factor for additional stabilization
-//                           my::velint_.Dot(normal),    // velocity in normal direction
-//                           gamma_ghost_penalty,
-//                           velgrad_interface_fac,
-//                           h_k);
-
+        //--------------------------------------------
+        // compute errors
 
         LINALG::Matrix<my::nsd_,1>        u_analyt(true);      // boundary condition to enforce (xfsi), interfacial jump to enforce (fluidfluid)
         LINALG::Matrix<my::nsd_,my::nsd_> grad_u_analyt(true);
@@ -1133,7 +1116,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
           check_diff.Update(1.0, u_analyt, -1.0, ivelint_WDBC_JUMP);
 
 
-
+          // This check is obsolete, since there is a interpolation difference
+          // between analytical solution and the enforced boundary condition
           if(check_diff.Norm2() > 1e-12)
           {
 //            cout.precision(12);
@@ -1177,8 +1161,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side
-
-    //if(assemble_iforce) AssembleInterfaceForce(iforcecol, cutdis, cutla[0].lm_, iforce);
 
   } // end loop cut sides
 
@@ -1320,7 +1302,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
     // side and location vector
     DRT::Element * side = cutdis.gElement( sid );
     side->LocationVector(cutdis,cutla,false);
-    // the coresponding embedded element
+    // the corresponding embedded element
     DRT::Element * emb_ele = embdis.gElement( boundary_emb_gid_map.find(sid)->second );
     emb_ele->LocationVector(embdis,alela,false);
 
@@ -1451,12 +1433,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
 
         // -----------------------------------------
         // evaluate embedded element shape functions
-
-//        if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
-        {
-          emb->EvaluateEmb( x_side );
-        }
-        //     else dserror("choose vol_equivalent characteristic element length for embedded sided mortaring");
+        emb->EvaluateEmb( x_side );
 
         //--------------------------------------------
         // evaluate shape functions (and derivatives)
@@ -1483,28 +1460,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
         // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         double press = my::funct_.Dot(epreaf);
 
-
-        // get fields at interface
-
-//        //--------------------------------------------
-//        // compute stabilization factors
-//
-//        double stabfac_visc = 0.0;
-//        double stabfac_conv = 0.0;
-//        double velgrad_interface_fac = 0.0;
-//        double gamma_ghost_penalty = 0.0;
-//
-//        NIT_ComputeStabfac(fluidfluidcoupling,         // if fluidfluidcoupling
-//                           stabfac_visc,               // stabfac 1 for standard Nitsche term to set
-//                           stabfac_conv,               // stabfac 2 for additional stabilization term to set
-//                           NIT_stab_fac,               // viscous Nitsche prefactor
-//                           conv_stab_scaling,          // type of scaling for convective stabilization term
-//                           nitsche_stab_conv,              // stabilization factor for additional stabilization
-//                           my::velint_.Dot(normal),    // velocity in normal direction
-//                           gamma_ghost_penalty,
-//                           velgrad_interface_fac,
-//                           h_k);
-
+        //--------------------------------------------
+        // compute errors
 
         LINALG::Matrix<my::nsd_,1>        u_analyt(true);      // boundary condition to enforce (xfsi), interfacial jump to enforce (fluidfluid)
         LINALG::Matrix<my::nsd_,my::nsd_> grad_u_analyt(true);
@@ -1538,16 +1495,16 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
 
         double press_emb = 0.0;
         emb->getembpress(press_emb);
-        //p_err = press - p_analyt;
+        //p_err = p_background - p_emb;
         p_err = press - press_emb;
 
         flux_u_err.Multiply(grad_u_err,normal);
         flux_p_err.Update(p_err,normal,0.0);
 
         // interface errors
-        // 1.   || nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
-        // 2.   || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
-        // 3.   || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+        // 1.   || nu^(+1/2) (u_b - u_e - u_jump) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
+        // 2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
+        // 3.   || nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
 
         double u_err_squared      = 0.0;
         double flux_u_err_squared = 0.0;
@@ -1568,8 +1525,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
 
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side
-
-    //if(assemble_iforce) AssembleInterfaceForce(iforcecol, cutdis, cutla[0].lm_, iforce);
 
   } // end loop cut sides
 

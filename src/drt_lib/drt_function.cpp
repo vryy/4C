@@ -2034,9 +2034,11 @@ double DRT::UTILS::KimMoinRHS::Evaluate(int index, const double* xp, double t, D
 
   if(is_stationary_)
   {
-    visc_x = kinviscosity_*2.*a*a*PI*PI* (-cos(a_pi_x)*sin(a_pi_y));
-    visc_y = kinviscosity_*2.*a*a*PI*PI* ( sin(a_pi_x)*cos(a_pi_y));
+    visc_x = kinviscosity_*2.*a*a*PI*PI* (-cos(a_pi_x)*sin(a_pi_y)); // * (gu = 1) for stationary
+    visc_y = kinviscosity_*2.*a*a*PI*PI* ( sin(a_pi_x)*cos(a_pi_y)); // * (gu = 1) for stationary
   }
+
+  // in case of instationary: du/dt - \nu \laplacian(u) = 0
 
   switch (index)
   {

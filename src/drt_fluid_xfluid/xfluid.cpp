@@ -2570,6 +2570,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           << " | || nu^(+1/2) (u - u*) ||_H1/2(Gamma)"
           << " | || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)"
           << " | || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)"
+          << " |  | sin(x) ( u,x - u,x exact ) | "
           << " |\n";
         f << step_ << " "
           << time_ << " "
@@ -2582,6 +2583,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           << interf_err_Honehalf << " "
           << interf_err_Hmonehalf_u << " "
           << interf_err_Hmonehalf_p << " "
+          << (*glob_dom_norms)[6] << " "
           <<"\n";
 
         f.flush();
@@ -2602,6 +2604,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           << interf_err_Honehalf << " "
           << interf_err_Hmonehalf_u << " "
           << interf_err_Hmonehalf_p << " "
+          << (*glob_dom_norms)[6] << " "
           <<"\n";
 
         f.flush();

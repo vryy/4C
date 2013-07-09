@@ -4894,6 +4894,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
     //-------------------------------------------------------------------------------------------------------------------
     // domain error norms w.r.t incompressible Navier-Stokes equations
     //
+    //--------------------------------------
+    // background domain
+    //--------------------------------------
     // standard domain errors
     // 1.   || u - u_b ||_L2(Omega)            =   standard L2-norm for velocity
     // 2.   || grad( u - u_b ) ||_L2(Omega)    =   standard H1-seminorm for velocity
@@ -4903,21 +4906,30 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
     //
     // viscosity-scaled domain errors
     // 5.   || nu^(+1/2) grad( u - u_b ) ||_L2(Omega)   =   visc-scaled H1-seminorm for velocity
-    //                                                    =   nu^(+1/2) * || grad( u - u_b ) ||_L2(Omega) (for homogeneous visc)
+    //                                                  =   nu^(+1/2) * || grad( u - u_b ) ||_L2(Omega) (for homogeneous visc)
     // 6.   || nu^(-1/2) ( p - p_b ) ||_L2(Omega)       =   visc-scaled L2-norm for for pressure
-    //                                                    =   nu^(-1/2) * || p - p_b ||_L2(Omega) (for homogeneous visc)
-    // 7.   || u - u_e ||_L2(Omega)            =   standard L2-norm for velocity
-    // 8.   || grad( u - u_e ) ||_L2(Omega)    =   standard H1-seminorm for velocity
-    // 9.   || u - u_e ||_H1(Omega)            =   standard H1-norm for velocity
-    //                                           =   sqrt( || u - u_e ||^2_L2(Omega) + || grad( u - u_e ) ||^2_L2(Omega) )
-    // 10.  || p - p_e ||_L2(Omega)            =   standard L2-norm for for pressure
+    //                                                  =   nu^(-1/2) * || p - p_b ||_L2(Omega) (for homogeneous visc)
+    //
+    // Error on Functionals from solution (Sudhakar)
+    // 7.   | sin(x) ( u,x - u,x exact ) | (background)
+    //
+    //
+    //--------------------------------------
+    // embedded domain
+    //--------------------------------------
+    // 1.   || u - u_e ||_L2(Omega)            =   standard L2-norm for velocity
+    // 2.   || grad( u - u_e ) ||_L2(Omega)    =   standard H1-seminorm for velocity
+    // 3.   || u - u_e ||_H1(Omega)            =   standard H1-norm for velocity
+    //                                         =   sqrt( || u - u_e ||^2_L2(Omega) + || grad( u - u_e ) ||^2_L2(Omega) )
+    // 4.  || p - p_e ||_L2(Omega)            =   standard L2-norm for for pressure
     //
     // viscosity-scaled domain errors
-    // 11.  || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)   =   visc-scaled H1-seminorm for velocity
+    // 5.  || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)   =   visc-scaled H1-seminorm for velocity
     //                                                  =   nu^(+1/2) * || grad( u - u_e ) ||_L2(Omega) (for homogeneous visc)
-    // 12.  || nu^(-1/2) ( p - p_e ) ||_L2(Omega)       =   visc-scaled L2-norm for for pressure
+    // 6.  || nu^(-1/2) ( p - p_e ) ||_L2(Omega)       =   visc-scaled L2-norm for for pressure
     //                                                  =   nu^(-1/2) * || p - p_e ||_L2(Omega) (for homogeneous visc)
-    //
+    // Error on Functionals from solution (Sudhakar)
+    // 7.  | sin(x) ( u,x - u,x exact ) | (embedded)
     //-------------------------------------------------------------------------------------------------------------------
     // interface/boundary error norms at the XFEM-interface, boundary
     // w.r.t Nitsche's method to enforce interface/boundary conditions
@@ -4934,7 +4946,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
     // number of norms that have to be calculated
     int num_dom_norms    = 7;
-    int num_interf_norms = 12;
+    int num_interf_norms = 5;
     int num_stab_norms   = 3;
 
     Epetra_SerialDenseVector cpu_dom_norms_bg(num_dom_norms);
@@ -5210,8 +5222,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       // local element-wise squared error norms
       Epetra_SerialDenseVector ele_dom_norms_emb(num_dom_norms);
-      Epetra_SerialDenseVector ele_interf_norms(num_interf_norms);
-
 
       // pointer to current element
       DRT::Element* actele = embdis_->lRowElement(i);
@@ -5456,6 +5466,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           << interf_err_Honehalf << " "
           << interf_err_Hmonehalf_u << " "
           << interf_err_Hmonehalf_p << " "
+          << (*glob_dom_norms_bg)[6] << " "
+          << (*glob_dom_norms_emb)[6] << " "
           <<"\n";
 
         f.flush();
