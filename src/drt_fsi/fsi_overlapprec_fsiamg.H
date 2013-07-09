@@ -576,9 +576,11 @@ namespace FSI
                      std::vector<MLAPI::Operator>& Afa,
                      std::vector<MLAPI::Operator>& Aaf) const;
     
+    /// @name Access routines
     inline const bool& SisAMG() const { return sisml_; }
     inline const bool& FisAMG() const { return fisml_; }
     inline const bool& AisAMG() const { return aisml_; }
+    //@}
     
     bool                                 sisml_;
     bool                                 fisml_;
@@ -587,12 +589,12 @@ namespace FSI
     int                                  frun_;
     int                                  arun_;
     
-    int                                  minnlevel_; ///< min of the below nlevel_
-    int                                  maxnlevel_; ///< max of the below nlevel_
-    int                                  analyze_;   ///< run analysis of FSIAMG
-    INPAR::FSI::LinearBlockSolver        strategy_; ///< type of preocnidtioner  to run: BGS(AMG) or AMG(BGS)
-    std::vector<std::string>             blocksmoother_; ///< type of inter-field block smoother
-    std::vector<double>                  schuromega_; ///< damping factor for construction of Schur complement
+    int                                  minnlevel_;      ///< min of the below nlevel_
+    int                                  maxnlevel_;      ///< max of the below nlevel_
+    int                                  analyze_;        ///< run analysis of FSIAMG
+    INPAR::FSI::LinearBlockSolver        strategy_;       ///< type of preconditioner  to run: BGS(AMG) or AMG(BGS)
+    std::vector<std::string>             blocksmoother_;  ///< type of inter-field block smoother
+    std::vector<double>                  schuromega_;     ///< damping factor for construction of Schur complement
     std::vector<double>                  pcomega_;
     std::vector<int>                     pciter_;
     std::vector<double>                  somega_;
@@ -602,13 +604,16 @@ namespace FSI
     std::vector<double>                  aomega_;
     std::vector<int>                     aiterations_;
 
+    /// @name AMG for structure
     int                                  snlevel_;   ///< num level in structure AMG
     Teuchos::ParameterList               sparams_;
     mutable std::vector<MLAPI::Operator> Ass_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sss_;
     std::vector<MLAPI::Operator>         Pss_;
     std::vector<MLAPI::Operator>         Rss_;
+    //@}
 
+    /// @name AMG for fluid
     int                                  fnlevel_;   ///< num level in fluid AMG
     Teuchos::ParameterList               fparams_;
     mutable std::vector<MLAPI::Operator> Aff_;
@@ -616,13 +621,16 @@ namespace FSI
     mutable std::vector<MLAPI::Operator> Schurff_;
     std::vector<MLAPI::Operator>         Pff_;
     std::vector<MLAPI::Operator>         Rff_;
+    //@}
 
+    /// @name AMG for ale
     int                                  anlevel_;   ///< num level in ale AMG
     Teuchos::ParameterList               aparams_;
     mutable std::vector<MLAPI::Operator> Aaa_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Saa_;
     std::vector<MLAPI::Operator>         Paa_;
     std::vector<MLAPI::Operator>         Raa_;
+    //@}
 
     // these are for implicit off-diagonal in block smoother
     mutable MLAPI::Operator              Asf_;
