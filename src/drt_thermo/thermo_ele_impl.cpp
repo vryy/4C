@@ -786,21 +786,21 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     case INPAR::THR::dyna_genalpha :
     {
       // extract time values from parameter list
-      const double alpha_f = params.get<double>("alphaf");
-      const double alpha_m = params.get<double>("alpham");
+      const double alphaf = params.get<double>("alphaf");
+      const double alpham = params.get<double>("alpham");
       const double gamma = params.get<double>("gamma");
       const double stepsize = params.get<double>("delta time");
 
       // ---------------------------------------------------------- etang
       // combined tangent and conductivity matrix to one global matrix
-      // etang = alpha_m/(gamma . Dt) . ecapa + alpha_f . econd
-      // fac_capa = alpha_m/(gamma . Dt)
-      // fac_cond = alpha_f
-      double fac_capa = alpha_m/(gamma * stepsize);
-      etang.Update(fac_capa,ecapa_,alpha_f);
+      // etang = alpham/(gamma . Dt) . ecapa + alphaf . econd
+      // fac_capa = alpham/(gamma . Dt)
+      // fac_cond = alphaf
+      double fac_capa = alpham/(gamma * stepsize);
+      etang.Update(fac_capa,ecapa_,alphaf);
 
       // ---------------------------------------------------------- efcap
-      // efcap = ecapa * R_{n+alpha_m}
+      // efcap = ecapa . R_{n+alpham}
       if (discretization.HasState(0,"mid-temprate"))
       {
         Teuchos::RCP<const Epetra_Vector> ratem
@@ -1617,7 +1617,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
-  // -------------------------------------------- temporal discretisation
+  // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
   const INPAR::THR::DynamicType timint
    = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
@@ -1625,6 +1625,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   // get step size dt
   const double stepsize = params.get<double>("delta time");
   // initialise time_factor
+  double timefac_d = 0.0;
   double timefac = 0.0;
   
   // consider linearisation of velocities due to displacements
@@ -1633,30 +1634,31 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   case INPAR::THR::dyna_statics :
   {
     // k_Td = k_Td^e . time_fac_d'
-
-    // time_fac_d' = Lin (v_n+1) . \Delta d_n+1 = 1/dt
+    timefac = 1.0;
+    // timefac_d' = Lin (v_n+1) . \Delta d_n+1 = 1/dt
     // cf. Diss N. Karajan (2009) for quasistatic approach
-    timefac = 1/stepsize;
+    timefac_d = 1/stepsize;
     break;
   }
   case INPAR::THR::dyna_onesteptheta :
   {
     // k_Td = theta . k_Td^e . time_fac_d'
-    double theta = params.get<double>("theta");
-    // initialise time_fac of velocity discretisation w.r.t. displacements
-    double str_theta = params.get<double>("str_THETA");
-    timefac = theta/(stepsize * str_theta);
+    timefac = params.get<double>("theta");
+    // timefac_d' = Lin (v_n+1) . \Delta d_n+1 = 1/(theta . dt)
+    // initialise timefac_d of velocity discretisation w.r.t. displacements
+    double str_theta = params.get<double>("str_theta");
+    timefac_d = 1/(str_theta * stepsize);
     break;
   }
   case INPAR::THR::dyna_genalpha :
   {
-    dserror("Genalpha not yet implemented");
-
-    // TODO check scaling factor for genalpha again!
-    const double str_beta = params.get<double>("str_BETA");
-    const double str_gamma = params.get<double>("str_GAMMA");
+    // k_Td = alphaf . k_Td^e . time_fac_d'
+    timefac = params.get<double>("alphaf");
+    // timefac_d' = Lin (v_n+1) . \Delta d_n+1 = gamma/(beta . dt)
+    const double str_beta = params.get<double>("str_beta");
+    const double str_gamma = params.get<double>("str_gamma");
     // Lin (v_n+1) . \Delta d_n+1 = (gamma) / (beta . dt)
-    timefac =  str_gamma /(str_beta*stepsize);
+    timefac_d =  str_gamma/(str_beta * stepsize);
     break;
   }
   case INPAR::THR::dyna_undefined :
@@ -1745,10 +1747,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     // coupling stiffness matrix
     if (etangcoupl != NULL)
     {
-      // k_Td^e = k_Td^e + ( N_T^T . N_T . T . (-C_temp)/str_timefac . B_L ) * detJ * w(gp)
-      // with C_temp = m * I
+      // k_Td^e = k_Td^e + ( N_T^T . N_T . T . (-C_temp)/str_timefac . B_L ) . detJ . w(gp)
+      // with C_temp = m . I
       // (8x24) = (8x6) . (6x24)
-      etangcoupl->MultiplyNN((fac_*timefac), NNTC, boplin, 1.0);
+      etangcoupl->MultiplyNN((timefac*fac_*timefac_d), NNTC, boplin, 1.0);
     }  // (etangcoupl != NULL)
 
    }  //-------------------------------------- end loop over Gauss Points
@@ -1840,7 +1842,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
   if (intpoints.IP().nquad != nquad_)
     dserror("Trouble with number of Gauss points");
 
-  // ----------------------------------------- loop over Gauss Points
+  // --------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     // compute inverse Jacobian matrix and derivatives at GP w.r.t material
@@ -1855,7 +1857,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // Grad T = d T_j / d x_i = L . N . T = B_ij T_j
     gradtemp_.MultiplyNN(derxy_,etemp_);
 
-    // ------------------------------------ call thermal material law
+    // ---------------------------------------- call thermal material law
     // call material law => cmat_,heatflux_
     // negative q is used for balance equation:
     // heatflux_ = k_0 * Grad T
@@ -1878,7 +1880,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     LINALG::Matrix<6,nen_*nsd_*numdofpernode_> bop;
     CalculateBop(&bop,&defgrd,&derxy_);
 
-    // ------- derivatives of right Cauchy-Green deformation tensor C
+    // ----------- derivatives of right Cauchy-Green deformation tensor C
     // build the rate of C: C'= F^T . F' + (F')^T . F
     // OR: C' = F^T . F' if applied to symmetric tensor
     // save C' as rate vector Crate
@@ -1901,7 +1903,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     heatflux_.Update(0.0, initialheatflux, 1.0);
     // from here on heatflux_ == -Q
 
-    // ---------------------------------------------- post processing
+    // -------------------------------------------------- post processing
     // store the temperature gradient for postprocessing
     // return gp tempgrad (only in case of tempgrad output)
     // RK: Grad T
@@ -1981,6 +1983,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       std::cout << "CalculateNlnCouplFintCondCapa Nln eheatflux = " << *eheatflux << std::endl;
 #endif  // THRASOUTPUT
 
+    // ------------------------------------------------ call the material
     if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
       // scalar-valued current element temperature T_{n+1}
@@ -2022,13 +2025,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
 
     }  // m_thermostvenant
 
-    // ----------------------------------------- terms for r_T / k_TT
+    // --------------------------------------------- terms for r_T / k_TT
     // scalar product: ctempcdot = -(m * I) : 1/2 C' = -C_temp : 1/2 C'
     double ctempCdot = 0.0;
     for (int i=0; i<6; ++i)
       ctempCdot += ctemp(i,0) * (1/2.0) * Cratevct(i,0);
 
-    // -------------------------- integrate internal force vector r_T
+    // ------------------------------ integrate internal force vector r_T
     // add the displacement-dependent terms to fint
     // fint = fint + fint_{Td}
     if (efint != NULL)
@@ -2047,7 +2050,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       efint->Multiply((fac_*ctempCdot), funct_, NT, 1.0);
     }  // if (efint != NULL)
 
-    // --------------------------- integrate conductivity matrix k_TT
+    // ------------------------------- integrate conductivity matrix k_TT
     // update conductivity matrix k_TT (with displacement dependent term)
     if (econd != NULL)
     {
@@ -2169,6 +2172,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
    = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
   switch (timint)
   {
+  case INPAR::THR::dyna_statics :
+  {
+    timefac = 1.0;
+    timefac_d = 1.0 / stepsize;
+    break;
+  }
   case INPAR::THR::dyna_onesteptheta :
   {
     // k^e_Td = k^e_Td
@@ -2179,23 +2188,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
     timefac = theta;
 
     // initialise time_fac of velocity discretisation w.r.t. displacements
-    const double str_theta = params.get<double>("str_THETA");
+    const double str_theta = params.get<double>("str_theta");
     timefac_d = 1.0 /(stepsize*str_theta);
-    break;
-  }
-  case INPAR::THR::dyna_statics :
-  {
-    timefac = 1.0;
-    timefac_d = 1.0 / stepsize;
     break;
   }
   case INPAR::THR::dyna_genalpha :
   {
-    // Lin (v_n+1) . \Delta d_n+1 = (gamma) / (beta . dt)
-    const double str_beta = params.get<double>("str_BETA");
-    const double str_gamma = params.get<double>("str_GAMMA");
-    timefac =  str_gamma / str_beta;
-    dserror("Genalpha not yet implemented");
+    timefac = params.get<double>("alphaf");
+    // Lin (v_n+1) . \Delta d_n+1 = (gamma ) / (beta . dt)
+    const double str_beta = params.get<double>("str_beta");
+    const double str_gamma = params.get<double>("str_gamma");
+    timefac_d =  str_gamma / (str_beta * stepsize);
     break;
   }
   case INPAR::THR::dyna_undefined :
@@ -2301,10 +2304,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
 
     // ---------------------------------------- coupling to mechanics
     // (material) deformation gradient F
-    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
     defgrd.MultiplyTT(xcurr,derxy_);
     // rate of (material) deformation gradient F'
-    // F' = d xcurr' / d xrefe = (xcurr')^T * N_XYZ^T
+    // F' = d xcurr' / d xrefe = (xcurr')^T . N_XYZ^T
     defgrdrate.MultiplyTT(xcurrrate,derxy_);
     // inverse of deformation gradient
     invdefgrd.Invert(defgrd);
@@ -2338,9 +2341,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
 
     // -------------------------------- calculate linearisation of C'
     // C_T : 1/2 C'_lin --> symmetric part of C'_lin is sufficient
-    // C'_lin = dCrate/dd = 1/2 . [ 1/(theta . dt) . (B^T + B) + (F')^T . B_L + B_L^T . F' ]
-    //        = 1/(theta . dt) [ B^T + B ] + [ (F')^T . B_L + ( (F')^T . B_L )^T ]
-    // C_T : 1/2 C'_lin = C_T : [ 1/(theta . Dt) B + B' ]
+    // C'_lin = dCrate/dd = 1/2 . [ timefac_d . (B^T + B) + (F')^T . B_L + B_L^T . F' ]
+    //        = timefac_d [ B^T + B ] + [ (F')^T . B_L + ( (F')^T . B_L )^T ]
+    // C_T : 1/2 C'_lin = C_T : [ timefac_d B + B' ]
     // --> use only the symmetric part of C'_lin
 
     // with B' = (F')^T . B_L: calculate rate of B
@@ -2376,38 +2379,39 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
     // ----------------- coupling matrix k_Td only for monolithic TSI
     if (etangcoupl != NULL)
     {
-      // k^e_Td = k^e_Td + theta . N_T^T . (-C_temp) . 1/2 C'_lin . N_T . T . detJ . w(gp)
-      //          - theta . ( B_T^T . C_mat . C^{-1}_lin . B_T . T . detJ . w(gp) )
+      // k^e_Td = k^e_Td + timefac . N_T^T . (-C_temp) . 1/2 C'_lin . N_T . T . detJ . w(gp)
+      //          - timefac . ( B_T^T . C_mat . C^{-1}_lin . B_T . T . detJ . w(gp) )
       // with
       // B_T: thermal gradient matrix
       // B_L: linear B-operator, gradient matrix == B_T
       // B: nonlinear B-operator, i.e. B = F^T . B_L
-      // C'_lin = 1/(theta . Dt) ( B^T + B ) + F'T . B_L + B_L^T . F'
+      // C'_lin = timefac_d ( B^T + B ) + F'T . B_L + B_L^T . F'
       // --> 1/2 C'_lin = sym C'_lin = 1/(theta . Dt) . B + B'
       // with boprate := B' = F'T . B_L
       // C^{-1}_lin = - F^{-1} . (B_L . F^{-1} + B_L^{T} . F^{-T}) . F^{-T}
       //
       // C_mat = k_0 * I
 
-      // k^e_Td = theta . N_T^T . N_T . T . (-C_temp) . 1/2 C'_lin . detJ . w(gp)
+      // k^e_Td = timefac . N_T^T . N_T . T . (-C_temp) . 1/2 C'_lin . detJ . w(gp)
       // (8x24)            (8x3) (3x8)(8x1)   (6x1)       (6x24)
       // (8x24)               (8x8)   (8x1)   (1x6)       (6x24)
       // (8x24)                  (8x1)        (1x6)       (6x24)
       // (8x24)                         (8x6)             (6x24)
       etangcoupl->Multiply(fac_, NNTC, boprate, 1.0);
       etangcoupl->Multiply((fac_*timefac_d), NNTC, bop, 1.0);
-      // k^e_Td = k^e_Td - theta . ( B_T^T . C_mat . C^{-1}_lin . B_T . T . detJ . w(gp) )
-      //        = k^e_Td + theta . ( B_T^T . C_mat . B_T . T . C^{-1}_lin . detJ . w(gp) )
+      // k^e_Td = k^e_Td - timefac . ( B_T^T . C_mat . C^{-1}_lin . B_T . T . detJ . w(gp) )
+      //        = k^e_Td + timefac . ( B_T^T . C_mat . B_T . T . C^{-1}_lin . detJ . w(gp) )
       // (8x24)                      (8x3)   (3x3)  (3x8)(8x1)  (6x24)
       //                                 (8x3)        (3x1)
       //                                       (8x1) (1x24)
-      //        = k^e_Td + theta . ( B_T^T . B_T . T . C_mat . C^{-1}_lin . detJ . w(gp) )
+      //        = k^e_Td + timefac . ( B_T^T . B_T . T . C_mat . C^{-1}_lin . detJ . w(gp) )
       // (8x24)                      (8x3)  (3x8)(8x1) (1x6) (6x24)
       etangcoupl->MultiplyNN(fac_, bgradTcmat, dCinv_dd, 1.0);
     }  // (etangcoupl != NULL)
 
   }  // ---------------------------------- end loop over Gauss Points
 
+  // scale total tangent with timefac
   if (etangcoupl != NULL)
   {
     etangcoupl->Scale(timefac);
@@ -2563,14 +2567,21 @@ std::cout << "edisp\n" << edisp << std::endl;
   {
     // evolution equation of plastic material use implicit Euler
     // put str_timefac = 1.0
-    timefac = 1.0/stepsize;
+    timefac = 1.0 / stepsize;
     break;
   }
   case INPAR::THR::dyna_onesteptheta :
   {
-    // k_Td = theta . k_Td^e * time_fac_d' = theta . k_Td / Dt
+    // k_Td = theta . k_Td^e . timefac_Dgamma = theta . k_Td / Dt
     double theta = params.get<double>("theta");
-    timefac = theta * timefac / stepsize;
+    timefac = theta / stepsize;
+    break;
+  }
+  case INPAR::THR::dyna_genalpha :
+  {
+    // k_Td = alphaf . k_Td^e . timefac_Dgamma = alphaf . k_Td / Dt
+    double alphaf = params.get<double>("alphaf");
+    timefac = alphaf / stepsize;
     break;
   }
   case INPAR::THR::dyna_undefined :

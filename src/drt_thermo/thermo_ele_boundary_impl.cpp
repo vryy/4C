@@ -539,35 +539,41 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
           = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
         switch (timint)
         {
-          case INPAR::THR::dyna_statics :
-          {
-            if (*tempstate == "Tempn")
-              dserror("Old temperature T_n is not allowed with static time integrator");
-            // continue
-            break;
-          }
-          case INPAR::THR::dyna_onesteptheta :
-          {
-            // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
-            // convective boundary condition is nonlinear and produces a term in the
-            // tangent, consider the factor theta here, too
-            const double theta = params.get<double>("theta");
-            // combined tangent and conductivity matrix to one global matrix
-            etangcoupl.Scale(theta);
-            break;
-          }
-          case INPAR::THR::dyna_genalpha :
-          {
-            dserror("Genalpha not yet implemented");
-            break;
-          }
-          case INPAR::THR::dyna_undefined :
-          default :
-          {
-            dserror("Don't know what to do...");
-            break;
-          }
+        case INPAR::THR::dyna_statics :
+        {
+          if (*tempstate == "Tempn")
+            dserror("Old temperature T_n is not allowed with static time integrator");
+          // continue
+          break;
+        }
+        case INPAR::THR::dyna_onesteptheta :
+        {
+          // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
+          // convective boundary condition is nonlinear and produces a term in the
+          // tangent, consider the factor theta here, too
+          const double theta = params.get<double>("theta");
+          // combined tangent and conductivity matrix to one global matrix
+          etangcoupl.Scale(theta);
+          break;
+        }
+        case INPAR::THR::dyna_genalpha :
+        {
+          // Note: efext is scaled with theta in thrtimint_ost.cpp. Because the
+          // convective boundary condition is nonlinear and produces a term in the
+          // tangent, consider the factor theta here, too
+          const double alphaf = params.get<double>("alphaf");
+          // combined tangent and conductivity matrix to one global matrix
+          etangcoupl.Scale(alphaf);
+          break;
+        }
+        case INPAR::THR::dyna_undefined :
+        default :
+        {
+          dserror("Don't know what to do...");
+          break;
+        }
         }  // end of switch(timint)
+
       }  // disp!=0
     }  // if ( (kintype == 1) and (la.Size()>1) )
   }  // calc_thermo_fextconvection_coupltang
@@ -725,14 +731,12 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
     LINALG::Matrix<1,1> Ntemp(true);
     Ntemp.MultiplyTN(funct_,etemp_);
 
-    // - T_surf * I
+    // substract the surface temperature: Ntemp -=  T_surf
     LINALG::Matrix<1,1> Tsurf(true);
     for (int i=0; i<1; ++i)
     {
       Tsurf(i) = (surtemp);
     }
-
-    // Ntemp -= T_surf
     // in the following Ntemp describes the temperature difference and not only
     // the scalar-valued temperature
     Ntemp.Update(-1.0,Tsurf,1.0);
@@ -740,7 +744,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
     // ---------------------------------------------- right-hand-side
     if (efext != NULL)
     {
-      // fext^e = fext^e - N^T . coeff . ( N . T - T_surf) . detJ * w(gp)
+      // fext^e = fext^e - N^T . coeff . (N . T - T_oo) . detJ * w(gp)
       // in energy balance: q_c positive, but fext = r^ + q^ + q^_c
       // we want to define q^_c = - q . n
       // q^_cr = k . Grad T = h (T - T_oo), vgl. Farhat(1992)
@@ -933,9 +937,9 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     {
       // efext = efext - N^T . coeff . ( N . T - T_surf) . sqrt( Normal^T . C^{-1} . Normal ) . detJ * w(gp)
 
-      // in energy balance: q_c positive, but fext = r + q^bar  q_c^bar
-      // we want to define q_c = - q . n
-      // q_c^bar = k . Grad T = h (T - T_oo), vgl. Farhat(1992)
+      // in energy balance: q_c positive, but fext = r + q^ + q_c^
+      // we want to define q_c^ = - q . n
+      // q_c^ = k . Grad T = h (T - T_oo)
       efext->Multiply(coeffA,funct_,Ntemp,1.0);
     }  // efext != NULL
 

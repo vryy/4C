@@ -104,10 +104,12 @@ TSI::Monolithic::Monolithic(
   INPAR::THR::DynamicType thermotimealgo
     = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
 
-  // use for both fields the same time integrator
-  if ( ( (structtimealgo != INPAR::STR::dyna_onesteptheta) or (thermotimealgo != INPAR::THR::dyna_onesteptheta) )
+  // use the same time integrator for both fields
+  if ( ( (structtimealgo!=INPAR::STR::dyna_statics) or (thermotimealgo!=INPAR::THR::dyna_statics) )
        and
-       ( (structtimealgo!=INPAR::STR::dyna_statics) or (thermotimealgo!=INPAR::THR::dyna_statics) )
+       ( (structtimealgo != INPAR::STR::dyna_onesteptheta) or (thermotimealgo != INPAR::THR::dyna_onesteptheta) )
+       and
+       ( (structtimealgo!=INPAR::STR::dyna_genalpha) or (thermotimealgo!=INPAR::THR::dyna_genalpha) )
      )
     dserror("same time integration scheme for STR and THR required for monolithic.");
 
@@ -117,7 +119,7 @@ TSI::Monolithic::Monolithic(
 
   blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
-  // velocities V_{n+1} at t_{n+1}
+  // new velocities V_{n+1} at t_{n+1}
   veln_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
   veln_->PutScalar(0.0);
 
@@ -146,7 +148,7 @@ TSI::Monolithic::Monolithic(
   }  // end BlockMatrixMerge
 
   // structural and thermal contact
-  if(StructureField()->ContactManager() != Teuchos::null)
+  if (StructureField()->ContactManager() != Teuchos::null)
   {
     cmtman_ = StructureField()->ContactManager();
 
@@ -186,10 +188,13 @@ void TSI::Monolithic::ReadRestart(int step)
   StructureField()->ReadRestart(step);
 
   // pass the current coupling varibles to the respective field
-  ThermoField()->ApplyStructVariables(StructureField()->Dispnp(),
-                                      StructureField()->ExtractVelnp()
-                                      );
-  StructureField()->ApplyCouplingState(ThermoField()->Tempnp(),"temperature");
+  ThermoField()->ApplyStructVariables(
+                   StructureField()->Dispnp(),
+                   StructureField()->ExtractVelnp()
+                   );
+  StructureField()->ApplyCouplingState(
+                      ThermoField()->Tempnp(),"temperature"
+                      );
 
   // second ReadRestart needed due to the coupling variables
   ThermoField()->ReadRestart(step);
@@ -302,7 +307,6 @@ void TSI::Monolithic::CreateLinearSolver()
 #endif
     break;
   }
-
   default:
     dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
     break;
@@ -604,6 +608,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   }
   else
   {
+    // evaluation is at t_{n+1} for one-step-theta and TR-like genalpha
     veln_ = StructureField()->ExtractVelnp();
   }
 #ifndef MonTSIwithoutSTR
@@ -1014,6 +1019,7 @@ void TSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
     // returns residual temperatures or iterative thermal increment - tempi_
     ThermoField()->InitialGuess()
     );
+
 } // InitialGuess()
 
 
@@ -1031,6 +1037,7 @@ void TSI::Monolithic::SetupVector(
   // noticing the block number
   Extractor()->InsertVector(*sv,0,f);
   Extractor()->InsertVector(*tv,1,f);
+
 }  // SetupVector()
 
 
@@ -1051,13 +1058,13 @@ bool TSI::Monolithic::Converged()
   // residual TSI forces
   switch (normtyperhs_)
   {
-  case INPAR::TSI::convnorm_abs:
+  case INPAR::TSI::convnorm_abs :
     convrhs = normrhs_ < tolrhs_;
     break;
-  case INPAR::TSI::convnorm_rel:
+  case INPAR::TSI::convnorm_rel :
     convrhs = normrhs_ < std::max(tolrhs_*normrhsiter0_, 1e-15);
     break;
-  case INPAR::TSI::convnorm_mix:
+  case INPAR::TSI::convnorm_mix :
     convrhs = ( (normrhs_ < tolrhs_) and (normrhs_ < std::max(normrhsiter0_*tolrhs_, 1e-15)) );
     break;
   default:
@@ -1067,88 +1074,90 @@ bool TSI::Monolithic::Converged()
   // residual TSI increments
   switch (normtypeinc_)
   {
-  case INPAR::TSI::convnorm_abs:
+  case INPAR::TSI::convnorm_abs :
     convinc = norminc_ < tolinc_;
     break;
-  case INPAR::TSI::convnorm_rel:
+  case INPAR::TSI::convnorm_rel :
     convinc = norminc_ < std::max(norminciter0_*tolinc_,1e-15);
     break;
-  case INPAR::TSI::convnorm_mix:
+  case INPAR::TSI::convnorm_mix :
     convinc = norminc_ < std::max(norminciter0_*tolinc_,1e-15);
     break;
   default:
     dserror("Cannot check for convergence of increments!");
-  }
+  }  // switch (normtypeinc_)
 
   // -------------------------------------------------- single field test
   // ---------------------------------------------------------- structure
   // structural residual forces
   switch (normtypestrrhs_)
   {
-  case INPAR::STR::convnorm_abs:
+  case INPAR::STR::convnorm_abs :
     convstrrhs = normstrrhs_ < tolstrrhs_;
     break;
-  case INPAR::STR::convnorm_rel:
+  case INPAR::STR::convnorm_rel :
     convstrrhs = normstrrhs_ < std::max(normstrrhsiter0_*tolstrrhs_,1e-15);
     break;
-  case INPAR::STR::convnorm_mix:
+  case INPAR::STR::convnorm_mix :
     convstrrhs = ( (normstrrhs_ < tolstrrhs_) or
                    (normstrrhs_ < std::max(normstrrhsiter0_*tolstrrhs_,1e-15))
                  );
     break;
-  default:
+  default :
     dserror("Cannot check for convergence of residual forces!");
     break;
-  }
+  }  // switch (normtypestrrhs_)
+
   // residual displacements
   switch (normtypedisi_)
   {
-  case INPAR::STR::convnorm_abs:
+  case INPAR::STR::convnorm_abs :
     convdisp = normdisi_ < toldisi_;
     break;
-  case INPAR::STR::convnorm_rel:
+  case INPAR::STR::convnorm_rel :
     convdisp = normdisi_ < std::max(normdisiiter0_*toldisi_,1e-15);
     break;
-  case INPAR::STR::convnorm_mix:
+  case INPAR::STR::convnorm_mix :
     convdisp = ( (normdisi_ < toldisi_) or
                  (normdisi_ < std::max(normdisiiter0_*toldisi_,1e-15))
                );
     break;
-  default:
+  default :
     dserror("Cannot check for convergence of displacements!");
-  }
+  }  // switch (normtypedisi_)
 
   // ------------------------------------------------------------- thermo
   // thermal residual forces
   switch (normtypethrrhs_)
   {
-  case INPAR::THR::convnorm_abs:
+  case INPAR::THR::convnorm_abs :
     convthrrhs = normthrrhs_ < tolthrrhs_;
     break;
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     convthrrhs = normthrrhs_ < normthrrhsiter0_*tolthrrhs_;
     break;
-  case INPAR::THR::convnorm_mix:
+  case INPAR::THR::convnorm_mix :
     convthrrhs = ( (normthrrhs_ < tolthrrhs_) or (normthrrhs_ < normthrrhsiter0_*tolthrrhs_) );
     break;
-  default:
+  default :
     dserror("Cannot check for convergence of residual forces!");
-  }
+  }  // switch (normtypethrrhs_)
+
   // residual temperatures
   switch (normtypetempi_)
   {
-  case INPAR::THR::convnorm_abs:
+  case INPAR::THR::convnorm_abs :
     convtemp = normtempi_ < toltempi_;
     break;
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     convtemp = normtempi_ < normtempiiter0_*toltempi_;
     break;
-  case INPAR::THR::convnorm_mix:
+  case INPAR::THR::convnorm_mix :
     convtemp = ( (normtempi_ < toltempi_) or (normtempi_ < normtempiiter0_*toltempi_) );
     break;
-  default:
+  default :
     dserror("Cannot check for convergence of temperatures!");
-  }
+  }  // switch (normtypetempi_)
 
   // -------------------------------------------------------- convergence
   // combine increment-like and force-like residuals, combine TSI and single
@@ -1167,9 +1176,7 @@ bool TSI::Monolithic::Converged()
   else if (combincrhs_ == INPAR::TSI::bop_or_singl)
     conv = (convdisp or convstrrhs or convtemp or convthrrhs);
   else
-  {
     dserror("Something went terribly wrong with binary operator!");
-  }
 
   // return things
   return conv;
@@ -1253,7 +1260,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   // ---------------------------------------------------------- structure
   switch (normtypestrrhs_)
   {
-  case INPAR::STR::convnorm_rel:
+  case INPAR::STR::convnorm_rel :
     oss << std::setw(18)<< "rel-str-res-norm";
     break;
   case INPAR::STR::convnorm_abs :
@@ -1265,11 +1272,11 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   default:
     dserror("You should not turn up here.");
     break;
-  }
+  }  // switch (normtypestrrhs_)
 
   switch (normtypedisi_)
   {
-  case INPAR::STR::convnorm_rel:
+  case INPAR::STR::convnorm_rel :
     oss << std::setw(16)<< "rel-dis-norm";
     break;
   case INPAR::STR::convnorm_abs :
@@ -1278,15 +1285,15 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   case INPAR::STR::convnorm_mix :
     oss << std::setw(16)<< "mix-dis-norm";
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
     break;
-  }
+  }  // switch (normtypedisi_)
 
   // ------------------------------------------------------------- thermo
   switch (normtypethrrhs_)
   {
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     oss << std::setw(18)<< "rel-thr-res-norm";
     break;
   case INPAR::THR::convnorm_abs :
@@ -1295,13 +1302,13 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   case INPAR::THR::convnorm_mix :
     oss << std::setw(18)<< "mix-thr-res-norm";
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
-  }
+  }  // switch (normtypethrrhs_)
 
   switch (normtypetempi_)
   {
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     oss << std::setw(16)<< "rel-temp-norm";
     break;
   case INPAR::THR::convnorm_abs :
@@ -1310,10 +1317,9 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   case INPAR::THR::convnorm_mix :
     oss << std::setw(16)<< "mix-temp-norm";
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
-  }
-
+  }  // switch (normtypetempi_)
 
   // add solution time
   oss << std::setw(12)<< "wct";
@@ -1331,6 +1337,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
+  
 }  // PrintNewtonIterHeader()
 
 
@@ -1360,7 +1367,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   case INPAR::TSI::convnorm_mix :
     oss << std::setw(15) << std::setprecision(5) << std::scientific << std::min(normrhs_, normrhs_/normrhsiter0_);
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
   }
 
@@ -1375,9 +1382,9 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   case INPAR::TSI::convnorm_mix :
     oss << std::setw(15) << std::setprecision(5) << std::scientific << std::min(norminc_, norminc_/norminciter0_);
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
-  }
+  }  // switch (normtypeinc_)
 
   // ------------------------------------------------- test single fields
   // ---------------------------------------------------------- structure
@@ -1388,32 +1395,32 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   case INPAR::STR::convnorm_abs :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normstrrhs_;
     break;
-  case INPAR::STR::convnorm_rel:
+  case INPAR::STR::convnorm_rel :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normstrrhs_/normstrrhsiter0_;
     break;
   case INPAR::STR::convnorm_mix :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normstrrhs_, normstrrhs_/normstrrhsiter0_);
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
     break;
-  }
+  }  // switch (normtypestrrhs_)
 
   switch (normtypedisi_)
   {
   case INPAR::STR::convnorm_abs :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
     break;
-  case INPAR::STR::convnorm_rel:
+  case INPAR::STR::convnorm_rel :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_/normdisiiter0_;
     break;
   case INPAR::STR::convnorm_mix :
    oss << std::setw(16) << std::setprecision(5) << std::scientific << min(normdisi_, normdisi_/normdisiiter0_);
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
     break;
-  }
+  }  // switch (normtypedisi_)
 
   // ------------------------------------------------------------- thermo
   switch (normtypethrrhs_)
@@ -1421,30 +1428,30 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   case INPAR::THR::convnorm_abs :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normthrrhs_;
     break;
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normthrrhs_/normthrrhsiter0_;
     break;
   case INPAR::THR::convnorm_mix :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << std::min(normthrrhs_, normthrrhs_/normthrrhsiter0_);
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
-  }
+  }  // switch (normtypethrrhs_)
 
   switch (normtypetempi_)
   {
   case INPAR::THR::convnorm_abs :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normtempi_;
     break;
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normtempi_/normtempiiter0_;
     break;
   case INPAR::THR::convnorm_mix :
     oss << std::setw(16) << std::setprecision(5) << std::scientific << std::min(normtempi_, normtempi_/normtempiiter0_);
     break;
-  default:
+  default :
     dserror("You should not turn up here.");
-  }
+  }  // switch (normtypetempi_)
 
   // add solution time of to print to screen
   Epetra_Time timer(Comm());
@@ -1528,31 +1535,29 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   // major switch to different time integrators
   switch (strmethodname_)
   {
-   case  INPAR::STR::dyna_statics :
-   {
-     // continue
-     break;
-   }
-   case  INPAR::STR::dyna_onesteptheta :
-   {
-     double theta_ = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
-     // K_Teffdyn(T_n+1^i) = theta * k_st
-     k_st->Scale(theta_);
-     break;
-   }
-   // TODO: time factor for genalpha
-   case  INPAR::STR::dyna_genalpha :
-   {
-     double alphaf_ = sdyn_.sublist("GENALPHA").get<double>("ALPHA_F");
-     // K_Teffdyn(T_n+1) = (1-alphaf_) . kst
-     // Lin(dT_n+1-alphaf_/ dT_n+1) = (1-alphaf_)
-     k_st->Scale(1.0 - alphaf_);
-   }
-   default :
-   {
-     dserror("Don't know what to do...");
-     break;
-   }
+  case INPAR::STR::dyna_statics :
+  {
+    // continue
+    break;
+  }
+  case INPAR::STR::dyna_onesteptheta :
+  {
+    double theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
+    // K_Teffdyn(T_n+1^i) = theta * k_st
+    k_st->Scale(theta);
+    break;
+  }
+  case INPAR::STR::dyna_genalpha :
+  {
+    double alphaf = sdyn_.sublist("GENALPHA").get<double>("ALPHA_F");
+    // K_Teffdyn(T_n+1) = (1-alphaf_) . kst
+    // Lin(dT_n+1-alphaf_/ dT_n+1) = (1-alphaf_)
+    k_st->Scale(1.0 - alphaf);
+    break;
+  }
+  default :
+    dserror("Don't know what to do...");
+    break;
   }  // end of switch(strmethodname_)
 
 }  // ApplyStrCouplMatrix()
@@ -1580,6 +1585,8 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   // other parameters that might be needed by the elements
   tparams.set("delta time", Dt());
   tparams.set("total time", Time());
+  tparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
+
   // create specific time integrator
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
@@ -1587,44 +1594,45 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     "time integrator",
     DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP")
     );
-  tparams.set<int>("structural time integrator",strmethodname_);
+  tparams.set<int>("structural time integrator", strmethodname_);
   switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
   {
-    // static analysis
-    case INPAR::THR::dyna_statics :
-    {
-      break;
-    }
-    // dynamic analysis
-    case INPAR::THR::dyna_onesteptheta :
-    {
-      // K_Td = theta . k_Td^e
-      double theta_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
-      tparams.set("theta",theta_);
-      // put the structural theta value to the thermal parameter list
-      double str_theta_ = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
-      tparams.set("str_THETA", str_theta_);
-      break;
-    }
-    case INPAR::THR::dyna_genalpha :
-    {
-      // put the structural theta value to the thermal parameter list
-      double str_beta_ = sdyn_.sublist("GENALPHA").get<double>("BETA");
-      double str_gamma_ = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
-      tparams.set("str_BETA", str_beta_);
-      tparams.set("str_GAMMA", str_gamma_);
-
-      dserror("Genalpha not yet implemented");
-      break;
-    }
-    case INPAR::THR::dyna_undefined :
-    default :
-    {
-      dserror("Don't know what to do...");
-      break;
-    }
+  // static analysis
+  case INPAR::THR::dyna_statics :
+  {
+    // continue
+    break;
   }
-  tparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
+  // dynamic analysis
+  case INPAR::THR::dyna_onesteptheta :
+  {
+    // K_Td = theta . k_Td^e
+    double theta = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+    tparams.set("theta",theta);
+    // put the structural theta value to the thermal parameter list
+    double str_theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
+    tparams.set("str_theta", str_theta);
+    break;
+  }
+  case INPAR::THR::dyna_genalpha :
+  {
+    double alphaf = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
+    tparams.set("alphaf", alphaf);
+
+    // put the structural theta value to the thermal parameter list
+    double str_beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
+    double str_gamma = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
+    tparams.set("str_beta", str_beta);
+    tparams.set("str_gamma", str_gamma);
+    break;
+  }
+  case INPAR::THR::dyna_undefined :
+  default :
+  {
+    dserror("Don't know what to do...");
+    break;
+  }
+  }  // switch (THR::DynamicType)
 
   ThermoField()->Discretization()->ClearState();
   // set the variables that are needed by the elements
@@ -1688,40 +1696,42 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
     tparams.set<int>("structural time integrator",strmethodname_);
     switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
     {
-      // static analysis
-      case INPAR::THR::dyna_statics :
-      {
-        break;
-      }
-      // dynamic analysis
-      case INPAR::THR::dyna_onesteptheta :
-      {
-        // K_Td = theta . k_Td^e
-        double theta_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
-        tparams.set("theta",theta_);
-        // put the structural theta value to the thermal parameter list
-        double str_theta_ = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
-        tparams.set("str_THETA", str_theta_);
-        break;
-      }
-      case INPAR::THR::dyna_genalpha :
-      {
-        // put the structural theta value to the thermal parameter list
-        double str_beta_ = sdyn_.sublist("GENALPHA").get<double>("BETA");
-        double str_gamma_ = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
-        tparams.set("str_BETA", str_beta_);
-        tparams.set("str_GAMMA", str_gamma_);
-
-        dserror("Genalpha not yet implemented");
-        break;
-      }
-      case INPAR::THR::dyna_undefined :
-      default :
-      {
-        dserror("Don't know what to do...");
-        break;
-      }
+    // static analysis
+    case INPAR::THR::dyna_statics :
+    {
+      break;
     }
+    // dynamic analysis
+    case INPAR::THR::dyna_onesteptheta :
+    {
+      // K_Td = theta . k_Td^e
+      double theta = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+      tparams.set("theta",theta);
+      // put the structural theta value to the thermal parameter list
+      double str_theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
+      tparams.set("str_theta", str_theta);
+      break;
+    }
+    case INPAR::THR::dyna_genalpha :
+    {
+      // K_Td = alphaf . k_Td^e
+      double alphaf = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
+      tparams.set("alphaf",alphaf);
+
+      // put the structural theta value to the thermal parameter list
+      double str_beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
+      double str_gamma = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
+      tparams.set("str_beta", str_beta);
+      tparams.set("str_gamma", str_gamma);
+      break;
+    }
+    case INPAR::THR::dyna_undefined :
+    default :
+    {
+      dserror("Don't know what to do...");
+      break;
+    }
+    }  // end(switch)
 
     ThermoField()->Discretization()->ClearState();
     // set the variables that are needed by the elements
@@ -1760,6 +1770,7 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::CombinedDBCMap()
     = ThermoField()->GetDBCMapExtractor()->CondMap();
   Teuchos::RCP<Epetra_Map> condmap = LINALG::MergeMap(scondmap, tcondmap, false);
   return condmap;
+
 }  // CombinedDBCMap()
 
 
@@ -2749,33 +2760,47 @@ void TSI::Monolithic::SetDefaultParameters()
   switch (combincrhs_)
   {
   case INPAR::TSI::bop_and :
+  {
     if (Comm().MyPID() == 0)
       std::cout << "Convergence test of TSI:\n res, inc with 'AND'." << std::endl;
     break;
+  }
   case INPAR::TSI::bop_or :
+  {
     if (Comm().MyPID() == 0)
       std::cout << "Convergence test of TSI:\n res, inc with 'OR'." << std::endl;
     break;
+  }
   case INPAR::TSI::bop_coupl_and_singl :
+  {
     if (Comm().MyPID() == 0)
       std::cout << "Convergence test of TSI:\n res, inc, str-res, thr-res, dis, temp with 'AND'." << std::endl;
     break;
+  }
   case INPAR::TSI::bop_coupl_or_singl :
+  {
     if (Comm().MyPID() == 0)
       std::cout << "Convergence test of TSI:\n (res, inc) or (str-res, thr-res, dis, temp)." << std::endl;
     break;
+  }
   case INPAR::TSI::bop_and_singl :
+  {
     if (Comm().MyPID() == 0)
       std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'AND'." << std::endl;
     break;
+  }
   case INPAR::TSI::bop_or_singl :
+  {
     if (Comm().MyPID() == 0)
       std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'OR'." << std::endl;
     break;
+  }
   default :
+  {
     dserror("Something went terribly wrong with binary operator!");
     break;
   }
+  }  // switch (combincrhs_)
 #endif
 
   // convert the single field norms to be used within TSI
@@ -2798,7 +2823,7 @@ void TSI::Monolithic::SetDefaultParameters()
   default :
     dserror("STR norm is not determined");
     break;
-  }
+  }  // switch (striternorm)
 
   // what norm is used for thermo
   switch (thriternorm)
@@ -2817,9 +2842,11 @@ void TSI::Monolithic::SetDefaultParameters()
     break;
   case INPAR::THR::norm_vague :
   default :
+  {
     dserror("THR norm is not determined.");
     break;
   }
+  }  // switch (thriternorm)
 
   // if scaled L1-norm is wished to be used
   if ( (iternorm_ == INPAR::TSI::norm_l1_scaled) and
