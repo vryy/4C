@@ -168,18 +168,18 @@ double DRT::ELEMENTS::So_sh8::sosh8_calcaspectratio()
   // return an averaged aspect ratio
   if (r_stretch>=s_stretch and r_stretch>=t_stretch)
   {
-    return std::min(r_stretch/s_stretch,r_stretch/s_stretch);
-//    return 0.5*(r_stretch/s_stretch+r_stretch/t_stretch);
+//    return std::min(r_stretch/s_stretch,r_stretch/t_stretch);
+    return 0.5*(r_stretch/s_stretch+r_stretch/t_stretch);
   }
   else if (s_stretch>r_stretch and s_stretch>=t_stretch)
   {
-    return std::min(s_stretch/r_stretch,s_stretch/t_stretch);
-//    return 0.5*(s_stretch/r_stretch+s_stretch/t_stretch);
+//    return std::min(s_stretch/r_stretch,s_stretch/t_stretch);
+    return 0.5*(s_stretch/r_stretch+s_stretch/t_stretch);
   }
   else if (t_stretch>r_stretch and t_stretch>s_stretch)
   {
-    return std::min(t_stretch/s_stretch,t_stretch/r_stretch);
-//    return 0.5*(t_stretch/s_stretch+t_stretch/r_stretch);
+//    return std::min(t_stretch/s_stretch,t_stretch/r_stretch);
+    return 0.5*(t_stretch/s_stretch+t_stretch/r_stretch);
   }
 
   return 0.0;

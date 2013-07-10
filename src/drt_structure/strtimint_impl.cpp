@@ -1125,6 +1125,9 @@ void STR::TimIntImpl::NewtonFull()
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
 
+    // STC preconditioning
+    STCPreconditioning();
+
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
@@ -1133,9 +1136,6 @@ void STR::TimIntImpl::NewtonFull()
     // *********** time measurement ***********
     double dtcpu = timer_->WallTime();
     // *********** time measurement ***********
-
-    // STC preconditioning
-    STCPreconditioning();
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}

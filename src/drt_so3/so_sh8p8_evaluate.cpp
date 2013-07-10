@@ -2255,12 +2255,20 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
   double stc_fact=0.0;
   if (stc_scaling==INPAR::STR::stc_currsym)
   {
-    stc_fact = sqrt(sosh8_calcaspectratio());
+    //stc_fact = sqrt(sosh8_calcaspectratio());
+    stc_fact = sosh8_calcaspectratio();
   }
   else
   {
-    stc_fact = sosh8_calcaspectratio();
+    //stc_fact = sosh8_calcaspectratio();
+    stc_fact = sosh8_calcaspectratio()*sosh8_calcaspectratio();
   }
+
+  // Compute different scaling factors for STC or Inv(STC)
+  const double factor1 = (stc_fact+1.0)/(2.0*stc_fact);
+  const double factor2 = (stc_fact-1.0)/(2.0*stc_fact);
+  const double factor3 = (1.0/stc_fact);
+  const double factor4 = (1.0-1.0/stc_fact);
 
   if (stc_scaling==INPAR::STR::stc_curr or stc_scaling==INPAR::STR::stc_currsym)
   {
@@ -2317,13 +2325,12 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
           for (int ind2 = 0; ind2 < NUMDIM_; ind2++)
           {
             elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2) +=
-                (1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(NODDOF_ * ind1 + ind2, 0)*cond0.size();
-            elemat1(NODDOF_ * ind1 + ind2+NUMDOF_/2,NODDOF_ * ind1 + ind2+NUMDOF_/2) +=
-                (1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact))/adjele(NODDOF_ * ind1 + ind2+NUMDOF_/2,0)*cond1.size();
+                factor1/adjele(NODDOF_ * ind1 + ind2, 0)*cond0.size();
+            elemat1(NODDOF_ * ind1 + ind2+NUMDOF_/2,NODDOF_ * ind1 + ind2+NUMDOF_/2) += factor1/adjele(NODDOF_ * ind1 + ind2+NUMDOF_/2,0)*cond1.size();
             elemat1(NODDOF_ * ind1 + ind2, NODDOF_ * ind1 + ind2 + NUMDOF_/2) +=
-                (stc_fact-1.0)/(2.0*stc_fact)/adjele(NODDOF_ * ind1 + ind2, 0)*cond0.size();
+                factor2/adjele(NODDOF_ * ind1 + ind2, 0)*cond0.size();
             elemat1(NODDOF_ * ind1 + ind2 + NUMDOF_/2, NODDOF_ * ind1 + ind2) +=
-                (stc_fact-1.0)/(2.0*stc_fact)/adjele(NODDOF_ * ind1 + ind2 + NUMDOF_/2, 0)*cond1.size();
+                factor2/adjele(NODDOF_ * ind1 + ind2 + NUMDOF_/2, 0)*cond1.size();
           }
           elemat1(NODDOF_ * ind1 + NUMDIM_, NODDOF_ * ind1 + NUMDIM_) += 1.0 /adjele(NODDOF_ * ind1 + NUMDIM_, 0)*cond0.size();
           elemat1(NODDOF_ * ind1 + NUMDIM_ + NUMDOF_/2, NODDOF_ * ind1 + NUMDIM_ + NUMDOF_/2) +=
@@ -2372,9 +2379,9 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
             if (ind1<NUMNOD_/2)
             {
               elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2)+=
-                  (1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond0.size();
+                  factor3/adjele(NODDOF_ * ind1 + ind2,0)*cond0.size();
               elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2 + NUMDOF_/2)+=
-                  (1.0-1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond0.size();
+                  factor4/adjele(NODDOF_ * ind1 + ind2,0)*cond0.size();
             }
             else
             {
@@ -2428,9 +2435,9 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
             if (ind1>=NUMNOD_/2)
             {
               elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2)+=
-                  (1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond1.size();
+                  factor3/adjele(NODDOF_ * ind1 + ind2,0)*cond1.size();
               elemat1(NODDOF_ * ind1 + ind2,NODDOF_ * ind1 + ind2-NUMDOF_/2)+=
-                  (1.0-1.0/stc_fact)/adjele(NODDOF_ * ind1 + ind2,0)*cond1.size();
+                  factor4/adjele(NODDOF_ * ind1 + ind2,0)*cond1.size();
             }
             else
             {

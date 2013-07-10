@@ -1253,10 +1253,12 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
   double stc_fact=1.0;
   if (stc_scaling==INPAR::STR::stc_currsym)
   {
-    stc_fact = sqrt(sosh8_calcaspectratio());
+    //stc_fact = sqrt(sosh8_calcaspectratio());
+    stc_fact = sosh8_calcaspectratio();
   }
   else
   {
+    //stc_fact = sosh8_calcaspectratio();
     stc_fact = sosh8_calcaspectratio()*sosh8_calcaspectratio();
   }
 
@@ -1267,7 +1269,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
   double factor4=0.0;
   if (!calcinverse)
   {
-    factor1=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact));
+    factor1=(stc_fact+1.0)/(2.0*stc_fact);
     factor2=(stc_fact-1.0)/(2.0*stc_fact);
     factor3=(1.0/stc_fact);
     factor4=(1.0-1.0/stc_fact);
