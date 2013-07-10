@@ -365,6 +365,9 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
                                        FFTW_ESTIMATE);
   // fft
   fftw_execute(fft);
+  // free memory
+  fftw_destroy_plan(fft);
+  fftw_cleanup();
 
   // scale solution (not done in the fftw routine)
   for (int i=0; i< phi_hat->size(); i++)
@@ -392,101 +395,96 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
   for (std::size_t rr = 0; rr < scalarvariancespectrum_np_->size(); rr++)
     (*scalarvariancespectrum_np_)[rr] = 0.0;
 
-  // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
   // the complete number of modes is required here
-  // hence, we have k_3: [0,(nummodes_-1)]
-  for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+  // hence, we have k_3: [-nummodes_/2,(nummodes_/2-1)]
+  for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
   {
-    for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+    for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
     {
-      for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_-1); fftw_k_3++)
+      for (int k_3 = (-nummodes_/2); k_3 <= (nummodes_/2-1); k_3++)
       {
-
+        // initialize position in FFTW vectors
         int pos_fftw_k_1 = -999;
         int pos_fftw_k_2 = -999;
         int pos_fftw_k_3 = -999;
 
-        int k_1 = -999;
-        int k_2 = -999;
-        int k_3 = -999;
-
-        if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
-            (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
-            fftw_k_3 == 0)
+        // check if current wave vector lies within the fftw domain
+        if ((k_1 >= 0 and k_1 <= (nummodes_/2-1)) and
+            (k_2 >= 0 and k_2 <= (nummodes_/2-1)) and
+            (k_3 >= 0 and k_3 <= (nummodes_/2-1)))
         {
-          // wave number vector is part of construction domain
-          // and this value is taken
-          k_1 = fftw_k_1;
-          k_2 = fftw_k_2;
-          k_3 = fftw_k_3;
-
-          pos_fftw_k_1 = fftw_k_1;
-          pos_fftw_k_2 = fftw_k_2;
-          pos_fftw_k_3 = fftw_k_3;
+          pos_fftw_k_1 = k_1;
+          pos_fftw_k_2 = k_2;
+          pos_fftw_k_3 = k_3;
         }
         else
         {
-          // check if current wave vector is in the domain of fftw
-          // if not shift to domain using periodicity and conjugate symmetry
-          if (fftw_k_3 > (nummodes_/2))
+          // if k_3 is < 0, we have to take the conjugate
+          // to get into the FFTW domain
+          if (k_3 < 0)
           {
-            // find corresponding value in fftw-range first
-            int intermediate_fftw_3 = fftw_k_3 - nummodes_;
-            // since intermediate_fftw_3 is still outside of domain,
-            // get position of conjugate complex
-            intermediate_fftw_3 *= -1;
-            int intermediate_fftw_1 = -fftw_k_1;
-            int intermediate_fftw_2 = -fftw_k_2;
-            // check if this position is inside intervals
-            if ((intermediate_fftw_1 >= 0 and intermediate_fftw_1 <= (nummodes_-1))
-                 and (intermediate_fftw_2 >= 0 and intermediate_fftw_2 <= (nummodes_-1))
-                 and (intermediate_fftw_3 >= 0 and intermediate_fftw_3 <= (nummodes_/2)))
+            int k_conj_1 = -k_1;
+            int k_conj_2 = -k_2;
+            int k_conj_3 = -k_3;
+
+            // check if conjugate wave vector lies within the fftw domain
+            // this has to be fulfilled for k_3 but not for k_1 and k_2
+            if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
+                (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
+                (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
             {
-               pos_fftw_k_1 = intermediate_fftw_1;
-               pos_fftw_k_2 = intermediate_fftw_2;
-               pos_fftw_k_3 = intermediate_fftw_3;
+              pos_fftw_k_1 = k_conj_1;
+              pos_fftw_k_2 = k_conj_2;
+              pos_fftw_k_3 = k_conj_3;
             }
             else
             {
-              // shift intermediate_fftw_1 and intermediate_fftw_2 into fftw interval
-              // intermediate_fftw_3 always lies within the fftw interval
-              if (intermediate_fftw_1 < 0)
-                intermediate_fftw_1 += nummodes_;
-              if (intermediate_fftw_2 < 0)
-                intermediate_fftw_2 += nummodes_;
+              if (not (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
+                dserror("k_3 in fftw domain expected!");
 
-              pos_fftw_k_1 = intermediate_fftw_1;
-              pos_fftw_k_2 = intermediate_fftw_2;
-              pos_fftw_k_3 = intermediate_fftw_3;
+              // shift k_1 and k_2 into fftw domain
+              if (k_conj_1 < 0 )
+                k_conj_1 += nummodes_;
+              if (k_conj_2 < 0)
+                k_conj_2 += nummodes_;
+
+              if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
+                  (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
+                  (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
+              {
+                pos_fftw_k_1 = k_conj_1;
+                pos_fftw_k_2 = k_conj_2;
+                pos_fftw_k_3 = k_conj_3;
+              }
+              else
+                dserror("Position in fftw domain expected!");
             }
           }
           else
           {
-            pos_fftw_k_1 = fftw_k_1;
-            pos_fftw_k_2 = fftw_k_2;
-            pos_fftw_k_3 = fftw_k_3;
-          }
+            int k_shift_1 = k_1;
+            int k_shift_2 = k_2;
+            int k_shift_3 = k_3;
 
-          // see whether the negative wave vector is in the construction domain
-          k_1 = -pos_fftw_k_1;
-          k_2 = -pos_fftw_k_2;
-          k_3 = -pos_fftw_k_3;
-          if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
-              (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
-              (k_3 >= (-nummodes_/2) and k_3 <= 0))
-          {
+            if (not (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+              dserror("k_3 in fftw domain expected!");
 
-          }
-          else
-          {
-            // if negative wave vector is not in the construction domain
-            // we have to shift it into the domain using the periodicity of the
-            // wave number field
-            // -k_3 always lies within the construction domain!
-            if (k_1 < (-nummodes_/2))
-               k_1 += nummodes_;
-            if (k_2 < (-nummodes_/2))
-              k_2 += nummodes_;
+            // shift k_1 and k_2 into fftw domain
+            if (k_shift_1 < 0 )
+              k_shift_1 += nummodes_;
+            if (k_shift_2 < 0)
+              k_shift_2 += nummodes_;
+
+            if ((k_shift_1 >= 0 and k_shift_1 <= (nummodes_-1)) and
+                (k_shift_2 >= 0 and k_shift_2 <= (nummodes_-1)) and
+                (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+            {
+              pos_fftw_k_1 = k_shift_1;
+              pos_fftw_k_2 = k_shift_2;
+              pos_fftw_k_3 = k_shift_3;
+            }
+            else
+             dserror("Position in fftw domain expected!");
           }
         }
 
@@ -713,6 +711,9 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
                                          FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
+    // free memory
+    fftw_destroy_plan(fft);
+    fftw_cleanup();
 
     // scale solution (not done in the fftw routine)
     for (int i=0; i< phi_hat->size(); i++)
@@ -741,11 +742,14 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
     //----------------------------------------
 
     // setup
-    fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-                               (reinterpret_cast<fftw_complex*>(&((*fphi_hat)[0]))),
-                               &((*fphi)[0]), FFTW_ESTIMATE);
+    fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                           (reinterpret_cast<fftw_complex*>(&((*fphi_hat)[0]))),
+                                           &((*fphi)[0]), FFTW_ESTIMATE);
     // fft
-    fftw_execute(fft);
+    fftw_execute(fft_back);
+    // free memory
+    fftw_destroy_plan(fft_back);
+    fftw_cleanup();
 
     //----------------------------------------
     // set force

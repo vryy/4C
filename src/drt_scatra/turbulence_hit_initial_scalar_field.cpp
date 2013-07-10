@@ -394,6 +394,9 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
                                        &((*phi)[0]), FFTW_ESTIMATE);
   // fft
   fftw_execute(fft);
+  // free memory
+  fftw_destroy_plan(fft);
+  fftw_cleanup();
 
   //----------------------------------------
   // set scalar field

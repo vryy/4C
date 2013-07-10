@@ -525,17 +525,24 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
                                          FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
+    // free memory
+    fftw_destroy_plan(fft);
     // analogously for remaining directions
-    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
-                               &((*global_u2)[0]),
-                               (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
-                               FFTW_ESTIMATE);
-    fftw_execute(fft);
-    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
-                               &((*global_u3)[0]),
-                               (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
-                               FFTW_ESTIMATE);
-    fftw_execute(fft);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                           &((*global_u2)[0]),
+                                           (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
+                                           FFTW_ESTIMATE);
+    fftw_execute(fft_2);
+    // free memory
+    fftw_destroy_plan(fft_2);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                           &((*global_u3)[0]),
+                                           (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
+                                           FFTW_ESTIMATE);
+    fftw_execute(fft_3);
+    // free memory
+    fftw_destroy_plan(fft_3);
+    fftw_cleanup();
 
     // scale solution (not done in the fftw routine)
     for (int i=0; i< u1_hat->size(); i++)
@@ -568,9 +575,9 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
     // reset (just to be sure)
     E_kf_ = 0.0;
 
-    // although fftw provides due the conjugate symmetry merely the results for k_3: [0,nummodes_/2],
     // the complete number of modes is required here
-    // hence, we have k_3: [0,(nummodes_-1)]
+    // hence, we have k_3: [-nummodes_/2,(nummodes_/2-1)]
+#if 0 // outdated, to be removed
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
     {
       for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
@@ -588,7 +595,7 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
 
           if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
               (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
-              fftw_k_3 == 0)
+              (fftw_k_3 >= 0 and fftw_k_3 <= 0 )) //and fftw_k_3 <= (nummodes_/2-1)))
           {
             // wave number vector is part of construction domain
             // and this value is taken
@@ -649,7 +656,7 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
             k_3 = -pos_fftw_k_3;
             if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
                 (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
-                (k_3 >= (-nummodes_/2) and k_3 <= 0))
+                (k_3 >= (-nummodes_/2) and k_3 <= 0 )) //and k_3 <= (nummodes_/2-1)))
             {
 
             }
@@ -665,6 +672,98 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
                 k_2 += nummodes_;
             }
           }
+#else
+    for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
+    {
+      for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
+      {
+        for (int k_3 = (-nummodes_/2); k_3 <= (nummodes_/2-1); k_3++)
+        {
+          // initialize position in FFTW vectors
+          int pos_fftw_k_1 = -999;
+          int pos_fftw_k_2 = -999;
+          int pos_fftw_k_3 = -999;
+
+          // check if current wave vector lies within the fftw domain
+          if ((k_1 >= 0 and k_1 <= (nummodes_/2-1)) and
+              (k_2 >= 0 and k_2 <= (nummodes_/2-1)) and
+              (k_3 >= 0 and k_3 <= (nummodes_/2-1)))
+          {
+            pos_fftw_k_1 = k_1;
+            pos_fftw_k_2 = k_2;
+            pos_fftw_k_3 = k_3;
+          }
+          else
+          {
+            // if k_3 is < 0, we have to take the conjugate
+            // to get into the FFTW domain
+            if (k_3 < 0)
+            {
+              int k_conj_1 = -k_1;
+              int k_conj_2 = -k_2;
+              int k_conj_3 = -k_3;
+
+              // check if conjugate wave vector lies within the fftw domain
+              // this has to be fulfilled for k_3 but not for k_1 and k_2
+              if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
+                  (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
+                  (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
+              {
+                pos_fftw_k_1 = k_conj_1;
+                pos_fftw_k_2 = k_conj_2;
+                pos_fftw_k_3 = k_conj_3;
+              }
+              else
+              {
+                if (not (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
+                  dserror("k_3 in fftw domain expected!");
+
+                // shift k_1 and k_2 into fftw domain
+                if (k_conj_1 < 0 )
+                  k_conj_1 += nummodes_;
+                if (k_conj_2 < 0)
+                  k_conj_2 += nummodes_;
+
+                  if ((k_conj_1 >= 0 and k_conj_1 <= (nummodes_-1)) and
+                      (k_conj_2 >= 0 and k_conj_2 <= (nummodes_-1)) and
+                      (k_conj_3 >= 0 and k_conj_3 <= (nummodes_-1)))
+                  {
+                    pos_fftw_k_1 = k_conj_1;
+                    pos_fftw_k_2 = k_conj_2;
+                    pos_fftw_k_3 = k_conj_3;
+                  }
+                  else
+                    dserror("Position in fftw domain expected!");
+                }
+              }
+              else
+              {
+                int k_shift_1 = k_1;
+                int k_shift_2 = k_2;
+                int k_shift_3 = k_3;
+
+                if (not (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+                  dserror("k_3 in fftw domain expected!");
+
+                // shift k_1 and k_2 into fftw domain
+                if (k_shift_1 < 0 )
+                  k_shift_1 += nummodes_;
+                if (k_shift_2 < 0)
+                  k_shift_2 += nummodes_;
+
+                if ((k_shift_1 >= 0 and k_shift_1 <= (nummodes_-1)) and
+                    (k_shift_2 >= 0 and k_shift_2 <= (nummodes_-1)) and
+                    (k_shift_3 >= 0 and k_shift_3 <= (nummodes_-1)))
+                {
+                  pos_fftw_k_1 = k_shift_1;
+                  pos_fftw_k_2 = k_shift_2;
+                  pos_fftw_k_3 = k_shift_3;
+                }
+                else
+                 dserror("Position in fftw domain expected!");
+             }
+           }
+#endif
 
           // get position in u1_hat
           const int pos = pos_fftw_k_3 + (nummodes_/2+1) * (pos_fftw_k_2 + nummodes_ * pos_fftw_k_1);
@@ -680,19 +779,18 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
 
           if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
           {
+            // get wave number
+            const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
 
-          // get wave number
-          const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
-
-          // insert into sampling vector
-          // find position via k
-          for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-          {
-            if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
+            // insert into sampling vector
+            // find position via k
+            for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
             {
-              (*energyspectrum_np_)[rr] += energy;
+              if (k > ((*wavenumbers_)[rr]-0.5) and k<= ((*wavenumbers_)[rr]+0.5))
+              {
+                (*energyspectrum_np_)[rr] += energy;
+              }
             }
-          }
           }
           else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
           {
@@ -705,6 +803,13 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
         }
       }
     }
+
+
+//    for (std::size_t rr = 0; rr < energyspectrum_np_->size(); rr++)
+//    {
+//      std::cout << std::setprecision(12) << (*energyspectrum_np_)[rr] << std::endl;
+//    }
+//    dserror("ENDE");
 
     //--------------------------------------------------------
     // forcing factor from energy spectrum
@@ -955,17 +1060,24 @@ void HomIsoTurbForcing::UpdateForcing(const int step)
                                          FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
+    // free memory
+    fftw_destroy_plan(fft);
     // analogously for remaining directions
-    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
-                               &((*global_u2)[0]),
-                               (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
-                               FFTW_ESTIMATE);
-    fftw_execute(fft);
-    fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
-                               &((*global_u3)[0]),
-                               (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
-                               FFTW_ESTIMATE);
-    fftw_execute(fft);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                           &((*global_u2)[0]),
+                                           (reinterpret_cast<fftw_complex*>(&((*u2_hat)[0]))),
+                                           FFTW_ESTIMATE);
+    fftw_execute(fft_2);
+    // free memory
+    fftw_destroy_plan(fft_2);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
+                                           &((*global_u3)[0]),
+                                           (reinterpret_cast<fftw_complex*>(&((*u3_hat)[0]))),
+                                           FFTW_ESTIMATE);
+    fftw_execute(fft_3);
+    // free memory
+    fftw_destroy_plan(fft_3);
+    fftw_cleanup();
 
     // scale solution (not done in the fftw routine)
     for (int i=0; i< u1_hat->size(); i++)
@@ -1004,21 +1116,28 @@ void HomIsoTurbForcing::UpdateForcing(const int step)
     //----------------------------------------
 
     // setup
-    fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-                               (reinterpret_cast<fftw_complex*>(&((*f1_hat)[0]))),
-                               &((*f1)[0]), FFTW_ESTIMATE);
+    fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                              (reinterpret_cast<fftw_complex*>(&((*f1_hat)[0]))),
+                                              &((*f1)[0]), FFTW_ESTIMATE);
     // fft
-    fftw_execute(fft);
+    fftw_execute(fft_back);
+    // free memory
+    fftw_destroy_plan(fft_back);
 
     // similar for the remaining two directions
-    fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-                               (reinterpret_cast<fftw_complex*>(&((*f2_hat)[0]))),
-                               &((*f2)[0]), FFTW_ESTIMATE);
-    fftw_execute(fft);
-    fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-                               (reinterpret_cast<fftw_complex*>(&((*f3_hat)[0]))),
-                               &((*f3)[0]), FFTW_ESTIMATE);
-    fftw_execute(fft);
+    fftw_plan fft_back_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                                (reinterpret_cast<fftw_complex*>(&((*f2_hat)[0]))),
+                                                &((*f2)[0]), FFTW_ESTIMATE);
+    fftw_execute(fft_back_2);
+    // free memory
+    fftw_destroy_plan(fft_back_2);
+    fftw_plan fft_back_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                                (reinterpret_cast<fftw_complex*>(&((*f3_hat)[0]))),
+                                                &((*f3)[0]), FFTW_ESTIMATE);
+    fftw_execute(fft_back_3);
+    // free memory
+    fftw_destroy_plan(fft_back_3);
+    fftw_cleanup();
 
     //----------------------------------------
     // set force vector

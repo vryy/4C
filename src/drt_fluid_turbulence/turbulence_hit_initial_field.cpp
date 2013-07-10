@@ -253,6 +253,8 @@ void HomIsoTurbInitialField::CalculateInitialField()
                              &((*u1_back)[0]),
                              FFTW_ESTIMATE);
   fftw_execute(fft);
+  // free memory
+  fftw_destroy_plan(fft);
 
   // output on screen
 //  std::cout << "u1_hat " << std::endl;
@@ -514,16 +516,23 @@ void HomIsoTurbInitialField::CalculateInitialField()
                                        &((*u1)[0]), FFTW_ESTIMATE);
   // fft
   fftw_execute(fft);
+  // free memory
+  fftw_destroy_plan(fft);
 
   // similar for the remaining two directions
-  fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-                             (reinterpret_cast<fftw_complex*>(&((*u2_hat_fftw)[0]))),
-                             &((*u2)[0]), FFTW_ESTIMATE);
-  fftw_execute(fft);
-  fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-                             (reinterpret_cast<fftw_complex*>(&((*u3_hat_fftw)[0]))),
-                             &((*u3)[0]), FFTW_ESTIMATE);
-  fftw_execute(fft);
+  fftw_plan fft_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                         (reinterpret_cast<fftw_complex*>(&((*u2_hat_fftw)[0]))),
+                                         &((*u2)[0]), FFTW_ESTIMATE);
+  fftw_execute(fft_2);
+  // free memory
+  fftw_destroy_plan(fft_2);
+  fftw_plan fft_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                         (reinterpret_cast<fftw_complex*>(&((*u3_hat_fftw)[0]))),
+                                         &((*u3)[0]), FFTW_ESTIMATE);
+  fftw_execute(fft_3);
+  // free memory
+  fftw_destroy_plan(fft_3);
+  fftw_cleanup();
 
   //----------------------------------------
   // set velocity field
