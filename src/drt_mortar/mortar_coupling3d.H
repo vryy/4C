@@ -168,7 +168,7 @@ public:
   on the slave surface without any auxiliary plane).
 
   */
-  virtual const bool& CouplingInAuxPlane() {return DRT::INPUT::IntegralValue<int>(icontact_,"COUPLING_AUXPLANE");};
+  virtual const bool CouplingInAuxPlane() {return (bool)DRT::INPUT::IntegralValue<int>(icontact_,"COUPLING_AUXPLANE");};
 
   /*!
   \brief Return center of auxiliary plane

@@ -66,6 +66,7 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
 LAGMULT_QUAD                    quad_quad
 PARALLEL_REDIST                 Dynamic
+LM_DUAL_CONSISTENT              no
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC

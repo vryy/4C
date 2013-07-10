@@ -1211,14 +1211,6 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     if (mele[m]->IsQuad())
       quadratic = true;
 
-  // get LM interpolation and testing type for quadratic FE
-  INPAR::MORTAR::LagMultQuad lmtype =
-    DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");
-
-  // get numerical integration type
-  INPAR::MORTAR::IntType inttype =
-    DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(IParams(),"INTTYPE");
-
   // *********************************************************************
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
@@ -1241,9 +1233,6 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
   // ************************************************************** 3D ***
   else if (Dim()==3)
   {
-    // check for auxiliary plane coupling
-    bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
-
     // *************************************************** linear 3D ***
     if (!quadratic)
     {

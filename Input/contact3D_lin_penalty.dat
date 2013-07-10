@@ -75,6 +75,7 @@ SHAPEFCN                        Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 COUPLING_AUXPLANE               Yes
+LM_DUAL_CONSISTENT              no
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC

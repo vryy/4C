@@ -71,6 +71,7 @@ PENALTYPARAM                    20000
 SHAPEFCN                        Standard
 COUPLING_AUXPLANE               Yes
 LAGMULT_QUAD                    quad_quad
+LM_DUAL_CONSISTENT              no
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
