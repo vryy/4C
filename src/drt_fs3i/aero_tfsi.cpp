@@ -113,11 +113,7 @@ FS3I::AeroTFSI::AeroTFSI(
 
   }
   default:
-  {
-    if(fluid_forces_transfer_ == true)
-      dserror("There is only support for pure thermal problems for for the chosen tfsi_coupling type");
     break;
-  }
   }
 
   // setup of the helper class
@@ -152,9 +148,7 @@ void FS3I::AeroTFSI::Timeloop()
     std::map<int, LINALG::Matrix<3,1> > aerocoords;
     std::map<int, LINALG::Matrix<4,1> > aeroforces;
     int lengthphysicaldomain = 0;
-    if(tfsi_coupling_ == INPAR::TSI::mortar_mortar_std or
-        tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
-        tfsi_coupling_ == INPAR::TSI::proj_mortar_std or
+    if( tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
         tfsi_coupling_ == INPAR::TSI::proj_mortar_dual)
     {
       t_start = Teuchos::Time::wallTime();
@@ -203,16 +197,10 @@ void FS3I::AeroTFSI::Timeloop()
       aerocoupling_->PackData(interf, idispnStart, ithermoloadStart, aerosenddata, false);
       break;
     }
-    case INPAR::TSI::mortar_mortar_std :
-    case INPAR::TSI::proj_mortar_std :
-    {
-      aerocoupling_->TransferStructValuesToFluidStd(interf, lengthphysicaldomain, aerocoords, ithermoloadStart, aerosenddata);
-      break;
-    }
     case INPAR::TSI::mortar_mortar_dual :
     case INPAR::TSI::proj_mortar_dual :
     {
-      aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain, aerocoords, ithermoloadStart, aerosenddata);
+      aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain, aerocoords, idispnStart,  ithermoloadStart, aerosenddata);
       break;
     }
     case INPAR::TSI::proj_RBFI :
@@ -279,9 +267,7 @@ void FS3I::AeroTFSI::Timeloop()
 
       // receive data from INCA for boundary layer around physical domain
       // only geometry is important, forces are dropped
-      if(tfsi_coupling_ == INPAR::TSI::mortar_mortar_std or
-          tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
-          tfsi_coupling_ == INPAR::TSI::proj_mortar_std or
+      if( tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
           tfsi_coupling_ == INPAR::TSI::proj_mortar_dual)
       {
         lengthphysicaldomain[interf] = aerocoords.size();
@@ -303,7 +289,6 @@ void FS3I::AeroTFSI::Timeloop()
 
       switch(tfsi_coupling_)
       {
-      case INPAR::TSI::proj_mortar_std :
       case INPAR::TSI::proj_mortar_dual :
       {
         aerocoupling_->BuildMortarCoupling(interf, idispn, aerocoords);
@@ -313,12 +298,6 @@ void FS3I::AeroTFSI::Timeloop()
       case INPAR::TSI::proj_RBFI :
       {
         aerocoupling_->ProjectForceOnStruct(interf, idispn, aerocoords, aeroforces, iforce, ithermoload);
-        break;
-      }
-      case INPAR::TSI::mortar_mortar_std :
-      {
-        aerocoupling_->BuildMortarCoupling(interf, idispn, aerocoords);
-        aerocoupling_->TransferFluidLoadsToStructStd(interf, aeroforces, ithermoload);
         break;
       }
       case INPAR::TSI::mortar_mortar_dual :
@@ -395,16 +374,10 @@ void FS3I::AeroTFSI::Timeloop()
           aerocoupling_->PackData(interf, idispnp, itemp, aerosenddata);
           break;
         }
-        case INPAR::TSI::mortar_mortar_std :
-        case INPAR::TSI::proj_mortar_std :
-        {
-          aerocoupling_->TransferStructValuesToFluidStd(interf, lengthphysicaldomain[interf], aerocoords, itemp, aerosenddata);
-          break;
-        }
         case INPAR::TSI::mortar_mortar_dual :
         case INPAR::TSI::proj_mortar_dual :
         {
-          aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain[interf], aerocoords, itemp, aerosenddata);
+          aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain[interf], aerocoords, idispnp, itemp, aerosenddata);
           break;
         }
         case INPAR::TSI::proj_RBFI :
@@ -663,7 +636,7 @@ double FS3I::AeroTFSI::SplitData(
 
   // incoming data from INCA (xxxxyyyyzzzzffff) splitted into xyzxyzxyzxyz & ffff
   // or in case of forces that are included:
-  // incoming data from INCA (xxxx yyyy zzzz hhhh fxfxfxfx fyfyfyfy fzfzfzfz) splitted into xyzxyzxyzxyz & hfxfyfzhfxfyfzhfxfyfz
+  // incoming data from INCA (xxxx yyyy zzzz hhhh fxfxfxfx fyfyfyfy fzfzfzfz) splitted into xyzxyzxyzxyz & hfxfyfz.hfxfyfz.hfxfyfz
   size_t length = aerodata.size();
   size_t numfluidpoints;
   if(fluid_forces_transfer_)
@@ -774,17 +747,6 @@ void FS3I::AeroTFSI::PrintCouplingStrategy()
   case INPAR::TSI::conforming :
   {
     IO::cout << "\nTFSI coupling: conforming meshes. \n" << IO::endl;
-    break;
-  }
-  case INPAR::TSI::mortar_mortar_std :
-  {
-    IO::cout << "\nTFSI coupling: mortar coupling with standard shape functions for Lagrange multiplier. \n" << IO::endl;
-    break;
-  }
-  case INPAR::TSI::proj_mortar_std :
-  {
-    IO::cout << "\nTFSI coupling: conservative projection from fluid to structure and mortar coupling \n"
-        "with standard shape functions for Lagrange multiplier for structure to fluid. \n" << IO::endl;
     break;
   }
   case INPAR::TSI::mortar_mortar_dual :

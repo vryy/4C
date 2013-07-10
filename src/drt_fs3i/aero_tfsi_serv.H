@@ -110,9 +110,6 @@ namespace FS3I
         std::map<int, LINALG::Matrix<3,1> >& aerocoords  ///< coordinates where the corresponding aero forces affect
       );
 
-      /// returns type of shape functions used for mortar
-      INPAR::MORTAR::ShapeFcn Shapefcn() {return shapefcn_;}
-
       /// loads from the aero code are transferred via mortar to the structure (for dual shape functions in mortar)
       void TransferFluidLoadsToStructDual
       (
@@ -168,6 +165,7 @@ namespace FS3I
         int interf,   ///< interface id
         int sizeofphysicaldomain,    ///< size of physical domain
         std::map<int, LINALG::Matrix<3,1> >& aerocoords,  ///< interface displacements of fluid
+        Teuchos::RCP<Epetra_Vector> idispnp,  ///< interface displacements
         Teuchos::RCP<Epetra_Vector> itempnp,  ///< interface temperatures
         std::vector<double>& packeddata, ///< output: packed data, ready for sending
         bool writedata = true   ///< bool whether interface point data is written to file
@@ -277,14 +275,6 @@ namespace FS3I
       std::vector<Teuchos::RCP<const LINALG::MapExtractor> > thermorowmapext_;  ///< map extractor between thermo discret and interface thermo dis
 
       std::vector<Teuchos::RCP<LINALG::SparseMatrix> > DinvM_;  ///< projection operator for mortar coupling
-
-      std::vector<Teuchos::RCP<const Epetra_Map> > serialslrownoderestr_;  ///< restricted row node map after mortar coupling
-
-      // the next two are here for testing standard shape functions
-      std::vector<Teuchos::RCP<LINALG::SparseMatrix> > D_;  ///< M matrix of mortar coupling
-      std::vector<Teuchos::RCP<LINALG::SparseMatrix> > M_;  ///< M matrix of mortar coupling
-
-      INPAR::MORTAR::ShapeFcn shapefcn_;      // employed type of shape function set
 
       Teuchos::RCP<Epetra_MpiComm> serialcomm_;   ///< current implementation of mortar coupling is just serial
 

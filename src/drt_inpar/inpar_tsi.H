@@ -48,8 +48,6 @@ namespace TSI
     undefinded,
     conforming,
     mortar_mortar_dual,
-    mortar_mortar_std,
-    proj_mortar_std,
     proj_mortar_dual,
     proj_RBFI
   };
