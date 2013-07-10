@@ -34,6 +34,9 @@ UNUSED_PARAMS_TO_KEEP = [
 			'INPAR::SCATRA::evaltau_element_center',
 			'INPAR::SCATRA::penalty_method_no',
 			'INPAR::ELCH::elch_mov_bndry_fully_trans'
+                        # Cavitation parameters to be used in the future
+                        'INPAR::CAVITATION::TwoWayMomentum'
+                        'INPAR::CAVITATION::TwoWayFull'
 			]
 
 if __name__=='__main__':
