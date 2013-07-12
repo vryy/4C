@@ -262,7 +262,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       // fill particle position
       LINALG::Matrix<3,1> particleposition;
       std::vector<int> lm_b = particledis_->Dof(currparticle);
-      double posx = bubblepos->Map().LID(lm_b[0]);
+      int posx = bubblepos->Map().LID(lm_b[0]);
       for (int dim=0; dim<3; dim++)
       {
         particleposition(dim) = (*bubblepos)[posx+dim];
@@ -1031,24 +1031,6 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
 
       //get coordinates of the particle position in parameter space of the element
       foundele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, projpoint, elecoord);
-
-      // THIS IS JUST TO CHECK WHETHER GEO::currentToVolumeElementCoordinates delivers correct results
-      const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-      LINALG::Matrix<3,numnode> xyze_linalg;
-      for(int dim=0;dim<3;dim++)
-        for(size_t n=0;n<numnode;n++)
-          xyze_linalg(dim,n) = xyze(dim,n);
-      GEO::CUT::Position<DRT::Element::hex8> pos(xyze_linalg, projpoint);
-      bool withinele = pos.ComputeTol(GEO::TOL7);
-      LINALG::Matrix<3,1> elecoordCut = pos.LocalCoordinates();
-
-      if(withinele != foundele)
-      {
-        std::cout << "withinele is unequal foundele!" << std::endl;
-        if(abs(elecoordCut(0)-elecoord(0)) > GEO::TOL7 or abs(elecoordCut(1)-elecoord(1)) > GEO::TOL7 or abs(elecoordCut(2)-elecoord(2)) > GEO::TOL7)
-          dserror("GEO::currentToVolumeElementCoordinates delivers different results compared to GEO::CUT::Position");
-      }
-      // END: THIS IS JUST TO CHECK WHETHER GEO::currentToVolumeElementCoordinates delivers correct results
 
       if(foundele == true)
         break;

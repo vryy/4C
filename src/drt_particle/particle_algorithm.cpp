@@ -689,14 +689,37 @@ void PARTICLE::Algorithm::TransferParticles()
   // current positions of particles
   Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
 
+  std::set<int> examinedBins;
   // check in each bin whether particles have moved out
-  for(int ibin=0; ibin<particledis_->NumMyRowElements(); ibin++)
+  // first run over particles and then process whole bin in which particle is located
+  // until all particles have been checked
+  for(int i=0;i<particledis_->NodeRowMap()->NumMyElements();++i)
   {
-    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->lRowElement(ibin));
+    DRT::Node *currparticle = particledis_->lRowNode(i);
+
+    if(currparticle->NumElement() != 1)
+      dserror("ERROR: A particle is assigned to more than one bin!");
+
+    DRT::Element** currele = currparticle->Elements();
+    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
 #ifdef DEBUG
     if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
-    int binId = currbin->Id();
+
+    int binId=currbin->Id();
+
+    //if a bin has already been examined --> continue with next particle
+    if( examinedBins.count(binId) == 1 )
+    {
+      continue;
+    }
+    //else: bin is examined for the first time --> new entry in examinedBins
+    else
+    {
+      examinedBins.insert(binId);
+    }
+
+    // now all particles in this bin are processed
     DRT::Node** particles = currbin->Nodes();
     std::vector<int> tobemoved(0);
     for(int iparticle=0; iparticle<currbin->NumNode(); iparticle++)
@@ -755,6 +778,8 @@ void PARTICLE::Algorithm::TransferParticles()
 
   // new ghosting is necessary
   {
+    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::TransferParticles:NewGhost");
+    Teuchos::TimeMonitor monitor(*t);
     particledis_->ExportColumnElements(*bincolmap_);
 
     // create a set of particle IDs for each proc (row plus ghost)
@@ -778,8 +803,12 @@ void PARTICLE::Algorithm::TransferParticles()
     particledis_->ExportColumnNodes(*particlecolmap);
   }
 
-  // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-  particledis_->FillComplete(true, false, true);
+  {
+    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::TransferParticles:FillComplete");
+    Teuchos::TimeMonitor monitor(*t);
+    // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
+    particledis_->FillComplete(true, false, true);
+  }
 
   // reconstruct element -> bin pointers for particle wall elements
   BuildWallElementToBinPointers();
