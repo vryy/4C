@@ -41,14 +41,16 @@ if __name__=='__main__':
     else:	
 	global_src_path = sys.argv[2] + '/' + 'src/'
     
-    source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
-    for sh in source_headers.split():
-	baci_files = subprocess.check_output('ls ' + global_src_path + sh, shell=True)
-	baci_files = baci_files.split()
-	files_to_search.extend( [global_src_path + sh + '/' + (baci_files)[i] for i in range(len(baci_files)) ] )
+    # search for *.H and *.cpp files in the given src path	
+    baci_heads = subprocess.check_output('find ' + global_src_path + ' -name *.H', shell=True)
+    baci_heads = baci_heads.split()	
     
-    # file drt_validparameters.cpp will be neclected in search
-    files_to_search.remove(global_src_path + 'drt_inpar/drt_validparameters.cpp')
+    baci_cpp   = subprocess.check_output('find ' + global_src_path + ' -name *.cpp', shell=True)
+    baci_cpp   = baci_cpp.split()
+    
+    # exclude validparameters.H/.cpp from search
+    baci_heads.remove(global_src_path + 'drt_inpar/drt_validparameters.H')
+    baci_cpp.remove(global_src_path + 'drt_inpar/drt_validparameters.cpp')
     
     # Create current default header file via the -d option of baci
     default_header_file = subprocess.check_output(sys.argv[1] + ' -d', shell=True)
@@ -89,18 +91,14 @@ if __name__=='__main__':
 		except KeyError:
 		    pass		  
 		
-		# partitioning necessary due to maximal size of input arguments of bash console
-		files_to_search_part1 = files_to_search[:len(files_to_search)/2 + 1]
-		files_to_search_part2 = files_to_search[len(files_to_search)/2 + 1:]
-		
 		# Grep for value in code. If the value doesn't appear than the input parameter might be unused
 		# Check first part of files and if this failes check second part
 		# If both fail than the argument doesn't exists
 		try:
-		    test = subprocess.check_output( '/bin/grep ' +  sec_val[0] + " " + " ".join( files_to_search_part1 ), shell=True)
+		    test = subprocess.check_output( '/bin/grep ' +  sec_val[0] + " " + " ".join( baci_heads ), shell=True)
 		except subprocess.CalledProcessError: 
 		    try:
-			test = subprocess.check_output( '/bin/grep ' +  sec_val[0] + " " + " ".join( files_to_search_part2 ), shell=True)
+			test = subprocess.check_output( '/bin/grep ' +  sec_val[0] + " " + " ".join( baci_cpp ), shell=True)
 		    except subprocess.CalledProcessError: 
 			if fail.has_key(section):
 			    fail[section].update([sec_val[0]])

@@ -6,11 +6,12 @@
 # Script for searching parameters which aren't used any longer
 
 from read_ccarat_NIGHTLYTESTCASES import read_ccarat, write_ccarat
-from elements    import bcdictionary, surfaces
-from progress    import progress
-from sets        import Set
+from elements    		  import bcdictionary, surfaces
+from progress    		  import progress
+from sets        		  import Set
+from copy 			  import copy
 
-import sys, subprocess
+import sys, subprocess, re
 
 # Dictionary of unused parameters we want to keep in the code
 UNUSED_PARAMS_TO_KEEP = [ 
@@ -36,7 +37,7 @@ UNUSED_PARAMS_TO_KEEP = [
 			'INPAR::ELCH::elch_mov_bndry_fully_trans',
                         # Cavitation parameters to be used in the future
                         'INPAR::CAVITATION::TwoWayMomentum',
-                        'INPAR::CAVITATION::TwoWayF'
+                        'INPAR::CAVITATION::TwoWayFull'
 			]
 
 if __name__=='__main__':
@@ -45,24 +46,23 @@ if __name__=='__main__':
       print "usage: %s source-path" % sys.argv[0]
       sys.exit(1)    
     
-    # collect source files of src
-    files_to_search = []
-    
+    # global src path
     name = sys.argv[1]
     if name[-1] == '/':
 	global_src_path = name + 'src/'
     else:	
 	global_src_path = name + '/' + 'src/'
+
+    # search for *.H and *.cpp files in the given src path	
+    baci_heads = subprocess.check_output('find ' + global_src_path + ' -name *.H', shell=True)
+    baci_heads = baci_heads.split()	
     
-    source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
-   
-    for sh in source_headers.split():
-	baci_files = subprocess.check_output('ls ' + global_src_path + sh, shell=True)
-	baci_files = baci_files.split()
-	files_to_search.extend( [global_src_path + sh + '/' + (baci_files)[i] for i in range(len(baci_files)) ] )
+    baci_cpp   = subprocess.check_output('find ' + global_src_path + ' -name *.cpp', shell=True)
+    baci_cpp   = baci_cpp.split()
     
-    # valid parameters file will be neclected
-    files_to_search.remove(global_src_path + 'drt_inpar/drt_validparameters.cpp')
+    # exclude validparameters.H/.cpp from search
+    baci_heads.remove(global_src_path + 'drt_inpar/drt_validparameters.H')
+    baci_cpp.remove(global_src_path + 'drt_inpar/drt_validparameters.cpp')
     
     print 'Start to search inpar params'
     
@@ -72,33 +72,41 @@ if __name__=='__main__':
     inpar_parameters = subprocess.check_output('grep INPAR ' + global_src_path +  'drt_inpar/drt_validparameters.cpp', shell=True )
     inpar_parameters = inpar_parameters.split()
     
-    # partitioning necessary due to maximal size of input arguments of bash console
-    files_to_search_part1 = files_to_search[:len(files_to_search)/2 + 1]
-    files_to_search_part2 = files_to_search[len(files_to_search)/2 + 1:]
-    
     for inpa_para in progress('Searching inpar params', inpar_parameters):
+
+	# special treatment of lines which include tuple<int> before the parameter
+	# i.e. tuple<int>(INPAR::CAVIATION::TwoWayFull
+	# method is to substitute the brackets ( with an ,
+	inpa_para = re.sub(r'\(',',', inpa_para)
+	inpa_para = (inpa_para.split(','))
 	
-	inpa_para = inpa_para.strip(' \ntuple<int>(),;')
-	inpa_para = (inpa_para.split(','))[0]
+	# search for desired inpar value
+	for ip in inpa_para:
+	    ip = ip.strip(' \n,;()')
+	    if ip[:5]== 'INPAR':
+		inpa_para = ip
+		break
 	
-	if inpa_para[:5] == 'INPAR':
-	  
+	# else path necessary, since the INPAR parameter values could be in comments
+	else:
+	    continue
+  
+	try:
+	    if inpa_para in UNUSED_PARAMS_TO_KEEP:
+		continue
+	except KeyError:
+	    pass
+	
+	# Grep for value in code. If the value doesn't appear than the input parameter might be unused
+	# Check first part of files and if this failes check second part
+	# If both fail than the argument doesn't exists  
+	try:
+	    test = subprocess.check_output( '/bin/grep ' +  inpa_para + " " + " ".join(baci_heads), shell=True)
+	except subprocess.CalledProcessError: 
 	    try:
-		if inpa_para in UNUSED_PARAMS_TO_KEEP:
-		    continue
-	    except KeyError:
-		pass
-	    
-	    # Grep for value in code. If the value doesn't appear than the input parameter might be unused
-	    # Check first part of files and if this failes check second part
-	    # If both fail than the argument doesn't exists  
-	    try:
-		test = subprocess.check_output( '/bin/grep ' +  inpa_para + " " + " ".join(files_to_search_part1), shell=True)
+		test = subprocess.check_output( '/bin/grep ' +  inpa_para + " " + " ".join(baci_cpp), shell=True)
 	    except subprocess.CalledProcessError: 
-		try:
-		    test = subprocess.check_output( '/bin/grep ' +  inpa_para + " " + " ".join(files_to_search_part2), shell=True)
-		except subprocess.CalledProcessError: 
-		    fail.update([inpa_para])	
+		fail.update([inpa_para])	
 		
     if not fail:
 	print "Found no unused parameter"		

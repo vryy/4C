@@ -10,7 +10,7 @@ from elements    import bcdictionary, surfaces
 from progress    import progress
 from sets        import Set
 
-import sys, subprocess
+import sys, subprocess, re
 
 # Dictionary of unused parameters we want to keep in the code
 UNUSED_MAT_TO_KEEP = []
@@ -31,14 +31,16 @@ if __name__=='__main__':
     else:	
 	global_src_path = name + '/' + 'src/'
     
-    source_headers = subprocess.check_output('ls --hide=*.a ' + global_src_path, shell=True)
-    for sh in source_headers.split():
-	baci_files = subprocess.check_output('ls ' + global_src_path + sh, shell=True)
-	baci_files = baci_files.split()
-	files_to_search.extend( [global_src_path + sh + '/' + (baci_files)[i] for i in range(len(baci_files)) ] )
+    # search for *.H and *.cpp files in the given src path	
+    baci_heads = subprocess.check_output('find ' + global_src_path + ' -name *.H', shell=True)
+    baci_heads = baci_heads.split()	
     
-    # valid parameters file will be neclected
-    files_to_search.remove(global_src_path + 'drt_inpar/drt_validmaterials.cpp')
+    baci_cpp   = subprocess.check_output('find ' + global_src_path + ' -name *.cpp', shell=True)
+    baci_cpp   = baci_cpp.split()
+    
+    # exclude drt_validmaterials.H/.cpp from search
+    baci_heads.remove(global_src_path + 'drt_inpar/drt_validmaterials.H')
+    baci_cpp.remove(global_src_path + 'drt_inpar/drt_validmaterials.cpp')
     
     print 'Start to search inpar materials'
     
@@ -48,34 +50,41 @@ if __name__=='__main__':
     inpar_materials = subprocess.check_output('grep INPAR ' + global_src_path +  'drt_inpar/drt_validmaterials.cpp', shell=True )
     inpar_materials = inpar_materials.split()
     
-    # partitioning necessary due to maximal size of input arguments of bash console
-    files_to_search_part1 = files_to_search[:len(files_to_search)/2 + 1]
-    files_to_search_part2 = files_to_search[len(files_to_search)/2 + 1:]
-    
     # Grep for value in code. If the value doesn't appear than the input parameter might be unused
     # Check first part of files and if this failes check second part
     # If both fail than the argument doesn't exists  
 	    
     for inpa_mat in progress('Searching inpar materials', inpar_materials):
 	
-	inpa_mat = inpa_mat.strip(' \ntuple<int>(),;')
-	inpa_mat = (inpa_mat.split(','))[0]
+	# special treatment of lines which include tuple<int> before the parameter
+	# i.e. tuple<int>(INPAR::CAVIATION::TwoWayFull
+	# method is to substitute the brackets ( with an ,
+	inpa_mat = re.sub(r'\(',',', inpa_mat)
+	inpa_mat = (inpa_mat.split(','))
 	
-	if inpa_mat[:5] == 'INPAR':
+	# search for desired inpar value
+	for im in inpa_mat:
+	    im = im.strip(' \n,;()')
+	    if im[:5]== 'INPAR':
+		inpa_mat = im
+		break	
+	# else path necessary, since the INPAR parameter values could be in comments
+	else:
+	    continue		
+			  
+	try:
+	    if inpa_mat in UNUSED_MAT_TO_KEEP:
+		continue
+	except KeyError:
+	    pass
 	  
+	try:
+	    test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(baci_heads), shell=True)
+	except subprocess.CalledProcessError: 
 	    try:
-		if inpa_mat in UNUSED_MAT_TO_KEEP:
-		    continue
-	    except KeyError:
-		pass
-	      
-	    try:
-		test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(files_to_search_part1), shell=True)
+		test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(baci_cpp), shell=True)
 	    except subprocess.CalledProcessError: 
-		try:
-		    test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(files_to_search_part2), shell=True)
-		except subprocess.CalledProcessError: 
-		    fail.update([inpa_mat])	    
+		fail.update([inpa_mat])	    
 
     if not fail:
 	print "Found no unused input material in code"		
