@@ -811,7 +811,7 @@ void PARTICLE::Algorithm::TransferParticles()
   }
 
   // reconstruct element -> bin pointers for particle wall elements
-  BuildWallElementToBinPointers();
+  BuildElementToBinPointers();
 
   return;
 }
@@ -962,7 +962,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
       }
 
       // get corresponding bin ids in ijk range and fill them into binIds
-      GidsInijkRange(&ijk_range[0], binIds);
+      GidsInijkRange(&ijk_range[0], binIds, true);
     }
 
     //// 2.2) do a first negative search and remove bins that are not on this processor
@@ -1044,7 +1044,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
 /*----------------------------------------------------------------------*
 | build connectivity from particle wall elements to bins    ghamm 04/13 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::BuildWallElementToBinPointers()
+void PARTICLE::Algorithm::BuildElementToBinPointers()
 {
   // loop over column bins and fill wall elements
   const int numcolbin = particledis_->NumMyColElements();
@@ -1172,7 +1172,7 @@ void PARTICLE::Algorithm::ConvertGidToijk(int gid, int* ijk)
 /*----------------------------------------------------------------------*
  | get all bins in ijk range                               ghamm 02/13  |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::GidsInijkRange(int* ijk_range, std::set<int>& binIds)
+void PARTICLE::Algorithm::GidsInijkRange(int* ijk_range, std::set<int>& binIds, bool checkexistence)
 {
   for(int i=ijk_range[0]; i<=ijk_range[1]; i++)
   {
@@ -1185,7 +1185,10 @@ void PARTICLE::Algorithm::GidsInijkRange(int* ijk_range, std::set<int>& binIds)
         int gid = ConvertijkToGid(&ijk[0]);
         if(gid != -1)
         {
-          binIds.insert(gid);
+          if(checkexistence and particledis_->HaveGlobalElement(gid))
+            binIds.insert(gid);
+          else
+            binIds.insert(gid);
         }
       } // end for int k
     } // end for int j

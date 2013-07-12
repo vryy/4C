@@ -114,6 +114,9 @@ namespace CAVITATION
       std::map<int, std::set<int> >& fluideles   ///< map from bin id to fluid elements in this bin
       );
 
+    /// build connectivity from fluid elements to bins
+    virtual void BuildElementToBinPointers();
+
     /// get adjacent bins to corner, where ijk is in 1st octant
     std::vector<int> AdjacentBinstoCorner(
       int* ijk   ///< ijk is 1st octant
@@ -134,10 +137,6 @@ namespace CAVITATION
     Teuchos::RCP<DRT::Discretization> fluiddis_;     ///< underlying fluid discretization
 
     Teuchos::RCP<ADAPTER::Fluid> fluid_;     ///< underlying fluid time integrator
-
-    //! Info: Currently it is assumed that bins and fluid elements are fixed in space (initial content is stored here)
-    //! Future: Dynamical registering of fluid elements in bins when they are moving
-    std::map<int, std::set<int> > extendedfluidghosting_;   ///< map that contains all fluid element ids of each bin
 
     std::map<int, std::list<Teuchos::RCP<BubbleSource> > > bubble_source_;   ///< store particle sources for each bin
 

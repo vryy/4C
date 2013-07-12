@@ -23,6 +23,7 @@ Maintainer: Georg Hammerl
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/particle_mat.H"
+#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -252,7 +253,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   const int numcolbin = particledis_->NumMyColElements();
   for (int ibin=0; ibin<numcolbin; ++ibin)
   {
-    DRT::Element* actbin = particledis_->lColElement(ibin);
+    DRT::Element* actele = particledis_->lColElement(ibin);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
     DRT::Node** particlesinbin = actbin->Nodes();
 
     // calculate forces for all particles in this bin
@@ -278,11 +280,12 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       LINALG::Matrix<3,1> elecoord(true);
 
       // find out in which fluid element the current particle is located
-      std::set<int> fluideleIdsinbin = extendedfluidghosting_[actbin->Id()];
+      DRT::Element** fluidelesinbin = actbin->AssociatedFluidEles();
+      int numfluidelesinbin = actbin->NumAssociatedFluidEle();
       std::set<int>::const_iterator eleiter;
-      for(eleiter=fluideleIdsinbin.begin();eleiter!=fluideleIdsinbin.end();++eleiter)
+      for(int ele=0; ele<numfluidelesinbin; ++ele)
       {
-        DRT::Element* fluidele = fluiddis_->gElement(*eleiter);
+        DRT::Element* fluidele = fluidelesinbin[ele];
         DRT::Node** fluidnodes = fluidele->Nodes();
         const int numnode = fluidele->NumNode();
 
@@ -306,7 +309,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
         if(insideele == true)
         {
           targetfluidele = fluidele;
-          // leave loop over all fluid eles
+          // leave loop over all fluid eles in bin
           break;
         }
       }
@@ -718,7 +721,7 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
 
       // get corresponding bin ids in ijk range
       std::set<int> binIds;
-      GidsInijkRange(&ijk_range[0], binIds);
+      GidsInijkRange(&ijk_range[0], binIds, false);
 
       // assign fluid element to bins
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
@@ -926,7 +929,7 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
   //--------------------------------------------------------------------
   // 3st step: extend ghosting of underlying fluid discretization according to bin distribution
   //--------------------------------------------------------------------
-
+  std::map<int, std::set<int> > extendedfluidghosting;
   {
     // do communication to gather all elements for extended ghosting
     const int numproc = fluiddis_->Comm().NumProc();
@@ -960,14 +963,14 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
       // proc i has to store the received data
       if(iproc == myrank_)
       {
-        extendedfluidghosting_ = rdata;
+        extendedfluidghosting = rdata;
       }
     }
 
     //reduce map of sets to one set and copy to a vector to create fluidcolmap
     std::set<int> redufluideleset;
     std::map<int, std::set<int> >::iterator iter;
-    for(iter=extendedfluidghosting_.begin(); iter!= extendedfluidghosting_.end(); ++iter)
+    for(iter=extendedfluidghosting.begin(); iter!= extendedfluidghosting.end(); ++iter)
     {
       redufluideleset.insert(iter->second.begin(),iter->second.end());
     }
@@ -997,6 +1000,22 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
     // do a final fillcomplete to build connectivity
     fluiddis_->FillComplete(true,true,true);
 
+  }
+
+  //--------------------------------------------------------------------
+  // 4th step: assign fluid elements to bins
+  //--------------------------------------------------------------------
+  {
+    for(std::map<int, std::set<int> >::const_iterator biniter=extendedfluidghosting.begin(); biniter!=extendedfluidghosting.end(); ++biniter)
+    {
+      DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->gElement(biniter->first));
+      for(std::set<int>::const_iterator fluideleiter=biniter->second.begin(); fluideleiter!=biniter->second.end(); ++fluideleiter)
+      {
+        int fluideleid = *fluideleiter;
+        currbin->AddAssociatedFluidEle(fluideleid, fluiddis_->gElement(fluideleid));
+//          cout << "in bin with id:" << currbin->Id() << " is fluid ele with id" << fluideleid << "with pointer" << fluiddis_->gElement(fluideleid) << endl;
+      }
+    }
   }
 
 #ifdef DEBUG
@@ -1039,6 +1058,35 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
       dserror("particle (Id:%d) was found which does not have fluid support", particle->Id());
   }
 #endif
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| build connectivity from fluid elements to bins            ghamm 07/13 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::BuildElementToBinPointers()
+{
+  // first call base class to associate potential particle walls
+  PARTICLE::Algorithm::BuildElementToBinPointers();
+
+  // loop over column bins and fill fluid elements
+  const int numcolbin = particledis_->NumMyColElements();
+  for (int ibin=0; ibin<numcolbin; ++ibin)
+  {
+    DRT::Element* actele = particledis_->lColElement(ibin);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+    const int numfluidele = actbin->NumAssociatedFluidEle();
+    const int* fluideleids = actbin->AssociatedFluidEleIds();
+    std::vector<DRT::Element*> fluidelements(numfluidele);
+    for(int iele=0; iele<numfluidele; iele++)
+    {
+      const int fluideleid = fluideleids[iele];
+      fluidelements[iele] = fluiddis_->gElement(fluideleid);
+    }
+    actbin->BuildFluidElePointers(&fluidelements[0]);
+  }
 
   return;
 }

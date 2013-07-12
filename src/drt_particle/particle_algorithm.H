@@ -137,7 +137,7 @@ namespace PARTICLE
       );
 
     /// build connectivity from particle wall elements to bins
-    virtual void BuildWallElementToBinPointers();
+    virtual void BuildElementToBinPointers();
 
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
@@ -180,7 +180,8 @@ namespace PARTICLE
     /// get all bin ids for given range of ijk
     void GidsInijkRange(
       int* ijk_bound,   ///< given range of ijk
-      std::set<int>& binIds   ///< all bin ids in the specified range
+      std::set<int>& binIds,   ///< all bin ids in the specified range
+      bool checkexistence   ///< check can be added whether the gids are on this proc
       );
 
     /// get nodal coordinates of bin with given id
