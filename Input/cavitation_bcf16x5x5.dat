@@ -43,7 +43,6 @@ CUTOFF_RADIUS                   0.02
 //BOUNDINGBOX -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999
 T_COMPLIANCE                    linear
 ----------------------------------------------------------CAVITATION DYNAMIC
-ASSIGNFLUIDELETOBIN             Fast
 COUPALGO                        cavitation_twowaymomentum
 UPRES                           10
 RESTARTEVRY                     80

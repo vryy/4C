@@ -5304,13 +5304,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                             "Acceleration due to gravity in particle/cavitation simulations.",
                             &cavitationdyn);
-  setStringToIntegralParameter<int>("ASSIGNFLUIDELETOBIN","Fast",
-                                 "Assigning strategy for fluid elements to bins.",
-                                 tuple<std::string>("Fast","Exact"),
-                                 tuple<int>(
-                                     INPAR::CAVITATION::AssignFluidEleToBinFast,
-                                     INPAR::CAVITATION::AssignFluidEleToBinExact),
-                                 &cavitationdyn);
+
   // Coupling strategy
   setStringToIntegralParameter<int>(
                               "COUPALGO","cavitation_twowaymomentum",

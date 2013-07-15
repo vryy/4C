@@ -25,13 +25,6 @@ namespace INPAR
   namespace CAVITATION
   {
 
-    /// Strategy for assigning fluid elements to bins
-    enum AssignFluidElesToBins
-    {
-      AssignFluidEleToBinFast,
-      AssignFluidEleToBinExact
-    };
-
     /// Type of coupling strategy for cavitation problems
     enum CouplingStrategyOverFields
     {
