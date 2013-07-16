@@ -32,23 +32,23 @@ FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      GenAlpha                        // GenAlpha
-RESULTSEVRY                     10
-RESTARTEVRY                     100
-NLNSOL                          ptc                             // fullnewton modnewton nlncg ptc
-PTCDT                           0.01                            // default is 0.1
-TIMESTEP                        0.001                           // 0.0001 works with FulNewton
-NUMSTEP                         50
+DYNAMICTYP                      OneStepTheta                        // GenAlpha
+RESULTSEVRY                     1
+RESTARTEVRY                     10000
+NLNSOL                          fullnewton                            // fullnewton modnewton nlncg ptc
+PTCDT                           0.001                            // default is 0.1
+TIMESTEP                        0.002                           // 0.0001 works with FulNewton
+NUMSTEP                         750
 MAXTIME                         1000
 DAMPING                         No
-M_DAMP                          0.5
-K_DAMP                          0.5
-PREDICT                         ConstDis                        // ConstDisVelAcc ConstDis TangDis
+M_DAMP                          0.005
+K_DAMP                          0.005
+PREDICT                         ConstDisVelAcc                        // ConstDisVelAcc ConstDis TangDis
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
-TOLDISP                         1e-05
-TOLRES                          1e-05
+TOLDISP                         1e-07
+TOLRES                          1e-07
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 MAXITER                         100
@@ -56,25 +56,21 @@ UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
 LOADLIN                         Yes
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          TrLike
-BETA 0.291 //0.44444444444 //0.308641975
-GAMMA 0.581 //0.83333333333 //0.611111111
-ALPHA_M 0.378 //0.0 //0.333333333
-ALPHA_F 0.459 //0.3333333333333 //0.44444444
+------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1.0
 --------------------------------COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC
 CONVTOL                         1e-06
 MAXITER                         5
 MAXTIME                         1000
-NUMSTEP                         50
-TIMESTEP                        0.001
+NUMSTEP                         750
+TIMESTEP                        0.002
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      CrankNicolson
-NUMSTEP                         50
-TIMESTEP                        0.001
-RESTARTEVRY                     1
-UPRES                           1
+NUMSTEP                         750
+TIMESTEP                        0.002
+RESTARTEVRY                     10
+UPRES                           10
 SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
 MAXITERATIONS                   40
 TOLERANCE                       1E-7
@@ -85,12 +81,12 @@ SOLVER                          UMFPACK
 NAME                            Reduced_dimensional_Airways_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
-MAT 2 ELAST_CoupNeoHooke YOUNG 6.75e3 NUE 0.42
-//MAT 1 MAT_ViscoGenMax NUMMAT 3 MATIDS 2 4 5 DENS 0.001 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 1.0 RELAX_ISOT_MOD_VOL 0.17 BETA_ISOT_MOD_VOL 1.0 RELAX_ISOT_MOD_ISOC 0.17 BETA_ISOT_MOD_ISOC 1.0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 RELAX_ANISOT_MOD_VOL 0 BETA_ANISOT_MOD_VOL 0 RELAX_ANISOT_MOD_ISOC 0 BETA_ANISOT_MOD_ISOC 0 INIT_MODE -1
-//MAT 2 ELAST_VolOgden KAPPA 51137 BETA -2.0
-//MAT 4 ELAST_IsoNeoHooke MUE 4970
-//MAT 5 ELAST_IsoCub C 33116
+//MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
+//MAT 2 ELAST_CoupNeoHooke YOUNG 6.75e3 NUE 0.42
+MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 2 4 5 DENS 0.0002 GAMMA 0
+MAT 2 ELAST_VolOgden KAPPA 30000 BETA -2.0
+MAT 4 ELAST_IsoNeoHooke MUE 10000
+MAT 5 ELAST_IsoCub C 10000
 MAT 3 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1000*(1-cos(3*pi*t/3)) t1 0.000 t2 3.0
@@ -186,8 +182,8 @@ NODE 11 COORD 5.0000000000000000e+00 -5.0000000000000000e+00 -5.0000000000000000
 NODE 12 COORD 5.0000000000000000e+00 5.0000000000000000e+00 -5.0000000000000000e+00
 NODE 13 COORD 0.0 -15.0 5.0
 NODE 14 COORD 0.0 -10.0 5.0
-NODE 15 COORD 0.0 -5.0 0.0
-NODE 16 COORD 0.0 -5.0 10.0
+NODE 15 COORD 0.0 -5.0 10.0
+NODE 16 COORD 0.0 -5.0 0.0
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH8 HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
