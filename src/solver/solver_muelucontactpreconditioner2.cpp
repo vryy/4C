@@ -50,6 +50,14 @@
 
 #include <MueLu_MLParameterListInterpreter.hpp>
 
+#ifdef HAVE_MUELU_ISORROPIA
+#include "MueLu_RepartitionFactory.hpp"
+#include "MueLu_RebalanceTransferFactory.hpp"
+#include "MueLu_IsorropiaInterface.hpp"
+#include "MueLu_RebalanceAcFactory.hpp"
+#endif
+
+
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
@@ -387,6 +395,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     RFact  = Teuchos::rcp( new GenericRFactory() );
   }
 #else
+  // TODO outdated experiment -> remove me
   PFact = PtentFact;
   Teuchos::RCP<InjectionPFactory> Pinj = Teuchos::rcp(new InjectionPFactory());
   RFact = Teuchos::rcp( new TransPFactory() );
@@ -443,6 +452,51 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   coarsestSmooFact = GetContactCoarsestSolverFactory(params, Teuchos::null ); // use full matrix A on coarsest level (direct solver)
 
   ///////////////////////////////////////////////////////////////////////
+  // introduce rebalancing
+  ///////////////////////////////////////////////////////////////////////
+#if 1
+  // The Factory Manager will be configured to return the rebalanced versions of P, R, A by default.
+  // Everytime we want to use the non-rebalanced versions, we need to explicitly define the generating factory.
+  RFact->SetFactory("P", PFact);
+  //
+  AcFact->SetFactory("P", PFact);
+  AcFact->SetFactory("R", RFact);
+
+  // create "Partition"
+  Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface = Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
+  isoInterface->SetFactory("A", AcFact);
+
+  // Repartitioning (creates "Importer" from "Partition")
+  Teuchos::RCP<Factory> RepartitionFact = Teuchos::rcp(new RepartitionFactory());
+  {
+    Teuchos::ParameterList paramList;
+    paramList.set("minRowsPerProcessor", 10 /*optMinRowsPerProc*/);
+    paramList.set("nonzeroImbalance", 1.2 /*optNnzImbalance*/);
+    RepartitionFact->SetParameterList(paramList);
+  }
+  RepartitionFact->SetFactory("A", AcFact);
+  RepartitionFact->SetFactory("Partition", isoInterface);
+
+  // Reordering of the transfer operators
+  const std::string t = "useSubcomm";
+  Teuchos::RCP<Factory> RebalancedPFact = Teuchos::rcp(new RebalanceTransferFactory());
+  RebalancedPFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Interpolation")));
+  RebalancedPFact->SetFactory("P", PFact);
+  RebalancedPFact->SetParameter(t,Teuchos::ParameterEntry(false));
+
+  Teuchos::RCP<Factory> RebalancedRFact = Teuchos::rcp(new RebalanceTransferFactory());
+  RebalancedRFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Restriction")));
+  RebalancedRFact->SetFactory("R", RFact);
+  RebalancedRFact->SetFactory("Nullspace", PtentFact);
+  RebalancedRFact->SetParameter(t,Teuchos::ParameterEntry(false));
+
+  // Compute Ac from rebalanced P and R
+  Teuchos::RCP<Factory> RebalancedAFact = Teuchos::rcp(new RebalanceAcFactory());
+  RebalancedAFact->SetFactory("A", AcFact);
+  RebalancedAFact->SetParameter(t,Teuchos::ParameterEntry(false));
+#endif
+
+  ///////////////////////////////////////////////////////////////////////
   // prepare factory managers
   ///////////////////////////////////////////////////////////////////////
 
@@ -466,11 +520,23 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     vecManager[i]->SetFactory("Aggregates", UCAggFact);
     vecManager[i]->SetFactory("Graph", dropFact);
     vecManager[i]->SetFactory("DofsPerNode", dropFact);
-    vecManager[i]->SetFactory("A", AcFact);       // same RAP factory for all levels
-    vecManager[i]->SetFactory("P", PFact);        // same prolongator and restrictor factories for all levels
-    vecManager[i]->SetFactory("Ptent", PtentFact);// same prolongator and restrictor factories for all levels
-    vecManager[i]->SetFactory("R", RFact);        // same prolongator and restrictor factories for all levels
+#if 0
     vecManager[i]->SetFactory("Nullspace", nspFact); // use same nullspace factory throughout all multigrid levels
+    vecManager[i]->SetFactory("A", AcFact);          // same RAP factory for all levels
+    vecManager[i]->SetFactory("P", PFact);           // same prolongator and restrictor factories for all levels
+    vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
+    vecManager[i]->SetFactory("R", RFact);           // same prolongator and restrictor factories for all levels
+#else
+
+    // Configure FactoryManager
+    vecManager[i]->SetFactory("A", RebalancedAFact);
+    vecManager[i]->SetFactory("P", RebalancedPFact);
+    vecManager[i]->SetFactory("R", RebalancedRFact);
+    vecManager[i]->SetFactory("Nullspace",   RebalancedRFact);
+    vecManager[i]->SetFactory("Importer",    RepartitionFact);
+    vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
+#endif
+
   }
 
   // use new Hierarchy::Setup routine
