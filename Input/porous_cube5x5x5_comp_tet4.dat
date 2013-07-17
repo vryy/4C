@@ -42,7 +42,7 @@ LIFTDRAG                        No
 LINEAR_SOLVER                   3
 MAXTIME                         1000
 MESHTYING                       no
-NONLINEARBC                   no
+NONLINEARBC                     no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1
@@ -65,10 +65,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG yes //yes no_pspg
+PSPG                            yes //yes no_pspg            
 REYNOLDS-STRESS                 no_reynolds
-RSTAB rstab_gls //rstab_gls no_rstab
-STABTYPE residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls //rstab_gls no_rstab 
+STABTYPE                        residual_based //residual_based no_stabilization 
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -121,10 +121,10 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         Material
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5

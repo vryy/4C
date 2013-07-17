@@ -48,10 +48,10 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         No
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      Statics
 ITERNORM                        L2
 K_DAMP                          0.5
@@ -101,23 +101,23 @@ THETA                           0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-AZOUTPUT                        0                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         0                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-AZTOL                           1.0E-08                         // tolerance in unscaled residual
-AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
-AZITER                          1000                            // max iterations
-AZSUB                           300                             // size of krylov space for gmres
-AZOMEGA                         0                               // unused
-AZGRAPH                         0                               // unused
-AZPOLY                          3                               // polynomial order for Neumann
-AZSCAL                          none                            // none sym infnorm scaling of the system
+AZOUTPUT                        0                             // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         0                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+AZTOL                           1.0E-08                       // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
+AZITER                          1000                          // max iterations
+AZSUB                           300                           // size of krylov space for gmres
+AZOMEGA                         0                             // unused
+AZGRAPH                         0                             // unused
+AZPOLY                          3                             // polynomial order for Neumann
+AZSCAL                          none                          // none sym infnorm scaling of the system
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                             // Add Insert Zero
+IFPACKCOMBINE                   Add                           // Add Insert Zero
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_HOLZAPFELCARDIO KAPPA 1000E3 MUE 33.74E3 DENS 1.0 K1 13.9E3 K2 13.2 GAMMA 39. MINSTRETCH 1.0 INIT 3
 MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 2 3 5 6 DENS 1.0

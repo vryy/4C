@@ -58,16 +58,16 @@ CONSISTENCY                     no
 EVALUATION_MAT                  element_center
 EVALUATION_TAU integration_point //element_center
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ITEMAX                          3                               // abort solution process -> be able to test influence of the matrix as well!
+ITEMAX                          3                             // abort solution process -> be able to test influence of the matrix as well!
 CONVTOL                         1.0e-5
 ----------------------------------------------------------------ELCH CONTROL
 ITEMAX                          12
 MAXTIME                         1000
-NUMSTEP 10 //101 // series of stationary solutions from Pe=0 up to Pe=200
-RESTARTEVRY                     7                               // test writing of restart data
+NUMSTEP                         10 //101                      // series of stationary solutions from Pe=0 up to Pe=200
+RESTARTEVRY                     7                             // test writing of restart data
 TIMESTEP 0.5 //1.0
 UPRES                           1
-TEMPERATURE                     11.604506                       // abused as a scaling factor in order to have: F/RT = 100.0 -> F/RT\phi is the result stored in \phi
+TEMPERATURE                     11.604506                     // abused as a scaling factor in order to have: F/RT = 100.0 -> F/RT\phi is the result stored in \phi
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
@@ -75,7 +75,7 @@ TEMPERATURE                     11.604506                       // abused as a s
 -----------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.006666666666666666666 VALENCE +2.0
 MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -2.0

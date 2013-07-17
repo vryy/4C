@@ -58,50 +58,50 @@ INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 SIMPLER                         no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
-TDS                             quasistatic                     // quasistatic time_dependent
+STABTYPE                        residual_based                // no_stabilization residual_based inconsistent
+TDS                             quasistatic                   // quasistatic time_dependent
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_PC                root_of_volume
-TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes                             // no yes
-PSPG                            yes                             // no_pspg yes
-VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                        yes                             // no yes cstab_td
-CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
+TRANSIENT                       no_transient                  // no_transient yes_transient
+SUPG                            yes                           // no yes
+PSPG                            yes                           // no_pspg yes
+VSTAB                           no_vstab                      // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
+GRAD_DIV                        yes                           // no yes cstab_td
+CROSS-STRESS                    no_cross                      // no_cross cross_complete cross_rhs
+REYNOLDS-STRESS                 no_reynolds                   // no_reynolds reynolds_rhs
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        1                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          MueLu_nonsym                    // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         8                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-IFPACKFILL                      1.0                             // fill-in for ILUT
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-4                          // tolerance in unscaled residual
-AZITER                          600                             // max iterations
-AZSUB                           25                              // size of krylov space for gmres
-AZOMEGA                         1.0                             // unused
-AZGRAPH                         1                               // unused
-AZPOLY                          5                               // polynomial order for Neumann
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                            // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                           // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                50                              // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               SGS                             // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 2 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.89                            // damping fine grid
-ML_DAMPMED                      1.0                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        1                             // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          MueLu_nonsym                  // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         8                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           1.0E-4                        // tolerance in unscaled residual
+AZITER                          600                           // max iterations
+AZSUB                           25                            // size of krylov space for gmres
+AZOMEGA                         1.0                           // unused
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                          // none sym infnorm scaling of the system
+AZCONV                          AZ_r0                         // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                50                            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     5                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               SGS                           // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     2 3 3 3 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.89                          // damping fine grid
+ML_DAMPMED                      1.0                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

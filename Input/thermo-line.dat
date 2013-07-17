@@ -35,7 +35,7 @@ FILESTEPS                       1000
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      Statics  // Statics,OneStepTheta
 ITERNORM                        L2  // L1,L2,Rms,Inf
 INITFUNCNO                      1

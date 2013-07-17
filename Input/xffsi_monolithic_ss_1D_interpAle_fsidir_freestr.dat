@@ -60,14 +60,14 @@ STEADYTOL                       1e-6
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1
-NONLINEARBC                   no
+NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta
 TIMESTEP                        1
 NUMSTEP                         200
 MAXTIME                         5.0
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 DAMPING                         No
 M_DAMP                          0.000001
 K_DAMP                          0.00001
@@ -89,11 +89,11 @@ GAMMA                           0.611//0.5
 ALPHA_M                         0.333//0.5
 ALPHA_F                         0.444//0.5
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        incr_lin                        // classic_lin
+ALE_TYPE                        incr_lin                      // classic_lin
 TIMESTEP                        1
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
-LINEARBLOCKSOLVER               PreconditionedKrylov            // FSIAMG PreconditionedKrylov
+LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 MAXTIME                         1000.0
 TIMESTEP                        0.1
 NUMSTEP                         6
@@ -105,20 +105,20 @@ CONVTOL                         1.0E-6
 BASETOL                         1.0E-3
 STRUCTPCOMEGA 1.0 1.0
 STRUCTPCITER 1 1
-FLUIDPCOMEGA 1.0 1.0 1.0
-FLUIDPCITER 1 1 1
+FLUIDPCOMEGA                    1.0 1.0 1.0                  
+FLUIDPCITER                     1 1 1                        
 SHAPEDERIVATIVES                No
 PRECONDREUSE                    0
 SECONDORDER                     No
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK//Aztec_MSR              // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK//Aztec_MSR            // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+EMBEDDED_BOUNDARY               BoundaryTypeSigma             // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation    // xffsi_full_newton//
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation  // xffsi_full_newton//
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0 THEXPANS 0.0

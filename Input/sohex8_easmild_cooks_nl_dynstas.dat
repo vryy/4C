@@ -22,13 +22,13 @@ MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------DISCRETISATION
-// Number of meshes in ale field
+//                                                             // Number of meshes in ale field
 NUMALEDIS                       1
-// Number of meshes in fluid field
+//                                                             // Number of meshes in fluid field
 NUMFLUIDDIS                     1
-// Number of meshes in structural field
+//                                                             // Number of meshes in structural field
 NUMSTRUCDIS                     1
-// Number of meshes in thermal field
+//                                                             // Number of meshes in thermal field
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -53,18 +53,18 @@ LINEAR_SOLVER                   1
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              Or
-DAMPING                         No                              // must be off
+DAMPING                         No                            // must be off
 DYNAMICTYP Statics //Gen_Alfa
 K_DAMP                          0.5
 MAXITER                         50
-MAXTIME                         1000.0                          // effectively: max load factor
+MAXTIME                         1000.0                        // effectively: max load factor
 M_DAMP                          0.5
 NLNSOL                          fullnewton
-NUMSTEP                         100                             // effectively: max number of load steps
+NUMSTEP                         100                           // effectively: max number of load steps
 PREDICT                         ConstDis
 RESULTSEVRY                     1000
 RESTARTEVRY                     1000
-TIMESTEP                        1.0                             // effectively: load step size
+TIMESTEP                        1.0                           // effectively: load step size
 TOLCONSTR                       1e-08
 TOLDISP                         1.0e-7
 TOLRES                          1.0e-6

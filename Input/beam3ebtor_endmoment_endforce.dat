@@ -17,7 +17,7 @@ MATERIALS                       1
 NUMDF                           7
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-//RESTART                       1                               // legt Restart-Zeitschritt fest
+//RESTART                       1                             // legt Restart-Zeitschritt fest
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
@@ -40,7 +40,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
 TIMESTEP                        0.001
 NUMSTEP                         1000
 MAXTIME                         1

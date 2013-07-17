@@ -43,7 +43,7 @@ DYNAMICTYP                      GEMM
 RESULTSEVRY                     1
 RESEVRYERGY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.01
 NUMSTEP                         200
 MAXTIME                         2.0

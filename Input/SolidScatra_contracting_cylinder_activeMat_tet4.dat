@@ -43,10 +43,10 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         Rayleigh
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 ITERNORM                        Inf
 K_DAMP                          0.005
@@ -5691,11 +5691,11 @@ STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -1.63339347013906122e-01 T
 STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.47186352823382383e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.23346578032363652e-01 TOLERANCE 1e-10
 // checking xyz displacement of 2 points at the middle
-STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE  1.60961606143031934e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE 1.60961606143031934e-02 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE -3.46456720366776216e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE  1.85053958869615259e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE 1.85053958869615259e-02 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE -8.88869660832155781e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE -1.61303753234156785e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE  2.41194592368322892e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE 2.41194592368322892e-02 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

@@ -38,9 +38,9 @@ STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_COUPLING_STRESS          No
 STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  Initial                         // None, Current
+THERM_HEATFLUX                  Initial                       // None, Current
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial                         // None, Current
+THERM_TEMPGRAD                  Initial                       // None, Current
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
 APPLICATION                     MortarContact
@@ -59,11 +59,11 @@ PARALLEL_REDIST                 No
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         No
-DIVERCONT                       No
-DYNAMICTYP                      Statics                         // Centr_Diff, Gen_EMM, Gen_Alfa, Static, Statics, GenAlpha, OneStepTheta, GEMM, AdamsBashforth2, EulerMaruyama, EulerImpStoch
+DIVERCONT                       stop
+DYNAMICTYP                      Statics                       // Centr_Diff, Gen_EMM, Gen_Alfa, Static, Statics, GenAlpha, OneStepTheta, GEMM, AdamsBashforth2, EulerMaruyama, EulerImpStoch
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
@@ -73,7 +73,7 @@ MINITER                         0
 M_DAMP                          0.5
 NLNSOL                          fullnewton//fullnewton
 NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And                             // And changed 11.02.10
+NORMCOMBI_RESFDISP              And                           // And changed 11.02.10
 NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
 NORM_INCO                       Abs
@@ -84,14 +84,14 @@ PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-STC_SCALING                     no                              // new parameter 220310
+STC_SCALING                     no                            // new parameter 220310
 TIMESTEP                        0.0005
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLINCO                         1e-08
 TOLPRE                          1e-08
 TOLRES                          1e-08
-UZAWAALGO                       direct                          // iterative, changed to direct 220310
+UZAWAALGO                       direct                        // iterative, changed to direct 220310
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
@@ -126,10 +126,10 @@ STEPSIZEMIN                     0
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INITFUNCNO                      1
-INITIALFIELD                    zero_field                      // zero_field,field_by_function,field_by_condition
+INITIALFIELD                    zero_field                    // zero_field,field_by_function,field_by_condition
 ITERNORM                        L2
 MAXITER                         50
 MAXTIME                         1
@@ -159,11 +159,11 @@ NUMSTEP                         2
 RESTARTEVRY                     1
 TIMESTEP                        1
 UPRES                           1
-CONVTOL                         1e-06                           // 11.02.10
-ITEMAX                          10                              // 11.02.10
+CONVTOL                         1e-06                         // 11.02.10
+ITEMAX                          10                            // 11.02.10
 COUPVARIABLE                    Temperature
 COUPALGO                        tsi_iterstagg
-NORM_INC                        Rel                             // Abs
+NORM_INC                        Rel                           // Abs
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 AZBDIAG                         0
@@ -194,7 +194,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1                    
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
@@ -226,7 +226,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1                    
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Contact_Solver
@@ -258,7 +258,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1                    
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 400 NUE 0.0 DENS 1 THEXPANS 0.0001 CAPA 42 CONDUCT 5.2 INITTEMP 0

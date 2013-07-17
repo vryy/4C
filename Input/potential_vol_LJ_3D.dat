@@ -128,7 +128,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1 1                  
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 0.5 NUE 0.3 DENS 0.00000125 THEXPANS 0.0

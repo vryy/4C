@@ -41,7 +41,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     10
 RESTARTEVRY                     11
-NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
 TIMESTEP                        100
 NUMSTEP                         10
 MAXTIME                         1000.0
@@ -69,7 +69,7 @@ ALPHA_F                         0.4117647
 ------------------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS                    lung
 
-MC_X_0 -1082.598603 //displacment um
+MC_X_0                          -1082.598603 //displacment um 
 MC_X_1                          0.001565
 MC_X_2                          2.281617
 
@@ -84,11 +84,11 @@ INV_ANA_MAX_RUN                 20
 
 //INV_ANALYSIS                  lung
 ////Specimen                    8
-//MC_X_0 -1083.380550 //displacment um
+//MC_X_0                        -1083.380550 //displacment um 
 //MC_X_1                        0.003131
 //MC_X_2                        2.284432
 //
-//MC_Y_0 -179.586432 //displacment um
+//MC_Y_0                        -179.586432 //displacment um 
 //MC_Y_1                        0.003748
 //MC_Y_2                        1.260942
 
@@ -99,7 +99,7 @@ INV_ANA_MAX_RUN                 20
 //INV_ANA_MAX_RUN               10
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 // ug / um^3
 MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 32 DENS 0.194e-6 GAMMA 1

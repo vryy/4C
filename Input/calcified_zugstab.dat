@@ -20,8 +20,8 @@ NUMALEDIS                       0
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                          // Cauchy 2PK
-STRUCT_STRAIN                   gl                              // ea gl
+STRUCT_STRESS                   Cauchy                        // Cauchy 2PK
+STRUCT_STRAIN                   gl                            // ea gl
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -33,16 +33,16 @@ PATSPEC                         yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
-RESULTSEVRY                     10                              // write results output every xx steps
-RESTARTEVRY                     0                               // write restart file every yy steps
-NLNSOL                          fullnewton                      // ptc fullnewton lsnewton modnewton matfreenewton nlncg
-TIMESTEP                        0.05                            // time step size
+RESULTSEVRY                     10                            // write results output every xx steps
+RESTARTEVRY                     0                             // write restart file every yy steps
+NLNSOL                          fullnewton                    // ptc fullnewton lsnewton modnewton matfreenewton nlncg
+TIMESTEP                        0.05                          // time step size
 NUMSTEP                         20
 MAXTIME                         100000
 DAMPING                         no
 M_DAMP                          0.001
 K_DAMP                          0.0001
-PREDICT                         ConstDisVelAcc                  // ConstDis ConstDisVelAcc
+PREDICT                         ConstDisVelAcc                // ConstDis ConstDisVelAcc
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -57,7 +57,7 @@ UZAWAPARAM                      1.0
 -----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Superlu                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Superlu                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0.001
 MAT 10 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0

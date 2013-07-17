@@ -41,13 +41,13 @@ NEWTON_TOL                      1e-6
 NEWTON_MAX                      100
 T_PRIOR                         Gauss
 T_SKEW                          None
-T_VARIANCE                      .01                             // = sigma^2 = gamma/h^2
+T_VARIANCE                      .01                           // = sigma^2 = gamma/h^2
 T_RANGE_TOL                     1e-6
 CUTOFF_RADIUS                   1.0
-BOUNDINGBOX -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001
+BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001 
 T_COMPLIANCE                    linear
 ----------------------------------------------------------CAVITATION DYNAMIC
-GRAVITY_ACCELERATION 0.0 0.0 -9.81
+GRAVITY_ACCELERATION            0.0 0.0 -9.81                
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      ParticleCentrDiff
 RESULTSEVRY                     1
@@ -85,8 +85,8 @@ DSURF                           1
 E 1 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
-NODE 8 DPARTICLE 1
-NODE 10 DPARTICLE 2
+NODE                            8 DPARTICLE 1                
+NODE                            10 DPARTICLE 2               
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

@@ -44,7 +44,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton lsnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton lsnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.01
 NUMSTEP                         50
 MAXTIME                         1.0
@@ -66,8 +66,8 @@ SEMI_SMOOTH_CN                  1.0e3
 SEMI_SMOOTH_CT                  1.0
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Dual
-// exemplarily test dynamic redistribution with minimum
-// number of elements per proc = 0 and time limit = 1.5 here
+//                                                             // exemplarily test dynamic redistribution with minimum
+//                                                             // number of elements per proc = 0 and time limit = 1.5 here
 PARALLEL_REDIST                 Dynamic
 MIN_ELEPROC                     0
 MAX_BALANCE                     1.5

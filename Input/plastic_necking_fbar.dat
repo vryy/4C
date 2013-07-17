@@ -50,8 +50,8 @@ NUMTHERMDIS                     0
 OUTPUT_GID                      Yes
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                          // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_STRAIN                   Yes                             // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   Cauchy                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_STRAIN                   Yes                           // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -63,7 +63,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     5
 TIMESTEP                        0.02
 NUMSTEP                         40000
-MAXTIME                         1.0                             // 2.0
+MAXTIME                         1.0                           // 2.0
 DAMPING                         Yes
 M_DAMP                          0.1
 K_DAMP                          0.1
@@ -101,7 +101,7 @@ NDLINE                          5
 NDSURF                          5
 NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0                               // 1
+DSURF 0 // 1
 //                              pressure
 //E 5 - 2 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS

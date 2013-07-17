@@ -41,7 +41,7 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 NLNSOL                          fullnewton
-LOADLIN                         yes    // use linearization of follower load
+LOADLIN                         yes                           // use linearization of follower load
 TIMESTEP                        0.01
 NUMSTEP                         10
 MAXTIME                         3.0
@@ -61,11 +61,11 @@ NDLINE                          12
 NDSURF                          6
 NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF   1
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0                         0
+DSURF                           1
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF   1
-E 6 - 1 1 0 0 0 0 0 -0.5 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0                0
+DSURF                           1
+E 6 - 1 1 0 0 0 0 0 -0.5 0.0 0.0 0.0 0.0 0.0 orthopressure Mid 0 0 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 801 DNODE 2
@@ -2847,7 +2847,7 @@ NODE 808 COORD 1.000000000000000e+02 1.000000000000000e+00 1.000000000000000e+01
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
-// MAT_Struct_NeoHooke
+//                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------RESULT DESCRIPTION

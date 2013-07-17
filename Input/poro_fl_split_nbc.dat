@@ -45,7 +45,7 @@ ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         1000
 MESHTYING                       no
-NONLINEARBC                   no
+NONLINEARBC                     no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1
@@ -68,10 +68,10 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG yes //yes no_pspg
+PSPG                            yes //yes no_pspg            
 REYNOLDS-STRESS                 no_reynolds
-RSTAB rstab_gls //rstab_gls no_rstab
-STABTYPE residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls //rstab_gls no_rstab 
+STABTYPE                        residual_based //residual_based no_stabilization 
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -93,7 +93,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO poro_monolithicfluidsplit //poro_monolithicstructuresplit poro_monolithic
+COUPALGO                        poro_monolithicfluidsplit //poro_monolithicstructuresplit poro_monolithic 
 INCTOL                          1e-03
 ITEMAX                          20
 ITEMIN                          1
@@ -116,10 +116,10 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         Material
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5

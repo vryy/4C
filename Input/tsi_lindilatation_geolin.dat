@@ -29,13 +29,13 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-STRUCT_DISP                     Yes                             // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   GL                              // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2PK                             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          2PK                             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX Initial //Current // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                             // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD Initial //Current // None,No,NO,no,Current,Initial
+STRUCT_DISP                     Yes                           // Yes,No,yes,no,YES,NO
+STRUCT_STRAIN                   GL                            // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+THERM_HEATFLUX                  Initial //Current             // None,No,NO,no,Current,Initial
+THERM_TEMPERATURE               Yes                           // Yes,No,yes,no,YES,NO
+THERM_TEMPGRAD                  Initial //Current             // None,No,NO,no,Current,Initial
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -43,19 +43,19 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No                              // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
-DYNAMICTYP                      Statics                         // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DIVERCONT                       stop                          // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
+DYNAMICTYP                      Statics                       // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton                      // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton                    // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs                             // Abs,Rel,Mix
+NORM_RESF                       Abs                           // Abs,Rel,Mix
 NUMSTEP                         200
-PREDICT                         ConstDis                        // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis                      // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -65,32 +65,32 @@ TOLRES                          1e-08
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No
-DYNAMICTYP                      Statics                         // Statics,OneStepTheta
+DIVERCONT                       stop
+DYNAMICTYP                      Statics                       // Statics,OneStepTheta
 ITERNORM                        L2
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function               // field_by_function,zero_field
+INITIALFIELD                    field_by_function             // field_by_function,zero_field
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton                      // vague,fullnewton
+NLNSOL                          fullnewton                    // vague,fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp                       // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         ConstTemp                     // Vague,ConstTemp,ConstTempRate,TangTemp
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
-TIMESTEP                        1                               // 0.01
+TIMESTEP                        1                             // 0.01
 TOLRES                          1e-08
 TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
-COUPALGO                        tsi_oneway                      // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
-COUPVARIABLE                    Temperature                     // Displacement,Temperature
+COUPALGO                        tsi_oneway                    // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
+COUPVARIABLE                    Temperature                   // Displacement,Temperature
 ITEMAX                          1
 MAXTIME                         1
 NUMSTEP                         200
@@ -99,10 +99,10 @@ TIMESTEP                        0.01
 UPRES                           1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-SOLVER                          UMFPACK                         // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-SOLVER                          UMFPACK                         // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
 //parameters in [N,m,s,K]
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 10 NUE 0.0 DENS 0 THEXPANS 1.0e-05 CAPA 420 CONDUCT 52 INITTEMP 293

@@ -59,7 +59,7 @@ ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         1000
 MESHTYING                       no
-NONLINEARBC                   no
+NONLINEARBC                     no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1
@@ -111,10 +111,10 @@ CONTIPARTINT                    no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         Material
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
@@ -123,7 +123,7 @@ MAXITER                         50
 MAXTIME                         5
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton //fullnewton newtonlinuzawa 
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And

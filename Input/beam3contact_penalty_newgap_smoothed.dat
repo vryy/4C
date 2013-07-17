@@ -24,13 +24,13 @@ Default_title
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        3
 NODES                           5
-DIM 3 //rumpf2.txt /begin
+DIM                             3 //rumpf2.txt /begin        
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 //TIMETYP                       Dynamic
-//ALGEBRA                       Trilinos                        // ccarat/Trilinos
+//ALGEBRA                       Trilinos                      // ccarat/Trilinos
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -54,14 +54,14 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
-TIMESTEP                        0.002                           // pseudo time step as load step
-NUMSTEP                         500                             // number of pseudo time steps
-MAXTIME                         1                               // normalized pseudo simulation time
+NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
+TIMESTEP                        0.002                         // pseudo time step as load step
+NUMSTEP                         500                           // number of pseudo time steps
+MAXTIME                         1                             // normalized pseudo simulation time
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
-PREDICT                         ConstDis                        // ConstDisVelAcc ConstDis
+PREDICT                         ConstDis                      // ConstDisVelAcc ConstDis
 TOLRES                          1.0E-06
 TOLDISP                         1.0E-10
 NORM_RESF                       Abs
@@ -94,12 +94,12 @@ NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          2                               // Anzahl der DPOINTs mit DBC
+DPOINT 2 // Anzahl der DPOINTs mit DBC
 E 3 - NUMDOF 6 ONOFF 1 1 1 1 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 4 - NUMDOF 6 ONOFF 1 1 1 1 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           1                               // Anzahl der DLINEs mit DBC
+DLINE 1 // Anzahl der DLINEs mit DBC
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 -0.4 0.0 0.0 0.0 CURVE none 1 1 none none none FUNCT 0 0 0 0 0 0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF

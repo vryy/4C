@@ -44,8 +44,8 @@ ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXTIME                         1.0
 NUMSTEP                         10
-PCITER 1 1 1
-PCOMEGA 1.0 1.0 1.0
+PCITER                          1 1 1                        
+PCOMEGA                         1.0 1.0 1.0                  
 PRECONDREUSE                    10
 RESTARTEVRY                     2
 SECONDORDER                     no

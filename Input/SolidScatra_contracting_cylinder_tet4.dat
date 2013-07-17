@@ -2,7 +2,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Contracting Cylinder
+Contracting                     Cylinder
 Test for SolidScatra Material with Tet4 Elements
 Maintainer: A. Nagler
 ----------------------------------------------------------------PROBLEM SIZE
@@ -43,10 +43,10 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         Rayleigh
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 ITERNORM                        Inf
 K_DAMP                          0.005
@@ -5692,11 +5692,11 @@ STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -1.53180061014311614e-01 T
 STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.32836205061931029e-01 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.07755834826301133e-01 TOLERANCE 1e-7
 // checking xyz displacement of 2 points at the middle
-STRUCTURE DIS structure NODE  41 QUANTITY dispx VALUE  1.08967571955530633e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE  41 QUANTITY dispy VALUE -3.17822184997510540e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE  41 QUANTITY dispz VALUE  2.00737511090049760e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE  42 QUANTITY dispx VALUE -7.79396266323952123e-03 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE  42 QUANTITY dispy VALUE -1.41424957107789302e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE  42 QUANTITY dispz VALUE  2.12950414277708125e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE 1.08967571955530633e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE -3.17822184997510540e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE 2.00737511090049760e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE -7.79396266323952123e-03 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE -1.41424957107789302e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE 2.12950414277708125e-02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

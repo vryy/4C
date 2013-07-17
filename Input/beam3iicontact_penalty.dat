@@ -42,7 +42,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton modnewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
 TIMESTEP                        0.01
 NUMSTEP                         100
 MAXTIME                         1

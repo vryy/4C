@@ -72,7 +72,7 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      Statics
 ITERNORM                        L2
 K_DAMP                          0.5

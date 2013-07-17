@@ -57,17 +57,17 @@ INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 PREDICTOR                       explicit_second_order_midpoint
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
-TDS                             quasistatic                     // quasistatic time_dependent
+STABTYPE                        residual_based                // no_stabilization residual_based inconsistent
+TDS                             quasistatic                   // quasistatic time_dependent
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 CHARELELENGTH_PC                root_of_volume
-TRANSIENT                       no_transient                    // no_transient yes_transient
-SUPG                            yes                             // no yes
-PSPG                            yes                             // no_pspg yes
-VSTAB                           no_vstab                        // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
-GRAD_DIV                        yes                             // no yes cstab_td
-CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
-REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
+TRANSIENT                       no_transient                  // no_transient yes_transient
+SUPG                            yes                           // no yes
+PSPG                            yes                           // no_pspg yes
+VSTAB                           no_vstab                      // no_vstab vstab_gls vstab_gls_rhs vstab_usfem vstab_usfem_rhs
+GRAD_DIV                        yes                           // no yes cstab_td
+CROSS-STRESS                    no_cross                      // no_cross cross_complete cross_rhs
+REYNOLDS-STRESS                 no_reynolds                   // no_reynolds reynolds_rhs
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
 TIMESTEP                        0.00025

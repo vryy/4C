@@ -139,7 +139,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1 1                  
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.9E0 POISSON 0.4 DENS 1E-9 YOUNGS_FAST 3.0E5 RELAX 16. THETA 0.5

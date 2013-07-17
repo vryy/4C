@@ -64,17 +64,17 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 Chebychev
 ML_SMOOTHERMED                  Chebychev
-ML_SMOTIMES 			9 9 9 9 1
+ML_SMOTIMES                     9 9 9 9 1                    
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
 STRATIMIKOS_XMLFILE             None
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         Rayleigh
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 ITERNORM                        Inf
 K_DAMP                          0.005
@@ -106,10 +106,10 @@ STC_LAYER                       1
 STC_SCALING                     no
 TIMESTEP                        0.001
 TOLCONSTR                       1e-03
-TOLDISP                         1e-09                      
+TOLDISP                         1e-09
 TOLINCO                         1e-03
 TOLPRE                          1e-03
-TOLRES                          1e-06                           
+TOLRES                          1e-06
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1

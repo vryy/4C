@@ -40,7 +40,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1.0
@@ -60,37 +60,37 @@ MAXITER                         50
 -----------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Amesos_KLU_nonsym               // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                               // output every so often, 0 no output
-AZSOLVE                         CG                              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
-AZREUSE                         0                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
-IFPACKFILL                      1.0                             // fill-in for ILUT
-IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-8                          // tolerance in unscaled residual
-AZCONV                          AZ_noscaled                     // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           40                              // size of krylov space for gmres
-AZOMEGA                         1.0                             // unused
-AZGRAPH                         1                               // unused
-AZPOLY                          5                               // polynomial order for Neumann
-IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          infnorm                         // none sym infnorm scaling of the system
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  Chebychev                       // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                             // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     1.0                             // damping fine grid
-ML_DAMPMED                      1.0                             // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                             // output every so often, 0 no output
+AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         0                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           1.0E-8                        // tolerance in unscaled residual
+AZCONV                          AZ_noscaled                   // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           40                            // size of krylov space for gmres
+AZOMEGA                         1.0                           // unused
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          infnorm                       // none sym infnorm scaling of the system
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                1000                          // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 Chebychev                     // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  Chebychev                     // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU                           // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     1.0                           // damping fine grid
+ML_DAMPMED                      1.0                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
@@ -203,10 +203,10 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DPOINT                          0
-----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
+-----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
-DLINE  4
-E 9  - ROTANGLE -0.17292893294059 0.41748737523188 0.772391959633931 CURVE none none none FUNCT 0 0 0
+DLINE                           4
+E 9 - ROTANGLE -0.17292893294059 0.41748737523188 0.772391959633931 CURVE none none none FUNCT 0 0 0
 //normal 0.6396021 0.6396021 -0.4264014 tangent -1.0 1.0 0.0
 E 10 - ROTANGLE 0.17292893294059 0.41748737523188 -0.772391959633931 CURVE none none none FUNCT 0 0 0
 //normal 0.6396021 -0.6396021 -0.4264014 tangent 1.0 1.0 0.0
@@ -214,10 +214,10 @@ E 11 - ROTANGLE 0.517029242730366 0.214160524482409 -2.3093257050152 CURVE none 
 //normal -0.6396021 -0.6396021 -0.4264014 tangent 1.0 -1.0 0.0
 E 12 - ROTANGLE -0.517029242730366 0.214160524482409 2.3093257050152 CURVE none none none FUNCT 0 0 0
 //normal -0.6396021 0.6396021 -0.4264014 tangent -1.0 -1.0 0.0
-----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+-----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
-DSURF   4
-E 1  - ROTANGLE 0.252505250423375 0.252505250423375 -1.55600730815846 CURVE none none none FUNCT 0 0 0
+DSURF                           4
+E 1 - ROTANGLE 0.252505250423375 0.252505250423375 -1.55600730815846 CURVE none none none FUNCT 0 0 0
 //normal 0.0 -0.9486833 -0.3162278 tangent 1.0 0.0 0.0
 E 2 - ROTANGLE 0 0.321750586019418 0 CURVE none none none FUNCT 0 0 0
 //normal 0.9486833 0.0 -0.3162278 tangent 0.0 1.0 0.0

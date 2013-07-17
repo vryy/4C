@@ -51,7 +51,7 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No  // Yes,No,yes,no,YES,NO
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta,GenAlpha
 INITFUNCNO                      1  // -1
 INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition

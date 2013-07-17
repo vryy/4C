@@ -32,18 +32,18 @@ FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      OneStepTheta                        // GenAlpha
+DYNAMICTYP                      OneStepTheta                  // GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     10000
-NLNSOL                          fullnewton                            // fullnewton modnewton nlncg ptc
-PTCDT                           0.001                            // default is 0.1
-TIMESTEP                        0.002                           // 0.0001 works with FulNewton
+NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
+PTCDT                           0.001                         // default is 0.1
+TIMESTEP                        0.002                         // 0.0001 works with FulNewton
 NUMSTEP                         750
 MAXTIME                         1000
 DAMPING                         No
 M_DAMP                          0.005
 K_DAMP                          0.005
-PREDICT                         ConstDisVelAcc                        // ConstDisVelAcc ConstDis TangDis
+PREDICT                         ConstDisVelAcc                // ConstDisVelAcc ConstDis TangDis
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
@@ -56,7 +56,7 @@ UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
 LOADLIN                         Yes
-------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 --------------------------------COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC
 CONVTOL                         1e-06
@@ -71,7 +71,7 @@ NUMSTEP                         750
 TIMESTEP                        0.002
 RESTARTEVRY                     10
 UPRES                           10
-SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
+SOLVERTYPE                      Nonlinear                     // Linear Nonlinear
 MAXITERATIONS                   40
 TOLERANCE                       1E-7
 --------------------------------------------------------------------SOLVER 1
@@ -188,9 +188,9 @@ NODE 16 COORD 0.0 -5.0 0.0
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH8 HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
-3 RED_AIRWAY LINE2 13 14 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 10.0 Area 2.0 Generation 0
-4 RED_AIRWAY LINE2 14 15 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1
-5 RED_AIRWAY LINE2 14 16 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1
+3                               RED_AIRWAY LINE2 13 14 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 10.0 Area 2.0 Generation 0 
+4                               RED_AIRWAY LINE2 14 15 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
+5                               RED_AIRWAY LINE2 14 16 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS

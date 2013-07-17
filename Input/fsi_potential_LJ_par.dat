@@ -236,7 +236,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1 1                  
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
@@ -271,7 +271,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1 1                  
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
@@ -306,7 +306,7 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 2 2 0 1 1 1
+ML_SMOTIMES                     2 2 0 1 1 1                  
 SOLVER                          Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.3 DENS 0.00000125 THEXPANS 0.0

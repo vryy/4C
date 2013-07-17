@@ -72,38 +72,38 @@ TURBULENCE_APPROACH             CLASSICAL_LES
 -----------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER UMFPACK //Aztec_MSR // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                               // output every so often, 0 no output
-AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ML                              // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                               // how often to recompute some preconditioners
-AZDROP                          0.0                             // drop tolerance for ILUT
+SOLVER                          UMFPACK //Aztec_MSR           // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                             // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         0                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-AZTOL                           1.0E-5                          // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                            // max iterations
-AZSUB                           1000                            // size of krylov space for gmres
-AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                               // unused
-AZPOLY                          1                               // polynomial order for Neumann
-AZSCAL                          none                            // none sym infnorm scaling of the system
-DWINDTAU                        2.5                             // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-ML_PRINT                        0                               // ML print-out level (0-10)
-ML_MAXCOARSESIZE                125                             // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                               // ML max number of levels
-ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                         // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.45                            // damping fine grid
-ML_DAMPMED                      0.66                            // damping med grids
-ML_DAMPCOARSE                   1.0                             // damping coarse grid
+AZTOL                           1.0E-5                        // tolerance in (un)scaled residual
+AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           1000                          // size of krylov space for gmres
+AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1                             // unused
+AZPOLY                          1                             // polynomial order for Neumann
+AZSCAL                          none                          // none sym infnorm scaling of the system
+DWINDTAU                        2.5                           // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                125                           // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     2 2 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.45                          // damping fine grid
+ML_DAMPMED                      0.66                          // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0 // Re=662
 ----------------------------------------------------------------------CURVE1

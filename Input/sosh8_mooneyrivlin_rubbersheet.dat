@@ -20,15 +20,15 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
-// number of nodal clouds
+//                                                             // number of nodal clouds
 --------------------------------------------------------------DISCRETISATION
-// Number of meshes in ale field
+//                                                             // Number of meshes in ale field
 NUMALEDIS                       1
-// Number of meshes in fluid field
+//                                                             // Number of meshes in fluid field
 NUMFLUIDDIS                     1
-// Number of meshes in structural field
+//                                                             // Number of meshes in structural field
 NUMSTRUCDIS                     1
-// Number of meshes in thermal field
+//                                                             // Number of meshes in thermal field
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -54,7 +54,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     400
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.01
 NUMSTEP                         5
 MAXTIME                         100.0

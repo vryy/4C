@@ -43,7 +43,7 @@ PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
-AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_DAMPING                1.3 1.3 1.3                  
 AMGBS_BS_PCCOARSE               Umfpack
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
@@ -67,7 +67,7 @@ DWINDTAU                        1.5
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                             // Add Insert Zero
+IFPACKCOMBINE                   Add                           // Add Insert Zero
 ML_AGG_SIZE                     27
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
@@ -81,16 +81,16 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
+ML_SMOTIMES                     1 1 1 1 1                    
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         No
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      Statics
 ITERNORM                        L2
 K_DAMP                          0.5

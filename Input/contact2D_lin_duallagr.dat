@@ -44,7 +44,7 @@ DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESEVRYERGY                     1
 RESTARTEVRY                     10
-NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 PREDICT                         TangDis
 TIMESTEP                        0.03
 NUMSTEP                         50

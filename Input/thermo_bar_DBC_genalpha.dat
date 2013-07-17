@@ -51,7 +51,7 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha  //  Statics,OneStepTheta,GenAlpha,ExplicitEuler
 INITFUNCNO                      -1
 INITIALFIELD                    zero_field

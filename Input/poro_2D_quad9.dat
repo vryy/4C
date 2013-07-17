@@ -39,7 +39,7 @@ ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         1000
 MESHTYING                       no
-NONLINEARBC                   no
+NONLINEARBC                     no
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1
@@ -88,7 +88,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
+COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit 
 INCTOL                          1e-08
 ITEMAX                          20
 ITEMIN                          1
@@ -117,10 +117,10 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE -1 -1 -1
+CONTROLNODE                     -1 -1 -1                     
 CONTROLTYPE                     load
 DAMPING                         Material
-DIVERCONT                       No
+DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
@@ -129,7 +129,7 @@ MAXITER                         50
 MAXTIME                         8
 MINITER                         0
 M_DAMP                          0.5
-NLNSOL fullnewton //fullnewton newtonlinuzawa
+NLNSOL                          fullnewton //fullnewton newtonlinuzawa 
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And

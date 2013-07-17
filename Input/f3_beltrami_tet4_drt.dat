@@ -29,7 +29,7 @@ NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      BDF2                            // identical results with: Np_Gen_Alpha
+TIMEINTEGR                      BDF2                          // identical results with: Np_Gen_Alpha
 UPRES                           1
 RESTARTEVRY                     2
 MAXTIME                         0.1

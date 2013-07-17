@@ -37,13 +37,13 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-STRUCT_DISP                     Yes                             // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   GL                              // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2PK                             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          2PK                             // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX Initial //Current // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                             // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD Initial //Current // None,No,NO,no,Current,Initial
+STRUCT_DISP                     Yes                           // Yes,No,yes,no,YES,NO
+STRUCT_STRAIN                   GL                            // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+THERM_HEATFLUX                  Initial //Current             // None,No,NO,no,Current,Initial
+THERM_TEMPERATURE               Yes                           // Yes,No,yes,no,YES,NO
+THERM_TEMPGRAD                  Initial //Current             // None,No,NO,no,Current,Initial
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -51,19 +51,19 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No                              // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
-DYNAMICTYP                      Statics                         // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DIVERCONT                       stop                          // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
+DYNAMICTYP                      Statics                       // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton                      // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton                    // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs                             // Abs,Rel,Mix
+NORM_RESF                       Abs                           // Abs,Rel,Mix
 NUMSTEP                         200
-PREDICT                         ConstDis                        // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis                      // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -73,8 +73,8 @@ TOLRES                          1e-04
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       No
-DYNAMICTYP                      OneStepTheta                    // Statics,OneStepTheta
+DIVERCONT                       stop
+DYNAMICTYP                      OneStepTheta                  // Statics,OneStepTheta
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 ITERNORM                        L2
@@ -82,12 +82,12 @@ LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton                      // vague,fullnewton
+NLNSOL                          fullnewton                    // vague,fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp                       // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         ConstTemp                     // Vague,ConstTemp,ConstTempRate,TangTemp
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.01
@@ -98,8 +98,8 @@ THETA 1.0 //0.5
 -----------------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
 COUPALGO                        tsi_iterstagg_aitken//tsi_iterstagg(_irons,_fixedrelax,_sequstagg,_oneway,_monolithic)
-COUPVARIABLE                    Temperature                     // Displacement,TemperatureDisplacement //
-//FIXEDOMEGA                    1.0                             // default
+COUPVARIABLE                    Temperature                   // Displacement,TemperatureDisplacement //
+//FIXEDOMEGA                    1.0                           // default
 ITEMAX                          100
 MAXTIME                         1.0
 MAXOMEGA                        2.0
@@ -109,16 +109,16 @@ TIMESTEP                        0.1
 UPRES                           1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_DAMPING                1.3 1.3 1.3                  
 AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0                  
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_BS_PCSWEEPS               2 2 2                        
 AMGBS_PSMOOTHER_PRE             PA-AMG
 AMGBS_PSMOOTHER_VEL             PA-AMG
 AZBDIAG                         0
-AZCONV                          AZ_r0                           // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0                         // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
 AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
@@ -127,8 +127,8 @@ AZOUTPUT                        0
 AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
-AZSCAL                          none                            // none,sym,infnorm
-AZSOLVE                         GMRES                           // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSCAL                          none                          // none,sym,infnorm
+AZSOLVE                         GMRES                         // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
 AZTOL                           1e-08
 DWINDTAU                        1.5
@@ -149,16 +149,16 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
-SOLVER                          UMFPACK                         // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+ML_SMOTIMES                     1 1 1 1 1                    
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_DAMPING                1.3 1.3 1.3                  
 AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0                  
 AMGBS_BS_PCFINE                 Umfpack
 AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_BS_PCSWEEPS               2 2 2                        
 AMGBS_PSMOOTHER_PRE             PA-AMG
 AMGBS_PSMOOTHER_VEL             PA-AMG
 AZBDIAG                         0
@@ -193,8 +193,8 @@ ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
-ML_SMOTIMES 1 1 1 1 1
-SOLVER                          UMFPACK                         // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+ML_SMOTIMES                     1 1 1 1 1                    
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
 //parameters for steel [N,m,s,K]
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e11 NUE 0.0 DENS 7850.0 THEXPANS 1.2e-05 CAPA 3297000.0 CONDUCT 52.0 INITTEMP 300.0
