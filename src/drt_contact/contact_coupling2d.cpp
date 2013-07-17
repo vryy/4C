@@ -104,7 +104,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   double mxib = xiproj_[3];
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
+  CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
 
   // *******************************************************************
   // different options for mortar integration
@@ -132,10 +132,14 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
     Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
+    Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg = Teuchos::null;
     if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,mseg,gseg,wseg);
+    if (WearSide() != INPAR::CONTACT::wear_slave)
+      d2seg = Teuchos::rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
+
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,d2seg,mseg,gseg,wseg);
 
     // do the two assemblies into the slave nodes
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -147,6 +151,10 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     // assemble wear
     if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
+
+    // assemble diagonal master D matrix resulting due to weark dirichlet enforcement
+    if (WearSide() != INPAR::CONTACT::wear_slave)
+      integrator.AssembleD2(Comm(),MasterElement(),*d2seg);
   }
 
   // *******************************************************************
@@ -179,7 +187,7 @@ CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
-icontact_(params),
+imortar_(params),
 sele_(sele),
 mele_(mele)
 {
@@ -210,7 +218,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   if (IntType()==INPAR::MORTAR::inttype_segments)
   {
     // switch, if consistent boundary modification chosen
-    if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+    if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
         && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
        )
     {
@@ -219,7 +227,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       {
         // create Coupling2d object and push back
         Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
-            idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+            idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
         // project the element pair
         Coupling()[m]->Project();
@@ -249,7 +257,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       {
         // create Coupling2d object and push back
         Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
-            idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+            idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
         // project the element pair
         Coupling()[m]->Project();
@@ -265,13 +273,13 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
+  else if (IntType()==INPAR::MORTAR::inttype_elements || IntType()==INPAR::MORTAR::inttype_elements_BS)
   {
     if ((int)MasterElements().size()==0)
         return false;
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
+    CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
 
     // *******************************************************************
     // different options for mortar integration
@@ -295,7 +303,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       for (int m=0;m<(int)MasterElements().size();++m)
       {
         // create CoCoupling2d object and push back
-        Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+        Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
         // project the element pair
         Coupling()[m]->Project();
@@ -318,14 +326,14 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
         wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       //perform integration
-      integrator.FastIntegration(SlaveElement(),MasterElements(),dseg,mseg,gseg,wseg,&boundary_ele);
+      integrator.EleBased_Integration(SlaveElement(),MasterElements(),dseg,mseg,gseg,wseg,&boundary_ele);
 
-      if (IntType()==INPAR::MORTAR::inttype_fast_BS)
+      if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
         if (boundary_ele==true)
         {
           // switch, if consistent boundary modification chosen
-          if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+          if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
               && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
           )
           {
@@ -334,7 +342,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
             {
               // create Coupling2d object and push back
               Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
-                  idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+                  idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
               // project the element pair
               Coupling()[m]->Project();
@@ -362,7 +370,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
             for (int m=0;m<(int)MasterElements().size();++m)
             {
               // create CoCoupling2d object and push back
-              Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+              Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
               // project the element pair
               Coupling()[m]->Project();
@@ -379,7 +387,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
         {
           // do the two assemblies into the slave nodes
           integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-          integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+          integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
 
           // also do assembly of weighted gap vector
           integrator.AssembleG(Comm(),SlaveElement(),*gseg);
@@ -393,7 +401,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       {
         // do the two assemblies into the slave nodes
         integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+        integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
 
         // also do assembly of weighted gap vector
         integrator.AssembleG(Comm(),SlaveElement(),*gseg);
@@ -440,11 +448,11 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
     dserror("ConsistentDualShape() called for standard LM interpolation.");
 
   // Consistent modification only for linear LM interpolation
-  if (Quad()==true && DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true)
+  if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   // you should not be here
-  if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
+  if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
   // do nothing if there are no coupling pairs
@@ -478,7 +486,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   else           endslave = false;
 
   // create an integrator for this segment
-  CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
+  CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
 
   std::vector<std::map<int,double> > ximaps(4);
   // get directional derivatives of sxia, sxib, mxia, mxib
