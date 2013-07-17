@@ -724,6 +724,18 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     if (xmlfile != "none")
       mllist.set("xml file",xmlfile);
     mllist.set<bool>("LINALG::MueLu_Preconditioner",true);
+
+    mllist.set("aggregation: threshold"          ,inparams.get<double>("ML_PROLONG_THRES"));
+
+    int doRepart = DRT::INPUT::IntegralValue<int>(inparams,"MueLu_REBALANCE");
+    if(doRepart > 2) {
+      mllist.set("muelu repartition: enable",1);
+    } else {
+      mllist.set("muelu repartition: enable",0);
+    }
+    //mllist.set("repartition: partitioner","ParMETIS");
+    mllist.set("muelu repartition: max min ratio",inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
+    mllist.set("muelu repartition: min per proc",inparams.get<int>("MueLu_REBALANCE_MINROWS"));
   }
   break;
   case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
@@ -1007,7 +1019,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   mllist.set("null space: type","pre-computed");
   mllist.set("null space: add default vectors",false);
   mllist.set<double*>("null space: vectors",NULL);
-#if defined(PARALLEL) && defined(PARMETIS)
+#if defined(PARALLEL) && defined(PARMETIS) // these are the hard-coded ML repartitioning settings
   mllist.set("repartition: enable",1);
   mllist.set("repartition: partitioner","ParMETIS");
   mllist.set("repartition: max min ratio",1.3);

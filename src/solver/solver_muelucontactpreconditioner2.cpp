@@ -55,7 +55,9 @@
 #include "MueLu_RebalanceTransferFactory.hpp"
 #include "MueLu_IsorropiaInterface.hpp"
 #include "MueLu_RebalanceAcFactory.hpp"
+#include "MueLu_RebalanceMapFactory.hpp"
 #endif
+
 
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
@@ -158,7 +160,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   int    minPerAgg = 3;       // optimal for 2d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
-  bool bSegregateAggregates = true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
+  bool bSegregateAggregates = true; //false; // TODO fix me: only for tests with repartitioning! true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
+
+  bool bDoRepartition = false;
+  double optNnzImbalance = 1.3;
+  int optMinRowsPerProc = 3000;
 
   if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
   if(params.isParameter("ML output"))  verbosityLevel = params.get<int>("ML output");
@@ -170,6 +176,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
   if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
   //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
+
+  if(params.isParameter("muelu repartition: enable")) {
+    if(params.get<int>("muelu repartition: enable") == 1)      bDoRepartition = true;
+  }
+  if(params.isParameter("muelu repartition: max min ratio"))      optNnzImbalance     = params.get<double>("muelu repartition: max min ratio");
+  if(params.isParameter("muelu repartition: min per proc"))       optMinRowsPerProc   = params.get<int>("muelu repartition: min per proc");
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
@@ -272,6 +284,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
   // TODO what if xSingleNodeAggMap == Teuchos::null?
+  // when is SingleNodeAFact built? first when TrilinosSmoother is generated? Is it reused properly?
   Teuchos::RCP<FactoryBase> singleNodeAFact =
        Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
 
@@ -333,7 +346,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
 
   if(xSingleNodeAggMap != Teuchos::null) { // declare single node aggregates
-    //UCAggFact->SetOnePtMapName("SingleNodeAggDofMap", MueLu::NoFactory::getRCP());
     UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry(std::string("SingleNodeAggDofMap")));
     UCAggFact->SetFactory("OnePt aggregate map factory", MueLu::NoFactory::getRCP());
   }
@@ -372,14 +384,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     //       that problematic columns in Ptent are not corresponding to columns that belong to the
     //       with nonzero entries in slave rows. // TODO think more about this -> aggregation
     PFact->SetParameter("NonSmoothRowMapName", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
-    //PFact->SetParameter("NonSmoothRowMapName", Teuchos::ParameterEntry(std::string("")));
     PFact->SetFactory("NonSmoothRowMapFactory", MueLu::NoFactory::getRCP());
 
     // provide diagnostics of diagonal entries of current matrix A
     // if the solver object detects some significantly small entries on diagonal the contact
     // preconditioner can decide to skip transfer operator smoothing to increase robustness
     PFact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("NearZeroDiagMap")));
-    //PFact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("")));
     PFact->SetFactory("NearZeroDiagMapFactory", MueLu::NoFactory::getRCP());
 
     if(bSegregateAggregates) PFact->SetFactory("A",segregatedAFact); // make sure that prolongator smoothing does not disturb segregation of transfer operators
@@ -454,47 +464,66 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   ///////////////////////////////////////////////////////////////////////
   // introduce rebalancing
   ///////////////////////////////////////////////////////////////////////
-#if 1
-  // The Factory Manager will be configured to return the rebalanced versions of P, R, A by default.
-  // Everytime we want to use the non-rebalanced versions, we need to explicitly define the generating factory.
-  RFact->SetFactory("P", PFact);
-  //
-  AcFact->SetFactory("P", PFact);
-  AcFact->SetFactory("R", RFact);
+#ifdef HAVE_MUELU_ISORROPIA
+  Teuchos::RCP<Factory> RebalancedPFact = Teuchos::null;
+  Teuchos::RCP<Factory> RebalancedRFact = Teuchos::null;
+  Teuchos::RCP<Factory> RepartitionFact = Teuchos::null;
+  Teuchos::RCP<RebalanceAcFactory> RebalancedAFact = Teuchos::null;
+  if(bDoRepartition) {
+    // The Factory Manager will be configured to return the rebalanced versions of P, R, A by default.
+    // Everytime we want to use the non-rebalanced versions, we need to explicitly define the generating factory.
+    RFact->SetFactory("P", PFact);
+    //
+    AcFact->SetFactory("P", PFact);
+    AcFact->SetFactory("R", RFact);
 
-  // create "Partition"
-  Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface = Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
-  isoInterface->SetFactory("A", AcFact);
+    // create "Partition"
+    Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface = Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
+    isoInterface->SetFactory("A", AcFact);
 
-  // Repartitioning (creates "Importer" from "Partition")
-  Teuchos::RCP<Factory> RepartitionFact = Teuchos::rcp(new RepartitionFactory());
-  {
-    Teuchos::ParameterList paramList;
-    paramList.set("minRowsPerProcessor", 10 /*optMinRowsPerProc*/);
-    paramList.set("nonzeroImbalance", 1.2 /*optNnzImbalance*/);
-    RepartitionFact->SetParameterList(paramList);
+    // Repartitioning (creates "Importer" from "Partition")
+    RepartitionFact = Teuchos::rcp(new RepartitionFactory());
+    {
+      Teuchos::ParameterList paramList;
+      paramList.set("minRowsPerProcessor", /*10*/ optMinRowsPerProc);
+      paramList.set("nonzeroImbalance", /*1.2*/ optNnzImbalance);
+      RepartitionFact->SetParameterList(paramList);
+    }
+    RepartitionFact->SetFactory("A", AcFact);
+    RepartitionFact->SetFactory("Partition", isoInterface);
+
+    // Reordering of the transfer operators
+    RebalancedPFact = Teuchos::rcp(new RebalanceTransferFactory());
+    RebalancedPFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Interpolation")));
+    RebalancedPFact->SetFactory("P", PFact);
+
+    RebalancedRFact = Teuchos::rcp(new RebalanceTransferFactory());
+    RebalancedRFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Restriction")));
+    RebalancedRFact->SetFactory("R", RFact);
+    RebalancedRFact->SetFactory("Nullspace", PtentFact);
+
+    // Compute Ac from rebalanced P and R
+    RebalancedAFact = Teuchos::rcp(new RebalanceAcFactory());
+    RebalancedAFact->SetFactory("A", AcFact);
+
+    // Rebalance maps
+    Teuchos::RCP<RebalanceMapFactory> rebFact = Teuchos::rcp(new RebalanceMapFactory());
+    rebFact->SetParameter("Map name", Teuchos::ParameterEntry(std::string("SingleNodeAggDofMap")));
+    RebalancedAFact->AddRebalanceFactory(rebFact);
+
+    Teuchos::RCP<RebalanceMapFactory> rebFact2 = Teuchos::rcp(new RebalanceMapFactory());
+    rebFact2->SetParameter("Map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+    RebalancedAFact->AddRebalanceFactory(rebFact2);
+
+    Teuchos::RCP<RebalanceMapFactory> rebFact3 = Teuchos::rcp(new RebalanceMapFactory());
+    rebFact3->SetParameter("Map name", Teuchos::ParameterEntry(std::string("MasterDofMap")));
+    RebalancedAFact->AddRebalanceFactory(rebFact3);
+
+    Teuchos::RCP<RebalanceMapFactory> rebFact4 = Teuchos::rcp(new RebalanceMapFactory());
+    rebFact4->SetParameter("Map name", Teuchos::ParameterEntry(std::string("NearZeroDiagMap")));
+    RebalancedAFact->AddRebalanceFactory(rebFact4);
   }
-  RepartitionFact->SetFactory("A", AcFact);
-  RepartitionFact->SetFactory("Partition", isoInterface);
-
-  // Reordering of the transfer operators
-  const std::string t = "useSubcomm";
-  Teuchos::RCP<Factory> RebalancedPFact = Teuchos::rcp(new RebalanceTransferFactory());
-  RebalancedPFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Interpolation")));
-  RebalancedPFact->SetFactory("P", PFact);
-  RebalancedPFact->SetParameter(t,Teuchos::ParameterEntry(false));
-
-  Teuchos::RCP<Factory> RebalancedRFact = Teuchos::rcp(new RebalanceTransferFactory());
-  RebalancedRFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Restriction")));
-  RebalancedRFact->SetFactory("R", RFact);
-  RebalancedRFact->SetFactory("Nullspace", PtentFact);
-  RebalancedRFact->SetParameter(t,Teuchos::ParameterEntry(false));
-
-  // Compute Ac from rebalanced P and R
-  Teuchos::RCP<Factory> RebalancedAFact = Teuchos::rcp(new RebalanceAcFactory());
-  RebalancedAFact->SetFactory("A", AcFact);
-  RebalancedAFact->SetParameter(t,Teuchos::ParameterEntry(false));
-#endif
+#endif // #ifdef HAVE_MUELU_ISORROPIA
 
   ///////////////////////////////////////////////////////////////////////
   // prepare factory managers
@@ -514,28 +543,33 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     else
       SmooFactFine = GetContactSmootherFactory(pp, i, Teuchos::null); // use filtered matrix on fine and intermedium levels
 
+    // Configure FactoryManager
     if(SmooFactFine != Teuchos::null)
       vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
     vecManager[i]->SetFactory("CoarseSolver", coarsestSmooFact);
     vecManager[i]->SetFactory("Aggregates", UCAggFact);
     vecManager[i]->SetFactory("Graph", dropFact);
     vecManager[i]->SetFactory("DofsPerNode", dropFact);
-#if 0
-    vecManager[i]->SetFactory("Nullspace", nspFact); // use same nullspace factory throughout all multigrid levels
-    vecManager[i]->SetFactory("A", AcFact);          // same RAP factory for all levels
-    vecManager[i]->SetFactory("P", PFact);           // same prolongator and restrictor factories for all levels
-    vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
-    vecManager[i]->SetFactory("R", RFact);           // same prolongator and restrictor factories for all levels
-#else
 
-    // Configure FactoryManager
-    vecManager[i]->SetFactory("A", RebalancedAFact);
-    vecManager[i]->SetFactory("P", RebalancedPFact);
-    vecManager[i]->SetFactory("R", RebalancedRFact);
-    vecManager[i]->SetFactory("Nullspace",   RebalancedRFact);
-    vecManager[i]->SetFactory("Importer",    RepartitionFact);
-    vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
+#ifdef HAVE_MUELU_ISORROPIA
+    if(bDoRepartition) {
+      vecManager[i]->SetFactory("A", RebalancedAFact);
+      vecManager[i]->SetFactory("P", RebalancedPFact);
+      vecManager[i]->SetFactory("R", RebalancedRFact);
+      vecManager[i]->SetFactory("Nullspace",   RebalancedRFact);
+      vecManager[i]->SetFactory("Importer",    RepartitionFact);
+      vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
+    } else {
+#endif // #ifdef HAVE_MUELU_ISORROPIA
+      vecManager[i]->SetFactory("Nullspace", nspFact); // use same nullspace factory throughout all multigrid levels
+      vecManager[i]->SetFactory("A", AcFact);          // same RAP factory for all levels
+      vecManager[i]->SetFactory("P", PFact);           // same prolongator and restrictor factories for all levels
+      vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
+      vecManager[i]->SetFactory("R", RFact);           // same prolongator and restrictor factories for all levels
+#ifdef HAVE_MUELU_ISORROPIA
+    }
 #endif
+
 
   }
 
