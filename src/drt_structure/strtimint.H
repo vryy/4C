@@ -228,16 +228,20 @@ namespace STR
     virtual void PrepareTimeStep() = 0;
 
     //! Do time integration of multiple steps
-    void Integrate();
+    int Integrate();
+
+    //! do something in case nonlinear soluttion does not converge for some reason
+    int PerformErrorAction(int nonlinsoldiv);
 
     //! Do time integration of single step
-    virtual void IntegrateStep() = 0;
+    virtual int IntegrateStep() = 0;
+
 
     /// non-linear solve
     ///
     /// Do the nonlinear solve for the time step. All boundary conditions have
     /// been set.
-    virtual void Solve() = 0;
+    virtual int Solve() = 0;
 
     //! Linear structure solve with just an interface load
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
@@ -958,6 +962,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;    //!< old style dirichtoggle vector
                                                   //!< (only used for contact and supposed
                                                   //!< to go away sonner or later)
+    enum INPAR::STR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
     //@}
 
     //! @name Printing and output

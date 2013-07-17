@@ -80,7 +80,7 @@ namespace STR
     void InitializeBeamContact();
 
     //! \brief Do time integration
-    void Integrate();
+    int Integrate();
 
     //! \brief do predictor step
     void Predict();

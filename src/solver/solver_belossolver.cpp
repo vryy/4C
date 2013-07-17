@@ -194,7 +194,7 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::BelosSolver::Solve()
+int LINALG::SOLVER::BelosSolver::Solve()
 {
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
@@ -208,6 +208,7 @@ void LINALG::SOLVER::BelosSolver::Solve()
 
   // build Belos linear problem
   Teuchos::RCP<Belos::LinearProblem<double, MV, OP> > problem = Teuchos::rcp(new Belos::LinearProblem<double,MV,OP>(A_, x_, b_) );
+  bool we_have_a_problem = false;
   // TODO support for left preconditioner?
   if (preconditioner_ != Teuchos::null)
   {
@@ -243,6 +244,7 @@ void LINALG::SOLVER::BelosSolver::Solve()
   if (ret!=Belos::Converged)
   {
     std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
+    we_have_a_problem=true;
   }
 
 #ifdef HAVE_MueLu
@@ -283,4 +285,8 @@ void LINALG::SOLVER::BelosSolver::Solve()
 #endif // HAVE_MueLu
 
   ncall_ += 1; // increment counter of solver calls
+   if(we_have_a_problem)
+    return 1;
+  else // everything is fine
+    return 0;
 }

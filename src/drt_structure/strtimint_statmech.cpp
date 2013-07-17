@@ -254,7 +254,7 @@ void STR::TimIntStatMech::InitializeBeamContact()
 /*----------------------------------------------------------------------*
  |  integrate in time          (static/public)             mueller 03/12|
  *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::Integrate()
+int STR::TimIntStatMech::Integrate()
 {
   // set statmech internal time and time step size
   statmechman_->UpdateTimeAndStepSize((*dt_)[0],(*time_)[0],true);
@@ -342,7 +342,7 @@ void STR::TimIntStatMech::Integrate()
     }
 #endif
   }
-  return;
+  return 0;
 } // void STR::TimIntStatMech::Integrate()
 
 
@@ -791,9 +791,9 @@ void STR::TimIntStatMech::NewtonFull()
     cout<<"Newton-Raphson-iteration converged with..."<<endl;
     PrintNewtonIter();
   }
-  else if ( iter_ >= itermax_ && !iterdivercont_ )
+  else if ( iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_stop )
     dserror("Newton unconverged in %d iterations", iter_);
-  else if ( iter_ >= itermax_ && iterdivercont_ && !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
+  else if ( iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_continue && !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
     printf("Newton unconverged in %d iterations - new trial with new random numbers!\n\n", iter_);
   // get out of here
   return;

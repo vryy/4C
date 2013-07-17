@@ -149,7 +149,7 @@ int LINALG::SOLVER::DirectSolver::ApplyInverse(const Epetra_MultiVector& X, Epet
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::DirectSolver::Solve()
+int LINALG::SOLVER::DirectSolver::Solve()
 {
   if (amesos_==Teuchos::null) dserror("No solver allocated");
 
@@ -173,6 +173,8 @@ void LINALG::SOLVER::DirectSolver::Solve()
     // get x from x = P x_tilda
     projector_->ApplyP(*x_);
   }
+  // direct solver does not support errorcodes
+  return 0;
 }
 
 

@@ -87,7 +87,7 @@ void STR::TimIntExplEuler::ResizeMStep()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-void STR::TimIntExplEuler::IntegrateStep()
+int STR::TimIntExplEuler::IntegrateStep()
 {
   // time this step
   timer_->ResetStartTime();
@@ -209,7 +209,7 @@ void STR::TimIntExplEuler::IntegrateStep()
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
   // wassup?
-  return;
+  return 0;
 }
 
 /*----------------------------------------------------------------------*/

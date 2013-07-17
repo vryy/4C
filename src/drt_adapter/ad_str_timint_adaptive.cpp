@@ -38,9 +38,9 @@ ADAPTER::StructureTimIntAda::StructureTimIntAda(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::Integrate()
+int ADAPTER::StructureTimIntAda::Integrate()
 {
-  structure_->Integrate();
+  return structure_->Integrate();
 }
 
 /*----------------------------------------------------------------------*/

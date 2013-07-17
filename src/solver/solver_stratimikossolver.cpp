@@ -71,7 +71,7 @@ void LINALG::SOLVER::StratimikosSolver::Setup( Teuchos::RCP<Epetra_Operator> mat
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::StratimikosSolver::Solve()
+int LINALG::SOLVER::StratimikosSolver::Solve()
 {
   Teuchos::RCP<Teuchos::ParameterList> stratimikoslist = Teuchos::rcp(new Teuchos::ParameterList(Params().sublist("Stratimikos Parameters")));
       //Teuchos::rcp(&(Params().sublist("Stratimikos Parameters")));
@@ -139,6 +139,7 @@ void LINALG::SOLVER::StratimikosSolver::Solve()
   }*/
 
   ncall_ += 1;
+  return 0;
 }
 
 

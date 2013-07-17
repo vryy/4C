@@ -99,6 +99,7 @@ STR::TimInt::TimInt
   solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
+  divcontype_(DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT")),
   output_(output),
   printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
@@ -1057,19 +1058,10 @@ void STR::TimInt::SetRestartState
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeColMap()));
 
-  // unpack nodes and elements and redistirbuted to current layout
-
-  // take care --- we are just adding elements to the discretisation
-  // that means depending on the current distribution and the
-  // distribution of the data read we might increase the
-  // number of elements in dis_
-  // the call to redistribute deletes the unnecessary elements,
-  // so everything should be OK
-  // lets hope we dont need this
-  //discret_->UnPackMyNodes(nodedata);
+  // unpack nodes and elements 
   discret_->UnPackMyElements(elementdata);
-  discret_->Redistribute(*noderowmap,*nodecolmap);
-
+  int err =  discret_->FillComplete(true,true,true);
+  if (err) dserror("FillComplete() returned err=%d",err);
   return;
 }
 /*----------------------------------------------------------------------*/
@@ -2198,56 +2190,130 @@ void STR::TimInt::ApplyForceInternal
 
 /*----------------------------------------------------------------------*/
 /* integrate */
-void STR::TimInt::Integrate()
+int STR::TimInt::Integrate()
 {
-  // target time #timen_ and step #stepn_ already set
+  // error checking variables
+  int lnonlinsoldiv = 0;
+  int nonlinsoldiv  = 0;
 
+  // target time #timen_ and step #stepn_ already set
   // time loop
   // (NOTE: popp 03/2010: we have to add eps to avoid the very
   // awkward effect that the time loop stops one step too early)
   double eps = 1.0e-12;
-  //cout << "we are in timint and the time is" << timen_ << endl;
-  while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
+  while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) and (not nonlinsoldiv) )
   {
     // prepare contact for new time step
     PrepareStepContact();
 
     // integrate time step
     // after this step we hold disn_, etc
-    IntegrateStep();
+    lnonlinsoldiv = IntegrateStep();
+    // since it is possible that the nonlinear solution fails only on some procs
+    // we need to communicate the error
+    discret_->Comm().Barrier();
+    discret_->Comm().MaxAll(&lnonlinsoldiv,&nonlinsoldiv,1);
+    discret_->Comm().Barrier();
 
-    // calculate stresses, strains and energies
-    // note: this has to be done before the update since otherwise a potential
-    // material history is overwritten
-    PrepareOutput();
+    // if everything is fine
+    if(!nonlinsoldiv)
+    {
+      // calculate stresses, strains and energies
+      // note: this has to be done before the update since otherwise a potential
+      // material history is overwritten
+      PrepareOutput();
 
-    // update displacements, velocities, accelerations
-    // after this call we will have disn_==dis_, etc
-    UpdateStepState();
+      // calculate stresses, strains and energies
+      // note: this has to be done before the update since otherwise a potential
+      // material history is overwritten
+      PrepareOutput();
 
-    // update time and step
-    UpdateStepTime();
+      // update displacements, velocities, accelerations
+      // after this call we will have disn_==dis_, etc
+      UpdateStepState();
 
-    // update everything on the element level
-    UpdateStepElement();
+      // update time and step
+      UpdateStepTime();
 
-    // write output
-    OutputStep();
+      // update everything on the element level
+      UpdateStepElement();
 
-    // print info about finished time step
-    PrintStep();
+      // write output
+      OutputStep();
+
+      // print info about finished time step
+      PrintStep();
+    }
+    else // something went wrong update errorcode according to chosen divcont action
+    {
+      nonlinsoldiv = PerformErrorAction(nonlinsoldiv);
+    }
   }
-
   // stop supporting processors in multi scale simulations
   if (havemicromat_)
   {
     STRUMULTI::stop_np_multiscale();
   }
-
-  // that's it
-  return;
+  // that's it say what went wrong
+  return nonlinsoldiv;
 }
 
+/*----------------------------------------------------------------------*/
+int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
+{
+  // what to do when nonlinear solver does not converge
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  enum INPAR::STR::DivContAct divcontype = (DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdyn,"DIVERCONT"));
+  switch (divcontype)
+     {
+       case INPAR::STR::divcont_stop:
+       {
+       		// we should not get here, dserror for safety
+         dserror("Nonlinear solver did not converge! ");
+         return 1;
+       }
+       case INPAR::STR::divcont_continue:
+       {
+       // we should not get here, dserror for safety
+         dserror("Nonlinear solver did not converge! ");
+         return 1;
+       }
+       break;
+       case INPAR::STR::divcont_repeat_step:
+       {
+         IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
+         // do nothing since we didn't update yet
+         return 0;
+       }
+       break;
+       case INPAR::STR::divcont_halve_step:
+        {
+          IO::cout << "Nonlinear solver failed to converge divide timestep in half" << IO::endl;
+          // halve the time step size
+          (*dt_)[0]=(*dt_)[0]*0.5;
+          // update the number of max timesteps
+          stepmax_= stepmax_ + (stepmax_-stepn_)*2+1;
+          // reset timen_ because it is set in the constructor
+          timen_ = (*time_)[0] + (*dt_)[0];;
+          return 0;
+        }
+        break;
+       case INPAR::STR::divcont_repeat_simulation:
+       {
+         if(nonlinsoldiv==1)
+           IO::cout << "Nonlinear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
+         else if (nonlinsoldiv==2)
+           IO::cout << "Linear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
+         return 1; // so that timeloop will be aborted
+       }
+       break;
+       default:
+         dserror("Unknown DIVER_CONT case");
+         return 1;
+         break;
+     }
+  return 0; // make compiler happy
+}
 /*----------------------------------------------------------------------*/
 /* check whether contact solver should be used */
 bool STR::TimInt::UseContactSolver()

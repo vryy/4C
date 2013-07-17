@@ -1064,9 +1064,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::norm_rms,
                                  INPAR::STR::norm_inf),
                                &sdyn);
-  setStringToIntegralParameter<int>("DIVERCONT","No",
-                                    "Go on with time integration even if Newton-Raphson iteration failed",
-                                    yesnotuple,yesnovalue,&sdyn);
+
+  setStringToIntegralParameter<int>("DIVERCONT","stop","What to do with time integration when Newton-Raphson iteration failed",
+                                tuple<std::string>(
+                                  "stop",
+                                  "continue",
+                                  "repeat_step",
+                                  "halve_step",
+                                  "repeat_simulation"),
+                                tuple<int>(
+                                  INPAR::STR::divcont_stop,
+                                  INPAR::STR::divcont_continue,
+                                  INPAR::STR::divcont_repeat_step,
+                                  INPAR::STR::divcont_halve_step,
+                                  INPAR::STR::divcont_repeat_simulation),
+                                &sdyn);
 
   setStringToIntegralParameter<int>("NLNSOL","fullnewton","Nonlinear solution technique",
                                tuple<std::string>(
@@ -1088,6 +1100,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_noxnewtonlinesearch,
                                  INPAR::STR::soltech_noxgeneral),
                                &sdyn);
+
   // Currently not used, but structure will be kept if someone wants to reimplement
   // 																																		AN 2013_05
   setStringToIntegralParameter<int>("CONTROLTYPE","load","load, disp, arc1, arc2 control",
@@ -2083,10 +2096,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &tdyn
     );
 
-  setStringToIntegralParameter<int>("DIVERCONT","No",
-    "Go on with time integration even if Newton-Raphson iteration failed",
-    yesnotuple,yesnovalue,&tdyn
-    );
+  setStringToIntegralParameter<int>("DIVERCONT","stop","What to do with time integration when Newton-Raphson iteration failed",
+    tuple<std::string>(
+    "stop",
+    "continue",
+    "halve_step",
+    "repeat_step",
+    "repeat_simulation"),
+    tuple<int>(
+    INPAR::THR::divcont_stop,
+    INPAR::THR::divcont_continue,
+    INPAR::THR::divcont_halve_step,
+    INPAR::THR::divcont_repeat_step,
+    INPAR::THR::divcont_repeat_simulation),
+  &tdyn);
 
   setStringToIntegralParameter<int>("NLNSOL","fullnewton","Nonlinear solution technique",
     tuple<std::string>(

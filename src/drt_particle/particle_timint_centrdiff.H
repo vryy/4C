@@ -69,7 +69,7 @@ namespace PARTICLE
     //@{
 
     //! Do time integration of single step
-    virtual void IntegrateStep();
+    virtual int IntegrateStep();
 
     //! Nothing to update on element level
     void UpdateStepElement(){ return; }

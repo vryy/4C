@@ -128,8 +128,8 @@ namespace ADAPTER
     { structure_->Reset(); }
 
     /// integrate a single time step
-    virtual void IntegrateStep()
-    { structure_->IntegrateStep(); }
+    virtual int IntegrateStep()
+    { return structure_->IntegrateStep(); }
 
     /*
     \brief Shorten the Dirichlet DOF set
@@ -181,7 +181,7 @@ namespace ADAPTER
     { return structure_->GetTimeNumStep(); }
 
     /// integrate from t1 to t2
-    virtual void Integrate() { structure_->Integrate(); }
+    virtual int Integrate() { return structure_->Integrate(); }
 
     /// set time step size
     virtual void SetTimeStepSize(double timestepsize)
@@ -258,7 +258,7 @@ namespace ADAPTER
     //@{
 
     /// nonlinear solve
-    virtual void Solve()
+    virtual int Solve()
     { return structure_->Solve(); }
 
     //! linear structure solve with just an interface load

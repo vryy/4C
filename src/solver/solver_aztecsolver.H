@@ -60,7 +60,7 @@ namespace LINALG
         Teuchos::RCP<LINALG::KrylovProjector> projector
         );
 
-      virtual void Solve();
+      virtual int Solve();
 
       private:
 

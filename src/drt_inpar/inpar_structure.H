@@ -218,6 +218,46 @@ namespace INPAR
       }
     }
 
+    /// type of solution techniques
+    enum DivContAct
+    {
+      divcont_stop,  ///< abort simulation
+      divcont_continue,  ///< continue nevertheless
+      divcont_repeat_step,  ///< repeat time step
+      divcont_halve_step,  ///< halve time step and carry on with simulation
+      divcont_repeat_simulation,  ///< repeat the whole simulation
+    };
+
+    /// Map  enum to string
+    static inline const std::string DivContActString
+    (
+      const enum DivContAct name  ///< enum to convert
+    )
+    {
+      switch (name)
+      {
+      case divcont_stop :
+        return "stop";
+        break;
+      case divcont_continue :
+        return "continue";
+        break;
+      case  divcont_repeat_step :
+        return "repeat_step";
+        break;
+      case  divcont_halve_step :
+        return "halve_step";
+        break;
+      case divcont_repeat_simulation :
+         return "repeat_simulation";
+         break;
+      default :
+        dserror("Cannot make string for solution div cont technique %d", name);
+        return "";
+      }
+    }
+
+
     /// Type of predictor
     enum PredEnum
     {

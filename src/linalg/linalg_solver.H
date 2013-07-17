@@ -159,7 +159,7 @@ public:
     Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
 
   /// solve linear system after setup has been done
-  void Solve();
+  int Solve();
 
   /// Apply inverse of the preconditioner
   /*!
@@ -185,7 +185,7 @@ public:
   \param projector (in)    : Krylov space projector - Teuchos::null is no
                              projection desired
   */
-  void Solve(
+  int Solve(
     Teuchos::RCP<Epetra_Operator>     matrix                     ,
     Teuchos::RCP<Epetra_MultiVector>       x                     ,
     Teuchos::RCP<Epetra_MultiVector>       b                     ,

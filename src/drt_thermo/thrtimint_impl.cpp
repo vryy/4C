@@ -56,7 +56,7 @@ THR::TimIntImpl::TimIntImpl(
   iternorm_(DRT::INPUT::IntegralValue<INPAR::THR::VectorNorm>(tdynparams,"ITERNORM")),
   itermax_(tdynparams.get<int>("MAXITER")),
   itermin_(tdynparams.get<int>("MINITER")),
-  iterdivercont_(DRT::INPUT::IntegralValue<int>(tdynparams,"DIVERCONT")==1),
+  divcontype_ (DRT::INPUT::IntegralValue<INPAR::THR::DivContAct>(tdynparams,"DIVERCONT")),
   toltempi_(tdynparams.get<double>("TOLTEMP")),
   tolfres_(tdynparams.get<double>("TOLRES")),
   iter_(-1),
@@ -542,24 +542,41 @@ void THR::TimIntImpl::NewtonFull()
   // correct iteration counter
   iter_ -= 1;
 
-  // test whether max iterations was hit
-  if ( (iter_ >= itermax_) and (not iterdivercont_) )
-  {
-    dserror("Newton unconverged in %d iterations", iter_);
-  }
-  else if ( (iter_ >= itermax_) and (iterdivercont_) and (myrank_ == 0) )
-  {
-    printf("Newton unconverged in %d iterations ... continuing\n", iter_);
-  }
-  else if ( (Converged()) and (myrank_ == 0) )
-  {
-    PrintNewtonConv();
-  }
-
-  // get out of here
+  // Only simple divcont actions are implemented (divcont_stop and divcont_continue)
+  NewtonFullErrorCheck();
+  // Hence we do not return an error code
   return;
 }
 
+int THR::TimIntImpl::NewtonFullErrorCheck()
+{
+  // do some error checks
+  if ( (iter_ >= itermax_) and (divcontype_==INPAR::THR::divcont_stop ) )
+  {
+    dserror("Newton unconverged in %d iterations", iter_);
+    return 0;
+  }
+  else if ( (iter_ >= itermax_) and (divcontype_==INPAR::THR::divcont_continue ) )
+  {
+    if (myrank_ == 0)
+      IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
+    return 0;
+  }
+  else if ( divcontype_==INPAR::THR::divcont_repeat_step or divcontype_==INPAR::THR::divcont_halve_step or divcontype_==INPAR::THR::divcont_repeat_simulation )
+  {
+    if (myrank_ == 0)
+      dserror("Fatal failure in NewtonFullErrorCheck()! divcont_repeat_step and divcont_repeat_simulation not implemented for THR");
+    return 0;
+  }
+  // if everything is fine print to screen and return
+  if (Converged())
+  {
+    if(myrank_ == 0)
+    PrintNewtonConv();
+    return 0;
+  }
+  return 0; // make compiler happy
+}
 /*----------------------------------------------------------------------*
  | Prepare system for solving with Newton's method          bborn 08/09 |
  *----------------------------------------------------------------------*/

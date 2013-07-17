@@ -149,7 +149,7 @@ namespace ADAPTER {
     //@}
 
     /// Integrate from t1 to t2
-    virtual void Integrate() { structure_->Integrate(); }
+    virtual int Integrate() { return structure_->Integrate(); }
 
   private:
 

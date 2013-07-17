@@ -231,10 +231,10 @@ namespace ADAPTER {
 
     /// Take the time and integrate (time loop)
     /// \date 11/08
-    virtual void Integrate() = 0;
+    virtual int Integrate() = 0;
 
     /// integrate a single time step
-    virtual void IntegrateStep() = 0;
+    virtual int IntegrateStep() = 0;
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
@@ -310,7 +310,7 @@ namespace ADAPTER {
     ///
     ///  Do the nonlinear solve for the time step. All boundary conditions have
     ///  been set.
-    virtual void Solve() = 0;
+    virtual int Solve() = 0;
 
     /// linear structure solve with just a interface load
     ///

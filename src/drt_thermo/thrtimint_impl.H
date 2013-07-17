@@ -164,6 +164,9 @@ namespace THR
     //! and associated effective tangent matrix #tang_
     void NewtonFull();
 
+    // check for success of nonlinear solve
+    int NewtonFullErrorCheck();
+
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
     //! state of the temperature solution
@@ -362,8 +365,7 @@ namespace THR
     enum INPAR::THR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iterations
-    bool iterdivercont_;  //!< if TRUE then go on with time integration
-                          //!< even if Newton-Raphson iteration failed
+    enum INPAR::THR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
     double toltempi_;  //!< tolerance residual temperatures
     double tolfres_;  //!< tolerance force residual
     int iter_;  //!< iteration step

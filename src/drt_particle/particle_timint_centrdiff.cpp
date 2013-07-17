@@ -86,7 +86,7 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-void PARTICLE::TimIntCentrDiff::IntegrateStep()
+int PARTICLE::TimIntCentrDiff::IntegrateStep()
 {
   // time this step
   timer_->ResetStartTime();
@@ -141,7 +141,7 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
   // apply Dirichlet BCs on accelerations
   ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
 
-  return;
+  return 0;
 }
 
 

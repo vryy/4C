@@ -200,7 +200,7 @@ void LINALG::SOLVER::AztecSolver::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::AztecSolver::Solve()
+int LINALG::SOLVER::AztecSolver::Solve()
 {
 #ifdef WRITEOUTSTATISTICS
   Epetra_Time ttt(Comm());       // time measurement for whole routine
@@ -241,6 +241,9 @@ void LINALG::SOLVER::AztecSolver::Solve()
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
+
+  // bool to return error code
+  bool we_have_a_problem = false;
 
   // This hurts! It supresses error messages. This needs to be fixed.
   if (projector_!=Teuchos::null)
@@ -329,6 +332,7 @@ void LINALG::SOLVER::AztecSolver::Solve()
 #else
   if (status[AZ_why] != AZ_normal)
   {
+    we_have_a_problem = true;
     if (status[AZ_why] == AZ_breakdown)
     {
       if (comm_.MyPID()==0) printf("Numerical breakdown in AztecOO\n");
@@ -398,6 +402,11 @@ void LINALG::SOLVER::AztecSolver::Solve()
 #endif // HAVE_MueLu
 
   ncall_ += 1;
+  if(we_have_a_problem)
+    return 1;
+  else // everything is fine
+    return 0;
+
 }
 
 

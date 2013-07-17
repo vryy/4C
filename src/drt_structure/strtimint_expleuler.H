@@ -69,7 +69,7 @@ namespace STR
     //@{
 
     //! Do time integration of single step
-    virtual void IntegrateStep();
+    virtual int IntegrateStep();
 
     //! Update configuration after time step
     //!

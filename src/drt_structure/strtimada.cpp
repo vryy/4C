@@ -110,7 +110,7 @@ STR::TimAda::TimAda
 
 /*----------------------------------------------------------------------*/
 /* Integrate adaptively in time */
-void STR::TimAda::Integrate()
+int STR::TimAda::Integrate()
 {
   // Richardson extrapolation to no avail
   if (MethodAdaptDis() == ada_ident)
@@ -221,7 +221,7 @@ void STR::TimAda::Integrate()
   }
 
   // leave for good
-  return;
+  return 0;
 }
 
 /*----------------------------------------------------------------------*/

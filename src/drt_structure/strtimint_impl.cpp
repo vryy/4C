@@ -78,7 +78,7 @@ STR::TimIntImpl::TimIntImpl
   iternorm_(DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
   itermax_(sdynparams.get<int>("MAXITER")),
   itermin_(sdynparams.get<int>("MINITER")),
-  iterdivercont_(DRT::INPUT::IntegralValue<int>(sdynparams,"DIVERCONT")==1),
+  divcontype_ (DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT")),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
   tolpfres_(sdynparams.get<double>("TOLINCO")),
@@ -208,13 +208,13 @@ STR::TimIntImpl::TimIntImpl
 
 /*----------------------------------------------------------------------*/
 /* integrate step */
-void STR::TimIntImpl::IntegrateStep()
+int STR::TimIntImpl::IntegrateStep()
 {
+  int error = 0;
   Predict();
-  Solve();
-  return;
+  error = Solve();
+  return error;
 }
-
 /*----------------------------------------------------------------------*/
 /* predict solution */
 void STR::TimIntImpl::Predict()
@@ -1044,20 +1044,21 @@ bool STR::TimIntImpl::Converged()
 
 /*----------------------------------------------------------------------*/
 /* solve equilibrium */
-void STR::TimIntImpl::Solve()
+int STR::TimIntImpl::Solve()
 {
+  int nonlin_error = 0 ;
   // special nonlinear iterations for contact / meshtying
   if (HaveContactMeshtying())
   {
     // choose solution technique in accordance with user's will
-    CmtNonlinearSolve();
+    nonlin_error = CmtNonlinearSolve();
   }
 
   // special nonlinear iterations for beam contact
   else if (HaveBeamContact())
   {
     // choose solution technique in accordance with user's will
-    BeamContactNonlinearSolve();
+    nonlin_error =  BeamContactNonlinearSolve();
   }
 
   // all other cases
@@ -1067,20 +1068,20 @@ void STR::TimIntImpl::Solve()
     switch (itertype_)
     {
     case INPAR::STR::soltech_newtonfull :
-      NewtonFull();
+      nonlin_error = NewtonFull();
       break;
     case INPAR::STR::soltech_newtonuzawanonlin :
-      UzawaNonLinearNewtonFull();
+      nonlin_error = UzawaNonLinearNewtonFull();
       break;
     case INPAR::STR::soltech_newtonuzawalin :
-      UzawaLinearNewtonFull();
+      nonlin_error = UzawaLinearNewtonFull();
       break;
     case INPAR::STR::soltech_noxnewtonlinesearch :
     case INPAR::STR::soltech_noxgeneral :
-      NoxSolve();
+      nonlin_error = NoxSolve();
       break;
     case INPAR::STR::soltech_ptc :
-      PTC();
+      nonlin_error = PTC();
       break;
     // catch problems
     default :
@@ -1089,14 +1090,11 @@ void STR::TimIntImpl::Solve()
       break;
     }
   }
-
-  // see you
-  return;
+  return nonlin_error;
 }
-
 /*----------------------------------------------------------------------*/
 /* solution with full Newton-Raphson iteration */
-void STR::TimIntImpl::NewtonFull()
+int STR::TimIntImpl::NewtonFull()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -1115,8 +1113,9 @@ void STR::TimIntImpl::NewtonFull()
   // normdisi_ was already set in predictor; this is strictly >0
   timer_->ResetStartTime();
 
+  int linsolve_error= 0;
   // equilibrium iteration loop
-  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  while ( ( (not Converged() and (not linsolve_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
     // make negative residual
     fres_->Scale(-1.0);
@@ -1150,7 +1149,12 @@ void STR::TimIntImpl::NewtonFull()
     if (HaveContactMeshtying())
       CmtLinearSolve();
     else
-      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1, projector_);
+    {
+      linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1, projector_);
+      // check for problems in linear solver
+      // however we only care about this if we have a fancy divcont action (meaning function will return 0 )
+      linsolve_error = LinSolveErrorCheck(linsolve_error);
+    }
     solver_->ResetTolerance();
 
     // recover standard displacements
@@ -1255,27 +1259,71 @@ void STR::TimIntImpl::NewtonFull()
     conman_->ComputeMonitorValues(disn_);
   }
 
-  // test whether max iterations was hit
-  if ( (Converged()) and (myrank_ == 0) )
+  //do nonlinear solver error check
+  return NewtonFullErrorCheck(linsolve_error);
+}
+
+int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
+{
+  // if everything is fine print to screen and return
+  if (Converged())
   {
-    PrintNewtonConv();
+    if(myrank_ == 0)
+      PrintNewtonConv();
+    return 0;
   }
-  else if ( (iter_ >= itermax_) and (not iterdivercont_) )
+  // now some error checks
+  // do we have a problem in the linear solver
+  // only check if we want to do something fancy other wise we ignore the error in the linear solver
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
   {
-    dserror("Newton unconverged in %d iterations", iter_);
+    return linerror;
   }
-  else if ( (iter_ >= itermax_) and (iterdivercont_) and (myrank_ == 0) )
+  else
   {
-    printf("Newton unconverged in %d iterations ... continuing\n", iter_);
+    if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_stop ) )
+    {
+      dserror("Newton unconverged in %d iterations", iter_);
+      return 1;
+    }
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_continue ) )
+    {
+      if (myrank_ == 0)
+        IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
+      return 0;
+    }
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    {
+      if (myrank_ == 0)
+        IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;
+      return 1;
+    }
   }
-  // get out of here
-  return;
+  dserror("Fatal error in NonLinSolveErrorCheck, case not implemented ");
+  return 0;
+}
+
+
+int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
+{
+  // we only care about problems in the linear solver if we have a fancy divcont action
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
+  {
+    if (myrank_ == 0)
+    IO::cout<< "Linear solver is having trouble " << IO::endl;
+    return linerror;
+  }
+  else
+  {
+    return 0;
+  }
+
 }
 
 /*----------------------------------------------------------------------*/
 /* do non-linear Uzawa iteration within a full NRI is called,
  * originally by tk */
-void STR::TimIntImpl::UzawaNonLinearNewtonFull()
+int STR::TimIntImpl::UzawaNonLinearNewtonFull()
 {
   // now or never, break it
   dserror("Sorry dude, non-linear Uzawa with full Newton-Raphson"
@@ -1287,7 +1335,8 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
   // do Newton-Raphson iteration, which contains here effects of
   // constraint forces and stiffness
   // this call ends up with new displacements etc on \f$D_{n+1}\f$ etc
-  NewtonFull();
+  int error = NewtonFull();
+  if(error) return error;
 
   // compute constraint error ...
   conman_->ComputeError(timen_, disn_);
@@ -1315,7 +1364,9 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
     // do Newton-Raphson iteration, which contains here effects of
     // constraint forces and stiffness
     // this call ends up with new displacements etc on \f$D_{n+1}\f$ etc
-    NewtonFull();
+    int error = NewtonFull();
+    if(error) return error;
+
 
     // compute constraint error ...
     conman_->ComputeError(timen_, disn_);
@@ -1334,6 +1385,7 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
 
   // for output
   iter_ = uziter + 1;
+  return 0;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1372,7 +1424,7 @@ void STR::TimIntImpl::UpdateIterIncrConstr
 /*----------------------------------------------------------------------*/
 /* do linearised Uzawa iterations with full NRI
  * originally by tk 11/07 */
-void STR::TimIntImpl::UzawaLinearNewtonFull()
+int STR::TimIntImpl::UzawaLinearNewtonFull()
 {
   // allocate additional vectors and matrices
   Teuchos::RCP<Epetra_Vector> conrhs
@@ -1522,10 +1574,17 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 
   // correct iteration counter
   iter_ -= 1;
+	
+	// no linear solver error check implemented here, always passing 0
+  return UzawaLinearNewtonFullErrorCheck(0);
+}
 
-  if ( Converged() )
+int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
+{
+  // if everything is fine print to screen and return
+  if (Converged())
   {
-    // compute and print monitor values
+    	   // compute and print monitor values
     if (conman_->HaveMonitor())
     {
       conman_->ComputeMonitorValues(disn_);
@@ -1534,30 +1593,44 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     // print newton message on proc 0
     if (myrank_ == 0)
       conman_->PrintMonitorValues();
+      
+    return 0;
   }
-  // test whether max iterations was hit
-  else if ( (iter_ >= itermax_) and (not iterdivercont_) )
+  // now some error checks
+  // do we have a problem in the linear solver
+  // only check if we want to do something fancy other wise we ignore the error in the linear solver
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
   {
-    dserror("Newton unconverged in %d iterations", iter_);
+    return linerror;
   }
-  else if ( (iter_ >= itermax_) and (iterdivercont_) )
+  else
   {
-    // print newton message on proc 0
-    if (myrank_ == 0)
-      printf("Newton unconverged in %d iterations ... continuing\n", iter_);
-
-    // compute and print monitor values
-    if (conman_->HaveMonitor())
-      conman_->ComputeMonitorValues(disn_);
+    if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_stop ) )
+    {
+      dserror("Newton unconverged in %d iterations", iter_);
+      return 1;
+    }
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_continue ) )
+    {
+      if (myrank_ == 0)
+        IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
+        if (conman_->HaveMonitor())
+      		conman_->ComputeMonitorValues(disn_);
+      return 0;
+    }
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    {
+  		dserror("Fancy divcont actions not implemented forUzawaLinearNewtonFull ");
+      return 1;
+    }
   }
-
-  // good evening
-  return;
+  dserror("Fatal error in UzawaLinearNewtonFullErrorCheck, case not implemented ");
+  return 0;
 }
 
 /*----------------------------------------------------------------------*/
 /* solution with nonlinear iteration for contact / meshtying */
-void STR::TimIntImpl::CmtNonlinearSolve()
+int STR::TimIntImpl::CmtNonlinearSolve()
 {
   //********************************************************************
   // get some parameters
@@ -1592,7 +1665,8 @@ void STR::TimIntImpl::CmtNonlinearSolve()
     if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
     {
       // nonlinear iteration
-      NewtonFull();
+     int error = NewtonFull();
+     if(error) return error;
     }
 
     //********************************************************************
@@ -1615,7 +1689,8 @@ void STR::TimIntImpl::CmtNonlinearSolve()
         if (activeiter > 1) Predict();
 
         // nonlinear iteration
-        NewtonFull();
+        int error = NewtonFull();
+        if(error) return error;
 
         // update of active set (fixed-point)
         cmtman_->GetStrategy().UpdateActiveSet();
@@ -1632,7 +1707,8 @@ void STR::TimIntImpl::CmtNonlinearSolve()
     else
     {
       // nonlinear iteration
-      NewtonFull();
+      int error = NewtonFull();
+      if(error) return error;
     }
   }
 
@@ -1642,7 +1718,8 @@ void STR::TimIntImpl::CmtNonlinearSolve()
   else if (soltype == INPAR::CONTACT::solution_penalty)
   {
     // nonlinear iteration
-    NewtonFull();
+    int error = NewtonFull();
+    if(error) return error;
 
     // update constraint norm
     cmtman_->GetStrategy().UpdateConstraintNorm();
@@ -1675,7 +1752,8 @@ void STR::TimIntImpl::CmtNonlinearSolve()
       }
 
       // nonlinear iteration
-      NewtonFull();
+      int error = NewtonFull();
+      if(error) return error;
 
       // update constraint norm and penalty parameter
       cmtman_->GetStrategy().UpdateConstraintNorm(uzawaiter);
@@ -1690,7 +1768,7 @@ void STR::TimIntImpl::CmtNonlinearSolve()
     cmtman_->GetStrategy().ResetPenalty();
   }
 
-  return;
+  return 0;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1818,7 +1896,7 @@ void STR::TimIntImpl::CmtLinearSolve()
 
 /*----------------------------------------------------------------------*/
 /* solution with nonlinear iteration for beam contact */
-void STR::TimIntImpl::BeamContactNonlinearSolve()
+int STR::TimIntImpl::BeamContactNonlinearSolve()
 {
   //********************************************************************
   // get some parameters
@@ -1838,7 +1916,8 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
   if (soltype == INPAR::CONTACT::solution_penalty)
   {
      // nonlinear iteration (Newton)
-    NewtonFull();
+    int error = NewtonFull();
+    if(error) return error;
 
     // update constraint norm
     beamcman_->UpdateConstrNorm();
@@ -1880,8 +1959,8 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
       }
 
       // inner nonlinear iteration (Newton)
-      NewtonFull();
-
+      int error = NewtonFull();
+      if(error) return error;
       // update constraint norm and penalty parameter
       beamcman_->UpdateConstrNorm();
 
@@ -1909,12 +1988,12 @@ void STR::TimIntImpl::BeamContactNonlinearSolve()
   // if the modified gap function definition is used the normal vector of the last time step has to be stored
   if (newgapfunction) {beamcman_->ShiftAllNormal();}
 
-  return;
+  return 0;
 }
 
 /*----------------------------------------------------------------------*/
 /* solution with pseudo transient continuation */
-void STR::TimIntImpl::PTC()
+int STR::TimIntImpl::PTC()
 {
   // we do a PTC iteration here.
   // the specific time integration has set the following
@@ -1937,8 +2016,9 @@ void STR::TimIntImpl::PTC()
   double nc; fres_->NormInf(&nc);
   double dti = 1/ptcdt;
 
+  int linsolve_error= 0;
   // equilibrium iteration loop
-  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  while ( ( ( not Converged() and (not linsolve_error) ) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
     // make negative residual
     fres_->Scale(-1.0);
@@ -1982,7 +2062,12 @@ void STR::TimIntImpl::PTC()
     if (HaveContactMeshtying())
       CmtLinearSolve();
     else
-      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
+    {
+      linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
+      // check for problems in linear solver
+      // however we only care about this if we have a fancy divcont action  (meaning function will return 0 )
+      linsolve_error=LinSolveErrorCheck(linsolve_error);
+    }
     solver_->ResetTolerance();
 
     // recover standard displacements
@@ -2090,21 +2175,9 @@ void STR::TimIntImpl::PTC()
     conman_->ComputeMonitorValues(disn_);
   }
 
-  // test whether max iterations was hit
-  if ( (Converged()) and (myrank_ == 0) )
-  {
-    PrintNewtonConv();
-  }
-  else if ( (iter_ >= itermax_) and (not iterdivercont_) )
-  {
-    dserror("Newton unconverged in %d iterations", iter_);
-  }
-  else if ( (iter_ >= itermax_) and (iterdivercont_) and (myrank_ == 0) )
-  {
-    printf("Newton unconverged in %d iterations ... continuing\n", iter_);
-  }
-  // get out of here
-  return;
+  //do nonlinear solver error check
+  return NewtonFullErrorCheck(linsolve_error);
+
 }
 
 

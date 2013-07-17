@@ -36,7 +36,7 @@ namespace LINALG
                           bool                             reset               ,
                           Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
 
-      virtual void Solve() = 0;
+      virtual int Solve() = 0;
 
       virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) = 0;
 

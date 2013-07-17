@@ -284,10 +284,11 @@ void LINALG::Solver::Setup(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve()
+//void LINALG::Solver::Solve()
+int LINALG::Solver::Solve()
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  2)   Solve");
-  solver_->Solve();
+  return solver_->Solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -299,7 +300,8 @@ int LINALG::Solver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve(
+//void LINALG::Solver::Solve(
+int LINALG::Solver::Solve(
     Teuchos::RCP<Epetra_Operator>     matrix             ,
     Teuchos::RCP<Epetra_MultiVector>       x             ,
     Teuchos::RCP<Epetra_MultiVector>       b             ,
@@ -308,7 +310,7 @@ void LINALG::Solver::Solve(
     Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   Setup( matrix, x, b, refactor, reset, projector);
-  Solve();
+  return Solve();
 }
 
 
@@ -1998,7 +2000,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   //================================================================== deliver
   return outparams;
 }
-
 
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|

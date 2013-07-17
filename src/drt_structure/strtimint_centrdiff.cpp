@@ -87,7 +87,7 @@ void STR::TimIntCentrDiff::ResizeMStep()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-void STR::TimIntCentrDiff::IntegrateStep()
+int STR::TimIntCentrDiff::IntegrateStep()
 {
   // time this step
   timer_->ResetStartTime();
@@ -208,7 +208,7 @@ void STR::TimIntCentrDiff::IntegrateStep()
   veln_->Update(dthalf, *accn_, 1.0);
 
   // wassup?
-  return;
+  return 0;
 }
 
 /*----------------------------------------------------------------------*/

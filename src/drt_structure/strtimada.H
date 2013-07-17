@@ -132,7 +132,7 @@ namespace STR
     //! Integrate in time
     //! This is the key method here, i.e. the time integration
     //!  algorithm.
-    void Integrate();
+    int Integrate();
 
     //! Make one step with auxiliar scheme
     //!

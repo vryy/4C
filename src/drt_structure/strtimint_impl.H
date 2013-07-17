@@ -92,7 +92,7 @@ namespace STR
     //@}
 
     //! Do time integration of single step
-    void IntegrateStep();
+    int IntegrateStep();
 
     //! @name Prediction
     //@{
@@ -268,13 +268,20 @@ namespace STR
     //! Solve dynamic equilibrium
     //!
     //! This is a general wrapper around the specific techniques.
-    void Solve();
+    int Solve();
 
     //! Do full Newton-Raphson iteration
     //!
     //! This routines expects a prepared negative residual force #fres_
     //! and associated effective stiffness matrix #stiff_
-    void NewtonFull();
+    //void NewtonFull();
+    int NewtonFull();
+
+    //! check for success of linear solve otherwise return error code
+    int LinSolveErrorCheck(int linerror);
+
+    //! check for success of nonlinear solve otherwise return error code
+    int NewtonFullErrorCheck(int linerror);
 
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
@@ -289,7 +296,7 @@ namespace STR
     //! is increased by Uzawa_param*(Vol_err)
     //!
     //! \author tk (originally)
-    void UzawaNonLinearNewtonFull();
+    int UzawaNonLinearNewtonFull();
 
     //! do full Newton iteration respecting volume constraint
     //!
@@ -298,7 +305,10 @@ namespace STR
     //! Linear problem is solved with Uzawa algorithm.
     //!
     //! \author tk (originally) \date 11/07
-    void UzawaLinearNewtonFull();
+    int UzawaLinearNewtonFull();
+
+    //! check for success of nonlinear solve otherwise return error code
+    int UzawaLinearNewtonFullErrorCheck(int linerror);
 
     //! Do pseudo transient continuation non-linear iteration
     //!
@@ -307,12 +317,12 @@ namespace STR
     //! and/or can do larger time steps
     //!
     //! \author mwgee (originally) \date 03/12
-    void PTC();
+    int PTC();
 
     //! Do nonlinear iteration for contact / meshtying
     //!
     //! \author popp (originally) \date 03/10
-    void CmtNonlinearSolve();
+    int CmtNonlinearSolve();
 
     //! Call linear solver for contact / meshtying
     //!
@@ -327,7 +337,7 @@ namespace STR
     //! Do nonlinear iteration for beam contact
     //!
     //! \author popp (originally) \date 11/11
-    void BeamContactNonlinearSolve();
+    int BeamContactNonlinearSolve();
 
     //@}
 
@@ -435,7 +445,7 @@ namespace STR
     );
 
     //! Do non-linear solve with NOX
-    void NoxSolve();
+    int NoxSolve();
 
     //! moved from the ADAPTER to here, to be checked carefully
 //    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
@@ -449,7 +459,8 @@ namespace STR
 //      // we are just interested in the incremental interface displacements
 //      return interface_->ExtractFSICondVector(idisi);
 //    }
-
+    // check for success of nonlinear solve otherwise return error code
+    int NoxErrorCheck(NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver);
     //@}
 
     //! @name Updates
@@ -774,8 +785,8 @@ namespace STR
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iterations
-    bool iterdivercont_;  //!< if TRUE then go on with time integration
-                          //!< even if Newton-Raphson iteration failed
+
+    enum INPAR::STR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
     double toldisi_;  //!< tolerance residual displacements
     double tolfres_;  //!< tolerance force residual
     double tolpfres_; //!< norm of residual pressure forces

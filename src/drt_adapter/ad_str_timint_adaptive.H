@@ -54,7 +54,7 @@ namespace ADAPTER {
     //@{
 
     /// Integrate from t1 to t2
-    virtual void Integrate();
+    virtual int Integrate();
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     virtual void PrepareOutput();

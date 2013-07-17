@@ -76,7 +76,7 @@ namespace STR
     //@{
 
     //! Do time integration of single step
-    virtual void IntegrateStep() = 0;
+    virtual int IntegrateStep() = 0;
 
     //! Update configuration after time step
     //!
@@ -293,10 +293,10 @@ namespace STR
     ///  Do the nonlinear solve for the time step. All boundary conditions have
     ///  been set.
     /// eventually renamed here or IntegrateStep()
-    virtual void Solve()
+    virtual int Solve()
     {
       IntegrateStep();
-      return;
+      return 0;
     }
 
     //! prepare partiton step

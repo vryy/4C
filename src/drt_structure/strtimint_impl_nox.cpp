@@ -24,7 +24,7 @@ Maintainer: Alexander Popp
 #include "strtimint_noxlinsys.H"
 #include "../drt_inpar/drt_boolifyparameters.H"
 #include "../linalg/linalg_blocksparsematrix.H"
-
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/
 /* setup parameters for solution with NOX */
@@ -407,7 +407,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::TimIntImpl::NoxCreateLinearSystem
 
 /*----------------------------------------------------------------------*/
 /* Do non-linear solve with NOX */
-void STR::TimIntImpl::NoxSolve()
+int STR::TimIntImpl::NoxSolve()
 {
   // extract parameter lists
   Teuchos::ParameterList& nlParams = *noxparams_;
@@ -437,18 +437,47 @@ void STR::TimIntImpl::NoxSolve()
 
   // Solve the nonlinear system
   NOX::StatusTest::StatusType status = solver->solve();
+
+
+
+  noxstatustest_->print(std::cout);
+
+  // error check
+  return NoxErrorCheck(status, solver);
+}
+
+/*----------------------------------------------------------------------*/
+int STR::TimIntImpl::NoxErrorCheck(NOX::StatusTest::StatusType status, Teuchos::RCP<NOX::Solver::Generic> solver)
+{
   noxstatustest_->print(std::cout);
 
   // bona nox : A divergent NOX solution
-  if (status != NOX::StatusTest::Converged)
-    if (myrank_ == 0)
-      noxutils_->out() << "Nonlinear solver failed to converge!" << endl;
-
-  // extract number of iteration steps
-  iter_ = solver->getNumIterations();
-
-  // return to sender
-  return;
+   if (status != NOX::StatusTest::Converged)
+   {
+     if(divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation)
+     {
+       if (myrank_ == 0)
+         noxutils_->out() << "Nonlinear solver failed to converge!" << endl;
+       return 1;
+     }
+     else if (divcontype_==INPAR::STR::divcont_continue)
+     {
+       if(myrank_ == 0)
+       IO::cout <<"Nonlinear solver failed to converge! continuing " << IO::endl;
+       return 0;
+     }
+     else
+     {
+       dserror( "Nonlinear solver failed to converge!");
+       return 1; //make compiler happy
+     }
+   }
+   else // everything is fine
+   {
+     // extract number of iteration steps
+     iter_ = solver->getNumIterations();
+     return 0;
+   }
 }
 
 /*----------------------------------------------------------------------*/
