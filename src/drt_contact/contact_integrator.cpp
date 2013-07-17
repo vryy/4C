@@ -282,6 +282,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
      Teuchos::RCP<Epetra_SerialDenseVector> wseg)
@@ -325,6 +326,14 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   LINALG::SerialDenseMatrix mderiv(ncol,1);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,1);
+
+//  if (wear_both_==true)
+//  {
+    LINALG::SerialDenseVector m2val(ncol);
+    LINALG::SerialDenseMatrix m2deriv(ncol,1);
+    LINALG::SerialDenseVector lm2val(ncol);
+    LINALG::SerialDenseMatrix lm2deriv(ncol,1);
+//  }
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
@@ -426,7 +435,10 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     // coordinate transformation sxi->eta (slave MortarElement->Overlap)
     double sxi[2] = {0.0, 0.0};
+    double mxi2[2] = {0.0, 0.0};
+
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
+    mxi2[0] = 0.5*(1-eta[0])*mxia + 0.5*(1+eta[0])*mxib;
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
@@ -451,15 +463,29 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     if (linlm)
       sele.EvaluateShapeLagMultLin(ShapeFcn(),sxi,lmval,lmderiv,nrow);
     else
+    {
       sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
+      if (WearSide() != INPAR::CONTACT::wear_slave)
+        mele.EvaluateShapeLagMult(ShapeFcn(),mxi2,lm2val,lm2deriv,ncol);  // evaluate lm on master side for both-sided wear
+    }
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
     mele.EvaluateShape(mxi,mval,mderiv,ncol);
-    
+    mele.EvaluateShape(mxi2,m2val,m2deriv,ncol);
+
+
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.Jacobian(sxi);
+    double dxdmxi = 0.0;
+    if (WearSide() != INPAR::CONTACT::wear_slave)
+      dxdmxi = mele.Jacobian(mxi2);
+
     double dsxideta = -0.5*sxia + 0.5*sxib;
+
+    double dmxideta = 0.0;
+    if (WearSide() != INPAR::CONTACT::wear_slave)
+      dmxideta = -0.5*mxia + 0.5*mxib;
 
     // compute segment D/M matrix ****************************************
     // standard shape functions
@@ -570,7 +596,32 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
           }
         }
       }
-    } // ShapeFcn() switch
+
+      //*****************************************
+      // both-sided wear specific stuff
+      // loop over ncol
+      //*****************************************
+      if (WearSide() != INPAR::CONTACT::wear_slave)
+      {
+        for (int j=0;j<ncol*ndof;++j)
+        {
+          for (int k=0;k<ncol*ndof;++k)
+          {
+            int jindex = (int)(j/ndof);
+            int kindex = (int)(k/ndof);
+
+            // multiply the two shape functions
+            double prod = lm2val[jindex]*m2val[kindex];
+
+            if (j==k)
+            {
+              (*d2seg)(j,j) += prod*dxdmxi*dmxideta*wgt;
+            }
+          }
+        }
+      }
+
+    } // shapefcn_ switch
     // compute segment D/M matrix ****************************************
 
     // evaluate 2nd deriv of trace space shape functions (on slave element)
@@ -1395,7 +1446,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 /*----------------------------------------------------------------------*
  |  Integrate and linearize for lin and quad elements        farah 01/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
+void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
@@ -1845,7 +1896,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
 
   // Start integration if fast integration should be used or if there is no boundary element
   // for the fast_BS integration
-  if (*boundary_ele==false || integrationtype==INPAR::MORTAR::inttype_fast)
+  if (*boundary_ele==false || integrationtype==INPAR::MORTAR::inttype_elements)
   {
     //**********************************************************************
     // loop over all Gauss points for integration
@@ -5288,7 +5339,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 /*----------------------------------------------------------------------*
  |  Integrate and linearize D                                farah 01/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::FastIntegration(
+void CONTACT::CoIntegrator::EleBased_Integration(
      MORTAR::MortarElement& sele,
      std::vector<MORTAR::MortarElement*> meles,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
@@ -5479,7 +5530,7 @@ void CONTACT::CoIntegrator::FastIntegration(
 
 
 
-  if (*boundary_ele==false || inttype==INPAR::MORTAR::inttype_fast)
+  if (*boundary_ele==false || inttype==INPAR::MORTAR::inttype_elements)
   {
     //*************************************************************************
     //                loop over all Gauss points for integration
@@ -5637,13 +5688,13 @@ void CONTACT::CoIntegrator::FastIntegration(
               if (bound)
               {
                 MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
-                if (!mymrtrnode) dserror("ERROR: Fastintegration: Null pointer!");
+                if (!mymrtrnode) dserror("ERROR: elebased_integration: Null pointer!");
                 bool j_boundnode = mymrtrnode->IsOnBound();
 
                 for (int k=0;k<nrow*ndof;++k)
                 {
                   MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(mynodes[(int)(k/ndof)]);
-                  if (!mymrtrnode2) dserror("ERROR: FastIntegration: Null pointer!");
+                  if (!mymrtrnode2) dserror("ERROR: elebased_integration: Null pointer!");
                   bool k_boundnode = mymrtrnode2->IsOnBound();
 
                   int jindex = (int)(j/ndof);
@@ -6928,6 +6979,65 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | Assemble third mortar matrix D2                           farah 06/13|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
+                                    MORTAR::MortarElement& mele,
+                                    Epetra_SerialDenseMatrix& d2seg)
+{
+  // get adjacent nodes to assemble to
+  DRT::Node** mnodes = mele.Nodes();
+  if (!mnodes)
+    dserror("ERROR: AssembleD2: Null pointer for mnodes!");
+
+  if (mele.IsSlave()==true )
+    dserror("This function is only for master elements");
+
+  // loop over all master nodes
+  for (int master=0;master<mele.NumNode();++master)
+  {
+    CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+
+    // only process slave node rows that belong to this proc
+    //cout << "owner= " << mnode->Owner() << "  current proc= " << comm.MyPID()<< endl;
+//    if (mnode->Owner() != comm.MyPID())
+//      continue;
+
+    int mndof = mnode->NumDof();
+
+    // loop over all dofs of the slave node
+    for (int mdof=0;mdof<mndof;++mdof)
+    {
+      // loop over all master nodes again ("master2 nodes")
+      for (int master2=0;master2<mele.NumNode();++master2)
+      {
+        CONTACT::CoNode* m2node = static_cast<CONTACT::CoNode*>(mnodes[master2]);
+        const int* m2dofs = m2node->Dofs();
+        int m2ndof = m2node->NumDof();
+
+        // loop over all dofs of the slave node again ("master dofs")
+        for (int m2dof=0;m2dof<m2ndof;++m2dof)
+        {
+          int col = m2dofs[m2dof];
+          double val = d2seg(master*mndof+mdof,master2*m2ndof+m2dof);
+
+          if(abs(val)>1e-12)
+          {
+            mnode->AddD2Value(mdof,col,val);
+            //set this master node as "involved" for both sided wear
+            mnode->InvolvedM()=true;
+            //cout << "node= " << mnode->Id()<< endl;
+            //cout << "DOF FROM NODE " << *mnode->Dofs() << endl;
+          }
+        }
+      }
+    }
+  }
+  return true;
+}
+
 /*----------------------------------------------------------------------*
  |  Assemble D contribution (2D / 3D)                         popp 01/08|
  |  This method assembles the contrubution of a 1D/2D slave             |
@@ -7146,11 +7256,11 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
 
 
 /*----------------------------------------------------------------------*
- |  Assemble M contribution for FastIntegration(2D / 3D)     farah 01/13|
+ |  Assemble M contribution for eleb. int.(2D / 3D)          farah 01/13|
  |  Assemblle also the contribution for friction                        |
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoIntegrator::AssembleM_Fast(const Epetra_Comm& comm,
+bool CONTACT::CoIntegrator::AssembleM_EleBased(const Epetra_Comm& comm,
                                          MORTAR::MortarElement& sele,
                                          std::vector<MORTAR::MortarElement*> meles,
                                          Epetra_SerialDenseMatrix& mseg)
@@ -7181,10 +7291,10 @@ bool CONTACT::CoIntegrator::AssembleM_Fast(const Epetra_Comm& comm,
       // get adjacent slave nodes and master nodes
       DRT::Node** snodes = sele.Nodes();
       if (!snodes)
-      dserror("ERROR: AssembleM: Null pointer for snodes!");
+      dserror("ERROR: AssembleM_EleBased: Null pointer for snodes!");
       DRT::Node** mnodes = meles[nummasterele]->Nodes();
       if (!mnodes)
-      dserror("ERROR: AssembleM: Null pointer for mnodes!");
+      dserror("ERROR: AssembleM_EleBased: Null pointer for mnodes!");
 
       // loop over all slave nodes
       for (int slave=0;slave<sele.NumNode();++slave)
