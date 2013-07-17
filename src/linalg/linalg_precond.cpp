@@ -75,6 +75,10 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
       doml     = false;
     }
 
+    if(doifpack == false && doml == false) {
+      dserror("You have to use either ML or Ifpack. No ML Parameters of IFPACK Parameters found!");
+    }
+
     // do ifpack if desired
     if (doifpack)
     {
