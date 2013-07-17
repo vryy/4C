@@ -258,8 +258,9 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
       // insert back reference
       if (restart && create_controlfile_)
       {
+        size_t pos = restartname_.rfind('/');
         controlfile_ << "restarted_run = \""
-                     << restartname_
+                     << ((pos!=string::npos) ? restartname_.substr(pos+1) : restartname_)
                      << "\"\n\n";
       }
 
