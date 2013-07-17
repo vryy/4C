@@ -4,6 +4,14 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "cut_tolerance.H"
 
+// only forward declarations are not working when
+// building a release version of BACI with the new
+// Trilinos. The cut module in BACI is a very weird
+// piece of code and needs some major review of the
+// code organization...
+#include "cut_node.H"  // compilation fix
+#include "cut_edge.H"  // compilation fix
+
 namespace GEO
 {
   namespace CUT

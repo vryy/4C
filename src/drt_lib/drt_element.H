@@ -41,7 +41,7 @@ Maintainer: Michael Gee
 #define ELEMENT_H
 
 
-#include "Teuchos_RCP.hpp"
+//#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
