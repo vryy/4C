@@ -98,7 +98,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
                                               Epetra_MultiVector * x,
                                               Epetra_MultiVector * b )
 {
-  std::cout << "call MueLuContactSpPreconditioner::Setup" << std::endl;
+  //std::cout << "call MueLuContactSpPreconditioner::Setup" << std::endl;
 
   SetupLinearProblem( matrix, x, b );
 
