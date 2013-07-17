@@ -156,6 +156,20 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 	  meshfilename_ = meshfilename_helper2.substr(pos+1);
 
 
+  // parameter continuation parameter
+  // init variables to store restart information for parameter continuation
+  cont_step_ = Teuchos::rcp(new int);
+  cont_time_  = Teuchos::rcp(new double);
+  cont_disn_ = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  cont_disn_init_ = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  cont_veln_ = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  cont_accn_ = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  // this should also have row map layout
+  // we need to of those because we need to store and keep eleementdata of initial run with constant beta
+  cont_elementdata_init_ = Teuchos::rcp(new std::vector<char>);
+  cont_elementdata_ = Teuchos::rcp(new std::vector<char>);
+
+
   //init stuff that is only needed when we want to prolongate the results to a finer mesh,
   // and hence have a fine discretization
   if(prolongate_res_ )
@@ -331,7 +345,7 @@ void STR::MLMC::Integrate()
         if(!reduced_output_)
         {
           Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
-          Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+          //Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
 
         // time to go home...
@@ -415,6 +429,8 @@ void STR::MLMC::IntegrateNoReset()
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
+  // vector to store parameter continuation info in
+  Teuchos::RCP<std::vector <int> > paramcont_info  = Teuchos::rcp(new std::vector <int>(3,0));
 
   // nested par hack
   int numruns =numruns_pergroup_+start_run_;
@@ -425,20 +441,16 @@ void STR::MLMC::IntegrateNoReset()
   // get initial number of continuation steps from input
   unsigned int num_cont_steps= mlmcp.get<int>("NUMCONTSTEPS");
 
-
-  // init variables to store restart information for parameter continuation
-  Teuchos::RCP<int> cont_step = Teuchos::rcp(new int);
-  Teuchos::RCP<double> cont_time  = Teuchos::rcp(new double);
   double time_step_size = 0.0 ;
-  Teuchos::RCP<Epetra_Vector> cont_disn = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
-  Teuchos::RCP<Epetra_Vector> cont_disn_init = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
-  Teuchos::RCP<Epetra_Vector> cont_veln = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
-  Teuchos::RCP<Epetra_Vector> cont_accn = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
-  // this should also have row map layout
-  // we need to of those because we need to store and keep eleementdata of initial run with constant beta
-  Teuchos::RCP<std::vector<char> > cont_elementdata_init = Teuchos::rcp(new std::vector<char>);
-  Teuchos::RCP<std::vector<char> > cont_elementdata = Teuchos::rcp(new std::vector<char>);
-  const double t0 = Teuchos::Time::wallTime();
+
+
+  //store time init with zero just to be sure
+  t0_ = 0.0;
+  t1_ = 0.0;
+  t2_ = 0.0;
+  t3_ = 0.0;
+  t4_ = 0.0;
+  t0_ = Teuchos::Time::wallTime();
   do
   {
     if (myrank == 0)
@@ -449,7 +461,6 @@ void STR::MLMC::IntegrateNoReset()
       IO::cout << "================================================================================" END_COLOR << IO::endl;
     }
     ResetPrestress();
-    //SetupStochMat((random_seed+(unsigned int)numb_run_));
     discret_->Comm().Barrier();
 
     if(!reduced_output_)
@@ -458,12 +469,6 @@ void STR::MLMC::IntegrateNoReset()
         output_->WriteMesh(1, 0.01);
     }
 
-
-    //store time
-    double t1 = 0;
-    double t2 = 0;
-    double t3 = 0;
-    double t4 = 0;
     // major switch to different time integrators
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
     {
@@ -477,7 +482,6 @@ void STR::MLMC::IntegrateNoReset()
       case INPAR::STR::dyna_euma:
       case INPAR::STR::dyna_euimsto:
       {
-        Teuchos::RCP<const Epetra_Vector> dis_coarse2 = Teuchos::null;
         // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have acces to the results
         // What follows is basicaly a copy of whats usually in dyn_nlnstructural_drt();
         // create an adapterbase and adapter
@@ -498,90 +502,39 @@ void STR::MLMC::IntegrateNoReset()
         {
 
           // for first run do normal integration
-          //SetupStochMat((random_seed+(unsigned int)numb_run_));
-          // Init all elements with same beta value for referene solution
           SetupStochMatDet(1.5);
           structadaptor.Integrate();
           // get all information
-          structadaptor.GetRestartData(cont_step,cont_time,cont_disn_init,cont_veln,cont_accn,cont_elementdata_init);
-          std::cout << std::setprecision(9) << "cont disp first run " << (*cont_disn_init)[0] << std::endl;
+          structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_);
           // Get timestep size
           time_step_size=structadaptor.GetTimeStepSize();
         }
         else
         {
-          t1 = Teuchos::Time::wallTime();
-          // for loop to encapsulate parameter continuation scheme
-          for(unsigned int k =0 ; k<num_cont_steps ; k++)
+          // compute solution with parameter continuation
+          int error = ParameterContinuation( num_cont_steps, random_seed,false, structadaptor);
+          // if not converged
+          int num_trials = 1;
+          int max_trials = 4;
+          int num_cont_steps_new = num_cont_steps;
+          while( error && num_trials < max_trials)
           {
-             if(k==0)
-             {
-               *cont_elementdata=*cont_elementdata_init;
-               *cont_disn=*cont_disn_init;
-             }
-             double gamma=1.0/num_cont_steps+(k*(1.0/num_cont_steps));
-             IO::cout << "Gamma is  " << gamma << IO::endl;
-             // if we have prestress we need possibly a two step process
-             // get prestress type
-             INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+            // double number of cont steps
+            num_cont_steps_new = num_cont_steps_new*2;
+            error = ParameterContinuation( num_cont_steps_new, random_seed, true, structadaptor);
+            num_trials++;
+            // check for error
+            if(num_trials==max_trials && error)
+              dserror("your problem is stupid, go away");
+          }
+          // how many step did I plan to use
+          paramcont_info->at(0)=num_cont_steps;
+          paramcont_info->at(1)=num_cont_steps_new;
+          paramcont_info->at(2)=num_trials;
 
-             if(pstype==INPAR::STR::prestress_mulf)
-             {
-               // get prestress time
-               double pstime = sdyn.get<double>("PRESTRESSTIME");
-               double endtime;
 
-               // compute the number of steps we did in prestressing mode
-               int num_prestress_steps = (int)(pstime/time_step_size);
-               // store maxtime
-               endtime= structadaptor.GetTimeEnd();
-               // alter timemax to compute only one timestep
-               structadaptor.SetTimeEnd(pstime);
-               // set restart without displacement (use acc instead which are zero in statics)
-               structadaptor.SetRestart(num_prestress_steps-1,(num_prestress_steps-1)*time_step_size,cont_accn,cont_veln,cont_accn,cont_elementdata);
-               // set new material parameters
-               // Setup Material Parameters in each element based on deterministic value
-               //measure time only if we really compute the random field (k=0)
-               if(!k)
-                  t2 = Teuchos::Time::wallTime();
-               BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 1.5 ,gamma);
-               //BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 4.61,gamma);
-               if(!k)
-                   t3 = Teuchos::Time::wallTime();
-               structadaptor.Integrate();
-               // create dummy rcp to throw away
-               Teuchos::RCP<int> garbage1 = Teuchos::rcp(new int);
-               Teuchos::RCP<double> garbage2  = Teuchos::rcp(new double);
-               // get the newly computed prestress deformation gradient
-               // use acc for disp again which will be overritten by the accc directly after
-               structadaptor.GetRestartData(garbage1,garbage2,cont_accn,cont_veln,cont_accn,cont_elementdata);
-               // write new prestress data together with old displament data to discretization
-               structadaptor.SetRestart((*(cont_step)-1),(*cont_time)-time_step_size,cont_disn,cont_veln,cont_accn,cont_elementdata);
-               // reset old maxtime
-               structadaptor.SetTimeEnd(endtime);
-               //BlendStochMat((random_seed+(unsigned int)numb_run_),(bool)(k+1),4.61,gamma);
-               BlendStochMat((random_seed+(unsigned int)numb_run_),(bool)(k+1),1.5,gamma);
-               structadaptor.Integrate();
-               structadaptor.GetRestartData(garbage1,garbage2,cont_disn,cont_veln,cont_accn,cont_elementdata);
-
-             }
-             else // no prestress
-             {
-               // set prestress state and time, disp acc vel are al set to zero
-               structadaptor.SetRestart((*(cont_step)-1),(*cont_time)-time_step_size,cont_disn,cont_veln,cont_accn,cont_elementdata);
-               //measure time only if we really compute the random field (k=0)
-               if(!k)
-                 t2 = Teuchos::Time::wallTime();
-               BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 4.61,gamma);
-               if(!k)
-                 t3 = Teuchos::Time::wallTime();
-               structadaptor.Integrate();
-               structadaptor.GetRestartData(cont_step,cont_time,cont_disn,cont_veln,cont_accn,cont_elementdata);
-             }
-
-          }// eof parameter continuation scheme
-          t4 = Teuchos::Time::wallTime();
         }
+
 
         // test results
         DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
@@ -590,7 +543,7 @@ void STR::MLMC::IntegrateNoReset()
         if(!reduced_output_)
         {
           Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
-          Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+          //Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
 
         // time to go home...
@@ -609,16 +562,18 @@ void STR::MLMC::IntegrateNoReset()
       Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains =Teuchos::rcp(new std::vector <std::vector<double > >);
       Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params =Teuchos::rcp(new std::vector <std::vector<double > >);
 
-      EvalDisAtEleCenters(cont_disn,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+      EvalDisAtEleCenters(cont_disn_,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
       ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_2pk,INPAR::STR::strain_gl,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
-      EvalDisAtEleCenters(cont_disn,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
+      EvalDisAtEleCenters(cont_disn_,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
       ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_cauchy,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
 
       // Evaluate Peak stress and strain vallues
-      EvalPeakWallStress(cont_disn, INPAR::STR::stress_cauchy,INPAR::STR::strain_ea );
+      EvalPeakWallStress(cont_disn_, INPAR::STR::stress_cauchy,INPAR::STR::strain_ea );
+      // write parameter continuation data to file
+      WriteParamContInfoToFile(paramcont_info);
     }
 
-    const double t5 = Teuchos::Time::wallTime();
+    t5_ = Teuchos::Time::wallTime();
     numb_run_++;
     if(!reduced_output_)
     {
@@ -626,21 +581,117 @@ void STR::MLMC::IntegrateNoReset()
       if(!discret_->Comm().MyPID())
       {
         IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
-        IO::cout<<"Setup Stochastic Material:\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<IO::endl;
-        IO::cout<<"Forward Solve  :\t"<<std::setprecision(4)<<t4-t1-(t3-t2)<<"\ts"<<IO::endl;
-        IO::cout<<"Total Wall Time After " << numb_run_ << " runs:\t"<<std::setprecision(4)<<t5-t0<<"\ts"<<IO::endl;
+        IO::cout<<"Setup Stochastic Material:\t"<<std::setprecision(4)<<t3_-t2_<<"\ts"<<IO::endl;
+        IO::cout<<"Forward Solve  :\t"<<std::setprecision(4)<<t4_-t1_-(t3_-t2_)<<"\ts"<<IO::endl;
+        IO::cout<<"Total Wall Time After " << numb_run_ << " runs:\t"<<std::setprecision(4)<<t5_-t0_<<"\ts"<<IO::endl;
         IO::cout<<"=================================================="<<IO::endl;
       }
     }
 
   }while (numb_run_< numruns); // eof outer MC loop
-  const double t6 = Teuchos::Time::wallTime();
+ t6_ = Teuchos::Time::wallTime();
   IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
-  IO::cout<<"Total runtime:\t"<<std::setprecision(4)<<t6-t0<<"\ts"<<IO::endl;
+  IO::cout<<"Total runtime:\t"<<std::setprecision(4)<<t6_-t0_<<"\ts"<<IO::endl;
   IO::cout<<"=================================================="<<IO::endl;
   return;
 }
 
+//---------------------------------------------------------------------------------------------
+int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int random_seed, bool re_use_rf, ADAPTER::Structure&  structadaptor)
+{
+  int error = 0;
+  t1_ = Teuchos::Time::wallTime();
+  // init some variables
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  *cont_elementdata_=*cont_elementdata_init_;
+  *cont_disn_=*cont_disn_init_;
+
+  // Get timestep size
+  double time_step_size=structadaptor.GetTimeStepSize();
+
+  // for loop to encapsulate parameter continuation scheme
+  for(unsigned int k =0 ; k<num_cont_steps ; k++)
+  {
+     double gamma=1.0/num_cont_steps+(k*(1.0/num_cont_steps));
+     IO::cout << "Gamma is  " << gamma << IO::endl;
+     // if we have prestress we need possibly a two step process
+     // get prestress type
+     INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+
+     if(pstype==INPAR::STR::prestress_mulf)
+     {
+       // get prestress time
+       double pstime = sdyn.get<double>("PRESTRESSTIME");
+       double endtime;
+
+       // compute the number of steps we did in prestressing mode
+       int num_prestress_steps = (int)(pstime/time_step_size);
+       // store maxtime
+       endtime= structadaptor.GetTimeEnd();
+       // alter timemax to compute only one timestep
+       structadaptor.SetTimeEnd(pstime);
+       // set restart without displacement (use acc instead which are zero in statics)
+       structadaptor.SetRestart(num_prestress_steps-1,(num_prestress_steps-1)*time_step_size,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_);
+       // set new material parameters
+       // Setup Material Parameters in each element based on deterministic value
+       //measure time only if we really compute the random field (k=0)
+       if(!re_use_rf)
+       {
+         t2_ = Teuchos::Time::wallTime();
+         BlendStochMat((random_seed+(unsigned int)numb_run_), false , 1.5 ,gamma);
+         t3_ = Teuchos::Time::wallTime();
+         // we only want to setupt once hence
+         re_use_rf=true;
+       }
+       else if(re_use_rf)
+       {
+         BlendStochMat((random_seed+(unsigned int)numb_run_), true , 1.5 ,gamma);
+       }
+       error=structadaptor.Integrate();
+       if(error)
+       {
+         // reset endtime
+         structadaptor.SetTimeEnd(endtime);
+         return error;
+       }
+
+       // create dummy rcp to throw away
+       Teuchos::RCP<int> garbage1 = Teuchos::rcp(new int);
+       Teuchos::RCP<double> garbage2  = Teuchos::rcp(new double);
+       // get the newly computed prestress deformation gradient
+       // use acc for disp again which will be overritten by the accc directly after
+       structadaptor.GetRestartData(garbage1,garbage2,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_);
+       // write new prestress data together with old displament data to discretization
+       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+       // reset old maxtime
+       structadaptor.SetTimeEnd(endtime);
+       //BlendStochMat((random_seed+(unsigned int)numb_run_),(bool)(k+1),4.61,gamma);
+       BlendStochMat((random_seed+(unsigned int)numb_run_),true,1.5,gamma);
+       error = structadaptor.Integrate();
+       if(error)
+         return error;
+       structadaptor.GetRestartData(garbage1,garbage2,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+     }
+     else // no prestress
+     {
+       // set prestress state and time, disp acc vel are al set to zero
+       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+       //measure time only if we really compute the random field (k=0)
+       if(!k)
+         t2_ = Teuchos::Time::wallTime();
+       BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 4.61,gamma);
+       if(!k)
+         t3_ = Teuchos::Time::wallTime();
+       error = structadaptor.Integrate();
+       if(error)
+         return error;
+       structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+     }
+
+  }// eof parameter continuation scheme
+    t4_ = Teuchos::Time::wallTime();
+    return 0;
+}
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongatorParallel()
 {
@@ -2345,7 +2396,45 @@ void STR::MLMC::ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> Outpu
   }
   actdis_coarse_->Comm().Barrier();
 }
+void STR::MLMC::WriteParamContInfoToFile(
+      Teuchos::RCP<std::vector <int> > paramcont_info)
+{
+  if (actdis_coarse_->Comm().MyPID()==0)
+  {
+    // assemble name for outputfile
+    std::stringstream outputfile2;
+    outputfile2 << filename_ << "_parametercontinuation_output_" << start_run_ << ".txt";
+    std::string name = outputfile2.str();;
+    // file to write output
+    std::ofstream File;
+    if (numb_run_ == 0 || numb_run_ == start_run_)
+    {
+      File.open(name.c_str(),std::ios::out);
+      if (File.is_open())
+      {
+        File << "runid "<< "num_cont_steps_planned num_cont_steps_needed  num_trials"
+            << endl;
+        File.close();
+      }
+      else
+      {
+        dserror("Unable to open statistics output file");
+      }
+     }
 
+    // reopen in append mode
+    File.open(name.c_str(),std::ios::app);
+    File << numb_run_ ;
+    for (std::vector <int>::iterator it = paramcont_info->begin(); it != paramcont_info->end(); it++)
+    {
+      File << " " << *it;
+    }
+    File << endl;
+    File.close();
+    }
+
+  actdis_coarse_->Comm().Barrier();
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate (public) / basically copy of the Evaluate function of

@@ -22,6 +22,10 @@ Maintainer: Jonas Biehler
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_structure.H"
 
+namespace ADAPTER {
+
+ class Structure;
+}
 
 namespace Teuchos
 {
@@ -156,8 +160,30 @@ private:
       return false;
   }
 
+   //! store some time
+  double t0_;
+  double t1_;
+  double t2_;
+  double t3_;
+  double t4_;
+  double t5_;
+  double t6_;
 
+  // #########################################################################
+  // ##     variables needed for parameter continuation               ##
+  // #########################################################################
 
+  // init variables to store restart information for parameter continuation
+  Teuchos::RCP<int> cont_step_;
+  Teuchos::RCP<double> cont_time_;
+  Teuchos::RCP<Epetra_Vector> cont_disn_;
+  Teuchos::RCP<Epetra_Vector> cont_disn_init_;
+  Teuchos::RCP<Epetra_Vector> cont_veln_;
+  Teuchos::RCP<Epetra_Vector> cont_accn_ ;
+  // this should also have row map layout
+  // we need to of those because we need to store and keep eleementdata of initial run with constant beta
+  Teuchos::RCP<std::vector<char> > cont_elementdata_init_;
+  Teuchos::RCP<std::vector<char> > cont_elementdata_ ;
 
   // #########################################################################
   // ##     variables needed for Multilevel Monte Carlo only                ##
@@ -330,6 +356,9 @@ public:
   //! \brief perform time integration and eval (testing version to try out new stuff, to be merged some day)
   void IntegrateNoReset();
 
+  //! brief compute solution of nonlinear problem using numerical continuation scheme
+  int ParameterContinuation(unsigned int num_cont_steps, unsigned int random_seed, bool re_use_rf, ADAPTER::Structure &structadaptor);
+
   //! \brief routine to assign material parameters to each element based on random field
   void SetupStochMat(unsigned int random_seed);
 
@@ -381,6 +410,8 @@ public:
       Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains,
       Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params);
 
+  //! \brief write some info about parametercontinuation scheme to file
+  void WriteParamContInfoToFile(Teuchos::RCP<std::vector <int> > paramcont_info);
 
   //! \brief determine which of the output elemenst are on which proc
   void SetupEvalDisAtEleCenters(std::vector <int> AllOutputEleIds);
