@@ -124,7 +124,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 
   // create a CONTACT integrator instance with correct NumGP and Dim
   // it is sufficient to do this once as all IntCells are triangles
-  CONTACT::CoIntegrator integrator(icontact_,Cells()[0]->Shape());
+  CONTACT::CoIntegrator integrator(imortar_,Cells()[0]->Shape());
 
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
@@ -1352,7 +1352,7 @@ CONTACT::CoCoupling3dManager::CoCoupling3dManager(DRT::Discretization& idiscret,
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
-icontact_(params),
+imortar_(params),
 sele_(sele),
 mele_(mele)
 {
@@ -1390,7 +1390,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   if (IntType()==INPAR::MORTAR::inttype_segments)
   {
     // switch, if consistent boundary modification chosen
-    if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+    if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
         && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
        )
     {
@@ -1398,7 +1398,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       for (int m=0;m<(int)MasterElements().size();++m)
       {
         // create CoCoupling3d object and push back
-        Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+        Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,imortar_,
             SlaveElement(),MasterElement(m))));
 
         // do coupling
@@ -1425,7 +1425,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       for (int m=0;m<(int)MasterElements().size();++m)
       {
         // create CoCoupling3d object and push back
-        Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+        Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,imortar_,
             SlaveElement(),MasterElement(m))));
 
         // do coupling
@@ -1442,7 +1442,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
+  else if (IntType()==INPAR::MORTAR::inttype_elements || IntType()==INPAR::MORTAR::inttype_elements_BS)
   {
     if ((int)MasterElements().size()==0)
       return false;
@@ -1459,7 +1459,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
       // create an integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
+      CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
 
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
@@ -1469,14 +1469,14 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       bool proj=false;
 
       //Perform integration and linearization
-      integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
+      integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
 
-      if (IntType()==INPAR::MORTAR::inttype_fast_BS)
+      if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
         if (boundary_ele==true)
         {
           // switch, if consistent boundary modification chosen
-          if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+          if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
               && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
              )
           {
@@ -1484,7 +1484,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
             for (int m=0;m<(int)MasterElements().size();++m)
             {
               // create CoCoupling3d object and push back
-              Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+              Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,imortar_,
                   SlaveElement(),MasterElement(m))));
 
               // do coupling
@@ -1511,7 +1511,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
             for (int m=0;m<(int)MasterElements().size();++m)
             {
               // create CoCoupling3d object and push back
-              Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,icontact_,
+              Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,dim_,false,imortar_,
                   SlaveElement(),MasterElement(m))));
 
               // do coupling
@@ -1527,16 +1527,16 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
         }
       }
 
-      if (IntType()==INPAR::MORTAR::inttype_fast_BS && boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
+      if (IntType()==INPAR::MORTAR::inttype_elements_BS && boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
       {
         integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+        integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
         integrator.AssembleG(Comm(),SlaveElement(),*gseg);
       }
       else if(proj==true)
       {
         integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+        integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
         integrator.AssembleG(Comm(),SlaveElement(),*gseg);
       }
     }
@@ -1583,7 +1583,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
         for (int j=0;j<(int)mauxelements.size();++j)
         {
           // create instance of coupling class
-          CoCoupling3dQuad coup(idiscret_,dim_,true,icontact_,
+          CoCoupling3dQuad coup(idiscret_,dim_,true,imortar_,
               SlaveElement(),*MasterElements()[m],*sauxelements[i],*mauxelements[j]);
           // do coupling
           coup.EvaluateCoupling();
@@ -1601,7 +1601,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
+  else if (IntType()==INPAR::MORTAR::inttype_elements || IntType()==INPAR::MORTAR::inttype_elements_BS)
   {
     // check for standard shape functions and quadratic LM interpolation
     if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad()==INPAR::MORTAR::lagmult_quad_quad
@@ -1621,7 +1621,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(icontact_,SlaveElement().Shape());
+    CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
 
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
@@ -1631,9 +1631,9 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     bool proj=false;
 
     //Perform integration and linearization
-    integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
+    integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
 
-    if (IntType()==INPAR::MORTAR::inttype_fast_BS)
+    if (IntType()==INPAR::MORTAR::inttype_elements_BS)
     {
       if (boundary_ele==true)
       {
@@ -1652,7 +1652,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
             for (int j=0;j<(int)mauxelements.size();++j)
             {
               // create instance of coupling class
-              CoCoupling3dQuad coup(idiscret_,dim_,true,icontact_,
+              CoCoupling3dQuad coup(idiscret_,dim_,true,imortar_,
                   SlaveElement(),*MasterElements()[m],*sauxelements[i],*mauxelements[j]);
               // do coupling
               coup.EvaluateCoupling();
@@ -1670,14 +1670,14 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     	else if (boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
     	{
       	integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-      	integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+      	integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
       	integrator.AssembleG(Comm(),SlaveElement(),*gseg);
     	}
     }
-		else if (proj==true && IntType()==INPAR::MORTAR::inttype_fast) //do not assemble entries when a master-element has no GP
+		else if (proj==true && IntType()==INPAR::MORTAR::inttype_elements) //do not assemble entries when a master-element has no GP
     {
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-      integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+      integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
     }
     else if (proj==false)
@@ -1707,11 +1707,11 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     dserror("ConsistentDualShape() called for standard LM interpolation.");
 
   // Consistent modification only for linear LM interpolation
-  if (Quad()==true && DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true)
+  if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   // you should not be here
-  if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
+  if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
   // do nothing if there are no coupling pairs
@@ -1845,7 +1845,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
        RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
        // create an integrator for this cell
-       CONTACT::CoIntegrator integrator(icontact_,currcell->Shape());
+       CONTACT::CoIntegrator integrator(imortar_,currcell->Shape());
        for (int gp=0;gp<integrator.nGP(); ++gp)
        {
          // coordinates and weight

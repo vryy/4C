@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 #include "Epetra_Comm.h"
 #include "../drt_lib/drt_element.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/inpar_contact.H"
 
 
 /*!
@@ -111,13 +112,20 @@ public:
 
   */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
+
+  /*!
+  \brief Return type of wear surface definition
+
+  */
+  INPAR::CONTACT::WearSide WearSide()
+      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
 
   /*!
   \brief Return the LM interpolation / testing type for quadratic FE
 
   */
-  INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD") ; }
+  INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD") ; }
 
   /*!
   \brief Return number of Gauss points for this instance
@@ -157,7 +165,7 @@ public:
   \brief Perform mortar-integration without previous segmentation -- 2D
 
   */
-  virtual void FastIntegration(
+  virtual void EleBased_Integration(
          Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
          Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
          MORTAR::MortarElement& sele,
@@ -208,7 +216,7 @@ public:
          (i.e. M, g, LinM, Ling and possibly D, LinD)
 
   */
-  virtual void IntegrateDerivCell3D_Fast(
+  virtual void IntegrateDerivCell3D_EleBased(
       MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
@@ -298,10 +306,10 @@ public:
                  Epetra_SerialDenseMatrix& M_seg);
 
   /*!
-  \brief Assemble M contribution of current slave-master pairing for FastIntegration
+  \brief Assemble M contribution of current slave-master pairing for EleBased_Integration
 
   */
-  virtual bool AssembleM_Fast(const Epetra_Comm& comm,
+  virtual bool AssembleM_EleBased(const Epetra_Comm& comm,
                  MORTAR::MortarElement& sele,
                  std::vector<MORTAR::MortarElement*> meles,
                  Epetra_SerialDenseMatrix& M_seg);
@@ -323,7 +331,7 @@ protected:
     MortarIntegrator operator = (const MortarIntegrator& old);
     MortarIntegrator(const MortarIntegrator& old);
 
-    Teuchos::ParameterList&       icontact_;    // containing contact input parameters
+    Teuchos::ParameterList&       imortar_;    // containing contact input parameters
     int                           dim_;         // dimension of problem (2D or 3D)
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates

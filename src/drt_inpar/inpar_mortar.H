@@ -101,8 +101,8 @@ namespace INPAR
     enum IntType
     {
       inttype_segments,       ///< segmentation of mortar interface
-      inttype_fast,           ///< fast, elementwise integration
-      inttype_fast_BS         ///< fast, elementwise intgration with Boundary Segmentation
+      inttype_elements,       ///< fast, elementwise integration
+      inttype_elements_BS     ///< fast, elementwise intgration with Boundary Segmentation
     };
   }  // namespace MORTAR
 

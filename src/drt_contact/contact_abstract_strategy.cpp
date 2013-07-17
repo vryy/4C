@@ -298,6 +298,8 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   gactivedofs_      = Teuchos::null;
   gactiven_         = Teuchos::null;
   gactivet_         = Teuchos::null;
+  gminvolvednodes_  = Teuchos::null;
+  gminvolveddofs_   = Teuchos::null;
   if (!redistributed) gndofrowmap_= Teuchos::null;
 
   if (friction_)
@@ -335,6 +337,18 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
     gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
     
+    // ****************************************************
+    // both-sided wear specific
+    // ****************************************************
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+    {
+      gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
+      gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
+    }
+
+    // ****************************************************
+    // friction
+    // ****************************************************
     if (friction_)
     {
       gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
@@ -457,7 +471,11 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   stresstangential_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   
   // output wear
-  if (wear_) wearoutput_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  if (wear_)
+  {
+    wearoutput_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    wearoutput2_ = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_)); // wear for master side
+  }
      
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -845,6 +863,7 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
 
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
   dmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+  d2matrix_= Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,10));
   mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
   if (friction_) jump_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -881,6 +900,11 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     interface_[i]->AssembleDM(*dmatrix_,*mmatrix_);
     interface_[i]->AssembleG(*g_);
     
+    // only assemble D2 for both-sided wear --> unweights the weighted wear increment in master side
+    // --> based on weak dirichlet bc!
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+      interface_[i]->AssembleD2(*d2matrix_);
+
     // assemble wear vector
     if (wear_) interface_[i]->AssembleWear(*wearvector_);
     
@@ -921,6 +945,7 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
 
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
+  d2matrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
   
   if (tsi_) amatrix_->Complete();
@@ -1468,9 +1493,12 @@ void CONTACT::CoAbstractStrategy::OutputWear()
   Teuchos::RCP<LINALG::SparseMatrix> daa,dai,dia,dii;
   Teuchos::RCP<Epetra_Map> gidofs;
   
+  // ****************************************************************
   // split the matrix
-  LINALG::SplitMatrix2x2(dmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,daa,dai,dia,dii);
+  // why is here an empty gidofs map instead of a full map used???
+  // ****************************************************************
 
+  LINALG::SplitMatrix2x2(dmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,daa,dai,dia,dii);
   
   // extract active parts of wear vector
   Teuchos::RCP<Epetra_Vector> wear_vectora = Teuchos::rcp(new Epetra_Vector(*gactivedofs_,true));
@@ -1496,6 +1524,55 @@ void CONTACT::CoAbstractStrategy::OutputWear()
    double tmp = (*real_wear)[real_wear->Map().LID(gid)];
    (*wearoutput_)[wearoutput_->Map().LID(gid)] = tmp;
   }
+
+  /**********************************************************************
+   * Here the wearoutput_ - vector is the unweighted ("real") wearvector.
+   * To calculate the wearvector for the master surface we transform
+   * the slavewear vector via w_2~ = M^T * D^-1 * w~. In addition, we
+   * unweight the resulting vector by D_2^-1*w_2~ and get the final
+   * unweighted wear vector.
+   **********************************************************************/
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  {
+    // extract involved parts of d2 matrix
+    // matrices, maps - i: involved ; n: non-involved
+    Teuchos::RCP<LINALG::SparseMatrix> d2ii,d2in,d2ni,d2nn;
+    Teuchos::RCP<Epetra_Map> gndofs; // non-involved dofs
+
+    LINALG::SplitMatrix2x2(d2matrix_,gminvolveddofs_,gndofs,gminvolveddofs_,gndofs,d2ii,d2in,d2ni,d2nn);
+
+    Teuchos::RCP<Epetra_Vector> wear_master = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> real_wear2 = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+
+    mmatrix_->Multiply(true,*real_wear,*wear_master); // now we have the weighted wear on the master surface
+
+    // extract involved parts of wear vector
+    Teuchos::RCP<Epetra_Vector> wear2_real    = Teuchos::rcp(new Epetra_Vector(*gminvolveddofs_,true));
+    Teuchos::RCP<Epetra_Vector> wear2_vectori = Teuchos::rcp(new Epetra_Vector(*gminvolveddofs_,true));
+    Teuchos::RCP<Epetra_Vector> wear2_vectorn = Teuchos::rcp(new Epetra_Vector(*gndofs));
+
+    // split the vector
+    LINALG::SplitVector(*gmdofrowmap_,*wear_master,gminvolveddofs_,wear2_vectori,gndofs,wear2_vectorn);
+
+    if(gminvolveddofs_->NumGlobalElements())
+    {
+      solver.Solve(d2ii->EpetraMatrix(), wear2_real, wear2_vectori, true);
+    }
+
+    Teuchos::RCP<Epetra_Vector> real_wear2exp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+    LINALG::Export(*wear2_real,*real_wear2exp);
+    real_wear2->Update(1.0,*real_wear2exp,0.0);
+
+
+    // copy the local part of real_wear into wearoutput_
+    for (int i=0; i<(int)gmdofrowmap_->NumMyElements(); ++i)
+    {
+     int gid = gmdofrowmap_->MyGlobalElements()[i];
+     double tmp = (*real_wear2)[real_wear2->Map().LID(gid)];
+     (*wearoutput2_)[wearoutput2_->Map().LID(gid)] = -tmp; // negative sign because on other interface side
+    }
+  }
+
   return;
 }
 

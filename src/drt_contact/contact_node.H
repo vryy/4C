@@ -130,6 +130,13 @@ public:
   */
   virtual double& Getg() { return grow_; }
 
+
+  /*!
+  \brief Return the 'D' map (vector) of this node
+  */
+  virtual std::vector<std::map<int,double> >& GetD2() { return d2rows_; }
+
+
   /*!
   \brief Return the 'DerivN' map (vector) of this node
 
@@ -259,6 +266,7 @@ protected:
   double          teta_[3];        // nodal tangent t_eta for contact methods
   double          grow_;           // nodal entry of g vector
 
+  std::vector<std::map<int,double> >      d2rows_;     // nodal rows of master sided D matrix
   std::vector<std::map<int,double> >      derivn_;     // directional derivative of nodal normal
   std::vector<std::map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
   std::vector<std::map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
@@ -390,6 +398,11 @@ public:
   */
   virtual bool& Active() { return active_; }
 
+
+
+
+  virtual bool& InvolvedM() { return involvedm_; }
+
   /*!
   \brief Return data container of this node
 
@@ -413,6 +426,10 @@ public:
 
   */
   void AddgValue(double& val);
+
+
+
+  void AddD2Value(int& row, int& col, double& val);
 
   /*!
   \brief Add a value to the map of LM derivatives of this node
@@ -491,6 +508,7 @@ protected:
 
   bool            active_;         // true if cnode is in contact (active set strategy)
   bool            initactive_;     // true if node is initialized as active node
+  bool            involvedm_;      // cnode is an master node for which the mortar integration is performed (both-sided wear)
 
   Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_;   // additional information of proc's contact nodes
 

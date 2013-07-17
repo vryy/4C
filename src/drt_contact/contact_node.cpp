@@ -121,7 +121,8 @@ CONTACT::CoNode::CoNode(int id, const double* coords, const int owner,
                         const bool initactive) :
 MORTAR::MortarNode(id,coords,owner,numdof,dofs,isslave),
 active_(false),
-initactive_(initactive)
+initactive_(initactive),
+involvedm_(false)
 {
   return;
 }
@@ -132,7 +133,8 @@ initactive_(initactive)
 CONTACT::CoNode::CoNode(const CONTACT::CoNode& old) :
 MORTAR::MortarNode(old),
 active_(old.active_),
-initactive_(old.initactive_)
+initactive_(old.initactive_),
+involvedm_(false)
 {
   // not yet used and thus not necessarily consistent
   dserror("ERROR: CoNode copy-ctor not yet implemented");
@@ -174,7 +176,7 @@ void CONTACT::CoNode::Print(ostream& os) const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            mwgee 10/07|
+ |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
 {
@@ -192,6 +194,8 @@ void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,active_);
   // add initactive_
   AddtoPack(data,initactive_);
+  // add involved
+  AddtoPack(data,involvedm_);
 
   // add data_
   bool hasdata = (codata_!=Teuchos::null);
@@ -224,6 +228,8 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   active_ = ExtractInt(position,data);
   // isslave_
   initactive_ = ExtractInt(position,data);
+  // isslave_
+  involvedm_ = ExtractInt(position,data);
 
   // data_
   bool hasdata = ExtractInt(position,data);
@@ -258,6 +264,36 @@ void CONTACT::CoNode::AddgValue(double& val)
 
   // add given value to grow_
   CoData().Getg()+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'D2' map                              farah 06/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddD2Value(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==true)
+    dserror("ERROR: AddD2Value: function called for slave node %i", Id());
+
+  //cout << "in addd2value" << endl;
+
+  //cout << "MODATA= " << (int)MoData().GetD2().size() << endl;
+
+  // check if this has been called before
+  if ((int)CoData().GetD2().size()==0)
+    CoData().GetD2().resize(NumDof());
+
+  // check row index input
+  if ((int)CoData().GetD2().size()<=row)
+    dserror("ERROR: AddD2Value: tried to access invalid row index!");
+
+  //cout << "in addd2value 2" << endl;
+
+  // add the pair (col,val) to the given row
+  std::map<int,double>& d2map = CoData().GetD2()[row];
+  d2map[col] += val;
 
   return;
 }

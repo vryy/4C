@@ -78,8 +78,8 @@ public:
  
   */
   CoInterface(const int id, const Epetra_Comm& comm, const int dim,
-              const Teuchos::ParameterList& icontact, bool selfcontact,
-              INPAR::MORTAR::RedundantStorage redundant);
+              const Teuchos::ParameterList& icontact,
+              bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
     
   /*!
   \brief Destructor
@@ -110,6 +110,17 @@ public:
     if (Filled()) return activenodes_;
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
+  }
+
+
+  virtual const Teuchos::RCP<Epetra_Map> InvolvedDofs() const
+  {
+    return involveddofs_;
+  }
+
+  virtual const Teuchos::RCP<Epetra_Map> InvolvedNodes() const
+  {
+    return involvednodes_;
   }
 
   /*!
@@ -462,6 +473,8 @@ public:
   virtual void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
                              LINALG::SparseMatrix& linmglobal);
 
+
+  virtual void AssembleD2(LINALG::SparseMatrix& dglobal);
   /*!
   \brief Assemble weighted gap g
 
@@ -616,6 +629,12 @@ protected:
   Teuchos::RCP<Epetra_Map>      slipnodes_;      // row map of all slip slave nodes
   Teuchos::RCP<Epetra_Map>      slipdofs_;       // row map of all slip slave dofs
   Teuchos::RCP<Epetra_Map>      slipt_;          // row map of part of T-matrix (slip nodes)
+
+  // both-sided wear specific stuff
+  Teuchos::RCP<Epetra_Map>      involvednodes_;  // row map of all involved master nodes
+  Teuchos::RCP<Epetra_Map>      involveddofs_;   // row map of all involved master dofs
+
+  Teuchos::ParameterList        icontact_;       // containing contact input parameters of interface
 
   Teuchos::RCP<SelfBinaryTree>  binarytreeself_; // binary tree for self contact search
 

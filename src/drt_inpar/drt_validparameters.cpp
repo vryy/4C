@@ -1518,12 +1518,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("INTTYPE","Segments","Type of numerical integration scheme",
     tuple<std::string>("Segments","segments",
-             "Fast","fast",
-             "Fast_BS", "fast_BS"),
+             "Elements","elements",
+             "Elements_BS", "elements_BS"),
     tuple<int>(
         INPAR::MORTAR::inttype_segments, INPAR::MORTAR::inttype_segments,
-        INPAR::MORTAR::inttype_fast, INPAR::MORTAR::inttype_fast,
-        INPAR::MORTAR::inttype_fast_BS, INPAR::MORTAR::inttype_fast_BS),
+        INPAR::MORTAR::inttype_elements, INPAR::MORTAR::inttype_elements,
+        INPAR::MORTAR::inttype_elements_BS, INPAR::MORTAR::inttype_elements_BS),
     &mortar);
     
   IntParameter("NUMGP_PER_DIM",0,"Number of employed integration points per dimension",&mortar);
@@ -1571,6 +1571,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &scontact);
 
   DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
+
+  setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
+        tuple<std::string>("No","no", "none" ,
+                           "Mapping","mapping", "map",
+                           "Ale_Mortar","ale_mortar", "ALE_Mortar"),
+        tuple<int>(
+                INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave,
+                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map,
+                INPAR::CONTACT::wear_both_ale, INPAR::CONTACT::wear_both_ale, INPAR::CONTACT::wear_both_ale),
+        &scontact);
 
   setStringToIntegralParameter<int>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",

@@ -54,7 +54,7 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 MORTAR::MortarIntegrator::MortarIntegrator(Teuchos::ParameterList& params,
                                DRT::Element::DiscretizationType eletype) :
-icontact_(params)
+imortar_(params)
 {
   InitializeGP(eletype);
 }
@@ -92,7 +92,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
     DRT::UTILS::GaussRule1D mygaussrule = DRT::UTILS::intrule_line_5point;
 
     // GP switch if non-zero value provided by user
-    if(integrationtype==INPAR::MORTAR::inttype_fast ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
+    if(integrationtype==INPAR::MORTAR::inttype_elements ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
     {
       if (numgp>0)
       {
@@ -192,7 +192,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
 
     // GP switch if non-zero value provided by user
-    if(integrationtype==INPAR::MORTAR::inttype_fast)// ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
+    if(integrationtype==INPAR::MORTAR::inttype_elements)// ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
     {
       if (numgp>0)
       {
@@ -283,7 +283,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_9point;
 
     // GP switch if non-zero value provided by user
-    if(integrationtype==INPAR::MORTAR::inttype_fast ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
+    if(integrationtype==INPAR::MORTAR::inttype_elements ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
     {
       if (numgp>0)
       {
@@ -385,7 +385,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
  | Integration over the entire Slave-Element: no mapping sxi->eta                       |
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
-void MORTAR::MortarIntegrator::FastIntegration(
+void MORTAR::MortarIntegrator::EleBased_Integration(
        Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
        Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
        MORTAR::MortarElement& sele,
@@ -470,7 +470,7 @@ void MORTAR::MortarIntegrator::FastIntegration(
     {
       // get Master element nodes themselves
       DRT::Node** mnodes = meles[nummaster]->Nodes();
-      if(!mnodes) dserror("ERROR: FastIntegration: Null pointer!");
+      if(!mnodes) dserror("ERROR: EleBased_Integration: Null pointer!");
 
       // project Gauss point onto master element
       double mxi[2] = {0.0, 0.0};
@@ -569,13 +569,13 @@ void MORTAR::MortarIntegrator::FastIntegration(
             if (bound)
             {
               MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
-              if (!mymrtrnode) dserror("ERROR: Fastintegration: Null pointer!");
+              if (!mymrtrnode) dserror("ERROR: EleBased_integration: Null pointer!");
               bool j_boundnode = mymrtrnode->IsOnBound();
 
               for (int k=0;k<nrow*ndof;++k)
               {
                 MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(mynodes[(int)(k/ndof)]);
-                if (!mymrtrnode2) dserror("ERROR: FastIntegration: Null pointer!");
+                if (!mymrtrnode2) dserror("ERROR: EleBased_Integration: Null pointer!");
                 bool k_boundnode = mymrtrnode2->IsOnBound();
 
                 int jindex = (int)(j/ndof);
@@ -644,13 +644,13 @@ void MORTAR::MortarIntegrator::FastIntegration(
         if (bound)
         {
           MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
-          if (!mymrtrnode) dserror("ERROR: Fastintegration: Null pointer!");
+          if (!mymrtrnode) dserror("ERROR: EleBased_integration: Null pointer!");
           bool j_boundnode = mymrtrnode->IsOnBound();
 
           for (int k=0;k<nrow*ndof;++k)
           {
           MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(mynodes[(int)(k/ndof)]);
-          if (!mymrtrnode2) dserror("ERROR: FastIntegration: Null pointer!");
+          if (!mymrtrnode2) dserror("ERROR: EleBased_Integration: Null pointer!");
           bool k_boundnode = mymrtrnode2->IsOnBound();
 
           int jindex = (int)(j/ndof);
@@ -1343,7 +1343,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
 /*----------------------------------------------------------------------*
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarIntegrator::IntegrateDerivCell3D_Fast(
+void MORTAR::MortarIntegrator::IntegrateDerivCell3D_EleBased(
      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
@@ -2684,10 +2684,10 @@ bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble M contribution for FastIntegration(2D / 3D)     farah 01/13|
+ |  Assemble M contribution for ele. b. int. (2D / 3D)       farah 01/13|
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarIntegrator::AssembleM_Fast(const Epetra_Comm& comm,
+bool MORTAR::MortarIntegrator::AssembleM_EleBased(const Epetra_Comm& comm,
                                          MORTAR::MortarElement& sele,
                                          std::vector<MORTAR::MortarElement*> meles,
                                          Epetra_SerialDenseMatrix& mseg)

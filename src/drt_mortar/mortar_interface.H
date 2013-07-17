@@ -93,12 +93,12 @@ public:
   \param id (in): Unique interface id
   \param comm (in): A communicator object
   \param dim (in): Global problem dimension
-  \param icontact (in): Global contact parameter list
+  \param imortar (in): Global contact parameter list
   \param redundant (in): type of redundancy in interface storage
  
   */
   MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
-                  const Teuchos::ParameterList& icontact,
+                  const Teuchos::ParameterList& imortar,
                   INPAR::MORTAR::RedundantStorage redundant);
     
   /*!
@@ -166,7 +166,7 @@ public:
   \brief Get interface contact parameter list
 
   */
-  virtual Teuchos::ParameterList& IParams() {return icontact_;};
+  virtual Teuchos::ParameterList& IParams() {return imortar_;};
 
   /*!
   \brief Get quadratic 2d/3d slave element flag
@@ -189,14 +189,14 @@ public:
 
   */
   virtual const INPAR::MORTAR::SearchAlgorithm SearchAlg()
-  {return DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(icontact_,"SEARCH_ALGORITHM");};
+  {return DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar_,"SEARCH_ALGORITHM");};
 
   /*!
   \brief Get search algorithm parameter
 
   */
   virtual const double SearchParam()
-  {return icontact_.get<double>("SEARCH_PARAM");};
+  {return imortar_.get<double>("SEARCH_PARAM");};
   
   /*!
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)
@@ -701,7 +701,7 @@ protected:
 
   Teuchos::RCP<DRT::Discretization>  idiscret_;      // the discretization of the mortar interface
   int                                dim_;           // dimension of problem (2D or 3D)
-  Teuchos::ParameterList             icontact_;      // containing contact input parameters of interface
+  Teuchos::ParameterList             imortar_;      // containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn            shapefcn_;      // employed type of shape function set
   bool                               quadslave_;     // flag indicating quadratic 2d/3d slave elements
   INPAR::MORTAR::RedundantStorage    redundant_;     // employed type of redundancy in storage of interface

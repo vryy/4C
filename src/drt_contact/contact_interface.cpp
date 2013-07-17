@@ -630,6 +630,32 @@ void CONTACT::CoInterface::Initialize()
     }
   }
   
+  //******************************************************
+  // for both-sided wear
+  //******************************************************
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  {
+    for (int i=0;i<MasterRowNodes()->NumMyElements();++i) //col //for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
+    {
+      int gid = MasterRowNodes()->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CoNode* cnode = static_cast<CoNode*>(node);
+
+      if (cnode->IsSlave() ==false)
+      {
+        // reset nodal Mortar maps
+        for (int j=0;j<(int)((cnode->CoData().GetD2()).size());++j)
+          (cnode->CoData().GetD2())[j].clear();
+
+        (cnode->CoData().GetD2()).resize(0);
+      }
+  //    else
+  //      cout << "this was a slave node" << endl;
+
+    }
+  }
+
   // loop over all slave nodes to reset stuff (standard column map)
   // (include slave side boundary nodes / crosspoints)
   for (int i=0;i<SlaveColNodesBound()->NumMyElements();++i)
@@ -781,8 +807,21 @@ void CONTACT::CoInterface::SetElementAreas()
   }
   else
   {
-    // refer call back to base class version
-    MORTAR::MortarInterface::SetElementAreas();
+  	// for both-sided wear we need element areas of master elements --> colelements
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  	{
+    	for (int i=0;i<idiscret_->NumMyColElements();++i)
+    	{
+      	MORTAR::MortarElement* element = static_cast<MORTAR::MortarElement*>(idiscret_->lColElement(i));
+      	element->InitializeDataContainer();
+      	element->MoData().Area()=element->ComputeArea();
+    	}
+    }
+    else
+    {
+    	//refer call back to base class version
+    	MORTAR::MortarInterface::SetElementAreas();
+    }
   }
 
   return;
@@ -1166,7 +1205,7 @@ bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
   //**********************************************************************
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(icontact_,sele.Shape());
+  CONTACT::CoIntegrator integrator(imortar_,sele.Shape());
 
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
@@ -1224,7 +1263,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
     
     // create CoCoupling2dManager
-    CONTACT::CoCoupling2dManager coup(Discret(),Dim(),quadratic,icontact_,sele,mele);
+    CONTACT::CoCoupling2dManager coup(Discret(),Dim(),quadratic,IParams(),sele,mele);
 
     // increase counter of slave/master integration pairs and intcells
     smintpairs_ += (int)mele.size();
@@ -1303,7 +1342,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(icontact_,sele.Shape());
+      CONTACT::CoIntegrator integrator(imortar_,sele.Shape());
       integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
 
       // do the assembly into the slave nodes
@@ -1320,7 +1359,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
         Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
         // create a CONTACT integrator instance with correct NumGP and Dim
-        CONTACT::CoIntegrator integrator(icontact_,sauxelements[i]->Shape());
+        CONTACT::CoIntegrator integrator(imortar_,sauxelements[i]->Shape());
         integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg);
 
         // do the assembly into the slave nodes
@@ -1342,7 +1381,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     // create a CONTACT integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(icontact_,sele.Shape());
+    CONTACT::CoIntegrator integrator(imortar_,sele.Shape());
     integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
 
     // do the assembly into the slave nodes
@@ -1353,7 +1392,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate relative movement (jump) of a slave node      gitterle 10/09|
+ |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
                                           const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
@@ -3052,6 +3091,85 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
 }
 
 /*----------------------------------------------------------------------*
+ |  Assemble Mortar matrice for both sided wear              farah 06/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") == INPAR::CONTACT::wear_slave)
+    dserror("ERROR: AssembleD2 only for mapped both-sided wear!");
+
+  //*******************************************************
+  // assemble second D matrix for both-sided wear
+  //*******************************************************
+  for (int i=0;i<mnoderowmap_->NumMyElements();++i)
+  {
+    int gid = mnoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+
+    /**************************************************** D-matrix ******/
+    if ((cnode->CoData().GetD2()).size()>0)
+    {
+      std::vector<std::map<int,double> > dmap = cnode->CoData().GetD2();
+      int rowsize = cnode->NumDof();
+      int colsize = (int)dmap[0].size();
+
+      for (int j=0;j<rowsize-1;++j)
+        if ((int)dmap[j].size() != (int)dmap[j+1].size())
+          dserror("ERROR: AssembleDM: Column dim. of nodal D-map is inconsistent!");
+
+      std::map<int,double>::iterator colcurr;
+
+      for (int j=0;j<rowsize;++j)
+      {
+        int row = cnode->Dofs()[j];
+        int k = 0;
+
+        for (colcurr=dmap[j].begin();colcurr!=dmap[j].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = colcurr->second;
+
+          // do the assembly into global D matrix
+          if (shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
+          {
+            // check for diagonality
+            if (row!=col && abs(val)>1.0e-12)
+              dserror("ERROR: AssembleDM: D-Matrix is not diagonal!");
+
+            // check for positivity
+            //if (row==col && val<0.0)
+            //  dserror("ERROR: AssembleDM: D-Matrix is not positive!");
+
+            // create an explicitly diagonal d matrix
+            if (row==col)
+              dglobal.Assemble(val, row, col);
+          }
+          else if (shapefcn_ == INPAR::MORTAR::shape_standard)
+          {
+            dserror("both-sided wear only for dual lagr. mult.");
+          }
+
+          ++k;
+        }
+
+        if (k!=colsize)
+          dserror("ERROR: AssembleDM: k = %i but colsize = %i",k,colsize);
+      }
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Assemble matrices LinDM containing fc derivatives         popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
@@ -4611,6 +4729,8 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
   std::vector<int> mydofgids(0);
   std::vector<int> myslipnodegids(0);
   std::vector<int> myslipdofgids(0);
+  std::vector<int> mymnodegids(0);
+  std::vector<int> mymdofgids(0);
 
   // loop over all slave nodes
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
@@ -4690,10 +4810,42 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
     }
   }
 
+  // loop over all master nodes - both-sided wear specific
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  {
+    for (int k=0;k<mnoderowmap_->NumMyElements();++k)
+  	{
+    	int gid = mnoderowmap_->GID(k);
+    	DRT::Node* node = idiscret_->gNode(gid);
+    	if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    	CoNode* cnode = static_cast<CoNode*>(node);
+    	const int numdof = cnode->NumDof();
+
+    	if (cnode->InvolvedM()==true)
+    	{
+      	mymnodegids.push_back(cnode->Id());
+
+      	for (int j=0;j<numdof;++j)
+      	{
+        	mymdofgids.push_back(cnode->Dofs()[j]);
+      	}
+      	//reset it
+      	cnode->InvolvedM()=false;
+    	}
+  	}
+  }
+
   // create active node map and active dof map
   activenodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
   activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
 
+  // create map for all involved master nodes -- both-sided wear specific
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  {
+  	involvednodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mymnodegids.size(),&mymnodegids[0],0,Comm()));
+  	involveddofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mymdofgids.size(),&mymdofgids[0],0,Comm()));
+	}
+	
   if (friction_)
   {
     // create slip node map and slip dof map

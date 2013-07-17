@@ -74,7 +74,7 @@ SHAPEFCN             Dual
 SEARCH_ALGORITHM     BruteForceEleBased
 SEARCH_PARAM         0.3
 COUPLING_AUXPLANE    Yes
-INTTYPE              fast_BS
+INTTYPE              elements_BS
 LM_DUAL_CONSISTENT   yes
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver

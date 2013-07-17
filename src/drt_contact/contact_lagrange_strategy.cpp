@@ -3129,6 +3129,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   gslipdofs_ = Teuchos::null;
   gslipt_ = Teuchos::null;
 
+  // for both-sided wear
+  gminvolvednodes_  = Teuchos::null;
+  gminvolveddofs_   = Teuchos::null;
+
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -3138,6 +3142,14 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
+
+    // for both-sided wear -- involved master nodes/dofs
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(scontact_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+    {
+      gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
+      gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
+    }
+
     if(friction_)
     {  
       gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
@@ -3338,6 +3350,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (Dim()==3) euclidean = sqrt(sum[0]*sum[0]+sum[1]*sum[1]);
        }
 
+
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
@@ -3506,6 +3519,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   gslipdofs_ = Teuchos::null;
   gslipt_ = Teuchos::null;
 
+  // for both-sided wear
+  gminvolvednodes_  = Teuchos::null;
+  gminvolveddofs_   = Teuchos::null;
+
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -3515,6 +3532,14 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
+
+    // for both-sided wear
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(scontact_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+    {
+      gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
+      gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
+    }
+
     if(friction_)
     {
       gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);

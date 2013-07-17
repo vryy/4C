@@ -59,7 +59,7 @@ MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret,
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
-icontact_(params),
+imortar_(params),
 sele_(sele),
 mele_(mele),
 overlap_(false)
@@ -565,7 +565,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   double mxib = xiproj_[3];
 
   // create an integrator instance with correct NumGP and Dim
-  MORTAR::MortarIntegrator integrator(icontact_,SlaveElement().Shape());
+  MORTAR::MortarIntegrator integrator(imortar_,SlaveElement().Shape());
 
   // *******************************************************************
   // different options for mortar integration
@@ -673,7 +673,7 @@ MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret,
 idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
-icontact_(params),
+imortar_(params),
 sele_(sele),
 mele_(mele)
 {
@@ -696,7 +696,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
   if (IntType()==INPAR::MORTAR::inttype_segments)
   {
     // switch, if consistent boundary modification chosen
-    if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+    if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
         && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
        )
     {
@@ -705,7 +705,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
       {
         // create Coupling2d object and push back
         Coupling().push_back(Teuchos::rcp(new Coupling2d(
-            idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+            idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
         // project the element pair
         Coupling()[m]->Project();
@@ -735,7 +735,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
       {
         // create Coupling2d object and push back
         Coupling().push_back(Teuchos::rcp(new Coupling2d(
-            idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+            idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
         // project the element pair
         Coupling()[m]->Project();
@@ -751,13 +751,13 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
+  else if (IntType()==INPAR::MORTAR::inttype_elements || IntType()==INPAR::MORTAR::inttype_elements_BS)
   {
     if ((int)MasterElements().size()==0)
       return false;
 
     // create an integrator instance with correct NumGP and Dim
-    MORTAR::MortarIntegrator integrator(icontact_,SlaveElement().Shape());
+    MORTAR::MortarIntegrator integrator(imortar_,SlaveElement().Shape());
 
     int nrow = SlaveElement().NumNode();
     int ncol = (MasterElements().size())*MasterElement(0).NumNode();
@@ -784,15 +784,15 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
         (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad) ||
         (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
-      integrator.FastIntegration(dseg,mseg,SlaveElement(),MasterElements(),&boundary_ele);
+      integrator.EleBased_Integration(dseg,mseg,SlaveElement(),MasterElements(),&boundary_ele);
 
       // Perform Boundary Segmentation if required
-      if (IntType()==INPAR::MORTAR::inttype_fast_BS)
+      if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
         if (boundary_ele==true)
         {std::cout << "Boundary segmentation for element: " << SlaveElement().Id() << "\n" ;
           // switch, if consistent boundary modification chosen
-          if (   DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true
+          if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
               && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
              )
           {
@@ -801,7 +801,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
             {
               // create Coupling2d object and push back
               Coupling().push_back(Teuchos::rcp(new Coupling2d(
-                  idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+                  idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
               // project the element pair
               Coupling()[m]->Project();
@@ -828,7 +828,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
             {
               // create Coupling2d object and push back
               Coupling().push_back(Teuchos::rcp(new Coupling2d(
-                  idiscret_,dim_,quad_,icontact_,SlaveElement(),MasterElement(m))));
+                  idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
               // project the element pair
               Coupling()[m]->Project();
@@ -845,7 +845,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
       else
       {
         integrator.AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_Fast(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
+        integrator.AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
       }
     }
   }
@@ -871,11 +871,11 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     dserror("ConsistentDualShape() called for standard LM interpolation.");
 
   // Consistent modification only for linear LM interpolation
-  if (Quad()==true && DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==true)
+  if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   // you should not be here
-  if (DRT::INPUT::IntegralValue<int>(icontact_,"LM_DUAL_CONSISTENT")==false)
+  if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
   // do nothing if there are no coupling pairs

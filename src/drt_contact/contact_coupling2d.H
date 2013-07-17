@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #define CONTACT_COUPLING2D_H
 
 #include "../drt_mortar/mortar_coupling2d.H"
+#include "../drt_inpar/inpar_contact.H"
 
 
 /*!
@@ -94,6 +95,13 @@ public:
 
   */
   bool IntegrateOverlap();
+
+  /*!
+  \brief Return type of wear surface definition
+
+  */
+  INPAR::CONTACT::WearSide WearSide()
+      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
 
   //@}
 
@@ -166,13 +174,13 @@ public:
   \brief Get type of quadratic LM interpolation
 
   */
-  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD"); };
+  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD"); };
 
   /*!
   \brief Get type of integration scheme
 
   */
-  virtual INPAR::MORTAR::IntType IntType() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(icontact_,"INTTYPE"); };
+  virtual INPAR::MORTAR::IntType IntType() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE"); };
 
   /*!
   \brief Get coupling type
@@ -197,7 +205,7 @@ public:
 
   */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
 
   /*!
   \brief Evaluate coupling pairs
@@ -223,7 +231,7 @@ protected:
     DRT::Discretization&                      idiscret_;  // discretization of the contact interface
     int                                       dim_;       // problem dimension (here: 2D)
     bool                                      quad_;      // flag indicating coupling type (true = quadratic)
-    Teuchos::ParameterList&                   icontact_;   // containing contact input parameters
+    Teuchos::ParameterList&                   imortar_;   // containing contact input parameters
     MORTAR::MortarElement*                    sele_;      // slave element
     std::vector<MORTAR::MortarElement*>       mele_;      // master elements
     std::vector<Teuchos::RCP<CoCoupling2d> >  coup_;      // coupling pairs

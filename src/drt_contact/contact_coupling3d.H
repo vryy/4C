@@ -272,7 +272,7 @@ public:
 
   */
   INPAR::MORTAR::LagMultQuad LagMultQuad()
-  { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD"); }
+  { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD"); }
 
   //@}
   
@@ -359,7 +359,7 @@ public:
 
   */
   INPAR::MORTAR::IntType IntType()
-  { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(icontact_,"INTTYPE"); };
+  { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE"); };
 
   /*!
   \brief Get coupling type
@@ -372,7 +372,7 @@ public:
 
   */
   INPAR::MORTAR::LagMultQuad LagMultQuad()
-  { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(icontact_,"LAGMULT_QUAD"); }
+  { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD"); }
 
   /*!
   \brief Get communicator
@@ -392,7 +392,7 @@ public:
 
   */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
 
   /*!
   \brief Calculate consistent dual shape functions in boundary elements
@@ -411,7 +411,7 @@ protected:
   DRT::Discretization&                      idiscret_;    // discretization of the contact interface
   int                                       dim_;         // problem dimension (here: 3D)
   bool                                      quad_;        // flag indicating coupling type (true = quadratic)
-  Teuchos::ParameterList&                   icontact_;         // containing contact input parameters
+  Teuchos::ParameterList&                   imortar_;         // containing contact input parameters
   MORTAR::MortarElement*                    sele_;        // slave element
   std::vector<MORTAR::MortarElement*>       mele_;        // master elements
   std::vector<Teuchos::RCP<CoCoupling3d> >  coup_;        // coupling pairs
@@ -452,7 +452,7 @@ public:
 
   */
   INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(icontact_,"SHAPEFCN"); }
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
 
   /*!
   \brief Evaluate coupling pairs

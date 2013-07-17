@@ -66,12 +66,12 @@ Maintainer: Alexander Popp
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarInterface::MortarInterface(const int id, const Epetra_Comm& comm,
-         const int dim, const Teuchos::ParameterList& icontact,
+         const int dim, const Teuchos::ParameterList& imortar,
          INPAR::MORTAR::RedundantStorage redundant) :
 id_(id),
 comm_(comm),
 dim_(dim),
-icontact_(icontact),
+imortar_(imortar),
 shapefcn_(INPAR::MORTAR::shape_undefined),
 quadslave_(false),
 redundant_(redundant),
@@ -573,6 +573,35 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
     
     // initialize container if not yet initialized before
     mnode->InitializeDataContainer();
+  }
+
+  //***********************************************************
+  // both-sided wear
+  // here we need a datacontainer for the masternodes too
+  // they have to know their involved nodes/dofs
+  //***********************************************************
+  if(DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+    {
+      for (int i=0; i<MasterRowNodes()->NumMyElements(); ++i) //col //for (int i=0; i<MasterRowNodes()->NumMyElements(); ++i)
+      {
+        int gid = MasterRowNodes()->GID(i);
+        DRT::Node* node = Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
+        MortarNode* mnode = static_cast<MortarNode*>(node);
+
+        //********************************************************
+        // NOTE: depending on which kind of node this really is,
+        // i.e. mortar, contact or friction node, several derived
+        // versions of the InitializeDataContainer() methods will
+        // be called here, apart from the base class version.
+        //********************************************************
+
+        // initialize container if not yet initialized before
+        mnode->InitializeDataContainer();
+      }
+    }
   }
 
   // initialize element data container
@@ -1429,7 +1458,6 @@ void MORTAR::MortarInterface::SetElementAreas()
 
     mele->MoData().Area() = mele->ComputeArea();
   }
-
   return;
 }
 
@@ -1927,7 +1955,7 @@ bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele)
   //**********************************************************************
 
   // create an integrator instance with correct NumGP and Dim
-  MORTAR::MortarIntegrator integrator(icontact_,sele.Shape());
+  MORTAR::MortarIntegrator integrator(imortar_,sele.Shape());
 
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
@@ -2464,7 +2492,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
       mglobal.Assemble(-1,Mnode,lmrow,lmrowowner,lmcol);
     }
   }
-
+  
   return;
 }
 

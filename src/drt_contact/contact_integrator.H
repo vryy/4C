@@ -107,7 +107,7 @@ public:
          (i.e. M, g, LinM, Ling and possibly D, LinD)
 
   */
-  void FastIntegration(
+  void EleBased_Integration(
       MORTAR::MortarElement& sele,
       std::vector<MORTAR::MortarElement*> meles,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
@@ -125,6 +125,7 @@ public:
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
       Teuchos::RCP<Epetra_SerialDenseVector> wseg);
@@ -146,7 +147,7 @@ public:
          (i.e. M, g, LinM, Ling and possibly D, LinD)
 
   */
-  void IntegrateDerivCell3D_Fast(
+  void IntegrateDerivCell3D_EleBased(
       MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
@@ -256,6 +257,10 @@ public:
                  MORTAR::MortarElement& sele,
                  Epetra_SerialDenseMatrix& D_seg);
 
+  bool AssembleD2(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& mele,
+                 Epetra_SerialDenseMatrix& D2_seg);
+
   /*!
   \brief Assemble D contribution of current overlap into slave nodes
          (special version for 3D quadratic mortar with piecewise linear LM interpolation)
@@ -287,10 +292,10 @@ public:
   
 
   /*!
-  \brief Assemble M contribution of current slave-master pairing for FastIntegration
+  \brief Assemble M contribution of current slave-master pairing for EleBased int.
 
   */
-  virtual bool AssembleM_Fast(const Epetra_Comm& comm,
+  virtual bool AssembleM_EleBased(const Epetra_Comm& comm,
                  MORTAR::MortarElement& sele,
                  std::vector<MORTAR::MortarElement*> meles,
                  Epetra_SerialDenseMatrix& M_seg);
@@ -363,9 +368,10 @@ protected:
     DRT::Node**                                      mynodes_;   // slave element nodes
     LINALG::SerialDenseMatrix                        scoord_;    // slave element nodal coordinates
     LINALG::SerialDenseMatrix                        mcoord_;    // master element nodal coordinates
-    bool                                             duallin_;   // flag indicating linearization of dual shape fct.
-    std::vector<std::vector<std::map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
     LINALG::SerialDenseMatrix                        ssecderiv_; // storage for 2nd derivatives of standard shape fct.
+    bool                                             duallin_;   // flag indicating linearization of dual shape fct.
+    bool                                             wear_both_;   // flag indicating linearization of dual shape fct.
+    std::vector<std::vector<std::map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
     std::vector<std::map<int,double> >               ximaps_;    // storage for 2d segment endpoints derivatives
 
 }; // class CoIntegrator

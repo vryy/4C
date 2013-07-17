@@ -75,10 +75,17 @@ namespace STRU_ALE
     void TimeLoop();
 
     /// Interface displacements (frictional contact)
-    void InterfaceDisp (Teuchos::RCP<Epetra_Vector>& disinterface);
+    void InterfaceDisp (Teuchos::RCP<Epetra_Vector>& disinterface_s,
+                        Teuchos::RCP<Epetra_Vector>& disinterface_m);
     
     // Dof Coupling
     void DispCoupling (Teuchos::RCP<Epetra_Vector>& disinterface);
+
+    // Merge wear from slave and master surface to one wear vector
+    void MergeWear (Teuchos::RCP<Epetra_Vector>& disinterface_s,
+                    Teuchos::RCP<Epetra_Vector>& disinterface_m,
+                    Teuchos::RCP<Epetra_Vector>& disinterface_g);
+
 
     /// Application of mesh displacements (frictional contact)
     void ApplyMeshDisplacement();

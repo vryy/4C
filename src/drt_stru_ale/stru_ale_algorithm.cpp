@@ -108,7 +108,7 @@ void STRU_ALE::Algorithm::TimeLoop()
     PrintHeader();
 
     /********************************************************************/
-    /* START LAGRANGE STEP                                                    */
+    /* START LAGRANGE STEP                                              */
     /* structural lagrange step with contact                            */
     /********************************************************************/
     // predict and solve structural system
@@ -126,18 +126,21 @@ void STRU_ALE::Algorithm::TimeLoop()
     AleField().PrepareTimeStep();
 
     // wear as interface displacements in ale dofs
-    RCP<Epetra_Vector> idisale;
-    InterfaceDisp(idisale);
+    RCP<Epetra_Vector> idisale_s, idisale_m, idisale_global;
+    InterfaceDisp(idisale_s, idisale_m);
     
     // system of equation
     AleField().BuildSystemMatrix();
 
-    // couplig of struct/mortar and ale dofs
-    DispCoupling(idisale);
+    // merge the both wear vectors for master and slave side to one global vector
+    MergeWear(idisale_s,idisale_m,idisale_global);
+
+    // coupling of struct/mortar and ale dofs
+    DispCoupling(idisale_global);
 
     // application of interface displacements as dirichlet conditions
-    AleField().ApplyInterfaceDisplacements(idisale);
-    
+    AleField().ApplyInterfaceDisplacements(idisale_global);
+
     // solution
     AleField().Solve();
 
@@ -188,10 +191,37 @@ void STRU_ALE::Algorithm::DispCoupling(Teuchos::RCP<Epetra_Vector>& disinterface
 }
 
 /*----------------------------------------------------------------------*
+ | Merge wear from slave and master surface to one           farah 06/13|
+ | wear vector                                                          |
+ *----------------------------------------------------------------------*/
+void STRU_ALE::Algorithm::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s ,
+                                    Teuchos::RCP<Epetra_Vector>& disinterface_m,
+                                    Teuchos::RCP<Epetra_Vector>& disinterface_g)
+{
+
+  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+  std::vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+
+
+  disinterface_g = Teuchos::rcp(new Epetra_Vector(*interface[0]->Discret().DofRowMap()),true);
+  Teuchos::RCP<Epetra_Vector>  auxvector = Teuchos::rcp(new Epetra_Vector(*interface[0]->Discret().DofRowMap()),true);
+
+  LINALG::Export(*disinterface_s,*disinterface_g);
+  LINALG::Export(*disinterface_m,*auxvector);
+
+  disinterface_g->Update(1.0,*auxvector,true);
+
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | Vector of interface displacements in ALE dofs             farah 05/13|
  | Currently just for 1 interface                                       |
  *----------------------------------------------------------------------*/
-void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterface)
+void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterface_s,
+                                        Teuchos::RCP<Epetra_Vector>& disinterface_m)
 {
   // FIXGIT: From global slave vector
   // FIXGIT: Perhaps master nodes
@@ -230,13 +260,12 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   {
     // get slave row dofs as map
     Teuchos::RCP<Epetra_Map> slavedofs = interface[0]->SlaveRowDofs();
-
     // additional spatial displacements
     // FIXGIT: transformation of results
 
-    disinterface = Teuchos::rcp(new Epetra_Vector(*slavedofs,true));
+    disinterface_s = Teuchos::rcp(new Epetra_Vector(*slavedofs,true));
 
-    for (int i=0; i<disinterface->MyLength(); ++i)
+    for (int i=0; i<disinterface_s->MyLength(); ++i)
     {
       if (i%dim == 0)
       {
@@ -264,12 +293,12 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
         }
         else
         {
-          (*disinterface)[i] = -(*cstrategy.ContactWear())[i];
-          (*disinterface)[i+1] = -(*cstrategy.ContactWear())[i+1];
+          (*disinterface_s)[i] = -(*cstrategy.ContactWear())[i];
+          (*disinterface_s)[i+1] = -(*cstrategy.ContactWear())[i+1];
 
           if (dim==3)
           {
-            (*disinterface)[i+2] = -(*cstrategy.ContactWear())[i+2];
+            (*disinterface_s)[i+2] = -(*cstrategy.ContactWear())[i+2];
           }
           i=i+dim-1;
         }
@@ -277,11 +306,40 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
     }
   } // interface loop
 
+
+  // *********************************************************************************************
+  // and now the same fun for the master surface
+  // BUT: in which direction wear should be added? normal to master surface?
+  // normal to slave surface? Think about that!
+  // *********************************************************************************************
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+    // get slave row dofs as map
+    Teuchos::RCP<Epetra_Map> masterdofs = interface[0]->MasterRowDofs();
+
+    disinterface_m = Teuchos::rcp(new Epetra_Vector(*masterdofs,true));
+
+    for (int i=0; i<disinterface_m->MyLength(); ++i)
+    {
+      if (i%dim == 0)
+      {
+        (*disinterface_m)[i] = -(*cstrategy.ContactWear2())[i];
+        (*disinterface_m)[i+1] = -(*cstrategy.ContactWear2())[i+1];
+
+        if (dim==3)
+        {
+          (*disinterface_m)[i+2] = -(*cstrategy.ContactWear2())[i+2];
+        }
+        i=i+dim-1;
+      }
+    }
+  } // interface loop for master side
   return;
 }  // STRU_ALE::Algorithm::InterfaceDisp()
 
 /*----------------------------------------------------------------------*
- | Application of mesh displacement                           mgit 07/11 |
+ | Application of mesh displacement                           mgit 07/11|
  *----------------------------------------------------------------------*/
 void STRU_ALE::Algorithm::ApplyMeshDisplacement()
 {

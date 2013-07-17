@@ -215,7 +215,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     Teuchos::RCP<Epetra_Vector> ContactWear() { return wearoutput_; }
-
+    Teuchos::RCP<Epetra_Vector> ContactWear2() { return wearoutput2_; } // for master side
 
     /*!
     \brief Return required Integration time
@@ -712,12 +712,16 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Map> gslipdofs_;            // global slip slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gslipt_;               // global row map of matrix T for slip dofs (of all interfaces)
 
+    Teuchos::RCP<Epetra_Map> gminvolvednodes_;      // global involved master node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gminvolveddofs_;       // global involved master dof row map (of all interfaces)
+
     Teuchos::RCP<Epetra_Map> pglmdofrowmap_;        // global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pgsdofrowmap_;         // global slave dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pgmdofrowmap_;         // global master dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;        // global slave and master dof row map (before parallel redistribution)
 
     Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
+    Teuchos::RCP<LINALG::SparseMatrix> d2matrix_;   // global Mortar matrix D2
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
     Teuchos::RCP<Epetra_Vector> wearvector_;        // global weighted wear vector w
@@ -758,6 +762,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     // contact with wear
     bool wear_;                                           // flag for contact with wear
     Teuchos::RCP<Epetra_Vector> wearoutput_;              // vector of wear at t_n+1
+    Teuchos::RCP<Epetra_Vector> wearoutput2_;              // vector of wear at t_n+1
     double inttime_;                                      // integration time
 
 }; // class CoAbstractStrategy

@@ -1436,8 +1436,11 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
 {
   if (!xi)
     dserror("ERROR: EvaluateShapeLagMult called with xi=NULL");
-  if (!IsSlave())
-    dserror("ERROR: EvaluateShapeLagMult called for master element");
+
+//  commented out due to both sided wear --> here we have to do some calculations with
+//  the master elements
+//  if (!IsSlave())
+//    dserror("ERROR: EvaluateShapeLagMult called for master element");
 
   // dual LM shape functions or not
   bool dual = false;

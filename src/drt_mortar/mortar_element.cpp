@@ -733,7 +733,9 @@ double MORTAR::MortarElement::Jacobian(double* xi)
 
   // 2D linear case (2noded line element)
   if (dt==line2)
+  {
     jac = MoData().Area()/2;
+  }
 
   // 3D linear case (3noded triangular element)
   else if (dt==tri3)

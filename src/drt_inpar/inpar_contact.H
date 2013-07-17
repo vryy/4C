@@ -77,6 +77,15 @@ namespace INPAR
       wear_archard   ///< Archard wear law
     };
 
+    /// Definition of contact wear surface
+    /// (this enum represents the input file parameter BOTH_SIDED_WEAR)
+    enum WearSide
+    {
+      wear_slave,     ///< wear on slave side
+      wear_both_map,  ///< map slave-side wear to master side
+      wear_both_ale   ///< compute wear on master side with ale strategy
+    };
+
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy

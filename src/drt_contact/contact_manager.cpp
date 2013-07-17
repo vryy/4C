@@ -622,6 +622,14 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       contact.get<double>("WEARCOEFF") <= 0.0)
     dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.");
 
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(contact,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave &&
+      Comm().NumProc() > 1)
+    dserror("ERROR: Both-sided wear only applicable in serial!");
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") != INPAR::MORTAR::inttype_segments)
+    dserror("ERROR: Calculation of wear only possible by employing segment-based integration!");
+
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
@@ -646,6 +654,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(contact,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave)
+    std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !") << endl;
 
   // *********************************************************************
   // warnings concerning integration method
