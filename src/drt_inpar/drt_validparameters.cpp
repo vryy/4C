@@ -5411,22 +5411,21 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  Teuchos::Tuple<std::string,13> solver_name;
-  Teuchos::Tuple<int,13>  solver_number;
+  Teuchos::Tuple<std::string,12> solver_name;
+  Teuchos::Tuple<int,12>  solver_number;
 
   solver_name[0] = "Amesos_KLU_sym";               solver_number[0] = INPAR::SOLVER::amesos_klu_sym;
   solver_name[1] = "Amesos_KLU_nonsym";            solver_number[1] = INPAR::SOLVER::amesos_klu_nonsym;
   solver_name[2] = "Superlu";                      solver_number[2] = INPAR::SOLVER::superlu;
-  solver_name[3] = "vm3";                          solver_number[3] = INPAR::SOLVER::vm3;
-  solver_name[4] = "Aztec_MSR";                    solver_number[4] = INPAR::SOLVER::aztec_msr;
-  solver_name[5] = "LAPACK_sym";                   solver_number[5] = INPAR::SOLVER::lapack_sym;
-  solver_name[6] = "LAPACK_nonsym";                solver_number[6] = INPAR::SOLVER::lapack_nonsym;
-  solver_name[7] = "UMFPACK";                      solver_number[7] = INPAR::SOLVER::umfpack;
-  solver_name[8] = "Belos";                        solver_number[8] = INPAR::SOLVER::belos;
-  solver_name[9] = "Stratimikos_Amesos";           solver_number[9] = INPAR::SOLVER::stratimikos_amesos;
-  solver_name[10]= "Stratimikos_Aztec";            solver_number[10]= INPAR::SOLVER::stratimikos_aztec;
-  solver_name[11]= "Stratimikos_Belos";            solver_number[11]= INPAR::SOLVER::stratimikos_belos;
-  solver_name[12]= "undefined";                    solver_number[12]= INPAR::SOLVER::undefined;
+  solver_name[3] = "Aztec_MSR";                    solver_number[3] = INPAR::SOLVER::aztec_msr;
+  solver_name[4] = "LAPACK_sym";                   solver_number[4] = INPAR::SOLVER::lapack_sym;
+  solver_name[5] = "LAPACK_nonsym";                solver_number[5] = INPAR::SOLVER::lapack_nonsym;
+  solver_name[6] = "UMFPACK";                      solver_number[6] = INPAR::SOLVER::umfpack;
+  solver_name[7] = "Belos";                        solver_number[7] = INPAR::SOLVER::belos;
+  solver_name[8] = "Stratimikos_Amesos";           solver_number[8] = INPAR::SOLVER::stratimikos_amesos;
+  solver_name[9] = "Stratimikos_Aztec";            solver_number[9]= INPAR::SOLVER::stratimikos_aztec;
+  solver_name[10]= "Stratimikos_Belos";            solver_number[10]= INPAR::SOLVER::stratimikos_belos;
+  solver_name[11]= "undefined";                    solver_number[11]= INPAR::SOLVER::undefined;
 
 
   setStringToIntegralParameter<int>(
@@ -5462,8 +5461,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,30> name;
-    Teuchos::Tuple<int,30>  number;
+    Teuchos::Tuple<std::string,29> name;
+    Teuchos::Tuple<int,29>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -5475,26 +5474,25 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[7] = "ICC";                          number[7] = INPAR::SOLVER::azprec_ICC;
     name[8] = "LU";                           number[8] = INPAR::SOLVER::azprec_LU;
     name[9] = "RILU";                         number[9] = INPAR::SOLVER::azprec_RILU;
-    name[10] = "BILU";                        number[10] = INPAR::SOLVER::azprec_BILU;
-    name[11] = "ML";                          number[11] = INPAR::SOLVER::azprec_ML;
-    name[12] = "MLFLUID";                     number[12] = INPAR::SOLVER::azprec_MLfluid;
-    name[13] = "MLFLUID2";                    number[13] = INPAR::SOLVER::azprec_MLfluid2;
-    name[14] = "MLAPI";                       number[14] = INPAR::SOLVER::azprec_MLAPI;
-    name[15] = "GaussSeidel";                 number[15] = INPAR::SOLVER::azprec_GaussSeidel;
-    name[16] = "DownwindGaussSeidel";         number[16] = INPAR::SOLVER::azprec_DownwindGaussSeidel;
-    name[17] = "AMG(Braess-Sarazin)";         number[17] = INPAR::SOLVER::azprec_AMGBS;
-    name[18] = "AMG";                         number[18] = INPAR::SOLVER::azprec_AMG;
-    name[19] = "BGS2x2";                      number[19] = INPAR::SOLVER::azprec_BGS2x2;
-    name[20] = "BGSnxn";                      number[20] = INPAR::SOLVER::azprec_BGSnxn;
-    name[21] = "TekoSIMPLE";                  number[21] = INPAR::SOLVER::azprec_TekoSIMPLE;
-    name[22] = "CheapSIMPLE";                 number[22] = INPAR::SOLVER::azprec_CheapSIMPLE;
-    name[23] = "MueLu_sym";                   number[23] = INPAR::SOLVER::azprec_MueLuAMG_sym;
-    name[24] = "MueLu_nonsym";                number[24] = INPAR::SOLVER::azprec_MueLuAMG_nonsym;
-    name[25] = "MueLu_contact";               number[25] = INPAR::SOLVER::azprec_MueLuAMG_contact;
-    name[26] = "MueLu_contact2";              number[26] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
-    name[27] = "MueLu_contact3";              number[27] = INPAR::SOLVER::azprec_MueLuAMG_contact3;
-    name[28] = "MueLu_contactSP";             number[28] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
-    name[29] = "MueLu_contactPenalty";        number[29] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
+    name[10] = "ML";                          number[10] = INPAR::SOLVER::azprec_ML;
+    name[11] = "MLFLUID";                     number[11] = INPAR::SOLVER::azprec_MLfluid;
+    name[12] = "MLFLUID2";                    number[12] = INPAR::SOLVER::azprec_MLfluid2;
+    name[13] = "MLAPI";                       number[13] = INPAR::SOLVER::azprec_MLAPI;
+    name[14] = "GaussSeidel";                 number[14] = INPAR::SOLVER::azprec_GaussSeidel;
+    name[15] = "DownwindGaussSeidel";         number[15] = INPAR::SOLVER::azprec_DownwindGaussSeidel;
+    name[16] = "AMG(Braess-Sarazin)";         number[16] = INPAR::SOLVER::azprec_AMGBS;
+    name[17] = "AMG";                         number[17] = INPAR::SOLVER::azprec_AMG;
+    name[18] = "BGS2x2";                      number[18] = INPAR::SOLVER::azprec_BGS2x2;
+    name[19] = "BGSnxn";                      number[19] = INPAR::SOLVER::azprec_BGSnxn;
+    name[20] = "TekoSIMPLE";                  number[20] = INPAR::SOLVER::azprec_TekoSIMPLE;
+    name[21] = "CheapSIMPLE";                 number[21] = INPAR::SOLVER::azprec_CheapSIMPLE;
+    name[22] = "MueLu_sym";                   number[22] = INPAR::SOLVER::azprec_MueLuAMG_sym;
+    name[23] = "MueLu_nonsym";                number[23] = INPAR::SOLVER::azprec_MueLuAMG_nonsym;
+    name[24] = "MueLu_contact";               number[24] = INPAR::SOLVER::azprec_MueLuAMG_contact;
+    name[25] = "MueLu_contact2";              number[25] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
+    name[26] = "MueLu_contact3";              number[26] = INPAR::SOLVER::azprec_MueLuAMG_contact3;
+    name[27] = "MueLu_contactSP";             number[27] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
+    name[28] = "MueLu_contactPenalty";        number[28] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
 
     setStringToIntegralParameter<int>(
       "AZPREC", "ILU",

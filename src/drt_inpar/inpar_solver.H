@@ -37,7 +37,6 @@ namespace INPAR
       amesos_klu_sym,    ///< Trilinos' solver interface Amesos using KLU
       amesos_klu_nonsym, ///< Trilinos' solver interface Amesos using KLU
       superlu,           ///< Trilinos' solver interface Amesos using SuperLU_Dist
-      vm3,               ///< VM3 solver
       belos,             ///< Belos solver
       stratimikos_amesos,///< Stratimikos solver framework (Amesos KLU)
       stratimikos_aztec, ///< Stratimikos solver framework (Aztec)
@@ -78,7 +77,6 @@ namespace INPAR
       azprec_DownwindGaussSeidel,///< symmetric n-step gauss-seidel preconditioner
       azprec_LU,                 ///< ?
       azprec_RILU,               ///< relaxed incomplete LU
-      azprec_BILU,               ///< block incomplete LU (only with matrix in DVBR format
       azprec_ICC,                ///< incomplete cholesky
       azprec_MLfluid,            ///< ML for Fluids
       azprec_MLfluid2,           ///< energy optimal unsymmetric ML for Fluids
