@@ -63,7 +63,7 @@ SYSTEM                          spsimpler
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Dual
 LAGMULT_QUAD                    quad_quad
-INTTYPE                         fast
+INTTYPE                         elements
 NUMGP_PER_DIM                   7
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
