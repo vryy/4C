@@ -136,7 +136,7 @@ NORM_DISP                       Mix
 NORM_RESF                       Mix
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
-DIVERCONT                       yes
+DIVERCONT                       continue
 DYNAMICTYP                      Statics
 ITERNORM                        L2
 K_DAMP                          0.5

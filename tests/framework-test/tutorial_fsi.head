@@ -1697,9 +1697,8 @@ CONTROLTYPE                     load
 //                              no,No,NO,yes,Yes,YES,Rayleigh,Material,BrownianMotion
 DAMPING                         No
 //
-// Go on with time integration even if Newton-Raphson iteration failed
-//                              Yes,No,yes,no,YES,NO
-DIVERCONT                       No
+// What to do in time integration even if Newton-Raphson iteration failed
+DIVERCONT                       stop
 //
 // type of time integration control
 //                              Statics
