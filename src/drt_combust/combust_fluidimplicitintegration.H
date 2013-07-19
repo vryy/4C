@@ -3,10 +3,10 @@
 \brief class holding implicit time integration schemes for combustion problems
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ namespace FLD
 /*!
 \brief implicit time integration for combustion problems
 
-\author henke (henke@lnm.mw.tum.de)
+\author henke (rasthofer@lnm.mw.tum.de)
 */
 
 // forward declarations

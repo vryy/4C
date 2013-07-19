@@ -5,8 +5,8 @@
 \brief Input parameters for combustion
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 */

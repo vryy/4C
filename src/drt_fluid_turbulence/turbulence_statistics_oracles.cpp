@@ -4,10 +4,10 @@
 \brief statistical data processing for ORACLES problem
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15236
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
