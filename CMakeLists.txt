@@ -584,7 +584,6 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_fluidresulttest.cpp
   src/drt_combust/combust_reinitializer.cpp
   src/drt_combust/combust_reinitialization_pde.cpp
-  src/drt_combust/combust_utils.cpp
 )
 set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
