@@ -2626,7 +2626,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  default: dserror("unknown definition for tau_M\n %i  ", fldpara_->WhichTau()); break;
+  default:
+  {
+    if (not (fldpara_->StabType() == INPAR::FLUID::stabtype_edgebased and
+        fldpara_->WhichTau() == INPAR::FLUID::tau_not_defined))
+      dserror("unknown definition for tau_M\n %i  ", fldpara_->WhichTau());
+
+    break;
+  }
   }  // end switch (fldpara_->WhichTau())
 
 
