@@ -455,3 +455,234 @@ void COMBUST::UTILS::computeStabilizationParams(
   }  // end switch (tautype)
 }
 
+
+void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
+    const double dynvisc,                /// dynamic viscosity
+    const double dens,                   /// density
+    const double vel_norm,
+    const double hk,
+    const enum INPAR::FLUID::EOS_TauType tautype,
+    double& tau_conv,
+    double& tau_div,
+    double& tau_p,
+    double& tau_ghost
+    )
+{
+  // non-dimensional factors
+  double gamma_u   = 0.0; //scaling factor for streamline stabilization
+  double gamma_div = 0.0; //scaling factor for divergence stabilization
+  double gamma_p   = 0.0; //scaling factor for pressure stabilization
+
+  //--------------------------------------------------------------------------------------------------------------
+  //                       edge-oriented stabilization (EOS), continuous interior penalty (CIP)
+  //--------------------------------------------------------------------------------------------------------------
+
+  switch(tautype)
+  {
+    case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_2006:
+    {
+      // E.Burman, M.A.Fernandez and P.Hansbo 2006
+      // "Edge stabilization for the incompressible Navier-Stokes equations: a continuous interior penalty finite element method"
+      //
+      // velocity:
+      //                              h_K^2 * rho
+      //             gamma_u *  -----------------------
+      //                           || u ||_0,inf_,K
+      //
+      // divergence:
+      //
+      //             gamma_div * h_K^2 * || u ||_0,inf_,K * rho
+      //
+      // pressure:
+      //
+      //                              h_K^2                                          || u ||_0,inf_,K   *   h_K
+      //  gamma_p * min(1,Re_K) * --------------------------       with    Re_K =  --------------------------------
+      //                           || u ||_0,inf_,K  * rho                                      nu
+      //
+
+      // these values are taken from below (EOS_tau_burman_fernandez), since there seem not to be any other values
+      gamma_u = 0.05;
+      gamma_p = 0.05;
+      gamma_div = 0.05;
+
+      // element Reynold's number Re_K
+      double Re_K = vel_norm* hk * dens / dynvisc;
+
+      // streamline/velocity:
+      if(Re_K < 1.0)
+      {
+        tau_conv   = gamma_u * hk * hk * hk / dynvisc;
+      }
+      else
+      {
+        tau_conv   = gamma_u * hk * hk / vel_norm* dens;
+      }
+
+      // divergence:
+      if(vel_norm> 1.0e-14)
+      {
+        tau_div = gamma_div  * hk* hk * vel_norm* dens;
+      }
+      else
+      {
+        tau_div = 0.0;
+      }
+
+      // pressure stabilization
+      // switch between low and high Reynolds numbers
+      if(Re_K < 1.0)
+      {
+        tau_p   = gamma_p * hk* hk* hk/ dynvisc;
+      }
+      else
+      {
+        tau_p   = gamma_p * hk * hk / (vel_norm* dens);
+      }
+    }
+    break;
+    case INPAR::FLUID::EOS_tau_burman_fernandez:
+    {
+      // E.Burman, M.A.Fernandez 2009
+      // "Finite element methods with symmetric stabilization for the transient convection-diffusion-reaction equation"
+      //
+      // velocity:
+      //                      1                                         1.0
+      //             gamma_u --- *  h_E^2 * rho        with gamma_u = -------
+      //                      2                                        100.0
+      //
+      //--------------------------------------------------------------------------------------------------------------------------
+      //
+      // E.Burman 2007
+      // "Interior penalty variational multiscale method for the incompressible Navier-Stokes equation: Monitoring artificial dissipation"
+      //
+      // velocity:
+      //                                                                  1.0
+      //             gamma_u *  h_E^2 * rho            with gamma_u   = -------
+      //                                                                 100.0
+      // divergence:
+      //
+      //           gamma_div *  h_E^2 * rho            with gamma_div = 0.05*gamma_u
+      //
+      // pressure:
+      //
+      //                                                                                        1.0
+      //             gamma_p *  h_E^2                  no scaling with density, with gamma_p = -------
+      //                                                                                        100.0
+      //--------------------------------------------------------------------------------------------------------------------------
+      // E.Burman, P.Hansbo 2006
+      // "Edge stabilization for the generalized Stokes problem: A continuous interior penalty method"
+      //
+      // pressure:
+      //                      1                                             1.0
+      //             gamma_p --- *  h_E^(s+1)              with gamma_u = -------
+      //                      2                                            100.0
+      //
+      //                                                   with s=2 (nu>=h) viscous case
+      //                                                   with s=1 (nu<h)  non-viscous case
+      //
+      // divergence:
+      //                      1                                             1.0
+      //           gamma_div --- *  h_E^(s+1) * rho        with gamma_u = -------
+      //                      2                                            100.0
+      //
+      //                                                   with s=2 (nu>=h) viscous case
+      //                                                   with s=1 (nu<h)  non-viscous case
+      //
+      //                                              1
+      //           nu-weighting: gamma*(h_E^2) * -----------  (smoothing between h_E^3/nu and h_E^2 )
+      //                                          (1+ nu/h)
+      //--------------------------------------------------------------------------------------------------------------------------
+
+
+      //-----------------------------------------------
+      // pressure
+      bool nu_weighting = true;
+
+  //    gamma_p = 0.5 / 100.0;
+  //    gamma_p = 1.0 / 100.0;
+      // each face has to be evaluated only once -> doubled stabfac, either unstable for multibody test case!
+      gamma_p = 5.0 / 100.0;
+      gamma_u = 5.0 / 100.0;
+
+      //scaling with h^2 (non-viscous case)
+      tau_p = gamma_p * hk * hk;
+
+      //-----------------------------------------------
+      // streamline
+      tau_conv = dens * gamma_u * hk * hk;
+
+      //-----------------------------------------------
+      // divergence
+      tau_div= 0.05*tau_conv;
+
+      // nu-weighting
+      if(nu_weighting) // viscous -> non-viscous case
+      {
+        tau_p /= (1.0 + (dynvisc/(hk*dens)));
+      }
+      else //viscous case
+      {
+        if((dynvisc/dens) >= hk) tau_p /= (dynvisc/(hk*dens));
+      }
+
+      // to have a consistent formulation we need only one density factor for
+      // pressure stabilisation. That is because we have two times pressure
+      // (test functions and the shape function) in the formulation. If we do not
+      // cross out one density, we would multiply the term two times with
+      // density, which is not correct.
+      tau_p /= dens;
+
+    }
+    break;
+    case INPAR::FLUID::EOS_tau_braack_burman_2007:
+    {
+      dserror("Braack_Burman_2007 tau-def not implemented yet");
+    }
+    break;
+    case INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall:
+    {
+      // stationary definition of stabilization parameters
+
+      // Barrenechea/Valentin, Franca/Valentin
+      double mk = 1.0/3.0;
+      double Re_K = mk*vel_norm*hk/ (2.0*dynvisc/dens);
+
+      double xi = std::max(1.0, Re_K);
+
+      gamma_p = 1.0/30.0;
+
+      //multibody
+      //1.0, 1.0/8.0 not possible, 1.0/10.0 okay, 1.0/50.0, 1.0/100.0 unstable for multibody
+
+      //cylinder2D fine
+      // 1.0/10.0, 1.0/20.0 not okay, 1.0/30.0 okay, 1.0/50.0 okay
+
+      tau_p = gamma_p * hk*hk*hk*mk/(4.0*dynvisc*xi);
+
+      tau_p = gamma_p * hk*hk*hk*mk/(4.0*dynvisc);
+    //  tau_p = 1.0/40.0    *        hk* hk/max(1.0, max_vel_L2_norm);
+
+      tau_div = 0.0;
+
+      gamma_u = 1.0/40.0; //gamma_p;
+    //  tau_conv   = gamma_u * hk*hk*hk*mk/(4.0*density*kinvisc*xi);
+      tau_conv   = gamma_u * hk*hk/(2.0*dens);
+
+
+      gamma_div = gamma_p*1.0/10.0;//1.0/10.0;
+      tau_div = gamma_div  * hk* hk * vel_norm* dens; // * min(1.0, Re_K);
+    }
+    break;
+    default: dserror("unknown definition for tau\n %i  ", tautype); break;
+  }
+
+
+    //--------------------------------------------------------------------------------------------------------------
+    //                                               ghost penalty
+    //--------------------------------------------------------------------------------------------------------------
+
+    double gamma_ghost_penalty = 0.01;
+    tau_ghost = gamma_ghost_penalty*dynvisc*hk;
+  return;
+}
+

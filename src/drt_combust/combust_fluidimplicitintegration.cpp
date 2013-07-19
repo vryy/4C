@@ -143,7 +143,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     // losing the DofGid range that the PBCDofset is assigned here
     pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions(discret_));
     pbc_->UpdateDofsForPeriodicBoundaryConditions();
-    pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
+    col_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
+    row_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
   }
 
   //------------------------------------------------------------------------------------------------
@@ -247,7 +248,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   output_->WriteMesh(0,0.0);
 
   // store a dofset with the complete fluid unknowns
-  standarddofset_ = Teuchos::rcp(new DRT::IndependentPBCDofSet(pbcmapmastertoslave_));
+  standarddofset_ = Teuchos::rcp(new DRT::IndependentPBCDofSet(col_pbcmapmastertoslave_));
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
@@ -848,7 +849,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
       physprob_.xfemfieldset_,
       *physprob_.elementAnsatz_,
       xparams_,
-      pbcmapmastertoslave_)
+      col_pbcmapmastertoslave_)
   );
 
   // temporarely save old dofmanager
@@ -1000,7 +1001,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
               newdofrowmap,
               oldNodalDofColDistrib,
               state_.nodalDofDistributionMap_,
-              pbcmapmastertoslave_));
+              col_pbcmapmastertoslave_));
 
           switch (xfemtimeint_enr_)
           {
@@ -1541,7 +1542,79 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
           discret_->ClearState();
 
-                 // potential Neumann inflow terms
+        // add edged-based stabilization, if selected
+        if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
+        {
+//          if (timealgo_!=INPAR::FLUID::timeint_one_step_theta and timealgo_!=INPAR::FLUID::timeint_stationary)
+//            dserror("Other time integration schemes than OST currently not supported for edge-based stabilization!");
+////           // set the only required state vectors
+////           if (is_genalpha_)
+////           {
+////             discret_->SetState("velaf",velaf_);
+////             if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+////               discret_->SetState("velnp",velnp_);
+////           }
+////           else discret_->SetState("velaf",velnp_);
+//           if (timealgo_==INPAR::FLUID::timeint_one_step_theta and theta_!=1.0)
+//             dserror("Set theta=1, since only this setting seems to be correctly supported currently!");
+//           discret_->SetState("velaf",velnp_);
+
+           // create the parameters for the discretization
+           Teuchos::ParameterList faceeleparams;
+
+           // action for elements
+           faceeleparams.set("action","calc_edge_based_stab_terms");
+
+           // combsution problem
+           faceeleparams.set<int>("combusttype",combusttype_);
+
+           // parameter for suppressing additional enrichment dofs in two-phase flow problems
+           faceeleparams.set<int>("selectedenrichment",DRT::INPUT::IntegralValue<INPAR::COMBUST::SelectedEnrichment>(params_->sublist("COMBUSTION FLUID"),"SELECTED_ENRICHMENT"));
+
+           // other parameters that might be needed by the elements
+           faceeleparams.set<int>("timealgo",timealgo_);
+           faceeleparams.set("time",time_);
+           faceeleparams.set("dt",dta_);
+           faceeleparams.set("theta",theta_);
+           faceeleparams.set("gamma",gamma_);
+           faceeleparams.set("alphaF",alphaF_);
+           faceeleparams.set("alphaM",alphaM_);
+
+           // parameters for stabilization
+           faceeleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
+
+           // set scheme-specific element parameters and vector values
+           if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+             discret_->SetState("velaf",state_.velaf_);
+           else
+             discret_->SetState("velnp",state_.velnp_);
+
+           discret_->SetState("veln" ,state_.veln_);
+           discret_->SetState("velnm",state_.velnm_);
+           discret_->SetState("accn" ,state_.accn_);
+
+           if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+             discret_->SetState("accam",state_.accam_);
+
+           // this cast is only for the time being
+           // as soon as the definition of internal faces is included
+           // in the standard discretization, these lines can be removed
+           // and CreateInternalFacesExtension() can be called once
+           // in the constructor of the fluid time integration
+           // TODO: kann ich das trotzdem in den Konstruktor verschieben
+           // TODO: was macht Redistribution damit
+           std::cout << "Jetzt gehts los mit eb .." << std::endl;
+           Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+           xdiscret->CreateInternalFacesExtension(col_pbcmapmastertoslave_);
+           std::cout << ".. Schritt 1 geschafft .." << std::endl;
+
+           xdiscret->EvaluateEdgeBasedCombust(faceeleparams,sysmat_,residual_);
+
+           discret_->ClearState();
+        }
+
+
+          // potential Neumann inflow terms
           if (nonlinearbc_)
           {
             // create parameter list
@@ -4535,10 +4608,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-//          std::map<int, std::vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
+          std::map<int, std::vector<int> >::iterator master = row_pbcmapmastertoslave_->find(lnode->Id());
 
           // slavenodes are ignored
-//          if(master == pbcmapmastertoslave_->end()) continue;
+          if(master == row_pbcmapmastertoslave_->end()) continue;
         }
 
         // add random noise on initial function field
@@ -5249,7 +5322,8 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
   // update the PBCs and PBCDofSet
   // includes call to FillComplete()
   pbc_->PutAllSlavesToMastersProc();
-  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
+  col_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
+  row_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
 
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
@@ -5267,7 +5341,7 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
     discret_->FillComplete();
 
   // update the dofset with the complete fluid unknowns
-  standarddofset_->SetCoupledNodes(pbcmapmastertoslave_);
+  standarddofset_->SetCoupledNodes(col_pbcmapmastertoslave_);
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
@@ -5293,7 +5367,7 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(
       physprob_.xfemfieldset_,
       *physprob_.elementAnsatz_,
       xparams_,
-      pbcmapmastertoslave_)
+      col_pbcmapmastertoslave_)
   );
 
   // save dofmanager to be able to plot Gmsh stuff in Output()

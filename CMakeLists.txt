@@ -352,7 +352,9 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_conditiondefinition.cpp
   src/drt_lib/drt_container.cpp
   src/drt_lib/drt_discret.cpp
+  src/drt_lib/drt_discret_faces.cpp
   src/drt_lib/drt_discret_xfem.cpp
+  src/drt_lib/drt_discret_xfem_evaluate.cpp
   src/drt_lib/drt_discret_conditions.cpp
   src/drt_lib/drt_discret_evaluate.cpp
   src/drt_lib/drt_discret_fillcomplete.cpp
@@ -894,6 +896,8 @@ set(OBJS_DRT_COMBUST3_LIB
   src/drt_combust/combust_refinementcell.cpp
   src/drt_combust/combust3.cpp
   src/drt_combust/combust3_evaluate.cpp
+  src/drt_combust/combust3_elementface.cpp
+  src/drt_combust/combust3_elementface_evaluate.cpp
   src/drt_combust/combust3_input.cpp
   src/drt_combust/combust3_line.cpp
   src/drt_combust/combust3_line_evaluate.cpp

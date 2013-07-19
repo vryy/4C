@@ -22,7 +22,7 @@ Maintainer: Benedikt Schott
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_discret_faces.H"
 
 
 
@@ -214,7 +214,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
     std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
     Teuchos::ParameterList&              params,          ///< parameter list
-    DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
+    DRT::DiscretizationFaces&             discretization,  ///< faces discretization
     RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
     RCP<Epetra_Vector>                   systemvector     ///< systemvector
     )

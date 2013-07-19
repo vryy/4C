@@ -17,7 +17,7 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_discret_faces.H"
 
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_volumecell.H"
@@ -92,9 +92,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   //                                                                         NO  (if both parent elements are uncut)
 
 
-  RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret);
+  RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
 
   // get the parent fluid elements
@@ -410,7 +410,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
                                                         DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
                                                         std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
                                                         std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element
-                                                        DRT::DiscretizationXFEM &              xdiscret,         ///< XFEM discretization
+                                                        DRT::DiscretizationFaces &              xdiscret,         ///< XFEM discretization
                                                         Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
                                                         Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
                                                         )
@@ -473,9 +473,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
     Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
 )
 {
-  RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret);
+  RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
-    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
 
   // get the parent fluid elements

@@ -5,10 +5,10 @@
 \brief collection of routines for XFEM elements
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15236
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -138,6 +138,25 @@ namespace XFEM
       break;
     case DRT::Element::tet10:
       rule = DRT::UTILS::intrule_tet_24point;
+      break;
+    default:
+      dserror("unknown distype for gaussrule initialization");
+    }
+    return rule;
+  }
+
+  /*!
+ \brief get optimal gaussrule for given discretization type
+        template version
+ \return enum with optimal gaussrule for this element
+   */
+  inline DRT::UTILS::GaussRule2D getOptimalFaceGaussrule(DRT::Element::DiscretizationType  distype)
+  {
+    DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
+    switch (distype)
+    {
+    case DRT::Element::quad4:
+      rule = DRT::UTILS::intrule_quad_4point;
       break;
     default:
       dserror("unknown distype for gaussrule initialization");
@@ -334,6 +353,20 @@ namespace XFEM
       for (int isd = 0; isd < nsd; ++isd)
         v(isd) += eleVectorField(isd,iparam)*shp(iparam);
     return v;
+  }
+
+  //! interpolate from nodal vector array to integration point vector using the shape function
+  template <class M, class VS>
+  double interpolateScalarFieldToIntPoint(
+      const M&  eleVectorField,       ///< array with nodal vector values
+      const VS& shp,                  ///< array with nodal shape function
+      const int numparam              ///< number of parameters
+      )
+  {
+    double s = 0.0;
+    for (int iparam = 0; iparam < numparam; ++iparam)
+        s += eleVectorField(iparam,0)*shp(iparam);
+    return s;
   }
 
 template <size_t numparam>

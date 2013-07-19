@@ -7,10 +7,10 @@
 	Pack, Unpack, NumDofPerNode etc.
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15236
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -20,6 +20,7 @@ Maintainer: Florian Henke
 
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_combust.H"
 
 
@@ -48,6 +49,7 @@ namespace DRT
     // forward declarations
 //    class Combust3Surface;
 //    class Combust3Line;
+  class Combust3IntFace;
 
 class Combust3Type : public DRT::ElementType
 {
@@ -85,6 +87,7 @@ private:
         //! @name Friends
 //        friend class Combust3Surface;
 //        friend class Combust3Line;
+        friend class Combust3IntFace;
         //@}
 
         class MyState
@@ -182,6 +185,19 @@ private:
 
         virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
+        /*!
+        \brief Get RCP to the internal face adjacent to this element as master element and the parent_slave element
+        */
+        virtual Teuchos::RCP<DRT::Element> CreateInternalFaces(
+                                                      DRT::Element* parent_slave,          //!< parent slave fluid3 element
+                                                      int nnode,                           //!< number of surface nodes
+                                                      const int* nodeids,                  //!< node ids of surface element
+                                                      DRT::Node** nodes,                   //!< nodes of surface element
+                                                      const int lsurface_master,           //!< local surface number w.r.t master parent element
+                                                      const int lsurface_slave,            //!< local surface number w.r.t slave parent element
+                                                      const std::vector<int> localtrafomap //! local trafo map
+            );
+
         virtual int UniqueParObjectId() const { return Combust3Type::Instance().UniqueParObjectId(); }
 
         virtual void Pack(DRT::PackBuffer& data) const;
@@ -203,11 +219,70 @@ private:
 
         //! @name Access methods
 
+// TODO: das brauche ich wohl nicht weil ich den dof manager fragen muss
+//        /*!
+//        \brief Get number of degrees of freedom of a certain node
+//               (implements pure virtual DRT::Element)
+//
+//        The element decides how many degrees of freedom its nodes must have.
+//        As this may vary along a simulation, the element can redecide the
+//        number of degrees of freedom per node along the way for each of it's nodes
+//        separately.
+//        */
+//        virtual int NumDofPerNode(const DRT::Node& node) const
+//        {
+//          // number of Dof's is fluid-specific.
+//          // Therefore, it is not pushed into drt_utilis_local_connectivity
+//          switch(distype_)
+//          {
+//          case DRT::Element::hex8:
+//          case DRT::Element::hex20:
+//          case DRT::Element::hex27:
+//          case DRT::Element::tet4:
+//          case DRT::Element::tet10:
+//          case DRT::Element::wedge6:
+//          case DRT::Element::wedge15:
+//          case DRT::Element::pyramid5:
+//          case DRT::Element::nurbs8:
+//          case DRT::Element::nurbs27:
+//            return 4;
+//            break;
+//          case DRT::Element::quad4:
+//          case DRT::Element::quad8:
+//          case DRT::Element::quad9:
+//          case DRT::Element::nurbs4:
+//          case DRT::Element::nurbs9:
+//          case DRT::Element::tri3:
+//          case DRT::Element::tri6:
+//            return 3;
+//            break;
+//          case DRT::Element::line2:
+//          case DRT::Element::line3: dserror("1D Fluid elements are not supported"); break;
+//            break;
+//          default:
+//            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
+//            break;
+//          }
+//          return 0;
+//        }
+//
+//        /*!
+//        \brief Get number of degrees of freedom of a certain node in case of multiple
+//               dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
+//
+//        The element decides how many degrees of freedom its nodes must have.
+//        As this may vary along a simulation, the element can redecide the
+//        number of degrees of freedom per node along the way for each of it's nodes
+//        separately.
+//
+//        */
+//        virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const;
+
         virtual int NumDofPerNode(const DRT::Node& node) const;
 
         virtual int NumDofPerElement() const;
 
-        Teuchos::RCP<XFEM::ElementDofManager> GetEleDofManager(){ return eleDofManager_; }
+        Teuchos::RCP<XFEM::ElementDofManager> GetEleDofManager() const { return eleDofManager_; }
 
         void Print(ostream& os) const;
 
@@ -462,7 +537,7 @@ private:
     /*!
      * \brief An element representing a surface of a combust3 element
      *
-     * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
+     * \author rasthofer (rasthofer@lnm.mw.tum.de)
      */
     class Combust3Surface : public DRT::Element
     {
@@ -799,6 +874,378 @@ private:
         int                    lline_;
 
     }; // class Combust3Line
+
+
+    //=======================================================================
+    //=======================================================================
+    //=======================================================================
+    //=======================================================================
+
+
+    /*!
+    \brief An element representing an internal face element between two fluid elements
+
+    \note It's only purpose is to evaluate edge based stabilizations for XFEM.
+    */
+    class Combust3IntFaceType : public DRT::ElementType
+    {
+    public:
+
+      std::string Name() const { return "Combust3IntFaceType"; }
+
+      static Combust3IntFaceType & Instance() { return instance_; };
+
+      virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+      virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
+
+      virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
+
+    private:
+
+      static Combust3IntFaceType instance_;
+    };
+
+
+    // class Combust3IntFace
+
+    class Combust3IntFace : public DRT::Element
+    {
+    public:
+
+      //! @name Constructors and destructors and related methods
+
+      //! number of space dimensions
+      /*!
+      \brief Standard Constructor
+
+      \param id: A unique global id
+      \param owner: Processor owning this surface
+      \param nnode: Number of nodes attached to this element
+      \param nodeids: global ids of nodes attached to this element
+      \param nodes: the discretizations map of nodes to build ptrs to nodes from
+      \param master_parent: The master parent fluid element of this surface
+      \param slave_parent: The slave parent fluid element of this surface
+      \param lsurface_master: the local surface number of this surface w.r.t. the master parent element
+      \param lsurface_slave: the local surface number of this surface w.r.t. the slave parent element
+      \param localtrafomap: transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
+      */
+      Combust3IntFace( int id,
+                     int owner,
+                     int nnode,
+                     const int* nodeids,
+                     DRT::Node** nodes,
+                     DRT::ELEMENTS::Combust3* parent_master,
+                     DRT::ELEMENTS::Combust3* parent_slave,
+                     const int lsurface_master,
+                     const int lsurface_slave,
+                     const std::vector<int> localtrafomap
+                     );
+
+      /*!
+      \brief Copy Constructor
+
+      Makes a deep copy of a Element
+      */
+      Combust3IntFace(const Combust3IntFace& old);
+
+      /*!
+      \brief Deep copy this instance of an element and return pointer to the copy
+
+      The Clone() method is used from the virtual base class Element in cases
+      where the type of the derived class is unknown and a copy-ctor is needed
+
+      */
+      DRT::Element* Clone() const;
+
+      /*!
+      \brief Get shape type of element
+      */
+      virtual DiscretizationType Shape() const;
+
+      /*!
+      \brief Return number of lines of this element
+      */
+      virtual int NumLine() const
+      {
+        return DRT::UTILS::getNumberOfElementLines(Shape());
+      }
+
+      /*!
+      \brief Return number of surfaces of this element
+      */
+      virtual int NumSurface() const
+      {
+        return DRT::UTILS::getNumberOfElementSurfaces(Shape());
+      }
+
+      /*!
+      \brief Get vector of RCPs to the lines of this element
+      */
+      virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+
+      /*!
+      \brief Return unique ParObject id
+
+      every class implementing ParObject needs a unique id defined at the
+      top of the drt_parobject.H file.
+      */
+      virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
+
+      /*!
+      \brief Return unique ParObject id
+
+      every class implementing ParObject needs a unique id defined at the
+      top of the drt_parobject.H file.
+      */
+      virtual int UniqueParObjectId() const { return Combust3IntFaceType::Instance().UniqueParObjectId(); }
+
+      /*!
+      \brief Pack this class so it can be communicated
+
+      \ref Pack and \ref Unpack are used to communicate this element
+      */
+      virtual void Pack(DRT::PackBuffer& data) const;
+
+      /*!
+      \brief Unpack data from a char vector into this class
+
+      \ref Pack and \ref Unpack are used to communicate this element
+      */
+      virtual void Unpack(const std::vector<char>& data);
+
+      /*!
+      \brief Destructor
+      */
+      virtual ~Combust3IntFace();
+
+      //@}
+
+      //! @name Acess methods
+
+
+      /*!
+      \brief Get number of degrees of freedom of a certain node
+             (implements pure virtual DRT::Element)
+
+      The element decides how many degrees of freedom its nodes must have.
+      As this may vary along a simulation, the element can redecide the
+      number of degrees of freedom per node along the way for each of it's nodes
+      separately.
+      */
+      virtual int NumDofPerNode(const DRT::Node& node) const
+      {
+        return std::max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
+      }
+
+      /*!
+      \brief Get number of degrees of freedom of a certain node in case of multiple
+             dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
+
+      The element decides how many degrees of freedom its nodes must have.
+      As this may vary along a simulation, the element can redecide the
+      number of degrees of freedom per node along the way for each of it's nodes
+      separately.
+
+      */
+      virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+      {
+        // TODO: darf ich hier den Dofmanager fragen?
+        //  std::cout << "NumDofPerNode()" << std::endl;
+        //return std::max(parent_master_->NumDofPerNode(nds,node),parent_slave_->NumDofPerNode(nds,node));
+        return std::max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
+      }
+
+      /*!
+      \brief Get number of degrees of freedom per element
+             (implements pure virtual DRT::Element)
+
+      The element decides how many element degrees of freedom it has.
+      It can redecide along the way of a simulation.
+
+      \note Element degrees of freedom mentioned here are dofs that are visible
+            at the level of the total system of equations. Purely internal
+            element dofs that are condensed internally should NOT be considered.
+      */
+      virtual int NumDofPerElement() const { return 0; }
+
+      /*!
+      \brief create the location vector for patch of master and slave element
+
+      \note All dofs shared by master and slave element are contained only once. Dofs from interface nodes are also included.
+      */
+      void PatchLocationVector(
+          DRT::Discretization & discretization,       ///< discretization
+          std::vector<int>&     nds_master,           ///< nodal dofset w.r.t master parent element
+          std::vector<int>&     nds_slave,            ///< nodal dofset w.r.t slave parent element
+          std::vector<int>&     patchlm,              ///< local map for gdof ids for patch of elements
+          std::vector<int>&     master_lm,            ///< local map for gdof ids for master element
+          std::vector<int>&     slave_lm,             ///< local map for gdof ids for slave element
+          std::vector<int>&     face_lm,              ///< local map for gdof ids for face element
+          std::vector<int>&     lm_masterToPatch,     ///< local map between lm_master and lm_patch
+          std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
+          std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
+          std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+          std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+          );
+
+      /*!
+      \brief Print this element
+      */
+      void Print(ostream& os) const;
+
+      virtual DRT::ElementType & ElementType() const
+      { return Combust3IntFaceType::Instance(); }
+
+      //@}
+
+      //! @name Evaluation
+
+      /*!
+      \brief Evaluate element
+
+      \param params (in/out): ParameterList for communication between control routine
+                              and elements
+      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                              the controlling method does not epxect the element
+                              to fill this vector
+      \return 0 if successful, negative otherwise
+      */
+      int Evaluate(Teuchos::ParameterList&   params,
+                   DRT::Discretization&      discretization,
+                   std::vector<int>&         lm,
+                   Epetra_SerialDenseMatrix& elemat1,
+                   Epetra_SerialDenseMatrix& elemat2,
+                   Epetra_SerialDenseVector& elevec1,
+                   Epetra_SerialDenseVector& elevec2,
+                   Epetra_SerialDenseVector& elevec3);
+
+      int Evaluate(Teuchos::ParameterList&            params,               ///< parameter list
+                   DRT::Discretization&               discretization,       ///< discretization
+                   std::vector<int>&                  lm_patch,             ///< patch local map
+                   std::vector<int>&                  lm_face,              ///< face local map
+                   std::vector<int>&                  lm_master,            ///< master local map
+                   std::vector<int>&                  lm_slave,             ///< slave local map
+                   std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
+                   std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+                   std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
+                   std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
+                   std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+                   std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,   ///< element matrix blocks
+                   std::vector<Epetra_SerialDenseVector>&  elevec_blocks);    ///< element vector blocks
+
+      //@}
+
+      //! @name Evaluate methods
+
+      /*!
+      \brief Evaluate Neumann boundary condition
+
+      \param params (in/out)    : ParameterList for communication between control routine
+                                  and elements
+      \param discretization (in): reference to the underlying discretization
+      \param condition (in)     : condition to be evaluated
+      \param lm (in)            : location vector of this element
+      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+      \return 0 if successful, negative otherwise
+      */
+      virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
+                                  DRT::Discretization&      discretization,
+                                  DRT::Condition&           condition,
+                                  std::vector<int>&         lm,
+                                  Epetra_SerialDenseVector& elevec1,
+                                  Epetra_SerialDenseMatrix* elemat1 = NULL);
+
+      /*!
+      \brief return the master parent fluid element
+      */
+      virtual DRT::ELEMENTS::Combust3* ParentMasterElement() const
+      {
+        return parent_master_;
+      }
+
+      /*!
+      \brief return the slave parent fluid element
+      */
+      virtual DRT::ELEMENTS::Combust3* ParentSlaveElement() const
+      {
+        return parent_slave_;
+      }
+
+      /*!
+      \brief return the local surface number w.r.t. the master parent fluid element
+      */
+      virtual int SurfaceMasterNumber() const
+      {
+        return lsurface_master_;
+      }
+
+      /*!
+      \brief return the local surface number w.r.t. the slave parent fluid element
+      */
+      virtual int SurfaceSlaveNumber() const
+      {
+        return lsurface_slave_;
+      }
+
+
+      /*!
+      \brief return the local trafo map between the face's master numbering and the face's slave numbering
+      */
+      virtual std::vector<int> GetLocalTrafoMap() const
+      {
+        return localtrafomap_;
+      }
+
+      //@}
+
+    private:
+
+      // don't want = operator
+      Combust3IntFace& operator = (const Combust3IntFace& old);
+
+      //! action parameters recognized by combust3
+      enum ActionType
+      {
+        none,
+        calc_edge_based_stab_terms
+      };
+
+      //! convert string to desired action
+      ActionType convertStringToActionType(const string& action) const;
+
+      //! The master parent element of this surface
+      DRT::ELEMENTS::Combust3* parent_master_;
+
+      //! The parent slave element of this surface
+      DRT::ELEMENTS::Combust3* parent_slave_;
+
+      //! The local surface number of this surface w.r.t to the parent_master_ element
+      int lsurface_master_;
+
+      //! The local surface number of this surface w.r.t to the parent_slave_ element
+      int lsurface_slave_;
+
+      /*!
+       \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+              and the slave element's face's coordinate system
+       */
+      std::vector<int> localtrafomap_;
+
+    }; // class Combust3IntFace
 
   } // namespace ELEMENTS
 } // namespace DRT

@@ -50,6 +50,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 namespace DRT
 {
   class Discretization;
+  class DiscretizationFaces;
   class ResultTest;
 }
 namespace IO
@@ -932,7 +933,9 @@ protected:
   const UTILS::MapExtractor* surfacesplitter_;
 
   /// connection between master and slave nodes on this proc (based on row map!!!!)
-  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave_;
+  /// connection between master and slave nodes on this proc (based on col map!!!!)
+  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave_;
 
   /// a manager doing the transfer of boundary data for
   /// turbulent inflow profiles from a separate (periodic) domain
@@ -978,6 +981,9 @@ protected:
 
   /// flag for mesh-tying
   int msht_;
+
+  /// face discretization (only initialized for edge-based stabilization)
+  Teuchos::RCP<DRT::DiscretizationFaces>      facediscret_;
 
   //@}
 

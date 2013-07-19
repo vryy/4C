@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15236
 </pre>
 */
 
@@ -312,9 +312,22 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
 
 
       // stabilization terms
-      const bool pstab = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"PSPG");
-      const bool supg  = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"SUPG");
-      const bool graddiv = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"GRAD_DIV");
+      bool pstab = false;
+      bool supg = false;
+      bool graddiv = false;
+      const INPAR::FLUID::StabType stabtype = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(params.sublist("RESIDUAL-BASED STABILIZATION"),"STABTYPE");
+      if (stabtype == INPAR::FLUID::stabtype_residualbased)
+      {
+        pstab = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"PSPG");
+        supg  = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"SUPG");
+        graddiv = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"GRAD_DIV");
+      }
+      else if (stabtype == INPAR::FLUID::stabtype_edgebased)
+      {
+        // do nothing here
+      }
+      else
+        dserror("Unknown stabilization for combustion problems");
 
       // stabilization parameter
       const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("RESIDUAL-BASED STABILIZATION"),"DEFINITION_TAU");

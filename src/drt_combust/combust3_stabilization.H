@@ -5,10 +5,10 @@
  * \brief stabilization related, templated functions
  *
  * <pre>
- * Maintainer: Florian Henke
- *             henke@lnm.mw.tum.de
+ * Maintainer: Ursula Rasthofer
+ *             rasthofer@lnm.mw.tum.de
  *             http://www.lnm.mw.tum.de
- *             089 - 289-15265
+ *             089 - 289-15236
  * </pre>
  */
 /*----------------------------------------------------------------------*/
@@ -24,12 +24,24 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "combust3.H"
 
 
 namespace COMBUST
 {
 namespace UTILS
 {
+  //! lines perpendicular to surface of Hex element
+  //! 6 surfaces
+  //! 4 lines each
+  const int get_lines_perpendicular_surf_hex_ele[6][4]={
+                                        { 4,  5,  6,  7},
+                                        { 1,  3,  9, 11},
+                                        { 0,  2,  8, 10},
+                                        { 1,  3,  9, 11},
+                                        { 0,  2,  8, 10},
+                                        { 4,  5,  6,  7}};
+
   //! for each distype there should be an m_k needed for stabilization computation
   template<DRT::Element::DiscretizationType DISTYPE>
   double MK()
@@ -216,16 +228,121 @@ namespace UTILS
   }
 
   //! calculate characteristic element size for stabilization
-  template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+  template<DRT::Element::DiscretizationType DISTYPE, class M1>
   double HK(
-      const M1&  evelnp,  ///< nodal velocity array
-      const M2&  xyze     ///< element nodal position array
+      const M1&  xyze     ///< element nodal position array
   )
   {
     const double vol = VolumeViaNumIntegration<DISTYPE>(xyze);
 
     // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
     const double hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+    return hk;
+  }
+
+
+  template<DRT::Element::DiscretizationType M_DISTYPE,
+           DRT::Element::DiscretizationType S_DISTYPE,
+           int dim, class M1, class M2>
+  double computeHKfacestab(
+     const DRT::ELEMENTS::Combust3*          master,
+     const DRT::ELEMENTS::Combust3*          slave,
+     const DRT::ELEMENTS::Combust3IntFace*   ele,
+     M1&                                     m_xyze,
+     M2&                                     s_xyze,
+     const INPAR::FLUID::EOS_ElementLength&  eos_element_length
+     )
+  {
+    double hk = 0.0;
+
+    // do some checks first
+    if (M_DISTYPE != S_DISTYPE)
+     dserror("Same element type for master and slave expected");
+
+    // max distance to opposite surface
+    if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
+    {
+      // get all lines perpendicular to face with respect to master element
+      int face_id_wrt_master = ele->SurfaceMasterNumber();
+      std::vector<int> lines_master;
+
+      // get all lines perpendicular to face with respect to slave element
+      int face_id_wrt_slave = ele->SurfaceSlaveNumber();
+      std::vector<int> lines_slave;
+
+      switch (M_DISTYPE)
+      {
+        case DRT::Element::hex8:
+        {
+          // we have 4 lines for hex elements
+          lines_master.resize(4);
+          lines_slave.resize(4);
+          for (int i=0; i<4; i++)
+          {
+            lines_master[i] = get_lines_perpendicular_surf_hex_ele[face_id_wrt_master][i];
+            lines_slave[i] = get_lines_perpendicular_surf_hex_ele[face_id_wrt_slave][i];
+          }
+          break;
+        }
+        default:
+        {
+          dserror("Unknown element type!");
+          break;
+        }
+      }
+
+      // get nodes of lines
+      std::vector<std::vector<int> > eleNodeNumbering_hex_lines = DRT::UTILS::getEleNodeNumberingLines(M_DISTYPE);
+
+      // do the master element first
+      for (std::size_t iline=0; iline<lines_master.size(); iline++)
+      {
+        const int line_id = lines_master[iline];
+        const int node_1 = eleNodeNumbering_hex_lines[line_id][0];
+        const int node_2 = eleNodeNumbering_hex_lines[line_id][1];
+
+        LINALG::Matrix<dim,1> line_vec (true);
+        for (int idim=0; idim<dim; idim++)
+            line_vec(idim,0) = m_xyze(idim,node_2) - m_xyze(idim,node_1);
+
+        const double distance = line_vec.Norm2();
+
+        // take the longest distance to the other surface
+        hk = std::max(hk,distance);
+      }
+
+      // repeat for the slave element
+      for (std::size_t iline=0; iline<lines_slave.size(); iline++)
+      {
+        const int line_id = lines_slave[iline];
+        const int node_1 = eleNodeNumbering_hex_lines[line_id][0];
+        const int node_2 = eleNodeNumbering_hex_lines[line_id][1];
+
+        LINALG::Matrix<dim,1> line_vec (true);
+        for (int idim=0; idim<dim; idim++)
+            line_vec(idim,0) = s_xyze(idim,node_2) -s_xyze(idim,node_1);
+
+        const double distance = line_vec.Norm2();
+
+        // take the longest distance to the other surface
+        hk = std::max(hk,distance);
+      }
+    }
+    // largest surface
+    else if(eos_element_length == INPAR::FLUID::EOS_he_surf_with_max_diameter)
+    {
+      dserror("EOS_he_surf_with_max_diameter not considered for combustion problems");
+    }
+    else if (eos_element_length == INPAR::FLUID::EOS_he_vol_eq_diameter)
+    {
+      // master
+      hk = HK<M_DISTYPE>(m_xyze);
+      // slave
+      hk = std::max(hk,HK<S_DISTYPE>(s_xyze));
+    }
+    else
+      dserror("Unknown reference length for face stabilization in combust!");
 
     return hk;
   }
@@ -248,6 +365,20 @@ namespace UTILS
       double& tau_stab_Mp,
       double& tau_stab_C
       );
+
+
+  void computeStabilizationParamsEdgeBased(
+      const double dynvisc,                /// dyamic viscosity
+      const double dens,                   /// density
+      const double vel_norm,
+      const double hk,
+      const enum INPAR::FLUID::EOS_TauType tautype,
+      double& tau_conv,
+      double& tau_div,
+      double& tau_p,
+      double& tau_ghost
+      );
+
 
 } // namespace UTILS
 } // namespace COMBUST

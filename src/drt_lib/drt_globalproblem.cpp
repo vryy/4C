@@ -33,6 +33,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_utils_parallel.H"
 #include "drt_utils_createdis.H"
 #include "drt_discret.H"
+#include "drt_discret_faces.H"
 #include "drt_discret_xfem.H"
 #include "drt_linedefinition.H"
 #include "../drt_mat/material.H"
@@ -830,8 +831,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_fluid_fluid_ale:
   {
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
+    xfluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("xfluid"   ,reader.Comm()));
     aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis("fluid", fluiddis);
@@ -846,8 +847,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_fluid_fluid_fsi:
   {
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
+    xfluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("xfluid"   ,reader.Comm()));
     aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
 
@@ -865,8 +866,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_fluid_fluid:
   {
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
-    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
+    xfluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("xfluid"   ,reader.Comm()));
 
     AddDis("fluid", fluiddis);
     AddDis("xfluid", xfluiddis);
@@ -964,7 +965,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fluid_xfem:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
     aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     AddDis("structure", structdis);
@@ -1006,7 +1007,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     else
     {
-      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+      //fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
     }
 
     AddDis("fluid", fluiddis);

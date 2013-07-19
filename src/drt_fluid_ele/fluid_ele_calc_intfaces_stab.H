@@ -274,6 +274,7 @@ namespace DRT
           LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
           LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
           const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+          const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
           double &                                                       tau_p          ///< pressure stabilization parameter
       );
 
@@ -286,6 +287,7 @@ namespace DRT
           LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,         ///< element vector master block
           LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,         ///< element vector slave block
           const double &                                                 timefacfac,          ///< timefac x integration factor
+          const double &                                                 timefacfacrhs,       ///< (time factor rhs) x (integration factor)
           double &                                                       tau_div_streamline,  ///< streamline stabilization parameter
           LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff        ///< difference of velocity gradients
       );
@@ -298,9 +300,9 @@ namespace DRT
           LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
           LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
           LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                                 timefacfac,    ///< (time factor ) x (integration factor)
-          double &                                                       tau_div,       ///< combined penalty parameter for divergence stabilization terms
-          LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff  ///< velocity derivatives (neighbor-parent) element
+          const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+          const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
+          double &                                                       tau_div        ///< combined penalty parameter for divergence stabilization terms
       );
 
 
@@ -948,6 +950,10 @@ namespace DRT
       LINALG::Matrix<nsd_,nsd_> pvderxyaf_;
       //! neighbor velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<nsd_,nsd_> nvderxyaf_;
+      //! parent velocity derivatives in gausspoint, time n+1
+      LINALG::Matrix<nsd_,nsd_> pvderxynp_;
+      //! neighbor velocity derivatives in gausspoint, time n+1
+      LINALG::Matrix<nsd_,nsd_> nvderxynp_;
       //! parent velocity (2nd) derivatives in gausspoint, time n+af
       LINALG::Matrix<nsd_,numderiv2_p> pvderxy2af_;
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af

@@ -15,7 +15,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_condition_selector.H"
@@ -1074,7 +1074,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     //------------------------------------------------------------
     // loop over row faces
 
-    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.bgdis_, true);
+    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.bgdis_, true);
 
     const int numrowintfaces = xdiscret->NumMyRowIntFaces();
 
@@ -1218,7 +1218,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     //------------------------------------------------------------
     // loop over row faces
 
-    Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.embdis_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.embdis_, true);
 
     const int numrowintfaces = xdiscret->NumMyRowIntFaces();
 
@@ -2229,11 +2229,11 @@ FLD::XFluidFluid::XFluidFluid(
   // create internal faces extension for edge based stabilization
   if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
   {
-    RCP<DRT::DiscretizationXFEM> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(embdis_, true);
-    actembdis->CreateInternalFacesExtension();
+    RCP<DRT::DiscretizationFaces> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
+    actembdis->CreateInternalFacesExtension(Teuchos::null);
 
-    RCP<DRT::DiscretizationXFEM> actbgdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(bgdis_, true);
-    actbgdis->CreateInternalFacesExtension();
+    RCP<DRT::DiscretizationFaces> actbgdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(bgdis_, true);
+    actbgdis->CreateInternalFacesExtension(Teuchos::null);
   }
   //-------------------------------------------------------------------
 
@@ -4034,9 +4034,9 @@ void FLD::XFluidFluid::OutputDiscret()
     ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
 
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     if (xdiscret == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
     // output for Element and Node IDs
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
@@ -4095,13 +4095,13 @@ void FLD::XFluidFluid::Output()
   {
 
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     if (xdiscret == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
-    RCP<DRT::DiscretizationXFEM> embxdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(embdis_, true);
+    RCP<DRT::DiscretizationFaces> embxdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
     if (embxdiscret == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
 
     // output for Element and Node IDs
@@ -4528,9 +4528,9 @@ void FLD::XFluidFluid::disToStream(Teuchos::RCP<DRT::Discretization> dis,
   if(faces)
   {
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationXFEM> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(dis, true);
+    RCP<DRT::DiscretizationFaces> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
     if (xdis == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
     if( xdis->FilledExtension() == true )     // faces output
     {

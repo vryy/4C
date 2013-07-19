@@ -28,7 +28,7 @@ namespace DRT
 {
   class AssembleStrategy;
   class Discretization;
-  class DiscretizationXFEM;
+  class DiscretizationFaces;
   class Element;
 
   namespace ELEMENTS
@@ -90,7 +90,7 @@ public:
                                      DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
                                      std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
                                      std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element
-                                     DRT::DiscretizationXFEM &              xdiscret,         ///< XFEM discretization
+                                     DRT::DiscretizationFaces &             xdiscret,         ///< discretization with faces
                                      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
                                      Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
                                      );

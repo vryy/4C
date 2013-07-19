@@ -106,7 +106,7 @@ void SysmatDomainNitsche(
   dsassert(numparamvelx == numparampres, "assumption violation");
 
   // stabilization parameter
-  const double hk = COMBUST::UTILS::HK<DISTYPE>(evelnp,xyze);
+  const double hk = COMBUST::UTILS::HK<DISTYPE>(xyze);
   const double mk = COMBUST::UTILS::MK<DISTYPE>();
 
   // get domain integration cells for this element

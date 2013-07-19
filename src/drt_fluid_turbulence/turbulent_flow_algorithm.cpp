@@ -76,11 +76,12 @@ step_(0)
   // otherwise the periodic boundary connection between the nodes has to be rebuild
   // this results in a new dofmap and, hence, the connection between the parent dofset
   // and the child dofset will be lost
-  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave = inflowgenerator_->GetCoupledRowNodesChildDiscretization();
+  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave = inflowgenerator_->GetCoupledRowNodesChildDiscretization();
+  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave = inflowgenerator_->GetCoupledColNodesChildDiscretization();
 
   // initialize fluid inflow algorithm
   // this is a second fluid algorithm
-  inflowfluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,inflowdis_,pbcmapmastertoslave));
+  inflowfluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,inflowdis_,row_pbcmapmastertoslave,col_pbcmapmastertoslave));
 
   return;
 }

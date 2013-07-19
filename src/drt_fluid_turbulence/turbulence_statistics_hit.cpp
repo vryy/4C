@@ -1182,7 +1182,7 @@ void TurbulenceStatisticsHit::DumpStatistics(
     for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
     {
       // build sum up to cut-off wave number
-      if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
+      if ((*wavenumbers_)[rr]<= ((((double)nummodes_)/2)-1))
         q_E += (*energyspectrum_)[rr];
     }
 
@@ -1198,7 +1198,7 @@ void TurbulenceStatisticsHit::DumpStatistics(
     // start for k=1 not k=0, see Diss Hickel
     for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
     {
-      if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
+      if ((*wavenumbers_)[rr]<= ((((double)nummodes_)/2)-1))
       {
         q_E += (((*energyspectrum_)[rr])/numsamp_);
         // is this the same? yes, it is!
@@ -1354,7 +1354,7 @@ void TurbulenceStatisticsHit::DumpScatraStatistics(
   {
     for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
     {
-      if ((*wavenumbers_)[rr]<= (((double)nummodes_)/2)-1)
+      if ((*wavenumbers_)[rr]<= ((((double)nummodes_)/2)-1))
       {
         q_E += ((*energyspectrum_)[rr]/numsamp_);
         // is this the same? yes, it is!

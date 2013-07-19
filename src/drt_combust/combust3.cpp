@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15265
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -486,5 +486,55 @@ DRT::ELEMENTS::Combust3::DLMInfo::DLMInfo(const int nd, const int na)
 
   return;
 }
+
+
+/*-----------------------------------------------------------------------*
+ |  get internal faces element (public)                  rasthofer 04 /12|
+ *-----------------------------------------------------------------------*/
+RCP<DRT::Element> DRT::ELEMENTS::Combust3::CreateInternalFaces( DRT::Element* parent_slave,           //!< parent slave fluid3 element
+                                                             int nnode,                           //!< number of surface nodes
+                                                             const int* nodeids,                  //!< node ids of surface element
+                                                             DRT::Node** nodes,                   //!< nodes of surface element
+                                                             const int lsurface_master,           //!< local surface number w.r.t master parent element
+                                                             const int lsurface_slave,            //!< local surface number w.r.t slave parent element
+                                                             const std::vector<int> localtrafomap //! local trafo map
+)
+{
+ // dynamic cast for slave parent element
+ DRT::ELEMENTS::Combust3 * slave_pele = dynamic_cast<DRT::ELEMENTS::Combust3 *>( parent_slave );
+
+ //std::cout << "Hier gehts im Moment nicht weiter" << std::endl;
+ // insert both parent elements
+ return DRT::UTILS::ElementIntFaceFactory<Combust3IntFace,Combust3>( -1,             //!< internal face element id
+                                                               -1,             //!< owner of internal face element
+                                                               nnode,          //!< number of surface nodes
+                                                               nodeids,        //!< node ids of surface element
+                                                               nodes,          //!< nodes of surface element
+                                                               this,           //!< master parent element
+                                                               slave_pele,     //!< slave parent element
+                                                               lsurface_master,//!< local surface number w.r.t master parent element
+                                                               lsurface_slave, //!< local surface number w.r.t slave parent element
+                                                               localtrafomap   //!< local trafo map
+                                                               );
+}
+
+
+// TODO: das brauche ich wohl nicht weil ich den dof manager fragen muss
+//int DRT::ELEMENTS::Combust3::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+//{
+//  dserror("NumDofPerNode() called");
+//  // was ist hier bei combust zu tun?
+//  if (nds==1)
+//  {
+//    return 1;
+//  }
+//  else if(nds==0)
+//    return NumDofPerNode(node);
+//  else
+//  {
+//    dserror("invalid number of dof sets");
+//    return -1;
+//  }
+//}
 
 

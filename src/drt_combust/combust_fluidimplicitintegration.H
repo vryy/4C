@@ -513,8 +513,10 @@ protected:
   /// number of spatial dimensions
   int numdim_;
 
+  //! connection between master and slave col nodes
+  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave_;
   //! connection between master and slave row nodes
-  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave_;
 
   //@}
 

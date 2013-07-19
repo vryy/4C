@@ -175,7 +175,8 @@ namespace INPAR
     enum EOS_ElementLength
     {
       EOS_he_max_dist_to_opp_surf,
-      EOS_he_surf_with_max_diameter
+      EOS_he_surf_with_max_diameter,
+      EOS_he_vol_eq_diameter
     };
 
     /// EdgeBased (EOS) and Ghost Penalty matrix pattern

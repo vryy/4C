@@ -3150,14 +3150,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Definition of element length for edge-based stabilization",
                                     tuple<std::string>(
                                     "EOS_he_max_dist_to_opp_surf",
-                                    "EOS_he_surf_with_max_diameter"),
+                                    "EOS_he_surf_with_max_diameter",
+                                    "EOS_he_vol_eq_diameter"),
                                     tuple<std::string>(
                                       "take the maximal distance along 1D edge to opposite surface for both parent elements",
-                                      "take the maximal (nsd-1)D face diameter of all faces for both parent elements"
+                                      "take the maximal (nsd-1)D face diameter of all faces for both parent elements",
+                                      "take the maximal volume eqivalent diameter of adjecent elements"
                                       ),
                                     tuple<int>(
                                     INPAR::FLUID::EOS_he_max_dist_to_opp_surf,
-                                    INPAR::FLUID::EOS_he_surf_with_max_diameter) ,
+                                    INPAR::FLUID::EOS_he_surf_with_max_diameter,
+                                    INPAR::FLUID::EOS_he_vol_eq_diameter) ,
                                     &fdyn_edge_based_stab);
 
 

@@ -31,7 +31,7 @@ namespace DRT
 {
 class Condition;
 class Discretization;
-class DiscretizationXFEM;
+class DiscretizationFaces;
 
 
 namespace ELEMENTS
@@ -61,7 +61,7 @@ public:
                        std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                        std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
                        Teuchos::ParameterList&              params,          ///< parameter list
-                       DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
+                       DRT::DiscretizationFaces&             discretization,  ///< faces discretization
                        Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
                        Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
                        ) = 0;
@@ -132,7 +132,7 @@ public:
                               std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                               std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
                               Teuchos::ParameterList&              params,          ///< parameter list
-                              DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
+                              DRT::DiscretizationFaces&             discretization,  ///< faces discretization
                               Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
                               Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
                               );

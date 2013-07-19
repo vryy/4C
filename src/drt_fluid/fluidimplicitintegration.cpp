@@ -80,10 +80,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 
 #include <cmath>
 
-#if 0
-// temporary: until standard discretization can deal with edged-based stabilization
-#include "../drt_lib/drt_discret_xfem.H"
-#endif
+// allows for dealing with edged-based stabilization
+#include "../drt_lib/drt_discret_faces.H"
 
 
 /*----------------------------------------------------------------------*
@@ -109,6 +107,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   surfacesplitter_(NULL),
   inrelaxation_(false),
   msht_(INPAR::FLUID::no_meshtying),
+  facediscret_(Teuchos::null),
   fldgrdisp_(Teuchos::null)
 {
   // time measurement: initialization
@@ -178,7 +177,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
 
-  pbcmapmastertoslave_ = params_->get<RCP<std::map<int,std::vector<int> > > >("periodic bc");
+  row_pbcmapmastertoslave_ = params_->get<RCP<std::map<int,std::vector<int> > > >("periodic bc (row)");
+  col_pbcmapmastertoslave_ = params_->get<RCP<std::map<int,std::vector<int> > > >("periodic bc (col)");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -503,7 +503,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
       // get one instance of the dynamic Smagorinsky class
       DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
-                                          pbcmapmastertoslave_,
+                                          row_pbcmapmastertoslave_,
                                           *params_             ));
     }
     else if (physmodel == "Smagorinsky")
@@ -523,7 +523,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
         scale_sep_ = INPAR::FLUID::box_filter;
         // get one instance of the dynamic Smagorinsky class
         DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
-                                            pbcmapmastertoslave_,
+                                            row_pbcmapmastertoslave_,
                                             *params_             ));
       }
       else if (scale_sep == "algebraic_multigrid_operator")
@@ -561,7 +561,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
         // get one instance of the dynamic Smagorinsky class
         DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
-                                            pbcmapmastertoslave_,
+                                            row_pbcmapmastertoslave_,
                                             *params_             ));
 
         if (fssgv_ != "No")
@@ -744,11 +744,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 void FLD::FluidImplicitTimeInt::Integrate()
 {
   // output of stabilization details
+  Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
   if (myrank_==0)
   {
-    Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
-
     cout << "Stabilization type         : " << stabparams->get<std::string>("STABTYPE") << "\n";
     cout << "                             " << "Evaluation Tau  = " << stabparams->get<std::string>("EVALUATION_TAU") <<"\n";
     cout << "                             " << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") <<"\n";
@@ -783,9 +781,14 @@ void FLD::FluidImplicitTimeInt::Integrate()
     }
     else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
     {
-      dserror("Edge-based stabilization for standard fluid problems not yet activated!");
-      //---------------------------------------------------------------------------------------------
+      Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
+
       cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
+
+      cout << "+---------------------------------------------------------------------------------+\n";
+      cout << "|  WARNING: edge-based stabilization requires face discretization                 |\n";
+      cout << "|           face discretization currently only available for pure fluid problems  |\n";
+      cout << "+---------------------------------------------------------------------------------+\n";
 
       cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
       cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
@@ -793,9 +796,23 @@ void FLD::FluidImplicitTimeInt::Integrate()
       cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
       cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
       cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
-      cout << "+------------------------------------------------------------------------------------+\n" << endl;
+      cout << "+---------------------------------------------------------------------------------+\n" << endl;
+
     }
 
+  }
+
+  if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
+  {
+    // if the definition of internal faces would be included
+    // in the standard discretization, these lines can be removed
+    // and CreateInternalFacesExtension() can be called once
+    // in the constructor of the fluid time integration
+    // since we want to keep the standard discretization as clean as
+    // possible, we create interal faces via an enhanced discretization
+    // including the faces between elements
+    facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    facediscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_,true);
   }
 
   // distinguish stationary and instationary case
@@ -1953,36 +1970,25 @@ void FLD::FluidImplicitTimeInt::AssembleEdgeBasedMatandRHS()
   // add edged-based stabilization, if selected
   if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
   {
-    if (timealgo_!=INPAR::FLUID::timeint_one_step_theta and timealgo_!=INPAR::FLUID::timeint_stationary)
-      dserror("Other time integration schemes than OST currently not supported for edge-based stabilization!");
-//           // set the only required state vectors
-//           if (is_genalpha_)
-//           {
-//             discret_->SetState("velaf",velaf_);
-//             if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
-//               discret_->SetState("velnp",velnp_);
-//           }
-//           else discret_->SetState("velaf",velnp_);
-     if (timealgo_==INPAR::FLUID::timeint_one_step_theta and theta_!=1.0)
-       dserror("Set theta=1, since only this setting seems to be correctly supported currently!");
-     discret_->SetState("velaf",velnp_);
+    if (timealgo_==INPAR::FLUID::timeint_bdf2)
+      dserror("BDF2 time-integration scheme currently not supported for edge-based stabilization!");
+
+    // set the only required state vectors
+    if (is_genalpha_)
+    {
+      discret_->SetState("velaf",velaf_);
+      if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+        discret_->SetState("velnp",velnp_);
+    }
+    else
+      discret_->SetState("velaf",velnp_);
 
      if (alefluid_)
      {
-       dserror("Edge-based stabilization not yet supported for ale problemes!");
+       dserror("Edge-based stabilization not yet supported for ale problems!");
      }
 
-     // this cast is only for the time being
-     // as soon as the definition of internal faces is included
-     // in the standard discretization, these lines can be removed
-     // and CreateInternalFacesExtension() can be called once
-     // in the constructor of the fluid time integration
-#if 0
-     Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
-     xdiscret->CreateInternalFacesExtension();
-
-     xdiscret->EvaluateEdgeBased(sysmat_,residual_);
-#endif
+     facediscret_->EvaluateEdgeBased(sysmat_,residual_);
 
      discret_->ClearState();
   }
@@ -2887,6 +2893,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
   Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
+  if(stabparams->get<std::string>("STABTYPE")=="residual_based"){
   if(stabparams->get<std::string>("TDS") == "time_dependent")
   {
     const double tcpu=Teuchos::Time::wallTime();
@@ -2934,7 +2941,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     {
       cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
     }
-  }
+  }}
 
   // compute accelerations
   {
@@ -4227,10 +4234,10 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-          std::map<int, std::vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
+          std::map<int, std::vector<int> >::iterator master = row_pbcmapmastertoslave_->find(lnode->Id());
 
           // slavenodes are ignored
-          if(master == pbcmapmastertoslave_->end()) continue;
+          if(master == row_pbcmapmastertoslave_->end()) continue;
         }
 
         // add random noise on initial function field
@@ -4867,7 +4874,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         std::ofstream f;
         f.open(fname.c_str());
         f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
+        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5) << time_ << std::setw(8) << std::setprecision(10) << "    " << velerr/velint<< std::setw(15) << std::setprecision(10) << "    " << preerr/pint << " "<<"\n";
         f.flush();
         f.close();
       }
@@ -4875,7 +4882,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       {
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
+        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5) << time_ << std::setw(8) << std::setprecision(10) << "    " << velerr/velint<< std::setw(15) << std::setprecision(10) << "    " << preerr/pint << " "<<"\n";
         f.flush();
         f.close();
       }

@@ -8,7 +8,7 @@
 Maintainer: Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15262
+            089 - 289-15236
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -79,8 +79,6 @@ void SysmatTwoPhaseFlow(
     const bool                          instationary,  ///< switch between stationary and instationary formulation
     const bool                          genalpha,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
-//    double&                        ele_meas_plus,      ///< set measure of element in plus domain
-//    double&                        ele_meas_minus      ///< set measure of element in minus domain
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat - domain");
@@ -119,7 +117,7 @@ void SysmatTwoPhaseFlow(
   //    std::cout << "pressure dofs " << numparampres << std::endl;
 
   // stabilization parameter
-  const double hk = COMBUST::UTILS::HK<DISTYPE>(evelnp,xyze);
+  const double hk = COMBUST::UTILS::HK<DISTYPE>(xyze);
   const double mk = COMBUST::UTILS::MK<DISTYPE>();
 
   // information about domain integration cells

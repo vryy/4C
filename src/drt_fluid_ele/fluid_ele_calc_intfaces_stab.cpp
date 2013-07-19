@@ -264,44 +264,51 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   //---------------------------------------------------
 
 
-  if (fldpara.TimeAlgo()!=INPAR::FLUID::timeint_one_step_theta and fldpara.TimeAlgo()!=INPAR::FLUID::timeint_stationary)
-      dserror("Other time integration schemes than OST and Stationary currently not supported for edge-based stabilization!");
-  if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
-      dserror("Read remark!");
-  // Remark:
-  // in the following Paper a fully implicit integration of the stabilization terms is proposed
-  // this corresponds to theta=1 for the stabilization terms, while theta!=1 may be used for all other term
-  // if you known what you are doing, you may turn off the dserror
+  if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_bdf2)
+      dserror("BDF2 time-integration scheme currently not supported for edge-based stabilization!");
 
-  // for the streamline and divergence stabilization a full matrix pattern is applied
-  // fully implicit integration of j_stream(u_h,v_h)
-  // Literature: E.Burman, M.A.Fernandez 2009
-  // "Finite element methods with symmetric stabilization for the transient convection-diffusion-reaction equation"
-
-  //    const double timefac      = fldpara_->TimeFac();     // timefac_ = theta_*dt_;
-  //    const double timefacpre   = fldpara_->TimeFacPre();  // special factor for pressure terms in genalpha time integration
-  //    const double timefacrhs   = fldpara_->TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
-
-  // modified time factors
+  // time factors
   double timefac    = 0.0;
   double timefacpre = 0.0;
+  double timefacrhs = 0.0;
 
   // full matrix pattern (implicit) for streamline and div-stab
-  if(not fldpara.IsStationary())
+  if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta)
   {
+//    if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
+//      dserror("Read remark!");
+    // Remark:
+    // in the following Paper a fully implicit integration of the stabilization terms is proposed
+    // this corresponds to theta=1 for the stabilization terms, while theta!=1 may be used for all other terms
+
+    // for the streamline and divergence stabilization a full matrix pattern is applied
+    // fully implicit integration of j_stream(u_h,v_h)
+    // Literature: E.Burman, M.A.Fernandez 2009
+    // "Finite element methods with symmetric stabilization for the transient convection-diffusion-reaction equation"
     timefac    = fldpara.Dt(); // set theta = 1.0
     timefacpre = fldpara.Dt(); // set theta = 1.0
+    timefacrhs = fldpara.Dt(); // set theta = 1.0
   }
-  else
+  else if (fldpara.IsGenalpha())
+  {
+    timefac      = fldpara.TimeFac();     // timefac_ = theta_*dt_;
+    timefacpre   = fldpara.TimeFacPre();  // special factor for pressure terms in genalpha time integration
+    timefacrhs   = fldpara.TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
+  }
+  else if (fldpara.IsStationary())
   {
     timefac    = 1.0;
     timefacpre = 1.0;
+    timefacrhs = 1.0;
   }
+  else
+    dserror("Unknown time-integration scheme for edge-based stabilization!");
 
   if(ghost_penalty_reconstruct)
   {
     timefac    = 1.0;
     timefacpre = 1.0;
+    timefacrhs = 1.0;
   }
 
   //---------------------------------------------------
@@ -312,6 +319,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   if(master_numdof != numdofpernode_*piel) dserror("wrong number of master dofs");
   if(slave_numdof  != numdofpernode_*niel) dserror("wrong number of slave dofs");
+  if(master_numdof != slave_numdof) dserror("Different element typs?");
 
   //---------------------------------------------------
   // create element matrices for each block of same component
@@ -370,7 +378,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
 
-  if(fldpara.TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
+  if(fldpara.IsGenalphaNP())
   {
     // velocities (intermediate time step, n+1)
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -454,7 +462,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double kinvisc = 0.0;
   double dens    = 0.0;
 
-  // get patch viscosity and denity, fill element's vectors
+  // get patch viscosity and density, fill element's vectors
   GetElementData( intface,
                   pele,
                   nele,
@@ -490,14 +498,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   {
     for(int c=0; c<piel; c++)
     {
-      if( fabs(pevelnp_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(pevelnp_(r,c));
+      if( fabs(pevelaf_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(pevelaf_(r,c));
     }
   }
   for(int r=0; r<nsd_; r++)
   {
     for(int c=0; c<niel; c++)
     {
-      if( fabs(nevelnp_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(nevelnp_(r,c));
+      if( fabs(nevelaf_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(nevelaf_(r,c));
     }
   }
 
@@ -551,7 +559,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   }
 
   //------------------------
-  // coordinates of all integration points as wirth local coordinates w.r.t the respective local side
+  // coordinates of all integration points as with local coordinates w.r.t the respective local side
   // of the respective parent element
   for(DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
@@ -777,6 +785,45 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     vderxyaf_diff.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_);
 
 
+    //-----------------------------------------------------
+    // get velocity (n+1,i) derivatives at integration point
+    //
+    //       n+1       +-----  dN (x)
+    //   dvel    (x)    \        k         n+1
+    //   ----------- =   +     ------ * vel
+    //       dx         /        dx        k
+    //         j       +-----      j
+    //                 node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        // parent element
+        pvderxynp_(rr,mm)=pderxy_(mm,0)*pevelnp_(rr,0);
+        for(int nn=1;nn<piel;++nn)
+        {
+          pvderxynp_(rr,mm)+=pderxy_(mm,nn)*pevelnp_(rr,nn);
+        }
+
+        // neighbor element
+        nvderxynp_(rr,mm)=nderxy_(mm,0)*nevelnp_(rr,0);
+        for(int nn=1;nn<niel;++nn)
+        {
+          nvderxynp_(rr,mm)+=nderxy_(mm,nn)*nevelnp_(rr,nn);
+        }
+
+      }
+    }
+
+    //-----------------------------------------------------
+
+    LINALG::Matrix<nsd_,nsd_> vderxynp_diff(true);
+    vderxynp_diff.Update(1.0, nvderxynp_, -1.0, pvderxynp_);
+
+
     if(use2ndderiv)
     {
 
@@ -856,6 +903,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     double timefacfac     = fac*timefac;
     double timefacfac_pre = fac*timefacpre;
+    double timefacfac_rhs = fac*timefacrhs;
 
     EdgeBasedStabilization.ComputeStabilizationParams(fldpara.EOS_WhichTau(), tau_grad, tau_u, tau_div, tau_p, kinvisc, dens, max_vel_L2_norm, timefac, GP_visc_fac);
 
@@ -876,6 +924,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                       elevector_m,
                       elevector_s,
                       timefacfac_pre,
+                      timefacfac_rhs,
                       tau_p
       );
     }
@@ -896,7 +945,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       {
         if(EOS_conv_stream) tau_vel += tau_u*normal_vel_lin_space;
         if(EOS_conv_cross)  tau_vel += tau_u * 1.0; // that's still wrong
-        if(EOS_div_vel_jump)tau_vel += tau_div;
+        if(EOS_div_vel_jump)
+        {
+          if (fldpara.IsGenalphaNP()) dserror("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
+          else tau_vel += tau_div;
+        }
         if(GP_visc)         tau_vel += tau_grad;
       }
 
@@ -908,6 +961,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                             elevector_m,
                             elevector_s,
                             timefacfac,
+                            timefacfac_rhs,
                             tau_vel,
                             vderxyaf_diff);
     }
@@ -964,9 +1018,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                   elematrix_ss,
                   elevector_m,
                   elevector_s,
-                  timefacfac,
-                  tau_div,
-                  vderxyaf_diff);
+                  timefacfac_pre,
+                  timefacfac_rhs,
+                  tau_div);
       }
 
     }
@@ -1946,8 +2000,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
             LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
             LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
             LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                                 timefacfacpre,
-            double &                                                       tau_p
+            const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+            const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
+            double &                                                       tau_p          ///< pressure stabilization parameter
 )
 {
 
@@ -1970,12 +2025,12 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
    */
 
   double tau_timefacfacpre = tau_p*timefacfacpre;
+  double tau_timefacfacrhs = tau_p*timefacfacrhs;
 
   // grad(p_neighbor) - grad(p_parent)
   LINALG::Matrix<nsd_,1> prederxy_jump(true);
   prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
-  prederxy_jump.Scale(tau_timefacfacpre);
-
+  prederxy_jump.Scale(tau_timefacfacrhs);
 
   LINALG::Matrix<piel,piel> pderiv_dyad_pderiv(true);
   pderiv_dyad_pderiv.MultiplyTN(pderxy_, pderxy_);
@@ -2050,6 +2105,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
     LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,         ///< element vector master block
     LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,         ///< element vector slave block
     const double &                                                 timefacfac,          ///< timefac x integration factor
+    const double &                                                 timefacfacrhs,       ///< (time factor rhs) x (integration factor)
     double &                                                       tau_div_streamline,  ///< streamline stabilization parameter
     LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff        ///< difference of velocity gradients
 
@@ -2088,6 +2144,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
   */
 
   double tau_timefacfac = tau_div_streamline * timefacfac;
+  double tau_timefacfacrhs = tau_div_streamline * timefacfacrhs;
 
 
   for (int idim = 0; idim <nsd_; ++idim) // combined components of u and v
@@ -2110,7 +2167,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
           elematrix_ms(row, ui*numdofpernode_+idim) -= tau_timefacfac*pderxy_(jdim,vi)*nderxy_(jdim,ui);
         }
 
-        elevector_m(row, 0) += tau_timefacfac * pderxy_(jdim, vi)*vderxyaf_diff(idim, jdim);
+        elevector_m(row, 0) += tau_timefacfacrhs * pderxy_(jdim, vi)*vderxyaf_diff(idim, jdim);
       }
 
       // slave row
@@ -2129,7 +2186,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
           elematrix_ss(row, ui*numdofpernode_+idim) += tau_timefacfac*nderxy_(jdim,vi)*nderxy_(jdim,ui);
         }
 
-        elevector_s(row, 0) -= tau_timefacfac * nderxy_(jdim, vi)*vderxyaf_diff(idim, jdim);
+        elevector_s(row, 0) -= tau_timefacfacrhs * nderxy_(jdim, vi)*vderxyaf_diff(idim, jdim);
       }
     }
   }
@@ -2149,14 +2206,15 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
     LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
     LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
     LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-    const double &                                                 timefacfac,    ///< (time factor ) x (integration factor)
-    double &                                                       tau_div,       ///< combined penalty parameter for divergence stabilization terms
-    LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff  ///< velocity derivatives (neighbor-parent) element
+    const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+    const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
+    double &                                                       tau_div        ///< combined penalty parameter for divergence stabilization terms
 )
 {
 
 
-  double tau_timefacfac = tau_div * timefacfac;
+  double tau_timefacfacpre = tau_div * timefacfacpre;
+  double tau_timefacfacrhs = tau_div * timefacfacrhs;
 
 
   // edge stabilization: divergence
@@ -2182,14 +2240,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
         //parent row
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac*pderxy_(jdim,vi)*pderxy_(idim,ui);
+          elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfacpre*pderxy_(jdim,vi)*pderxy_(idim,ui);
 
         }
 
         //neighbor row
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_sm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac*nderxy_(jdim,vi)*pderxy_(idim,ui);
+          elematrix_sm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfacpre*nderxy_(jdim,vi)*pderxy_(idim,ui);
         }
       }
 
@@ -2199,42 +2257,39 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
         //parent row
         for (int vi=0; vi<piel; ++vi)
         {
-          elematrix_ms(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac*pderxy_(jdim,vi)*nderxy_(idim,ui);
+          elematrix_ms(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfacpre*pderxy_(jdim,vi)*nderxy_(idim,ui);
         }
 
         //neighbor row
         for (int vi=0; vi<niel; ++vi)
         {
-          elematrix_ss(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac*nderxy_(jdim,vi)*nderxy_(idim,ui);
+          elematrix_ss(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfacpre*nderxy_(jdim,vi)*nderxy_(idim,ui);
         }
       }
     }
   }
 
 
-
-
   // parent divergence
-  double p_div = pvderxyaf_(0,0) + pvderxyaf_(1,1) + pvderxyaf_(2,2);
-
+  double p_div = pvderxynp_(0,0) + pvderxynp_(1,1) + pvderxynp_(2,2);
   // neighbor divergence
-  double n_div = nvderxyaf_(0,0) + nvderxyaf_(1,1) + nvderxyaf_(2,2);
+  double n_div = nvderxynp_(0,0) + nvderxynp_(1,1) + nvderxynp_(2,2);
+
 
   for (int idim = 0; idim <nsd_; ++idim) // components of v
   {
     // v_parent (u_neighbor-u_parent)
     for (int vi=0; vi<piel; ++vi)
     {
-      elevector_m(vi*numdofpernode_+idim,0) += tau_timefacfac * pderxy_(idim,vi)*(n_div - p_div);
+      elevector_m(vi*numdofpernode_+idim,0) += tau_timefacfacrhs * pderxy_(idim,vi)*(n_div - p_div);
     }
 
     // -v_neighbor (u_neighbor-u_parent)
     for (int vi=0; vi<niel; ++vi)
     {
-      elevector_s(vi*numdofpernode_+idim,0) -= tau_timefacfac * nderxy_(idim,vi)*(n_div - p_div);
+      elevector_s(vi*numdofpernode_+idim,0) -= tau_timefacfacrhs * nderxy_(idim,vi)*(n_div - p_div);
     }
   }
-
 
 
   return;
