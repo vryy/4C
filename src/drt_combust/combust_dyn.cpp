@@ -12,7 +12,6 @@ Maintainer: Ursula Rasthofer
 *----------------------------------------------------------------------*/
 
 #include "combust_dyn.H"
-#include "combust_utils.H"
 #include "combust_algorithm.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
@@ -21,6 +20,9 @@ Maintainer: Ursula Rasthofer
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
+
+#include "../drt_io/io_pstream.H"
+#include <iostream>
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -34,7 +36,23 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // print COMBUST-Logo on screen
   //------------------------------------------------------------------------------------------------
-  if (comm.MyPID()==0) COMBUST::printCombustLogo();
+  if (comm.MyPID()==0)
+  {
+//      IO::cout << "     ___            ___    \n"
+//               << "    /   \\          /   \\ \n"
+//               << "    \\_   \\        /  __/ \n"
+//               << "     _\\   \\      /  /__  " << " Das ist               \n"
+//               << "     \\___  \\____/   __/  " << " das Verbrennungsmodul \n"
+//               << "         \\_       _/      " << " in BACI               \n"
+//               << "           | @ @  \\_      " << "                       \n"
+//               << "           |               " << " Der Elch wird bald    \n"
+//               << "         _/     /\\        " << " ein feuerspeiender    \n"
+//               << "        /o)  (o/\\ \\_     " << " Drache sein!          \n"
+//               << "        \\_____/ /         \n"
+//               << "          \\____/          \n"
+//               << "                           " << IO::endl;
+      IO::cout << "\n ENTER COMBUSTION AND TWO-PHASE FLOW MODULE ...\n" << IO::endl;
+  }
 
   //------------------------------------------------------------------------------------------------
   // create G-function discretization by copying the fluid discretization (fill with scatra elements)
