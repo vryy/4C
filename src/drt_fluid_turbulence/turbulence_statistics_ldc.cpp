@@ -59,10 +59,10 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   togglew_ = LINALG::CreateVector(*dofrowmap,true);
   togglep_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // bounds for extension of cavity in x3-direction
+  // bounds for extension of cavity in x1-direction
   x1min_ = +10e+19;
   x1max_ = -10e+19;
-  // bounds for extension of cavity in x3-direction
+  // bounds for extension of cavity in x2-direction
   x2min_ = +10e+19;
   x2max_ = -10e+19;
   // bounds for extension of cavity in x3-direction
@@ -81,8 +81,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   std::set<double,LineSortCriterion> x2avcoords;
   std::set<double,LineSortCriterion> x3avcoords;
 
-  // loop nodes, build sets of centerlines accessible on this proc and
-  // calculate extension of cavity in x3-direction
+  // loop nodes, build sets of centerlines accessible on this proc
   for (int i=0; i<discret_->NumMyRowNodes(); ++i)
   {
     DRT::Node* node = discret_->lRowNode(i);
@@ -90,21 +89,21 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
     x2avcoords.insert(node->X()[1]);
     x3avcoords.insert(node->X()[2]);
 
-    if (x1min_>node->X()[2])
+    if (x1min_>node->X()[0])
     {
-      x1min_=node->X()[2];
+      x1min_=node->X()[0];
     }
-    if (x1max_<node->X()[2])
+    if (x1max_<node->X()[0])
     {
-      x1max_=node->X()[2];
+      x1max_=node->X()[0];
     }
-    if (x2min_>node->X()[2])
+    if (x2min_>node->X()[1])
     {
-      x2min_=node->X()[2];
+      x2min_=node->X()[1];
     }
-    if (x2max_<node->X()[2])
+    if (x2max_<node->X()[1])
     {
-      x2max_=node->X()[2];
+      x2max_=node->X()[1];
     }
     if (x3min_>node->X()[2])
     {

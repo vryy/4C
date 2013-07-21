@@ -1341,6 +1341,15 @@ namespace FLD
         }
         break;
       }
+      case lid_driven_cavity:
+      {
+        if(statistics_ldc_==Teuchos::null)
+          dserror("need statistics_ldc_ to do a time sample for a lid driven cavity");
+
+        if(outputformat == write_single_record)
+          statistics_ldc_->DumpStatistics(step);
+        break;
+      }
       case loma_lid_driven_cavity:
       {
         if(statistics_ldc_==Teuchos::null)
