@@ -17,7 +17,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_boundary_calc.H"
-#include "fluid_ele_calc_weak_dbc.H"
+#include "fluid_ele_boundary_parent_calc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_opti/topopt_fluidAdjoint3_boundary.H"
@@ -184,9 +184,20 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         mynormals);
     break;
   }
+  case FLD::flow_dep_pressure_bc:
+  {
+    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->FlowDepPressureBC(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+    break;
+  }
   case FLD::enforce_weak_dbc:
   {
-    return DRT::ELEMENTS::FluidBoundaryWeakDBCInterface::Impl(this)->EvaluateWeakDBC(
+    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EvaluateWeakDBC(
         this,
         params,
         discretization,
@@ -197,7 +208,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   }
   case FLD::evaluate_nitsche_par:
   {
-    return DRT::ELEMENTS::FluidBoundaryWeakDBCInterface::Impl(this)->EvaluateNitschePar(
+    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->EvaluateNitschePar(
         this,
         params,
         discretization,
@@ -208,18 +219,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   }
   case FLD::mixed_hybrid_dbc:
   {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->MixHybDirichlet(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-    break;
-  }
-  case FLD::flow_dep_pressure_bc:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->FlowDepPressureBC(
+    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->MixHybDirichlet(
         this,
         params,
         discretization,

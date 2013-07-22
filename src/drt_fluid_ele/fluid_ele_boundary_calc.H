@@ -42,16 +42,13 @@ class FluidBoundaryImplInterface : DRT::SingletonDestruction
 {
 
 public:
+
   /// Empty constructor
   FluidBoundaryImplInterface() {}
+
   /// Empty destructor
   virtual ~FluidBoundaryImplInterface() {}
 
-  /// Evaluate a Neumann boundary condition
-  /*!
-    This class does not provide a definition for this function, it
-    must be defined in FluidBoundaryImpl.
-   */
   virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*      ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
@@ -129,24 +126,6 @@ public:
       Epetra_SerialDenseVector&       elevec1,
       const std::vector<double>&      mydispnp,
       std::vector<double>&            mynormals
-  ) = 0;
-
-  virtual void MixHybDirichlet(
-      DRT::ELEMENTS::FluidBoundary*  ele1,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm,
-      Epetra_SerialDenseMatrix&       elemat1,
-      Epetra_SerialDenseVector&       elevec1
-  ) = 0;
-
-  virtual void FlowDepPressureBC(
-      DRT::ELEMENTS::FluidBoundary*  ele1,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm,
-      Epetra_SerialDenseMatrix&       elemat1,
-      Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void ConservativeOutflowConsistency(
@@ -298,13 +277,13 @@ public:
   //! number of element nodes
   static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  //! number of space dimensions of the FluidBoundary element
+  //! number of spatial dimensions of boundary element
   static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  //! number of space dimensions of the parent element
+  //! number of spatial dimensions of parent element
   static const int nsd_ = bdrynsd_+1;
 
-  //! number of dof's per node
+  //! number of degrees of freedom per node
   static const int numdofpernode_ = nsd_ + 1;
 
   //! Evaluate a Neumann boundary condition
@@ -553,43 +532,6 @@ public:
       Epetra_SerialDenseVector&  elevec1);
 
     /*!
-    \brief Evaluate boundary and parent element for flow-dependent pressure boundary
-           conditions
-
-    \param params (in)        : ParameterList for communication between control routine
-    \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
-    \param elemat1 (out)      : matrix to be filled by element.
-    \param elevec1 (out)      : vector to be filled by element.
-
-    */
-  void  FlowDepPressureBC(
-      DRT::ELEMENTS::FluidBoundary*  surfele,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm,
-      Epetra_SerialDenseMatrix&       elemat,
-      Epetra_SerialDenseVector&       elevec);
-
-    /*!
-    \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
-
-    \param params (in)        : ParameterList for communication between control routine
-    \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
-    \param elemat1 (out)      : matrix to be filled by element.
-    \param elevec1 (out)      : vector to be filled by element.
-
-    */
-  void  MixHybDirichlet(
-      DRT::ELEMENTS::FluidBoundary*  surfele,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm,
-      Epetra_SerialDenseMatrix&       elemat,
-      Epetra_SerialDenseVector&       elevec);
-
-    /*!
     \brief apply no penetration boundary condition
 
     \param params (in)        : ParameterList for communication between control routine
@@ -665,47 +607,6 @@ private:
   void CreateLinesQuad(const int& nline,
       const int& nnode);
 
-    /*!
-    \brief Evaluate boundary and parent element for flow-dependent pressure boundary
-           conditions
-
-    \param params (in)        : ParameterList for communication between control routine
-    \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
-    \param elemat1 (out)      : matrix to be filled by element.
-    \param elevec1 (out)      : vector to be filled by element.
-
-    */
-  template <DRT::Element::DiscretizationType bndydistype,
-            DRT::Element::DiscretizationType pdistype>
-  void FlowDepPressureBC(
-      DRT::ELEMENTS::FluidBoundary*  ele,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm,
-      Epetra_SerialDenseMatrix&       elemat,
-      Epetra_SerialDenseVector&       elevec);
-
-    /*!
-    \brief Evaluate Boundary ele and parent for mixed hybrid Dirichlet conditions
-
-    \param params (in)        : ParameterList for communication between control routine
-    \param discretization (in): A reference to the underlying discretization
-    \param lm (in)            : location vector of this element
-    \param elemat1 (out)      : matrix to be filled by element.
-    \param elevec1 (out)      : vector to be filled by element.
-
-    */
-  template <DRT::Element::DiscretizationType bndydistype,
-            DRT::Element::DiscretizationType pdistype>
-  void MixHybDirichlet(
-      DRT::ELEMENTS::FluidBoundary*  ele,
-      Teuchos::ParameterList&         params,
-      DRT::Discretization&            discretization,
-      std::vector<int>&               lm,
-      Epetra_SerialDenseMatrix&       elemat,
-      Epetra_SerialDenseVector&       elevec);
-
   /*!
   \brief apply boundary integral for porous media problems
 
@@ -763,191 +664,10 @@ private:
       double&                                     normalfac       ///< nurbs specific factor for normal
   );
 
-  //-----------------------------------------------------------------
-  //  evaluate the residual of Spaldings law of the wall
-  //                                           (private) gammi 11/09
-  //-----------------------------------------------------------------
-  double SpaldingResidual(
-    const double y     ,
-    const double visc  ,
-    const double utau  ,
-    const double normu
-    )
-    {
-      // get dimensionless velocity
-      if (abs(utau)<1.0E-14) dserror("utau is zero!");
-      const double up = normu/utau;
-
-      const double chi=0.4;
-      const double B  =5.5;
-
-      //      +
-      // get y , a dimensionless boundary layer thickness
-      if (visc<1.0E-14) dserror("visc is zero or negative!");
-      const double yp = y*utau/visc;
-
-      /*
-      // Evaluate Spaldings law of the wall
-      //                                /                                                  \
-      //                               |                           /     +\ 2    /     +\ 3 |
-      //                               |       +                  | chi*u  |    | chi*u  |  |
-      //  +     / +\     +    -chi*B   |  chi*u               +    \      /      \      /   |
-      // y = f | u  | = u  + e       * | e       - 1.0 - chi*u  - ----------- - ----------- |
-      //        \  /                   |                              2.0           6.0     |
-      //                               |                                                    |
-      //                                \                                                  /
-      */
-      return(yp-(up+exp(-chi*B)*(exp(chi*up)-1.0-chi*up*(1+chi*up/2.0*(1.0+chi*up/3.0)))));
-    }
-
-  //-----------------------------------------------------------------
-  //     evaluate the residual of Spaldings law of the wall
-  //                                           (private) gammi 11/09
-  //-----------------------------------------------------------------
-  double JacobianSpaldingResidual_utau(
-    const double y     ,
-    const double visc  ,
-    const double utau  ,
-    const double normu )
-    {
-      // get dimensionless velocity
-      const double up = normu/utau;
-
-      const double chi=0.4;
-      const double B  =5.5;
-
-      //                    +
-      // get derivative of y , a dimensionless boundary layer thickness
-      const double dyplus_dutau=y/visc;
-
-      //                                   +
-      // get derivative of function f wrt u
-      const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
-
-      //                    +
-      // get derivative of u  wrt u_tau
-      const double duplus_dutau=-normu/(utau*utau);
-
-      return(dyplus_dutau-df_duplus*duplus_dutau);
-    }
-
-  //-----------------------------------------------------------------
-  //     evaluate the residual of Spaldings law of the wall
-  //                                           (private) gammi 11/09
-  //-----------------------------------------------------------------
-  double JacobianSpaldingResidual_u(
-    const double y     ,
-    const double visc  ,
-    const double utau  ,
-    const double normu )
-    {
-      // get dimensionless velocity
-      const double up = normu/utau;
-
-      const double chi=0.4;
-      const double B  =5.5;
-
-      //                    +
-      // get derivative of y , a dimensionless boundary layer thickness
-      const double dyplus_du=0.0;
-
-      //                                   +
-      // get derivative of function f wrt u
-      const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
-
-      //                    +
-      // get derivative of u  wrt u
-      const double duplus_du=1.0/utau;
-
-      return(dyplus_du-df_duplus*duplus_du);
-    }
-
-
-
-  //-----------------------------------------------------------------
-  //     evaluate the residual of Spaldings law of the wall
-  //                                           (private) gammi 11/09
-  //-----------------------------------------------------------------
-  double JacobianSpaldingResidual_uplus(
-    const double y     ,
-    const double visc  ,
-    const double utau  ,
-    const double normu )
-    {
-      // get dimensionless velocity
-      const double up = normu/utau;
-
-      const double chi=0.4;
-      const double B  =5.5;
-
-      //                    +
-      // get derivative of y , a dimensionless boundary layer thickness
-      const double dyplus_duplus=0.0;
-      /*
-      // Spaldings law of the wall
-      //                     /                                                  \
-      //                    |                           /     +\ 2    /     +\ 3 |
-      //                    |       +                  | chi*u  |    | chi*u  |  |
-      //  +   +    -chi*B   |  chi*u               +    \      /      \      /   |
-      // y - u  - e       * | e       - 1.0 - chi*u  - ----------- - ----------- | = 0
-      //                    |                              2.0           6.0     |
-      //                    |                                                    |
-      //                     \                                                  /
-      */
-
-      //                                   +
-      // get derivative of function f wrt u
-      const double df_duplus=1+exp(-chi*B)*(chi*exp(chi*up)-chi-chi*chi*up-chi*chi*chi*up*up/2.0);
-
-      return(dyplus_duplus-df_duplus);
-    }
-
-
   //! get density
   void GetDensity(Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material
                   const LINALG::Matrix<bdrynen_,1>& escaaf,        ///< scalar at time n+alpha_f / n+1  
                   const double                      thermpressaf); ///< thermodynamic pressure at time n+alpha_f / n+1
-
-  //! get viscosity
-  void GetViscosity(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
-                    const LINALG::Matrix<nsd_,nsd_>&  vderxy);   ///< velocity derivatives at time n+alpha_f / n+1
-
-  //-----------------------------------------------------------------
-  // evaluate measure for rate of strain          (private) vg 06/13
-  //
-  //          +-                                 -+ 1
-  //          |          /   \           /   \    | -
-  //          | 2 * eps | vel |   * eps | vel |   | 2
-  //          |          \   / ij        \   / ij |
-  //          +-                                 -+
-  //
-  //-----------------------------------------------------------------
-  double GetStrainRate(const LINALG::Matrix<nsd_,nsd_>& vderxy)
-  {
-    double rateofstrain=0.0;
-
-    // compute (two times) strain-rate tensor
-    LINALG::Matrix<nsd_,nsd_> two_epsilon;
-    for(int rr=0;rr<nsd_;++rr)
-    {
-      for(int mm=0;mm<nsd_;++mm)
-      {
-        two_epsilon(rr,mm) = vderxy(rr,mm) + vderxy(mm,rr);
-      }
-    }
-
-    // compute product of (two times) strain-rate tensor with itself
-    for(int rr=0;rr<nsd_;++rr)
-    {
-      for(int mm=0;mm<nsd_;++mm)
-      {
-        rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
-      }
-    }
-
-    // return square-root of (two times) product 
-    return(sqrt(rateofstrain/2.0));
-  }
 
   //! pointer to parameter list
   Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;

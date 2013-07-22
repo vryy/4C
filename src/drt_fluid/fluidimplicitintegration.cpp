@@ -1844,11 +1844,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
           discret_->SetState("velnp",velnp_);
       }
       else discret_->SetState("velaf",velnp_);
-      /*if (alefluid_)
-      {
-        discret_->SetState("dispnp",dispnp_);
-        discret_->SetState("gridvelaf",gridv_);
-      }*/
+      if (alefluid_) discret_->SetState("dispnp",dispnp_);
 
       // set values for elements
       flowdeppressureparams.set<LINALG::Matrix<4,1> >("flow rate",flowraterel);
@@ -1893,11 +1889,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
         discret_->SetState("velnp",velnp_);
     }
     else discret_->SetState("velaf",velnp_);
-    if (alefluid_)
-    {
-      discret_->SetState("dispnp",dispnp_);
-      discret_->SetState("gridvelaf",gridv_);
-    }
+    if (alefluid_) discret_->SetState("dispnp",dispnp_);
 
     // evaluate all line weak Dirichlet boundary conditions
     discret_->EvaluateCondition(weakdbcparams,sysmat_,Teuchos::null,
@@ -1926,17 +1918,18 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     // create parameter list
     Teuchos::ParameterList mhdbcparams;
 
-     // set action for elements
-     mhdbcparams.set<int>("action", FLD::mixed_hybrid_dbc);
+    // set action for elements
+    mhdbcparams.set<int>("action", FLD::mixed_hybrid_dbc);
 
-     // set required state vectors
-     if (is_genalpha_)
-     {
-       discret_->SetState("velaf",velaf_);
-       if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
-         discret_->SetState("velnp",velnp_);
-     }
-     else discret_->SetState("velaf",velnp_);
+    // set required state vectors
+    if (is_genalpha_)
+    {
+      discret_->SetState("velaf",velaf_);
+      if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
+        discret_->SetState("velnp",velnp_);
+    }
+    else discret_->SetState("velaf",velnp_);
+    if (alefluid_) discret_->SetState("dispnp",dispnp_);
 
     // evaluate all line mixed/hybrid Dirichlet boundary conditions
     discret_->EvaluateCondition(mhdbcparams, sysmat_, Teuchos::null,

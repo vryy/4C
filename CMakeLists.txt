@@ -1281,6 +1281,7 @@ set(OBJS_DRT_B3_LIB
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
+  src/drt_fluid_ele/fluid_ele_boundary_parent_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary.cpp
   src/drt_fluid_ele/fluid_ele_boundary_evaluate.cpp
   src/drt_fluid_ele/fluid_ele_calc.cpp
@@ -1295,7 +1296,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
-  src/drt_fluid_ele/fluid_ele_calc_weak_dbc.cpp
   src/drt_fluid_ele/fluid_ele_calc_xfem.cpp
   src/drt_fluid_ele/fluid_ele_calc_xfem_coupling.cpp
   src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl.cpp
