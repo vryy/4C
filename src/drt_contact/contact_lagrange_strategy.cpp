@@ -69,8 +69,7 @@ activesetsteps_(1)
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::Initialize()
 {
-  // (re)setup global normal and tangent matrices
-  nmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  // (re)setup global tangent matrix
   tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
 
   // (re)setup global matrix containing gap derivatives
@@ -124,23 +123,21 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   }
 
   /**********************************************************************/
-  /* build global matrix n with normal vectors of active nodes          */
-  /* and global matrix t with tangent vectors of active nodes           */
+  /* build global matrix t with tangent vectors of active nodes           */
   /* and global matrix s with normal derivatives of active nodes        */
   /* and global matrix linstick with derivatives of stick nodes         */
   /* and global matrix linslip with derivatives of slip nodes           */
   /**********************************************************************/
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
+    interface_[i]->AssembleT(*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);
     interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
   }
 
-  // FillComplete() global matrices N and T
-  nmatrix_->Complete(*gactivedofs_,*gactiven_);
+  // FillComplete() global matrix T
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
 
   // FillComplete() global matrix S
@@ -512,11 +509,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     }
 
     //-------------------------------------------------------- FOURTH LINE
-    // n*mhata: do the multiplication
-    Teuchos::RCP<LINALG::SparseMatrix> nmhata;
-    if (aset) nmhata = LINALG::MLMultiply(*nmatrix_,false,*mhata,false,false,false,true);
-
-    // nmatrix: nothing to do
+    // nothing to do
 
     //--------------------------------------------------------- FIFTH LINE
     // blocks for complementary conditions (stick nodes)
@@ -1066,21 +1059,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   }
 
   /**********************************************************************/
-  /* build global matrix n with normal vectors of active nodes          */
-  /* and global matrix t with tangent vectors of active nodes           */
+  /* build global matrix t with tangent vectors of active nodes         */
   /* and global matrix s with normal derivatives of active nodes        */
   /* and global matrix p with tangent derivatives of active nodes       */
   /**********************************************************************/
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
+    interface_[i]->AssembleT(*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleP(*pmatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
   }
 
-  // FillComplete() global matrices N and T
-  nmatrix_->Complete(*gactivedofs_,*gactiven_);
+  // FillComplete() global matrix T
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
 
   // FillComplete() global matrix S
@@ -2021,13 +2012,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     }
 
     //---------------------------------------------------------- FOURTH LINE
-    // n*mhata: do the multiplication
-    Teuchos::RCP<LINALG::SparseMatrix> nmhata;
-    if (aset) nmhata = LINALG::MLMultiply(*nmatrix_,false,*mhata,false,false,false,true);
-
-    // nmatrix: nothing to do
-
-    // smatrix: nothing to do
+    // nothing to do
 
     //----------------------------------------------------------- FIFTH LINE
     // kan: multiply tmatrix with invda and kan

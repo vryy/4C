@@ -2787,10 +2787,9 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrices with nodal normals / tangents           popp 01/08|
+ |  Assemble matrix with nodal tangents                       popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
-                                     LINALG::SparseMatrix& tglobal)
+void CONTACT::CoInterface::AssembleT(LINALG::SparseMatrix& tglobal)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -2809,41 +2808,18 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
     CoNode* cnode = static_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleNT: Node ownership inconsistency!");
+      dserror("ERROR: AssembleT: Node ownership inconsistency!");
     
-    // error if no D matrix entries
-    if((cnode->MoData().GetD()).size() == 0)
-      dserror("Error: No D matrix entry available!");
-
     if (Dim()==2)
     {
       // prepare assembly
       int colsize = cnode->NumDof();
-      std::vector<int> lmrowN(1);
       std::vector<int> lmrowT(1);
-      std::vector<int> lmrowownerN(1);
       std::vector<int> lmrowownerT(1);
       std::vector<int> lmcol(colsize);
 
-      lmrowN[0] = activen_->GID(i);
-      lmrowownerN[0] = cnode->Owner();
       lmrowT[0] = activet_->GID(i);
       lmrowownerT[0] = cnode->Owner();
-
-      /**************************************************** N-matrix ******/
-      Epetra_SerialDenseMatrix Nnode(1,colsize);
-
-      // we need D diagonal entry of this node
-      double wii = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-
-      for (int j=0;j<colsize;++j)
-      {
-        lmcol[j] = cnode->Dofs()[j];
-        Nnode(0,j) = wii * cnode->MoData().n()[j];
-      }
-
-      // assemble into matrix of normal vectors N
-      nglobal.Assemble(-1,Nnode,lmrowN,lmrowownerN,lmcol);
 
       /**************************************************** T-matrix ******/
       Epetra_SerialDenseMatrix Tnode(1,colsize);
@@ -2862,33 +2838,14 @@ void CONTACT::CoInterface::AssembleNT(LINALG::SparseMatrix& nglobal,
     {
       // prepare assembly
       int colsize = cnode->NumDof();
-      std::vector<int> lmrowN(1);
       std::vector<int> lmrowT(2);
-      std::vector<int> lmrowownerN(1);
       std::vector<int> lmrowownerT(2);
       std::vector<int> lmcol(colsize);
 
-      lmrowN[0] = activen_->GID(i);
-      lmrowownerN[0] = cnode->Owner();
       lmrowT[0] = activet_->GID(2*i);
       lmrowT[1] = activet_->GID(2*i+1);
       lmrowownerT[0] = cnode->Owner();
       lmrowownerT[1] = cnode->Owner();
-
-      /**************************************************** N-matrix ******/
-      Epetra_SerialDenseMatrix Nnode(1,colsize);
-
-      // we need D diagonal entry of this node
-      double wii = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-
-      for (int j=0;j<colsize;++j)
-      {
-        lmcol[j] = cnode->Dofs()[j];
-        Nnode(0,j) = wii * cnode->MoData().n()[j];
-      }
-
-      // assemble into matrix of normal vectors N
-      nglobal.Assemble(-1,Nnode,lmrowN,lmrowownerN,lmcol);
 
       /**************************************************** T-matrix ******/
       Epetra_SerialDenseMatrix Tnode(2,colsize);

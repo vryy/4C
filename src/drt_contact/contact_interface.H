@@ -433,11 +433,10 @@ public:
   virtual void AssembleLinZ(LINALG::SparseMatrix& lambdaglobal);
 
   /*!
-  \brief Assemble matrices N / T containing nodal normals / tangents
+  \brief Assemble matrix T containing nodal tangents
 
   */
-  virtual void AssembleNT(LINALG::SparseMatrix& nglobal,
-                          LINALG::SparseMatrix& tglobal);
+  virtual void AssembleT(LINALG::SparseMatrix& tglobal);
 
   /*!
   \brief Assemble matrix S containing linearizations

@@ -266,7 +266,6 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     
     Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M    
 
-    Teuchos::RCP<LINALG::SparseMatrix> nmatrix_; // global Matrix N containing active node normals
     Teuchos::RCP<LINALG::SparseMatrix> tmatrix_; // global Matrix T containing active node tangents
     Teuchos::RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
     Teuchos::RCP<LINALG::SparseMatrix> pmatrix_; // global Matrix P containing tangent derivatives
