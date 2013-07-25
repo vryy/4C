@@ -1,0 +1,192 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file elast_coupanisoneohooke.H
+\brief
+This file contains the routines required for the anisotropic material
+using a pow-like material
+
+<pre>
+Maintainer: Nagler Andreas
+            nagler@lnm.mw.tum.de
+            089/289 15249
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef ELAST_COUPANISOPOW_H_
+#define ELAST_COUPANISOPOW_H_
+
+#include "elast_summand.H"
+#include "../drt_mat/matpar_parameter.H"
+
+namespace MAT
+{
+namespace ELASTIC
+{
+
+  namespace PAR
+  {
+
+    /*----------------------------------------------------------------------*/
+    /// material parameters for anisochoric contribution of a
+    /// pow like material with one fiber direction
+    ///
+    ///
+    /// <h3>Input line</h3>
+    /// MAT 1 CoupAnisoPow C 1.0 D 2.0 [ GAMMA 35.0 INIT 0 ADAPT_ANGLE 0]
+    class CoupAnisoPow : public MAT::PAR::Parameter
+    {
+    public:
+
+      /// standard constructor
+      CoupAnisoPow(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~CoupAnisoPow() { ; }
+
+      /// @name material parameters
+      //@{
+
+      /// stiffness factor
+      double c_;
+      /// exponential factor
+      double d_;
+      /// angle between circumferential and fiber direction (used for cir, axi, rad nomenclature)
+      double gamma_;
+      /// fiber initalization status
+      int init_;
+      /// adapt angle during remodeling
+      int adapt_angle_;
+
+      //@}
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// @name Write methods
+      //@{
+      void SetC(const double c) { c_ = c; };
+      void SetD(const double d) { d_ = d; };
+      //@}
+
+    };  // class CoupAnisoPow
+
+  }  // namespace PAR
+
+  /*----------------------------------------------------------------------*/
+  /// Coupled anisotropic pow-like fiber function, implemented for one possible fiber family
+  /// [1]
+  /// This is a hyperelastic, anisotropic material
+  /// of the most simple kind.
+  ///
+  /// Strain energy function is given by
+  ///\f[
+  ///   \Psi = C \left(IV_{\boldsymbol C}-1\right)^{D}.
+  ///\f]
+  ///
+  ///
+  /// <h3>References</h3>
+  /// <ul>
+  /// <li> [1] GA Holzapfel, Nonlinear solid mechanics 2004
+  /// </ul>
+  ///
+  /// \author nagler
+  /// \date 07/13
+  class CoupAnisoPow : public Summand
+  {
+
+  public:
+
+    /// empty constructor
+    CoupAnisoPow();
+
+    /// constructor with given material parameters
+    CoupAnisoPow(MAT::ELASTIC::PAR::CoupAnisoPow* params);
+
+    ///@name Packing and Unpacking
+    //@{
+
+    virtual void PackSummand(DRT::PackBuffer& data) const;
+
+    virtual void UnpackSummand(const std::vector<char>& data, std::vector<char>::size_type& position);
+
+    //@}
+
+
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupanisoneohooke; }
+
+    //@}
+
+    /// Setup of summand
+    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+
+    /// Add anisotropic principal stresses
+    virtual void AddStressAnisoPrincipal(
+        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
+        LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
+        Teuchos::ParameterList& params /// additional parameters for computation of material properties
+    );
+
+    /// @name Access material constants
+    //@{
+    /// Get stiffness
+    double C() const { return params_->c_; };
+    /// Get exponent factor
+    double D() const { return params_->d_; };
+
+    //@}
+
+    /// Set fiber directions
+    virtual void SetFiberVecs(
+        const double newgamma,   ///< new angle
+        const LINALG::Matrix<3,3> locsys,   ///< local coordinate system
+        const LINALG::Matrix<3,3> defgrd   ///< deformation gradient
+    );
+
+    /// Get fiber directions
+    virtual void GetFiberVecs(
+        std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
+    );
+
+    /// Read FIBER1
+    void ReadFiber1(
+        DRT::INPUT::LineDefinition* linedef
+    );
+
+    /// Read RAD-AXI-CIR
+    void ReadRadAxiCir(
+        DRT::INPUT::LineDefinition* linedef,
+        LINALG::Matrix<3,3>& locsys
+    );
+
+    /// Indicator for formulation
+    virtual void SpecifyFormulation(
+        bool& isoprinc, ///< global indicator for isotropic principal formulation
+        bool& isomod, ///< global indicator for isotropic splitted formulation
+        bool& anisoprinc, ///< global indicator for anisotropic principal formulation
+        bool& anisomod ///< global indicator for anisotropic splitted formulation
+      )
+    {
+      anisoprinc = true;
+      return;
+    };
+
+  private:
+
+    /// my material parameters
+    MAT::ELASTIC::PAR::CoupAnisoPow* params_;
+
+    /// fiber direction
+    LINALG::Matrix<3,1>  a_;
+    /// structural tensors in voigt notation for anisotropy
+    LINALG::Matrix<6,1>  A_;
+
+  };
+
+}  // namespace ELAST
+}  // namespace MAT
+
+#endif  // COUPANISOPOW_H_
