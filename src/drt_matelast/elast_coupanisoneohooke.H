@@ -74,14 +74,14 @@ namespace ELASTIC
   /*----------------------------------------------------------------------*/
   /// Coupled anisotropic exponential fiber function, implemented for one possible fiber family
   /// [1]
-  /// This is a hyperelastic, anisotropic material
-  /// of the most simple kind.
+  /// This is a hyperelastic, anisotropic material of the most simple kind.
   ///
   /// Strain energy function is given by
   ///\f[
   ///   \Psi = c \left(IV_{\boldsymbol C}-1\right).
   ///\f]
   ///
+  /// !!!Warning!!! The current implementation does not automatically respect the stress free state of the reference configuration
   ///
   /// <h3>References</h3>
   /// <ul>
@@ -145,6 +145,17 @@ namespace ELASTIC
     /// Get fiber directions
     virtual void GetFiberVecs(
         std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
+    );
+
+    /// Read FIBER1
+    void ReadFiber1(
+        DRT::INPUT::LineDefinition* linedef
+    );
+
+    /// Read RAD-AXI-CIR
+    void ReadRadAxiCir(
+        DRT::INPUT::LineDefinition* linedef,
+        LINALG::Matrix<3,3>& locsys
     );
 
     /// Indicator for formulation

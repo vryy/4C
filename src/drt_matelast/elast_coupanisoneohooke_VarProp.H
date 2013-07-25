@@ -56,7 +56,7 @@ namespace ELASTIC
       double gamma_;
       /// polar angle of spherical coordinates
       double theta_;
-      /// initalization modus;
+      /// fiber initalization status
       int init_;
       /// adapt angle during remodeling
       int adapt_angle_;
@@ -151,6 +151,17 @@ namespace ELASTIC
         std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
     );
 
+    /// Read FIBER1
+    void ReadFiber1(
+        DRT::INPUT::LineDefinition* linedef
+    );
+
+    /// Read RAD-AXI-CIR
+    void ReadRadAxiCir(
+        DRT::INPUT::LineDefinition* linedef,
+        LINALG::Matrix<3,3>& locsys
+    );
+
     /// Setup of patient-specific materials
     virtual void SetupAAA(Teuchos::ParameterList& params){return;}
 
@@ -175,7 +186,7 @@ namespace ELASTIC
     LINALG::Matrix<3,1>  a_;
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A_;
-    // material coefficient depending on the position
+    /// material coefficient depending on the position
     double stress_coeff_;
 
   };

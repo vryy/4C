@@ -89,6 +89,7 @@ namespace INPAR
       mes_volpenalty,  ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_vologden,  ///< Ogden volumetric part of the  hyperelastic potential summand
       mes_coupanisoexpo,   ///< anisotropic exponential single fiber summand
+      mes_coupanisopow,   ///< anisotropic pow-like single fiber summand
       mes_coupanisoexpotwocoup,  ///< anisotropic two fiber summand with coupling between the fibers
       mes_coupanisoneohooke,  ///< anisotropic Neo-Hooke single fiber summand
       mes_coupanisoneohooke_activestress,  ///< anisotropic Neo-Hooke single fiber summand with active stress computed through a simplified Bestel-Clement-Sorine model

@@ -446,6 +446,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupanisoneohooke.cpp
   src/drt_matelast/elast_coupanisoneohooke_ActiveStress.cpp
   src/drt_matelast/elast_coupanisoneohooke_VarProp.cpp
+  src/drt_matelast/elast_coupanisopow.cpp
   src/drt_matelast/elast_coupblatzko.cpp
   src/drt_matelast/elast_couplogneohooke.cpp
   src/drt_matelast/elast_coupneohooke.cpp

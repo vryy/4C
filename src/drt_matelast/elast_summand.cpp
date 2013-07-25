@@ -36,6 +36,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupanisoneohooke.H"
 #include "elast_coupanisoneohooke_ActiveStress.H"
 #include "elast_coupanisoneohooke_VarProp.H"
+#include "elast_coupanisopow.H"
 #include "elast_isoanisoexpo.H"
 #include "elast_coupvarga.H"
 #include "elast_isovarga.H"
@@ -206,6 +207,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoExpo(curmat));
     MAT::ELASTIC::PAR::CoupAnisoExpo* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoExpo*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoExpo(params));
+  }
+  case INPAR::MAT::mes_coupanisopow:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoPow(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoPow* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoPow*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoPow(params));
   }
   case INPAR::MAT::mes_coupanisoexpotwocoup:
   {

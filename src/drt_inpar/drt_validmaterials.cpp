@@ -1124,6 +1124,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with one pow-like fiber family
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoPow",
+                                            "anisotropic part with one pow-like fiber",
+                                            INPAR::MAT::mes_coupanisopow));
+
+    AddNamedReal(m,"C","linear constant");
+    AddNamedReal(m,"D","exponential constant");
+    AddNamedReal(m,"GAMMA","angle", true);
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
+    AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // coupled anisotropic material with two exponential fiber families
   {
     Teuchos::RCP<MaterialDefinition> m

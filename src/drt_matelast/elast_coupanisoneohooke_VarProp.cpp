@@ -86,6 +86,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::UnpackSummand(const std::vector<ch
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* linedef)
 {
+  // path if fibers aren't given in path file
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
@@ -124,76 +125,44 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* 
     }
     SetFiberVecs(-1.0,locsys,Id);
   }
+
+  // path if fibers are given in .dat file
   else if (params_->init_ == 1)
   {
-    // fibers aligned in local element cosy with gamma around circumferential direction
-    // -> check whether element supports local element cosy
+
+    // CIR-AXI-RAD nomenclature
     if (linedef->HaveNamed("RAD") and
         linedef->HaveNamed("AXI") and
         linedef->HaveNamed("CIR"))
     {
-      // read local (cylindrical) cosy-directions at current element
-      // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-    	std::vector<double> rad;
-    	std::vector<double> axi;
-    	std::vector<double> cir;
+      // Read in of data
       LINALG::Matrix<3,3> locsys(true);
-      linedef->ExtractDoubleVector("RAD",rad);
-      linedef->ExtractDoubleVector("AXI",axi);
-      linedef->ExtractDoubleVector("CIR",cir);
-      double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-
-      for (int i = 0; i < 3; ++i)
-      {
-        radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-      }
-      radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
-
-      for (int i=0; i<3; ++i)
-      {
-        locsys(i,0) = rad[i]/radnorm;
-        locsys(i,1) = axi[i]/axinorm;
-        locsys(i,2) = cir[i]/cirnorm;
-      }
-
+      ReadRadAxiCir(linedef, locsys);
       LINALG::Matrix<3,3> Id(true);
       for (int i=0; i<3; i++)
         Id(i,i) = 1.0;
+      // final setup of fiber data
       SetFiberVecs(0.0,locsys,Id);
     }
-    // read given first fiber family
+
+    // FIBER1 nomenclature
     else if ( linedef->HaveNamed("FIBER1") )
     {
-    	std::vector<double> fiber1;
-      LINALG::Matrix<3,3> locsys(true);
-      linedef->ExtractDoubleVector("FIBER1",fiber1);
-      double f1norm=0.;
-
-      //normalization
-      for (int i = 0; i < 3; ++i)
-      {
-      	f1norm += fiber1[i]*fiber1[i];
-      }
-      f1norm = sqrt(f1norm);
-
-      // we set locsys(:,2) = fiber1, since in function SetFiberVecs
-      // the fiber orientation will be calculated via
-      // ca = cos(gamma)*locsys(:,2) + sin(gamma)*locsys(:,1)
-      //    = locsys(:,2) for gamma=0.0
-      for (int i=0; i<3; ++i)
-      {
-        locsys(i,2) = fiber1[i]/f1norm;
-      }
-
-      LINALG::Matrix<3,3> Id(true);
-      for (int i=0; i<3; i++)
-        Id(i,i) = 1.0;
-      SetFiberVecs(0.0,locsys,Id);
+      // Read in of fiber data and setting fiber data
+      ReadFiber1(linedef);
     }
+
+    // error path
     else
     {
       dserror("Reading of element local cosy for anisotropic materials failed");
     }
+
+    // Setup of structural tensors
+    for (int i = 0; i < 3; ++i)
+      A_(i) = a_(i)*a_(i);
+    A_(3) = a_(0)*a_(1); A_(4) = a_(1)*a_(2); A_(5) = a_(0)*a_(2);
+
   }
   else
     dserror("INIT mode not implemented");
@@ -220,6 +189,77 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
    // no contribution to cmat
   // double delta = 0.0;
   // cmat.MultiplyNT(delta, A_, A_, 1.0);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::GetFiberVecs(
+    std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
+)
+{
+  fibervecs.push_back(a_);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+// Function which reads in the given fiber value due to the FIBER1 nomenclature
+void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::ReadFiber1(
+    DRT::INPUT::LineDefinition* linedef
+)
+{
+  std::vector<double> fiber1;
+  linedef->ExtractDoubleVector("FIBER1",fiber1);
+  double f1norm=0.;
+  //normalization
+  for (int i = 0; i < 3; ++i)
+  {
+    f1norm += fiber1[i]*fiber1[i];
+  }
+  f1norm = sqrt(f1norm);
+
+  // fill final fiber vector
+  for (int i = 0; i < 3; ++i)
+    a_(i) = fiber1[i]/f1norm;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+// Function which reads in the given fiber value due to the CIR-AXI-RAD nomenclature
+void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::ReadRadAxiCir(
+    DRT::INPUT::LineDefinition* linedef,
+    LINALG::Matrix<3,3>& locsys
+)
+{
+  // fibers aligned in local element cosy with gamma around circumferential direction
+  // -> check whether element supports local element cosy
+  if (linedef->HaveNamed("RAD") and
+      linedef->HaveNamed("AXI") and
+      linedef->HaveNamed("CIR"))
+  {
+    // read local (cylindrical) cosy-directions at current element
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    std::vector<double> rad;
+    std::vector<double> axi;
+    std::vector<double> cir;
+
+    linedef->ExtractDoubleVector("RAD",rad);
+    linedef->ExtractDoubleVector("AXI",axi);
+    linedef->ExtractDoubleVector("CIR",cir);
+    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+
+    for (int i = 0; i < 3; ++i)
+    {
+      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
+    }
+    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+
+    for (int i=0; i<3; ++i)
+    {
+      locsys(i,0) = rad[i]/radnorm;
+      locsys(i,1) = axi[i]/axinorm;
+      locsys(i,2) = cir[i]/cirnorm;
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -255,19 +295,4 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(
 
   a_0.Multiply(idefgrd,ca);
   a_.Update(1./a_0.Norm2(),a_0);
-
-  for (int i = 0; i < 3; ++i)
-    A_(i) = a_(i)*a_(i);
-
-  A_(3) = a_(0)*a_(1); A_(4) = a_(1)*a_(2); A_(5) = a_(0)*a_(2);
 }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::GetFiberVecs(
-    std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
-)
-{
-  fibervecs.push_back(a_);
-}
-

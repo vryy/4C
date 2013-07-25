@@ -51,12 +51,12 @@ namespace ELASTIC
       /// fiber params
       double k1_;
       double k2_;
-      /// angle between circumferential and fiber direction
+      /// angle between circumferential and fiber direction (used for cir, axi, rad nomenclature)
       double gamma_;
       /// fiber params for the compressible case
       double k1comp_;
       double k2comp_;
-      /// initalization modus;
+      /// fiber initalization status
       int init_;
       /// adapt angle during remodeling
       int adapt_angle_;
@@ -158,6 +158,17 @@ namespace ELASTIC
     /// Get fiber directions
     virtual void GetFiberVecs(
         std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
+    );
+
+    /// Read FIBER1
+    void ReadFiber1(
+        DRT::INPUT::LineDefinition* linedef
+    );
+
+    /// Read RAD-AXI-CIR
+    void ReadRadAxiCir(
+        DRT::INPUT::LineDefinition* linedef,
+        LINALG::Matrix<3,3>& locsys
     );
 
     /// Indicator for formulation
