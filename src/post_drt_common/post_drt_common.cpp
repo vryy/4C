@@ -55,6 +55,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   std::string file = "xxx";
   std::string output;
   struct_vel_acc_ = "no";
+  struct_mat_disp_ = "no";
 
   int printparobjecttypes = 0;
 
@@ -73,6 +74,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("tempgradtype",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("tempgrad",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("structvelacc",&struct_vel_acc_,"structural velocity and acceleration output [yes]");
+  CLP.setOption("structmatdisp",&struct_mat_disp_,"material displacement output output [yes]");
   CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
 
   Teuchos::CommandLineProcessor::EParseCommandLineReturn

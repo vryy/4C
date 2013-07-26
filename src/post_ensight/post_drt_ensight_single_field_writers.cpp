@@ -27,7 +27,6 @@
 void StructureEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim());
-  EnsightWriter::WriteResult("material_displacement", "material_displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("prolongated_gauss_2PK_stresses_xyz", "prolongated_gauss_2PK_stresses_xyz", nodebased,6);
   EnsightWriter::WriteResult("prolongated_gauss_GL_strains_xyz", "prolongated_gauss_GL_strains_xyz", nodebased,6);
   if(field->problem()->struct_vel_acc() == "yes")
@@ -35,6 +34,9 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
     EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim());
     EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim());
   }
+  if (field->problem()->struct_mat_disp() == "yes")
+    EnsightWriter::WriteResult("material_displacement", "material_displacement", dofbased, field->problem()->num_dim());
+
   // Statistical Output from MLMC
   EnsightWriter::WriteResult("mean_displacements", "mean_displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("variance_displacements", "variance_displacement", dofbased, field->problem()->num_dim());

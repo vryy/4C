@@ -153,6 +153,8 @@ public:
   //! returns struct_vel_acc_
   std::string struct_vel_acc() { return struct_vel_acc_; }
 
+  //! returns struct_mat_disp_
+  std::string struct_mat_disp() { return struct_mat_disp_; }
   //@}
 
 private:
@@ -218,6 +220,9 @@ private:
 
   //! structural velocity and acceleration output optionally set by command line argument
   std::string struct_vel_acc_;
+
+  //! material displacement output optionally set by command line argument
+  std::string struct_mat_disp_;
 
   //! MAP pointers into the control file map.
   // We don't own these pointers, so no reference counting.

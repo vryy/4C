@@ -221,8 +221,12 @@ STR::TimInt::TimInt
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*dofrowmap_, true);
+
   // material displacements Dm_{n+1} at t_{n+1}
-  dismatn_ = LINALG::CreateVector(*dofrowmap_,true);
+  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
+      (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+    dismatn_ = LINALG::CreateVector(*dofrowmap_,true);
+
   // velocities V_{n+1} at t_{n+1}
   veln_ = LINALG::CreateVector(*dofrowmap_, true);
   // accelerations A_{n+1} at t_{n+1}
