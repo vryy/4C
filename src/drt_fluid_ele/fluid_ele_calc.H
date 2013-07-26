@@ -131,13 +131,14 @@ namespace ELEMENTS
      *   \author: ghamm
      *   \date:   01/2013
      */
-    virtual int CalcMatDeriv(
+    virtual int CalcMatDerivAndRotU(
         DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
         Teuchos::ParameterList&         params,           //< parameter list
         DRT::Discretization&            discretization,   //< fluid discretization
         std::vector<int>&               lm,               //< location vector for DOF management
         Epetra_SerialDenseVector&       elevec1,          //< reference to element vector to be filled
-        Epetra_SerialDenseVector&       elevec2           //< reference to element vector to be filled
+        Epetra_SerialDenseVector&       elevec2,          //< reference to element vector to be filled
+        Epetra_SerialDenseVector&       elevec3           //< reference to element vector to be filled
         );
 
 

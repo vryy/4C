@@ -161,13 +161,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
  | calculate material derivative of velocity               ghamm 01/13 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDeriv(
+int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDerivAndRotU(
   DRT::ELEMENTS::Fluid*     ele,
   Teuchos::ParameterList&   params,
   DRT::Discretization&      discretization,
   std::vector<int>&         lm,
   Epetra_SerialDenseVector& elevec1,
-  Epetra_SerialDenseVector& elevec2)
+  Epetra_SerialDenseVector& elevec2,
+  Epetra_SerialDenseVector& elevec3)
 {
   // fill the local element vector/matrix with the global values
   LINALG::Matrix<nsd_,nen_> eveln(true);
@@ -176,11 +177,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDeriv(
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnm, NULL,"velnm");
 
   // coordinates of the current integration point
-  const double* coord = params.get<double*>("elecoords");
-  for (int isd=0;isd<nsd_;isd++)
-  {
-    xsi_(isd) = coord[isd];
-  }
+  xsi_.Update(1.0, params.get<LINALG::Matrix<nsd_,1> >("elecoords"));
 
   // shape functions and their first derivatives
   DRT::UTILS::shape_function<distype>(xsi_,funct_);
@@ -211,6 +208,33 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDeriv(
   {
     elevec2[isd] = conv_old_(isd);
   }
+
+  // velocity gradient stored in vderxy_
+  /*
+     +-            -+
+     | du   du   du |
+     | --   --   -- |
+     | dx   dy   dz |
+     |              |
+     | dv   dv   dv |
+     | --   --   -- |
+     | dx   dy   dz |
+     |              |
+     | dw   dw   dw |
+     | --   --   -- |
+     | dx   dy   dz |
+     +-            -+
+  */
+
+  // rotation of fluid
+  if(nsd_ == 3)
+  {
+    elevec3[0] = vderxy_(2,1) - vderxy_(1,2);
+    elevec3[1] = vderxy_(0,2) - vderxy_(2,0);
+    elevec3[2] = vderxy_(1,0) - vderxy_(0,1);
+  }
+  else
+    dserror("not implemented");
 
   return 0;
 }

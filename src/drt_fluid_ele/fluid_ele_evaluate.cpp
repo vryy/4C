@@ -902,10 +902,17 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       // calculate the integrated divergence operator
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcDivOp(this, discretization, lm, elevec1);
     }
-    case FLD::calc_mat_derivative_u:
+    case FLD::calc_mat_deriv_u_and_rot_u:
     {
       // calculate material derivative at specified element coordinates
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcMatDeriv(this, params, discretization, lm, elevec1, elevec2);
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcMatDerivAndRotU(
+          this,
+          params,
+          discretization,
+          lm,
+          elevec1,
+          elevec2,
+          elevec3);
     }
     case FLD::set_general_fluid_parameter:
     case FLD::set_time_parameter:
