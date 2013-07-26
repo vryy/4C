@@ -1131,8 +1131,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "anisotropic part with one pow-like fiber",
                                             INPAR::MAT::mes_coupanisopow));
 
-    AddNamedReal(m,"C","linear constant");
-    AddNamedReal(m,"D","exponential constant");
+    AddNamedReal(m,"K","linear constant");
+    AddNamedReal(m,"D1","exponential constant for fiber invariant");
+    AddNamedReal(m,"D2","exponential constant for system");
     AddNamedReal(m,"GAMMA","angle", true);
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);

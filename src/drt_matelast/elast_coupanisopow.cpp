@@ -28,8 +28,9 @@ MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  c_(matdata->GetDouble("C")),
-  d_(matdata->GetDouble("D")),
+  k_(matdata->GetDouble("K")),
+  d1_(matdata->GetDouble("D1")),
+  d2_(matdata->GetDouble("D2")),
   gamma_(matdata->GetDouble("GAMMA")),
   init_(matdata->GetInt("INIT")),
   adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
@@ -83,7 +84,7 @@ void MAT::ELASTIC::CoupAnisoPow::UnpackSummand(const std::vector<char>& data,
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
 {
-  // path if fibers aren't given in path file
+  // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
@@ -125,13 +126,11 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
       dserror("Reading of element local cosy for anisotropic materials failed");
     }
 
-    // Setup of structural tensors
-    for (int i = 0; i < 3; ++i)
-      A_(i) = a_(i)*a_(i);
-    A_(3) = a_(0)*a_(1); A_(4) = a_(1)*a_(2); A_(5) = a_(0)*a_(2);
   }
   else
     dserror("INIT mode not implemented");
+
+  SetupStructuralTensor(a_,A_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -144,12 +143,13 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(
 )
 {
   // load params
-  double c=params_->c_;
-  double d=params_->d_;
+  double k=params_->k_;
+  double d1=params_->d1_;
+  double d2=params_->d2_;
 
-  if (d<=1.0)
+  if (d2<=1.0)
   {
-    dserror("exponential factor should be greater than 1, since otherwise one can't achieve a stress free reference state");
+    dserror("exponential factor D2 should be greater than 1.0, since otherwise one can't achieve a stress free reference state");
   }
 
   // calc invariant I4
@@ -157,19 +157,24 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(
   I4 =  A_(0)*rcg(0) + A_(1)*rcg(1) + A_(2)*rcg(2)
       + A_(3)*rcg(3) + A_(4)*rcg(4) + A_(5)*rcg(5);
 
+
+  double pow_I4_d1   = pow(I4,d1);
+  double pow_I4_d1m1 = pow(I4,d1-1.0);
+  double pow_I4_d1m2 = pow(I4,d1-2.0);
   // Compute stress and material update
   // Beware that the fiber will be turned off in case of compression
   double gamma = 0.0;
   if (I4 > 1.0)
   {
-    gamma = 2.0*c*d*pow((I4 - 1),d-1);
+    gamma = 2.0 * k * d2 * d1 * pow_I4_d1m1 * pow( pow_I4_d1 - 1.0 , d2 - 1.0);
   }
   stress.Update(gamma, A_, 1.0);
 
   double delta = 0.0;
   if (I4 > 1.0)
   {
-    delta = 4.0*c*d*(d-1)*pow((I4 - 1),d-2);
+    delta = 4.0 * k * d2 * (d2-1) * d1*pow_I4_d1m1*d1*pow_I4_d1m1 *pow( pow_I4_d1 - 1.0 ,d2-2.0) +
+            4.0 * k * d2 * d1 * (d1-1.0) * pow_I4_d1m2 * pow( pow_I4_d1 - 1.0,d2-1.0);
   }
   cmat.MultiplyNT(delta, A_, A_, 1.0);
 

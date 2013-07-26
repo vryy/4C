@@ -115,6 +115,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
   const LINALG::Matrix<3,1>& prinv
   )
 {
+
   // principal coefficients
   gamma(0) += alpha_ * (2.*1.*pow(prinv(2),-1./3.));
   gamma(1) += 0.;

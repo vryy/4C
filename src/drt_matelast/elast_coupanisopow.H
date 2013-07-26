@@ -49,9 +49,11 @@ namespace ELASTIC
       //@{
 
       /// stiffness factor
-      double c_;
-      /// exponential factor
-      double d_;
+      double k_;
+      /// exponential factor for I4
+      double d1_;
+      /// exponential factor for ((I4)^{d1}-1)
+      double d2_;
       /// angle between circumferential and fiber direction (used for cir, axi, rad nomenclature)
       double gamma_;
       /// fiber initalization status
@@ -66,8 +68,8 @@ namespace ELASTIC
 
       /// @name Write methods
       //@{
-      void SetC(const double c) { c_ = c; };
-      void SetD(const double d) { d_ = d; };
+//      void SetK(const double k) { k_ = k; };
+//      void SetD1(const double d) { d_ = d; };
       //@}
 
     };  // class CoupAnisoPow
@@ -77,14 +79,21 @@ namespace ELASTIC
   /*----------------------------------------------------------------------*/
   /// Coupled anisotropic pow-like fiber function, implemented for one possible fiber family
   /// [1]
-  /// This is a hyperelastic, anisotropic material
-  /// of the most simple kind.
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = C \left(IV_{\boldsymbol C}-1\right)^{D}.
+  ///   \Psi = K \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2}.
   ///\f]
   ///
+  /// The corresponding derivatives are
+  ///
+  ///\f[
+  ///   \frac{d\Psi}{d IV_{\boldsymbol C}} = K\ D2\ D1\ (IV_{\boldsymbol C})^{D1-1} \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-1}.
+  ///\f]
+  ///
+  ///\f[
+  ///   \frac{d^2\Psi}{d^2 IV_{\boldsymbol C}} = K\ D2\ (D2-1)\ \left( D1\ (IV_{\boldsymbol C})^{D1-1} \right)^2 \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-2}\ +\ K\ D2\ D1\ (D1-1)\ (IV_{\boldsymbol C})^{D1-2}\ \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-1}
+  ///\f]
   ///
   /// <h3>References</h3>
   /// <ul>
@@ -133,9 +142,9 @@ namespace ELASTIC
     /// @name Access material constants
     //@{
     /// Get stiffness
-    double C() const { return params_->c_; };
+//    double C() const { return params_->c_; };
     /// Get exponent factor
-    double D() const { return params_->d_; };
+//    double D() const { return params_->d_; };
 
     //@}
 

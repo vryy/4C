@@ -93,7 +93,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(const std::vector<char>& 
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* linedef)
 {
-  // path if fibers aren't given in path file
+  // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
@@ -135,19 +135,13 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
       dserror("Reading of element local cosy for anisotropic materials failed");
     }
 
-    // Setup of structural tensors
-    for (int i = 0; i < 3; ++i) {
-      A1_(i) = a1_(i)*a1_(i);
-      A2_(i) = a2_(i)*a2_(i);
-    }
-    A1_(3) = a1_(0)*a1_(1); A1_(4) = a1_(1)*a1_(2); A1_(5) = a1_(0)*a1_(2);
-    A2_(3) = a2_(0)*a2_(1); A2_(4) = a2_(1)*a2_(2); A2_(5) = a2_(0)*a2_(2);
-
-    A1A2_.MultiplyNT(a1_,a2_);
-
   }
   else
     dserror("INIT mode not implemented");
+
+  SetupStructuralTensor(a1_,A1_);
+  SetupStructuralTensor(a2_,A2_);
+  A1A2_.MultiplyNT(a1_,a2_);
 }
 
 /*----------------------------------------------------------------------*/

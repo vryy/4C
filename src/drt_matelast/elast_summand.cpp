@@ -301,3 +301,16 @@ void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data)
   return;
 };
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::Summand::SetupStructuralTensor(
+    LINALG::Matrix<3,1>  &fiber_vector,
+    LINALG::Matrix<6,1>  &structural_tensor
+)
+{
+  for (int i = 0; i < 3; ++i)
+    structural_tensor(i) = fiber_vector(i)*fiber_vector(i);
+  structural_tensor(3) = fiber_vector(0)*fiber_vector(1);
+  structural_tensor(4) = fiber_vector(1)*fiber_vector(2);
+  structural_tensor(5) = fiber_vector(0)*fiber_vector(2);
+}

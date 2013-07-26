@@ -95,7 +95,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinit
   tauc_last_ = params_->tauc0_;
   tauc_ = params_->tauc0_;
 
-  // path if fibers aren't given in path file
+  // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
@@ -167,14 +167,11 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinit
       dserror("Reading of element local cosy for anisotropic materials failed");
     }
 
-    // Setup of structural tensors
-    for (int i = 0; i < 3; ++i)
-      A_(i) = a_(i)*a_(i);
-    A_(3) = a_(0)*a_(1); A_(4) = a_(1)*a_(2); A_(5) = a_(0)*a_(2);
-
   }
   else
     dserror("INIT mode not implemented");
+
+  SetupStructuralTensor(a_,A_);
 }
 
 /*----------------------------------------------------------------------*/

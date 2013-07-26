@@ -107,7 +107,6 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddCoefficientsPrincipal(
   const LINALG::Matrix<3,1>& prinv
   )
 {
-
   // principal coefficients
   gamma(0) += 0.;
   gamma(1) += cele_ * 4.*pow(prinv(2),-2./3.);
