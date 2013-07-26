@@ -604,7 +604,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   // ToDo: Remove the CONVTOL-tolerances and replace them by the single field
   //       tolerances given just below also for lung- and constraint-FSI
   //
-  // Currently, we have to keep the parameter CONVTOL for constraint FSI
+  // Currently, we have to keep the parameter CONVTOL for lung and constraint FSI
   nlParams.set("Norm abs pres", fsidyn.get<double>("CONVTOL"));
   nlParams.set("Norm abs vel",  fsidyn.get<double>("CONVTOL"));
   nlParams.set("Norm abs disp", fsidyn.get<double>("CONVTOL"));

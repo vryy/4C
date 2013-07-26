@@ -311,7 +311,7 @@ namespace FSI
     //! \sa SetupRHSResidual()
     //! \sa SetupRHSLambda()
     //! \sa SetupRHSFirstiter()
-    void SetupRHS(
+    virtual void SetupRHS(
         Epetra_Vector& f,     ///< empty rhs vector (to be filled)
         bool firstcall=false  ///< indicates whether this is the first nonlinear iteration or not
     );
