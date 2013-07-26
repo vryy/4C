@@ -450,6 +450,17 @@ public:
   virtual void AssembleS(LINALG::SparseMatrix& sglobal);
 
   /*!
+  \brief Assemble matrices W containing linearizations
+
+  This method builds an algebraic form of the FULL linearization
+  of the normal contact and slip contact condition for ~w. 
+  --> w.r.t. lagr. mult.
+
+  */
+  virtual void AssembleLinWLm(LINALG::SparseMatrix& sglobal);
+  virtual void AssembleLinWLmSl(LINALG::SparseMatrix& sglobal);
+
+  /*!
   \brief Assemble matrix P containing linearizations
 
   This method builds an algebraic form of the FULL linearization
@@ -577,6 +588,20 @@ public:
 
   */
   void FDCheckGapDeriv();
+
+  /*!
+  \brief Check weighted wear ~w derivatives with finite differences
+         derivation w.r.t. displ.
+
+  */
+  void FDCheckWearDeriv();
+
+  /*!
+  \brief Check weighted wear ~w derivatives with finite differences
+         derivation w.r.t. lagr.-mult.
+
+  */
+  void FDCheckWearDerivLm();
 
   /*!
   \brief Check tangential LM derivatives with finite differences

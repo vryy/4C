@@ -1778,6 +1778,432 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
 }
 
 /*----------------------------------------------------------------------*
+ | Finite difference check for normal Wear-lm derivatives    farah 07/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FDCheckWearDerivLm()
+{
+  double wcoeff = (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF");
+
+  // FD checks only for serial case
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // create storage for gap values
+  int nrow = snoderowmap_->NumMyElements();
+  std::vector<double> refW(nrow);
+  std::vector<double> newW(nrow);
+
+  // problem dimension (2D or 3D)
+  int dim = Dim();
+
+  // store reference
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    // store wear-values into refW
+    refW[i]=cnode->FriDataPlus().Wear();
+  }
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize -- set FriDataPlus.Wear() = 0 !!!
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* snode = static_cast<CoNode*>(node);
+
+    //int sdof = snode->Dofs()[fd%dim];
+    //std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      snode->MoData().lm()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->MoData().lm()[1] += delta;
+    }
+    else
+    {
+      snode->MoData().lm()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      FriNode* kcnode = static_cast<FriNode*>(knode);
+
+      // store gap-values into newG
+      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
+
+//      cout << "newW[k]  = " << newW[k] << endl;
+//      cout << "refW[k]  = " << refW[k] << endl;
+//      cout << "newW[k]-refW[k]  =  " << newW[k]-refW[k] << endl;
+//      cout << "(newW[k]-refW[k])/delta  =  " << (newW[k]-refW[k])/delta << endl;
+//      cout << "DerivWLm()  = " << kcnode->CoData().GetDerivWlm()[snode->Dofs()[fd%dim]] << endl;
+//      cout << "*********************** " << endl;
+
+
+//      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
+//      {
+         double finit = (newW[k]-refW[k])/delta;
+         double analy = kcnode->CoData().GetDerivWlm()[snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivw=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << endl;
+//      }
+    }
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      snode->MoData().lm()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->MoData().lm()[1] -= delta;
+    }
+    else
+    {
+      snode->MoData().lm()[2] -= delta;
+    }
+
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+//    if (w>0)
+//      dserror("WARNING!!!");
+  }
+
+  //LM only on slave nodes!!!
+
+  // back to normal...
+  Initialize();
+  Evaluate();
+
+  // write the init. wear back into the node
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    // store gap-values into refG
+    cnode->FriDataPlus().Wear()=refW[i];
+  }
+
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check for normal Wear-d derivatives     farah 07/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FDCheckWearDeriv()
+{
+
+  double wcoeff = (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF");
+
+  // FD checks only for serial case
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // create storage for gap values
+  int nrow = snoderowmap_->NumMyElements();
+  std::vector<double> refW(nrow);
+  std::vector<double> newW(nrow);
+
+  // problem dimension (2D or 3D)
+  int dim = Dim();
+
+  // store reference
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    // store wear-values into refW
+    refW[i]=cnode->FriDataPlus().Wear();
+  }
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize -- set FriDataPlus.Wear() = 0 !!!
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* snode = static_cast<CoNode*>(node);
+
+    int sdof = snode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      FriNode* kcnode = static_cast<FriNode*>(knode);
+
+      // store gap-values into newG
+      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
+
+//      cout << "newW[k]  = " << newW[k] << endl;
+//      cout << "refW[k]  = " << refW[k] << endl;
+//      cout << "(newW[k]-refW[k])/delta  =  " << (newW[k]-refW[k])/delta << endl;
+//      cout << "*********************** " << endl;
+
+
+      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
+      {
+         double finit = (newW[k]-refW[k])/delta;
+         double analy = kcnode->CoData().GetDerivW()[snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivw=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << endl;
+      }
+    }
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+//    if (w>0)
+//      dserror("WARNING!!!");
+  }
+
+  // global loop to apply FD scheme to all master dofs (=dim*nodes)
+  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    FriNode* mnode = static_cast<FriNode*>(node);
+
+    int mdof = mnode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << endl;
+
+    // apply finite difference scheme
+    /*if (Comm().MyPID()==mnode->Owner())
+    {
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
+           << " Dof(g): " << mnode->Dofs()[fd%dim] << endl;
+    }*/
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-6;
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      FriNode* kcnode = static_cast<FriNode*>(knode);
+
+      // store gap-values into newG
+      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
+
+      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
+      {
+         double finit = (newW[k]-refW[k])/delta;
+         double analy = kcnode->CoData().GetDerivW()[mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivw=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << endl;
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+//    if (w>0)
+//      dserror("WARNING!!!");
+  }
+
+  // back to normal...
+  Initialize();
+  Evaluate();
+
+  // write the init. wear back into the node
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    cnode->FriDataPlus().Wear()=refW[i];
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | Finite difference check for normal gap derivatives         popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckGapDeriv()
@@ -1807,48 +2233,48 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
 
-    if (cnode->Active())
-    {
-      // check two versions of weighted gap
-      double defgap = 0.0;
-      double wii = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-
-      for (int j=0;j<dim;++j)
-        defgap-= (cnode->MoData().n()[j])*wii*(cnode->xspatial()[j]);
-
-      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
-      std::map<int,double>::iterator mcurr;
-
-      for (int m=0;m<mnodefullmap->NumMyElements();++m)
-      {
-        int gid = mnodefullmap->GID(m);
-        DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cmnode = static_cast<CoNode*>(mnode);
-        const int* mdofs = cmnode->Dofs();
-        bool hasentry = false;
-
-        // look for this master node in M-map of the active slave node
-        for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
-          if ((mcurr->first)==mdofs[0])
-          {
-            hasentry=true;
-            break;
-          }
-
-        double mik = (mmap[0])[mdofs[0]];
-        double* mxi = cmnode->xspatial();
-
-        // get out of here, if master node not adjacent or coupling very weak
-        if (!hasentry || abs(mik)<1.0e-12) continue;
-
-        for (int j=0;j<dim;++j)
-          defgap+= (cnode->MoData().n()[j]) * mik * mxi[j];
-      }
-
-      //std::cout << "SNode: " << cnode->Id() << " IntGap: " << cnode->CoData().Getg() << " DefGap: " << defgap << endl;
-      //cnode->CoData().Getg = defgap;
-    }
+//    if (cnode->Active())
+//    {
+//      // check two versions of weighted gap
+//      double defgap = 0.0;
+//      double wii = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
+//
+//      for (int j=0;j<dim;++j)
+//        defgap-= (cnode->MoData().n()[j])*wii*(cnode->xspatial()[j]);
+//
+//      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
+//      std::map<int,double>::iterator mcurr;
+//
+//      for (int m=0;m<mnodefullmap->NumMyElements();++m)
+//      {
+//        int gid = mnodefullmap->GID(m);
+//        DRT::Node* mnode = idiscret_->gNode(gid);
+//        if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+//        CoNode* cmnode = static_cast<CoNode*>(mnode);
+//        const int* mdofs = cmnode->Dofs();
+//        bool hasentry = false;
+//
+//        // look for this master node in M-map of the active slave node
+//        for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
+//          if ((mcurr->first)==mdofs[0])
+//          {
+//            hasentry=true;
+//            break;
+//          }
+//
+//        double mik = (mmap[0])[mdofs[0]];
+//        double* mxi = cmnode->xspatial();
+//
+//        // get out of here, if master node not adjacent or coupling very weak
+//        if (!hasentry || abs(mik)<1.0e-12) continue;
+//
+//        for (int j=0;j<dim;++j)
+//          defgap+= (cnode->MoData().n()[j]) * mik * mxi[j];
+//      }
+//
+//      //std::cout << "SNode: " << cnode->Id() << " IntGap: " << cnode->CoData().Getg() << " DefGap: " << defgap << endl;
+//      //cnode->CoData().Getg = defgap;
+//    }
 
     // store gap-values into refG
     refG[i]=cnode->CoData().Getg();
@@ -1910,48 +2336,48 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = static_cast<CoNode*>(knode);
 
-      if (kcnode->Active())
-      {
-        // check two versions of weighted gap
-        double defgap = 0.0;
-        double wii = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-
-        for (int j=0;j<dim;++j)
-          defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
-
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::map<int,double>::iterator mcurr;
-
-        for (int m=0;m<mnodefullmap->NumMyElements();++m)
-        {
-          int gid = mnodefullmap->GID(m);
-          DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
-          CoNode* cmnode = static_cast<CoNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
-          bool hasentry = false;
-
-          // look for this master node in M-map of the active slave node
-          for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
-            if ((mcurr->first)==mdofs[0])
-            {
-              hasentry=true;
-              break;
-            }
-
-          double mik = (mmap[0])[mdofs[0]];
-          double* mxi = cmnode->xspatial();
-
-          // get out of here, if master node not adjacent or coupling very weak
-          if (!hasentry || abs(mik)<1.0e-12) continue;
-
-          for (int j=0;j<dim;++j)
-            defgap+= (kcnode->MoData().n()[j]) * mik * mxi[j];
-        }
-
-        //std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << endl;
-        //kcnode->CoData().Getg = defgap;
-      }
+//      if (kcnode->Active())
+//      {
+//        // check two versions of weighted gap
+//        double defgap = 0.0;
+//        double wii = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
+//
+//        for (int j=0;j<dim;++j)
+//          defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
+//
+//        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
+//        std::map<int,double>::iterator mcurr;
+//
+//        for (int m=0;m<mnodefullmap->NumMyElements();++m)
+//        {
+//          int gid = mnodefullmap->GID(m);
+//          DRT::Node* mnode = idiscret_->gNode(gid);
+//          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+//          CoNode* cmnode = static_cast<CoNode*>(mnode);
+//          const int* mdofs = cmnode->Dofs();
+//          bool hasentry = false;
+//
+//          // look for this master node in M-map of the active slave node
+//          for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
+//            if ((mcurr->first)==mdofs[0])
+//            {
+//              hasentry=true;
+//              break;
+//            }
+//
+//          double mik = (mmap[0])[mdofs[0]];
+//          double* mxi = cmnode->xspatial();
+//
+//          // get out of here, if master node not adjacent or coupling very weak
+//          if (!hasentry || abs(mik)<1.0e-12) continue;
+//
+//          for (int j=0;j<dim;++j)
+//            defgap+= (kcnode->MoData().n()[j]) * mik * mxi[j];
+//        }
+//
+//        //std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << endl;
+//        //kcnode->CoData().Getg = defgap;
+//      }
 
       // store gap-values into newG
       newG[k]=kcnode->CoData().Getg();
@@ -2836,8 +3262,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==snode->Owner())
     {
-      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
-           << " Dof: " << snode->Dofs()[fd%3] << endl;
+      //std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
+      //     << " Dof: " << snode->Dofs()[fd%3] << endl;
     }
 
     // do step forward (modify nodal displacement)
@@ -2928,7 +3354,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
         //std::cout << "Ref-G: " << refG[k] << endl;
         //std::cout << "New-G: " << newG[k] << endl;
         std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
@@ -2940,7 +3366,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       // print results (derivatives) to screen
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
         //std::cout << "Ref-G: " << refG[k] << endl;
         //std::cout << "New-G: " << newG[k] << endl;
         std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;
@@ -2981,8 +3407,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     // apply finite difference scheme
     if (Comm().MyPID()==mnode->Owner())
     {
-      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
-           << " Dof: " << mnode->Dofs()[fd%3] << endl;
+      //std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
+      //     << " Dof: " << mnode->Dofs()[fd%3] << endl;
     }
 
     // do step forward (modify nodal displacement)
@@ -3073,7 +3499,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
         //std::cout << "Ref-G: " << refG[k] << endl;
         //std::cout << "New-G: " << newG[k] << endl;
         std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << endl;
@@ -3085,7 +3511,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
       // print results (derivatives) to screen
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
+        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
         //std::cout << "Ref-G: " << refG[k] << endl;
         //std::cout << "New-G: " << newG[k] << endl;
         std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << endl;

@@ -270,6 +270,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     Teuchos::RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
     Teuchos::RCP<LINALG::SparseMatrix> pmatrix_; // global Matrix P containing tangent derivatives
 
+    Teuchos::RCP<LINALG::SparseMatrix> wlinmatrix_;   // global Matrix Wg containing wear-lm derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> wlinmatrixsl_; // global Matrix Wsl containing wear-lm slip derivatives
+
+
     Teuchos::RCP<Epetra_Vector> fs_;          // slave side effective forces (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> invd_; // inverse of Mortar matrix D (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> ksn_;  // stiffness block K_sn (needed for LM)

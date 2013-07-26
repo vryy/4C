@@ -41,6 +41,13 @@ Maintainer: Alexander Popp
 #define CONTACT_DEFINES_H
 
 /************************************************************************/
+/* Wear algorithm options                                               */
+/************************************************************************/
+//#define WEARIMPLICIT              /* flag for implicit wear algorithm including linearizations*/
+//#define WEARIMPLICITFD            /* flag for FD-check w.r.t. disp. */
+//#define WEARIMPLICITFDLM          /* flag for FD-check w.r.t. lm-mult. */
+
+/************************************************************************/
 /* Contact algorithm options                                            */
 /************************************************************************/
 

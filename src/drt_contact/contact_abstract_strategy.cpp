@@ -939,9 +939,30 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
 #endif // #ifdef CONTACTFDMORTARM
   }
 
+  // *********************************************************************************
   // modify gap vector towards wear, only if no structure with ale is applied
+  // This additional gap is also required for an implicit ALE-wear algorithm !!!
+  // THIS IS THE EXPLICIT WEAR ALGORITHM
+  // wearvector_ only updated at the end of a time step --> this newton-step-wise
+  // update is not elegant!
+  // *********************************************************************************
   if (wear_ and DRT::Problem::Instance()->ProblemType()!=prb_struct_ale)
     g_->Update(1.0,*wearvector_,1.0);
+  else
+  {
+    if (wear_)
+    {
+#ifdef WEARIMPLICIT
+      // update the gap function with the current wear increment
+      // this is for the implicit wear algorithm
+      // we have to update the wear-increment in every newton-step and not just
+      // after a time step!
+      StoreNodalQuantities(MORTAR::StrategyBase::wear);
+      if (wear_) interface_[0]->AssembleWear(*wearvector_);
+      g_->Update(1.0,*wearvector_,1.0);
+#endif
+    }
+  }
 
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();

@@ -706,6 +706,13 @@ void CONTACT::CoInterface::Initialize()
     cnode->CoData().Getg() = 1.0e12;
     (cnode->CoData().GetDerivG()).clear();
     
+#ifdef WEARIMPLICIT
+    // reset weighted wear increment and derivative
+    // only for implicit wear algorithm
+    (cnode->CoData().GetDerivW()).clear();
+    (cnode->CoData().GetDerivWlm()).clear();
+#endif
+
     // reset derivative map of lagrange multipliers
     for (int j=0; j<(int)((cnode->CoData().GetDerivZ()).size()); ++j)
       (cnode->CoData().GetDerivZ())[j].clear();
@@ -735,6 +742,13 @@ void CONTACT::CoInterface::Initialize()
       {  
         // reset wear increment
         frinode->FriDataPlus().DeltaWear() = 0.0;
+
+#ifdef WEARIMPLICIT
+        // reset abs. wear. 
+        // for impl. wear algor. the abs. wear equals the 
+        // delta-wear
+        frinode->FriDataPlus().Wear() = 0.0;
+#endif
       }
     }
   }
@@ -1420,6 +1434,12 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
 
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
+
+#ifdef WEARIMPLICIT
+		// wear as internal state variable --> additional gap
+    gap += cnode->FriDataPlus().Wear();
+#endif
+
     int dim = cnode->NumDof();
 
     // compute normal part of Lagrange multiplier
@@ -2868,7 +2888,148 @@ void CONTACT::CoInterface::AssembleT(LINALG::SparseMatrix& tglobal)
 }
 
 /*----------------------------------------------------------------------*
+ |  Assemble matrix W_lm containing wear w~ derivatives      farah 07/13|
+ |  w.r.t. lm                                                           |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleLinWLm(LINALG::SparseMatrix& sglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // nothing to do if no active nodes
+  if (activenodes_==Teuchos::null)
+    return;
+
+  // loop over all active slave nodes of the interface
+  for (int i=0;i<activenodes_->NumMyElements();++i) //(int i=0;i<activenodes_->NumMyElements();++i)
+  {
+    int gid = activenodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleWLm: Node ownership inconsistency!");
+
+    // prepare assembly
+    std::map<int,double>& dwmap = cnode->CoData().GetDerivWlm();
+    std::map<int,double>::iterator colcurr;
+    int row = activen_->GID(i);
+
+    for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
+    {
+      int col = colcurr->first;
+      double val = colcurr->second;
+      //std::cout << "Assemble S: " << row << " " << col << " " << val << endl;
+      // do not assemble zeros into s matrix
+
+      //cout << "val= " << val << "   row= " << row << "   col= " << col << endl;
+
+      if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+    }
+
+  } //for (int i=0;i<activenodes_->NumMyElements();++i)
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble matrix W_lmsl containing wear w~ derivatives      farah 07/13|
+ |  w.r.t. lm  --> for slip                                                         |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // nothing to do if no slip nodes
+  if (slipnodes_->NumMyElements()==0)
+    return;
+
+  // get input params
+  double frcoeff = IParams().get<double>("FRCOEFF");
+  double ct = IParams().get<double>("SEMI_SMOOTH_CT");
+  double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+
+  // loop over all active slave nodes of the interface
+  for (int i=0;i<slipnodes_->NumMyElements();++i)
+  {
+    int gid = slipnodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+
+    // prepare assembly, get information from node
+    std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
+    std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
+    //std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+    std::map<int,double>& dwmap = cnode->CoData().GetDerivWlm();
+
+    double* jump = cnode->FriData().jump();
+    double* n = cnode->MoData().n();
+    double* txi = cnode->CoData().txi();
+    //double* teta = cnode->CoData().teta();
+    double* z = cnode->MoData().lm();
+    //double& wgap = cnode->CoData().Getg();
+
+
+    // iterator for maps
+    std::map<int,double>::iterator colcurr;
+
+    // row number of entries
+    std::vector<int> row (Dim()-1);
+    if (Dim()==2)
+    {
+      row[0] = slipt_->GID(i);
+    }
+    else if (Dim()==3)
+    {
+      row[0] = slipt_->GID(2*i);
+      row[1] = slipt_->GID(2*i)+1;
+    }
+    else
+      dserror("ERROR: AssemblelinSlip: Dimension not correct");
+
+    // evaluation of specific components of entries to assemble
+    double znor = 0;
+    double ztxi = 0;
+    //double zteta = 0;
+    double jumptxi = 0;
+    //double jumpteta = 0;
+    //double euclidean = 0;
+    for (int i=0;i<Dim();i++)
+    {
+      znor += n[i]*z[i];
+      ztxi += txi[i]*z[i];
+      //zteta += teta[i]*z[i];
+      jumptxi += txi[i]*jump[i];
+      //jumpteta += teta[i]*jump[i];
+    }
+
+    // loop over all entries of the current derivative map
+    for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
+    {
+      int col = colcurr->first;
+      double valtxi = frcoeff*cn*(colcurr->second)*(ztxi+ct*jumptxi);
+      //double valteta = frcoeff*cn*(colcurr->second)*(zteta+ct*jumpteta);
+
+      // do not assemble zeros into matrix
+      if (abs(valtxi)>1.0e-12) sglobal.Assemble(valtxi,row[0],col);
+      //if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Assemble matrix S containing gap g~ derivatives           popp 02/09|
+ |  PS: "AssembleS" is an outdated name which could make                |
+ |  you confused.                                                       |
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 {
@@ -2904,6 +3065,23 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
       // do not assemble zeros into s matrix
       if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
     }
+
+    /*************************************************************************
+     * Wear implicit linearization   --> obviously, we need a new linear.    *
+     *************************************************************************/
+#ifdef WEARIMPLICIT
+    // prepare assembly
+    std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
+
+    for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
+    {
+      int col = colcurr->first;
+      double val = colcurr->second;
+      //std::cout << "Assemble S: " << row << " " << col << " " << val << endl;
+      // do not assemble zeros into s matrix
+      if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+    }
+#endif
 
   } //for (int i=0;i<activenodes_->NumMyElements();++i)
 
@@ -3608,6 +3786,11 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double* z = cnode->MoData().lm();
       double& wgap = cnode->CoData().Getg();
 
+#ifdef WEARIMPLICIT
+			// wear as internal state variable --> additional gap
+      wgap += cnode->FriDataPlus().Wear();
+#endif
+
       // iterator for maps
       std::map<int,double>::iterator colcurr;
 
@@ -4101,6 +4284,25 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
             if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
           }
+
+          /*************************************************************************
+           * Wear implicit linearization w.r.t. displ.                                          *
+           *************************************************************************/
+#ifdef WEARIMPLICIT
+          std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
+
+          // loop over all entries of the current derivative map
+          for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
+          {
+            int col = colcurr->first;
+            double valtxi = frcoeff*cn*(colcurr->second)*(ztxi+ct*jumptxi);
+            double valteta = frcoeff*cn*(colcurr->second)*(zteta+ct*jumpteta);
+
+            // do not assemble zeros into matrix
+            if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
+            if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+          }
+#endif
         } // if (frcoeff==0.0)
       } // if (frictionlessandfirst == false)
     } // loop over all slip nodes of the interface

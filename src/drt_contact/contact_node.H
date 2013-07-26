@@ -130,7 +130,6 @@ public:
   */
   virtual double& Getg() { return grow_; }
 
-
   /*!
   \brief Return the 'D' map (vector) of this node
   */
@@ -236,6 +235,25 @@ public:
   virtual std::map<int,double>& GetDerivG() { return derivg_; }
 
   /*!
+  \brief Return the 'DerivW' map of this node
+
+  This map contains the directional derivatives of the node's
+  weighted wear increment entry w~ with respect to the slave/master displacements.
+
+  */
+  virtual std::map<int,double>& GetDerivW() { return derivw_; }
+
+
+  /*!
+  \brief Return the 'DerivW' map of this node
+
+  This map contains the directional derivatives of the node's
+  weighted wear increment entry w~ with respect to the lagr. mult.
+
+  */
+  virtual std::map<int,double>& GetDerivWlm() { return derivw_lm_; }
+
+  /*!
   \brief Return scaling factor for weighted gap
 
   Note: This is only calculated when performing a penalty strategy
@@ -273,6 +291,8 @@ protected:
   std::map<int,std::map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
   std::map<int,std::map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
   std::map<int,double>                    derivg_;     // directional derivative of nodal weighted gap value
+  std::map<int,double>                    derivw_;     // directional derivative of nodal weighted wear value
+  std::map<int,double>                    derivw_lm_;  // directional derivative of nodal weighted wear value
 
   // Penalty-related quantities
   double                                  kappa_;      // gap-scaling factor kappa

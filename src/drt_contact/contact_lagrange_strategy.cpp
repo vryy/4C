@@ -75,6 +75,15 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   // (re)setup global matrix containing gap derivatives
   smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
 
+
+#ifdef WEARIMPLICIT
+  // create matrices for implicite wear: these matrices are due to
+  // the gap-change in the compl. fnc.
+  // Here are only the lin. w.r.t. the lagr. mult.
+  wlinmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  wlinmatrixsl_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
+#endif
+
   // further terms depend on friction case
   // (re)setup global matrix containing "no-friction"-derivatives
   if (!friction_)
@@ -135,6 +144,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);
     interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
+
+#ifdef WEARIMPLICIT
+    // assemble wear-specific matrices
+    interface_[i]->AssembleLinWLm(*wlinmatrix_);
+    interface_[i]->AssembleLinWLmSl(*wlinmatrixsl_);
+#endif
   }
 
   // FillComplete() global matrix T
@@ -142,6 +157,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
 
   // FillComplete() global matrix S
   smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
+
+#ifdef WEARIMPLICIT
+  // complete wear-specific matrices
+  wlinmatrix_->Complete(*gsdofrowmap_,*gactiven_);
+  wlinmatrixsl_->Complete(*gsdofrowmap_,*gslipt_);
+#endif
 
   // FillComplete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
@@ -981,7 +1002,27 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       feff->Update(alphaf_,*fmoldexp,1.0);
     }
   }
-    
+#ifdef WEARIMPLICITFDLM
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckWearDerivLm();
+  }
+#endif
+
+#ifdef WEARIMPLICITFD
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckWearDeriv();
+  }
+#endif
+
+#ifdef CONTACTFDGAP
+  // FD check of weighted gap g derivatives (non-penetr. condition)
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckGapDeriv();
+  }
+#endif // #ifdef CONTACTFDGAP
 
 #ifdef CONTACTFDSTICK
 
@@ -999,8 +1040,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       deriv2->Add(*linstickDIS_,false,1.0,1.0);
       deriv2->Complete(*gsmdofrowmap_,*gactivet_);
 
-      std::cout << *deriv1 << endl;
-      std::cout << *deriv2 << endl;
+      std::cout << "DERIV 1 *********** "<< *deriv1 << endl;
+      std::cout << "DERIV 2 *********** "<< *deriv2 << endl;
 
       interface_[i]->FDCheckStickDeriv();
     }
@@ -2582,12 +2623,18 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     ones->PutScalar(1.0);
     Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
     onesdiag->Complete();
-    
+
     // build constraint matrix kzz
     Teuchos::RCP<LINALG::SparseMatrix> kzz = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
     if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
     if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_,false,1.0,1.0);
     if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
+
+#ifdef WEARIMPLICIT
+    // add C-fnc. derivatives w.r.t. lm-values to kzz
+    if (gactiven_->NumGlobalElements()) kzz->Add(*wlinmatrix_,false,1.0,1.0);
+    if (gslipt_->NumGlobalElements()) kzz->Add(*wlinmatrixsl_,false,1.0,1.0);
+#endif
     kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
     
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
@@ -2646,6 +2693,30 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     Teuchos::RCP<Epetra_Vector> slipexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*linslipRHS_,*slipexp);
     
+#ifdef WEARIMPLICIT
+    // WEAR LIN. W.R.T. Z *****************************************************
+    // for normal contact
+    if (gactiven_->NumGlobalElements())
+    {
+      Teuchos::RCP<Epetra_Vector> fw = Teuchos::rcp(new Epetra_Vector(*gactiven_));
+      wlinmatrix_->Multiply(false,*z_,*fw);
+      Teuchos::RCP<Epetra_Vector> fwexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+      LINALG::Export(*fw,*fwexp);
+      constrrhs->Update(1.0,*fwexp,1.0);
+    }
+
+    // WEAR LIN. W.R.T. Z *****************************************************
+    // for slip contact
+    if (gslipt_->NumGlobalElements())
+    {
+      Teuchos::RCP<Epetra_Vector> fwsl = Teuchos::rcp(new Epetra_Vector(*gslipt_));
+      wlinmatrixsl_->Multiply(false,*z_,*fwsl);
+      Teuchos::RCP<Epetra_Vector> fwexpsl = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+      LINALG::Export(*fwsl,*fwexpsl);
+      constrrhs->Update(1.0,*fwexpsl,1.0);
+    }
+#endif
+
     // build constraint rhs
     constrrhs->Update(-1.0,*gactexp,1.0);
     constrrhs->Update(1.0,*stickexp,1.0);

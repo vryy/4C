@@ -30,6 +30,7 @@ Maintainer: Markus Gitterle
 #include "../drt_ale/ale.H"
 #include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_node.H"
+#include "../drt_contact/contact_defines.H"
 #include "../drt_structure/stru_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -242,8 +243,13 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   // 2. compute the non-weighted wear vector
   // FIX: This should be done in a different way
   //***********************************************************************
+#ifdef WEARIMPLICIT
+  cstrategy.OutputWear();
+#else
   cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::wear);
   cstrategy.OutputWear();
+#endif
+
 
   // dimension of the problem
   int dim = strategy.Dim();
@@ -500,8 +506,8 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
   // error if element is not found
   if (found == false)
   {
-    cout << "coords: " << *XMat1 << "   " << *XMat2 << "   " << *XMat3 << endl;
-    cout << "STRU_ALE::Algorithm::AdvectionMap: Particle tracking not successful." << endl;
+    //cout << "coords: " << *XMat1 << "   " << *XMat2 << "   " << *XMat3 << endl;
+    //cout << "STRU_ALE::Algorithm::AdvectionMap: Particle tracking not successful." << endl;
   }
   // bye
   return;
