@@ -118,6 +118,7 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
     {
       // Read in of data
       ReadFiber1(linedef);
+      SetupStructuralTensor(a_,A_);
     }
 
     // error path
@@ -129,8 +130,6 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
   }
   else
     dserror("INIT mode not implemented");
-
-  SetupStructuralTensor(a_,A_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -284,4 +283,6 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(
 
   a_0.Multiply(idefgrd,ca);
   a_.Update(1./a_0.Norm2(),a_0);
+
+  SetupStructuralTensor(a_,A_);
 }

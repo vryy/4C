@@ -159,6 +159,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinit
     {
       // Read in of fiber data and setting fiber data
       ReadFiber1(linedef);
+      SetupStructuralTensor(a_,A_);
     }
 
     // error path
@@ -170,8 +171,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinit
   }
   else
     dserror("INIT mode not implemented");
-
-  SetupStructuralTensor(a_,A_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -318,4 +317,5 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::SetFiberVecs(
   a_0.Multiply(idefgrd,ca);
   a_.Update(1./a_0.Norm2(),a_0);
 
+  SetupStructuralTensor(a_,A_);
 }

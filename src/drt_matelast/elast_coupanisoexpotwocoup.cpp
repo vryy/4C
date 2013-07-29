@@ -127,6 +127,9 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
     {
       // Read in of fiber data and setting fiber data
       ReadFiber12(linedef);
+      SetupStructuralTensor(a1_,A1_);
+      SetupStructuralTensor(a2_,A2_);
+      A1A2_.MultiplyNT(a1_,a2_);
     }
 
     // error path
@@ -138,10 +141,6 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
   }
   else
     dserror("INIT mode not implemented");
-
-  SetupStructuralTensor(a1_,A1_);
-  SetupStructuralTensor(a2_,A2_);
-  A1A2_.MultiplyNT(a1_,a2_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -344,4 +343,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(
   a2_0.Multiply(idefgrd,ca2);
   a2_.Update(1./a2_0.Norm2(),a2_0);
 
+  SetupStructuralTensor(a1_,A1_);
+  SetupStructuralTensor(a2_,A2_);
+  A1A2_.MultiplyNT(a1_,a2_);
 }
