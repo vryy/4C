@@ -715,6 +715,49 @@ namespace UTILS {
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
+  /// special implementation for controlled rotations
+  class ControlledRotationFunction : public Function
+  {
+  public:
+
+    /// ctor
+    ControlledRotationFunction(std::string fileName, std::string type);
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  private:
+    // Condition type: STRUCTURE=1, FLUID=2
+    int type_;
+
+    // Time of previous time step (at t-deltaT)
+    double timeOld_;
+
+    // Time step size
+    double deltaT_;
+
+    // Number of maneuver cells (variables)
+    const int NUMMANEUVERCELLS_;
+
+    // Number of maneuvers
+    int numManeuvers_;
+
+    // Double Vector containing maneuver information (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
+    std::vector<double> maneuvers_;
+
+    // Previous angular acceleration (at t-deltaT)
+    LINALG::Matrix<3,1> omegaDotOld_B_;
+
+    // Current angular rate (at t)
+    LINALG::Matrix<3,1> omega_B_;
+
+    // Satellite's current attitude trafo matrix from B- to I-system (at t)
+    LINALG::Matrix<3,3> satAtt_dcm_IB_;
+
+    // Satellite's current attitude quaternion from B- to I-system (at t)
+    LINALG::Matrix<4,1> satAtt_q_IB_;
+  };
+
 }
 }
 
@@ -937,6 +980,14 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("LEVELSETCUTTEST")
     ;
 
+  DRT::INPUT::LineDefinition controlledrotation;
+  controlledrotation
+    .AddNamedInt("FUNCT")
+    .AddTag("CONTROLLEDROTATION")
+    .AddNamedString("FILE")
+    .AddNamedString("TYPE")
+    ;
+
   DRT::INPUT::LineDefinition componentexpr;
   componentexpr
     .AddNamedInt("FUNCT")
@@ -983,6 +1034,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(oraclesgfunc);
   lines->Add(rotatingcone);
   lines->Add(levelsetcuttest);
+  lines->Add(controlledrotation);
   lines->Add(componentexpr);
   lines->Add(expr);
   return lines;
@@ -1303,6 +1355,16 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("LEVELSETCUTTEST"))
       {
         functions_.push_back(Teuchos::rcp(new LevelSetCutTestFunction()));
+      }
+      else if (function->HaveNamed("CONTROLLEDROTATION"))
+      {
+          std::string fileName;
+          function->ExtractString("FILE", fileName);
+
+          std::string type;
+          function->ExtractString("TYPE", type);
+
+          functions_.push_back(Teuchos::rcp(new ControlledRotationFunction(fileName, type)));
       }
       else if (function->HaveNamed("EXPR"))
       {
@@ -3573,4 +3635,250 @@ double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp
   else
    dserror("this node does not exist");
   return phi;
+}
+
+/*----------------------------------------------------------------------*
+ | Constructor of ControlledRotation                         hahn 04/13 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(std::string fileName, std::string type) :
+Function(), NUMMANEUVERCELLS_(4)
+{
+    // Initialize variables
+    // *****************************************************************************
+
+    // Initialize condition type
+    if (type == "STRUCTURE") {    // structure
+        type_ = 1;
+    } else if (type == "FLUID") { // fluid
+        type_ = 2;
+    } else {
+        dserror("When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or 'FLUID'");
+    }
+
+    // Initialize time of previous time step (at t-deltaT)
+    timeOld_ = 0.0;
+
+    // Initialize time step size
+    deltaT_ = 0.0;
+
+    // Initialize previous angular acceleration (at t-deltaT)
+    omegaDotOld_B_(0,0) = 0;
+    omegaDotOld_B_(1,0) = 0;
+    omegaDotOld_B_(2,0) = 0;
+
+    // Current angular rate (at t)
+    omega_B_(0,0) = 0;
+    omega_B_(1,0) = 0;
+    omega_B_(2,0) = 0;
+
+    // Initialize satellite's current attitude trafo matrix from B- to I-system (at t)
+    satAtt_dcm_IB_(0,0) = 1.0; satAtt_dcm_IB_(0,1) = 0.0; satAtt_dcm_IB_(0,2) = 0.0;
+    satAtt_dcm_IB_(1,0) = 0.0; satAtt_dcm_IB_(1,1) = 1.0; satAtt_dcm_IB_(1,2) = 0.0;
+    satAtt_dcm_IB_(2,0) = 0.0; satAtt_dcm_IB_(2,1) = 0.0; satAtt_dcm_IB_(2,2) = 1.0;
+
+    // Initialize satellite's current attitude quaternion from B- to I-system (at t)
+    satAtt_q_IB_(0,0) = 0;
+    satAtt_q_IB_(1,0) = 0;
+    satAtt_q_IB_(2,0) = 0;
+    satAtt_q_IB_(3,0) = 1;
+
+    // Initialize maneuvers
+    maneuvers_.clear();
+
+    // Read maneuver file and fill maneuvers variable
+    // *****************************************************************************
+
+    std::string line;
+    std::stringstream lineStream;
+    std::string cell;
+
+    // Open file
+    std::ifstream file (fileName.c_str());
+    if (!file.is_open()) {
+        dserror("Unable to open file: %s", fileName.c_str());
+    }
+
+    // Loop through all lines
+    while (getline (file,line)) {
+        if (!line.empty()) {
+            // Clear local variables
+            lineStream.clear();
+            cell.clear();
+
+            // Obtain all numManeuverCells=4 values from current line (t, omegaDot_x_B, omegaDot_y_B, omegaDot_z_B)
+            lineStream << line;
+            for (int i=0; i<NUMMANEUVERCELLS_; i++) {
+                // Obtain i-th cell from current line
+                getline(lineStream, cell, ' ');
+
+                // If empty cell, than either empty line or one cell in the line
+                // missing, anyhow an error.
+                if (cell.empty()) {
+                    dserror("Error during reading of file: %s", fileName.c_str());
+                }
+
+                // Convert input cell from string to double
+                double cellDouble = (double)strtod(cell.c_str(), NULL);
+
+                // Add cell to maneuvers vector
+                maneuvers_.push_back(cellDouble);
+            }
+        }
+    }
+
+    // Close file
+    file.close();
+
+    // Determine number of maneuvers
+    numManeuvers_ = (int)(maneuvers_.size()) / (int)NUMMANEUVERCELLS_;
+
+    // Output maneuver list
+    printf("\n=================================================================================\n");
+    printf("ControlledRotation - %s\n", type.c_str());
+    printf("---------------------------------------------------------------------------------\n");
+    printf("The following %d maneuvers have been loaded from file %s:\n", numManeuvers_, fileName.c_str());
+    for (int i=0; i<numManeuvers_; i++) {
+        printf("Time: %e  OmegaDot_B: %e, %e, %e \n",
+                maneuvers_[i*NUMMANEUVERCELLS_+0], maneuvers_[i*NUMMANEUVERCELLS_+1],
+                maneuvers_[i*NUMMANEUVERCELLS_+2], maneuvers_[i*NUMMANEUVERCELLS_+3]);
+    }
+    printf("=================================================================================\n\n");
+
+}
+
+/*----------------------------------------------------------------------*
+ | Evaluate ControlledRotation and return for structures the current    |
+ | displacement and for fluids the current velocity of the respective   |
+ | node for the given index.                                 hahn 04/13 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+    // Determine time difference
+    double deltaT = t - timeOld_;
+
+    // If new time step, apply angular acceleration (if desired) and determine
+    // new attitude satAtt_dcm_IB_
+    // *****************************************************************************
+    if (deltaT > 1e-9) { // new time step
+
+        // Determine current angular acceleration (at t)
+        // -----------------------------------------------------------------------------
+        LINALG::Matrix<3,1> omegaDot_B;
+        omegaDot_B(0,0) = 0.0;
+        omegaDot_B(1,0) = 0.0;
+        omegaDot_B(2,0) = 0.0;
+
+        for (int i=0; i<numManeuvers_; i++) {
+            if (t >= maneuvers_[i*NUMMANEUVERCELLS_+0]) {
+                omegaDot_B(0,0) = maneuvers_[i*NUMMANEUVERCELLS_+1];
+                omegaDot_B(1,0) = maneuvers_[i*NUMMANEUVERCELLS_+2];
+                omegaDot_B(2,0) = maneuvers_[i*NUMMANEUVERCELLS_+3];
+            }
+        }
+
+        // Calculate current angular rate (at t) by integration
+        // of angular acceleration (trapezoidal rule):
+        // omega_(t) = deltaT * (omegaDotOld + omegaDot) / 2 + omega_(t-deltaT)
+        // -----------------------------------------------------------------------------
+        LINALG::Matrix<3,1> deltaOmega;
+        deltaOmega.Update(omegaDotOld_B_, omegaDot_B); // 1) deltaOmega <- omegaDotOld_ + omegaDot
+        deltaOmega.Scale(deltaT/2.0);                  // 2) deltaOmega <- deltaOmega * deltaT / 2.0
+        omega_B_ += deltaOmega;                        // 3) omega_ <- omega_ + deltaOmega
+
+        /* // Debugging output
+           cout << "omegaDot: "; omegaDot_B.Print(cout); // Print omegaDot_B
+           cout << "omega:    "; omega_B_.Print(cout);   // Print omega_B_
+        */
+
+        omegaDotOld_B_ = omegaDot_B; // Set omegaDotOld_B_ for next time step
+
+        // Calculate new attitude quaternion satAtt_q_IB_ [Wertz, p. 511f]
+        // -----------------------------------------------------------------------------
+        LINALG::Matrix<4,4> mOmega; // Skew-symmetric matrix containing angular velocity components
+        mOmega(0,0) =  0.0;           mOmega(0,1) =  omega_B_(2,0); mOmega(0,2) = -omega_B_(1,0); mOmega(0,3) = omega_B_(0,0);
+        mOmega(1,0) = -omega_B_(2,0); mOmega(1,1) =  0.0;           mOmega(1,2) =  omega_B_(0,0); mOmega(1,3) = omega_B_(1,0);
+        mOmega(2,0) =  omega_B_(1,0); mOmega(2,1) = -omega_B_(0,0); mOmega(2,2) =  0.0;           mOmega(2,3) = omega_B_(2,0);
+        mOmega(3,0) = -omega_B_(0,0); mOmega(3,1) = -omega_B_(1,0); mOmega(3,2) = -omega_B_(2,0); mOmega(3,3) = 0.0;
+
+        mOmega.Scale(deltaT/2.0);
+        mOmega(0,0) = 1.0;
+        mOmega(1,1) = 1.0;
+        mOmega(2,2) = 1.0;
+        mOmega(3,3) = 1.0;
+
+        satAtt_q_IB_.Multiply(mOmega, satAtt_q_IB_);
+
+        satAtt_q_IB_.Scale(1/satAtt_q_IB_.Norm2()); // Normalize attitude quaternion
+
+        // Create transformation matrix satAtt_dcm_IB_ [Wertz, (E-8)]
+        // -----------------------------------------------------------------------------
+        const double q1 = satAtt_q_IB_(0,0);
+        const double q2 = satAtt_q_IB_(1,0);
+        const double q3 = satAtt_q_IB_(2,0);
+        const double q4 = satAtt_q_IB_(3,0);
+
+        satAtt_dcm_IB_(0,0) = q1*q1-q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(0,1) = 2.0*(q1*q2-q3*q4);        satAtt_dcm_IB_(0,2) = 2.0*(q1*q3+q2*q4);
+        satAtt_dcm_IB_(1,0) = 2.0*(q1*q2+q3*q4);       satAtt_dcm_IB_(1,1) = -q1*q1+q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(1,2) = 2.0*(q2*q3-q1*q4);
+        satAtt_dcm_IB_(2,0) = 2.0*(q1*q3-q2*q4);       satAtt_dcm_IB_(2,1) = 2.0*(q2*q3+q1*q4);        satAtt_dcm_IB_(2,2) = -q1*q1-q2*q2+q3*q3+q4*q4;
+
+        // Update time step size
+        // -----------------------------------------------------------------------------
+        deltaT_ = deltaT;
+
+        // Update time of last time step
+        // -----------------------------------------------------------------------------
+        timeOld_ = t;
+    }
+
+    // Obtain the current node position in the inertial system
+    // *****************************************************************************
+    // NOTE: 1) Here it is assumed that the mesh is already given in the body system.
+    //       2) The inertial system used here has position and attitude of the body
+    //          system at initial time. Thus it is deviating from the ECI system J2000
+    //          at most by a constant displacement that is due to the satellite position
+    //          at initial time and a constant rotation that is due to the satellite's
+    //          attitude at initial time. Due to Galilei-invariance this shouldn't be
+    //          a problem and it can easily be converted to the J2000 system.
+
+    // Node reference position, given in the body system
+    LINALG::Matrix<3,1> nodeReferencePos_B;
+    nodeReferencePos_B(0,0) = xp[0];
+    nodeReferencePos_B(1,0) = xp[1];
+    nodeReferencePos_B(2,0) = xp[2];
+
+    // Node position, given in the inertial system
+    LINALG::Matrix<3,1> nodePos_I;
+    nodePos_I.Multiply(satAtt_dcm_IB_, nodeReferencePos_B);
+
+    // Calculate and return the displacement/velocity of the node for the given index
+    // *****************************************************************************
+
+    if (t<=0) {
+        // Return zero displacement/translational velocity of the node for the given index
+        return 0.0;
+    }
+
+    // Displacement of the node for the given index
+    const double dispNodePos_I = nodePos_I(index,0) - nodeReferencePos_B(index,0);
+
+    if (type_ == 1) { // structure
+
+        // Return the displacement of the node for the given index
+        return dispNodePos_I;
+
+    } else if (type_ == 2) { // fluid
+
+        // Node velocity, given in the inertial system: v = omega x r
+        double nodeVel_I[3];
+        nodeVel_I[0] = omega_B_(1,0) * nodePos_I(2,0) - omega_B_(2,0) * nodePos_I(1,0);
+        nodeVel_I[1] = omega_B_(2,0) * nodePos_I(0,0) - omega_B_(0,0) * nodePos_I(2,0);
+        nodeVel_I[2] = omega_B_(0,0) * nodePos_I(1,0) - omega_B_(1,0) * nodePos_I(0,0);
+
+        // Return the translational velocity of the node for the given index
+        return (nodeVel_I[index]);
+
+    } else {
+        dserror("When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or 'FLUID'");
+        return 0.0;
+    }
 }
