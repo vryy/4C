@@ -913,22 +913,22 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
       // **********************************************************************
       // (2) Lin. of dual shape function of LM mult.
-//      for (int i=0;i<nrow;++i)
-//      {
-//        for (int m=0;m<nrow;++m)
-//        {
-//          for (CI p=dualmap[i][m].begin();p!=dualmap[i][m].end();++p)
-//          {
-//            ddualgp_x[p->first] += (*lagmult)(0,m) *sval[m]*(p->second);
-//            ddualgp_y[p->first] += (*lagmult)(1,m) *sval[m]*(p->second);
-//            //ddualgp_z[p->first] += (*lagmult)(2,i) *sval[m]*(p->second);
-//          }
-//        }
-//      }
-//      for (CI p=ddualgp_x.begin();p!=ddualgp_x.end();++p)
-//        dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
-//      for (CI p=ddualgp_y.begin();p!=ddualgp_y.end();++p)
-//        dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
+      for (int i=0;i<nrow;++i)
+      {
+        for (int m=0;m<nrow;++m)
+        {
+          for (CI p=dualmap[i][m].begin();p!=dualmap[i][m].end();++p)
+          {
+            ddualgp_x[p->first] += (*lagmult)(0,m) *sval[m]*(p->second);
+            ddualgp_y[p->first] += (*lagmult)(1,m) *sval[m]*(p->second);
+            //ddualgp_z[p->first] += (*lagmult)(2,i) *sval[m]*(p->second);
+          }
+        }
+      }
+      for (CI p=ddualgp_x.begin();p!=ddualgp_x.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
+      for (CI p=ddualgp_y.begin();p!=ddualgp_y.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
 
 
       // LM deriv
@@ -1668,15 +1668,15 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
         dserror("Petrov-Galerkin approach is not provided for the implicit wear algorithm!");
 
       // (1) Lin(Phi) - dual shape functions resulting from weighting the wear
-//      if (ShapeFcn() == INPAR::MORTAR::shape_dual)
-//      {
-//        for (int m=0;m<nrow;++m)
-//        {
-//          facw = wcoeff*wgt*sval[m]*wearval*dsxideta*dxdsxi;
-//          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
-//            dwmap[p->first] += facw*(p->second);
-//        }
-//      }
+      if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+      {
+        for (int m=0;m<nrow;++m)
+        {
+          facw = wcoeff*wgt*sval[m]*wearval*dsxideta*dxdsxi;
+          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            dwmap[p->first] += facw*(p->second);
+        }
+      }
 
       // (2) Lin(Phi) - slave GP coordinates --> because of duality
       facw = wcoeff*wgt*lmderiv(j,0)*wearval*dsxideta*dxdsxi;

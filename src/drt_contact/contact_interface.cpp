@@ -2921,10 +2921,6 @@ void CONTACT::CoInterface::AssembleLinWLm(LINALG::SparseMatrix& sglobal)
     {
       int col = colcurr->first;
       double val = colcurr->second;
-      //std::cout << "Assemble S: " << row << " " << col << " " << val << endl;
-      // do not assemble zeros into s matrix
-
-      //cout << "val= " << val << "   row= " << row << "   col= " << col << endl;
 
       if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
     }
@@ -2935,8 +2931,8 @@ void CONTACT::CoInterface::AssembleLinWLm(LINALG::SparseMatrix& sglobal)
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix W_lmsl containing wear w~ derivatives      farah 07/13|
- |  w.r.t. lm  --> for slip                                                         |
+ |  Assemble matrix W_lmsl containing wear w~ derivatives    farah 07/13|
+ |  w.r.t. lm  --> for slip                                             |
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
 {
@@ -3020,7 +3016,6 @@ void CONTACT::CoInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
 
       // do not assemble zeros into matrix
       if (abs(valtxi)>1.0e-12) sglobal.Assemble(valtxi,row[0],col);
-      //if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
     }
   }
   return;
