@@ -87,7 +87,7 @@ namespace ELASTIC
   /// Strain energy function is given by:
   ///\f[
   ///   \Psi = \frac {a_4}{2 b_4} \left( e^{b_4 (IV_{\boldsymbol C} - 1)^2} - 1 \right) +
-  ///   \frac {a_6}{2 b_6} \left( e^{b_6 (VI_{\boldsymbol C} - 1)^2} - 1 \right) + \frac {a_8}{2 b_8} \left( e^{b_8 VIII_{\boldsymbol C}^2} - 1 \right)
+  ///   \frac {a_6}{2 b_6} \left( e^{b_6 (VI_{\boldsymbol C} - 1)^2} - 1 \right) + \frac {a_8}{2 b_8} \left( e^{b_8 \left( VIII_{\boldsymbol C} - a_0 \cdot b_0 \right)^2} - 1 \right)
   ///\f]
   ///
   /// <h3>References</h3>
@@ -192,6 +192,8 @@ namespace ELASTIC
     /// fiber directions
     LINALG::Matrix<3,1>  a1_;
     LINALG::Matrix<3,1>  a2_;
+    /// dot product fiber direction
+    double a1a2_;
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A1_;
     LINALG::Matrix<6,1>  A2_;

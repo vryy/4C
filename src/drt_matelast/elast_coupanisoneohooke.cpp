@@ -83,6 +83,9 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::UnpackSummand(const std::vector<char>& dat
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
 {
+  // warning message
+  std::cout<<"Material does not respect a stress free reference state"<<std::endl;
+
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
   {

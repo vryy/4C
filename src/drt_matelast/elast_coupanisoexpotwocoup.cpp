@@ -71,6 +71,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::PackSummand(DRT::PackBuffer& data) cons
 {
   AddtoPack(data,a1_);
   AddtoPack(data,a2_);
+  AddtoPack(data,a1a2_);
   AddtoPack(data,A1_);
   AddtoPack(data,A2_);
   AddtoPack(data,A1A2_);
@@ -84,6 +85,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(const std::vector<char>& 
 {
   ExtractfromPack(position,data,a1_);
   ExtractfromPack(position,data,a2_);
+  ExtractfromPack(position,data,a1a2_);
   ExtractfromPack(position,data,A1_);
   ExtractfromPack(position,data,A2_);
   ExtractfromPack(position,data,A1A2_);
@@ -141,6 +143,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
   }
   else
     dserror("INIT mode not implemented");
+
+  a1a2_=a1_(0)*a2_(0) + a1_(1)*a2_(1) + a1_(2)*a2_(2);
 }
 
 /*----------------------------------------------------------------------*/
@@ -183,14 +187,14 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(
   stress.Update(gamma, A1_, 1.0);
   gamma = 2.0 * A6 * (I6-1.0) * exp(B6 * (I6-1.0)*(I6-1.0));
   stress.Update(gamma, A2_, 1.0);
-  gamma = A8 * I8 * exp( B8*I8*I8);
+  gamma = A8 * (I8-a1a2_) * exp( B8*(I8-a1a2_)*(I8-a1a2_));
   stress.Update(gamma, A1A2sym, 1.0);
 
   double delta = 2.0 * (1.0 + 2.0*B4*(I4-1.0)*(I4-1.0)) * 2.0 * A4 * exp(B4*(I4-1.0)*(I4-1.0));
   cmat.MultiplyNT(delta, A1_, A1_, 1.0);
   delta = 2.0 * (1.0 + 2.0*B6*(I6-1.0)*(I6-1.0)) * 2.0 * A6 * exp(B6*(I6-1.0)*(I6-1.0));
   cmat.MultiplyNT(delta, A2_, A2_, 1.0);
-  delta = A8 * exp( B8*I8*I8)*(1 + 2.0 * B8*I8*I8);
+  delta = A8 * exp( B8*(I8-a1a2_)*(I8-a1a2_))*(1 + 2.0 * B8*(I8-a1a2_)*(I8-a1a2_));
   cmat.MultiplyNT(delta, A1A2sym, A1A2sym, 1.0);
 }
 
