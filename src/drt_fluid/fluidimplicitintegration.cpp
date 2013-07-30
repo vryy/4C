@@ -205,47 +205,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     dserror("Pressure map empty. Wrong DIM value in input file?");
 
   // -------------------------------------------------------------------
-  // setup Krylov space projection if necessary
-  // -------------------------------------------------------------------
-
-  // sysmat might be singular (if we have a purely Dirichlet constrained
-  // problem, the pressure mode is defined only up to a constant)
-  // in this case, we need a basis vector for the nullspace/kernel
-
-  // get condition "KrylovSpaceProjection" from discretization
-  std::vector<DRT::Condition*> KSPcond;
-  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-  int numcond = KSPcond.size();
-  int numfluid = 0;
-
-  DRT::Condition* kspcond = NULL;
-  // check if for fluid Krylov projection is required
-  for(int icond = 0; icond < numcond; icond++)
-  {
-    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
-    if (*name == "fluid")
-    {
-      numfluid++;
-      kspcond = KSPcond[icond];
-    }
-  }
-
-  // initialize variables for Krylov projection if necessary
-  if (numfluid == 1)
-  {
-    SetupKrylovSpaceProjection(kspcond);
-    if (myrank_ == 0)
-      cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << endl;
-  }
-  else if (numfluid == 0)
-  {
-    updateprojection_ = false;
-    projector_ = Teuchos::null;
-  }
-  else
-    dserror("Received more than one KrylovSpaceCondition for fluid field");
-
-  // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
   // additional rhs vector for robin-BC and vector for copying the residual
@@ -391,6 +350,47 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     blocksysmat->SetNumdim(numdim_);
     sysmat_ = blocksysmat;
   }
+
+  // -------------------------------------------------------------------
+  // setup Krylov space projection if necessary
+  // -------------------------------------------------------------------
+
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+
+  // get condition "KrylovSpaceProjection" from discretization
+  std::vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+
+  DRT::Condition* kspcond = NULL;
+  // check if for fluid Krylov projection is required
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid")
+    {
+      numfluid++;
+      kspcond = KSPcond[icond];
+    }
+  }
+
+  // initialize variables for Krylov projection if necessary
+  if (numfluid == 1)
+  {
+    SetupKrylovSpaceProjection(kspcond);
+    if (myrank_ == 0)
+      cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << endl;
+  }
+  else if (numfluid == 0)
+  {
+    updateprojection_ = false;
+    projector_ = Teuchos::null;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
 
   // -------------------------------------------------------------------
   // Initialize the reduced models
