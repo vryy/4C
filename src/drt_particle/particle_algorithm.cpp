@@ -701,25 +701,26 @@ void PARTICLE::Algorithm::TransferParticles()
       dserror("ERROR: A particle is assigned to more than one bin!");
 
     DRT::Element** currele = currparticle->Elements();
-    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-#ifdef DEBUG
-    if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
+    DRT::Element* currbin = currele[0];
+    // as checked above, there is only one element in currele array
+    int binId = currbin->Id();
 
-    int binId=currbin->Id();
-
-    //if a bin has already been examined --> continue with next particle
+    // if a bin has already been examined --> continue with next particle
     if( examinedBins.count(binId) == 1 )
     {
       continue;
     }
-    //else: bin is examined for the first time --> new entry in examinedBins
+    // else: bin is examined for the first time --> new entry in examinedBins
     else
     {
       examinedBins.insert(binId);
     }
 
     // now all particles in this bin are processed
+#ifdef DEBUG
+    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+#endif
     DRT::Node** particles = currbin->Nodes();
     std::vector<int> tobemoved(0);
     for(int iparticle=0; iparticle<currbin->NumNode(); iparticle++)
@@ -761,7 +762,7 @@ void PARTICLE::Algorithm::TransferParticles()
     // finally remove nodes from their old bin
     for(size_t iter=0; iter<tobemoved.size(); iter++)
     {
-      currbin->DeleteNode(tobemoved[iter]);
+      static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(tobemoved[iter]);
     }
 
   } // end for ibin
