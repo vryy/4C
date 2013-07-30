@@ -47,14 +47,6 @@ namespace STR
 class StruResultTest : public DRT::ResultTest
 {
 public:
-  //! constructor
-  StruResultTest(
-    Teuchos::RCP<DRT::Discretization> strudis_in,  //!< structure discretisation
-    Teuchos::RCP<Epetra_Vector> dis,  //!< displacements to test
-    Teuchos::RCP<Epetra_Vector> vel,  //!< velocities to test
-    Teuchos::RCP<Epetra_Vector> acc  //!< accelerations to test
-  );
-
   //! Constructor for time integrators of general kind
   //! \author bborn \date 06/08
   StruResultTest(STR::TimInt& tintegrator);

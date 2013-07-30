@@ -18,21 +18,7 @@ Maintainer: Alexander Popp
 #include "strtimint.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(Teuchos::RCP<DRT::Discretization> strudis_in,
-                               Teuchos::RCP<Epetra_Vector> dis,
-                               Teuchos::RCP<Epetra_Vector> vel,
-                               Teuchos::RCP<Epetra_Vector> acc)
-  : DRT::ResultTest("STRUCTURE")
-{
-  strudisc_ = strudis_in;
-  dis_ = dis;
-  vel_ = vel;
-  acc_ = acc;
-}
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -40,10 +26,14 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
   : DRT::ResultTest("STRUCTURE")
 {
   dis_  = tintegrator.Dis();
-  dism_ = tintegrator.Dismat();
   vel_  = tintegrator.Vel();
   acc_  = tintegrator.Acc();
   strudisc_ = tintegrator.Discretization();
+  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
+      (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+    dism_ = tintegrator.Dismat();
+  else
+    dism_=Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*/

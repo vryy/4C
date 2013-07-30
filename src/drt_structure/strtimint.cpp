@@ -146,6 +146,7 @@ STR::TimInt::TimInt
   vel_(Teuchos::null),
   acc_(Teuchos::null),
   disn_(Teuchos::null),
+  dismatn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
   fifc_(Teuchos::null),
@@ -212,8 +213,6 @@ STR::TimInt::TimInt
 
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
-  // material_displacements D_{n}
-  dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // accelerations A_{n}
@@ -222,10 +221,15 @@ STR::TimInt::TimInt
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*dofrowmap_, true);
 
-  // material displacements Dm_{n+1} at t_{n+1}
   if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
       (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+  {
+    // material displacements Dm_{n+1} at t_{n+1}
     dismatn_ = LINALG::CreateVector(*dofrowmap_,true);
+
+    // material_displacements D_{n}
+    dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  }
 
   // velocities V_{n+1} at t_{n+1}
   veln_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -929,7 +933,8 @@ void STR::TimInt::ResetStep()
 {
   // reset state vectors
   disn_->Update(1.0, (*dis_)[0], 0.0);
-  dismatn_->Update(1.0, (*dism_)[0], 0.0);
+  if (dismatn_ != Teuchos::null)
+    dismatn_->Update(1.0, (*dism_)[0], 0.0);
   veln_->Update(1.0, (*vel_)[0], 0.0);
   accn_->Update(1.0, (*acc_)[0], 0.0);
 
@@ -1289,7 +1294,8 @@ void STR::TimInt::OutputRestart
     output_->WriteMesh(step_, (*time_)[0]);
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
-    output_->WriteVector("material_displacement", (*dism_)(0));
+    if( dism_!=Teuchos::null )
+      output_->WriteVector("material_displacement", (*dism_)(0));
     output_->WriteVector("velocity", (*vel_)(0));
     output_->WriteVector("acceleration", (*acc_)(0));
     if(!HaveStatMech())
