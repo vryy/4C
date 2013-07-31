@@ -16,7 +16,7 @@ Maintainer: Tobias Wiesner
 #include "../linalg/linalg_mapextractor.H" // This is for mmex_ (reference, not RCP by intention)
 
 using Teuchos::RCP;				// it's ok to use Teuchos::RCP and Teuchos::ParameterList
-using Teuchos::ParameterList;   // note, we do not include a whole namespacae!
+using Teuchos::ParameterList;   // note, we do not include a whole namespace!
 
 namespace LINALG
 {
