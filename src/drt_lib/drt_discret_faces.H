@@ -143,7 +143,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  DiscretizationFaces(const string name, RCP<Epetra_Comm> comm)
+  DiscretizationFaces(const std::string name, RCP<Epetra_Comm> comm)
   :Discretization(name, comm) { extension_filled_ = false; }; // use base class constructor
 
   /*!
@@ -360,7 +360,7 @@ public:
 
   \note This is a collective call
   */
-  void PrintIntFaces(ostream& os) const;
+  void PrintIntFaces(std::ostream& os) const;
 
 
 protected:
@@ -378,7 +378,7 @@ protected:
 } // namespace DRT
 
 /// << operator
-ostream& operator << (ostream& os, const DRT::DiscretizationFaces& dis);
+std::ostream& operator << (std::ostream& os, const DRT::DiscretizationFaces& dis);
 
 
 #endif  // #ifndef DISCRET_FACES_H

@@ -2413,7 +2413,7 @@ void STR::MLMC::WriteParamContInfoToFile(
       if (File.is_open())
       {
         File << "runid "<< "num_cont_steps_planned num_cont_steps_needed  num_trials"
-            << endl;
+            << std::endl;
         File.close();
       }
       else
@@ -2429,7 +2429,7 @@ void STR::MLMC::WriteParamContInfoToFile(
     {
       File << " " << *it;
     }
-    File << endl;
+    File << std::endl;
     File.close();
     }
 

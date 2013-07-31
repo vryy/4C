@@ -323,7 +323,7 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                         rasthofer 02/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Combust3IntFace::Print(ostream& os) const
+void DRT::ELEMENTS::Combust3IntFace::Print(std::ostream& os) const
 {
   os << "Combust3IntFace ";
   Element::Print(os);

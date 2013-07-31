@@ -384,7 +384,7 @@ template <DRT::Element::DiscretizationType bdistype,
   int fdp_cond_id = params.get<int>("ConditionID");
 
   // decide on whether it is a flow-rate- or flow-volume-based condition
-  const string* condtype = (*fdp_cond).Get<string>("type of flow dependence");
+  const std::string* condtype = (*fdp_cond).Get<std::string>("type of flow dependence");
 
   // flow-rate-based condition
   if (*condtype == "flow_rate")
@@ -824,21 +824,21 @@ template <DRT::Element::DiscretizationType bdistype,
   RCP<DRT::Condition> wdbc_cond = params.get<RCP<DRT::Condition> >("condition");
 
   // type of consistency (default: adjoint-consistent)
-  const string* consistency = (*wdbc_cond).Get<string>("Choice of gamma parameter");
+  const std::string* consistency = (*wdbc_cond).Get<std::string>("Choice of gamma parameter");
   double wd_gamma=0.0;
   if (*consistency=="adjoint-consistent")    wd_gamma = 1.0;
   else if(*consistency=="diffusive-optimal") wd_gamma =-1.0;
   else dserror("unknown type of consistency for weak DBC: %s",(*consistency).c_str());
 
   // decide whether to use it or not
-  const string* deftauB = (*wdbc_cond).Get<string>("Definition of penalty parameter");
+  const std::string* deftauB = (*wdbc_cond).Get<std::string>("Definition of penalty parameter");
   bool spalding = false;
   if (*deftauB == "Spalding")      spalding = true;
   else if (*deftauB == "constant") spalding = false;
   else dserror("unknown definition of penalty parameter tauB for weak DBC: %s",(*deftauB).c_str());
 
   // linearisation of adjoint convective flux
-  const string* linearisation_approach = (*wdbc_cond).Get<string>("Linearisation");
+  const std::string* linearisation_approach = (*wdbc_cond).Get<std::string>("Linearisation");
   bool complete_linearisation = false;
   if (*linearisation_approach == "lin_all")
     complete_linearisation = true;
@@ -867,7 +867,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
   // find out whether to apply weak DBC only in normal direction
   bool onlynormal = false;
-  const string* active_components = (*wdbc_cond).Get<string>("Directions to apply weak dbc");
+  const std::string* active_components = (*wdbc_cond).Get<std::string>("Directions to apply weak dbc");
   if (*active_components == "all_directions")               onlynormal = false;
   else if(*active_components == "only_in_normal_direction") onlynormal = true;
   else
@@ -2991,7 +2991,7 @@ template <DRT::Element::DiscretizationType bdistype,
     	{
     		if (abs(Amat(vi, ui) - Amat(ui, vi)) > 1E-14)
     		{
-    			cout << "Warning 1: " << Amat(vi, ui) << " " << Amat(ui, vi) << endl;
+    		  std::cout << "Warning 1: " << Amat(vi, ui) << " " << Amat(ui, vi) << std::endl;
     			dserror("Amat is not symmetric!!!");
     		}
     	}
@@ -3092,7 +3092,7 @@ template <DRT::Element::DiscretizationType bdistype,
     	{
     		if (abs(Bmat(vi, ui) - Bmat(ui, vi)) > 1E-14)
     		{
-    			cout << "Warning: " <<  Bmat(vi, ui) << " " << Bmat(ui, vi) << endl;
+    		  std::cout << "Warning: " <<  Bmat(vi, ui) << " " << Bmat(ui, vi) << std::endl;
     			dserror("Bmat is not symmetric!!!");
     		}
     	}
@@ -3214,9 +3214,9 @@ template <DRT::Element::DiscretizationType bdistype,
   double u_C=(*hixhybdbc_cond).GetDouble("u_C");
 
   // decide whether to use it or not
-  const string* deftauB
+  const std::string* deftauB
     =
-    (*hixhybdbc_cond).Get<string>("Definition of penalty parameter");
+    (*hixhybdbc_cond).Get<std::string>("Definition of penalty parameter");
 
   bool spalding=false;
 
@@ -3237,9 +3237,9 @@ template <DRT::Element::DiscretizationType bdistype,
   }
 
   // flag for utau computation (viscous tangent or at wall (a la Michler))
-  const string* utau_computation
+  const std::string* utau_computation
     =
-    (*hixhybdbc_cond).Get<string>("utau_computation");
+    (*hixhybdbc_cond).Get<std::string>("utau_computation");
 
 
   // find out whether we will use a time curve and get the factor

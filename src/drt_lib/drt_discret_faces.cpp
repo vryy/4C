@@ -514,8 +514,8 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
           const std::vector<int>* myid
             = mypbcs[numcond]->Get<std::vector<int> >("Id of periodic boundary condition");
 
-          const string* mymasterslavetoggle
-            = mypbcs[numcond]->Get<string>("Is slave periodic boundary condition");
+          const std::string* mymasterslavetoggle
+            = mypbcs[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
           if (*mymasterslavetoggle == "Master")
           {
@@ -1258,7 +1258,7 @@ int DRT::DiscretizationFaces::NumMyColIntFaces() const
 /*----------------------------------------------------------------------*
  |  << operator                                             schott 03/12|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::DiscretizationFaces& dis)
+std::ostream& operator << (std::ostream& os, const DRT::DiscretizationFaces& dis)
 {
   // print standard discretization info
   dis.Print(os);
@@ -1272,7 +1272,7 @@ ostream& operator << (ostream& os, const DRT::DiscretizationFaces& dis)
 /*----------------------------------------------------------------------*
  |  Print internal faces discretization (public)            schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::PrintIntFaces(ostream& os) const
+void DRT::DiscretizationFaces::PrintIntFaces(std::ostream& os) const
 {
   int numglobalfaces = 0;
   if (Filled())
@@ -1293,7 +1293,7 @@ void DRT::DiscretizationFaces::PrintIntFaces(ostream& os) const
   if (Comm().MyPID()==0)
   {
     os << "--------------------------------------------------\n";
-    os << "Discretization: " << Name() << endl;
+    os << "Discretization: " << Name() << std::endl;
     os << "--------------------------------------------------\n";
     os << numglobalfaces << " Faces (global)\n";
     os << "--------------------------------------------------\n";
@@ -1314,9 +1314,9 @@ void DRT::DiscretizationFaces::PrintIntFaces(ostream& os) const
       for (curr = faces_.begin(); curr != faces_.end(); ++curr)
       {
         os << *(curr->second);
-        os << endl;
+        os << std::endl;
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }

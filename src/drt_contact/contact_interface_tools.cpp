@@ -1895,7 +1895,7 @@ void CONTACT::CoInterface::FDCheckWearDerivLm()
            w++;
          }
 
-         std::cout << endl;
+         std::cout << std::endl;
 //      }
     }
     // undo finite difference modification
@@ -1913,7 +1913,7 @@ void CONTACT::CoInterface::FDCheckWearDerivLm()
     }
 
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
 //    if (w>0)
 //      dserror("WARNING!!!");
   }
@@ -1993,7 +1993,7 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
     CoNode* snode = static_cast<CoNode*>(node);
 
     int sdof = snode->Dofs()[fd%dim];
-    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
@@ -2057,7 +2057,7 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
            w++;
          }
 
-         std::cout << endl;
+         std::cout << std::endl;
       }
     }
     // undo finite difference modification
@@ -2074,7 +2074,7 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
       snode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
 //    if (w>0)
 //      dserror("WARNING!!!");
   }
@@ -2097,7 +2097,7 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
     FriNode* mnode = static_cast<FriNode*>(node);
 
     int mdof = mnode->Dofs()[fd%dim];
-    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << endl;
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
 
     // apply finite difference scheme
     /*if (Comm().MyPID()==mnode->Owner())
@@ -2161,7 +2161,7 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
            w++;
          }
 
-         std::cout << endl;
+         std::cout << std::endl;
       }
     }
 
@@ -2179,7 +2179,7 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
       mnode->xspatial()[2] -= delta;
     }
 
-    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << endl;
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
 //    if (w>0)
 //      dserror("WARNING!!!");
   }

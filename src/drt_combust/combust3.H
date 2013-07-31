@@ -1092,7 +1092,7 @@ private:
       /*!
       \brief Print this element
       */
-      void Print(ostream& os) const;
+      void Print(std::ostream& os) const;
 
       virtual DRT::ElementType & ElementType() const
       { return Combust3IntFaceType::Instance(); }
@@ -1225,7 +1225,7 @@ private:
       };
 
       //! convert string to desired action
-      ActionType convertStringToActionType(const string& action) const;
+      ActionType convertStringToActionType(const std::string& action) const;
 
       //! The master parent element of this surface
       DRT::ELEMENTS::Combust3* parent_master_;

@@ -24,7 +24,7 @@ Maintainer: Ursula Rasthofer
  | converts a string into an Action for this element    rasthofer 02/13 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3IntFace::ActionType DRT::ELEMENTS::Combust3IntFace::convertStringToActionType(
-              const string& action) const
+              const std::string& action) const
 {
   DRT::ELEMENTS::Combust3IntFace::ActionType act = Combust3IntFace::none;
   if (action == "calc_edge_based_stab_terms")
