@@ -148,7 +148,7 @@ namespace MueLu {
           }
         }
 #endif
-        Utils::MyOldScaleMatrix(AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
+        Utils::MyOldScaleMatrix(*AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
         //Utils::Write("DinvAP.mat", *AP);
       }
 
@@ -189,7 +189,7 @@ namespace MueLu {
 
         bool doTranspose=false;
         bool PtentHasFixedNnzPerRow=true;
-        Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
+        Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
 
       }
 
@@ -214,7 +214,7 @@ namespace MueLu {
     else
       {
         // prolongation factory is in restriction mode
-        RCP<Matrix> R = Utils2::Transpose(finalP, true); // use Utils2 -> specialization for double
+        RCP<Matrix> R = Utils2::Transpose(*finalP, true); // use Utils2 -> specialization for double
         //RCP<Matrix> R = MyTranspose(finalP, true);
         Set(coarseLevel, "R", R);
 
