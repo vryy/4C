@@ -317,6 +317,14 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       P11Fact->SetFactory("NearZeroDiagMapFactory", MueLu::NoFactory::getRCP());
       */
       R11Fact  = Teuchos::rcp( new GenericRFactory() );
+    } else if (agg_damping == -2.0) {
+      // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
+      P11Fact  = Teuchos::rcp( new PgPFactory() );
+      P11Fact->SetFactory("P",Ptent11Fact);
+      //PFact->SetFactory("A",singleNodeAFact);
+      //PFact->SetFactory("A",slaveTransferAFactory);  // produces nans
+      R11Fact  = Teuchos::rcp( new TransPFactory() );
+      R11Fact->SetFactory("P",Ptent11Fact);
     } else {
       // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
       P11Fact  = Teuchos::rcp( new PgPFactory() );
