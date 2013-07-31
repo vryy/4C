@@ -70,7 +70,7 @@ public:
   /*========================================================================*/
 
   //! get startvalues in time step for nodes which changed interface-side
-  void compute( vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn );
+  void compute( std::vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn );
 
 private:
 
@@ -111,10 +111,10 @@ private:
   void getDataForNotConvergedNodes();
 
   //! prepare new iteration
-  void newIteration_prepare( vector<Teuchos::RCP<Epetra_Vector> > newRowVectors );
+  void newIteration_prepare( std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors );
 
   //! gradients at a node
-  void newIteration_nodalData( vector<Teuchos::RCP<Epetra_Vector> > newColVectors );
+  void newIteration_nodalData( std::vector<Teuchos::RCP<Epetra_Vector> > newColVectors );
 
   //! reinitialize some data for new computations, e.g. at a new FGI
   void reinitializeData();

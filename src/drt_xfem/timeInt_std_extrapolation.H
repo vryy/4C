@@ -49,12 +49,12 @@ public:
 
   //! call the computation
   void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   //! call the computation
-  void compute(vector<RCP<Epetra_Vector> > newRowVectors);
+  void compute(std::vector<RCP<Epetra_Vector> > newRowVectors);
 
   friend class SemiLagrange; // extrapolation can be called by SemiLagrange class
 
@@ -92,8 +92,8 @@ private:
   void callInterpolation(
       DRT::Element* ele,
       LINALG::Matrix<3,1>& xi,
-      vector<LINALG::Matrix<3,1> >& velValues,
-      vector<double>& presValues
+      std::vector<LINALG::Matrix<3,1> >& velValues,
+      std::vector<double>& presValues
   );
 
   //! bisection algorithm of the extrapolation approach
@@ -101,8 +101,8 @@ private:
   void interpolation(
       DRT::Element* ele,
       LINALG::Matrix<3,1>& xi,
-      vector<LINALG::Matrix<3,1> >& velValues,
-      vector<double>& presValues
+      std::vector<LINALG::Matrix<3,1> >& velValues,
+      std::vector<double>& presValues
   );
 
   double veljump_;
@@ -145,12 +145,12 @@ public:
 
   //! call the computation
   void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   //! call the computation
-  void compute(vector<RCP<Epetra_Vector> > newRowVectors);
+  void compute(std::vector<RCP<Epetra_Vector> > newRowVectors);
 
   friend class SemiLagrange; // Extrapol can be called by SemiLagrange class
 
@@ -183,8 +183,8 @@ private:
   void callInterpolation(
       const DRT::Element* ele,
       LINALG::Matrix<3,1>& xi,
-      vector<LINALG::Matrix<3,1> >& velValues,
-      vector<double>& presValues,
+      std::vector<LINALG::Matrix<3,1> >& velValues,
+      std::vector<double>& presValues,
       int side
   );
 
@@ -193,8 +193,8 @@ private:
   void interpolation(
       const DRT::Element* ele,
       LINALG::Matrix<3,1>& xi,
-      vector<LINALG::Matrix<3,1> >& velValues,
-      vector<double>& presValues,
+      std::vector<LINALG::Matrix<3,1> >& velValues,
+      std::vector<double>& presValues,
       int side
   );
 

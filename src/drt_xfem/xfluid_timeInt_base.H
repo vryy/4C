@@ -16,9 +16,6 @@ Maintainer: Benedikt Schott
 #define XFLUID_TIMEINT_BASE_H_
 
 
-using std::vector; // intermediate
-
-
 namespace GEO
 {
   namespace CUT
@@ -88,8 +85,8 @@ public:
           DRT::Node&                   node,                    //! node for which SL-algorithm is called
           int                          nds_np,                  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is called
           LINALG::Matrix<3,1>          vel,                     //! velocity at point x (=x_Lagr(t^n+1))
-          vector<LINALG::Matrix<3,3> > velDeriv,                //! velocity gradient at point x (=x_Lagr(t^n+1))
-          vector<LINALG::Matrix<1,3> > presDeriv,               //! pressure gradient at point x (=x_Lagr(t^n+1))
+          std::vector<LINALG::Matrix<3,3> > velDeriv,                //! velocity gradient at point x (=x_Lagr(t^n+1))
+          std::vector<LINALG::Matrix<1,3> > presDeriv,               //! pressure gradient at point x (=x_Lagr(t^n+1))
           LINALG::Matrix<3,1>          startpoint,              //! current startpoint (Lagrangean origin) approximation
           int                          searchedProcs,
           int                          counter,
@@ -121,8 +118,8 @@ public:
           DRT::Node& node,
           int                          nds_np,                  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is called
           LINALG::Matrix<3,1>& vel,
-          vector<LINALG::Matrix<3,3> >& velDeriv,
-          vector<LINALG::Matrix<1,3> >& presDeriv,
+          std::vector<LINALG::Matrix<3,3> >& velDeriv,
+          std::vector<LINALG::Matrix<1,3> >& presDeriv,
           LINALG::Matrix<3,1>& initialpoint,
           int initial_eid,
           int initial_ele_owner,
@@ -159,8 +156,8 @@ public:
           DRT::Node& node,
           int                          nds_np,                  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is called
           LINALG::Matrix<3,1>& vel,
-          vector<LINALG::Matrix<3,3> >& velDeriv,
-          vector<LINALG::Matrix<1,3> >& presDeriv,
+          std::vector<LINALG::Matrix<3,3> >& velDeriv,
+          std::vector<LINALG::Matrix<1,3> >& presDeriv,
           LINALG::Matrix<3,1>& initialpoint,
           int initial_eid,
           int initial_ele_owner,
@@ -184,8 +181,8 @@ public:
           DRT::Node& node,
           int                          nds_np,                  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is called
           LINALG::Matrix<3,1>& startpoint,
-          vector<LINALG::Matrix<3,1> >& velValues,
-          vector<double>& presValues,
+          std::vector<LINALG::Matrix<3,1> >& velValues,
+          std::vector<double>& presValues,
           type newtype
       ) :
         node_(node),
@@ -289,7 +286,7 @@ public:
       //------------------------------------------
       //! @name computed/reconstructed pressure and velocity values
       //------------------------------------------
-      vector<LINALG::Matrix<3,1> >   velValues_;  // computed velocity for a node
+      std::vector<LINALG::Matrix<3,1> >   velValues_;  // computed velocity for a node
       std::vector<double>            presValues_; // computed pressure for a node
 
       //------------------------------------------
@@ -326,8 +323,8 @@ public:
 
   //! perform the computation
   virtual void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   ){  dserror("Unused function! Use a function of the derived classes"); };
 
   //! set computation type due to iteration counter
@@ -359,7 +356,7 @@ public:
 protected:
 
   //! initialize data to be set in every computation
-  void handleVectors( vector<RCP<Epetra_Vector> >& newRowVectorsn );
+  void handleVectors( std::vector<RCP<Epetra_Vector> >& newRowVectorsn );
 
   //! return the number of Epetra vectors which shall get new values for a given node with according data
   size_t vectorSize(TimeIntData* data) const {return vectorSize(data->type_);};
@@ -463,7 +460,7 @@ protected:
   //! add adjacebt elements for a periodic boundary node
   void addPBCelements(
       const DRT::Node*              node,
-      vector<const DRT::Element*>&  eles
+      std::vector<const DRT::Element*>&  eles
   ) const;
 
   //! find the PBC node
@@ -484,7 +481,7 @@ protected:
       DRT::PackBuffer& dataSend,
       int&             dest,
       int&             source,
-      vector<char>&    dataRecv
+      std::vector<char>&    dataRecv
   ) const;
 
   //! packing a node
@@ -495,8 +492,8 @@ protected:
 
   //! unpacking a node
   void unpackNode(
-      vector<char>::size_type& posinData,
-      vector<char>&            dataRecv,
+      std::vector<char>::size_type& posinData,
+      std::vector<char>&            dataRecv,
       DRT::Node&               node
   ) const;
 
@@ -623,7 +620,7 @@ public:
   /*========================================================================*/
 
   //! perform the computation
-  virtual void compute( vector<RCP<Epetra_Vector> >& newRowVectorsn );
+  virtual void compute( std::vector<RCP<Epetra_Vector> >& newRowVectorsn );
 
   /*========================================================================*/
   //! element based routines
@@ -726,9 +723,9 @@ protected:
       LINALG::Matrix<3,1>&                          newNodeCoords,        ///< node coordinates of point that has to be projected
       double &                                      min_dist,             ///< minimal distance, potentially updated
       LINALG::Matrix<3,1>&                          proj_x_np,            ///< projection of point on this side
-      std::map<vector<int>, std::vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
-      std::map<vector<int>, vector<int> >&          proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
-      std::map<vector<int>, vector<int> >&          proj_nid_line,        ///< map<sorted nids, side Ids>
+      std::map<std::vector<int>, std::vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
+      std::map<std::vector<int>, std::vector<int> >&          proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
+      std::map<std::vector<int>, std::vector<int> >&          proj_nid_line,        ///< map<sorted nids, side Ids>
       int &                                         proj_sid,             ///< id of side that contains the projected point
       TimeIntData::projection&                      proj                  ///< projection type
       );
@@ -742,9 +739,9 @@ protected:
       int &                                       proj_nid_np,          ///< nid id of projected point on surface
       LINALG::Matrix<3,1>&                        proj_x_np,            ///< projection of point on this side
       int &                                       proj_sid,             ///< id of side that contains the projected point
-      std::map<vector<int>, std::vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
-      std::map<vector<int>, std::vector<int> >    proj_lineid,          ///< map<side ID, local line id>
-      std::map<vector<int>, std::vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
+      std::map<std::vector<int>, std::vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
+      std::map<std::vector<int>, std::vector<int> >    proj_lineid,          ///< map<side ID, local line id>
+      std::map<std::vector<int>, std::vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
       TimeIntData::projection&                    proj                  ///< projection type
       );
 

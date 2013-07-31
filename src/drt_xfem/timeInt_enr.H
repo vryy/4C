@@ -47,8 +47,8 @@ public:
 
   //! main function computing the new enrichment values
   void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   std::map<int,std::vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues(){return &eleJumpsAndKinks_;}
@@ -74,7 +74,7 @@ protected:
       const DRT::Element* ele,
       LINALG::Matrix<1,numnode>& dmin,
       LINALG::Matrix<3,1> normal,
-      vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
+      std::vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
       int& numnodeused
   );
 
@@ -83,7 +83,7 @@ protected:
   void oldKinkValues(
       const DRT::Element* ele,
       LINALG::Matrix<1,numnode>& dmin,
-      vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
+      std::vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
       int& numnodeused
   );
 
@@ -98,13 +98,13 @@ protected:
   //! computation of new enrichment values at new interface position for jump enriched dofs
   void computeJumpEnrichmentValues(
       const DRT::Node* node,
-      vector<LINALG::Matrix<2,4> > jumpsAndKinks
+      std::vector<LINALG::Matrix<2,4> > jumpsAndKinks
   );
 
   //! computation of new enrichment values at new interface position for kink enriched dofs
   void computeKinkEnrichmentValues(
       const DRT::Node* node,
-      vector<LINALG::Matrix<1,4> > kinks
+      std::vector<LINALG::Matrix<1,4> > kinks
   );
 
   void setJumpEnrichmentValues(

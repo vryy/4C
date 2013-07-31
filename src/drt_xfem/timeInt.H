@@ -24,8 +24,6 @@ Maintainer: Martin Winklmaier
 #include "../drt_inpar/inpar_combust.H"
 
 
-using std::vector; // intermediate
-
 namespace COMBUST
 {
   class FlameFront;
@@ -148,7 +146,7 @@ protected:
   //! add adjacebt elements for a periodic boundary node
   void addPBCelements(
       const DRT::Node* node,
-      vector<const DRT::Element*>&  eles
+      std::vector<const DRT::Element*>&  eles
   ) const;
 
   void findPBCNode(
@@ -163,7 +161,7 @@ protected:
       DRT::PackBuffer& dataSend,
       int& dest,
       int& source,
-      vector<char>& dataRecv
+      std::vector<char>& dataRecv
   ) const;
 
   //! packing a node
@@ -174,8 +172,8 @@ protected:
 
   //! unpacking a node
   void unpackNode(
-      vector<char>::size_type& posinData,
-      vector<char>& dataRecv,
+      std::vector<char>::size_type& posinData,
+      std::vector<char>& dataRecv,
       DRT::Node& node
   ) const;
 #endif
@@ -425,8 +423,8 @@ protected:
         const DRT::Node& node,
         double dist,
         int counter,
-        vector<LINALG::Matrix<2,4> > jumpAndKinkValues,
-        vector<LINALG::Matrix<1,4> > kinkValues
+        std::vector<LINALG::Matrix<2,4> > jumpAndKinkValues,
+        std::vector<LINALG::Matrix<1,4> > kinkValues
     ) :
       node_(node),
       phiValue_(dist),
@@ -440,14 +438,14 @@ protected:
     TimeIntData(
         DRT::Node& node,
         LINALG::Matrix<3,1> vel,
-        vector<LINALG::Matrix<3,3> > velDeriv,
-        vector<LINALG::Matrix<1,3> > presDeriv,
+        std::vector<LINALG::Matrix<3,3> > velDeriv,
+        std::vector<LINALG::Matrix<1,3> > presDeriv,
         LINALG::Matrix<3,1> startpoint,
         double phiValue,
         int searchedProcs,
         int counter,
-        vector<int> startGid,
-        vector<int> startOwner,
+        std::vector<int> startGid,
+        std::vector<int> startOwner,
         double dMin,
         type newtype
     ) :
@@ -470,14 +468,14 @@ protected:
     TimeIntData(
         DRT::Node& node,
         LINALG::Matrix<3,1>& vel,
-        vector<LINALG::Matrix<3,3> >& velDeriv,
-        vector<LINALG::Matrix<1,3> >& presDeriv,
+        std::vector<LINALG::Matrix<3,3> >& velDeriv,
+        std::vector<LINALG::Matrix<1,3> >& presDeriv,
         LINALG::Matrix<3,1>& startpoint,
         double phiValue,
         int searchedProcs,
         int counter,
-        vector<int> startGid,
-        vector<int> startOwner,
+        std::vector<int> startGid,
+        std::vector<int> startOwner,
         type newtype,
         state newstate
     ) :
@@ -499,12 +497,12 @@ protected:
     TimeIntData(
         DRT::Node& node,
         LINALG::Matrix<3,1>& vel,
-        vector<LINALG::Matrix<3,3> >& velDeriv,
-        vector<LINALG::Matrix<1,3> >& presDeriv,
+        std::vector<LINALG::Matrix<3,3> >& velDeriv,
+        std::vector<LINALG::Matrix<1,3> >& presDeriv,
         LINALG::Matrix<3,1>& startpoint,
         double phiValue,
-        vector<int> startGid,
-        vector<int> startOwner,
+        std::vector<int> startGid,
+        std::vector<int> startOwner,
         type newtype
     ) :
       node_(node),
@@ -524,10 +522,10 @@ protected:
         DRT::Node& node,
         LINALG::Matrix<3,1>& startpoint,
         double phiValue,
-        vector<int> startGid,
-        vector<int> startOwner,
-        vector<LINALG::Matrix<3,1> >& velValues,
-        vector<double>& presValues,
+        std::vector<int> startGid,
+        std::vector<int> startOwner,
+        std::vector<LINALG::Matrix<3,1> >& velValues,
+        std::vector<double>& presValues,
         type newtype
     ) :
       node_(node),
@@ -583,19 +581,19 @@ protected:
 
     DRT::Node 						node_; // node according to startpoint
     LINALG::Matrix<3,1> 			vel_; // velocity at point x (=x_Lagr(t^n+1))
-    vector<LINALG::Matrix<3,3> > 	velDeriv_; // velocity gradient at point x (=x_Lagr(t^n+1))
-    vector<LINALG::Matrix<1,3> > 	presDeriv_; // pressure gradient at point x (=x_Lagr(t^n+1))
+    std::vector<LINALG::Matrix<3,3> > 	velDeriv_; // velocity gradient at point x (=x_Lagr(t^n+1))
+    std::vector<LINALG::Matrix<1,3> > 	presDeriv_; // pressure gradient at point x (=x_Lagr(t^n+1))
     LINALG::Matrix<3,1> 			startpoint_; // startpoint approximation
     double 							phiValue_; // phi-value according to the analysed node at time t^n+1
     int 							searchedProcs_; // searched procnumber if point lies in
     int 							counter_; // newton iteration counters for the points
-    vector<int> 					startGid_; // nearest node for a moving node lying in an "interface element"
-    vector<int> 					startOwner_; // nearest nodes owner
+    std::vector<int> 					startGid_; // nearest node for a moving node lying in an "interface element"
+    std::vector<int> 					startOwner_; // nearest nodes owner
     double 							dMin_; // minimal distance in initialization
-    vector<LINALG::Matrix<3,1> > 	velValues_; // computed velocity for a node
+    std::vector<LINALG::Matrix<3,1> > 	velValues_; // computed velocity for a node
     std::vector<double> 					presValues_; // computed pressure for a node
-    vector<LINALG::Matrix<2,4> > 	jumpAndKinkValues_; // computed jump and kink values for a node's jump enrichment dof
-    vector<LINALG::Matrix<1,4> > 	kinkValues_; // computed kink values for a node's kink enrichment dof
+    std::vector<LINALG::Matrix<2,4> > 	jumpAndKinkValues_; // computed jump and kink values for a node's jump enrichment dof
+    std::vector<LINALG::Matrix<1,4> > 	kinkValues_; // computed kink values for a node's kink enrichment dof
     state state_; // status for both the used special algorithm and the state within the algorithm
     type type_; // basic computation type due to FGI and FRS
 
@@ -623,7 +621,7 @@ protected:
   RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle_; // interface handle of new time step t^n+1
   RCP<Epetra_MultiVector> gradphi_; // smoothed gradient of phi-vector of new time step t^n+1
   const std::vector<RCP<Epetra_Vector> > oldVectors_; // global vectors of old time step t^n in column map
-  vector<RCP<Epetra_Vector> > newVectors_; // global vectors of new time step t^n+1 in row map
+  std::vector<RCP<Epetra_Vector> > newVectors_; // global vectors of new time step t^n+1 in row map
 
   // stuff for parallel communication
   const RCP<std::map<int,std::vector<int> > > pbcmap_; // map for master and slave elements of nodes
@@ -992,8 +990,8 @@ public:
 
   //! perform the computation
   virtual void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   )
   {
     dserror("Unused function! Use a function of the derived classes");
@@ -1001,7 +999,7 @@ public:
 
   //! perform the computation
   virtual void compute(
-      vector<RCP<Epetra_Vector> > newRowVectors
+      std::vector<RCP<Epetra_Vector> > newRowVectors
   )
   {
     dserror("Unused function! Use a function of the derived classes");
@@ -1304,8 +1302,8 @@ public:
 
   //! perform the computation
   virtual void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
 
@@ -1348,8 +1346,8 @@ protected:
       const DRT::Element* element,
       LINALG::Matrix<1,numnode>& dmin,
       bool& allEleNodesOnProc,
-      vector<LINALG::Matrix<4,numnode> >& jumpEnrValues,
-      vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
+      std::vector<LINALG::Matrix<4,numnode> >& jumpEnrValues,
+      std::vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
       LINALG::Matrix<3,1>& normal
   ) const
   {

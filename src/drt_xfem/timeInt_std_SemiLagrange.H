@@ -49,8 +49,8 @@ public:
 
   //! get startvalues in time step for nodes which changed interface-side
   void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
 private:
@@ -108,12 +108,12 @@ private:
 
   //! preparation of new iteration
   void newIteration_prepare(
-      vector<RCP<Epetra_Vector> > newRowVectors
+      std::vector<RCP<Epetra_Vector> > newRowVectors
   );
 
   //! gradients at a node
   void newIteration_nodalData(
-      vector<RCP<Epetra_Vector> > newColVectors
+      std::vector<RCP<Epetra_Vector> > newColVectors
   );
 
   //! reinitialize some data for new computations, f.e. at a new FGI
@@ -122,13 +122,13 @@ private:
   //! compute the nodal gradient
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
   void computeNodalGradient(
-      vector<RCP<Epetra_Vector> >& newColVectors,
+      std::vector<RCP<Epetra_Vector> >& newColVectors,
       const Epetra_Map& newdofcolmap,
       std::map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
       const DRT::Element* ele,
       DRT::Node* node,
-      vector<LINALG::Matrix<3,3> >& velnpDeriv1,
-      vector<LINALG::Matrix<1,3> >& presnpDeriv1
+      std::vector<LINALG::Matrix<3,3> >& velnpDeriv1,
+      std::vector<LINALG::Matrix<1,3> >& presnpDeriv1
   ) const;
 
   //! compute the theta which has to be used for computation
