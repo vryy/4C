@@ -134,68 +134,81 @@ namespace MueLu {
         //Utils::Write("AP.mat", *AP);
       }
 
-      //bool bDoDamping = true;
+      int bSkipDamping = 0;
+      int globalbSkipDamping = 0;
       {
         SubFactoryMonitor m2(*this, "Scaling (A x Ptentative) by D^{-1}", coarseLevel);
         bool doFillComplete=true; //false;
         bool optimizeStorage=false;
         Teuchos::ArrayRCP<SC> diag = Utils::GetMatrixDiagonal(*A);
-#if 0 // TODO remove me. check is done outside (e.g. in MueLu_Contact preconditioner
-        for(LocalOrdinal l=0; l<diag.size(); l++) {
-          if(std::abs(diag[l])<1e-8) {  // was <1e-3 before
-            std::cout << "               switch off transfer operator smoothing" << std::endl;
-            bDoDamping = false;
+#if 1 // TODO remove me. check is done outside (e.g. in MueLu_Contact preconditioner
+        // needed if we do not provide the near zero map!!!
+        if(NearZeroDiagRowMapName == "") {
+          for(LocalOrdinal l=0; l<diag.size(); l++) {
+            if(std::abs(diag[l])<1e-8) {  // was <1e-3 before
+              std::cout << "               switch off transfer operator smoothing" << std::endl;
+              bSkipDamping = 1;
+              break;
+            }
           }
         }
+
+        // sum up all entries in multipleColRequests over all processors
+        sumAll(A->getRowMap()->getComm(), (LocalOrdinal)bSkipDamping, globalbSkipDamping);
 #endif
         Utils::MyOldScaleMatrix(*AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
         //Utils::Write("DinvAP.mat", *AP);
       }
 
-      const std::string DampingStrategy = pL.get<std::string >("Damping strategy");
-      Scalar lambdaMax;
-      {
-        if(DampingStrategy == "Standard") {
-          SubFactoryMonitor m2(*this, "Eigenvalue estimate", coarseLevel);
-          Magnitude stopTol = 1e-4;
-          lambdaMax = Utils::PowerMethod(*A, true, (LO) 10, stopTol);
-          //Scalar lambdaMax = Utils::PowerMethod(*A, true, (LO) 50, (Scalar)1e-7, true);
-          GetOStream(Statistics1, 0) << "Damping factor = " << dampingFactor/lambdaMax << " (" << dampingFactor << " / " << lambdaMax << ")" << std::endl;
-          if(lambdaMax < 0.0) {
+      if (globalbSkipDamping == 0) {
+        const std::string DampingStrategy = pL.get<std::string >("Damping strategy");
+        Scalar lambdaMax;
+        {
+          if(DampingStrategy == "Standard") {
+            SubFactoryMonitor m2(*this, "Eigenvalue estimate", coarseLevel);
+            Magnitude stopTol = 1e-4;
+            lambdaMax = Utils::PowerMethod(*A, true, (LO) 10, stopTol);
+            //Scalar lambdaMax = Utils::PowerMethod(*A, true, (LO) 50, (Scalar)1e-7, true);
+            GetOStream(Statistics1, 0) << "Damping factor = " << dampingFactor/lambdaMax << " (" << dampingFactor << " / " << lambdaMax << ")" << std::endl;
+            if(lambdaMax < 0.0) {
+              lambdaMax = 1.0;
+              dampingFactor = 0.0; // no smoothing at all
+              GetOStream(Statistics1, 0) << "Correct damping factor = " << dampingFactor/lambdaMax << " (" << dampingFactor << " / " << lambdaMax << ")" << std::endl;
+            }
+          } else if(DampingStrategy == "User") {
             lambdaMax = 1.0;
-            dampingFactor = 0.0; // no smoothing at all
-            GetOStream(Statistics1, 0) << "Correct damping factor = " << dampingFactor/lambdaMax << " (" << dampingFactor << " / " << lambdaMax << ")" << std::endl;
+            GetOStream(Statistics1, 0) << "Damping factor = " << dampingFactor/lambdaMax << " (user-given)" << std::endl;
           }
-        } else if(DampingStrategy == "User") {
-          lambdaMax = 1.0;
-          GetOStream(Statistics1, 0) << "Damping factor = " << dampingFactor/lambdaMax << " (user-given)" << std::endl;
+          else {
+            TEUCHOS_TEST_FOR_EXCEPTION(true, Exceptions::RuntimeError, "MueLu::SelectiveSaFactory::Build: wrong damping strategy. allowed values are Standard and User");
+          }
         }
-        else {
-          TEUCHOS_TEST_FOR_EXCEPTION(true, Exceptions::RuntimeError, "MueLu::SelectiveSaFactory::Build: wrong damping strategy. allowed values are Standard and User");
+
+
+        {
+          // fix product DinvAP
+          // remove basis function smoothing for problematic rows
+          Teuchos::RCP<Matrix> APtemp = FixAPproduct(fineLevel, coarseLevel, A, AP);
+          if(APtemp != Teuchos::null) // TODO check this.
+            AP = APtemp;
         }
-      }
 
+        {
+          SubFactoryMonitor m2(*this, "M+M: P = (Ptentative) + (D^{-1} x A x Ptentative)", coarseLevel);
 
+          bool doTranspose=false;
+          bool PtentHasFixedNnzPerRow=true;
+          Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
+
+        }
+
+        {
+          SubFactoryMonitor m2(*this, "FillComplete() of P", coarseLevel);
+          finalP->fillComplete( Ptent->getDomainMap(), Ptent->getRangeMap() );
+        }
+      } else // bDoDamping == false // TODO fix this. move this to FixAP?
       {
-        // fix product DinvAP
-        // remove basis function smoothing for problematic rows
-        Teuchos::RCP<Matrix> APtemp = FixAPproduct(fineLevel, coarseLevel, A, AP);
-        if(APtemp != Teuchos::null) // TODO check this.
-          AP = APtemp;
-      }
-
-      {
-        SubFactoryMonitor m2(*this, "M+M: P = (Ptentative) + (D^{-1} x A x Ptentative)", coarseLevel);
-
-        bool doTranspose=false;
-        bool PtentHasFixedNnzPerRow=true;
-        Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
-
-      }
-
-      {
-        SubFactoryMonitor m2(*this, "FillComplete() of P", coarseLevel);
-        finalP->fillComplete( Ptent->getDomainMap(), Ptent->getRangeMap() );
+        finalP = Ptent;
       }
     } else {
       finalP = Ptent;
