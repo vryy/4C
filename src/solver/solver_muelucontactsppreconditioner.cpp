@@ -26,6 +26,7 @@
 #include <Xpetra_MapExtractorFactory.hpp>
 #include <Xpetra_BlockedCrsMatrix.hpp>
 #include <Xpetra_StridedEpetraMap.hpp>
+#include <Xpetra_CrsMatrix.hpp> // for merging blocked operator
 
 // MueLu
 #include <MueLu.hpp>
@@ -505,6 +506,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     } // end debug output
 #endif
 
+    //Write(H);
+
     // set multigrid preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
   }
@@ -773,6 +776,52 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
   return SmooSCFact;
 }
+
+void LINALG::SOLVER::MueLuContactSpPreconditioner::Write(const Teuchos::RCP<Hierarchy> & H) {
+  LocalOrdinal startLevel = 0;
+  LocalOrdinal endLevel = H->GetNumLevels() - 1;
+
+  //TEUCHOS_TEST_FOR_EXCEPTION(startLevel > endLevel, Exceptions::RuntimeError, "MueLu::Hierarchy::Write : startLevel must be <= endLevel");
+
+  //TEUCHOS_TEST_FOR_EXCEPTION(startLevel < 0 || endLevel >= Levels_.size(), Exceptions::RuntimeError, "MueLu::Hierarchy::Write bad start or end level");
+
+  for (LO i = startLevel; i < endLevel+1; ++i) {
+    std::ostringstream buf; buf << i;
+    std::string fileName = "A_" + buf.str() + ".m";
+
+    Teuchos::RCP<Matrix> A = H->GetLevel(i)->Get<Teuchos::RCP<Matrix> >("A");
+    Teuchos::RCP<BlockedCrsMatrix> Ab = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(A);
+    Teuchos::RCP<CrsMatrix> Am = Ab->Merge();
+    Teuchos::RCP<Matrix> Aw = Teuchos::rcp(new CrsMatrixWrap(Am));
+
+    Utils::Write( fileName,*Aw );
+
+    if (i>0) {
+      fileName = "P_" + buf.str() + ".m";
+      //Utils::Write( fileName,*(Levels_[i]-> template Get< RCP< Matrix> >("P")) );
+
+      Teuchos::RCP<Matrix> P = H->GetLevel(i)->Get<Teuchos::RCP<Matrix> >("P");
+      Teuchos::RCP<BlockedCrsMatrix> Pb = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(P);
+      Teuchos::RCP<CrsMatrix> Pm = Pb->Merge();
+      Teuchos::RCP<Matrix> Pw = Teuchos::rcp(new CrsMatrixWrap(Pm));
+      Utils::Write( fileName,*Pw );
+
+      //if (!implicitTranspose_) {
+
+      fileName = "R_" + buf.str() + ".m";
+      //Utils::Write( fileName,*(Levels_[i]-> template Get< RCP< Matrix> >("R")) );
+      Teuchos::RCP<Matrix> R = H->GetLevel(i)->Get<Teuchos::RCP<Matrix> >("R");
+      Teuchos::RCP<BlockedCrsMatrix> Rb = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(R);
+      Teuchos::RCP<CrsMatrix> Rm = Rb->Merge();
+      Teuchos::RCP<Matrix> Rw = Teuchos::rcp(new CrsMatrixWrap(Rm));
+      Utils::Write( fileName,*Rw );
+
+      //}
+    }
+  }
+
+} //Write()
+
 
 #endif //#ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu

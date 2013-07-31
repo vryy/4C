@@ -62,6 +62,8 @@ namespace LINALG
       virtual const std::string getParameterListName() const { return "MueLu (Contact) Parameters"; } // TODO check me
     private:
 
+      void Write(const Teuchos::RCP<Hierarchy> & H);
+
       //! function interprets ML parameter lists
       Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetBlockSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
 
