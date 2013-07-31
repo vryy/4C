@@ -3964,10 +3964,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     double mechdiss = 0;
     double wearval = 0.0;
     
+    // wear-lin
+    Epetra_SerialDenseMatrix jump (3,1);
+    Epetra_SerialDenseMatrix jumptan(3,1);
+    Epetra_SerialDenseMatrix tanplane(3,3);
+
+    double jump_val_lin = 0.0;
+    double gplm[3] = {0.0, 0.0, 0.0};
+    double lm_lin = 0.0;
+
     if((tsi and friction) or wear)
     {
       // tangent plane  
-      Epetra_SerialDenseMatrix tanplane(3,3);
       tanplane(0,0)= 1-(gpn[0]*gpn[0]);
       tanplane(0,1)=  -(gpn[0]*gpn[1]);
       tanplane(0,2)=  -(gpn[0]*gpn[2]);
@@ -3997,7 +4005,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       }
    
       // build jump (relative displacement increment) at current GP
-      Epetra_SerialDenseMatrix jump (3,1);
       jump(0,0)=(sgpjump[0]-mgpjump[0]); 
       jump(1,0)=(sgpjump[1]-mgpjump[1]); 
       jump(2,0)=(sgpjump[2]-mgpjump[2]); 
@@ -4012,7 +4019,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       }
        
       // build tangential jump
-      Epetra_SerialDenseMatrix jumptan(3,1);
       jumptan.Multiply('N','N',1,tanplane,jump,0.0);
   
       // build tangential lm
@@ -4039,7 +4045,28 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
         jumpval = sqrt(jumptan(0,0)*jumptan(0,0)+jumptan(1,0)*jumptan(1,0)+jumptan(2,0)*jumptan(2,0));
         
         // product
+#ifdef WEARIMPLICIT
+        wearval = (wearval)*jumpval;
+#else
         wearval = abs(wearval)*jumpval;
+#endif
+
+
+        //****************************************************************
+        //   lin
+        //****************************************************************
+        // normal contact stress
+        for (int i=0;i<3;++i)
+          gplm[i]=lm(i,0);
+
+        for (int i=0;i<3;++i)
+          lm_lin += gpn[i]*gplm[i];
+
+         jump_val_lin +=  sqrt(jumptan(0,0)*jumptan(0,0)+jumptan(1,0)*jumptan(1,0)+jumptan(2,0)*jumptan(2,0));
+
+        //****************************************************************
+        //   end lin
+        //****************************************************************
       }
     }  
     
@@ -4207,6 +4234,286 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
           dgapgp[p->first] += gpn[k] * mderiv(z,1) * mmrtrnodes[z]->xspatial()[k] * (p->second);
       }
     }
+
+
+#ifdef WEARIMPLICIT
+    // *****************************************************************************
+    // Linearization of wear without lm-weighting and Jacobi -- dweargp            *
+    // *****************************************************************************
+
+    std::map<int,double> dweargp;
+
+    // evaluate the GP wear function derivatives
+    std::map<int,double> ddualgp_x;
+    std::map<int,double> ddualgp_y;
+    std::map<int,double> ddualgp_z;
+
+    std::map<int,double> ddualgp_x_sxi;
+    std::map<int,double> ddualgp_y_sxi;
+    std::map<int,double> ddualgp_z_sxi;
+
+    std::vector<std::vector<std::map<int,double> > > tanggp(3,std::vector<std::map<int,double> >(3));
+
+    // lin. abs(x) = x/abs(x) * lin x.
+    double xabsx = (1/abs(jump_val_lin)) * lm_lin;
+
+    // only for implicit wear
+    if(wear)
+    {
+      // **********************************************************************
+      // (1) Lin of normal for LM -- deriv normal maps from weighted gap lin.
+      for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
+        dweargp[p->first] += abs(jump_val_lin) * gplm[0] * (p->second);
+
+      for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
+        dweargp[p->first] += abs(jump_val_lin) * gplm[1] * (p->second);
+
+      for (CI p=dmap_nzsl_gp_unit.begin();p!=dmap_nzsl_gp_unit.end();++p)
+        dweargp[p->first] += abs(jump_val_lin) * gplm[2] * (p->second);
+
+      // **********************************************************************
+      // (2) Lin. of dual shape function of LM mult.
+      for (int i=0;i<nrow;++i)
+      {
+        for (int m=0;m<nrow;++m)
+        {
+          for (CI p=dualmap[i][m].begin();p!=dualmap[i][m].end();++p)
+          {
+            ddualgp_x[p->first] += (*lagmult)(0,m) *sval[m]*(p->second);
+            ddualgp_y[p->first] += (*lagmult)(1,m) *sval[m]*(p->second);
+            ddualgp_z[p->first] += (*lagmult)(2,m) *sval[m]*(p->second);
+          }
+        }
+      }
+      for (CI p=ddualgp_x.begin();p!=ddualgp_x.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
+      for (CI p=ddualgp_y.begin();p!=ddualgp_y.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
+      for (CI p=ddualgp_z.begin();p!=ddualgp_z.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[2]*(p->second);
+
+      // LM deriv
+      for (int i=0;i<nrow;++i)
+      {
+        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        {
+          ddualgp_x_sxi[p->first] += (*lagmult)(0,i) *lmderiv(i,0)*(p->second);
+          ddualgp_y_sxi[p->first] += (*lagmult)(1,i) *lmderiv(i,0)*(p->second);
+          ddualgp_z_sxi[p->first] += (*lagmult)(2,i) *lmderiv(i,0)*(p->second);
+        }
+        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+        {
+          ddualgp_x_sxi[p->first] += (*lagmult)(0,i) *lmderiv(i,1)*(p->second);
+          ddualgp_y_sxi[p->first] += (*lagmult)(1,i) *lmderiv(i,1)*(p->second);
+          ddualgp_z_sxi[p->first] += (*lagmult)(2,i) *lmderiv(i,1)*(p->second);
+        }
+      }
+      for (CI p=ddualgp_x_sxi.begin();p!=ddualgp_x_sxi.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
+      for (CI p=ddualgp_y_sxi.begin();p!=ddualgp_y_sxi.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
+      for (CI p=ddualgp_z_sxi.begin();p!=ddualgp_z_sxi.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[2]*(p->second);
+
+      // **********************************************************************
+      // (3) absolute incremental slip linearization:
+      // (a) build directional derivative of slave GP tagent
+
+      // lin tangplane: 1-n x n --> - ( dn x n + n x dn )
+      for (int i=0; i<3; ++i)
+      {
+        for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
+          tanggp[0][i][p->first] -= gpn[i]*(p->second);
+
+        for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
+          tanggp[1][i][p->first] -= gpn[i]*(p->second);
+
+        for (CI p=dmap_nzsl_gp_unit.begin();p!=dmap_nzsl_gp_unit.end();++p)
+          tanggp[2][i][p->first] -= gpn[i]*(p->second);
+      }
+      for (int i=0; i<3; ++i)
+      {
+        for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
+          tanggp[i][0][p->first] -= gpn[i]*(p->second);
+
+        for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
+          tanggp[i][1][p->first] -= gpn[i]*(p->second);
+
+        for (CI p=dmap_nzsl_gp_unit.begin();p!=dmap_nzsl_gp_unit.end();++p)
+          tanggp[i][2][p->first] -= gpn[i]*(p->second);
+      }
+
+      std::map<int,double> dt0;
+      std::map<int,double> dt1;
+      std::map<int,double> dt2;
+
+      // xccord from tang jump lin --> lin tangplane * jump
+      for (CI p=tanggp[0][0].begin();p!=tanggp[0][0].end();++p)
+        dt0[p->first] += (p->second) * jump(0,0);
+
+      for (CI p=tanggp[0][1].begin();p!=tanggp[0][1].end();++p)
+        dt0[p->first] += (p->second) * jump(1,0);
+
+      for (CI p=tanggp[0][2].begin();p!=tanggp[0][2].end();++p)
+        dt0[p->first] += (p->second) * jump(2,0);
+
+      // yccord from tang jump lin
+      for (CI p=tanggp[1][0].begin();p!=tanggp[1][0].end();++p)
+        dt1[p->first] += (p->second) * jump(0,0);
+
+      for (CI p=tanggp[1][1].begin();p!=tanggp[1][1].end();++p)
+        dt1[p->first] += (p->second) * jump(1,0);
+
+      for (CI p=tanggp[1][2].begin();p!=tanggp[1][2].end();++p)
+        dt1[p->first] += (p->second) * jump(2,0);
+
+      // zccord from tang jump lin
+      for (CI p=tanggp[2][0].begin();p!=tanggp[2][0].end();++p)
+        dt2[p->first] += (p->second) * jump(0,0);
+
+      for (CI p=tanggp[2][1].begin();p!=tanggp[2][1].end();++p)
+        dt2[p->first] += (p->second) * jump(1,0);
+
+      for (CI p=tanggp[2][2].begin();p!=tanggp[2][2].end();++p)
+        dt2[p->first] += (p->second) * jump(2,0);
+
+
+      // add to weargp :  1/abs(tangplane*jump) * LM * tanjump^T * (lin. tangplane * jump)
+      for (CI p=dt0.begin();p!=dt0.end();++p)
+        dweargp[p->first] += xabsx * (p->second) * jumptan(0,0);
+      for (CI p=dt1.begin();p!=dt1.end();++p)
+        dweargp[p->first] += xabsx * (p->second) * jumptan(1,0);
+      for (CI p=dt2.begin();p!=dt2.end();++p)
+        dweargp[p->first] += xabsx * (p->second) * jumptan(2,0);
+
+      // **********************************************************************
+      // (c) build directional derivative of jump
+      std::map<int,double> dmap_slcoord_gp_x;
+      std::map<int,double> dmap_slcoord_gp_y;
+      std::map<int,double> dmap_slcoord_gp_z;
+
+      std::map<int,double> dmap_mcoord_gp_x;
+      std::map<int,double> dmap_mcoord_gp_y;
+      std::map<int,double> dmap_mcoord_gp_z;
+
+      std::map<int,double> dmap_coord_x;
+      std::map<int,double> dmap_coord_y;
+      std::map<int,double> dmap_coord_z;
+
+      // lin slave part -- sxi
+      for (int i=0;i<nrow;++i)
+      {
+        for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        {
+          double valx =  sderiv(i,0) * ( scoord(0,i) - (*scoordold)(0,i) );
+          dmap_slcoord_gp_x[p->first] += valx*(p->second);
+          double valy =  sderiv(i,0) * ( scoord(1,i) - (*scoordold)(1,i) );
+          dmap_slcoord_gp_y[p->first] += valy*(p->second);
+          double valz =  sderiv(i,0) * ( scoord(2,i) - (*scoordold)(2,i) );
+          dmap_slcoord_gp_z[p->first] += valz*(p->second);
+        }
+        for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+        {
+          double valx =  sderiv(i,1) * ( scoord(0,i) - (*scoordold)(0,i) );
+          dmap_slcoord_gp_x[p->first] += valx*(p->second);
+          double valy =  sderiv(i,1) * ( scoord(1,i) - (*scoordold)(1,i) );
+          dmap_slcoord_gp_y[p->first] += valy*(p->second);
+          double valz =  sderiv(i,1) * ( scoord(2,i) - (*scoordold)(2,i) );
+          dmap_slcoord_gp_z[p->first] += valz*(p->second);
+        }
+      }
+
+      // lin master part -- mxi
+      for (int i=0;i<ncol;++i)
+      {
+        for (CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+        {
+          double valx =  mderiv(i,0) * ( mcoord(0,i)-(*mcoordold)(0,i) );
+          dmap_mcoord_gp_x[p->first] += valx*(p->second);
+          double valy =  mderiv(i,0) * ( mcoord(1,i)-(*mcoordold)(1,i) );
+          dmap_mcoord_gp_y[p->first] += valy*(p->second);
+          double valz =  mderiv(i,0) * ( mcoord(2,i)-(*mcoordold)(2,i) );
+          dmap_mcoord_gp_z[p->first] += valz*(p->second);
+        }
+        for (CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
+        {
+          double valx =  mderiv(i,1) * ( mcoord(0,i)-(*mcoordold)(0,i) );
+          dmap_mcoord_gp_x[p->first] += valx*(p->second);
+          double valy =  mderiv(i,1) * ( mcoord(1,i)-(*mcoordold)(1,i) );
+          dmap_mcoord_gp_y[p->first] += valy*(p->second);
+          double valz =  mderiv(i,1) * ( mcoord(2,i)-(*mcoordold)(2,i) );
+          dmap_mcoord_gp_z[p->first] += valz*(p->second);
+        }
+      }
+
+      // deriv slave x-coords
+      for (int i=0;i<nrow;++i)
+      {
+        dmap_slcoord_gp_x[smrtrnodes[i]->Dofs()[0]]+=sval[i];
+        dmap_slcoord_gp_y[smrtrnodes[i]->Dofs()[1]]+=sval[i];
+        dmap_slcoord_gp_z[smrtrnodes[i]->Dofs()[2]]+=sval[i];
+      }
+      // deriv master x-coords
+      for (int i=0;i<ncol;++i)
+      {
+        dmap_mcoord_gp_x[mmrtrnodes[i]->Dofs()[0]]+=mval[i];
+        dmap_mcoord_gp_y[mmrtrnodes[i]->Dofs()[1]]+=mval[i];
+        dmap_mcoord_gp_z[mmrtrnodes[i]->Dofs()[2]]+=mval[i];
+      }
+
+      //slave: add to jumplin
+      for (CI p=dmap_slcoord_gp_x.begin();p!=dmap_slcoord_gp_x.end();++p)
+        dmap_coord_x[p->first] += (p->second);
+      for (CI p=dmap_slcoord_gp_y.begin();p!=dmap_slcoord_gp_y.end();++p)
+        dmap_coord_y[p->first] += (p->second);
+      for (CI p=dmap_slcoord_gp_z.begin();p!=dmap_slcoord_gp_z.end();++p)
+        dmap_coord_z[p->first] += (p->second);
+
+      //master: add to jumplin
+      for (CI p=dmap_mcoord_gp_x.begin();p!=dmap_mcoord_gp_x.end();++p)
+        dmap_coord_x[p->first] -= (p->second);
+      for (CI p=dmap_mcoord_gp_y.begin();p!=dmap_mcoord_gp_y.end();++p)
+        dmap_coord_y[p->first] -= (p->second);
+      for (CI p=dmap_mcoord_gp_z.begin();p!=dmap_mcoord_gp_z.end();++p)
+        dmap_coord_z[p->first] -= (p->second);
+
+      // matrix vector prod -- tan
+      std::map<int,double> lintan0;
+      std::map<int,double> lintan1;
+      std::map<int,double> lintan2;
+
+      for (CI p=dmap_coord_x.begin();p!=dmap_coord_x.end();++p)
+        lintan0[p->first] += tanplane(0,0) * (p->second);
+      for (CI p=dmap_coord_y.begin();p!=dmap_coord_y.end();++p)
+        lintan0[p->first] += tanplane(0,1) * (p->second);
+      for (CI p=dmap_coord_z.begin();p!=dmap_coord_z.end();++p)
+        lintan0[p->first] += tanplane(0,2) * (p->second);
+
+      for (CI p=dmap_coord_x.begin();p!=dmap_coord_x.end();++p)
+        lintan1[p->first] += tanplane(1,0) * (p->second);
+      for (CI p=dmap_coord_y.begin();p!=dmap_coord_y.end();++p)
+        lintan1[p->first] += tanplane(1,1) * (p->second);
+      for (CI p=dmap_coord_z.begin();p!=dmap_coord_z.end();++p)
+        lintan1[p->first] += tanplane(1,2) * (p->second);
+
+      for (CI p=dmap_coord_x.begin();p!=dmap_coord_x.end();++p)
+        lintan2[p->first] += tanplane(2,0) * (p->second);
+      for (CI p=dmap_coord_y.begin();p!=dmap_coord_y.end();++p)
+        lintan2[p->first] += tanplane(2,1) * (p->second);
+      for (CI p=dmap_coord_z.begin();p!=dmap_coord_z.end();++p)
+        lintan2[p->first] += tanplane(2,2) * (p->second);
+
+      // add to dweargp
+      for (CI p=lintan0.begin();p!=lintan0.end();++p)
+        dweargp[p->first] += xabsx * jumptan(0,0) * (p->second);
+      for (CI p=lintan1.begin();p!=lintan1.end();++p)
+        dweargp[p->first] += xabsx * jumptan(1,0) * (p->second);
+      for (CI p=lintan2.begin();p!=lintan2.end();++p)
+        dweargp[p->first] += xabsx * jumptan(2,0) * (p->second);
+    }// end wear
+
+#endif
+
     // evaluate linearizations *******************************************
     
     // compute cell gap vector *******************************************
@@ -4494,6 +4801,66 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
         for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
           dgmap[p->first] += fac*(p->second);
       }
+
+#ifdef WEARIMPLICIT
+      /*******************************************************************
+       * Wear linearization for implicit algorithms                      *
+       * only for dual lagr. mult.                                       *
+       *******************************************************************/
+      double wcoeff = (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF");
+      double facw = 0.0;
+
+      // get the corresponding map as a reference
+      std::map<int,double>& dwmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivW();
+
+      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+        dserror("Petrov-Galerkin approach is not provided for the implicit wear algorithm!");
+
+      // (1) Lin(Phi) - dual shape functions resulting from weighting the wear
+      if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+      {
+        for (int m=0;m<nrow;++m)
+        {
+          facw = wcoeff*wgt*sval[m]*wearval*jac;
+          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            dwmap[p->first] += facw*(p->second);
+        }
+      }
+
+      // (2) Lin(Phi) - slave GP coordinates --> because of duality
+      facw = wcoeff*wgt*lmderiv(j,0)*wearval*jac;
+      for (CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        dwmap[p->first] += facw*(p->second);
+
+      facw = wcoeff*wgt*lmderiv(j,1)*wearval*jac;
+      for (CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+        dwmap[p->first] += facw*(p->second);
+
+      // (3) Lin(w) - wear function
+      facw = wcoeff*wgt*lmval[j]*jac;
+      for (CI p=dweargp.begin();p!=dweargp.end();++p)
+        dwmap[p->first] += facw*(p->second);
+
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      facw = wcoeff*wgt*lmval[j]*wearval;
+      for (CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+        dwmap[p->first] += facw*(p->second);
+
+      //****************************************************************
+      // LIN WEAR W.R.T. LM
+      //****************************************************************
+      std::map<int,double>& dwlmmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivWlm();
+
+      for (int bl=0;bl<nrow;++bl)
+      {
+        MORTAR::MortarNode* wearnode = static_cast<MORTAR::MortarNode*>(mynodes[bl]);
+
+        dwlmmap[wearnode->Dofs()[0]] += wcoeff*lmval[j]*jac*wgt*abs(jump_val_lin)*gpn[0]*lmval[bl];
+        dwlmmap[wearnode->Dofs()[1]] += wcoeff*lmval[j]*jac*wgt*abs(jump_val_lin)*gpn[1]*lmval[bl];
+        dwlmmap[wearnode->Dofs()[2]] += wcoeff*lmval[j]*jac*wgt*abs(jump_val_lin)*gpn[2]*lmval[bl];
+      }
+
+#endif
     }
     // compute cell gap linearization ************************************
   }

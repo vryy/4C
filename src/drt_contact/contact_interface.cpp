@@ -2916,6 +2916,7 @@ void CONTACT::CoInterface::AssembleLinWLm(LINALG::SparseMatrix& sglobal)
     std::map<int,double>& dwmap = cnode->CoData().GetDerivWlm();
     std::map<int,double>::iterator colcurr;
     int row = activen_->GID(i);
+    // row number of entries
 
     for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
     {
@@ -2969,7 +2970,7 @@ void CONTACT::CoInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
     double* jump = cnode->FriData().jump();
     double* n = cnode->MoData().n();
     double* txi = cnode->CoData().txi();
-    //double* teta = cnode->CoData().teta();
+    double* teta = cnode->CoData().teta();
     double* z = cnode->MoData().lm();
     //double& wgap = cnode->CoData().Getg();
 
@@ -2994,17 +2995,17 @@ void CONTACT::CoInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
     // evaluation of specific components of entries to assemble
     double znor = 0;
     double ztxi = 0;
-    //double zteta = 0;
+    double zteta = 0;
     double jumptxi = 0;
-    //double jumpteta = 0;
+    double jumpteta = 0;
     //double euclidean = 0;
     for (int i=0;i<Dim();i++)
     {
       znor += n[i]*z[i];
       ztxi += txi[i]*z[i];
-      //zteta += teta[i]*z[i];
+      zteta += teta[i]*z[i];
       jumptxi += txi[i]*jump[i];
-      //jumpteta += teta[i]*jump[i];
+      jumpteta += teta[i]*jump[i];
     }
 
     // loop over all entries of the current derivative map
@@ -3012,10 +3013,11 @@ void CONTACT::CoInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
     {
       int col = colcurr->first;
       double valtxi = frcoeff*cn*(colcurr->second)*(ztxi+ct*jumptxi);
-      //double valteta = frcoeff*cn*(colcurr->second)*(zteta+ct*jumpteta);
+      double valteta = frcoeff*cn*(colcurr->second)*(zteta+ct*jumpteta);
 
       // do not assemble zeros into matrix
       if (abs(valtxi)>1.0e-12) sglobal.Assemble(valtxi,row[0],col);
+      if (abs(valtxi)>1.0e-12) sglobal.Assemble(valteta,row[1],col);
     }
   }
   return;

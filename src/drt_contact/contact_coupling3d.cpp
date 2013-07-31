@@ -190,9 +190,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 
       Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
       if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
-      {
         wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-      }
 
       
       if (CouplingInAuxPlane())
