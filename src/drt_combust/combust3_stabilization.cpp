@@ -479,8 +479,14 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
 
   switch(tautype)
   {
-    case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_2006:
+    case INPAR::FLUID::EOS_tau_burman:
     {
+      dserror("Not yet implemented!");
+    }
+    break;
+    case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo:
+    {
+      dserror("Adapt to fluid!");
       // E.Burman, M.A.Fernandez and P.Hansbo 2006
       // "Edge stabilization for the incompressible Navier-Stokes equations: a continuous interior penalty finite element method"
       //
@@ -634,7 +640,12 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
 
     }
     break;
-    case INPAR::FLUID::EOS_tau_braack_burman_2007:
+    case INPAR::FLUID::EOS_tau_braack_burman_john_lube:
+    {
+      dserror("Braack_Burman_2007 tau-def not implemented yet");
+    }
+    break;
+    case INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump:
     {
       dserror("Braack_Burman_2007 tau-def not implemented yet");
     }

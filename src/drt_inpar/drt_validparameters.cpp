@@ -3123,24 +3123,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Burman_Fernandez",
                                     "Definition of stabilization parameter for edge-based stabilization",
                                     tuple<std::string>(
-                                    "Burman_Fernandez_Hansbo_2006",
-                                    "Braack_Burman_2007",
+                                    "Burman_Fernandez_Hansbo",
+                                    "Braack_Burman_John_Lube",
+                                    "Braack_Burman_John_Lube_wo_divjump",
                                     "Franca_Barrenechea_Valentin_Wall",
                                     "Burman_Fernandez",
+                                    "Burman",
                                     "tau_not_defined"
                                     ),
                                     tuple<std::string>(
-                                      "definition of burman_fernandez_hansbo_2006",
-                                      "definition of braack_burman_2007",
+                                      "definition of burman_fernandez_hansbo",
+                                      "definition of braack_burman_john_lube",
+                                      "definition of braack_burman_john_lube without explicit inclusion of divergence jump",
                                       "definition of tau_franca_barrenechea_valentin_wall",
                                       "definition of EOS_tau_burman_fernandez",
+                                      "definition of EOS_tau_burman",
                                       "no chosen definition"
                                       ),
                                     tuple<int>(
-                                      INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_2006,
-                                      INPAR::FLUID::EOS_tau_braack_burman_2007,
+                                      INPAR::FLUID::EOS_tau_burman_fernandez_hansbo,
+                                      INPAR::FLUID::EOS_tau_braack_burman_john_lube,
+                                      INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump,
                                       INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall,
                                       INPAR::FLUID::EOS_tau_burman_fernandez,
+                                      INPAR::FLUID::EOS_tau_burman,
                                       INPAR::FLUID::EOS_tau_not_defined) ,
                                     &fdyn_edge_based_stab);
 

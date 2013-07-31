@@ -794,7 +794,7 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
           }
           else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
           {
-            if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_3 < threshold_wavenumber_)
+            if ((abs(k_1) < threshold_wavenumber_ and abs(k_2) < threshold_wavenumber_ and abs(k_3) < threshold_wavenumber_)
                 and ((k_1*k_1 + k_2*k_2 + k_3*k_3) > 0))
               E_kf_ += energy;
           }
@@ -914,7 +914,7 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
               // note: we have "-" here, since we take -fac*u in the function below
               const double fac = -Pin_/(2.0*E_kf_);
 
-              if ((k_1 < threshold_wavenumber_ and k_2 < threshold_wavenumber_ and k_3 < threshold_wavenumber_)
+              if ((abs(k_1) < threshold_wavenumber_ and abs(k_2) < threshold_wavenumber_ and abs(k_3) < threshold_wavenumber_)
                   and ((k_1*k_1 + k_2*k_2 + k_3*k_3) > 0))
               {
                 // get position in fac-vector

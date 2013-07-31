@@ -951,6 +951,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
           else tau_vel += tau_div;
         }
         if(GP_visc)         tau_vel += tau_grad;
+
+        if (fldpara.EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
+         tau_vel = tau_u;
       }
 
       // assemble velocity (EOS) stabilization terms for fluid
@@ -1009,7 +1012,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
       if(elemat_blocks.size() < 10) dserror("do not choose diagonal pattern for div_EOS stabilization!");
 
-      if(!ghost_penalty_reconstruct)
+      if(!ghost_penalty_reconstruct and
+         fldpara.EOS_WhichTau() != INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
       {
         // assemble divergence (EOS) stabilization terms for fluid
         div_EOS(  elematrix_mm,
@@ -2653,8 +2657,58 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
   switch(tautype)
   {
-  case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_2006:
+  case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo:
   {
+    // E.Burman, M.A.Fernandez and P.Hansbo 2006
+    // "Continuous interior penalty method for Oseen's equations"
+    //
+    // velocity:
+    //
+    //             gamma_u * xi * h_K^2
+    //
+    //
+    // divergence:
+    //
+    //             gamma_div * h_K^2 * || u ||_0,inf_,K * xi
+    //
+    // pressure:
+    //
+    //                         h_K^2
+    //  gamma_p * xi * ---------------------
+    //                   || u ||_0,inf_,K
+    //
+    //                    || u ||_0,inf_,K   *   h_K
+    //  with    Re_K =  --------------------------------   and  xi = min(1,Re_K)
+    //                                nu
+
+//    gamma_p = 2.0 / 100.0;
+//    gamma_u = 2.0 / 100.0;
+//    gamma_div = 0.05 * gamma_u;
+
+    gamma_p = 1.0 / 8.0;
+    gamma_u = 1.0 / 8.0;
+    gamma_div = 1.0 / 8.0;
+
+    // element Reynold's number Re_K
+    double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
+    double xi = std::min(1.0,Re_K);
+
+    //-----------------------------------------------
+    // streamline
+    tau_u = density * gamma_u * xi * p_hk_*p_hk_;
+
+    //-----------------------------------------------
+    // pressure
+    if (max_vel_L2_norm > 1.0e-9)
+      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    else
+      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+
+    //-----------------------------------------------
+    // divergence
+    tau_div= density * gamma_div * xi * max_vel_L2_norm * p_hk_*p_hk_;
+
+#if 0
     // E.Burman, M.A.Fernandez and P.Hansbo 2006
     // "Edge stabilization for the incompressible Navier-Stokes equations: a continuous interior penalty finite element method"
     //
@@ -2673,40 +2727,40 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //  gamma_p * min(1,Re_K) * --------------------------       with    Re_K =  --------------------------------
     //                           || u ||_0,inf_,K  * rho                                      nu
     //
-
-    // element Reynold's number Re_K
-    double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
-
-    // streamline/velocity:
-    if(Re_K < 1.0)
-    {
-      tau_u   = gamma_u * p_hk_*p_hk_*p_hk_ / kinvisc * density;
-    }
-    else
-    {
-      tau_u   = gamma_u * p_hk_*p_hk_ / max_vel_L2_norm * density;
-    }
-
-    // divergence:
-    if(max_vel_L2_norm > 1.0e-14)
-    {
-      tau_div = gamma_div  * p_hk_* p_hk_ * max_vel_L2_norm * density;
-    }
-    else
-    {
-      tau_div = 0.0;
-    }
-
-    // pressure stabilization
-    // switch between low and high Reynolds numbers
-    if(Re_K < 1.0)
-    {
-      tau_p   = gamma_p    * p_hk_* p_hk_* p_hk_/ (kinvisc * density);
-    }
-    else
-    {
-      tau_p   = gamma_p    *        p_hk_* p_hk_/ (max_vel_L2_norm * density);
-    }
+//    // element Reynold's number Re_K
+//    double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
+//
+//    // streamline/velocity:
+//    if(Re_K < 1.0)
+//    {
+//      tau_u   = gamma_u * p_hk_*p_hk_*p_hk_ / kinvisc * density;
+//    }
+//    else
+//    {
+//      tau_u   = gamma_u * p_hk_*p_hk_ / max_vel_L2_norm * density;
+//    }
+//
+//    // divergence:
+//    if(max_vel_L2_norm > 1.0e-14)
+//    {
+//      tau_div = gamma_div  * p_hk_* p_hk_ * max_vel_L2_norm * density;
+//    }
+//    else
+//    {
+//      tau_div = 0.0;
+//    }
+//
+//    // pressure stabilization
+//    // switch between low and high Reynolds numbers
+//    if(Re_K < 1.0)
+//    {
+//      tau_p   = gamma_p    * p_hk_* p_hk_* p_hk_/ (kinvisc * density);
+//    }
+//    else
+//    {
+//      tau_p   = gamma_p    *        p_hk_* p_hk_/ (max_vel_L2_norm * density);
+//    }
+#endif
   }
   break;
   case INPAR::FLUID::EOS_tau_burman_fernandez:
@@ -2795,17 +2849,129 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     }
 
     // to have a consistent formulation we need only one density factor for
-    // pressure stabilisation. That is because we have two times pressure
-    // (test functions and the shape function) in the formuation. If we do not
+    // pressure stabilization. That is because we have two times pressure
+    // (test functions and the shape function) in the formulation. If we do not
     // cross out one density, we would multiply the term two times with
     // density, which is not correct.
     tau_p /= density;
 
   }
   break;
-  case INPAR::FLUID::EOS_tau_braack_burman_2007:
+  case INPAR::FLUID::EOS_tau_burman:
   {
-    dserror("Braack_Burman_2007 tau-def not implemented yet");
+    // E.Burman 2007
+    // "Interior penalty variational multiscale method for the incompressible Navier-Stokes equation: Monitoring artificial dissipation"
+    //
+    // velocity:
+    //                                                                  1.0
+    //             gamma_u *  h_E^2 * rho            with gamma_u   = -------
+    //                                                                 100.0
+    // divergence:
+    //
+    //           gamma_div *  h_E^2 * rho            with gamma_div = 0.05*gamma_u
+    //
+    // pressure:
+    //
+    //                                                                                        1.0
+    //             gamma_p *  h_E^2                  no scaling with density, with gamma_p = -------
+    //                                                                                        100.0
+
+    // we integrate each face once; Burman twice -> factor two for gamma compared to Burman
+    gamma_p = 2.0 / 100.0;
+    gamma_u = 2.0 / 100.0;
+    gamma_div = 0.05 * gamma_u;
+
+    //-----------------------------------------------
+    // streamline
+    tau_u = density * gamma_u * p_hk_*p_hk_;
+
+    //-----------------------------------------------
+    // pressure
+    tau_p = gamma_p * p_hk_*p_hk_ / density;
+
+    //-----------------------------------------------
+    // divergence
+    tau_div= density * gamma_div * p_hk_*p_hk_;
+
+  }
+  break;
+  case INPAR::FLUID::EOS_tau_braack_burman_john_lube:
+  {
+    // M. Braack, E. Burman, V. John, G. Lube 2007
+    // "Stabilized finite element methods for the generalized Oseen problem"
+    //
+    // velocity:
+    //
+    //             gamma_u * h_K^2
+    //
+    //
+    // divergence:
+    //
+    //             gamma_div * h_K^2 * || u ||_0,inf_,K
+    //
+    // pressure:
+    //
+    //                         h_K^2
+    //  gamma_p * xi * ---------------------
+    //                   || u ||_0,inf_,K
+    //
+    //                    || u ||_0,inf_,K   *   h_K
+    //  with    Re_K =  --------------------------------   and  xi = min(1,Re_K)
+    //                                n
+
+//    gamma_p = 2.0 / 100.0;
+//    gamma_u = 2.0 / 100.0;
+//    gamma_div = 0.05 * gamma_u;
+
+    gamma_p = 1.0;
+    gamma_u = 1.0;
+    gamma_div = 1.0;
+
+    // element Reynold's number Re_K
+    double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
+    double xi = std::min(1.0,Re_K);
+
+    //-----------------------------------------------
+    // streamline
+    tau_u = density * gamma_u * p_hk_*p_hk_;
+
+    //-----------------------------------------------
+    // pressure
+    if (max_vel_L2_norm > 1.0e-9)
+      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    else
+      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+
+    //-----------------------------------------------
+    // divergence
+    tau_div= density * gamma_div * max_vel_L2_norm * p_hk_*p_hk_;
+  }
+  break;
+  case INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump:
+  {
+    // M. Braack, E. Burman, V. John, G. Lube 2007
+    // "Stabilized finite element methods for the generalized Oseen problem"
+    gamma_p = 1.0;
+    gamma_u = 1.0;
+    gamma_div = 1.0;
+
+    // element Reynold's number Re_K
+    double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
+    double xi = std::min(1.0,Re_K);
+
+    //-----------------------------------------------
+    // streamline and divergence
+    tau_u = density * Re_K * p_hk_ * kinvisc;
+    //-----------------------------------------------
+    // divergence
+    tau_div = 0.0;
+
+    //-----------------------------------------------
+    // pressure
+    if (max_vel_L2_norm > 1.0e-9)
+      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    else
+      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
   }
   break;
   case INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall:

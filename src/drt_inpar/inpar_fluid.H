@@ -164,8 +164,10 @@ namespace INPAR
     /// tau type for edge-oriented / continuous interior penalty stabilization
     enum EOS_TauType
     {
-      EOS_tau_burman_fernandez_hansbo_2006,
-      EOS_tau_braack_burman_2007,
+      EOS_tau_burman,
+      EOS_tau_burman_fernandez_hansbo,
+      EOS_tau_braack_burman_john_lube,
+      EOS_tau_braack_burman_john_lube_wo_divjump,
       EOS_tau_franca_barrenechea_valentin_wall,
       EOS_tau_burman_fernandez,
       EOS_tau_not_defined
