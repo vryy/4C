@@ -121,7 +121,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
     scaling->scaleLinearSystem(Problem);
 
     if (utils.isPrintType(NOX::Utils::Details)) {
-      utils.out() << *scaling << endl;
+      utils.out() << *scaling << std::endl;
     }
   }
   // ************* End linear system scaling *******************

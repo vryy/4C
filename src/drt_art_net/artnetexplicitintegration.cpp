@@ -273,12 +273,12 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   }
 
 #if 0
-  cout<<"|**************************************************************************|"<<endl;
-  cout<<"|******************** The Initialize Vector qanp is ***********************|"<<endl;
-  cout<<"|**************************************************************************|"<<endl;
-  cout<<*qanp_<<endl;
-  cout<<"|**************************************************************************|"<<endl;
-  cout<<*Wfnp_<<endl;
+  std::cout<<"|**************************************************************************|"<<std::endl;
+  std::cout<<"|******************** The Initialize Vector qanp is ***********************|"<<std::endl;
+  std::cout<<"|**************************************************************************|"<<std::endl;
+  std::cout<<*qanp_<<std::endl;
+  std::cout<<"|**************************************************************************|"<<std::endl;
+  std::cout<<*Wfnp_<<std::endl;
 #endif
 
 } // ArtNetExplicitTimeInt::ArtNetExplicitTimeInt
@@ -571,8 +571,8 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
   }
 
 #if 0
-    cout<<"Boundary values are: "<<endl<<*bcval_<<endl;
-    cout<<"Boundary toggels are: "<<endl<<*dbctog_<<endl;
+    std::cout<<"Boundary values are: "<<std::endl<<*bcval_<<std::endl;
+    std::cout<<"Boundary toggels are: "<<std::endl<<*dbctog_<<std::endl;
 #endif
 
     LINALG::ApplyDirichlettoSystem(sysmat_,qanp_,rhs_,bcval_,dbctog_);
@@ -595,7 +595,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     if (A_debug != Teuchos::null)
     {
       // print to screen
-      (A_debug->EpetraMatrix())->Print(cout);
+      (A_debug->EpetraMatrix())->Print(std::cout);
     }
 
 #endif
@@ -609,7 +609,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
   dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
 
   if (myrank_ == 0)
-    cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
+    std::cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
 
   // Update Wf and Wb
   {
@@ -668,7 +668,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
       if (A_debug != Teuchos::null)
       {
         // print to screen
-        (A_debug->EpetraMatrix())->Print(cout);
+        (A_debug->EpetraMatrix())->Print(std::cout);
       }
     }
 #endif
@@ -682,7 +682,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
       if (A_debug != Teuchos::null)
       {
         // print to screen
-        (A_debug->EpetraMatrix())->Print(cout);
+        (A_debug->EpetraMatrix())->Print(std::cout);
       }
     }
 #endif
@@ -1059,7 +1059,7 @@ ART::ArtNetExplicitTimeInt::~ArtNetExplicitTimeInt()
 void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
 #if 1
 {
-  //  cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<endl;
+  //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<std::endl;
 
   // create the parameters for the discretization
   ParameterList eleparams;
@@ -1069,11 +1069,11 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
 
   // set vecotr values needed by elements
   discret_->ClearState();
-  //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<endl;
+  //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<std::endl;
   discret_->SetState("qanp",qanp_);
-  //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<endl;
+  //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<std::endl;
   //  discret_->SetState("Wfnp",Wfnp_);
-  //  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<endl;
+  //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<std::endl;
   //  discret_->SetState("Wbnp",Wbnp_);
 
   eleparams.set("time step size",dta_);
@@ -1081,14 +1081,14 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   eleparams.set("pressure",pn_);
   eleparams.set("art_area",an_);
   eleparams.set("flow",qn_);
-  //  cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<endl;
+  //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<std::endl;
   // call standard loop over all elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  //  cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<endl;
+  //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<std::endl;
 }//ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
 #else
 {
-  cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<endl;
+  std::cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<std::endl;
 
   // create the parameters for the discretization
   ParameterList eleparams;
@@ -1098,21 +1098,21 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
 
   // set vecotr values needed by elements
   discret_->ClearState();
-  cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<endl;
+  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<std::endl;
   discret_->SetState("qanp",qanp_);
-  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<endl;
+  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<std::endl;
   discret_->SetState("Wfnp",Wfnp_);
-  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<endl;
+  std::cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<std::endl;
   discret_->SetState("Wbnp",Wbnp_);
 
   eleparams.set("time step size",dta_);
   eleparams.set("total time",time_);
   eleparams.set("pressure",pn_);
   eleparams.set("flow",qn_);
-  cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<endl;
+  std::cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<std::endl;
   // call standard loop over all elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<endl;
+  std::cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<std::endl;
 }//ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
 #endif
 

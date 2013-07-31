@@ -219,7 +219,7 @@ CONTACT::FriNode* CONTACT::FriNode::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                               mgit 02/10|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::FriNode& frinode)
+std::ostream& operator << (std::ostream& os, const CONTACT::FriNode& frinode)
 {
   frinode.Print(os);
   return os;
@@ -229,7 +229,7 @@ ostream& operator << (ostream& os, const CONTACT::FriNode& frinode)
 /*----------------------------------------------------------------------*
  |  print this element (public)                               mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::Print(ostream& os) const
+void CONTACT::FriNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";

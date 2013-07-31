@@ -83,7 +83,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
-  string& action = p.get<std::string>("action","none");
+  std::string& action = p.get<std::string>("action","none");
   if (action != "calc_struct_nlnstiffmass"  &&
       action != "calc_struct_nlnstifflmass" &&
       action != "calc_struct_nlnstiff"      &&
@@ -1183,8 +1183,8 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
         sumFinvdFdm(0,lmlm[ele][j]) += FinvdFdm(0,j);
     }
     //sumFinvdFdm.Scale(fac);
-    //cout << sumFinvdFdm << endl;
-    //cout << FnodeL << FKron << endl;
+    //std::cout << sumFinvdFdm << std::endl;
+    //std::cout << FnodeL << FKron << std::endl;
 
     for (int i=0; i<ndofinpatch; ++i)
     {
@@ -1197,7 +1197,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     }
 
 
-    //cout << bopbar2 << endl << endl << endl << endl;
+    //std::cout << bopbar2 << std::endl << std::endl << std::endl << std::endl;
     bopbar = bopbar2;
   }
 #endif

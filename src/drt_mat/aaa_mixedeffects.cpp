@@ -178,7 +178,7 @@ void MAT::AAA_mixedeffects::Evaluate(
   // material parameters for isochoric part
   const double alpha    = 1E6*(0.09631+0.03329*(elelocalrad*2/params_->refdia_ - 2.55));
   const double beta     = 1E6*(-0.9553*(elelocalrad*2/(params_->refdia_) - 2.55)+(0.06721 * (params_->age_)));
-  //cout << elelocalrad*2 << "  " << beta << endl;
+  //std::cout << elelocalrad*2 << "  " << beta << std::endl;
   const double nue      = params_->nue_;       // Poisson's ratio
   // material parameters for volumetric part
   const double beta2 = -2.0;                                   // parameter from Holzapfel

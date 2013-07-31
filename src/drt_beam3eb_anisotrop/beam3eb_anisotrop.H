@@ -88,8 +88,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -234,7 +234,7 @@ public:
   /*!
   \brief Print this element
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
 
   //@}
@@ -668,7 +668,7 @@ private:
 }; // class Beam3ebanisotrop
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Element& ele);
+std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 } // namespace Elements
 } // namespace DRT

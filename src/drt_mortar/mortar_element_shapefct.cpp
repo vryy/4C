@@ -1885,11 +1885,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     }
 
     // std::cout linearization of Ae
-    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //std::cout << "Analytical A-derivative of Element: " << Id() << std::endl;
     //for (int i=0;i<nnodes;++i)
     //  for (int j=0;j<nnodes;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
 
     /*
 #ifdef DEBUG
@@ -1897,7 +1897,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
     Epetra_SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
     int thedim=3;
@@ -1943,14 +1943,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
         int col= mycnode->Dofs()[dim];
 
-        std::cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << std::endl;
 
         // FD solution
         for (int i=0;i<nnodes;++i)
           for (int j=0;j<nnodes;++j)
           {
             double val = (ae1(i,j)-aeref(i,j))/delta;
-            std::cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << std::endl;
           }
 
         // undo FD
@@ -2057,18 +2057,18 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     }
 
     // std::cout linearization of Ae
-    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //std::cout << "Analytical A-derivative of Element: " << Id() << std::endl;
     //for (int i=0;i<nnodes;++i)
     //  for (int j=0;j<nnodes;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
     /*
 #ifdef DEBUG
     // *******************************************************************
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
     Epetra_SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
     int thedim=3;
@@ -2113,14 +2113,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         ae1.Multiply('N','N',1.0,de1,me1,0.0);
         int col= mycnode->Dofs()[dim];
 
-        std::cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << std::endl;
 
         // FD solution
         for (int i=0;i<nnodes;++i)
           for (int j=0;j<nnodes;++j)
           {
             double val = (ae1(i,j)-aeref(i,j))/delta;
-            std::cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << std::endl;
           }
 
         // undo FD
@@ -2235,18 +2235,18 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     }
 
     // std::cout linearization of Ae
-    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //std::cout << "Analytical A-derivative of Element: " << Id() << std::endl;
     //for (int i=1;i<nnodes;++i)
     //  for (int j=1;j<nnodes;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
     /*
 #ifdef DEBUG
     // *******************************************************************
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
     LINALG::SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
 
@@ -2303,14 +2303,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
         int col= mycnode->Dofs()[dim];
 
-        std::cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << std::endl;
 
         // FD solution
         for (int i=1;i<nnodes;++i)
           for (int j=1;j<nnodes;++j)
           {
             double val = (ae1(i-1,j-1)-aeref(i-1,j-1))/delta;
-            std::cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << std::endl;
           }
 
         // undo FD
@@ -2425,18 +2425,18 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
     }
 
     // std::cout linearization of Ae
-    //std::cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //std::cout << "Analytical A-derivative of Element: " << Id() << std::endl;
     //for (int i=0;i<nnodes-1;++i)
     //  for (int j=0;j<nnodes-1;++j)
     //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
-    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    //      std::cout << "A" << i << j << " " << p->first << " " << p->second << std::endl;
     /*
 #ifdef DEBUG
     // *******************************************************************
     // FINITE DIFFERENCE check of Lin(Ae)
     // *******************************************************************
 
-    std::cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
     LINALG::SerialDenseMatrix aeref(ae);
     double delta = 1e-8;
 
@@ -2493,14 +2493,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CoNode* mycnode = static_cast<CoNode*> (mynodes[node]);
         int col= mycnode->Dofs()[dim];
 
-        std::cout << "A-Derivative: " << col << endl;
+        std::cout << "A-Derivative: " << col << std::endl;
 
         // FD solution
         for (int i=0;i<nnodes-1;++i)
           for (int j=0;j<nnodes-1;++j)
           {
             double val = (ae1(i,j)-aeref(i,j))/delta;
-            std::cout << "A" << i << j << " " << val << endl;
+            std::cout << "A" << i << j << " " << val << std::endl;
           }
 
         // undo FD

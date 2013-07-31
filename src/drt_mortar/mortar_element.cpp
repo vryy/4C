@@ -160,7 +160,7 @@ MORTAR::MortarElement* MORTAR::MortarElement::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const MORTAR::MortarElement& element)
+std::ostream& operator << (std::ostream& os, const MORTAR::MortarElement& element)
 {
   element.Print(os);
   return os;
@@ -170,7 +170,7 @@ ostream& operator << (ostream& os, const MORTAR::MortarElement& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::Print(ostream& os) const
+void MORTAR::MortarElement::Print(std::ostream& os) const
 {
   os << "Mortar Element ";
   DRT::Element::Print(os);

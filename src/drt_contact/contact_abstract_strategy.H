@@ -607,7 +607,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     \brief Print interfaces
 
     */
-    virtual void Print(ostream& os) const;
+    virtual void Print(std::ostream& os) const;
 
     /*!
     \brief Print current active set to screen for debugging purposes
@@ -769,6 +769,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 } // namespace CONTACT
 
 // << operator
-ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy);
+std::ostream& operator << (std::ostream& os, const CONTACT::CoAbstractStrategy& strategy);
 
 #endif  // #ifndef CONTACT_STRATEGY_H

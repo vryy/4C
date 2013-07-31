@@ -552,7 +552,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::GetMaterialParams(
           {
             // For storing additional data, we increase the vector for
             // diffusivity and valences by one!
-            cout<<"k = "<<k<<"   Did push back for diffus_ and valence_!"<<endl;
+            std::cout<<"k = "<<k<<"   Did push back for diffus_ and valence_!"<<std::endl;
             diffus_.push_back(actsinglemat->ElimDiffusivity());
             valence_.push_back(actsinglemat->ElimValence());
             diffusvalence_.push_back(valence_[numscal_]*diffus_[numscal_]);
@@ -570,7 +570,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::GetMaterialParams(
           else
             dserror("Something is wrong with eliminated ion species data");
           //if (ele->Id()==0)
-          //  cout<<"data: "<<diffus_[numscal_]<<"   "<<valence_[numscal_]<<endl;
+          //  std::cout<<"data: "<<diffus_[numscal_]<<"   "<<valence_[numscal_]<<std::endl;
           // data check:
           if (abs(diffus_[numscal_])< EPS13) dserror("No diffusivity for eliminated species read!");
           if (abs(valence_[numscal_])< EPS13) dserror("No valence for eliminated species read!");
@@ -1514,10 +1514,10 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
       tau_[k] = 0.5*h*xi/vel_norm;
 
 #if 0
-      cout<<"epe = "<<epe<<endl;
-      cout<<"xi_opt  = "<<xi<<endl;
-      cout<<"vel_norm  = "<<vel_norm<<endl;
-      cout<<"tau_opt = "<<tau_[k]<<endl<<endl;
+      std::cout<<"epe = "<<epe<<std::endl;
+      std::cout<<"xi_opt  = "<<xi<<std::endl;
+      std::cout<<"vel_norm  = "<<vel_norm<<std::endl;
+      std::cout<<"tau_opt = "<<tau_[k]<<std::endl<<std::endl;
 #endif
     }
     else tau_[k] = 0.0;
@@ -1533,7 +1533,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
   } //switch (whichtau_)
 
 #if 0
-  cout<<"diffus  for k "<<k <<" is = "<<diffus<<endl;
+  std::cout<<"diffus  for k "<<k <<" is = "<<diffus<<std::endl;
 #endif
 #ifdef VISUALIZE_ELEMENT_DATA
   // visualize stabilization parameter
@@ -2583,7 +2583,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalMatAndRHS_REINIT_Penalty(
         if(fabs(phi_diff)< 1e-12)
         {
           // maybe a complete edge is zero -> do nothing for this element
-          cout << "!!! WARNING: one element edge is zero in element " << ele->Id() << "-> check this penalty case!!! (do nothing at the moment)" << endl;
+          std::cout << "!!! WARNING: one element edge is zero in element " << ele->Id() << "-> check this penalty case!!! (do nothing at the moment)" << std::endl;
           return;
         }
 
@@ -3215,7 +3215,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::Sysmat_Reinit_OST(
   if(fabs(grad_phi_0.Norm2()) < phi_gradient_TOL)
   {
     do_evaluate=false;
-    cout << "only mass matrix assembled in element " << ele->Id() << "Too small gradients for reinitialization" << endl;
+    std::cout << "only mass matrix assembled in element " << ele->Id() << "Too small gradients for reinitialization" << std::endl;
   }
 
   //=========================================================================================

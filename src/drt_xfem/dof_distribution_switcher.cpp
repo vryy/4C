@@ -79,11 +79,11 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
         const DofKey altdofkey(nodegid, XFEM::FieldEnr(olddofkey.getFieldEnr().getField(), altenr));
         const int newdofpos = newNodalDofDistrib_.find(altdofkey)->second;
 
-        //std::cout << olddofkey.toString() << " -> " << altdofkey.toString() << endl;
+        //std::cout << olddofkey.toString() << " -> " << altdofkey.toString() << std::endl;
         if (newdofpos < 0)
         {
-          std::cout << "old Dofkey" << endl << olddofkey.toString() << endl;
-          std::cout << "alt Dofkey" << endl << altdofkey.toString() << endl;
+          std::cout << "old Dofkey" << std::endl << olddofkey.toString() << std::endl;
+          std::cout << "alt Dofkey" << std::endl << altdofkey.toString() << std::endl;
           dserror("bug!");
         }
 //        unknownDofKeys.erase(altdofkey);
@@ -203,7 +203,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
   if (vector == Teuchos::null)
   {
 #ifdef DEBUG
-    std::cout << "  created new vector with all zeros" << endl;
+    std::cout << "  created new vector with all zeros" << std::endl;
 #endif
   }
   else
@@ -213,10 +213,10 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
 #endif
     const RCP<Epetra_Vector> oldVector = vector;
     const Epetra_BlockMap& oldmap = oldVector->Map();
-//    std::cout << "olddofrowmap_" << endl;
-//    std::cout << (olddofrowmap_) << endl;
-//    std::cout << "newdofrowmap_" << endl;
-//    std::cout << (newdofrowmap_) << endl;
+//    std::cout << "olddofrowmap_" << std::endl;
+//    std::cout << (olddofrowmap_) << std::endl;
+//    std::cout << "newdofrowmap_" << std::endl;
+//    std::cout << (newdofrowmap_) << std::endl;
 
     if (not oldmap.SameAs(olddofrowmap_)) dserror("bug!");
 
@@ -233,7 +233,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
       {
         const DofKey olddofkey = olddof->first;
         const int olddofpos = olddof->second;
-        //cout << newdofkey.toString() << " -> init to old value" << endl;
+        //std::cout << newdofkey.toString() << " -> init to old value" << std::endl;
         (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];
 
         if (quasi_static_enr == true)

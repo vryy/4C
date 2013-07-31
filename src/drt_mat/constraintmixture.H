@@ -96,17 +96,17 @@ namespace MAT
       /// at this time turnover of collagen starts
       const double starttime_;
       /// time integration scheme (Explicit,Implicit)
-      const string* integration_;
+      const std::string* integration_;
       /// tolerance for local Newton iteration
       const double abstol_;
       /// driving force of growth (Single,All)
-      const string* growthforce_;
+      const std::string* growthforce_;
       /// how to set stretches in the beginning
-      const string* initstretch_;
+      const std::string* initstretch_;
       /// number of timecurve for increase of prestretch in time
       const int timecurve_;
       /// which degradation function
-      const string degoption_;
+      const std::string degoption_;
       /// tolerance for degradation
       const double degtol_;
       //@}
@@ -338,10 +338,10 @@ namespace MAT
     (const int gp, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd);
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<string,int>& names);
+    virtual void VisNames(std::map<std::string,int>& names);
 
     /// Return visualization data
-    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp);
 
   private:
 

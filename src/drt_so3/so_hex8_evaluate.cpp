@@ -760,13 +760,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         // compute GP contribution to energy error norm
         energynorm += fac * psierror;
 
-        //cout << "UAnalytical:      " << uanalyt << endl;
-        //cout << "UDiscrete:        " << ugp << endl;
-        //cout << "StrainAnalytical: " << strainanalyt << endl;
-        //cout << "StrainDiscrete:   " << straingp << endl;
-        //cout << "DerivAnalytical:  " << derivanalyt << endl;
-        //cout << "DerivDiscrete:    " << derivgp << endl;
-        //cout << endl;
+        //std::cout << "UAnalytical:      " << uanalyt << std::endl;
+        //std::cout << "UDiscrete:        " << ugp << std::endl;
+        //std::cout << "StrainAnalytical: " << strainanalyt << std::endl;
+        //std::cout << "StrainDiscrete:   " << straingp << std::endl;
+        //std::cout << "DerivAnalytical:  " << derivanalyt << std::endl;
+        //std::cout << "DerivDiscrete:    " << derivgp << std::endl;
+        //std::cout << std::endl;
       }
       //----------------------------------------------------------------
 
@@ -866,8 +866,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
       // if(gp ==1)
       // {
-      //cout << "Fhist  " << Fhist << endl;
-      //cout << "Fhnew  " << new << endl;
+      //std::cout << "Fhist  " << Fhist << std::endl;
+      //std::cout << "Fhnew  " << new << std::endl;
       // }
     }
 

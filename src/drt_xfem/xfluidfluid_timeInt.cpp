@@ -133,18 +133,18 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       GEO::CUT::Point::PointPosition pos = p->Position();
       if (pos==GEO::CUT::Point::outside and bgdis->NumDof(node) != 0) //std
       {
-        //cout << node->Id() << "std!! size()" << vcs.size() << endl;
-        //cout << " outside " << pos <<  " "<< node->Id() << endl;
+        //std::cout << node->Id() << "std!! size()" << vcs.size() << std::endl;
+        //std::cout << " outside " << pos <<  " "<< node->Id() << std::endl;
         std::vector<int> gdofs = bgdis->Dof(node);
         stdnodenp_[gid] = gdofs;
       }
       else if (pos==GEO::CUT::Point::inside and  bgdis->NumDof(node) == 0) //void
       {
-        //cout << " inside " <<  pos << " " << node->Id() << endl;
+        //std::cout << " inside " <<  pos << " " << node->Id() << std::endl;
       }
       else if (pos==GEO::CUT::Point::inside and  bgdis->NumDof(node) != 0) //enriched
       {
-        //cout << " inside enriched" <<  pos << " " << node->Id() << endl;
+        //std::cout << " inside enriched" <<  pos << " " << node->Id() << std::endl;
         std::vector<int> gdofs = bgdis->Dof(node);
         enrichednodenp_[gid] = gdofs;
       }
@@ -157,7 +157,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       // size (void)
       else if (pos==GEO::CUT::Point::oncutsurface and  bgdis->NumDof(node) == 0)
       {
-        //cout << " on the surface " <<  pos << " " << node->Id() << endl;
+        //std::cout << " on the surface " <<  pos << " " << node->Id() << std::endl;
       }
       else
       {
@@ -186,23 +186,23 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
 //   for(std::map<int, std::vector<int> >::iterator iter = nodetoparentele_.begin(); iter!= nodetoparentele_.end();
 //       iter++)
 //   {
-//     cout << "ngid " <<  iter->first << endl;
+//     std::cout << "ngid " <<  iter->first << std::endl;
 //     std::vector<int> fff= iter->second;
 //     for (int u=0;u<fff.size();++u)
-//       cout << fff.at(u);
-//     cout << endl;
+//       std::cout << fff.at(u);
+//     std::cout << std::endl;
 //   }
 //   for(std::map<int, std::vector< std::vector< int > > >::iterator iter = parenteletondsset_.begin(); iter!= parenteletondsset_.end();
 //       iter++)
 //   {
-//     cout << "elegid " << iter->first << endl;
-//     cout << "size nds " << iter->second.size() << endl;
+//     std::cout << "elegid " << iter->first << std::endl;
+//     std::cout << "size nds " << iter->second.size() << std::endl;
 //     for (int s=0; s < iter->second.size(); ++s)
 //     {
 //       const std::vector<int> & nds = iter->second[s];
 //       for (int ttt=0; ttt<nds.size(); ++ttt)
-//         cout << nds.at(ttt) << " " ;
-//       cout << endl;
+//         std::cout << nds.at(ttt) << " " ;
+//       std::cout << std::endl;
 //     }
 //   }
 //     for (int i=0; i<bgdis->NumMyColNodes(); ++i)
@@ -212,12 +212,12 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
 //        std::map<int, std::vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
 //        std::map<int, std::vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
 //        std::map<int, std::vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
-//        if (iter2 != enrichednoden_.end()) cout  << " enrichned n : " << actnode->Id() << " "  ;
-//        if (iter2 == enrichednoden_.end() and iter == stdnoden_.end()) cout  << " void n :" <<  actnode->Id() << " "  ;
-//        if (iter4 != enrichednodenp_.end()) cout  << " enrichned np : " << actnode->Id() << " "  ;
-//        if (iter4 == enrichednodenp_.end() and iter3 == stdnodenp_.end()) cout  << " void np :" <<  actnode->Id() << " "  ;
-//        if (iter  != stdnoden_.end()) cout  << " std n : " << actnode->Id() << " "  ;
-//        if (iter3 != stdnodenp_.end()) cout  << " std np :" <<  actnode->Id() << " "  ;
+//        if (iter2 != enrichednoden_.end()) std::cout  << " enrichned n : " << actnode->Id() << " "  ;
+//        if (iter2 == enrichednoden_.end() and iter == stdnoden_.end()) std::cout  << " void n :" <<  actnode->Id() << " "  ;
+//        if (iter4 != enrichednodenp_.end()) std::cout  << " enrichned np : " << actnode->Id() << " "  ;
+//        if (iter4 == enrichednodenp_.end() and iter3 == stdnodenp_.end()) std::cout  << " void np :" <<  actnode->Id() << " "  ;
+//        if (iter  != stdnoden_.end()) std::cout  << " std n : " << actnode->Id() << " "  ;
+//        if (iter3 != stdnodenp_.end()) std::cout  << " std np :" <<  actnode->Id() << " "  ;
 //    }
 }
 
@@ -378,7 +378,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
 
 //      int numsets = bgdis->NumDof(bgnode)/4;
 //      if (numsets > 1)
-//         cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+//         std::cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << std::endl;
 
       //  the first set of bgstatevn is transfered to bgstatevnp.
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp1,bgstatevn1);
@@ -900,7 +900,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
       //int numsets = bgdis->NumDof(bgnode)/4;
 
 //      if( numsets > 1 )
-//        cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+//        std::cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << std::endl;
 
     }
     //keep the ghost dofs:
@@ -936,7 +936,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
 
       if( bgdis->NumDof(bgnode) > 0 )
         IO::cout  <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() <<  IO::endl;
-      //cout << "do nothing" << bgnode->Id() << endl; ;
+      //std::cout << "do nothing" << bgnode->Id() << std::endl; ;
     }
     else
       IO::cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  IO::endl;
@@ -1216,7 +1216,7 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject2(D
   {
     case DRT::Element::hex8:
     {
-//      cout <<" bg ele id" << pele->Id() << endl;
+//      std::cout <<" bg ele id" << pele->Id() << std::endl;
       const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
       LINALG::Matrix<4,numnodes> veln(true);
       LINALG::Matrix<4,numnodes> disp;
@@ -1328,7 +1328,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
     DRT::UTILS::ConditionSelector conds(*embdis_, "FSICoupling");
     if (conds.ContainsNode(embnode->Id())==false)//if no fsi node
     {
-      //cout << "unknown node id " << embnode->Id() << endl;
+      //std::cout << "unknown node id " << embnode->Id() << std::endl;
       embdis_->Dof(embnode,0,pgdofs);
 
       DRT::UTILS::ExtractMyValues(*aledispnp,mydisp,pgdofs);
@@ -1347,7 +1347,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
       {
         DRT::Element* pele = embdis_->lColElement(e);
         LINALG::Matrix<20,1> interpolatedvec(true);
-        //cout << "pele id " << pele->Id() << endl;
+        //std::cout << "pele id " << pele->Id() << std::endl;
 
         insideelement = ComputeSpacialToElementCoordAndProject(pele,embnodecords,interpolatedvec,
         													   statevemb_n,vec1, vec2, vec3, vec4,
@@ -1388,7 +1388,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
            count ++;
        }
 /*          if (count == bgdis->NumMyColElements())
-            cout << "no bg elements found for: " << embnode->Id() << endl;*/
+            std::cout << "no bg elements found for: " << embnode->Id() << std::endl;*/
         }
     }
   }
@@ -1732,12 +1732,12 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
 //         iter++)
 //     {
 //       std::set<int>::const_iterator iterpatchele = incompelementids_set_.find(*iter);
-//       cout << "all eles" << *iter << endl;
+//       std::cout << "all eles" << *iter << std::endl;
 //       DRT::Node ** elenodes = bgdis->gElement(*iter)->Nodes();
 //       for(int inode=0; inode<bgdis->gElement(*iter)->NumNode(); ++inode)
 //       {
-//         cout <<  "bgnode id " <<elenodes[inode]->Id() ;
-//         cout << " dofs " << bgdis->NumDof(elenodes[inode]) << endl;
+//         std::cout <<  "bgnode id " <<elenodes[inode]->Id() ;
+//         std::cout << " dofs " << bgdis->NumDof(elenodes[inode]) << std::endl;
 //       }
 //     }
 
@@ -1774,7 +1774,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
 {
 
   // generate an empty boundary discretisation
-  incompdis_ = Teuchos::rcp(new DRT::Discretization((string)"incompressibility discretisation",
+  incompdis_ = Teuchos::rcp(new DRT::Discretization((std::string)"incompressibility discretisation",
                                            Teuchos::rcp(bgdis->Comm().Clone())));
 
   std::set<int> incompelementids_set_all;
@@ -2125,8 +2125,8 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
 
         if ( next_us <= maxgid )
         {
-          // cout << "next yy "<< next << " " << (*C_vel)[next] << endl;
-          // cout << "next_us yy "<< next_us << " " <<  (*C_vel)[next_us] << endl;
+          // std::cout << "next yy "<< next << " " << (*C_vel)[next] << std::endl;
+          // std::cout << "next_us yy "<< next_us << " " <<  (*C_vel)[next_us] << std::endl;
 
           double Nenner = sqrt((*C_vel)[next]*(*C_vel)[next]+
                                (*C_vel)[next_us]*(*C_vel)[next_us]);
@@ -2207,8 +2207,8 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
   int mylastGID = lastallreduced.MaxMyGID();
   LINALG::Export(*C_vel,*C_vel_last);
 
-  // cout << "C_vellast " << *C_vel_last << endl;
-  // cout << "length " << C_vel_last->MyLength() << endl;
+  // std::cout << "C_vellast " << *C_vel_last << std::endl;
+  // std::cout << "length " << C_vel_last->MyLength() << std::endl;
 
   // loop over all processors
   if (C_vel_last->MyLength() > 1)
@@ -2230,7 +2230,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
         double next_val = (*C_vel_last)[pr];
         double nextus_val = (*C_vel_last)[pr+1];
 
-        // cout << "val " << next_val << " " << nextus_val << endl;
+        // std::cout << "val " << next_val << " " << nextus_val << std::endl;
 
         double Nenner = sqrt(next_val*next_val+nextus_val*nextus_val);
         Nenner = 1/Nenner;

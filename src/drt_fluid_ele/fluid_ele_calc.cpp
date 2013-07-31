@@ -1425,7 +1425,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
 
   if (myneumcond.size()==1)
   {
-    const string* condtype = myneumcond[0]->Get<string>("type");
+    const std::string* condtype = myneumcond[0]->Get<std::string>("type");
 
     // check for potential time curve
     const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");

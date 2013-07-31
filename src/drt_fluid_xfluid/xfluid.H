@@ -428,17 +428,17 @@ namespace FLD
 
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() { cout << "InitialGuess" <<endl;  return state_->incvel_; }
-    Teuchos::RCP<Epetra_Vector> Residual()     { cout << "Residual" << endl;     return state_->residual_; }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() { std::cout << "InitialGuess" <<std::endl;  return state_->incvel_; }
+    Teuchos::RCP<Epetra_Vector> Residual()     { std::cout << "Residual" << std::endl;     return state_->residual_; }
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
-    Teuchos::RCP<const Epetra_Vector> TrueResidual() { cout << "Xfluid_TrueResidual" << endl; return state_->trueresidual_; }
-    Teuchos::RCP<const Epetra_Vector> Velnp()        { cout << "Velnp" << endl;        return state_->velnp_; }
-    Teuchos::RCP<const Epetra_Vector> Velaf()        { cout << "Velaf" << endl;        return state_->velaf_; }
-    Teuchos::RCP<const Epetra_Vector> Veln()         { cout << "Veln() in!!! " <<  endl; return state_->veln_; } //return state_->fluidfluidveln_ ;}//
+    Teuchos::RCP<const Epetra_Vector> TrueResidual() { std::cout << "Xfluid_TrueResidual" << std::endl; return state_->trueresidual_; }
+    Teuchos::RCP<const Epetra_Vector> Velnp()        { std::cout << "Velnp" << std::endl;        return state_->velnp_; }
+    Teuchos::RCP<const Epetra_Vector> Velaf()        { std::cout << "Velaf" << std::endl;        return state_->velaf_; }
+    Teuchos::RCP<const Epetra_Vector> Veln()         { std::cout << "Veln() in!!! " <<  std::endl; return state_->veln_; } //return state_->fluidfluidveln_ ;}//
 
-    Teuchos::RCP<const Epetra_Vector> Dispnp() { cout << "Dispnp " << endl; return state_->dispnp_; }
-    Teuchos::RCP<const Epetra_Vector> Dispn()  { cout << "Dispn" << endl;   return state_->dispn_; }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() { std::cout << "Dispnp " << std::endl; return state_->dispnp_; }
+    Teuchos::RCP<const Epetra_Vector> Dispn()  { std::cout << "Dispn" << std::endl;   return state_->dispn_; }
 
     //! get the interface forces acting on the structural surface
     Teuchos::RCP<const Epetra_Vector> ITrueResidual(){ return itrueresidual_; }

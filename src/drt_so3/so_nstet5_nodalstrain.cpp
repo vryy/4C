@@ -91,7 +91,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
-  string& action = p.get<std::string>("action","none");
+  std::string& action = p.get<std::string>("action","none");
   if (action != "calc_struct_nlnstiffmass"  &&
       action != "calc_struct_nlnstifflmass" &&
       action != "calc_struct_nlnstiff"      &&

@@ -28,7 +28,7 @@ public:
   */
   FluidDiscretExtractor(
     RCP<DRT::Discretization> actdis,         //! parent discretization
-    const string&            condition,      //! condition for separation of domain
+    const std::string&            condition,      //! condition for separation of domain
     bool                     yescondition);  //! (unused) bool to distinguish between all nodes having the condition and all nodes not having it
 
    /*!

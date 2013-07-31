@@ -55,7 +55,7 @@ namespace FS3I
     //@}
 
     /// flag for constant thermodynamic pressure
-    string consthermpress_;
+    std::string consthermpress_;
 
     /// fluid- and structure-based scalar transport problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra_;

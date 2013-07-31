@@ -110,7 +110,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   std::vector<double> globalmaxs (0);
   for (size_t i = 0; i < surfacepbcs->size(); ++i)
   {
-    const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
+    const std::string* ismaster = (*surfacepbcs)[i]->Get<std::string>("Is slave periodic boundary condition");
     if (*ismaster == "Master")
     {
       const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
@@ -120,7 +120,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
         const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
         if (masterid == slaveid)
         {
-          const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
+          const std::string* isslave = (*surfacepbcs)[j]->Get<std::string>("Is slave periodic boundary condition");
           if (*isslave == "Slave")
           {
             const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
@@ -132,7 +132,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
       }
 
       // Get normal direction of pbc plane
-      const string* pbcplane = (*surfacepbcs)[i]->Get<string>("degrees of freedom for the pbc plane");
+      const std::string* pbcplane = (*surfacepbcs)[i]->Get<std::string>("degrees of freedom for the pbc plane");
       if (*pbcplane == "yz")
         planenormal.push_back(0);
       else if (*pbcplane == "xz")
@@ -167,7 +167,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
 
   //  for (size_t i = 0; i < planenormal.size(); ++i)
   //  {
-  //    cout << "Normal: " << planenormal[i] << " Min: " << globalmins[i] << " Max: " << globalmaxs[i] << endl;
+  //    std::cout << "Normal: " << planenormal[i] << " Min: " << globalmins[i] << " Max: " << globalmaxs[i] << std::endl;
   //  }
 
 
@@ -183,7 +183,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   {
     // get the processor local node
     const DRT::Node* lnode = gfuncdis->lRowNode(lnodeid);
-    //cout << "proc " << comm.MyPID() << " reinitialization for node: " << lnode->Id() << endl;
+    //std::cout << "proc " << comm.MyPID() << " reinitialization for node: " << lnode->Id() << std::endl;
 
     // get the dof associated with this node
     const std::vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar!
@@ -390,9 +390,9 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
       //         local patches -> mindist = vertexdist or edgedist
       // case 3: something went wrong:  "mindist" still has default value (5555.5)
 
-      //cout << "minimal distance to facing patch is " << mindist << endl;
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << endl;
-      //cout << "vertexdist " << std::setw(18) << std::setprecision(12) << std::scientific << vertexdist << endl;
+      //std::cout << "minimal distance to facing patch is " << mindist << std::endl;
+      //std::cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << std::endl;
+      //std::cout << "vertexdist " << std::setw(18) << std::setprecision(12) << std::scientific << vertexdist << std::endl;
       if (fabs(edgedist) < fabs(mindist)) // case 2a
       {
         // if G-value at the node is negative, the minimal distance has to be negative
@@ -416,7 +416,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
           mindist = -vertexdist;
         else
           mindist = vertexdist;
-        //cout << "node " << lnode->Id() << " does not face a patch (blind angle) or this patch is not local; distance: " << mindist << endl;
+        //std::cout << "node " << lnode->Id() << " does not face a patch (blind angle) or this patch is not local; distance: " << mindist << std::endl;
 
         if (pbcnode)
         {
@@ -536,11 +536,11 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
     break;
   case DRT::Element::hex20:
     numnodesperele = 20;
-    cout << "Warning, the fast signed distance reinitialization has not been tested with hex20 elements!" << endl;
+    std::cout << "Warning, the fast signed distance reinitialization has not been tested with hex20 elements!" << std::endl;
     break;
   case DRT::Element::hex27:
     numnodesperele = 27;
-    cout << "Warning, the fast signed distance reinitialization has not been tested with hex27 elements!" << endl;
+    std::cout << "Warning, the fast signed distance reinitialization has not been tested with hex27 elements!" << std::endl;
     break;
   default:
     dserror("The fast signed distance reinitialization only supports hex8, hex20 and hex27 elements.");
@@ -560,7 +560,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
 
   for (size_t i = 0; i < surfacepbcs->size(); ++i)
   {
-    const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
+    const std::string* ismaster = (*surfacepbcs)[i]->Get<std::string>("Is slave periodic boundary condition");
     if (*ismaster == "Master")
     {
       const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
@@ -570,7 +570,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
         const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
         if (masterid == slaveid)
         {
-          const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
+          const std::string* isslave = (*surfacepbcs)[j]->Get<std::string>("Is slave periodic boundary condition");
           if (*isslave == "Slave")
           {
             const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
@@ -582,7 +582,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
       }
 
       // Get normal direction of pbc plane
-      const string* pbcplane = (*surfacepbcs)[i]->Get<string>("degrees of freedom for the pbc plane");
+      const std::string* pbcplane = (*surfacepbcs)[i]->Get<std::string>("degrees of freedom for the pbc plane");
       if (*pbcplane == "yz")
         planenormal.push_back(0);
       else if (*pbcplane == "xz")
@@ -971,8 +971,8 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
 //    if (fabs(nodecoord(0)) < 1.0e-8 and fabs(nodecoord(1)) < 1.0e-8 and fabs(nodecoord(2)) < 1.0e-8)
 //#endif
 //    {
-//      //cout << "alter phi wert in der Mitte " << (*phivector)[doflid] << endl;
-//      //cout << "reinitilisierter phi wert in der Mitte " << eledistance.front().second << endl;
+//      //std::cout << "alter phi wert in der Mitte " << (*phivector)[doflid] << std::endl;
+//      //std::cout << "reinitilisierter phi wert in der Mitte " << eledistance.front().second << std::endl;
 //      //---------------------
 //      // write radius to file
 //      //---------------------
@@ -986,9 +986,9 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
 //        //(*log) << "\n";
 //        (*log) <<  " "  << std::setw(12) << std::setprecision(8) << eledistance.front().second;
 //        (*log) <<  " "  << std::setw(12) << std::setprecision(8) << (*phivector)[doflid];
-//        (*log) << &endl;
+//        (*log) << &std::endl;
 //        log->flush();
-//        cout << "wrote reinitialized radius at center to file" << endl;
+//        std::cout << "wrote reinitialized radius at center to file" << std::endl;
 //      }
 //    }
 
@@ -1043,7 +1043,7 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
   }
 
   // Newton iteration converged
-  //  cout << "Newton iteration converged in " << iter << " steps!" << endl;
+  //  std::cout << "Newton iteration converged in " << iter << " steps!" << std::endl;
 
   //----------------------------------------------------
   // check if projection lies within boundary cell space
@@ -1066,7 +1066,7 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
     {
       facenode = true;
       patchdist = fabs(alpha);
-//      cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << endl;
+//      std::cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << std::endl;
     }
     break;
   }
@@ -1079,7 +1079,7 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
     {
       facenode = true;
       patchdist = fabs(alpha);
-//      cout << "facing patch found (quad4 patch)!" << endl;
+//      std::cout << "facing patch found (quad4 patch)!" << std::endl;
     }
     break;
   }
@@ -1088,15 +1088,15 @@ void COMBUST::Reinitializer::FindFacingPatchProjCellSpace(
   }
 //  if (!converged)
 //  {
-//    cout << "node x component " << node(0,0) << endl;
-//    cout << "node y component " << node(1,0) << endl;
-//    cout << "node z component " << node(2,0) << endl;
-//    cout << "eta1 " << eta(0) << endl;
-//    cout << "eta2 " << eta(1) << endl;
-//    cout << "alpha " << alpha << endl;
-//    cout << "patch vertices x component " << patchcoord(0,0) << " " << patchcoord(0,1) << " " << patchcoord(0,2) << endl;
-//    cout << "patch vertices y component " << patchcoord(1,0) << " " << patchcoord(1,1) << " " << patchcoord(1,2) << endl;
-//    cout << "patch vertices z component " << patchcoord(2,0) << " " << patchcoord(2,1) << " " << patchcoord(2,2) << endl;
+//    std::cout << "node x component " << node(0,0) << std::endl;
+//    std::cout << "node y component " << node(1,0) << std::endl;
+//    std::cout << "node z component " << node(2,0) << std::endl;
+//    std::cout << "eta1 " << eta(0) << std::endl;
+//    std::cout << "eta2 " << eta(1) << std::endl;
+//    std::cout << "alpha " << alpha << std::endl;
+//    std::cout << "patch vertices x component " << patchcoord(0,0) << " " << patchcoord(0,1) << " " << patchcoord(0,2) << std::endl;
+//    std::cout << "patch vertices y component " << patchcoord(1,0) << " " << patchcoord(1,1) << " " << patchcoord(1,2) << std::endl;
+//    std::cout << "patch vertices z component " << patchcoord(2,0) << " " << patchcoord(2,1) << " " << patchcoord(2,2) << std::endl;
 //  }
 
   return;
@@ -1263,8 +1263,8 @@ void COMBUST::Reinitializer::ComputeNormalVectorToFlameFront(
 #endif
 
 //  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
-//  cout << "proc " << comm.MyPID() << " normal " <<  normal << endl;
-//  cout << "proc " << comm.MyPID() << " patch " <<  patchcoord << endl;
+//  std::cout << "proc " << comm.MyPID() << " normal " <<  normal << std::endl;
+//  std::cout << "proc " << comm.MyPID() << " patch " <<  patchcoord << std::endl;
 
   // compute unit (normed) normal vector
   double norm = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
@@ -1275,7 +1275,7 @@ void COMBUST::Reinitializer::ComputeNormalVectorToFlameFront(
 #ifdef COMBUST_2D
   if (!((normal(2) > 0.0-1.0E-8) and (normal(2) < 0.0+1.0E-8)))
   {
-    cout << "z-component of normal: " << normal(2) << endl;
+    std::cout << "z-component of normal: " << normal(2) << std::endl;
     dserror ("pseudo-3D problem not symmetric anymore!");
   }
 #endif
@@ -1355,7 +1355,7 @@ void::COMBUST::Reinitializer::FindFacingPatchProjCellEdges(
       else
         vertexdist = normdist;
 
-      //cout << "distance to vertex is overwritten by: " << vertexdist << endl;
+      //std::cout << "distance to vertex is overwritten by: " << vertexdist << std::endl;
     }
 
     // divide vectors by their norms to get unit vectors

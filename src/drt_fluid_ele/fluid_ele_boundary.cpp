@@ -104,7 +104,7 @@ DRT::ELEMENTS::FluidBoundary::~FluidBoundary()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidBoundary::Print(ostream& os) const
+void DRT::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
 {
   os << "FluidBoundary ";
   Element::Print(os);

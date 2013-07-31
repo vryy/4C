@@ -60,7 +60,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
         }
         else
         {
-          cout << "could not get displacement vector to compute current positions!" << endl;
+          std::cout << "could not get displacement vector to compute current positions!" << std::endl;
         }
       }
 

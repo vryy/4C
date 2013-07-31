@@ -70,7 +70,7 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
   //  IO::GMSH::XdisToStream("Fluid", 0.0, fluiddis_, elementalDomainIntCells_, elementalBoundaryIntCells_, f_system);
   //  //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, cutterposnp_);
   //  f_system.close();
-  //  if (screen_out) cout << " done" << endl;
+  //  if (screen_out) std::cout << " done" << std::endl;
   //}
 
   if (gmshdebugout)
@@ -84,9 +84,9 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 
     std::ofstream f_system(filename.str().c_str());
     {
-      // stringstream for domains
+      // std::stringstream for domains
       std::stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << std::endl;
 
       for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)
       {
@@ -102,13 +102,13 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
             domain_id = 1;
           //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
-          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
+          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << std::endl;
         };
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};" << std::endl;
 
       // the cut is done in element coordinates; for distorted elements, the sence of orientation can be reversed in physical coordinates
-      gmshfilecontent << "View \" " << "Volume negative physical coordinates \" {" << endl;
+      gmshfilecontent << "View \" " << "Volume negative physical coordinates \" {" << std::endl;
       for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)
       {
         const DRT::Element* actele = fluiddis_->lRowElement(i);
@@ -123,15 +123,15 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
             vol_id = 2;
           //const double color = domain_id*100000+(closestElementId);
           const double color = vol_id;
-          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
+          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << std::endl;
         };
       };
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};" << std::endl;
 
       f_system << gmshfilecontent.str();
     }
     f_system.close();
-    if (screen_out) cout << " done" << endl;
+    if (screen_out) std::cout << " done" << std::endl;
   }
 
 //  if (gmshdebugout) // print space time layer
@@ -145,9 +145,9 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //
 //    std::ofstream f_system(filename.str().c_str());
 //    {
-//      // stringstream for domains
+//      // std::stringstream for domains
 //      std::stringstream gmshfilecontent;
-//      gmshfilecontent << "View \" " << "SpaceTime cells \" {" << endl;
+//      gmshfilecontent << "View \" " << "SpaceTime cells \" {" << std::endl;
 //      LINALG::SerialDenseVector vals(8);
 //      vals(0) = 0.0;vals(1) = 0.0;vals(2) = 0.0;vals(3) = 0.0;
 //      vals(4) = 1.0;vals(5) = 1.0;vals(6) = 1.0;vals(7) = 1.0;
@@ -155,13 +155,13 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //      {
 //        const XFEM::SpaceTimeBoundaryCell& slabitem = slabiter->second;
 //
-//        gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(DRT::Element::hex8, vals, slabitem.get_xyzt()) << endl;
+//        gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(DRT::Element::hex8, vals, slabitem.get_xyzt()) << std::endl;
 //      }
-//      gmshfilecontent << "};" << endl;
+//      gmshfilecontent << "};" << std::endl;
 //      f_system << gmshfilecontent.str();
 //    }
 //    f_system.close();
-//    if (screen_out) cout << " done" << endl;
+//    if (screen_out) std::cout << " done" << std::endl;
 //  }
 //
 //
@@ -177,9 +177,9 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //    std::cout << "writing " << left << std::setw(50) <<filenameP.str()<<"...";
 //    std::ofstream f_systemP(filenameP.str().c_str());
 //    {
-//      // stringstream for cellcenter points
+//      // std::stringstream for cellcenter points
 //      std::stringstream gmshfilecontentP;
-//      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
+//      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << std::endl;
 //
 //      for (int i=0; i<fluiddis_->NumMyRowElements(); ++i)
 //      {
@@ -197,14 +197,14 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 //          point(1,0)=cellcenterpos(1);
 //          point(2,0)=cellcenterpos(2);
 //
-//          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, (actele->Id()), point) << endl;
+//          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, (actele->Id()), point) << std::endl;
 //        };
 //      };
-//      gmshfilecontentP << "};" << endl;
+//      gmshfilecontentP << "};" << std::endl;
 //      f_systemP << gmshfilecontentP.str();
 //    }
 //    f_systemP.close();
-//    cout << " done" << endl;
+//    std::cout << " done" << std::endl;
 //
 //    octTreenp_->printTree(DRT::Problem::Instance()->OutputControlFile()->FileName(), step);
 //    octTreenp_->evaluateTreeMetrics(step);
@@ -232,7 +232,7 @@ void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle(
 }
 
 /*----------------------------------------------------------------------*
- * to string
+ * to std::string
  *----------------------------------------------------------------------*/
 std::string COMBUST::InterfaceHandleCombust::toString() const
 {

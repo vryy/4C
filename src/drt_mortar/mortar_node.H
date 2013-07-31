@@ -260,7 +260,7 @@ public:
   /*!
   \brief Print this MortarNode
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   /*!
   \brief Is node on slave or master side of mortar interface
@@ -485,7 +485,7 @@ protected:
 
 
 // << operator
-ostream& operator << (ostream& os, const MORTAR::MortarNode& cnode);
+std::ostream& operator << (std::ostream& os, const MORTAR::MortarNode& cnode);
 
 
 #endif  // #ifndef MORTAR_NODE_H

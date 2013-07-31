@@ -214,7 +214,7 @@ class StrategyBase
     virtual const int NumberOfSlipNodes() = 0;
     virtual void OutputStresses() = 0;
     virtual void OutputWear() = 0;
-    virtual void Print(ostream& os) const = 0;
+    virtual void Print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis) = 0;
@@ -224,7 +224,7 @@ class StrategyBase
     virtual void RestrictMeshtyingZone() = 0;
     virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void SetState(const string& statename, const Teuchos::RCP<Epetra_Vector> vec) = 0;
+    virtual void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec) = 0;
     virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
     virtual void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;

@@ -240,7 +240,7 @@ namespace XFEM
         for (std::set<XFEM::Enrichment>::const_iterator enriter = enrset.begin(); enriter != enrset.end(); ++enriter)
         {
           enrvalstmp[*enriter] = enrvals_.find(*enriter)->second - (enrvalnodes.find(inode)->second).find(*enriter)->second;
-          //cout << "shifted enrichment value " << enrvalstmp[*enriter] << endl;
+          //std::cout << "shifted enrichment value " << enrvalstmp[*enriter] << std::endl;
         }
         enrvalnodes_[inode] = enrvalstmp;
         enrvalstmp.clear();
@@ -536,7 +536,7 @@ namespace XFEM
           if (enrfield->getField() == field)
           {
             const double enrval = enrvals_.find(enrfield->getEnrichment())->second;
-//cout << "enrichment value: " << enrval << endl;
+//std::cout << "enrichment value: " << enrval << std::endl;
             enr_funct(dofcounter) = funct(inode) * enrval;
             dofcounter += 1;
           }
@@ -718,11 +718,11 @@ namespace XFEM
           if (enrfield->getField() == field)
           {
             const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
-//cout << "enrval " << enrval << endl;
+//std::cout << "enrval " << enrval << std::endl;
             const std::vector<double> enrvalderxy = enrvalderxy_.find(enrfield->getEnrichment())->second;
-//cout << "enrvalderxy groesse: " << enrvalderxy.size() << endl;
+//std::cout << "enrvalderxy groesse: " << enrvalderxy.size() << std::endl;
 //for (size_t count=0; count < enrvalderxy.size(); ++count)
-//  cout << "enrvalderxy " << count << "wert " << enrvalderxy[count] << endl;
+//  std::cout << "enrvalderxy " << count << "wert " << enrvalderxy[count] << std::endl;
 
             const std::vector<double> enrvalderxy2 = enrvalderxy2_.find(enrfield->getEnrichment())->second;
 
@@ -901,9 +901,9 @@ namespace XFEM
           der2gp(isd,5) += derxy2(5,inode)*egradphi(isd,inode); // d^2N_i/dydz * grad\phi^isd_i
         }
       }
-      //cout << "gp " << gp << endl;
-      //cout << "dergp " << dergp << endl;
-      //cout << "der2gp " << dergp << endl;
+      //std::cout << "gp " << gp << std::endl;
+      //std::cout << "dergp " << dergp << std::endl;
+      //std::cout << "der2gp " << dergp << std::endl;
 
       // compute absolute value of gradient of phi
       // |grad\phi| = sqrt( grad\phi_x^2 + grad\phi_y^2 + grad\phi_z^2 )
@@ -945,19 +945,19 @@ namespace XFEM
         }
       }
 //#ifdef COLLAPSE_FLAME
-////cout << "normal " << normal << endl;
+////std::cout << "normal " << normal << std::endl;
 //      const double x = point(0);
-////cout << "x " << x << endl;
+////std::cout << "x " << x << std::endl;
 //      const double y = point(1);
-////cout << "y " << y << endl;
+////std::cout << "y " << y << std::endl;
 //      const double r2 = x*x + y*y;
-////cout << "r2 " << r2 << endl;
+////std::cout << "r2 " << r2 << std::endl;
 //      const double r = std::sqrt(r2);
-////cout << "r " << r << endl;
+////std::cout << "r " << r << std::endl;
 //      const double r2_32 = std::pow(r2,-1.5);
-////cout << "r2_32 " << r2_32 << endl;
+////std::cout << "r2_32 " << r2_32 << std::endl;
 //      const double r2_52 = std::pow(r2,-2.5);
-////cout << "r2_52 " << r2_52 << endl;
+////std::cout << "r2_52 " << r2_52 << std::endl;
 //      dern(0,0) = -1.0/r + x*x*r2_32;
 //      dern(0,1) = x*y*r2_32;
 //      dern(0,2) = 0.0;
@@ -968,7 +968,7 @@ namespace XFEM
 //      dern(2,1) = 0.0;
 //      dern(2,2) = 0.0;
 //#endif
-      //cout << "dern " << dern << endl;
+      //std::cout << "dern " << dern << std::endl;
 
       // second derivative of normal vector
       LINALG::Matrix<3,6> der2n(true);

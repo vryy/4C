@@ -306,7 +306,7 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
         (position_ == Point::outside and pos == Point::inside) )
     {
 //      this->Print(std::cout);
-      cout << "point with changing position inside->outside or vice versa " << pid_ << endl;
+      std::cout << "point with changing position inside->outside or vice versa " << pid_ << std::endl;
       throw std::runtime_error("Are you sure that you want to change the point-position from inside to outside or vice versa?");
     }
 //#endif

@@ -253,10 +253,10 @@ void ELCH::Algorithm::DoFluidStep()
 {
   if (Comm().MyPID()==0)
   {
-    cout<<"\n";
-    cout<<"*********************\n";
-    cout<<"    FLUID SOLVER     \n";
-    cout<<"*********************\n";
+    std::cout<<"\n";
+    std::cout<<"*********************\n";
+    std::cout<<"    FLUID SOLVER     \n";
+    std::cout<<"*********************\n";
   }
 
   // solve nonlinear Navier-Stokes system
@@ -272,10 +272,10 @@ void ELCH::Algorithm::DoTransportStep()
 {
   if (Comm().MyPID()==0)
   {
-    cout<<"\n";
-    cout<<"************************\n";
-    cout<<"       ELCH SOLVER      \n";
-    cout<<"************************\n";
+    std::cout<<"\n";
+    std::cout<<"************************\n";
+    std::cout<<"       ELCH SOLVER      \n";
+    std::cout<<"************************\n";
   }
 
   // transfer convective velocity to scalar transport field solver
@@ -423,11 +423,11 @@ void ELCH::Algorithm::OuterIterationConvection()
   // Outer Iteration loop starts
   if (Comm().MyPID()==0)
   {
-    cout<<"\n";
-    cout<<"**************************************************************\n";
-    cout<<"      OUTER ITERATION LOOP ("<<ScaTraField().MethodTitle()<<")\n";
+    std::cout<<"\n";
+    std::cout<<"**************************************************************\n";
+    std::cout<<"      OUTER ITERATION LOOP ("<<ScaTraField().MethodTitle()<<")\n";
     printf("      Time Step %3d/%3d \n",Step(), ScaTraField().NStep());
-    cout<<"**************************************************************\n";
+    std::cout<<"**************************************************************\n";
   }
 
 #ifdef OUTPUT
@@ -564,10 +564,10 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
     {
       if (Comm().MyPID() == 0)
       {
-      cout<<"\n";
-      cout<<"*****************************************************************************\n";
-      cout<<"                          OUTER ITERATION STEP\n";
-      cout<<"*****************************************************************************\n";
+      std::cout<<"\n";
+      std::cout<<"*****************************************************************************\n";
+      std::cout<<"                          OUTER ITERATION STEP\n";
+      std::cout<<"*****************************************************************************\n";
       printf("+------------+-------------------+--------------+-------------+-------------+\n");
       printf("|- step/max -|- tol      [norm] -|-- con-inc ---|-- pot-inc --|-- vel-inc --|\n");
       printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E  | %10.3E  |",
@@ -610,10 +610,10 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
       stopnonliniter=false;
       if (Comm().MyPID() == 0)
       {
-      cout<<"\n";
-      cout<<"*****************************************************************************\n";
-      cout<<"                          OUTER ITERATION STEP\n";
-      cout<<"*****************************************************************************\n";
+      std::cout<<"\n";
+      std::cout<<"*****************************************************************************\n";
+      std::cout<<"                          OUTER ITERATION STEP\n";
+      std::cout<<"*****************************************************************************\n";
       printf("+------------+-------------------+--------------+-------------+-------------+\n");
       printf("|- step/max -|- tol      [norm] -|-- con-inc ---|-- pot-inc --|-- vel-inc --|\n");
       printf("|  %3d/%3d   | %10.3E[L_2 ]  |       -      |      -      |      -      |",

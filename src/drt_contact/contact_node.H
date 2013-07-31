@@ -391,7 +391,7 @@ public:
   /*!
   \brief Print this cnode
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   /*!
   \brief Is Node initialized as active node (only slave nodes)
@@ -537,6 +537,6 @@ protected:
 
 
 // << operator
-ostream& operator << (ostream& os, const CONTACT::CoNode& cnode);
+std::ostream& operator << (std::ostream& os, const CONTACT::CoNode& cnode);
 
 #endif  // #ifndef CNODE_H

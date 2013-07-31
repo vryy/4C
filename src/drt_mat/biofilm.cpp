@@ -23,7 +23,7 @@ MAT::PAR::Biofilm::Biofilm(
   )
 : Parameter(matdata),
   diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
-  kinetics_(matdata->Get<string>("KINETICS")),
+  kinetics_(matdata->Get<std::string>("KINETICS")),
   rearate_(matdata->GetDouble("REARATE")),
   satcoeff_(matdata->GetDouble("SATCOEFF"))
 {

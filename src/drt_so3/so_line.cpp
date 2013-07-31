@@ -113,7 +113,7 @@ void DRT::ELEMENTS::StructuralLine::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::Print(ostream& os) const
+void DRT::ELEMENTS::StructuralLine::Print(std::ostream& os) const
 {
   os << "StructuralLine ";
   Element::Print(os);

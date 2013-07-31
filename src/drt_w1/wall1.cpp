@@ -313,7 +313,7 @@ DRT::ELEMENTS::Wall1::~Wall1()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Print(ostream& os) const
+void DRT::ELEMENTS::Wall1::Print(std::ostream& os) const
 {
   os << "Wall1 ";
   Element::Print(os);

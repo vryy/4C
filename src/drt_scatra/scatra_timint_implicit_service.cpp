@@ -181,7 +181,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
-    std::vector<string>& condnames,
+    std::vector<std::string>& condnames,
     const bool writetofile,
     const int num,
     bool biogrowth)
@@ -306,9 +306,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       or (writeflux_==INPAR::SCATRA::flux_convective_boundary))
   {
     if (myrank_==0)
-      cout<<"Convective flux contribution is added to trueresidual_ vector.\n"
+      std::cout<<"Convective flux contribution is added to trueresidual_ vector.\n"
       "Be sure not to address the same boundary part twice!\n Two flux calculation boundaries "
-      "should also not share a common node!"<<endl;
+      "should also not share a common node!"<<std::endl;
 
     // now we evaluate the conditions and separate via ConditionID
     for (unsigned int i=0; i < condnames.size(); i++)
@@ -355,8 +355,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     if (myrank_ == 0)
     {
-      cout<<"Normal fluxes at boundary '"<<condnames[i]<<"':\n"
-      <<"+----+-----+-------------------------+------------------+--------------------------+"<<endl;
+      std::cout<<"Normal fluxes at boundary '"<<condnames[i]<<"':\n"
+      <<"+----+-----+-------------------------+------------------+--------------------------+"<<std::endl;
       printf("| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
     }
 
@@ -537,7 +537,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     } // loop over condid
 
     if (myrank_==0)
-      cout<<"+----+-----+-------------------------+------------------+--------------------------+"<<endl;
+      std::cout<<"+----+-----+-------------------------+------------------+--------------------------+"<<std::endl;
   }
 
   // print out the accumulated normal flux over all indicated boundaries
@@ -549,7 +549,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       printf("| Sum of all normal flux boundary integrals for scalar %d: %+10.5E             |\n"
           ,idof,normfluxsum[idof]);
     }
-    cout<<"+----------------------------------------------------------------------------------+"<<endl;
+    std::cout<<"+----------------------------------------------------------------------------------+"<<std::endl;
   }
   // clean up
   discret_->ClearState();
@@ -639,25 +639,25 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       // append error of the last time step to the error file
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
-        ostringstream temp;
+        ostd::stringstream temp;
         const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
         //const std::string fname = simulation+".relerror";
         const std::string fname = "XXX_kwok_xele.relerror";
 
         double elelength=0.0;
-        if(simulation.find("5x5")!=string::npos)
+        if(simulation.find("5x5")!=std::string::npos)
           elelength=0.2;
-        else if(simulation.find("10x10")!=string::npos)
+        else if(simulation.find("10x10")!=std::string::npos)
           elelength=0.1;
-        else if(simulation.find("20x20")!=string::npos)
+        else if(simulation.find("20x20")!=std::string::npos)
           elelength=0.05;
-        else if(simulation.find("40x40")!=string::npos)
+        else if(simulation.find("40x40")!=std::string::npos)
           elelength=0.025;
-        else if(simulation.find("50x50")!=string::npos)
+        else if(simulation.find("50x50")!=std::string::npos)
           elelength=0.02;
-        else if(simulation.find("80x80")!=string::npos)
+        else if(simulation.find("80x80")!=std::string::npos)
           elelength=0.0125;
-        else cout << "Warning: file name did not allow a evaluation of the element size!!!" << endl;
+        else std::cout << "Warning: file name did not allow a evaluation of the element size!!!" << std::endl;
 
         std::ofstream f;
         f.precision(12);
@@ -986,14 +986,14 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     if (myrank_ == 0)
     {
       if (scatratype_==INPAR::SCATRA::scatratype_loma)
-        cout << "Mean scalar: " << std::setprecision (9) << (*scalars)[0]/domint << endl;
+        std::cout << "Mean scalar: " << std::setprecision (9) << (*scalars)[0]/domint << std::endl;
       else
       {
-        cout << "Domain integral:          " << std::setprecision (9) << domint << endl;
+        std::cout << "Domain integral:          " << std::setprecision (9) << domint << std::endl;
         for (int k = 0; k < numscal_; k++)
         {
-          cout << "Total concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k] << endl;
-          cout << "Mean concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k]/domint << endl;
+          std::cout << "Total concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k] << std::endl;
+          std::cout << "Mean concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k]/domint << std::endl;
         }
       }
     }
@@ -1128,8 +1128,8 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
 
   if ((myrank_ == 0) and printtoscreen)
   {
-    cout<<"Status of '"<<condname<<"':\n"
-    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
+    std::cout<<"Status of '"<<condname<<"':\n"
+    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<std::endl;
     printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
   }
 
@@ -1173,7 +1173,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
 
   if ((myrank_==0) and printtoscreen)
   {
-    cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<endl;
+    std::cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<std::endl;
     // print out the net total current for all indicated boundaries
     printf("Net total current over boundary: %10.3E\n\n",sum);
   }
@@ -1580,10 +1580,10 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
   // print out initial total mass
   if (myrank_ == 0)
   {
-    cout << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
-    cout << "Initial total mass in domain (times gas constant): " << initialmass_ << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    std::cout << std::endl;
+    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
+    std::cout << "Initial total mass in domain (times gas constant): " << initialmass_ << std::endl;
+    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
   }
 
   return;
@@ -1620,10 +1620,10 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
   // print out thermodynamic pressure
   if (myrank_ == 0)
   {
-    cout << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
-    cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    std::cout << std::endl;
+    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
+    std::cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << std::endl;
+    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
   }
 
   // compute time derivative of thermodynamic pressure at time step n+1
@@ -1798,7 +1798,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
  *----------------------------------------------------------------------*/
 RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
-    const std::vector<string>& condnames
+    const std::vector<std::string>& condnames
 )
 {
   // create vectors for x,y and z component of average normal vector field
@@ -1939,41 +1939,41 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
   std::ofstream gmshfilecontent(filename.c_str());
 //  {
 //    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phin \" {" << endl;
+//    gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
 //    // draw scalar field 'Phindtp' for every element
 //    IO::GMSH::ScalarFieldToGmsh(discret_,phin_,gmshfilecontent);
-//    gmshfilecontent << "};" << endl;
+//    gmshfilecontent << "};" << std::endl;
 //  }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+    gmshfilecontent << "View \" " << "Phinp \" {" << std::endl;
     // draw scalar field 'Phinp' for every element
     IO::GMSH::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 //  {
 //    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
+//    gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
 //    // draw scalar field 'Phindtn' for every element
 //    IO::GMSH::ScalarFieldToGmsh(discret_,phidtn_,gmshfilecontent);
-//    gmshfilecontent << "};" << endl;
+//    gmshfilecontent << "};" << std::endl;
 //  }
 //  {
 //    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phidtnp \" {" << endl;
+//    gmshfilecontent << "View \" " << "Phidtnp \" {" << std::endl;
 //    // draw scalar field 'Phindtp' for every element
 //    IO::GMSH::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
-//    gmshfilecontent << "};" << endl;
+//    gmshfilecontent << "};" << std::endl;
 //  }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+    gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
     // draw vector field 'Convective Velocity' for every element
     IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,convel_,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
   gmshfilecontent.close();
-  if (screen_out) std::cout << " done" << endl;
+  if (screen_out) std::cout << " done" << std::endl;
 } // ScaTraTimIntImpl::OutputToGmsh
 
 /*----------------------------------------------------------------------*
@@ -2078,7 +2078,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     {
       for (int k = 0; k < numscal_; k++)
       {
-        cout << "Total reaction (r_"<<k<<"): "<< std::setprecision (9) << intreacterm[k] << endl;
+        std::cout << "Total reaction (r_"<<k<<"): "<< std::setprecision (9) << intreacterm[k] << std::endl;
       }
     }
 
@@ -2249,7 +2249,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
       // time measurement:
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
       if (myrank_ == 0)
-        std::cout<<"SCATRA: calculating initial field for electric potential"<<endl;
+        std::cout<<"SCATRA: calculating initial field for electric potential"<<std::endl;
 
       // are we really at step 0?
       dsassert(step_==0,"Step counter is not 0");
@@ -2513,27 +2513,27 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           newtonrhs = + currresidual - (timefac*targetcurrent); // newtonrhs is stored only from cathode!
           if (myrank_==0)
           {
-            cout<<"\nGALVANOSTATIC MODE:\n";
-            cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<endl;
-            cout<<"  actual reaction current = "<<std::scientific<<actualcurrent<<endl;
-            cout<<"  required total current  = "<<targetcurrent<<endl;
-            cout<<"  negative residual (rhs) = "<<newtonrhs<<endl<<endl;
+            std::cout<<"\nGALVANOSTATIC MODE:\n";
+            std::cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<std::endl;
+            std::cout<<"  actual reaction current = "<<std::scientific<<actualcurrent<<std::endl;
+            std::cout<<"  required total current  = "<<targetcurrent<<std::endl;
+            std::cout<<"  negative residual (rhs) = "<<newtonrhs<<std::endl<<std::endl;
           }
 
           if (gstatnumite_ > gstatitemax)
           {
-            if (myrank_==0) cout<< endl <<"  --> maximum number iterations reached. Not yet converged!"<<endl<<endl;
+            if (myrank_==0) std::cout<< std::endl <<"  --> maximum number iterations reached. Not yet converged!"<<std::endl<<std::endl;
             return true; // we proceed to next time step
           }
           else if (abs(newtonrhs)< gstatcurrenttol)
           {
-            if (myrank_==0) cout<< endl <<"  --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" <<endl<<endl;
+            if (myrank_==0) std::cout<< std::endl <<"  --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" <<std::endl<<std::endl;
             return true; // we proceed to next time step
           }
           // electric potential increment of the last iteration
           else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
           {
-            if (myrank_==0) cout<< endl <<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<endl<<endl;
+            if (myrank_==0) std::cout<< std::endl <<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<std::endl<<std::endl;
             return true; // galvanostatic control has converged
           }
 
@@ -2550,9 +2550,9 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           // print additional information
           if (myrank_==0)
           {
-            cout<< "  area (condid " << icond <<")               = " << electrodesurface << endl;
-            cout<< "  actualcurrent - targetcurrent = " << (actualcurrent-targetcurrent) << endl;
-            cout<< "  conductivity                  = " << sigma_(numscal_) << endl;
+            std::cout<< "  area (condid " << icond <<")               = " << electrodesurface << std::endl;
+            std::cout<< "  actualcurrent - targetcurrent = " << (actualcurrent-targetcurrent) << std::endl;
+            std::cout<< "  conductivity                  = " << sigma_(numscal_) << std::endl;
           }
         }
 
@@ -2572,18 +2572,18 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       {
         if(myrank_==0)
         {
-          cout << endl <<"  cell potential difference = "<<potdiffcell<<endl;
-          cout<<"  bulk potential difference = "<<potdiffbulk<<endl;
+          std::cout << std::endl <<"  cell potential difference = "<<potdiffcell<<std::endl;
+          std::cout<<"  bulk potential difference = "<<potdiffbulk<<std::endl;
         }
         if (abs(actualcurrent) > EPS10)
         {
           if(myrank_==0)
           {
-            cout<<"  Defined GSTAT_LENGTH_CURRENTPATH:   "<< effective_length << endl;
-            cout<<"  Suggested GSTAT_LENGTH_CURRENTPATH: "<< (potdiffbulk/(actualcurrent))*(sigma_(numscal_)*electrodesurface)<<endl;
-            cout<<"  dV/dI =  "<< (-1.0)*potdiffbulk/actualcurrent << endl;
-            cout<<"  potinc_ohm (CURRENTPATH based): "<< potinc_ohm <<endl;
-            cout<<"  New guess for potinc_ohm:       "<< (-1.0)*(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<endl;
+            std::cout<<"  Defined GSTAT_LENGTH_CURRENTPATH:   "<< effective_length << std::endl;
+            std::cout<<"  Suggested GSTAT_LENGTH_CURRENTPATH: "<< (potdiffbulk/(actualcurrent))*(sigma_(numscal_)*electrodesurface)<<std::endl;
+            std::cout<<"  dV/dI =  "<< (-1.0)*potdiffbulk/actualcurrent << std::endl;
+            std::cout<<"  potinc_ohm (CURRENTPATH based): "<< potinc_ohm <<std::endl;
+            std::cout<<"  New guess for potinc_ohm:       "<< (-1.0)*(potdiffbulk*newtonrhs)/(timefac*actualcurrent)<<std::endl;
           }
           potinc_ohm = (-1.0)*(potdiffbulk*newtonrhs)/(timefac*(actualcurrent));
         }
@@ -2594,7 +2594,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       }
 
       // Newton step:  Jacobian * \Delta pot = - Residual
-      cout << "currtangent_cathode:  " << currtangent_cathode << endl;
+      std::cout << "currtangent_cathode:  " << currtangent_cathode << std::endl;
       const double potinc_cathode = newtonrhs/((-1)*currtangent_cathode);
       double potinc_anode = 0.0;
       if (abs(currtangent_anode)>EPS13) // anode surface overpotential is optional
@@ -2606,15 +2606,15 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       // print info to screen
       if (myrank_==0)
       {
-        cout<<endl<< "  ohmic overpotential                        = " << potinc_ohm << endl;
-        cout<< "  overpotential increment cathode (condid " << condid_cathode <<") = " << potinc_cathode << endl;
+        std::cout<<std::endl<< "  ohmic overpotential                        = " << potinc_ohm << std::endl;
+        std::cout<< "  overpotential increment cathode (condid " << condid_cathode <<") = " << potinc_cathode << std::endl;
         if (abs(potinc_anode)>EPS12) // prevents output if an anode is not considered
-          cout<< "  overpotential increment anode   (condid " << condid_anode <<") = " << potinc_anode << endl;
+          std::cout<< "  overpotential increment anode   (condid " << condid_anode <<") = " << potinc_anode << std::endl;
 
-        cout<< "  total increment for potential              = " << potinc_cathode+potinc_anode+potinc_ohm << endl;
-        cout<< endl;
-        cout<< "  old electrode potential (condid "<<condid_cathode <<") = "<<potold<<endl;
-        cout<< "  new electrode potential (condid "<<condid_cathode <<") = "<<potnew<<endl<<endl;
+        std::cout<< "  total increment for potential              = " << potinc_cathode+potinc_anode+potinc_ohm << std::endl;
+        std::cout<< std::endl;
+        std::cout<< "  old electrode potential (condid "<<condid_cathode <<") = "<<potold<<std::endl;
+        std::cout<< "  new electrode potential (condid "<<condid_cathode <<") = "<<potnew<<std::endl<<std::endl;
       }
       // replace potential value of the boundary condition (on all processors)
       cond[condid_cathode]->Add("pot",potnew);
@@ -2743,7 +2743,7 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
 #if 0
           myerrormessage<<"PROC "<<myrank_<<" dof index: "<<k<<setprecision(7)<<scientific<<
               " val: "<<((*vec)[lid])<<" node gid: "<<lnode->Id()<<
-              " coord: [x] "<< lnode->X()[0]<<" [y] "<< lnode->X()[1]<<" [z] "<< lnode->X()[2]<<endl;
+              " coord: [x] "<< lnode->X()[0]<<" [y] "<< lnode->X()[1]<<" [z] "<< lnode->X()[2]<<std::endl;
 #endif
         }
       }
@@ -2754,12 +2754,12 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
     {
       if (numfound[k] > 0)
       {
-        cout<<"WARNING: PROC "<<myrank_<<" has "<<numfound[k]<<
+        std::cout<<"WARNING: PROC "<<myrank_<<" has "<<numfound[k]<<
         " nodes with zero/neg. concentration values for species "<<k;
         if (makepositive)
-          cout<<"-> were made positive (set to 1.0e-13)"<<endl;
+          std::cout<<"-> were made positive (set to 1.0e-13)"<<std::endl;
         else
-          cout<<endl;
+          std::cout<<std::endl;
       }
     }
 
@@ -2776,7 +2776,7 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
         if ((errfile_!=NULL) and (myerrormessage.str()!=""))
         {
           fprintf(errfile_,myerrormessage.str().c_str());
-          // cout<<myerrormessage.str()<<endl;
+          // std::cout<<myerrormessage.str()<<std::endl;
         }
       }
       // give time to finish writing to file before going to next proc ?

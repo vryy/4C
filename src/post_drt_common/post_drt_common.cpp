@@ -94,7 +94,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
 
   if (file=="")
   {
-    CLP.printHelpMessage(argv[0],cout);
+    CLP.printHelpMessage(argv[0],std::cout);
     exit(1);
   }
 
@@ -182,7 +182,7 @@ PostField* PostProblem::get_discretization(const int num)
 {
   if (num >= static_cast<int>(fields_.size()))
   {
-    cout << "You asked for discretization " << num << " (counting from zero), but there are only "
+    std::cout << "You asked for discretization " << num << " (counting from zero), but there are only "
          << fields_.size() << " discretization(s)!";
     dserror("This is a bug!");
   }
@@ -250,7 +250,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
   MAP* table = &control_table_;
 
   /* copy directory information */
-  string::size_type separator = basename_.rfind('/', std::string::npos);
+  std::string::size_type separator = basename_.rfind('/', std::string::npos);
   if (separator != std::string::npos)
   {
     input_dir_ = basename_.substr(0,separator+1);
@@ -609,17 +609,17 @@ void PostProblem::read_meshes()
 
       if (currfield.problem()->Problemtype() == prb_combust)
       {
-        cout << "Name = " << currfield.discretization()->Name();
+        std::cout << "Name = " << currfield.discretization()->Name();
         if (currfield.discretization()->Name() == "fluid")
         {
-          cout << " ->set output mode for xfem elements" << endl;
+          std::cout << " ->set output mode for xfem elements" << std::endl;
           currfield.discretization()->FillComplete(false,false,false);
           Teuchos::ParameterList eleparams;
           eleparams.set("action","set_standard_mode");
           eleparams.set("standard_mode",true);
           currfield.discretization()->Evaluate(eleparams);
         }
-        cout << endl;
+        std::cout << std::endl;
       }
 
       if ((currfield.problem()->Problemtype()==prb_particle or currfield.problem()->Problemtype()==prb_cavitation)
@@ -1071,8 +1071,8 @@ PostResult::read_result_serialdensematrix(const std::string name)
 
   RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   std::vector<char>::size_type position=0;
-//   cout << "elemap:\n" << *elemap << endl;
-//   cout << "myelenum: " << elemap->NumMyElements() << endl;
+//   std::cout << "elemap:\n" << *elemap << std::endl;
+//   std::cout << "myelenum: " << elemap->NumMyElements() << std::endl;
   for (int i=0;i<elemap->NumMyElements();++i)
   {
     RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);

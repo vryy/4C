@@ -79,7 +79,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   Configuration config = config_none;
 
   // get type of condition
-  const string* type = condition.Get<string>("type");
+  const std::string* type = condition.Get<std::string>("type");
   if (*type == "neum_live")
   {
     ltype   = neum_live;
@@ -619,7 +619,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_cur_nodal_normals")       act = StructuralSurface::calc_cur_nodal_normals;
   else
   {
-    cout << action << endl;
+    std::cout << action << std::endl;
     dserror("Unknown type of action for StructuralSurface");
   }
 
@@ -907,7 +907,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     //get projection method
     RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
-    const string* projtype = condition->Get<string>("projection");
+    const std::string* projtype = condition->Get<std::string>("projection");
 
     if (projtype != NULL)
     {
@@ -1143,7 +1143,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       SpatialConfiguration(xscurr,mydisp);
 
       RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
-      const string* projtype = condition->Get<string>("projection");
+      const std::string* projtype = condition->Get<std::string>("projection");
 
       // To compute monitored area consider required projection method
       // and set according coordinates to zero

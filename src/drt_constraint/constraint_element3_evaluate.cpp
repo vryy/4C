@@ -83,7 +83,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       {
         RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
         const std::vector<double>*  direct = condition->Get<std::vector<double> > ("direction");
-        const string* value = condition-> Get<string>("value");
+        const std::string* value = condition-> Get<std::string>("value");
         if (*value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
         else if (*value == "x")
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         ComputeFirstDerivWeightedDistance(elevec1,*direct);
         elevec2=elevec1;
 
-        const string* value = condition-> Get<string>("value");
+        const std::string* value = condition-> Get<std::string>("value");
         if (*value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
         else if (*value == "x")

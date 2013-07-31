@@ -97,7 +97,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
         DRT::Node* nd = actdis->gNode((*nodes)[n]);
         if (nd->GetCondition("ArtInOutCond"))
         {
-          std::string TerminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+          std::string TerminalType = *(nd->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
           if(TerminalType == "inlet")
             ndi = nd;
           else
@@ -161,14 +161,14 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
       if(!inserted || !inserted2)
         dserror("Each artery must have a unique artery number, please correct your input file\n");
 
-      cout<<"----------------------------------------------------------"<<endl;
-      cout<<"Artery["<<Artery_Number<<"] has the following sorted nodes"<<endl;
+      std::cout<<"----------------------------------------------------------"<<std::endl;
+      std::cout<<"Artery["<<Artery_Number<<"] has the following sorted nodes"<<std::endl;
       for(unsigned int n=0; n<sorted_nodes->size();n++)
       {
-        cout<<(*sorted_nodes)[n]<<"\t";
+        std::cout<<(*sorted_nodes)[n]<<"\t";
       }
-      cout<<endl;
-      cout<<"----------------------------------------------------------"<<endl;
+      std::cout<<std::endl;
+      std::cout<<"----------------------------------------------------------"<<std::endl;
     }
   }
   //throw;
@@ -335,7 +335,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
     {
       (*fout_)<<myqanp[j]<<"\t";
     }
-    (*fout_)<<nd->Id()<<endl;
+    (*fout_)<<nd->Id()<<std::endl;
     // Update L
     L+=dL;
     // export the dof of the final node

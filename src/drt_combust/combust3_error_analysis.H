@@ -88,7 +88,7 @@ void AnalyticalSol_Couette_20x20x1_plain(
   // matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
   if((domainplus && exact_levelset_gp > 0) ||
       (!domainplus && exact_levelset_gp < 0)); // do nothing
-  else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
 
   // set analytical velocity
@@ -219,7 +219,7 @@ void AnalyticalSol_shear(
   // matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
   if((domainplus && exact_levelset_gp > 0) ||
       (!domainplus && exact_levelset_gp < 0)); // do nothing
-  else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
 
   // set analytical velocity
@@ -299,7 +299,7 @@ void AnalyticalSol_shear_Interface(
   //	// matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
   //	if((domainplus && exact_levelset_gp > 0) ||
   //	   (!domainplus && exact_levelset_gp < 0)); // do nothing
-  //	else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  //	else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
 
   // set analytical velocity
@@ -370,7 +370,7 @@ void AnalyticalSol_straight_bodyforce_inclined(
   // matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
   if((domainplus && exact_levelset_gp > 0) ||
       (!domainplus && exact_levelset_gp < 0)); // do nothing
-  else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
 
   // set analytical velocity
@@ -447,7 +447,7 @@ void AnalyticalSol_straight_bodyforce_inclined_Interface(
   //	// matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
   //	if((domainplus && exact_levelset_gp > 0) ||
   //	   (!domainplus && exact_levelset_gp < 0)); // do nothing
-  //	else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  //	else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
 
   // set analytical velocity
@@ -510,7 +510,7 @@ void AnalyticalSol_static_bubble(
   // matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
   if((domainplus && exact_levelset_gp > 0) ||
       (!domainplus && exact_levelset_gp < 0)); // do nothing
-  else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
   double rad_1 = 0.5;
   double curvature = 1.0/rad_1;
@@ -613,7 +613,7 @@ void AnalyticalSol_static_bubble_nxnx1(
   if((domainplus && exact_levelset_gp > 0) ||
       (!domainplus && exact_levelset_gp < 0))
     {} // do nothing
-//  else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+//  else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
   double rad_1 = 0.4;
   double curvature = 1.0/rad_1;
@@ -727,7 +727,7 @@ void AnalyticalSol_static_bubble_nxnxn(
   else
   {
 
-  } //cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  } //std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
   double rad_1 = 0.3;
   double rad_2 = 0.3;
@@ -839,7 +839,7 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat(
   else
   {
 
-  } //cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  } //std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
   double rad_1 = 0.232401774;
   double rad_2 = 0.232401774;
@@ -954,7 +954,7 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat(
   else
   {
 
-  } //cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  } //std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
   double rad_1 = sqrt(0.1);
   //double rad_2 = 0.1;
@@ -1354,7 +1354,7 @@ void Nitsche_BuildDomainIntegratedErrors(
 #ifdef DEBUG
       if (detcell < 0.0)
       {
-        cout << "detcell :  " << detcell << endl;
+        std::cout << "detcell :  " << detcell << std::endl;
         dserror("negative detcell!");
       }
 #endif
@@ -2172,7 +2172,7 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
        err_deriv_vel_visc_mean(i,2) = analyt_deriv_visc_mean(i,2) - deriv_visc_mean(i,2); // error of d/dz
      }
 
-//cout << "analyt " << analyt_flux_jump << endl;
+//std::cout << "analyt " << analyt_flux_jump << std::endl;
 
       // get {2*mu*E(v)-2*mu*E(v_h)}*n
       for (size_t i = 0; i< nsd; i++)

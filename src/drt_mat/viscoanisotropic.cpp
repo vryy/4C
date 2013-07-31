@@ -379,8 +379,8 @@ void MAT::ViscoAnisotropic::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* d
   ca2_->at(gp).resize(3);
   LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca1_->at(gp))[0]),defgrad->A(),&((a1_->at(gp))[0]));
   LINALG::DENSEFUNCTIONS::multiply<double,3,3,1>(&((ca2_->at(gp))[0]),defgrad->A(),&((a2_->at(gp))[0]));
-  //cout << (ca1_->at(gp))[0] << ",  " << (ca1_->at(gp))[1] << ",  " << (ca1_->at(gp))[2] << endl;
-  //cout <<  (a1_->at(gp))[0] << ",  " <<  (a1_->at(gp))[1] << ",  " <<  (a1_->at(gp))[2] << endl;
+  //std::cout << (ca1_->at(gp))[0] << ",  " << (ca1_->at(gp))[1] << ",  " << (ca1_->at(gp))[2] << std::endl;
+  //std::cout <<  (a1_->at(gp))[0] << ",  " <<  (a1_->at(gp))[1] << ",  " <<  (a1_->at(gp))[2] << std::endl;
   return;
 }
 
@@ -505,13 +505,13 @@ void MAT::ViscoAnisotropic::Evaluate
 
   if (J4 < minstretch)
   {
-//    cout<<"Fiber compression exceeded minstretch! J4 = " << J4 <<endl;
+//    std::cout<<"Fiber compression exceeded minstretch! J4 = " << J4 <<std::endl;
     J4 = minstretch;
     fib1_tension = 0.;
   }
   if (J6 < minstretch)
   {
-    //cout<<"Fiber compression exceeded minstretch! J6 = " << J6 <<endl;
+    //std::cout<<"Fiber compression exceeded minstretch! J6 = " << J6 <<std::endl;
     J6 = minstretch;
     fib2_tension = 0.;
   }
@@ -695,9 +695,9 @@ void MAT::ViscoAnisotropic::Evaluate
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::VisNames(std::map<string,int>& names)
+void MAT::ViscoAnisotropic::VisNames(std::map<std::string,int>& names)
 {
-  string fiber = "Fiber1";
+  std::string fiber = "Fiber1";
   names[fiber] = 3; // 3-dim vector
   fiber = "Fiber2";
   names[fiber] = 3; // 3-dim vector
@@ -705,7 +705,7 @@ void MAT::ViscoAnisotropic::VisNames(std::map<string,int>& names)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MAT::ViscoAnisotropic::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::ViscoAnisotropic::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   std::vector<double> a1 = Geta1()->at(0);  // get a1 of first gp
   std::vector<double> a2 = Geta2()->at(0);  // get a2 of first gp

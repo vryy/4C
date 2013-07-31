@@ -70,7 +70,7 @@ namespace STR
 
   public:
 
-    //! Provide the name as string
+    //! Provide the name as std::string
     static std::string MapKindEnumToString
     (
       const enum INPAR::STR::TimAdaKind term  //!< the enum
@@ -159,7 +159,7 @@ namespace STR
     //! @name Output
     //@{
 
-    //! Print error norm string
+    //! Print error norm std::string
     std::string PrintErrNorm() const;
 
     //! Print time adapting constants
@@ -219,7 +219,7 @@ namespace STR
     //! Provide the name
     virtual enum INPAR::STR::TimAdaKind MethodName() const = 0;
 
-    //! Provide the name as string
+    //! Provide the name as std::string
     std::string MethodTitle() const
     {
       return MapKindEnumToString(MethodName());

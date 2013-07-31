@@ -600,7 +600,7 @@ protected:
   //@}
 
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
-  string special_flow_;
+  std::string special_flow_;
 
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;

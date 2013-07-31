@@ -77,7 +77,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
       }
       case calc_Neumann_inflow:
       {
-        //cout << "ich werte jetzt den Neumann inflow Term aus!" << endl;
+        //std::cout << "ich werte jetzt den Neumann inflow Term aus!" << std::endl;
         //this->Print(std::cout);
         Epetra_Vector* phinp = parent_->Phinp();
 
@@ -273,7 +273,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
               }
 
               //TEST
-              //std::cout << "number of intersection points " << intersectionpoints.size() << endl;
+              //std::cout << "number of intersection points " << intersectionpoints.size() << std::endl;
               //for (std::size_t iter=0; iter<pointlist.size(); ++iter)
               //{
               //  std::cout<< iter << std::endl;
@@ -352,9 +352,9 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                   polypoints.push_back( intersectionpointsids.rbegin()->second);
 
                 //TEST Ausgabe
-                //cout << "polypoints" << endl;
+                //std::cout << "polypoints" << std::endl;
                 //for (int i=0; i<polypoints.size(); i++)
-                //  cout << polypoints[i] << endl;
+                //  std::cout << polypoints[i] << std::endl;
 
                 polygonpoints[ipoly] = polypoints;
               }
@@ -483,18 +483,18 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                 // remark: boundary integration cells in bisected cells (these have always triangular boundary
                 //         integration cells) are defined to belong to the "plus" domain (G>0)
                 surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::tri3, -1, trianglecoord, Teuchos::null, phystrianglecoord, inGplus));
-                //cout << "created tri3 boundary cell" << endl;
+                //std::cout << "created tri3 boundary cell" << std::endl;
               }
             }
             else
             {
-              cout << "--------------------------------" << endl;
-              cout << "special case Neumann inflow term" << endl;
-              cout << "--------------------------------" << endl;
+              std::cout << "--------------------------------" << std::endl;
+              std::cout << "special case Neumann inflow term" << std::endl;
+              std::cout << "--------------------------------" << std::endl;
               // print G-function values on screen
               const std::vector<double>& gfuncvalues = surfcell->GetGfuncValues();
               for (size_t i=0; i<gfuncvalues.size(); i++ )
-                cout << "G-function value " << i << ": " << gfuncvalues[i] << endl;
+                std::cout << "G-function value " << i << ": " << gfuncvalues[i] << std::endl;
 
               // remark: - case: 0 intersection points
               //                 the interface cuts through two nodes diagonally
@@ -505,7 +505,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
               //         - case: the interface cuts through one node
               //                 should not occur here, since this surface cell is 'touched_'
               //         - case: anything else is very strange
-              cout << "number of intersection points: " << surfcell->intersectionpoints_.size() << endl;
+              std::cout << "number of intersection points: " << surfcell->intersectionpoints_.size() << std::endl;
               //dserror("exactly 2 intersection points expected");
 
               // compute Neumann inflow term as if this surface cell was not bisected
@@ -577,7 +577,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                   if(averageGvalue>=0.0)
                     inGplus = true;
                 }
-                //cout << "created quad4 boundary cell" << endl;
+                //std::cout << "created quad4 boundary cell" << std::endl;
                 surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::quad4, -1, xicoord, Teuchos::null, xyzesurf, inGplus));
               }
             }
@@ -650,7 +650,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
               if(averageGvalue>=0.0)
                 inGplus = true;
             }
-            //cout << "created quad4 boundary cell" << endl;
+            //std::cout << "created quad4 boundary cell" << std::endl;
             surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::quad4, -1, xicoord, Teuchos::null, xyzesurf, inGplus));
           }
           {
@@ -682,7 +682,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
             //    GEO::BoundaryIntCell cell = surfaceintcelllist[icell];
             //    const LINALG::SerialDenseMatrix& cellpos = cell.CellNodalPosXiDomain();//cell.CellNodalPosXYZ();
             //    const double color = 5;
-            //    gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << endl;
+            //    gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << std::endl;
             //  }
             //  gmshfilecontent << "};\n";
             //}

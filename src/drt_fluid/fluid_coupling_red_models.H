@@ -121,16 +121,16 @@ private:
   map<const int, RCP<Fluid_couplingBc> > coup_map3D_;
 
   //! map of coupling variables returned by the reduced-D model at time step n+1
-  RCP<map<string, double > >                   mapRed_Dnp_;
+  RCP<map<std::string, double > >                   mapRed_Dnp_;
 
   //! map of coupling variables returned by the reduced-D model at time step n
-  RCP<map<string, double > >                   mapRed_Dn_;
+  RCP<map<std::string, double > >                   mapRed_Dn_;
 
   //! map of coupling variables returned by the 3-D model at time step n+1
-  RCP<map<string, double > >                   map3_Dnp_;
+  RCP<map<std::string, double > >                   map3_Dnp_;
 
   //! map of coupling variables returned by the 3-D model at time step n
-  RCP<map<string, double > >                   map3_Dn_;
+  RCP<map<std::string, double > >                   map3_Dn_;
 
   //! 3D fluid discretization
   RCP<DRT::Discretization>                     discret3D_;

@@ -115,7 +115,7 @@ DRT::Node* DRT::Node::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::Node& node)
+std::ostream& operator << (std::ostream& os, const DRT::Node& node)
 {
   node.Print(os);
   return os;
@@ -125,7 +125,7 @@ ostream& operator << (ostream& os, const DRT::Node& node)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Node::Print(ostream& os) const
+void DRT::Node::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Node " << std::setw(12) << Id()
@@ -145,7 +145,7 @@ void DRT::Node::Print(ostream& os) const
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {
       os << curr->first << " ";
-      os << *(curr->second) << endl;
+      os << *(curr->second) << std::endl;
     }
   }
 #endif
@@ -207,7 +207,7 @@ void DRT::Node::Unpack(const std::vector<char>& data)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Node::GetCondition(const string& name,std::vector<DRT::Condition*>& out) const
+void DRT::Node::GetCondition(const std::string& name,std::vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
@@ -227,7 +227,7 @@ void DRT::Node::GetCondition(const string& name,std::vector<DRT::Condition*>& ou
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Node::GetCondition(const string& name) const
+DRT::Condition* DRT::Node::GetCondition(const std::string& name) const
 {
   std::multimap<std::string,Teuchos::RCP<Condition> >::const_iterator curr =
                                          condition_.find(name);

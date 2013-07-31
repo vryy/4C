@@ -69,7 +69,7 @@ namespace UTILS
     Constraint
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-      const string& CondName, ///< Name of condition to creat constraint from
+      const std::string& CondName, ///< Name of condition to creat constraint from
       int& minID,  ///< minimum constraint or monitor ID so far
       int& maxID  ///< maximum constraint or monitor ID so far
     );
@@ -81,7 +81,7 @@ namespace UTILS
     Constraint
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-      const string& CondName ///< Name of condition to create constraints from
+      const std::string& CondName ///< Name of condition to create constraints from
     );
 
     /*!
@@ -104,7 +104,7 @@ namespace UTILS
     /// Set state of the underlying discretization
     void SetState
     (
-      const string& state,  ///< name of state to set
+      const std::string& state,  ///< name of state to set
       RCP<Epetra_Vector> V  ///< values to set
     );
 
@@ -160,7 +160,7 @@ namespace UTILS
     //! Return the ConstrType based on the condition name
     ConstrType GetConstrType
     (
-      const string& Name///<condition name
+      const std::string& Name///<condition name
     );
 
     //! Evaluate constraint conditions and assemble the results

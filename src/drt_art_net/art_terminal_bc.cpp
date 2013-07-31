@@ -68,8 +68,8 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
     // Read in Condition type and name
     // -----------------------------------------------------------------
-    Type = *(condition->Get<string>("type"));
-    BC   = *(condition->Get<string>("boundarycond"));
+    Type = *(condition->Get<std::string>("type"));
+    BC   = *(condition->Get<std::string>("boundarycond"));
     
     // -----------------------------------------------------------------
     // Read in the bc curve information
@@ -145,7 +145,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
     // Read in Condition type
     // -----------------------------------------------------------------
-    Type = *(condition->Get<string>("CouplingType"));
+    Type = *(condition->Get<std::string>("CouplingType"));
 
     // -----------------------------------------------------------------
     // Read in coupling variable rescribed by the 3D simulation
@@ -179,15 +179,15 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
       std::string VariableWithId = itr->first;
       size_t found;
       found= VariableWithId.rfind(stringID.str());
-      if (found!=string::npos)
+      if (found!=std::string::npos)
       {
-        BC   = string(VariableWithId,0,found);
+        BC   = std::string(VariableWithId,0,found);
         BCin = itr->second;
         break;
       }
     }
 
-    cout<<"Return ["<<BC<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<endl;
+    std::cout<<"Return ["<<BC<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<std::endl;
     if (Type == "forced")
     {
       Rf = 1.0;
@@ -471,7 +471,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     RCP<std::map<std::string,double> >  map1D;
     map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
 
-    std::string returnedBC = *(condition->Get<string>("ReturnedVariable"));
+    std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
 
     double BC3d = 0.0;
     if (returnedBC  == "flow")
@@ -479,7 +479,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
       double c = (Wfnp - Wbnp)/8.0;
       double A = std::pow(c,4)*4.0*pow(dens*Ao/beta,2);
       BC3d     = (Wfnp + Wbnp)/2.0*A;
-      cout<<"1D is returning flowrate = "<<BC3d<<endl;
+      std::cout<<"1D is returning flowrate = "<<BC3d<<std::endl;
     }
     else if (returnedBC == "pressure")
     {
@@ -489,14 +489,14 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     }
     else
     {
-      std::string str = (*condition->Get<string>("ReturnedVariable"));
+      std::string str = (*condition->Get<std::string>("ReturnedVariable"));
       dserror("%s, is an unimplimented type of coupling",str.c_str());
       exit(1);
     }
     std::stringstream returnedBCwithId;
     returnedBCwithId << returnedBC <<"_" << ID;
 
-    cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<endl;
+    std::cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<std::endl;
     // -----------------------------------------------------------------
     // Check whether the coupling wrapper has already initialized this
     // map else wise we will have problems with parallelization, that's
@@ -620,9 +620,9 @@ void ART::UTILS::SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
 {
 
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")
-  std::string int_type = *(condition->Get<string>("intigrationType"));
+  std::string int_type = *(condition->Get<std::string>("intigrationType"));
   // define windkessel BC type std::string (e.g: Type = "forced")
-  std::string wk_type  = *(condition->Get<string>("windkesselType"));
+  std::string wk_type  = *(condition->Get<std::string>("windkesselType"));
 
   // -------------------------------------------------------------------
   // Read in the bc curve information

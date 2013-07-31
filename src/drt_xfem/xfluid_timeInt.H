@@ -106,7 +106,7 @@ public:
 
   private:
 
-  /// returns matching string for each reconstruction method
+  /// returns matching std::string for each reconstruction method
   std::string MapMethodEnumToString
   (
      const enum INPAR::XFEM::XFluidTimeInt term

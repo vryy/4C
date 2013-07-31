@@ -232,7 +232,7 @@ public:
    * \brief Print this meshfree node
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
 protected:
 
@@ -260,6 +260,6 @@ protected:
 } // end namespace DRT
 
 // << operator
-ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeNode& meshfreenode);
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeNode& meshfreenode);
 
 #endif  // #ifndef DRT_MESHFREE_NODE_H

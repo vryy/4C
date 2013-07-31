@@ -272,7 +272,7 @@ public:
   /*!
   \brief Print this class
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   virtual bool Filled() const { return filled_; }
 
@@ -363,7 +363,7 @@ private:
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::DofSet& dofset);
+std::ostream& operator << (std::ostream& os, const DRT::DofSet& dofset);
 
 
 #endif  // #ifndef DOFSET_H

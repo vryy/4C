@@ -273,9 +273,9 @@ void STR::GenInvAnalysis::Integrate()
   {
     if (!myrank)
     {
-      cout << "#################################################################" << endl;
-      cout << "########################### making Jacobian matrix ##############" <<endl;
-      cout << "#################################################################" << endl;
+      std::cout << "#################################################################" << std::endl;
+      std::cout << "########################### making Jacobian matrix ##############" <<std::endl;
+      std::cout << "#################################################################" << std::endl;
       printf("Measured parameters nmp_ %d # parameters to fit np_ %d\n",nmp_,np_);
     }
 
@@ -317,7 +317,7 @@ void STR::GenInvAnalysis::Integrate()
       MultiInvAnaInit();
 
       if (!myrank)
-        cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<endl;
+        std::cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<std::endl;
       // make current set of material parameters
       Epetra_SerialDenseVector p_cur = p_;
       // perturb parameter i
@@ -411,9 +411,9 @@ void STR::GenInvAnalysis::NPIntegrate()
 
     if (!gmyrank)
     {
-      cout << "#################################################################" << endl;
-      cout << "######################## NP making Jacobian matrix ##############" <<endl;
-      cout << "#################################################################" << endl;
+      std::cout << "#################################################################" << std::endl;
+      std::cout << "######################## NP making Jacobian matrix ##############" <<std::endl;
+      std::cout << "#################################################################" << std::endl;
       printf("Measured parameters nmp_ %d # parameters to fit np_ %d NP groups %d\n",nmp_,np_,ngroup);
       fflush(stdout);
     }
@@ -460,7 +460,7 @@ void STR::GenInvAnalysis::NPIntegrate()
       MultiInvAnaInit(); // this might not work in here, I'm not sure
 
       if (!lmyrank)
-        cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<endl;
+        std::cout << "--------------------------- run "<< i+1 << " of: " << np_+1 <<" -------------------------" <<std::endl;
       // make current set of material parameters
       Epetra_SerialDenseVector p_cur = p_;
       // perturb parameter i
@@ -618,7 +618,7 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
           p_[i] += delta_p[i];
     }
     else
-      cout << "WARNING: MAT Params not updated! No descent direction" << endl;
+      std::cout << "WARNING: MAT Params not updated! No descent direction" << std::endl;
   }
   else
   // res_based update
@@ -700,8 +700,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
     // get the displacements of the monitored timesteps
     {
-//      cout << "time = " << time << endl ;
-//      cout << "timestep = " << timesteps_[writestep] << endl ;
+//      std::cout << "time = " << time << std::endl ;
+//      std::cout << "timestep = " << timesteps_[writestep] << std::endl ;
       if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
         Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
@@ -797,8 +797,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
     // get the displacements of the monitored timesteps
     {
-//      cout << "time = " << time << endl ;
-//      cout << "timestep = " << timesteps_[writestep] << endl ;
+//      std::cout << "time = " << time << std::endl ;
+//      std::cout << "timestep = " << timesteps_[writestep] << std::endl ;
 
       if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
@@ -896,7 +896,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
 
   if (gmyrank==0) // this if should actually not be necessary since there is only gproc 0 in here
   {
-      cout << endl;
+      std::cout << std::endl;
       printf("################################################");
       printf("##############################################\n");
       printf("############################ Inverse Analysis ##");
@@ -968,7 +968,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
 
       printf("################################################");
       printf("##############################################\n");
-      cout << endl;
+      std::cout << std::endl;
 #endif
       printf("\n"); fflush(stdout);
   }
@@ -988,10 +988,10 @@ void STR::GenInvAnalysis::PrintFile()
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   name.append(filename_);
 
-  if (name.rfind("_run_")!=string::npos)
+  if (name.rfind("_run_")!=std::string::npos)
   {
     size_t pos = name.rfind("_run_");
-    if (pos==string::npos)
+    if (pos==std::string::npos)
       dserror("inconsistent file name");
     name = name.substr(0, pos);
   }
@@ -2159,7 +2159,7 @@ void STR::GenInvAnalysis::CheckOptStep()
   {
     if (p_(i) < 0.0)
     {
-      cout << "at least one negative material parameter detected: reverse update" << endl;
+      std::cout << "at least one negative material parameter detected: reverse update" << std::endl;
       // reset the update step in case it was too large and increase regularization;
       // storage is not touched, so screen print out does not reflect what really happens
       p_ = p_o_;

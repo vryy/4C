@@ -74,7 +74,7 @@ void caldyn_drt()
 #ifdef HAVE_FFTW
     STR::mlmc();
 #else
-  cout<< RED_LIGHT << "CANNOT PERFORM MLMC WITHOUT FFTW  "<< END_COLOR << endl;
+  std::cout<< RED_LIGHT << "CANNOT PERFORM MLMC WITHOUT FFTW  "<< END_COLOR << std::endl;
 #endif
   }
   else

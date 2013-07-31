@@ -81,26 +81,26 @@ dofoffset_(dofoffset)
   if(boundingbox == "octree_axisaligned")
   {
     if(!discret_.Comm().MyPID())
-      cout<<"Search routine:\nOctree + Axis Aligned BBs"<<endl;
+      std::cout<<"Search routine:\nOctree + Axis Aligned BBs"<<std::endl;
     boundingbox_ = Beam3ContactOctTree::axisaligned;
   }
   else if(boundingbox == "octree_cylorient")
   {
     if(!discret_.Comm().MyPID())
-      cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<endl;
+      std::cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<std::endl;
     boundingbox_ = Beam3ContactOctTree::cyloriented;
   }
   else if(boundingbox == "octree_spherical")
   {
     if(!discret_.Comm().MyPID())
-      cout<<"Search routine:\nOctree + Spherical BBs"<<endl;
+      std::cout<<"Search routine:\nOctree + Spherical BBs"<<std::endl;
     boundingbox_ = Beam3ContactOctTree::spherical;
   }
   else
     dserror("No Octree declared in your Input file!");
 
   if(!discret_.Comm().MyPID())
-    cout<<"max. tree depth        = "<<maxtreedepth_<<"\nmax. BB per octant     = "<<minbboxesinoctant_<<"\nextrusion factor       = "<<extrusionfactor_<<endl;
+    std::cout<<"max. tree depth        = "<<maxtreedepth_<<"\nmax. BB per octant     = "<<minbboxesinoctant_<<"\nextrusion factor       = "<<extrusionfactor_<<std::endl;
 
   // get line conditions
   bbox2line_ = Teuchos::rcp(new Epetra_Vector(*(searchdis_.NodeColMap())));
@@ -146,7 +146,7 @@ std::vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int,
     contactpairs.clear();
 #ifdef OCTREEDEBUG
   if(!discret_.Comm().MyPID())
-    cout<<"Octree Search time:\t\t"<<Teuchos::Time::wallTime()-t_start<<" seconds"<<endl;
+    std::cout<<"Octree Search time:\t\t"<<Teuchos::Time::wallTime()-t_start<<" seconds"<<std::endl;
 #endif
   return contactpairs;
 }// OctTreeSearch()
@@ -283,12 +283,12 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       if(step!=-2)
         filename << "ContactPairs"<<std::setw(6) << std::setfill('0') << step <<".dat";
       else
-        filename << "ContactPairsInit.dat" <<endl;
+        filename << "ContactPairsInit.dat" <<std::endl;
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
       for (int i=0;i<(int)cpairs.size();i++)
-        myfile << (cpairs[i]->Element1())->Id() <<"  "<< (cpairs[i]->Element2())->Id() <<endl;
+        myfile << (cpairs[i]->Element1())->Id() <<"  "<< (cpairs[i]->Element2())->Id() <<std::endl;
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
     }
@@ -299,7 +299,7 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       if(step!=-2)
         filename << "OctreeLimits"<<std::setw(6) << std::setfill('0') << step <<".dat";
       else
-        filename << "OctreeLimitsInit.dat"<<endl;
+        filename << "OctreeLimitsInit.dat"<<std::endl;
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
@@ -307,12 +307,12 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       {
         for (int v=0; v<(int)octreelimits_[u].M(); v++)
           myfile << std::scientific<<octreelimits_[u](v)<<" ";
-        myfile <<endl;
+        myfile <<std::endl;
       }
       // root box
       for(int u=0; u<(int)rootbox_.M(); u++)
         myfile<<std::scientific<<rootbox_(u)<<" ";
-      myfile<<endl;
+      myfile<<std::endl;
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
 
@@ -332,7 +332,7 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       if(step!=-2)
         filename << "BoundingBoxCoords"<<std::setw(6) << std::setfill('0') << step <<".dat";
       else
-        filename << "BoundingBoxCoordsInit.dat"<<endl;
+        filename << "BoundingBoxCoordsInit.dat"<<std::endl;
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
@@ -340,7 +340,7 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       {
         for (int v=0; v<allbboxes_->NumVectors(); v++)
           myfile << std::scientific<< std::setprecision(10)<<(*allbboxes_)[v][u] <<" ";
-        myfile <<endl;
+        myfile <<std::endl;
       }
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
@@ -357,7 +357,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
 {
 #ifdef OCTREEDEBUG
   if(!discret_.Comm().MyPID())
-    cout<<"Searchdis: "<<searchdis_.ElementColMap()->NumMyElements()<<", Probdis: "<<discret_.NumGlobalElements()<<endl;
+    std::cout<<"Searchdis: "<<searchdis_.ElementColMap()->NumMyElements()<<", Probdis: "<<discret_.NumGlobalElements()<<std::endl;
 #endif
   // mapping bounding boxes to octants with -1.0 for empty with 4 columns (max number of octants a single BB can belong to)
   bbox2octant_ = Teuchos::rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),4));
@@ -465,7 +465,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
   searchdis_.Comm().MaxAll(&bbgentimelocal, &bbgentimeglobal, 1);
 
   if(!searchdis_.Comm().MyPID())
-    cout << "\n\nBBox creation time:\t\t" << bbgentimeglobal<< " seconds"<<endl;
+    std::cout << "\n\nBBox creation time:\t\t" << bbgentimeglobal<< " seconds"<<std::endl;
 #endif
 
   return;
@@ -802,7 +802,7 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
           break;
         minimum = std::min((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
         maximum = std::max((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
-        //cout << minimum << endl;
+        //std::cout << minimum << std::endl;
         (*allbboxes_)[2*i][elecolid] = minimum;    (*allbboxes_)[2*i+1][elecolid] = maximum;
       }// end of correct
     }
@@ -1153,17 +1153,17 @@ bool Beam3ContactOctTree::locateAll()
       {
         for (int v=0; v<bboxesinoctants_->NumVectors(); v++)
           myfile <<scientific<<(*bboxesinoctants_)[v][u] <<" ";
-        myfile <<endl;
+        myfile <<std::endl;
       }
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
 
-      cout<<"bboxesinoctants_ : "<<bboxesinoctants_->MyLength()<<"x"<<bboxesinoctants_->NumVectors()<<endl;
+      std::cout<<"bboxesinoctants_ : "<<bboxesinoctants_->MyLength()<<"x"<<bboxesinoctants_->NumVectors()<<std::endl;
     }
 #endif
 #ifdef MEASURETIME
      if(!searchdis_.Comm().MyPID())
-       cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;
+       std::cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << std::endl;
 #endif
      return true;
   }
@@ -1605,7 +1605,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
 
         if (considerpair)
         {
-          //cout<<"IDs: "<<bboxIDs[0]<<", "<< bboxIDs[1]<<endl;
+          //std::cout<<"IDs: "<<bboxIDs[0]<<", "<< bboxIDs[1]<<std::endl;
           // apply different bounding box intersection schemes
           bool intersection = false;
           switch(boundingbox_)
@@ -1640,7 +1640,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
   {
     counter++;
     //if(!discret_.Comm().MyPID())
-      //cout << std::scientific << (*it).first <<"  "<< ((*it).second)[0]<<" "<< ((*it).second)[1]<<endl;
+      //std::cout << std::scientific << (*it).first <<"  "<< ((*it).second)[0]<<" "<< ((*it).second)[1]<<std::endl;
     int collid1 = searchdis_.ElementColMap()->LID(((*it).second)[0]);
     int collid2 = searchdis_.ElementColMap()->LID(((*it).second)[1]);
 
@@ -1671,7 +1671,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
     contactpairs->push_back(rcp (new Beam3contact(discret_,searchdis_,dofoffset_,tempele1,tempele2,ele1pos,ele2pos)));
   }
   //if(!discret_.Comm().MyPID())
-    //cout<<"number of boxes: "<<counter<<endl;
+    //std::cout<<"number of boxes: "<<counter<<std::endl;
 
 #ifdef MEASURETIME
   double isectimelocal = Teuchos::Time::wallTime() - t_search;
@@ -1680,7 +1680,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
   searchdis_.Comm().MaxAll(&isectimelocal, &isectimeglobal, 1);
   discret_.Comm().Barrier();
   if(!searchdis_.Comm().MyPID())
-    cout << "Intersection time:\t\t" << isectimeglobal << " seconds"<<endl;
+    std::cout << "Intersection time:\t\t" << isectimeglobal << " seconds"<<std::endl;
 #endif
 
   return;

@@ -24,7 +24,7 @@ Maintainer: Thomas Kloeppel
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
-        const string& conditionname,
+        const std::string& conditionname,
         int& offsetID,
         int& maxID):
 actdisc_(discr)
@@ -35,7 +35,7 @@ actdisc_(discr)
     constrtype_=GetConstrType(conditionname);
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
-      //constrcond_[i]->Print(cout);
+      //constrcond_[i]->Print(std::cout);
       int condID=(*(constrcond_[i]->Get<std::vector<int> >("ConditionID")))[0];
       if (condID>maxID)
       {
@@ -69,7 +69,7 @@ actdisc_(discr)
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
-        const string& conditionname):
+        const std::string& conditionname):
 actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname,constrcond_);
@@ -102,7 +102,7 @@ actdisc_(discr)
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
 *-----------------------------------------------------------------------*/
-UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& name)
+UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const std::string& name)
 {
   if (name=="VolumeConstraint_3D" or name=="VolumeConstraint_3D_Pen")
     return volconstr3d;
@@ -171,7 +171,7 @@ void UTILS::Constraint::Initialize
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+        std::cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << std::endl;
       }
     }
   }
@@ -429,7 +429,7 @@ void UTILS::Constraint::InitializeConstraint(
 
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered a new active Lagrange condition (Id = " << condID << ")  at time t = "<< time << endl;
+        std::cout << "Encountered a new active Lagrange condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       }
     }
 
@@ -455,7 +455,7 @@ std::vector<int> UTILS::Constraint::GetActiveCondID()
  *-----------------------------------------------------------------------*/
 void UTILS::Constraint::SetState
 (
-  const string& state,  ///< name of state to set
+  const std::string& state,  ///< name of state to set
   RCP<Epetra_Vector> V  ///< values to set
 )
 {

@@ -38,7 +38,7 @@ written by : Alexander Volf
 #ifdef PRINT_DEBUG
 #include <string>
 #include <sstream>
-#include <cstring>
+#include <cstd::string>
 template <class T>
 void writeArray(const T& mat, std::string name = "unnamed")
 {
@@ -615,12 +615,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
           // compute GP contribution to energy error norm
           energynorm += fac * stress.Dot(strainerror);
 
-          //cout << "UAnalytical:      " << ugp << endl;
-          //cout << "UDiscrete:        " << uanalyt << endl;
-          //cout << "StrainAnalytical: " << strainanalyt << endl;
-          //cout << "StrainDiscrete:   " << straingp << endl;
-          //cout << "DerivAnalytical:  " << derivanalyt << endl;
-          //cout << "DerivDiscrete:    " << derivgp << endl;
+          //std::cout << "UAnalytical:      " << ugp << std::endl;
+          //std::cout << "UDiscrete:        " << uanalyt << std::endl;
+          //std::cout << "StrainAnalytical: " << strainanalyt << std::endl;
+          //std::cout << "StrainDiscrete:   " << straingp << std::endl;
+          //std::cout << "DerivAnalytical:  " << derivanalyt << std::endl;
+          //std::cout << "DerivDiscrete:    " << derivgp << std::endl;
         }
         //----------------------------------------------------------------
 

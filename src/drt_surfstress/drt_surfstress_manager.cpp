@@ -67,7 +67,7 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     con_last_        = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
     gamma_current_   = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
 
-    std::vector<string> conditions_to_copy;
+    std::vector<std::string> conditions_to_copy;
     std::string condname = "SurfaceStress";
     conditions_to_copy.push_back(condname);
 

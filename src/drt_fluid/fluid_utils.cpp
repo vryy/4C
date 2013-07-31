@@ -325,15 +325,15 @@ void FLD::UTILS::LiftDrag(
       // prepare output
       if (myrank==0)
       {
-        cout << "Lift and drag calculation:" << "\n";
+        std::cout << "Lift and drag calculation:" << "\n";
         if (ndim == 2)
         {
-          cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
+          std::cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
         }
         if (ndim == 3)
         {
-          cout << "lift'n'drag Id      F_x             F_y             F_z           ";
-          cout << "M_x             M_y             M_z :" << "\n";
+          std::cout << "lift'n'drag Id      F_x             F_y             F_z           ";
+          std::cout << "M_x             M_y             M_z :" << "\n";
         }
       }
 
@@ -482,28 +482,28 @@ void FLD::UTILS::LiftDrag(
         {
           if (ndim == 2)
           {
-            cout << "     " << label << "         ";
-            cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
-            cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
-            cout << std::scientific << ((*liftdragvals)[label])[5];
-            cout << "\n";
+            std::cout << "     " << label << "         ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[5];
+            std::cout << "\n";
           }
           if (ndim == 3)
           {
-            cout << "     " << label << "         ";
-            cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
-            cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
-            cout << std::scientific << ((*liftdragvals)[label])[2] << "    ";
-            cout << std::scientific << ((*liftdragvals)[label])[3] << "    ";
-            cout << std::scientific << ((*liftdragvals)[label])[4] << "    ";
-            cout << std::scientific << ((*liftdragvals)[label])[5];
-            cout << "\n";
+            std::cout << "     " << label << "         ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[2] << "    ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[3] << "    ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[4] << "    ";
+            std::cout << std::scientific << ((*liftdragvals)[label])[5];
+            std::cout << "\n";
           }
         }
       } // end: loop over L&D labels
       if (myrank== 0)
       {
-        cout << "\n";
+        std::cout << "\n";
       }
     }
   }
@@ -548,7 +548,7 @@ void FLD::UTILS::WriteLiftDragToFile(
     if (step <= 1)
     {
       f.open(fname.c_str(),std::fstream::trunc);
-      //f << header.str() << endl;
+      //f << header.str() << std::endl;
     }
     else
     {
@@ -609,7 +609,7 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
     dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
 
     //if(dofrowmap->Comm().MyPID()==0)
-    //	cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << endl;
+    //	std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;
 
     //ATTENTION: new definition: outflow is positive and inflow is negative
     volumeflowrateperline[condID] = flowrate;
@@ -661,7 +661,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
       for (size_t isd=0; isd < 3; isd++)
       {
         locflowrate(isd) += (*impulsrates)[dis.DofColMap()->LID(gdofs[isd])];
-//        cout << (*impulsrates)[dis.DofColMap()->LID(gdofs[isd])] << endl;
+//        std::cout << (*impulsrates)[dis.DofColMap()->LID(gdofs[isd])] << std::endl;
       }
     }
 
@@ -669,7 +669,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
 //    dofrowmap->Comm().SumAll(&locflowrate(0),&flowrate(0),1);
 //    dofrowmap->Comm().SumAll(&locflowrate(1),&flowrate(1),1);
 //    dofrowmap->Comm().SumAll(&locflowrate(2),&flowrate(2),1);
-//    cout << "locflowrate " << locflowrate << endl;
+//    std::cout << "locflowrate " << locflowrate << std::endl;
     if (volumeflowratepersurface.find(condID) == volumeflowratepersurface.end())
     {
       LINALG::Matrix<3,1> tmp(true);
@@ -717,7 +717,7 @@ void FLD::UTILS::WriteFlowRatesToFile(
                             + ".flowrate_ID_"+slabel.str()+".txt";
 
     if (step <= 1)
-      f.open(fname.c_str(),std::fstream::trunc); //f << header.str() << endl;
+      f.open(fname.c_str(),std::fstream::trunc); //f << header.str() << std::endl;
     else
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 

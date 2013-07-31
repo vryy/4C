@@ -1461,7 +1461,7 @@ namespace UTILS
               {
                 ver+=funct(i);
               }
-              cout << "sum funct " << ver << &endl;
+              std::cout << "sum funct " << ver << &std::endl;
           }
   #endif
 
@@ -1618,7 +1618,7 @@ namespace UTILS
               {
                   ver+=deriv1(0,i);
               }
-              cout << "sum deriv1(0,.) " << ver << &endl;
+              std::std::cout << "sum deriv1(0,.) " << ver << &std::endl;
           }
           {
               double ver=0;
@@ -1626,7 +1626,7 @@ namespace UTILS
               {
                   ver+=deriv1(2,i);
               }
-              cout << "sum deriv1(2,.) " << ver << &endl;
+              std::cout << "sum deriv1(2,.) " << ver << &std::endl;
           }
           {
               double ver=0;
@@ -1634,7 +1634,7 @@ namespace UTILS
               {
                   ver+=deriv1(1,i);
               }
-              cout << "sum deriv1(1,.) " << ver << &endl;
+              std::cout << "sum deriv1(1,.) " << ver << &std::endl;
           }
   #endif
 
@@ -1717,7 +1717,7 @@ namespace UTILS
           break;
       }
       default:
-          cout << DRT::DistypeToString(distype) << endl;
+          std::cout << DRT::DistypeToString(distype) << std::endl;
           dserror("distype unknown\n");
       } /* end switch(distype) */
       return;
@@ -1836,7 +1836,7 @@ namespace UTILS
               {
                   ver+=deriv2(0,i);
               }
-              cout << "sum deriv2(0,.) " << ver << &endl;
+              std::cout << "sum deriv2(0,.) " << ver << &std::endl;
           }
           {
               double ver=0;
@@ -1844,7 +1844,7 @@ namespace UTILS
               {
                   ver+=deriv2(1,i);
               }
-              cout << "sum deriv2(1,.) " << ver << &endl;
+              std::cout << "sum deriv2(1,.) " << ver << &std::endl;
           }
           {
               double ver=0;
@@ -1852,7 +1852,7 @@ namespace UTILS
               {
                   ver+=deriv2(2,i);
               }
-              cout << "sum deriv2(2,.) " << ver << &endl;
+              std::cout << "sum deriv2(2,.) " << ver << &std::endl;
           }
           {
               double ver=0;
@@ -1860,7 +1860,7 @@ namespace UTILS
               {
                   ver+=deriv2(3,i);
               }
-              cout << "sum deriv2(3,.) " << ver << &endl;
+              std::cout << "sum deriv2(3,.) " << ver << &std::endl;
           }
           {
               double ver=0;
@@ -1868,7 +1868,7 @@ namespace UTILS
               {
                   ver+=deriv2(4,i);
               }
-              cout << "sum deriv2(4,.) " << ver << &endl;
+              std::cout << "sum deriv2(4,.) " << ver << &std::endl;
           }
           {
               double ver=0;
@@ -1876,7 +1876,7 @@ namespace UTILS
               {
                   ver+=deriv2(5,i);
               }
-              cout << "sum deriv2(5,.) " << ver << &endl;
+              std::cout << "sum deriv2(5,.) " << ver << &std::endl;
           }
   #endif
           break;

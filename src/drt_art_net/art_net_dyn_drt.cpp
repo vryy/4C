@@ -51,12 +51,12 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
 #if 0
     if (actdis->Comm().MyPID()==0)
     {
-      cout<<"+--------------------- WARNING ---------------------+"<<endl;
-      cout<<"|                                                   |"<<endl;
-      cout<<"| One-dimesional arterial network is compiled, but  |"<<endl;
-      cout<<"| no artery elements are defined!                   |"<<endl;
-      cout<<"|                                                   |"<<endl;
-      cout<<"+---------------------------------------------------+"<<endl;
+      std::cout<<"+--------------------- WARNING ---------------------+"<<std::endl;
+      std::cout<<"|                                                   |"<<std::endl;
+      std::cout<<"| One-dimesional arterial network is compiled, but  |"<<std::endl;
+      std::cout<<"| no artery elements are defined!                   |"<<std::endl;
+      std::cout<<"|                                                   |"<<std::endl;
+      std::cout<<"+---------------------------------------------------+"<<std::endl;
     }
 #endif
     return Teuchos::null;
@@ -136,12 +136,12 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // solution output
   if (artdyn.get<std::string>("SOLVESCATRA")=="yes")
   {
-    cout<<"Scatra will be solved"<<endl;
+    std::cout<<"Scatra will be solved"<<std::endl;
     arterytimeparams.set ("solve scatra", true);
   }
   else
   {
-    cout<<"Scatra will not be solved"<<endl;
+    std::cout<<"Scatra will not be solved"<<std::endl;
     arterytimeparams.set ("solve scatra", false);
   }
 

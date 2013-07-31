@@ -28,7 +28,7 @@ Maintainer: Ursula Rasthofer
 COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   RCP<DRT::Discretization> discret,
   Teuchos::ParameterList&          params,
-  const string&                    geotype,
+  const std::string&                    geotype,
   const bool                       withscatra)
   :
   discret_    (discret),
@@ -158,9 +158,9 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
 
   if (discret_->Comm().MyPID()==0)
   {
-    cout << "\n" << "parameters used for ORACLES output: "       << endl;
-    cout         << "  utau: "               << utau_            << endl;
-    cout         << "  first y-coordinate: " << x2first_ << "\n" << endl;
+    std::cout << "\n" << "parameters used for ORACLES output: "       << std::endl;
+    std::cout         << "  utau: "               << utau_            << std::endl;
+    std::cout         << "  first y-coordinate: " << x2first_ << "\n" << std::endl;
   }
 
   // initialize counters
@@ -644,7 +644,7 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
   if (withscatra_)
   {
     if (discret_->Comm().MyPID()==0)
-      cout << "sampling with scatra... " << flush;
+      std::cout << "sampling with scatra... " << std::flush;
     if (velnp != Teuchos::null)
       vel_=velnp;
     else
@@ -667,7 +667,7 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
   else
   {
     if (discret_->Comm().MyPID()==0)
-      cout << "sampling without scatra... " << flush;
+      std::cout << "sampling without scatra... " << std::flush;
     vel_  ->Update(1.0,*velnp,0.0);
     force_->Update(1.0,*residual,0.0);
     phi_       = Teuchos::null;
@@ -1317,9 +1317,9 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     {
       for (size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
       {
-        //cout << abs((*wallforceu_)(iplane,ix1pos)) << endl;
-        //cout << abs((*wallforcev_)(iplane,ix1pos)) << endl;
-        //cout << abs((*wallforcew_)(iplane,ix1pos)) << endl;
+        //std::cout << abs((*wallforceu_)(iplane,ix1pos)) << std::endl;
+        //std::cout << abs((*wallforcev_)(iplane,ix1pos)) << std::endl;
+        //std::cout << abs((*wallforcew_)(iplane,ix1pos)) << std::endl;
 
         //ltau(iplane,ix1pos) = visc_ / (sqrt( abs((*wallforceu_)(iplane,ix1pos)) / (area(0,ix1pos)*dens_) ));
         ltau(iplane,ix1pos) = visc_ / (sqrt( abs((*wallforceu_)(iplane,ix1pos)) / (area*dens_) ));
@@ -1351,7 +1351,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcev_)(0,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcew_)(0,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallp_)     (0,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
 
@@ -1365,7 +1365,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcev_)(1,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallforcew_)(1,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallp_)     (1,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
 
@@ -1378,7 +1378,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelu_)(0,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelv_)(0,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelw_)(0,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
 
@@ -1391,7 +1391,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelu_)(1,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelv_)(1,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallvelw_)(1,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
     }
@@ -1420,7 +1420,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcev_)(0,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcew_)(0,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelp_)     (0,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
 
@@ -1434,7 +1434,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcev_)(1,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelforcew_)(1,ix1pos)/area/dens_;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelp_)     (1,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
 
@@ -1447,7 +1447,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelu_)(0,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelv_)(0,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelw_)(0,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
 
@@ -1460,7 +1460,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelu_)(1,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelv_)(1,ix1pos);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << (*wallinflowchannelvelw_)(1,ix1pos);
-        (*log) << &endl;
+        (*log) << &std::endl;
       }
       log->flush();
     }
@@ -1592,7 +1592,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
       const int                  step,
-      const string&              suffix,
+      const std::string&              suffix,
       const int                  x1pos,
       const std::vector<double>&  x2locations,
       double* profileu,

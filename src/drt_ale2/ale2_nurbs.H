@@ -106,7 +106,7 @@ public:
 
 
   /// Print this element
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return Ale2_NurbsType::Instance(); }

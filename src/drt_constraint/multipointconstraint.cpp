@@ -23,7 +23,7 @@ Maintainer: Thomas Kloeppel
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
-        const string& conditionname,
+        const std::string& conditionname,
         int& minID,
         int& maxID)
 : UTILS::Constraint
@@ -41,7 +41,7 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
-        const string& conditionname)
+        const std::string& conditionname)
 : UTILS::Constraint
   (
     discr,
@@ -54,7 +54,7 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
 /// Set state of the underlying constraint discretization
 void UTILS::MPConstraint::SetConstrState
 (
-  const string& state,  ///< name of state to set
+  const std::string& state,  ///< name of state to set
   RCP<Epetra_Vector> V  ///< values to set
 )
 {

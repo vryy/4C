@@ -100,9 +100,9 @@ bool CONTACT::CoCoupling3d::AuxiliaryPlane()
   // also compute linearization of the unit normal vector
   SlaveIntElement().DerivUnitNormalAtXi(loccenter,GetDerivAuxn());
   
-  //std::cout << "Slave Element: " << SlaveIntElement().Id() << endl;
-  //std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << endl;
-  //std::cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << endl;
+  //std::cout << "Slave Element: " << SlaveIntElement().Id() << std::endl;
+  //std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << std::endl;
+  //std::cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << std::endl;
 
   return true;
 }
@@ -424,7 +424,7 @@ bool CONTACT::CoCoupling3d::VertexLinearization(std::vector<std::vector<std::map
         int mid = currv.Nodeids()[0];
         double alpha = projpar[mid];
 
-        //std::cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << endl;
+        //std::cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << std::endl;
 
         // do master vertex linearization
         MasterVertexLinearization(currv,currlin,mid,alpha);

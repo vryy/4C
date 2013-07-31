@@ -105,8 +105,8 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if(discret_->Comm().MyPID()==0 && verbose_)
     {
-      cout << "Generate new dofset for discretization "<<discret_->Name();
-      cout<<endl<<endl;
+      std::cout << "Generate new dofset for discretization "<<discret_->Name();
+      std::cout<<std::endl<<std::endl;
     }
 
     // fetch all slaves to the proc of the master
@@ -117,9 +117,9 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     {
       if(discret_->Comm().MyPID()==0 && verbose_)
       {
-        cout << "\n---------------------------------------------\n";
-        cout << "Call METIS \n";
-        cout<<endl;
+        std::cout << "\n---------------------------------------------\n";
+        std::cout << "Call METIS \n";
+        std::cout<<std::endl;
       }
 
       // eventually call METIS to optimally distribute the nodes --- up to
@@ -133,7 +133,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if(discret_->Comm().MyPID()==0 && verbose_)
     {
-      cout<<endl<<endl;
+      std::cout<<std::endl<<std::endl;
     }
 
     if(verbose_)
@@ -143,7 +143,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if(discret_->Comm().MyPID()==0 && verbose_)
     {
-      cout<<endl<<endl;
+      std::cout<<std::endl<<std::endl;
     }
 
     {
@@ -201,7 +201,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 	  printf("   | %3d | %13d | %12d | %11d | %15d | %14d | %15d |\n",npid,n_nodes[npid],n_master[npid],n_slave[npid],n_elements[npid],n_ghostele[npid],n_dof[npid]);
 	  printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
 	}
-	cout << endl <<endl;
+	std::cout << std::endl <<std::endl;
       }
     }
   } // end if numpbcpairs_>0
@@ -267,7 +267,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
     //                     LOOP PERIODIC DIRECTIONS
     //----------------------------------------------------------------------
 
-    std::vector<string> planes;
+    std::vector<std::string> planes;
     planes.push_back("xy");
     planes.push_back("xz");
     planes.push_back("yz");
@@ -277,7 +277,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
     int num=0;
 
     // loop over periodic directions/planes
-    for(std::vector<string>::iterator thisplane=planes.begin();
+    for(std::vector<std::string>::iterator thisplane=planes.begin();
         thisplane!=planes.end();
         ++thisplane)
     {
@@ -324,8 +324,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
             // yes, I am the condition with id pbcid and in the desired layer
             if (myid[0][0] == pbcid && (mylayer[0][0]+1) == nlayer)
             {
-              const string* mymasterslavetoggle
-                = mysurfpbcs_[numcond]->Get<string>("Is slave periodic boundary condition");
+              const std::string* mymasterslavetoggle
+                = mysurfpbcs_[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
               if(*mymasterslavetoggle=="Master")
               {
@@ -335,9 +335,9 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 // check whether this periodic boundary condition belongs
                 // to thisplane
 
-                const string* dofsforpbcplanename
+                const std::string* dofsforpbcplanename
                   =
-                  mastercond->Get<string>("degrees of freedom for the pbc plane");
+                  mastercond->Get<std::string>("degrees of freedom for the pbc plane");
 
                 if(*dofsforpbcplanename == *thisplane)
                 {
@@ -369,7 +369,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
                 //--------------------------------------------------
                 // check whether this periodic boundary condition belongs
                 // to thisplane
-                const string* dofsforpbcplanename = slavecond->Get<string>("degrees of freedom for the pbc plane");
+                const std::string* dofsforpbcplanename = slavecond->Get<std::string>("degrees of freedom for the pbc plane");
 
                 if(*dofsforpbcplanename == *thisplane)
                 {
@@ -446,7 +446,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         //
         //
 
-        // we transform the three strings "xy", "xz", "yz" into integer
+        // we transform the three std::strings "xy", "xz", "yz" into integer
         // values dofsforpbcplanename
         std::vector<int> dofsforpbcplane(2);
 
@@ -503,7 +503,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
         if (discret_->Comm().MyPID() == 0 && verbose_)
         {
-          cout << " creating layer " << nlayer << " of midtosid-map in " << *thisplane << " direction ... ";
+          std::cout << " creating layer " << nlayer << " of midtosid-map in " << *thisplane << " direction ... ";
           fflush(stdout);
         }
 
@@ -539,7 +539,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
               if (not found)
               {
                 const double* x = discret_->gNode(mid)->X();
-                cout<<"\nmaster node not found in midtosid list: "<<mid
+                std::cout<<"\nmaster node not found in midtosid list: "<<mid
                     <<"  coord: x="<<x[0]<<" y="<<x[1]<<" z="<<x[2];
               }
             }
@@ -552,7 +552,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
         if (discret_->Comm().MyPID() == 0 && verbose_)
         {
-          cout << "adding connectivity to previous pbcs ... ";
+          std::cout << "adding connectivity to previous pbcs ... ";
           fflush(stdout);
         }
 
@@ -573,7 +573,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
         if (discret_->Comm().MyPID() == 0 && verbose_)
         {
-          cout << "done.\n";
+          std::cout << "done.\n";
           fflush(stdout);
         }
 
@@ -591,7 +591,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
     if (discret_->Comm().MyPID() == 0 && verbose_)
     {
-      cout << "Redistributing: \n";
+      std::cout << "Redistributing: \n";
       fflush(stdout);
     }
 
@@ -599,7 +599,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
 
     if (discret_->Comm().MyPID() == 0 && verbose_)
     {
-      cout << "... done\n";
+      std::cout << "... done\n";
       fflush(stdout);
     }
 
@@ -787,8 +787,8 @@ void PeriodicBoundaryConditions::AddConnectivity(
           unsigned ntimesmaster = 0;
           for (unsigned numcond=0;numcond<thiscond.size();++numcond)
           {
-            const string* mymasterslavetoggle
-              = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
+            const std::string* mymasterslavetoggle
+              = thiscond[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
             if(*mymasterslavetoggle=="Master")
             {
@@ -1010,8 +1010,8 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     for (unsigned numcond=0;numcond<thiscond.size();++numcond)
     {
 
-      const string* mymasterslavetoggle
-        = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
+      const std::string* mymasterslavetoggle
+        = thiscond[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
       if(*mymasterslavetoggle=="Slave")
       {
@@ -1056,11 +1056,11 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     discret_->Comm().SumAll(&mycerase,&numcerase,1);
     if(discret_->Comm().MyPID()==0 && verbose_)
     {
-      cout << " Erased " << numerase  << " slaves from nodeset.\n";
-      cout << " Erased " << numcerase << " from the map of all ";
-      cout << "coupled rownodes.\n";
-      cout << "        (we want a master->slaves map, so all entries ";
-      cout << "slave->... are deleted)\n";
+      std::cout << " Erased " << numerase  << " slaves from nodeset.\n";
+      std::cout << " Erased " << numcerase << " from the map of all ";
+      std::cout << "coupled rownodes.\n";
+      std::cout << "        (we want a master->slaves map, so all entries ";
+      std::cout << "slave->... are deleted)\n";
     }
 
     nodesonthisproc.clear();
@@ -1092,12 +1092,12 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     discret_->Comm().SumAll(&mynumappend,&numappend,1);
     if(discret_->Comm().MyPID()==0 && verbose_)
       {
-	cout << " Appended " << numappend << " ids which belong to slave ";
-        cout << "nodes that are coupled to a master\n";
-        cout << "        node. They will be fetched to the master's ";
-        cout << "procs, an their total \n";
-        cout << "        number has to equal the number of slaves ";
-        cout << "erased from the nodeset.\n";
+	std::cout << " Appended " << numappend << " ids which belong to slave ";
+        std::cout << "nodes that are coupled to a master\n";
+        std::cout << "        node. They will be fetched to the master's ";
+        std::cout << "procs, an their total \n";
+        std::cout << "        number has to equal the number of slaves ";
+        std::cout << "erased from the nodeset.\n";
       }
 
 
@@ -1132,8 +1132,8 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
       if(discret_->Comm().MyPID()==0 && verbose_)
 	{
- 	  cout << " The layout is generated: " << allcouplednodes << " masters are coupled to at least " << min << " and up to "<< max << " slaves,\n";
-        cout << "        all master/slave couples are sent to the same proc.\n";
+ 	  std::cout << " The layout is generated: " << allcouplednodes << " masters are coupled to at least " << min << " and up to "<< max << " slaves,\n";
+        std::cout << "        all master/slave couples are sent to the same proc.\n";
 
 	}
     }
@@ -1805,7 +1805,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
         if(verbose_)
         {
-          cout << "proc " <<  myrank << " repartition graph using metis\n";
+          std::cout << "proc " <<  myrank << " repartition graph using metis\n";
         }
         if (numproc<8) // better for smaller no. of partitions
         {
@@ -1824,7 +1824,7 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
         if(verbose_)
         {
-          cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << "\n";
+          std::cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << "\n";
           fflush(stdout);
         }
 #endif
@@ -1894,9 +1894,9 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
 
       if(discret_->Comm().MyPID()==0 && verbose_)
       {
-        cout << "---------------------------------------------\n";
-        cout << "Repair Master->Slave connection, generate final dofset";
-        cout<<endl<<endl;
+        std::cout << "---------------------------------------------\n";
+        std::cout << "Repair Master->Slave connection, generate final dofset";
+        std::cout<<std::endl<<std::endl;
       }
 
       // assign the new dofs, make absolutely sure that we always

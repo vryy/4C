@@ -52,7 +52,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_energy") act = Torsion3::calc_struct_energy;
   else
   {
-    cout<<action<<endl;
+    std::cout<<action<<std::endl;
     dserror("Unknown type of action for Torsion3");
   }
 
@@ -531,7 +531,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>&           dis
 	  } //bending potential cosine
 
   else
-		std::cout<<"\n No such bending potential. Possible bending potentials: \n quadratic \n cosine"<<endl;
+		std::cout<<"\n No such bending potential. Possible bending potentials: \n quadratic \n cosine"<<std::endl;
 
 
 }//nlnstiffmass

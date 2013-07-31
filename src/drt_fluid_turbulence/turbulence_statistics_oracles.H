@@ -51,7 +51,7 @@ public:
   */
   TurbulenceStatisticsORACLES(Teuchos::RCP<DRT::Discretization> discret,
                               Teuchos::ParameterList&           params,
-                              const string&                     geotype,
+                              const std::string&                     geotype,
                               const bool                        withscatra);
 
   /*!
@@ -95,7 +95,7 @@ public:
 
   void WriteStatisticsFile(
       const int               step,
-      const string&           suffix,
+      const std::string&           suffix,
       const int               x1pos,
       const std::vector<double>&   x2locations,
       double* profileu,

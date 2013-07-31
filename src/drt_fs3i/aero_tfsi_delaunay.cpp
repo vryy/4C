@@ -460,14 +460,14 @@ int FS3I::UTILS::dtris2(int point_num, int base, double point_xy[],
 		}
 
 		if (k == -1) {
-			cout << "\n";
-			cout << "DTRIS2 - Fatal error!\n";
-			cout << "  Fails for point number I = " << i << "\n";
-			cout << "  M =  " << m << "\n";
-			cout << "  M1 = " << m1 << "\n";
-			cout << "  X,Y(M)  = " << point_xy[2 * (m - 1) + 0] << "  "
+			std::cout << "\n";
+			std::cout << "DTRIS2 - Fatal error!\n";
+			std::cout << "  Fails for point number I = " << i << "\n";
+			std::cout << "  M =  " << m << "\n";
+			std::cout << "  M1 = " << m1 << "\n";
+			std::cout << "  X,Y(M)  = " << point_xy[2 * (m - 1) + 0] << "  "
 					<< point_xy[2 * (m - 1) + 1] << "\n";
-			cout << "  X,Y(M1) = " << point_xy[2 * (m1 - 1) + 0] << "  "
+			std::cout << "  X,Y(M1) = " << point_xy[2 * (m1 - 1) + 0] << "  "
 					<< point_xy[2 * (m1 - 1) + 1] << "\n";
 			delete[] stack;
 			return 224;
@@ -484,8 +484,8 @@ int FS3I::UTILS::dtris2(int point_num, int base, double point_xy[],
 
 	for (;;) {
 		if (point_num < j) {
-			cout << "\n";
-			cout << "DTRIS2 - Fatal error!\n";
+			std::cout << "\n";
+			std::cout << "DTRIS2 - Fatal error!\n";
 			delete[] stack;
 			return 225;
 		}
@@ -614,9 +614,9 @@ int FS3I::UTILS::dtris2(int point_num, int base, double point_xy[],
 			top = top + 1;
 
 			if (point_num < top) {
-				cout << "\n";
-				cout << "DTRIS2 - Fatal error!\n";
-				cout << "  Stack overflow.\n";
+				std::cout << "\n";
+				std::cout << "DTRIS2 - Fatal error!\n";
+				std::cout << "  Stack overflow.\n";
 				delete[] stack;
 				return 8;
 			}
@@ -639,9 +639,9 @@ int FS3I::UTILS::dtris2(int point_num, int base, double point_xy[],
 				tri_vert, tri_nabe, stack);
 
 		if (error != 0) {
-			cout << "\n";
-			cout << "DTRIS2 - Fatal error!\n";
-			cout << "  Error return from SWAPEC.\n";
+			std::cout << "\n";
+			std::cout << "DTRIS2 - Fatal error!\n";
+			std::cout << "  Error return from SWAPEC.\n";
 			delete[] stack;
 			return error;
 		}
@@ -725,9 +725,9 @@ int FS3I::UTILS::i4_modp(int i, int j)
 	int value;
 
 	if (j == 0) {
-		cout << "\n";
-		cout << "I4_MODP - Fatal error!\n";
-		cout << "  I4_MODP ( I, J ) called with J = " << j << "\n";
+		std::cout << "\n";
+		std::cout << "I4_MODP - Fatal error!\n";
+		std::cout << "  I4_MODP ( I, J ) called with J = " << j << "\n";
 		exit(1);
 	}
 
@@ -1177,9 +1177,9 @@ void FS3I::UTILS::perm_inverse(int n, int p[])
 	int p_min;
 
 	if (n <= 0) {
-		cout << "\n";
-		cout << "PERM_INVERSE - Fatal error!\n";
-		cout << "  Input value of N = " << n << "\n";
+		std::cout << "\n";
+		std::cout << "PERM_INVERSE - Fatal error!\n";
+		std::cout << "  Input value of N = " << n << "\n";
 		exit(1);
 	}
 	//
@@ -1195,9 +1195,9 @@ void FS3I::UTILS::perm_inverse(int n, int p[])
 	//  Now we can safely check the permutation.
 	//
 	if (!perm_check(n, p, base)) {
-		cerr << "\n";
-		cerr << "PERM_INVERSE - Fatal error!\n";
-		cerr << "  PERM_CHECK rejects this permutation.\n";
+		std::cerr << "\n";
+		std::cerr << "PERM_INVERSE - Fatal error!\n";
+		std::cerr << "  PERM_CHECK rejects this permutation.\n";
 		exit(1);
 	}
 	//
@@ -1353,9 +1353,9 @@ void FS3I::UTILS::r82vec_permute(int n, int p[], int base, double a[])
 	int istart;
 
 	if (!perm_check(n, p, base)) {
-		cerr << "\n";
-		cerr << "R82VEC_PERMUTE - Fatal error!\n";
-		cerr << "  PERM_CHECK rejects this permutation.\n";
+		std::cerr << "\n";
+		std::cerr << "R82VEC_PERMUTE - Fatal error!\n";
+		std::cerr << "  PERM_CHECK rejects this permutation.\n";
 		exit(1);
 	}
 	//
@@ -1389,11 +1389,11 @@ void FS3I::UTILS::r82vec_permute(int n, int p[], int base, double a[])
 				p[iput - 1] = -p[iput - 1];
 
 				if (iget < 1 || n < iget) {
-					cout << "\n";
-					cout << "R82VEC_PERMUTE - Fatal error!\n";
-					cout << "  Entry IPUT = " << iput
+					std::cout << "\n";
+					std::cout << "R82VEC_PERMUTE - Fatal error!\n";
+					std::cout << "  Entry IPUT = " << iput
 							<< " of the permutation has\n";
-					cout << "  an illegal value IGET = " << iget << ".\n";
+					std::cout << "  an illegal value IGET = " << iget << ".\n";
 					exit(1);
 				}
 

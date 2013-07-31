@@ -47,7 +47,7 @@ void POROELAST::PORO_SCATRA_Part_1WC::DoScatraStep()
 
   if (comm.MyPID() == 0)
   {
-    cout
+    std::cout
         << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
   }
   // -------------------------------------------------------------------

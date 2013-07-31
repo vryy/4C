@@ -208,7 +208,7 @@ public:
       //! @name to-String methods
       /*========================================================================*/
 
-      //! string representation of the data's state
+      //! std::string representation of the data's state
       std::string stateToString()
       {
         std::string output;
@@ -224,7 +224,7 @@ public:
         return output;
       };
 
-      //! string representation of the data's type
+      //! std::string representation of the data's type
       std::string typeToString()
       {
         std::string output;

@@ -163,7 +163,7 @@ public:
 
   \param os ofstrem
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   //@}
 

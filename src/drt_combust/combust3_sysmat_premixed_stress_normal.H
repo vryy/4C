@@ -328,13 +328,13 @@ void SysmatDomainStressNormal(
   // put one here to create arrays of size 1, since they are not needed anyway
   // in the xfem assembly, numparam is determined by the dofmanager
   const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Epsilonxx);
-//cout << "standard element: numparamepsilonxx " << numparamepsilonxx << endl;
-  //cout << "epsilonele_unknowns_present " << epsilonele_unknowns_present << endl;
+//std::cout << "standard element: numparamepsilonxx " << numparamepsilonxx << std::endl;
+  //std::cout << "epsilonele_unknowns_present " << epsilonele_unknowns_present << std::endl;
   const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
-//cout << "standard element: numparamdiscpres " << numparamdiscpres << endl;
-//cout << "discpres_unknowns_present " <<  discpres_unknowns_present << endl;
+//std::cout << "standard element: numparamdiscpres " << numparamdiscpres << std::endl;
+//std::cout << "discpres_unknowns_present " <<  discpres_unknowns_present << std::endl;
   const size_t numparamsigmaxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-//cout << "sigmaele_unknowns_present " << sigmaele_unknowns_present << endl;
+//std::cout << "sigmaele_unknowns_present " << sigmaele_unknowns_present << std::endl;
 
   // stabilization parameter
   const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
@@ -390,7 +390,7 @@ void SysmatDomainStressNormal(
 #ifdef DEBUG
       if (detcell < 0.0)
       {
-        cout << "detcell :  " << detcell << endl;
+        std::cout << "detcell :  " << detcell << std::endl;
         dserror("negative detcell!");
       }
 #endif
@@ -443,7 +443,7 @@ void SysmatDomainStressNormal(
 
       const double det = xjm.Determinant();
       const double fac = intpoints.qwgt[iquad]*det*detcell;
-      //cout << "domain spatial factor " << fac << endl;
+      //std::cout << "domain spatial factor " << fac << std::endl;
 
       if (det < 0.0)
       {
@@ -627,10 +627,10 @@ void SysmatDomainStressNormal(
 #endif
             shp);
 
-//cout << std::setprecision(16) << std::scientific;
-//cout << funct << endl;
-//cout << derxy << endl;
-//cout << derxy2 << endl;
+//std::cout << std::setprecision(16) << std::scientific;
+//std::cout << funct << std::endl;
+//std::cout << derxy << std::endl;
+//std::cout << derxy2 << std::endl;
 //
         if (epsilonele_unknowns_present)
         {
@@ -753,19 +753,19 @@ void SysmatDomainStressNormal(
       // get velocities and accelerations at integration point
       //------------------------------------------------------
       // TODO ist das mit der Beschleunigung richtig so?
-//cout << "evelnp "<< evelnp << endl;
-//cout << "gpveln "<< gpveln << endl;
-//cout << "gpvelnm "<< gpvelnm << endl;
-//cout << "gpaccn "<< gpaccn << endl;
+//std::cout << "evelnp "<< evelnp << std::endl;
+//std::cout << "gpveln "<< gpveln << std::endl;
+//std::cout << "gpvelnm "<< gpvelnm << std::endl;
+//std::cout << "gpaccn "<< gpaccn << std::endl;
       const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPointNormal(evelnp, shp, numparamvelx, ele, dofman);
       const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPointNormal(eveln , shp, numparamvelx, ele, dofman);
       const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPointNormal(evelnm, shp, numparamvelx, ele, dofman);
       const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPointNormal(eaccn , shp, numparamvelx, ele, dofman);
 
-//cout << "gpvelnp "<< gpvelnp << endl;
-//cout << "gpveln "<< gpveln << endl;
-//cout << "gpvelnm "<< gpvelnm << endl;
-//cout << "gpaccn "<< gpaccn << endl;
+//std::cout << "gpvelnp "<< gpvelnp << std::endl;
+//std::cout << "gpveln "<< gpveln << std::endl;
+//std::cout << "gpvelnm "<< gpvelnm << std::endl;
+//std::cout << "gpaccn "<< gpaccn << std::endl;
 
       //----------------------------------------------
       // get velocity derivatives at integration point
@@ -819,7 +819,7 @@ void SysmatDomainStressNormal(
         }
         if (velncounter != dofman.NumDofPerField(XFEM::PHYSICS::Veln)) dserror("Alles falsch, du Depp!");
       }
-//cout << "vderxy " << vderxy << endl;
+//std::cout << "vderxy " << vderxy << std::endl;
 
       //-----------------------------------------------------
       // get second velocity derivatives at integration point
@@ -927,8 +927,8 @@ void SysmatDomainStressNormal(
       if (epsilonele_unknowns_present)
       {
         XFEM::fill_tensor(numparamepsilonxx, shp_epsilon.d0, eepsilon, epsilon);
-//cout << "epsilon " << epsilon << endl;
-//cout << "discpres " << discpres << endl;
+//std::cout << "epsilon " << epsilon << std::endl;
+//std::cout << "discpres " << discpres << std::endl;
       }
       else
       {
@@ -940,7 +940,7 @@ void SysmatDomainStressNormal(
       if (sigmaele_unknowns_present)
       {
         XFEM::fill_tensor(numparamsigmaxx, shp_sigma.d0, eepsilon, sigma);
-//cout << "sigma " << sigma << endl;
+//std::cout << "sigma " << sigma << std::endl;
       }
       else
       {
@@ -1185,12 +1185,12 @@ void SysmatBoundaryStressNormal(
   //---------------------------------------------------------------------------
   // density \rho
   double dens_plus = -1.0;
-  //cout << "plus density: " << dens_plus << endl;
+  //std::cout << "plus density: " << dens_plus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_plus = -1.0;
   // density \rho
   double dens_minus = -1.0;
-  //cout << "minus density: " << dens_minus << endl;
+  //std::cout << "minus density: " << dens_minus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_minus = -1.0;
   // set density and dynamic viscosity
@@ -1376,7 +1376,7 @@ void SysmatBoundaryStressNormal(
       ju(0) = ju_n*normal(0);
       ju(1) = ju_n*normal(1);
       ju(2) = ju_n*normal(2);
-      //cout << "ju " << ju << endl;
+      //std::cout << "ju " << ju << std::endl;
 #ifdef COMBUST_TESTCOUETTEFLOW
       // overwrite velocity jump condition for shear flow test case
       ju(0) = -2.0;
@@ -1393,7 +1393,7 @@ void SysmatBoundaryStressNormal(
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-      //cout << "jflux " << jflux << endl;
+      //std::cout << "jflux " << jflux << std::endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;
@@ -1668,8 +1668,8 @@ void SysmatBoundaryStressNormal(
       for (size_t iparam = 0; iparam != numparampres; ++iparam)
         pdiscmean += shp_discpres_mean.d0(iparam)*ediscpres(iparam);
 
-//cout << "pdiscjump " << pdiscjump << endl;
-//cout << "pdiscmean " << pdiscmean << endl;
+//std::cout << "pdiscjump " << pdiscjump << std::endl;
+//std::cout << "pdiscmean " << pdiscmean << std::endl;
 
       // get viscous stress unknowns
       //static LINALG::Matrix<nsd,nsd> epsilonjump;
@@ -1680,14 +1680,14 @@ void SysmatBoundaryStressNormal(
       epsilonmean.Clear();
       XFEM::fill_tensor(numparamepsilonxx, shp_eps_visc_mean.d0, eepsilon, epsilonmean);
 
-//cout << "epsilonjump " << epsilonjump << endl;
-//cout << "epsilonmean " << epsilonmean << endl;
+//std::cout << "epsilonjump " << epsilonjump << std::endl;
+//std::cout << "epsilonmean " << epsilonmean << std::endl;
 #ifdef COMBUST_EPSPRES_BASED_NEUMANN_INFLOW
 //      static XFEM::ApproxFunc<0,shpVecSize> shp_inflow;
 //      const double direction = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
 //      if (direction < 0.0)
 //      {
-////        cout << "inflow right" << endl;
+////        std::cout << "inflow right" << std::endl;
 //        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
 //        {
 //          shp_inflow.d0(iparam) = enrfunct_minus(iparam);
@@ -1695,7 +1695,7 @@ void SysmatBoundaryStressNormal(
 //      }
 //      else
 //      {
-////        cout << "inflow left" << endl;
+////        std::cout << "inflow left" << std::endl;
 //        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
 //        {
 //          shp_inflow.d0(iparam) = enrfunct_plus(iparam);
@@ -1705,7 +1705,7 @@ void SysmatBoundaryStressNormal(
 //      static LINALG::Matrix<nsd,1> velinflow(true);
 //      velinflow.Clear();
 //      velinflow = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_inflow.d0, numparamvelx);
-//      //cout << velinflow << endl;
+//      //std::cout << velinflow << std::endl;
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_ADVECTIVEFLUX
@@ -1985,7 +1985,7 @@ void SysmatBoundaryStressNormal(
       //-----------------    |                       |
       const double inflowvel = -1.0*(velmean(0)*normal(0) + velmean(1)*normal(1) + velmean(2)*normal(2));
       //const double inflowvel = 1000*(veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2));
-//      cout << "inflowvel" << inflowvel << endl;
+//      std::cout << "inflowvel" << inflowvel << std::endl;
 //      assembler.template Matrix<Velx,Velx>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 //      assembler.template Matrix<Vely,Vely>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 //      assembler.template Matrix<Velz,Velz>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);

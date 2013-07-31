@@ -79,7 +79,7 @@ discret_(discret)
     fflush(stdout);
   }
   ReadAndCheckInput(mtparams);
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
 
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
@@ -288,7 +288,7 @@ discret_(discret)
     interface->FillComplete(maxdof);
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
   // create the solver strategy object
@@ -308,7 +308,7 @@ discret_(discret)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
   //**********************************************************************
 
   //**********************************************************************
@@ -324,7 +324,7 @@ discret_(discret)
   if (Comm().MyPID()==0)
   {
     std::cout << "\ngiven parameters in list '" << GetStrategy().Params().name() << "':\n";
-    std::cout << GetStrategy().Params() << endl;
+    std::cout << GetStrategy().Params() << std::endl;
   }
 
   return;
@@ -424,7 +424,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // warnings
   // *********************************************************************
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
-    std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << endl;
+    std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << std::endl;
 
   // *********************************************************************
   // warnings concerning integration method
@@ -436,12 +436,12 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 2D segment-based mortar integration provided.\n"
-                  << "         Using default value of 5 Gauss points per integration segment.\n" << endl;
+                  << "         Using default value of 5 Gauss points per integration segment.\n" << std::endl;
       }
       else
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 2D fast mortar integration provided.\n"
-                  << "         Using default value of 5 Gauss points per slave element.\n" << endl;
+                  << "         Using default value of 5 Gauss points per slave element.\n" << std::endl;
       }
     }
   }
@@ -452,12 +452,12 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 3D segment-based mortar integration provided.\n"
-                  << "           Using default value of 7 Gauss points per triangular integration cell.\n" << endl;
+                  << "           Using default value of 7 Gauss points per triangular integration cell.\n" << std::endl;
       }
       else
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 3D fast mortar integration provided.\n"
-                  << "           Using default value of 7/9 Gauss points per triangular/quadrilateral slave element.\n" << endl;
+                  << "           Using default value of 7/9 Gauss points per triangular/quadrilateral slave element.\n" << std::endl;
       }
     }
   }

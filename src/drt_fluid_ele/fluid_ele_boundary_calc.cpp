@@ -2181,7 +2181,6 @@ if (densaf_ < EPS15) dserror("zero or negative density!");
 return;
 } // FluidBoundaryImpl::GetDensity
 
-
 /*----------------------------------------------------------------------*
  |  Evaluating the velocity component of the traction      ismail 05/11 |
  *----------------------------------------------------------------------*/
@@ -2371,13 +2370,13 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
   for (int inode=0;inode<bdrynen_;inode++)
   {
     double radius = sqrt(pow(xyze_(0,inode),2.0)+pow(xyze_(1,inode),2.0));
-    cout<<"RAD: "<<radius<<"\t";
+    std::cout<<"RAD: "<<radius<<"\t";
     for (int idim=0; idim< nsd_; idim++)
     {
       evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
-      cout<<evelnp(idim,inode)<<"\t";
+      std::cout<<evelnp(idim,inode)<<"\t";
     }
-    cout<<endl;
+    std::cout<<std::endl;
   }
 
   // get node coordinates

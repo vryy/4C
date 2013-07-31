@@ -146,7 +146,7 @@ public:
   /*!
   \brief Print this element
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   //@}
 
@@ -160,7 +160,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const int& data)
+  void Add(const std::string& name, const int& data)
   { Add(name,&data,1); return; }
 
   /*!
@@ -172,7 +172,7 @@ public:
 
   \note If record with name name already exists, it will be overwritten
   */
-  void Add(const string& name, const int* data, const int num);
+  void Add(const std::string& name, const int* data, const int num);
 
   /*!
   \brief Add vector of int to the container
@@ -291,7 +291,7 @@ public:
            Pack/Unpack functionality of the container but is deep-copied in
            the copy-constructor
   */
-  void Add(const string& name, Epetra_MultiVector& data);
+  void Add(const std::string& name, Epetra_MultiVector& data);
 
    /*!
   \brief Add Teuchos::rcp to Epetra_Vector to the container
@@ -305,7 +305,7 @@ public:
            Pack/Unpack functionality of the container but is deep-copied in
            the copy-constructor
   */
-  void Add(const string& name, Epetra_Vector& data);
+  void Add(const std::string& name, Epetra_Vector& data);
 
   /*!
   \brief Add a LINALG::Matrix to the container, templated on the dimension
@@ -331,7 +331,7 @@ public:
   \endcode
   */
   template<int row, int col>
-  void Add(const string& name, const LINALG::Matrix<row,col>& matrix)
+  void Add(const std::string& name, const LINALG::Matrix<row,col>& matrix)
   {
     Epetra_SerialDenseMatrix data(row,col);
     for(int i=0; i<row; i++)
@@ -382,7 +382,7 @@ public:
 
   \return const Ptr to data if data with that name exists, NULL otherwise
   */
-  template<typename T> const T* Get(const string& name) const;
+  template<typename T> const T* Get(const std::string& name) const;
 
 
   /*!
@@ -397,7 +397,7 @@ public:
   int mynumber = Container::Getint("name_of_my_number")
   \endcode
   */
-  int GetInt(const string& name) const;
+  int GetInt(const std::string& name) const;
 
   /*!
   \brief Get a single double back without all that hassle
@@ -411,7 +411,7 @@ public:
   double mynumber = Container::GetDouble("name_of_my_number")
   \endcode
   */
-  double GetDouble(const string& name) const;
+  double GetDouble(const std::string& name) const;
 
   /*!
   \brief Get data of type int, double, string or Epetra_SerialDenseMatrix
@@ -449,7 +449,7 @@ public:
 
   \return non-constant Ptr to data if data with that name exists, NULL otherwise
   */
-  template<typename T> T* GetMutable(const string& name);
+  template<typename T> T* GetMutable(const std::string& name);
 
   //@}
 
@@ -461,7 +461,7 @@ public:
   \param name : Name of data to be deleted from container
 
   */
-  void Delete(const string& name);
+  void Delete(const std::string& name);
 
   /*!
   \brief Delete everything in this container
@@ -512,25 +512,25 @@ private:  // these methods are for PURE internal use
 protected:
 
   //! a map to store integer data in
-  std::map<string,Teuchos::RCP<std::vector<int> > >             intdata_;
+  std::map<std::string,Teuchos::RCP<std::vector<int> > >             intdata_;
 
   //! a map to store double data in
-  std::map<string,Teuchos::RCP<std::vector<double> > >          doubledata_;
+  std::map<std::string,Teuchos::RCP<std::vector<double> > >          doubledata_;
 
   //! a map to store string data in
-  std::map<string,string>                         stringdata_;
+  std::map<std::string,std::string>                         stringdata_;
 
   //! a map to store matrices in
-  std::map<string,Teuchos::RCP<Epetra_SerialDenseMatrix> > matdata_;
+  std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> > matdata_;
 
   //! a map to store epetra vectors in
-  std::map<string,Teuchos::RCP<Epetra_MultiVector> >       evecdata_;
+  std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >       evecdata_;
 
 }; // class Container
 } // namespace DRT
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Container& node);
+std::ostream& operator << (std::ostream& os, const DRT::Container& node);
 
 
 

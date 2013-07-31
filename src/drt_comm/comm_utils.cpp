@@ -144,7 +144,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
       while(gsum <= myrank);
 
 #ifdef DEBUG
-      cout << "Nested parallelism layout: Global rank: " << myrank <<" is in group: "<< color << endl;
+      std::cout << "Nested parallelism layout: Global rank: " << myrank <<" is in group: "<< color << std::endl;
 #endif
 
     } // end if (argument.substr( 0, 8 ) == "-ngroup=")
@@ -385,9 +385,9 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       std::vector<char>::size_type index = 0;
       cont.ExtractfromPack(index,data,singledata);
       cont.Unpack(singledata);
-      const std::string* rname = cont.Get<string>("disname");
+      const std::string* rname = cont.Get<std::string>("disname");
       name = *rname;
-      const std::string* rdistype = cont.Get<string>("distype");
+      const std::string* rdistype = cont.Get<std::string>("distype");
       distype = *rdistype;
       // allocate or get the discretization
       if (group->GroupId()==bgroup) 
@@ -508,9 +508,9 @@ void COMM_UTILS::BroadcastDiscretizations()
       std::vector<char>::size_type index = 0;
       cont.ExtractfromPack(index,data,singledata);
       cont.Unpack(singledata);
-      const std::string* rname = cont.Get<string>("disname");
+      const std::string* rname = cont.Get<std::string>("disname");
       name = *rname;
-      const std::string* rdistype = cont.Get<string>("distype");
+      const std::string* rdistype = cont.Get<std::string>("distype");
       distype = *rdistype;
       // allocate or get the discretization
       if (group->GroupId()==bgroup)
@@ -648,7 +648,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       commondis->AddNode(newnode);
     }
     // loop conditions
-    std::vector<string> condnames;
+    std::vector<std::string> condnames;
     dis->GetConditionNames(condnames);
     for (int i=0; i<(int)condnames.size(); ++i)
     {
@@ -688,7 +688,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     std::map<int,Teuchos::RCP<DRT::Container> >::iterator fool2 = condnamemap.begin();
     for ( ; fool1 != condmap.end(); ++fool1)
     {
-      const std::string* name = fool2->second->Get<string>("condname");
+      const std::string* name = fool2->second->Get<std::string>("condname");
       commondis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
       dis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
       ++fool2;

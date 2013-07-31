@@ -58,10 +58,10 @@ public:
   virtual ~Mesh();
 
   //! Print mesh info
-  void Print(ostream& os, bool verbose = false) const;
+  void Print(std::ostream& os, bool verbose = false) const;
 
   //! Print Nodes and Coords
-  void PrintNodes(ostream& os, bool storeid=false) const;
+  void PrintNodes(std::ostream& os, bool storeid=false) const;
 
   //! Get numer of nodes in mesh
   int GetNumNodes() const {return nodes_->size();}
@@ -193,7 +193,7 @@ private:
   //! exoid
   int exoid_;
   //! title
-  string title_;
+  std::string title_;
 };
 
 
@@ -246,13 +246,13 @@ public:
 
   std::vector<int> GetEleNodes(int i) const;
 
-  string GetName() const {return name_;}
+  std::string GetName() const {return name_;}
 
   int GetEleNode(int ele, int node) const;
 
   void FillEconnArray(int *connarray) const;
 
-  void Print(ostream& os, bool verbose=false) const;
+  void Print(std::ostream& os, bool verbose=false) const;
 
 private:
   Shape distype_;
@@ -260,32 +260,32 @@ private:
   //! Element Connectivity
   Teuchos::RCP<std::map<int,std::vector<int> > > eleconn_;
 
-  string name_;
+  std::string name_;
 };
 
 class NodeSet
 {
 public:
-  NodeSet(const std::set<int>& nodeids, const string& name, const string& propname);
+  NodeSet(const std::set<int>& nodeids, const std::string& name, const std::string& propname);
 
   virtual ~NodeSet();
 
   std::set<int> GetNodeSet() const {return nodeids_;};
 
-  string GetName() const {return name_;};
+  std::string GetName() const {return name_;};
 
-  string GetPropName() const {return propname_;};
+  std::string GetPropName() const {return propname_;};
 
   void FillNodelistArray(int *nodelist) const;
 
   inline int GetNumNodes() const {return nodeids_.size();}
 
-  void Print(ostream& os, bool verbose=false) const;
+  void Print(std::ostream& os, bool verbose=false) const;
 
 private:
   std::set<int> nodeids_;  // nodids in NodeSet
-  string name_;       // NodeSet name
-  string propname_;   // Icem assignes part names as property names
+  std::string name_;       // NodeSet name
+  std::string propname_;   // Icem assignes part names as property names
 };
 
 class SideSet
@@ -308,11 +308,11 @@ public:
   void FillSideLists(int* elemlist, int* sidelist) const;
   void FillSideLists(int* elemlist, int* sidelist, const std::map<int,std::vector<int> >& sides) const;
 
-  void Print(ostream& os, bool verbose=false) const;
+  void Print(std::ostream& os, bool verbose=false) const;
 
 private:
   std::map<int,std::vector<int> > sides_;
-  string name_;
+  std::string name_;
 };
 // *********** end of classes
 
@@ -345,7 +345,7 @@ inline ElementBlock::Shape StringToShape(const std::string shape)
   else if (shape.compare("BAR2")== 0)     return ElementBlock::bar2;
   else if (shape.compare("BAR3")== 0)     return ElementBlock::bar3;
   else{
-    cout << "Unknown Exodus Element Shape Name: " << shape;
+    std::cout << "Unknown Exodus Element Shape Name: " << shape;
     dserror("Unknown Exodus Element Shape Name!"); return ElementBlock::dis_none;
   }
 }
@@ -405,17 +405,17 @@ inline DRT::Element::DiscretizationType PreShapeToDrt(const ElementBlock::Shape 
 
 }
 
-void PrintMap(ostream& os,const std::map<int,std::vector<int> > mymap);
-void PrintMap(ostream& os, const std::map<int,std::vector<double> >mymap);
-void PrintMap(ostream& os,const std::map<int,std::set<int> > mymap);
-void PrintMap(ostream& os,const std::map<int,std::map<int,int> > mymap);
-void PrintMap(ostream& os,const std::map<int,std::pair<int,int> > mymap);
-void PrintMap(ostream& os,const std::map<int,int> mymap);
-void PrintMap(ostream& os,const std::map<int,double> mymap);
-void PrintMap(ostream& os,const std::map<double,int> mymap);
-void PrintVec(ostream& os, const std::vector<int> actvec);
-void PrintVec(ostream& os, const std::vector<double> actvec);
-void PrintSet(ostream& os, const std::set<int> actset);
+void PrintMap(std::ostream& os,const std::map<int,std::vector<int> > mymap);
+void PrintMap(std::ostream& os, const std::map<int,std::vector<double> >mymap);
+void PrintMap(std::ostream& os,const std::map<int,std::set<int> > mymap);
+void PrintMap(std::ostream& os,const std::map<int,std::map<int,int> > mymap);
+void PrintMap(std::ostream& os,const std::map<int,std::pair<int,int> > mymap);
+void PrintMap(std::ostream& os,const std::map<int,int> mymap);
+void PrintMap(std::ostream& os,const std::map<int,double> mymap);
+void PrintMap(std::ostream& os,const std::map<double,int> mymap);
+void PrintVec(std::ostream& os, const std::vector<int> actvec);
+void PrintVec(std::ostream& os, const std::vector<double> actvec);
+void PrintSet(std::ostream& os, const std::set<int> actset);
 
 
 int HexSideNumberExoToBaci(const int exoface);

@@ -125,7 +125,7 @@ void DRT::NURBS::ControlPoint::Unpack(const std::vector<char>& data)
 /*
   Print this control point
 */
-void DRT::NURBS::ControlPoint::Print(ostream& os) const
+void DRT::NURBS::ControlPoint::Print(std::ostream& os) const
 {
   os << "Control Point :";
   DRT::Node::Print(os);

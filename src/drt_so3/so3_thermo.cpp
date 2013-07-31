@@ -151,7 +151,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Unpack(
  | print this element (public)                               dano 08/12 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Print(ostream& os) const
+void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Print(std::ostream& os) const
 {
   os << "So3_Thermo ";
   return;
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::VisNames(std::map<std::string,i
  | return visualization data (public)                        dano 04/13 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   return so3_ele::VisData(name, data);
 

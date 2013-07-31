@@ -95,7 +95,7 @@ void XFEM::SemiLagrange::compute(
       for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
           data!=timeIntData_->end(); data++)
       {
-        //cout << endl << "on proc " << myrank_ << " iteration starts for " <<
+        //std::cout << std::endl << "on proc " << myrank_ << " iteration starts for " <<
         //    data->node_ << " with initial startpoint " << data->startpoint_;
 
         if (data->state_ == TimeIntData::currSL_)
@@ -124,7 +124,7 @@ void XFEM::SemiLagrange::compute(
             else // all procs searched -> point not in domain
             {
               data->state_ = TimeIntData::failedSL_;
-              cout << "WARNING! Lagrangian start point not in domain!" << endl;
+              std::cout << "WARNING! Lagrangian start point not in domain!" << std::endl;
             }
           } // end if elefound
           else  // if element is found, the newton iteration to find a better startpoint can start
@@ -156,15 +156,15 @@ void XFEM::SemiLagrange::compute(
 
             if (data->counter_ == newton_max_iter_) // maximum number of iterations reached
             { // do not use the lagrangian origin since this case is strange and potential dangerous
-              cout << "WARNING: newton iteration to find start value did not converge!" << endl;
+              std::cout << "WARNING: newton iteration to find start value did not converge!" << std::endl;
               data->state_ = TimeIntData::failedSL_;
             }
           } // end if over nodes which changed interface
         }
 
-          //cout << "on proc " << myrank_ << " after " << data->counter_ << " iterations "
+          //std::cout << "on proc " << myrank_ << " after " << data->counter_ << " iterations "
           //    << data->node_ << " has startpoint " << data->startpoint_ <<
-          //    " and state " << data->stateToString() << endl;
+          //    " and state " << data->stateToString() << std::endl;
       } // end loop over all nodes with changed interface side
     } // end if movenodes is empty or max. iter reached
     else //
@@ -211,7 +211,7 @@ void XFEM::SemiLagrange::compute(
 #ifdef DEBUG
 #ifdef PARALLEL
   if (counter > 8*numproc_) // too much loops shouldnt be if all this works
-    cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
+    std::cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << std::endl;
 #endif
 #endif
 
@@ -313,8 +313,8 @@ void XFEM::SemiLagrange::NewtonLoop(
   } // end while Newton loop
 #ifdef DEBUG
   // did newton iteration converge?
-  if(data->counter_ == newton_max_iter_){cout << "WARNING: newton iteration for finding start value not converged for point\n" << endl;}
-  //    cout << "after " << data->iter_ << " iterations the endpoint is\n" << xAppr << endl;
+  if(data->counter_ == newton_max_iter_){std::cout << "WARNING: newton iteration for finding start value not converged for point\n" << std::endl;}
+  //    std::cout << "after " << data->iter_ << " iterations the endpoint is\n" << xAppr << std::endl;
 #endif
 } // end function NewtonLoop
 
@@ -468,7 +468,7 @@ void XFEM::SemiLagrange::NewtonIter(
   // update iteration
   for (int i=0;i<nsd;i++)
     data->startpoint_(i) += incr(i);
-  //cout << "in newton loop: approximate startvalue is " << data->startpoint_(0) << " " << data->startpoint_(1) << " " << data->startpoint_(2) << endl;
+  //std::cout << "in newton loop: approximate startvalue is " << data->startpoint_(0) << " " << data->startpoint_(1) << " " << data->startpoint_(2) << std::endl;
 
   //=============== update residuum================
   elementSearch(ele, data->startpoint_, xi, vel,phi,elefound);
@@ -680,8 +680,8 @@ void XFEM::SemiLagrange::backTracking(
       (strcmp(backTrackingType,static_cast<const char*>("failing"))!=0))
     dserror("backTrackingType not implemented");
 
-  //  cout << data->node_ << "has lagrange origin " << data->startpoint_ << "with xi-coordinates "
-  //      << xi << "in element " << *fittingele << endl;
+  //  std::cout << data->node_ << "has lagrange origin " << data->startpoint_ << "with xi-coordinates "
+  //      << xi << "in element " << *fittingele << std::endl;
   LINALG::Matrix<nsd,nsd> xji(true); // invers of jacobian
   LINALG::Matrix<numnode,1> shapeFcn(true); // shape function
   double deltaT = 0; // pseudo time-step size
@@ -870,7 +870,7 @@ void XFEM::SemiLagrange::backTracking(
           }
           else
           {
-            cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
+            std::cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << std::endl;
             dserror("not implemented physical field!");
           }
           break;
@@ -878,7 +878,7 @@ void XFEM::SemiLagrange::backTracking(
         case XFEM::Enrichment::typeUndefined :
         default :
         {
-          cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+          std::cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << std::endl;
           dserror("unknown enrichment type");
           break;
         }
@@ -994,15 +994,15 @@ void XFEM::SemiLagrange::backTracking(
         } // end loop over fieldenrset
       } // end loop over element nodes
       if (index==0)
-        cout << *ele << "with nodevels " << nodeveldata[0] << ", nodeenrvals " << nodevelenrdata[0]
-                                                                                                 << " and summed up velnderiv currently is " << velnDeriv1[0] << endl;
+        std::cout << *ele << "with nodevels " << nodeveldata[0] << ", nodeenrvals " << nodevelenrdata[0]
+                                                                                                 << " and summed up velnderiv currently is " << velnDeriv1[0] << std::endl;
 #else
       if (iele==0)
         veln[index].Multiply(nodeveldata[index],enrShapeFcnVel);
       velnDeriv1[index].MultiplyNT(1.0,nodeveldata[index],enrShapeXYVelDeriv1,1.0);
       //      if (index==0)
-      //        cout << *ele << "with nodevels " << nodeveldata[index] << ", shapefcnderiv " <<
-      //            enrShapeXYVelDeriv1 << " and summed up velnderiv currently is " << velnDeriv1[index] << endl;
+      //        std::cout << *ele << "with nodevels " << nodeveldata[index] << ", shapefcnderiv " <<
+      //            enrShapeXYVelDeriv1 << " and summed up velnderiv currently is " << velnDeriv1[index] << std::endl;
 #endif
       presnDeriv1[index].MultiplyNT(1.0,nodepresdata[index],enrShapeXYPresDeriv1,1.0);
     } // end loop over vectors to be read from
@@ -1164,8 +1164,8 @@ void XFEM::SemiLagrange::newIteration_nodalData(
 
     data->velDeriv_ = velnpDeriv1;
     data->presDeriv_ = presnpDeriv1;
-    //    cout << "after setting transportvel is " << data->vel_ << ", velderiv is " << velnpDeriv1[0]
-    //         << " and presderiv is " << presnpDeriv1[0] << endl;
+    //    std::cout << "after setting transportvel is " << data->vel_ << ", velderiv is " << velnpDeriv1[0]
+    //         << " and presderiv is " << presnpDeriv1[0] << std::endl;
   }
 }
 
@@ -1241,7 +1241,7 @@ void XFEM::SemiLagrange::reinitializeData()
           case XFEM::Enrichment::typeUndefined : break;
           default :
           {
-            cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+            std::cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << std::endl;
             dserror("unknown enrichment type");
             break;
           }
@@ -1356,7 +1356,7 @@ void XFEM::SemiLagrange::computeNodalGradient(
       true);
 #endif
 
-  //cout << "shapefcnvel is " << enrShapeFcnVel << ", velderiv is " << enrShapeXYVelDeriv1 << " and presderiv is " << enrShapeXYPresDeriv1 << endl;
+  //std::cout << "shapefcnvel is " << enrShapeFcnVel << ", velderiv is " << enrShapeXYVelDeriv1 << " and presderiv is " << enrShapeXYPresDeriv1 << std::endl;
   for (size_t i=0;i<newColVectors.size();i++)
   {
 #ifdef COMBUST_NORMAL_ENRICHMENT
@@ -1571,7 +1571,7 @@ void XFEM::SemiLagrange::exportDataToStartpointProc()
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
 
     // unpack received data
@@ -1649,7 +1649,7 @@ void XFEM::SemiLagrange::exportIterData(
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     size_t posinData = 0;
     int allProcsDone;
 
@@ -1738,7 +1738,7 @@ void XFEM::SemiLagrange::exportIterData(
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
 
     // unpack received data

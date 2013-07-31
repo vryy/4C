@@ -48,8 +48,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -208,7 +208,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual RedAirwayType & ElementType() const
   { return RedAirwayType::Instance(); }
@@ -227,16 +227,16 @@ public:
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<string,int>("Owner",1));
+    names.insert(std::pair<std::string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<string,int>("StressesXYZ",6));
+    names.insert(std::pair<std::string,int>("StressesXYZ",6));
   \endcode
 
   \param names (out): On return, the derived class has filled names with
                       key names of data it wants to visualize and with int dimensions
                       of that data.
   */
-  virtual void VisNames(std::map<string,int>& names);
+  virtual void VisNames(std::map<std::string,int>& names);
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -252,7 +252,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, std::vector<double>& data);
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
 
 
   //! @name Input and Creation
@@ -439,8 +439,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -599,7 +599,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual RedAcinusType & ElementType() const
   { return RedAcinusType::Instance(); }
@@ -618,16 +618,16 @@ public:
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<string,int>("Owner",1));
+    names.insert(std::pair<std::string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<string,int>("StressesXYZ",6));
+    names.insert(std::pair<std::string,int>("StressesXYZ",6));
   \endcode
 
   \param names (out): On return, the derived class has filled names with
                       key names of data it wants to visualize and with int dimensions
                       of that data.
   */
-  virtual void VisNames(std::map<string,int>& names);
+  virtual void VisNames(std::map<std::string,int>& names);
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -643,7 +643,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, std::vector<double>& data);
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
 
 
   //! @name Input and Creation
@@ -830,8 +830,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -980,7 +980,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual RedInterAcinarDepType & ElementType() const
   { return RedInterAcinarDepType::Instance(); }
@@ -999,16 +999,16 @@ public:
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<string,int>("Owner",1));
+    names.insert(std::pair<std::string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<string,int>("StressesXYZ",6));
+    names.insert(std::pair<std::string,int>("StressesXYZ",6));
   \endcode
 
   \param names (out): On return, the derived class has filled names with
                       key names of data it wants to visualize and with int dimensions
                       of that data.
   */
-  virtual void VisNames(std::map<string,int>& names);
+  virtual void VisNames(std::map<std::string,int>& names);
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -1024,7 +1024,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, std::vector<double>& data);
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
 
 
   //! @name Input and Creation

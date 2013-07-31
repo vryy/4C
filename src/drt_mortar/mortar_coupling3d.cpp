@@ -162,7 +162,7 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
       double sxi[2] = {0.0, 0.0};
       double alpha = 0.0;
       MORTAR::MortarProjector projector(3);
-      //std::cout << "Projecting master node ID: " << mnode->Id() << endl;
+      //std::cout << "Projecting master node ID: " << mnode->Id() << std::endl;
       projector.ProjectElementNormal3D(*mnode,SlaveIntElement(),sxi,alpha);
 
       mvertices[i][0] = sxi[0];
@@ -346,9 +346,9 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   // we then compute the unit normal vector at the element center
   Lauxn() = SlaveIntElement().ComputeUnitNormalAtXi(loccenter,Auxn());
 
-  //std::cout << "Slave Element: " << SlaveIntElement().Id() << endl;
-  //std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << endl;
-  //std::cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << endl;
+  //std::cout << "Slave Element: " << SlaveIntElement().Id() << std::endl;
+  //std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << std::endl;
+  //std::cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << std::endl;
 
   return true;
 }
@@ -387,8 +387,8 @@ bool MORTAR::Coupling3d::ProjectSlave()
     // store into vertex data structure
     SlaveVertices().push_back(Vertex(vertices,Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
 
-    //std::cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << endl;
-    //std::cout << "->ProjNode(S) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << endl;
+    //std::cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl;
+    //std::cout << "->ProjNode(S) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << std::endl;
   }
 
   return true;
@@ -428,8 +428,8 @@ bool MORTAR::Coupling3d::ProjectMaster()
     // store into vertex data structure
     MasterVertices().push_back(Vertex(vertices,Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
 
-    //std::cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << endl;
-    //std::cout << "->ProjNode(M) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << endl;
+    //std::cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " << mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl;
+    //std::cout << "->ProjNode(M) " << mycnode->Id() << ": " << vertices[0] << " " << vertices[1] << " " << vertices[2] << std::endl;
   }
 
   return true;
@@ -478,8 +478,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
   if (out)
   {
-    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
-    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
+    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << std::endl;
+    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << std::endl;
   }
   
   // then we compute the counter-clockwise plane normal
@@ -517,7 +517,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
   // check polygon 2 and reorder in c-clockwise direction
   if (check2<0)
   {
-    if (out) std::cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
+    if (out) std::cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << std::endl;
     std::reverse(poly2.begin(), poly2.end());
   }
 
@@ -597,7 +597,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0]
            << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
   
-    std::cout << endl << endl;
+    std::cout << std::endl << std::endl;
   }
 
   //**********************************************************************
@@ -688,14 +688,14 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       // move point away if very close to edge 2
       if (dist > -tol && dist < 0)
       {
-        //std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved inside!" << endl;
+        //std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved inside!" << std::endl;
         poly1[i].Coord()[0] -= tol*n2[0];
         poly1[i].Coord()[1] -= tol*n2[1];
         poly1[i].Coord()[2] -= tol*n2[2];
       }
       else if (dist < tol && dist >= 0)
       {
-        //std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved outside!" << endl;
+        //std::cout << "Vertex " << i << " on poly1 is very close to edge " << j << " of poly2 -> moved outside!" << std::endl;
         poly1[i].Coord()[0] += tol*n2[0];
         poly1[i].Coord()[1] += tol*n2[1];
         poly1[i].Coord()[2] += tol*n2[2];
@@ -740,14 +740,14 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       // move point away if very close to edge 2
       if (dist > -tol && dist < 0)
       {
-        //std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved inside!" << endl;
+        //std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved inside!" << std::endl;
         poly2[i].Coord()[0] -= tol*n1[0];
         poly2[i].Coord()[1] -= tol*n1[1];
         poly2[i].Coord()[2] -= tol*n1[2];
       }
       else if (dist < tol && dist >= 0)
       {
-        //std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved outside!" << endl;
+        //std::cout << "Vertex " << i << " on poly2 is very close to edge " << j << " of poly1 -> moved outside!" << std::endl;
         poly2[i].Coord()[0] += tol*n1[0];
         poly2[i].Coord()[1] += tol*n1[1];
         poly2[i].Coord()[2] += tol*n1[2];
@@ -795,11 +795,11 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       double parallel = edge1[0]*n2[0]+edge1[1]*n2[1]+edge1[2]*n2[2];
       if(abs(parallel)<1.0e-12)
       {
-        if (out) std::cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
+        if (out) std::cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << std::endl;
         continue;
       }
 
-      if (out) std::cout << "Searching intersection (" << i << "," << j << ")" << endl;
+      if (out) std::cout << "Searching intersection (" << i << "," << j << ")" << std::endl;
 
       // check for intersection of non-parallel edges
       double wec_p1 = 0.0;
@@ -836,9 +836,9 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
           if (out)
           {
-            std::cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << endl;
-            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
-            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
+            std::cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << std::endl;
+            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << std::endl;
+            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << std::endl;
           }
           
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
@@ -858,47 +858,47 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
   /*
   // check slave points
-  std::cout << "\nTesting slave element points" << endl;
+  std::cout << "\nTesting slave element points" << std::endl;
   for (int i=0;i<(int)poly1.size();++i)
   {
     Vertex& testv = poly1[i];
-    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-    std::cout << "Type: " << testv.VType() << endl;
-    std::cout << "Alpha: " << testv.Alpha() << endl;
-    std::cout << "Node id: " << testv.Nodeids()[0] << endl << endl;
+    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+    std::cout << "Type: " << testv.VType() << std::endl;
+    std::cout << "Alpha: " << testv.Alpha() << std::endl;
+    std::cout << "Node id: " << testv.Nodeids()[0] << std::endl << std::endl;
   }
   // check master points
-  std::cout << "\nTesting master element points" << endl;
+  std::cout << "\nTesting master element points" << std::endl;
   for (int i=0;i<(int)poly2.size();++i)
   {
     Vertex& testv = poly2[i];
-    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-    std::cout << "Type: " << testv.VType() << endl;
-    std::cout << "Alpha: " << testv.Alpha() << endl;
-    std::cout << "Node id: " << testv.Nodeids()[0] << endl << endl;
+    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+    std::cout << "Type: " << testv.VType() << std::endl;
+    std::cout << "Alpha: " << testv.Alpha() << std::endl;
+    std::cout << "Node id: " << testv.Nodeids()[0] << std::endl << std::endl;
   }
 
   // check intersection points
-  std::cout << "\nTesting slave intersection points" << endl;
+  std::cout << "\nTesting slave intersection points" << std::endl;
   for (int i=0;i<(int)intersec1.size();++i)
   {
     Vertex& testv = intersec1[i];
-    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-    std::cout << "Type: " << testv.VType() << endl;
-    std::cout << "Alpha: " << testv.Alpha() << endl;
+    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+    std::cout << "Type: " << testv.VType() << std::endl;
+    std::cout << "Alpha: " << testv.Alpha() << std::endl;
     std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
-         << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+         << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
   }
   // check intersection points
-  std::cout << "\nTesting master intersection points" << endl;
+  std::cout << "\nTesting master intersection points" << std::endl;
   for (int i=0;i<(int)intersec2.size();++i)
   {
     Vertex& testv = intersec2[i];
-    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-    std::cout << "Type: " << testv.VType() << endl;
-    std::cout << "Alpha: " << testv.Alpha() << endl;
+    std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+    std::cout << "Type: " << testv.VType() << std::endl;
+    std::cout << "Alpha: " << testv.Alpha() << std::endl;
     std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
-         << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+         << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
   }
   */
 
@@ -949,7 +949,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
     if (poly1inner==true)
     {
-      if (out) std::cout << "Polygon S lies fully inside polygon M!" << endl;
+      if (out) std::cout << "Polygon S lies fully inside polygon M!" << std::endl;
       respoly = poly1;
     }
 
@@ -984,14 +984,14 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
       if (poly2inner==true)
       {
-        if (out) std::cout << "Polygon M lies fully inside polygon S!" << endl;
+        if (out) std::cout << "Polygon M lies fully inside polygon S!" << std::endl;
         respoly = poly2;
       }
 
       // fully adjacent case
       else
       {
-        if (out) std::cout << "Polygons S and M are fully adjacent!" << endl;
+        if (out) std::cout << "Polygons S and M are fully adjacent!" << std::endl;
         std::vector<Vertex> empty;
         respoly = empty;
       }
@@ -1156,14 +1156,14 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       for (int i=0;i<(int)intersec1.size();++i)
       {
         std::cout << "Intersec1: " << i << " " << intersec1[i].Coord()[0] << " " << intersec1[i].Coord()[1] << " " << intersec1[i].Coord()[2];
-        std::cout << " EntryExit: " << intersec1[i].EntryExit() << endl;
+        std::cout << " EntryExit: " << intersec1[i].EntryExit() << std::endl;
       }
   
-      //std::cout << endl;
+      //std::cout << std::endl;
       for (int i=0;i<(int)intersec2.size();++i)
       {
         std::cout << "Intersec2: " << i << " " <<  intersec2[i].Coord()[0] << " " << intersec2[i].Coord()[1] << " " << intersec2[i].Coord()[2];
-        std::cout << " EntryExit: " << intersec2[i].EntryExit() << endl;
+        std::cout << " EntryExit: " << intersec2[i].EntryExit() << std::endl;
       }
     }
 
@@ -1177,36 +1177,36 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     Vertex* current = &intersec1[0];
 
     // push_back start Vertex coords into result polygon
-    if (out) std::cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+    if (out) std::cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
     respoly.push_back(Vertex(current->Coord(),Vertex::lineclip,current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
 
     do {
       // find next Vertex / Vertices (path)
       if (current->EntryExit()==true)
       {
-        if (out) std::cout << "Intersection was Entry, so move to Next() on same polygon!" << endl;
+        if (out) std::cout << "Intersection was Entry, so move to Next() on same polygon!" << std::endl;
         do {
           current = current->Next();
-          if (out) std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+          if (out) std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
           respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
         } while (current->Intersect()==false);
-        if (out) std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+        if (out) std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
       }
       else
       {
-        if (out) std::cout << "Intersection was Exit, so move to Prev() on same polygon!" << endl;
+        if (out) std::cout << "Intersection was Exit, so move to Prev() on same polygon!" << std::endl;
         do {
           current = current->Prev();
-          if (out) std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+          if (out) std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
           respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
         } while (current->Intersect()==false);
-        if (out) std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
+        if (out) std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
       }
 
       // jump to the other input polygon
       current = current->Neighbor();
-      if (out) std::cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << endl;
-      if (out) std::cout << "Length of result list so far: " << (int)respoly.size() << endl;
+      if (out) std::cout << "Jumping to other polygon at intersection: " << current->Coord()[0] << " " << current->Coord()[1] << " " << current->Coord()[2] << std::endl;
+      if (out) std::cout << "Length of result list so far: " << (int)respoly.size() << std::endl;
 
       // check length of result polygon list
       if ((int)respoly.size()>8) dserror("ERROR: Length of result polygon > 8! Something went wrong!");
@@ -1234,7 +1234,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     if (identical) respoly.pop_back();
     else
     {
-      std::cout << "\nDifference Dists: " << fldist << " " << fldist2 << endl;
+      std::cout << "\nDifference Dists: " << fldist << " " << fldist2 << std::endl;
       dserror("ERROR: We did not arrive at the starting point again...?");
     }
 
@@ -1263,7 +1263,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         if (abs(dist) >= tolcollapse && abs(dist2) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
         else
-          if (out) std::cout << "Collapsed two points in result polygon!" << endl;
+          if (out) std::cout << "Collapsed two points in result polygon!" << std::endl;
       }
 
       // standard case
@@ -1278,18 +1278,18 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         if (abs(dist) >= tolcollapse)
           collapsedrespoly.push_back(respoly[i]);
         else
-          if (out) std::cout << "Collapsed two points in result polygon!" << endl;
+          if (out) std::cout << "Collapsed two points in result polygon!" << std::endl;
       }
     }
 
     // replace respoly by collapsed respoly
     respoly = collapsedrespoly;
-    if (out) std::cout << "Final length of result list: " << (int)respoly.size() << endl;
+    if (out) std::cout << "Final length of result list: " << (int)respoly.size() << std::endl;
 
     // check if respoly collapsed to nothing
     if ((int)collapsedrespoly.size()<3)
     {
-      if (out) std::cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << endl;
+      if (out) std::cout << "Collapsing of result polygon led to < 3 vertices -> no respoly!" << std::endl;
       std::vector<Vertex> empty;
       respoly = empty;
     }
@@ -1302,7 +1302,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       for (int k=0;k<3;++k)
         center[k] += respoly[i].Coord()[k]/((int)respoly.size());
 
-    if (out) std::cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2] << endl;
+    if (out) std::cout << "\nCenter ResPoly: " << center[0] << " " << center[1] << " " << center[2] << std::endl;
 
     // then we compute the clockwise plane normal
     double diff[3] = {0.0, 0.0, 0.0};
@@ -1326,7 +1326,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     if (check<0)
     {
       // reorder result polygon in clockwise direction
-      // std::cout << "Result polygon not ordered counter-clockwise -> reordered!" << endl;
+      // std::cout << "Result polygon not ordered counter-clockwise -> reordered!" << std::endl;
       std::reverse(respoly.begin(),respoly.end());
     }
 
@@ -1336,7 +1336,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
       std::cout << "\nResult Poylgon:";
       for (int i=0;i<(int)respoly.size();++i)
         std::cout << "\nVertex " << i << ":\t" << respoly[i].Coord()[0] << "\t" << respoly[i].Coord()[1] << "\t" << respoly[i].Coord()[2];
-      std::cout << endl;
+      std::cout << std::endl;
     }
     
     // check if result polygon is convex
@@ -1396,7 +1396,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream gmshfilecontent;
-    gmshfilecontent << "View \" Clipping \" {" << endl;
+    gmshfilecontent << "View \" Clipping \" {" << std::endl;
   
     for (int i=0;i<(int)poly1.size();++i)
     {
@@ -1405,18 +1405,18 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
                                  << poly1[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       else
       {
         gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
                                  << poly1[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
   
       }
       gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
-      gmshfilecontent << "{" << "S" << i << "};" << endl;
+      gmshfilecontent << "{" << "S" << i << "};" << std::endl;
     }
   
     for (int i=0;i<(int)poly2.size();++i)
@@ -1426,18 +1426,18 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
                                  << poly2[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
         gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
                                  << poly2[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
   
       }
       gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
-      gmshfilecontent << "{" << "M" << i << "};" << endl;
+      gmshfilecontent << "{" << "M" << i << "};" << std::endl;
     }
   
     for (int i=0;i<(int)respoly.size();++i)
@@ -1447,30 +1447,30 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
         gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
                                  << respoly[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
         gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
                                  << respoly[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
   
       }
       gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
-      gmshfilecontent << "{" << "R" << i << "};" << endl;
+      gmshfilecontent << "{" << "R" << i << "};" << std::endl;
     }
   
   //  for (int i=0;i<(int)intersec1.size();++i)
   //  {
   //    gmshfilecontent << "T3(" << std::scientific << intersec1[i].Coord()[0] << "," << intersec1[i].Coord()[1] << "," << intersec1[i].Coord()[2] << "," << 17 << ")";
-  //    if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SEME" << "};" << endl;
-  //    else if (intersec1[i].EntryExit()==false && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SXME" << "};" << endl;
-  //    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false) gmshfilecontent << "{" << "SEMX" << "};" << endl;
-  //    else gmshfilecontent << "{" << "SXMX" << "};" << endl;
+  //    if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SEME" << "};" << std::endl;
+  //    else if (intersec1[i].EntryExit()==false && intersec2[i].EntryExit()==true) gmshfilecontent << "{" << "SXME" << "};" << std::endl;
+  //    else if (intersec1[i].EntryExit()==true && intersec2[i].EntryExit()==false) gmshfilecontent << "{" << "SEMX" << "};" << std::endl;
+  //    else gmshfilecontent << "{" << "SXMX" << "};" << std::endl;
   //  }
   
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   
     // move everything to gmsh post-processing file and close it
     fprintf(fp,gmshfilecontent.str().c_str());
@@ -1519,8 +1519,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
 
   if (out)
   {
-    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << endl;
-    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << endl;
+    std::cout << "Center 1: " << center1[0] << " " << center1[1] << " " << center1[2] << std::endl;
+    std::cout << "Center 2: " << center2[0] << " " << center2[1] << " " << center2[2] << std::endl;
   }
   
   // then we compute the counter-clockwise plane normal
@@ -1558,7 +1558,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   // check polygon 2 and reorder in c-clockwise direction
   if (check2<0)
   {
-    if (out) std::cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << endl;
+    if (out) std::cout << "Polygon 2 (master) not ordered counter-clockwise -> reordered!" << std::endl;
     std::reverse(poly2.begin(), poly2.end());
   }
 
@@ -1633,7 +1633,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       bool nearcheck = RoughCheckNodes();
       if (nearcheck)
       {
-        std::cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: " << sid << "/" << mid << ")" << endl;
+        std::cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: " << sid << "/" << mid << ")" << std::endl;
       }
       
       if (nearcheck && out)
@@ -1658,7 +1658,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         FILE* fp = NULL;
         fp = fopen(filename.str().c_str(), "w");
         std::stringstream gmshfilecontent;
-        gmshfilecontent << "View \" ProblemClipping S" <<  sid << "/M" << mid << " \" {" << endl;
+        gmshfilecontent << "View \" ProblemClipping S" <<  sid << "/M" << mid << " \" {" << std::endl;
       
         // get slave and master nodes
         int nsnodes = SlaveIntElement().NumNode();
@@ -1690,7 +1690,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
                               << scoord(2,0) << "," << scoord(0,1) << "," << scoord(1,1) << ","
                               << scoord(2,1) << "," << scoord(0,2) << "," << scoord(1,2) << ","
                               << scoord(2,2) << ")";
-          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor << "};" << endl;
+          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor << "};" << std::endl;
         }
         else if (SlaveIntElement().Shape()==DRT::Element::quad4)
         {
@@ -1699,7 +1699,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
                                    << scoord(2,1) << "," << scoord(0,2) << "," << scoord(1,2) << ","
                                    << scoord(2,2) << "," << scoord(0,3) << "," << scoord(1,3) << ","
                                    << scoord(2,3) << ")";
-          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor << "," << scolor << "};" << endl;
+          gmshfilecontent << "{" << std::scientific << scolor << "," << scolor << "," << scolor << "," << scolor << "};" << std::endl;
         }
         
         if (MasterIntElement().Shape()==DRT::Element::tri3)
@@ -1708,7 +1708,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
                               << mcoord(2,0) << "," << mcoord(0,1) << "," << mcoord(1,1) << ","
                               << mcoord(2,1) << "," << mcoord(0,2) << "," << mcoord(1,2) << ","
                               << mcoord(2,2) << ")";
-          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor << "};" << endl;
+          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor << "};" << std::endl;
         }
         else if (MasterIntElement().Shape()==DRT::Element::quad4)
         {
@@ -1717,7 +1717,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
                                    << mcoord(2,1) << "," << mcoord(0,2) << "," << mcoord(1,2) << ","
                                    << mcoord(2,2) << "," << mcoord(0,3) << "," << mcoord(1,3) << ","
                                    << mcoord(2,3) << ")";
-          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor << "," << mcolor << "};" << endl;
+          gmshfilecontent << "{" << std::scientific << mcolor << "," << mcolor << "," << mcolor << "," << mcolor << "};" << std::endl;
         }
           
         // plot edges
@@ -1728,18 +1728,18 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
             gmshfilecontent << "SL(" << std::scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
                                      << mycsnodes[i]->xspatial()[2] << "," << mycsnodes[i+1]->xspatial()[0] << "," << mycsnodes[i+1]->xspatial()[1] << ","
                                      << mycsnodes[i+1]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
           }
           else
           {
             gmshfilecontent << "SL(" << std::scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << ","
                                      << mycsnodes[i]->xspatial()[2] << "," << mycsnodes[0]->xspatial()[0] << "," << mycsnodes[0]->xspatial()[1] << ","
                                      <<mycsnodes[0]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       
           }
           gmshfilecontent << "T3(" << std::scientific << mycsnodes[i]->xspatial()[0] << "," << mycsnodes[i]->xspatial()[1] << "," << mycsnodes[i]->xspatial()[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "S" << i << "};" << endl;
+          gmshfilecontent << "{" << "S" << i << "};" << std::endl;
         }
       
         for (int i=0;i<nmnodes;++i)
@@ -1749,21 +1749,21 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
             gmshfilecontent << "SL(" << std::scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
                                      << mycmnodes[i]->xspatial()[2] << "," << mycmnodes[i+1]->xspatial()[0] << "," << mycmnodes[i+1]->xspatial()[1] << ","
                                      << mycmnodes[i+1]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
           }
           else
           {
             gmshfilecontent << "SL(" << std::scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << ","
                                      << mycmnodes[i]->xspatial()[2] << "," << mycmnodes[0]->xspatial()[0] << "," << mycmnodes[0]->xspatial()[1] << ","
                                      <<mycmnodes[0]->xspatial()[2] << ")";
-            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       
           }
           gmshfilecontent << "T3(" << std::scientific << mycmnodes[i]->xspatial()[0] << "," << mycmnodes[i]->xspatial()[1] << "," << mycmnodes[i]->xspatial()[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "M" << i << "};" << endl;
+          gmshfilecontent << "{" << "M" << i << "};" << std::endl;
         }
         
-        gmshfilecontent << "};" << endl;
+        gmshfilecontent << "};" << std::endl;
       
         // move everything to gmsh post-processing file and close it
         fprintf(fp,gmshfilecontent.str().c_str());
@@ -1787,7 +1787,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       std::cout << "\nVertex " << i << ":\t" << std::scientific << poly2[i].Coord()[0]
            << "\t" << poly2[i].Coord()[1] << "\t" << poly2[i].Coord()[2];
   
-    std::cout << endl << endl;
+    std::cout << std::endl << std::endl;
   }
 
   //**********************************************************************
@@ -1875,11 +1875,11 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       double parallel = edge1[0]*n2[0]+edge1[1]*n2[1]+edge1[2]*n2[2];
       if (abs(parallel)<tol)
       {
-        if (out) std::cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << endl;
+        if (out) std::cout << "WARNING: Detected two parallel edges! (" << i << "," << j << ")" << std::endl;
         continue;
       }
 
-      if (out) std::cout << "Searching intersection (" << i << "," << j << ")" << endl;
+      if (out) std::cout << "Searching intersection (" << i << "," << j << ")" << std::endl;
 
       // check for intersection of non-parallel edges
       double wec_p1 = 0.0;
@@ -1916,9 +1916,9 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
 
           if (out)
           {
-            std::cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << endl;
-            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
-            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << endl;
+            std::cout << "Found intersection! (" << i << "," << j << ") " << alphap << " " << alphaq << std::endl;
+            std::cout << "On Polygon 1: " << ip[0] << " " << ip[1] << " " << ip[2] << std::endl;
+            std::cout << "On Polygon 2: " << iq[0] << " " << iq[1] << " " << iq[2] << std::endl;
           }
           
           // generate vectors of underlying node ids for lineclip (2x slave, 2x master)
@@ -1938,15 +1938,15 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   if (out)
   {
     // check intersection points
-    std::cout << "\nTesting intersection points" << endl;
+    std::cout << "\nTesting intersection points" << std::endl;
     for (int i=0;i<(int)intersec.size();++i)
     {
       Vertex& testv = intersec[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-      std::cout << "Type: " << testv.VType() << endl;
-      std::cout << "Alpha: " << testv.Alpha() << endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Type: " << testv.VType() << std::endl;
+      std::cout << "Alpha: " << testv.Alpha() << std::endl;
       std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
-           << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+           << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
     }
   }
     
@@ -2005,15 +2005,15 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   if (out)
   {
     // check collapsed intersection points
-    std::cout << "\nTesting collapsed intersection points" << endl;
+    std::cout << "\nTesting collapsed intersection points" << std::endl;
     for (int i=0;i<(int)collintersec.size();++i)
     {
       Vertex& testv = collintersec[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-      std::cout << "Type: " << testv.VType() << endl;
-      std::cout << "Alpha: " << testv.Alpha() << endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Type: " << testv.VType() << std::endl;
+      std::cout << "Alpha: " << testv.Alpha() << std::endl;
       std::cout << "Lineclip ids: " << testv.Nodeids()[0] << " " << testv.Nodeids()[1]
-           << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << endl << endl;
+           << " " << testv.Nodeids()[2] << " " << testv.Nodeids()[3] << std::endl << std::endl;
     }
   }
   
@@ -2252,12 +2252,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   if (out)
   {
     // check convex hull points
-    std::cout << "\nTesting convex hull points" << endl;
+    std::cout << "\nTesting convex hull points" << std::endl;
     for (int i=0;i<(int)convexhull.size();++i)
     {
       Vertex& testv = convexhull[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-      std::cout << "Type: " << testv.VType() << endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Type: " << testv.VType() << std::endl;
     }
   }
   
@@ -2338,12 +2338,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   if (out)
   {
     // check collapsed convex hull points
-    std::cout << "\nTesting collapsed convex hull points" << endl;
+    std::cout << "\nTesting collapsed convex hull points" << std::endl;
     for (int i=0;i<(int)collconvexhull.size();++i)
     {
       Vertex& testv = collconvexhull[i];
-      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << endl;
-      std::cout << "Type: " << testv.VType() << endl;
+      std::cout << "Coords: " << testv.Coord()[0] << " " << testv.Coord()[1] << " " << testv.Coord()[2] << std::endl;
+      std::cout << "Type: " << testv.VType() << std::endl;
     }
   }
   
@@ -2448,7 +2448,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       }
     }
     
-    if (out) std::cout << "Start of convex hull: Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << endl;
+    if (out) std::cout << "Start of convex hull: Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << std::endl;
      
     // (2) Sort remaining points ascending w.r.t their angle with the y-axis
     // (if more than 1 point with identical angle exists, sort ascending w.r.t. their y-value)
@@ -2475,9 +2475,9 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     if (out)
     {
       std::cout << "Unsorted convex hull:\n";
-      std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << endl;
+      std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << std::endl;
       for (int i=0;i<np-1;++i)
-        std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << endl;
+        std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << std::endl;
     }
     
     // check if sizes are correct
@@ -2507,9 +2507,9 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     if (out)
     {
       std::cout << "Sorted convex hull:\n";
-      std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << endl;
+      std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1] << std::endl;
       for (int i=0;i<np-1;++i)
-        std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << endl;
+        std::cout << "Index " << sorted[i] << "\t" << transformed(0,sorted[i]) << "\t" << transformed(1,sorted[i]) << "\t" << cotangle[sorted[i]] << std::endl;
     }
     
     // (3) Go through sorted list of points
@@ -2657,7 +2657,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream gmshfilecontent;
-    gmshfilecontent << "View \" Clipping \" {" << endl;
+    gmshfilecontent << "View \" Clipping \" {" << std::endl;
   
     for (int i=0;i<(int)poly1.size();++i)
     {
@@ -2666,18 +2666,18 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[i+1].Coord()[0] << "," << poly1[i+1].Coord()[1] << ","
                                  << poly1[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
       }
       else
       {
         gmshfilecontent << "SL(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << ","
                                  << poly1[i].Coord()[2] << "," << poly1[0].Coord()[0] << "," << poly1[0].Coord()[1] << ","
                                  << poly1[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 1.0 << "," << 1.0 << "};" << std::endl;
   
       }
       gmshfilecontent << "T3(" << std::scientific << poly1[i].Coord()[0] << "," << poly1[i].Coord()[1] << "," << poly1[i].Coord()[2] << "," << 17 << ")";
-      gmshfilecontent << "{" << "S" << i << "};" << endl;
+      gmshfilecontent << "{" << "S" << i << "};" << std::endl;
     }
   
     for (int i=0;i<(int)poly2.size();++i)
@@ -2687,18 +2687,18 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[i+1].Coord()[0] << "," << poly2[i+1].Coord()[1] << ","
                                  << poly2[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
         gmshfilecontent << "SL(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << ","
                                  << poly2[i].Coord()[2] << "," << poly2[0].Coord()[0] << "," << poly2[0].Coord()[1] << ","
                                  << poly2[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
   
       }
       gmshfilecontent << "T3(" << std::scientific << poly2[i].Coord()[0] << "," << poly2[i].Coord()[1] << "," << poly2[i].Coord()[2] << "," << 17 << ")";
-      gmshfilecontent << "{" << "M" << i << "};" << endl;
+      gmshfilecontent << "{" << "M" << i << "};" << std::endl;
     }
     
     for (int i=0;i<(int)respoly.size();++i)
@@ -2708,21 +2708,21 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[i+1].Coord()[0] << "," << respoly[i+1].Coord()[1] << ","
                                  << respoly[i+1].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
       }
       else
       {
         gmshfilecontent << "SL(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << ","
                                  << respoly[i].Coord()[2] << "," << respoly[0].Coord()[0] << "," << respoly[0].Coord()[1] << ","
                                  << respoly[0].Coord()[2] << ")";
-        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+        gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
   
       }
       gmshfilecontent << "T3(" << std::scientific << respoly[i].Coord()[0] << "," << respoly[i].Coord()[1] << "," << respoly[i].Coord()[2] << "," << 27 << ")";
-      gmshfilecontent << "{" << "R" << i << "};" << endl;
+      gmshfilecontent << "{" << "R" << i << "};" << std::endl;
     }
     
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   
     // move everything to gmsh post-processing file and close it
     fprintf(fp,gmshfilecontent.str().c_str());
@@ -2872,7 +2872,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
   Cells().resize(0);
   int clipsize = (int)(Clip().size());
   bool out = false;
-  if (out) std::cout << "***\nPolygon with " << clipsize << " vertices\n***" << endl;
+  if (out) std::cout << "***\nPolygon with " << clipsize << " vertices\n***" << std::endl;
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -2925,10 +2925,10 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
 
     if (out)
     {
-      std::cout << "-> checking " << currsize << "th node of polygon" << endl;
-      std::cout << "-> found " << (int)triangles.size() << " triangles" << endl;
+      std::cout << "-> checking " << currsize << "th node of polygon" << std::endl;
+      std::cout << "-> found " << (int)triangles.size() << " triangles" << std::endl;
       for (int k=0;k<(int)triangles.size();++k)
-        std::cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " " << triangles[k][2] << " " << endl;
+        std::cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " " << triangles[k][2] << " " << std::endl;
     }
 
     // check Delaunay criterion for all triangles and sort
@@ -3037,7 +3037,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
       if (abs(radius2-radius1) > tol || abs(radius3-radius1) > tol)
       {
         std::cout << "***WARNING*** Delaunay triangulation failed (no well-defined circumcircles)"
-             << " -> using backup" << endl;
+             << " -> using backup" << std::endl;
 
         // if Delaunay triangulation failed, use old center-based
         // triangulation as backup (therefore return false)
@@ -3097,12 +3097,12 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
 
     if (out)
     {
-      std::cout << "   -> found " << (int)goodtriangles.size() << " GOOD triangles" << endl;
+      std::cout << "   -> found " << (int)goodtriangles.size() << " GOOD triangles" << std::endl;
       for (int k=0;k<(int)goodtriangles.size();++k)
-        std::cout << "      Triangle: " << goodtriangles[k][0] << " " << goodtriangles[k][1] << " " << goodtriangles[k][2] << " " << endl;
-      std::cout << "   -> found " << (int)badtriangles.size() << " BAD triangles" << endl;
+        std::cout << "      Triangle: " << goodtriangles[k][0] << " " << goodtriangles[k][1] << " " << goodtriangles[k][2] << " " << std::endl;
+      std::cout << "   -> found " << (int)badtriangles.size() << " BAD triangles" << std::endl;
       for (int k=0;k<(int)badtriangles.size();++k)
-        std::cout << "      Triangle: " << badtriangles[k][0] << " " << badtriangles[k][1] << " " << badtriangles[k][2] << " " << endl;
+        std::cout << "      Triangle: " << badtriangles[k][0] << " " << badtriangles[k][1] << " " << badtriangles[k][2] << " " << std::endl;
     }
 
     // find vertices in bad triangles: ALL vertices
@@ -3244,9 +3244,9 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
 
     if (out)
     {
-      std::cout << "   -> we have " << (int)addtriangles.size() << " potential NEW triangles" << endl;
+      std::cout << "   -> we have " << (int)addtriangles.size() << " potential NEW triangles" << std::endl;
       for (int k=0;k<(int)addtriangles.size();++k)
-        std::cout << "      Triangle: " << addtriangles[k][0] << " " << addtriangles[k][1] << " " << addtriangles[k][2] << " " << endl;
+        std::cout << "      Triangle: " << addtriangles[k][0] << " " << addtriangles[k][1] << " " << addtriangles[k][2] << " " << std::endl;
     }
 
     // collapse addtriangles (remove double entries)
@@ -3289,10 +3289,10 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
 
     if (out)
     {
-      std::cout << "   -> added " << nadd << " NEW triangles" << endl;
-      std::cout << "   -> overall " << (int)triangles.size() << " triangles" << endl;
+      std::cout << "   -> added " << nadd << " NEW triangles" << std::endl;
+      std::cout << "   -> overall " << (int)triangles.size() << " triangles" << std::endl;
       for (int k=0;k<(int)triangles.size();++k)
-        std::cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " " << triangles[k][2] << " " << endl;
+        std::cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " " << triangles[k][2] << " " << std::endl;
     }
   }
 
@@ -3323,7 +3323,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
   if (numt != clipsize-2)
   {
     std::cout << "***WARNING*** Delaunay triangulation failed (" << clipsize << " vertices, "
-         << numt << " triangles)" << " -> using backup" << endl;
+         << numt << " triangles)" << " -> using backup" << std::endl;
 
     // if Delaunay triangulation failed, use old center-based
     // triangulation as backup (therefore return false)
@@ -3690,28 +3690,28 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
   // plot current integration cell
   const Epetra_SerialDenseMatrix& coord = Cells()[lid]->Coords();
 
-  // write output to temporary stringstream
+  // write output to temporary std::stringstream
   std::stringstream gmshfilecontent;
 
   // header and dummy elements
   if (count==0)
   {
     // header
-    gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << endl;
+    gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << std::endl;
 
     // dummy element 1
     gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << ")";
-    gmshfilecontent << "{" << std::scientific << 0 << "," << 0 << "," << 0 << "};" << endl;
+    gmshfilecontent << "{" << std::scientific << 0 << "," << 0 << "," << 0 << "};" << std::endl;
 
     // dummy element 1
     gmshfilecontent << "ST(" << std::scientific << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << ")";
-    gmshfilecontent << "{" << std::scientific << nproc-1 << "," << nproc-1 << "," << nproc-1 << "};" << endl;
+    gmshfilecontent << "{" << std::scientific << nproc-1 << "," << nproc-1 << "," << nproc-1 << "};" << std::endl;
   }
 
   // plot cell itself
@@ -3719,7 +3719,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
                   << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                   << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                   << coord(2,2) << ")";
-  gmshfilecontent << "{" << std::scientific << proc << "," << proc << "," << proc << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << proc << "," << proc << "," << proc << "};" << std::endl;
 
   // move everything to gmsh post-processing files and close them
   fprintf(fp,gmshfilecontent.str().c_str());

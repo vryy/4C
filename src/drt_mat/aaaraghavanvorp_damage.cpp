@@ -126,7 +126,7 @@ void MAT::AAAraghavanvorp_damage::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
 {
-  cout << "UNPACK \n";
+  std::cout << "UNPACK \n";
   //isinit_=true; // corretto ore 14:27
   std::vector<char>::size_type position = 0;
   // extract type
@@ -183,7 +183,7 @@ void MAT::AAAraghavanvorp_damage::Setup(int numgp, DRT::INPUT::LineDefinition* l
   double strength = 0.0; // section for extracting the element strength
   linedef->ExtractDouble("STRENGTH",strength);
 
-  cout << "SETUP \n";
+  std::cout << "SETUP \n";
   histgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
   histglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
 //  histgcurr_= Teuchos::rcp(new std::vector<double> );   ///< current damage parameter
@@ -226,7 +226,7 @@ void MAT::AAAraghavanvorp_damage::Setup(int numgp, DRT::INPUT::LineDefinition* l
 
 void MAT::AAAraghavanvorp_damage::Update()
 {
-// cout << " fcg"; // string to declare when the function is called,normally after convergence.
+// std::cout << " fcg"; // std::string to declare when the function is called,normally after convergence.
   histglast_ = histgcurr_;
   histeqstrmaxlast_ = histeqstrmaxcurr_;
 

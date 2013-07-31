@@ -134,7 +134,7 @@ void DRT::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::Print(ostream& os) const
+void DRT::ELEMENTS::StructuralSurface::Print(std::ostream& os) const
 {
   os << "StructuralSurface ";
   Element::Print(os);

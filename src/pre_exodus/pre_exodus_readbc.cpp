@@ -23,17 +23,17 @@ Here is everything related with reading a bc file
 /*----------------------------------------------------------------------*/
 void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs, std::vector<EXODUS::cond_def>& condefs)
 {
-  // first we read the whole file into one stream/string
+  // first we read the whole file into one stream/std::string
   std::stringstream bcstream;
   const char *bcfilechar = bcfile.c_str();
   std::ifstream bcfstream(bcfilechar, std::ifstream::in);
   if (!bcfstream.good()){
-    cout << endl << "Unable to open file: " << bcfile << endl;
+    std::cout << std::endl << "Unable to open file: " << bcfile << std::endl;
     dserror("Unable to open bc-file");
   }
   while (bcfstream.good()) bcstream << (char) bcfstream.get();
   bcfstream.close();
-  // string which contains the whole file
+  // std::string which contains the whole file
   std::string allconds = bcstream.str();
   allconds.erase(allconds.end()-1);  //delete last 'whatisthis'-char
 
@@ -78,8 +78,8 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
     // get actual condition
     std::string actcond = allconds.substr(startpos,found-startpos);
 
-    // ensure substring has minimum length!
-    if (actcond.size()<3) dserror("Substring is too short");
+    // ensure substd::string has minimum length!
+    if (actcond.size()<3) dserror("Substd::string is too short");
 
     // find out what mesh_entity type we have
     std::string mesh_entity = actcond.substr(0,3);
@@ -87,7 +87,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
     // get its id
     size_t found2 = actcond.find_first_of("=");
     std::string buffer = actcond.substr(markerlength,found2-markerlength);
-    // convert string to int
+    // convert std::string to int
     std::istringstream bufferstream(buffer);
     int id;
     bufferstream >> id;
@@ -159,7 +159,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>
         condefs.push_back(cdef);
       }
       else {
-        cout << "Undefined type for eb"<<id<<": "<<type<<endl;
+        std::cout << "Undefined type for eb"<<id<<": "<<type<<std::endl;
         dserror("Undefined type!");
       }
     }
@@ -392,7 +392,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       // get condition id for master pbc
       size_t end_m = master_con.desc.find("Master"); // master
       std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
-      // convert string to int
+      // convert std::string to int
       std::istringstream string_mconditionidstream(string_mconditionid);
       int master_conditionID = -1;
       string_mconditionidstream >> master_conditionID;
@@ -411,7 +411,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
         {
           size_t end_s = slave_con.desc.find("Slave"); // slave
           std::string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
-          // convert string to int
+          // convert std::string to int
           std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
           
@@ -429,7 +429,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       size_t tol_length = std::string("ABSTREETOL").length();
       start_tol = start_tol + tol_length + 1;
       std::string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
-      // convert string to int
+      // convert std::string to int
       std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
       string_tolstream >> abstol;
@@ -440,8 +440,8 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       
       if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
       {
-        cout << "yz num master nodes = " << master_nodeset.GetNumNodes() << endl;
-        cout << "yz num slave nodes = " << slave_nodeset.GetNumNodes() << endl;
+        std::cout << "yz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
+        std::cout << "yz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
         dserror("num master nodes != num slave nodes before adjusting coords");
       }
       
@@ -495,8 +495,8 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       } // loop all master nodes
       if(mesh.GetNodeSet(master_nodeset_id).GetNumNodes() != mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() )
       {
-        cout << "yz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << endl;
-        cout << "yz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << endl;
+        std::cout << "yz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << std::endl;
+        std::cout << "yz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << std::endl;
         dserror("num master nodes != num slave nodes after adjusting coords");
       }
     }
@@ -530,7 +530,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       // get condition id for master pbc
       size_t end_m = master_con.desc.find("Master"); // master
       std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
-      // convert string to int
+      // convert std::string to int
       std::istringstream string_mconditionidstream(string_mconditionid);
       int master_conditionID = -1;
       string_mconditionidstream >> master_conditionID;
@@ -550,7 +550,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
         {
           size_t end_s = slave_con.desc.find("Slave"); // slave
           std::string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
-          // convert string to int
+          // convert std::string to int
           std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
         
@@ -568,7 +568,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       size_t tol_length = std::string("ABSTREETOL").length();
       start_tol = start_tol + tol_length + 1;
       std::string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
-      // convert string to int
+      // convert std::string to int
       std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
       string_tolstream >> abstol;
@@ -669,7 +669,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        // get condition id for master pbc
        size_t end_m = master_con.desc.find("Master"); // master
        std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
-       // convert string to int
+       // convert std::string to int
        std::istringstream string_mconditionidstream(string_mconditionid);
        int master_conditionID = -1;
        string_mconditionidstream >> master_conditionID;
@@ -688,7 +688,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
          {
            size_t end_s = slave_con.desc.find("Slave"); // slave
            std::string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
-           // convert string to int
+           // convert std::string to int
            std::istringstream string_sconditionidstream(string_sconditionid);
            string_sconditionidstream >> slave_conditionID;
            
@@ -706,7 +706,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        size_t tol_length = std::string("ABSTREETOL").length();
        start_tol = start_tol + tol_length + 1;
        std::string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
-       // convert string to int
+       // convert std::string to int
        std::istringstream string_tolstream(string_tol);
        double abstol = -1.0;
        string_tolstream >> abstol;
@@ -717,8 +717,8 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        
        if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
        {
-          cout << "xy num master nodes = " << master_nodeset.GetNumNodes() << endl;
-          cout << "xy num slave nodes = " << slave_nodeset.GetNumNodes() << endl;
+          std::cout << "xy num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
+          std::cout << "xy num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
           dserror("xy num master nodes != num slave nodes before adjusting coords");
         }
        
@@ -772,8 +772,8 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        } // loop all master nodes
        if(mesh.GetNodeSet(master_nodeset_id).GetNumNodes() != mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() )
        {
-         cout << "xy num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << endl;
-         cout << "xy num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << endl;
+         std::cout << "xy num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << std::endl;
+         std::cout << "xy num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << std::endl;
          dserror("xy num master nodes != num slave nodes after adjusting coords");
        }
      }

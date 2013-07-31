@@ -43,7 +43,7 @@ public:
       std::cout << p.Pid() << " ";
       LINALG::Matrix<3,1> x(true);
       p.Coordinates(x.A());
-      cout << x << endl;
+      std::cout << x << std::endl;
     }
     std::cout << "\n";
   }

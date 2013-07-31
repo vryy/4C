@@ -362,7 +362,7 @@ private:
 
   //! @name control parameters
   bool                         homdir_;
-  string                       special_flow_homdir_;
+  std::string                       special_flow_homdir_;
   bool                         apply_dynamic_smagorinsky_;
   bool                         apply_box_filter_;
   bool                         calc_Ci_;

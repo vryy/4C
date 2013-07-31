@@ -81,8 +81,8 @@ namespace UTILS
   \param owner   (in): owner of the new element
 
   */
-  RCP<DRT::Element> Factory(const string eletype,
-                                    const string distype,
+  RCP<DRT::Element> Factory(const std::string eletype,
+                                    const std::string distype,
                                     const int id        ,
                                     const int owner     );
 

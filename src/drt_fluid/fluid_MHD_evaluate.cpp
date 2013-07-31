@@ -71,7 +71,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     // generate an empty boundary discretisation
     bnd_discret_ 
-      = Teuchos::rcp(new DRT::Discretization((string)"boundary discretisation",
+      = Teuchos::rcp(new DRT::Discretization((std::string)"boundary discretisation",
                                     Teuchos::rcp(pdiscret_->Comm().Clone())));
 
     // make the condition known to the boundary discretisation
@@ -239,15 +239,15 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| ... done.\n";
+      std::cout << "| ... done.\n";
     }
 
     {
       if(bnd_discret_->Comm().MyPID()==0)
       {
-        cout << "| Inherit periodic boundary conditions, redistribute again ";
-        cout << "to fetch slave nodes\n";
-        cout << "| to the master's proc\n";
+        std::cout << "| Inherit periodic boundary conditions, redistribute again ";
+        std::cout << "to fetch slave nodes\n";
+        std::cout << "| to the master's proc\n";
       }
 
       // make the pbc condition known to the boundary discretisation
@@ -296,16 +296,16 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
         
       if(bnd_discret_->Comm().MyPID()==0)
       {
-        cout << "| ... done.\n";
+        std::cout << "| ... done.\n";
       }
     }
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| Replace dofset by a transparent dofset that copies ";
-      cout << "the dofs of the original\n";
-      cout << "| (parent) discretisation. At this place";
-      cout << " a sub-dofrowmap (identical layout) of\n";
+      std::cout << "| Replace dofset by a transparent dofset that copies ";
+      std::cout << "the dofs of the original\n";
+      std::cout << "| (parent) discretisation. At this place";
+      std::cout << " a sub-dofrowmap (identical layout) of\n";
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
@@ -316,10 +316,10 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| the parent discretisation is generated. It is used to define a system\n";
-      cout << "| matrix for the boundary ";
-      cout << "dofs, which is filled and assembled into the global\n";
-      cout << "| matrix later on.\n";
+      std::cout << "| the parent discretisation is generated. It is used to define a system\n";
+      std::cout << "| matrix for the boundary ";
+      std::cout << "dofs, which is filled and assembled into the global\n";
+      std::cout << "| matrix later on.\n";
     }
 
     subdofrowmap_=Teuchos::rcp(new Epetra_Map(*bnd_discret_->DofRowMap()));
@@ -334,14 +334,14 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| ... done.\n";
+      std::cout << "| ... done.\n";
     }
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| Call PARMETIS on the boundary discretisation and ";
-      cout << "redistribute according to\n";
-      cout << "| the new maps\n";
+      std::cout << "| Call PARMETIS on the boundary discretisation and ";
+      std::cout << "redistribute according to\n";
+      std::cout << "| the new maps\n";
     }
 
     std::vector<int> bndnids;
@@ -386,20 +386,20 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 #endif
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| Redistributing .";
+      std::cout << "| Redistributing .";
     }
     bnd_discret_->Redistribute(*bndrownodes,*bndcolnodes,false,false);    
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << ".. done.\n";
+      std::cout << ".. done.\n";
     }
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| Apply periodic boundary conditions to the redistributed";
-      cout << " discretisation to\n";
-      cout << "| fetch slave nodes to the master's proc\n";
+      std::cout << "| Apply periodic boundary conditions to the redistributed";
+      std::cout << " discretisation to\n";
+      std::cout << "| fetch slave nodes to the master's proc\n";
     }
 
     {
@@ -409,9 +409,9 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| Assign the dofs for the redistributed layout, again using ";
-      cout << "a parallel version\n";
-      cout << "| of the transparent dofset\n";
+      std::cout << "| Assign the dofs for the redistributed layout, again using ";
+      std::cout << "a parallel version\n";
+      std::cout << "| of the transparent dofset\n";
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
@@ -421,7 +421,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
   
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| ... done.\n";
+      std::cout << "| ... done.\n";
       printf("|\n");
       printf("+----------------\n\n");
 
@@ -461,7 +461,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
           printf("   | %3d | %13d | %15d | %14d | %15d |\n",npid,n_nodes[npid],n_elements[npid],n_ghostele[npid],n_dof[npid]);
           printf("   +-----+---------------+-----------------+----------------+-----------------+\n");
         }
-        cout << endl <<endl;
+        std::cout << std::endl <<std::endl;
       }
     }
 
@@ -515,7 +515,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
       if (!bnd_discret_->DofRowMap()->UniqueGIDs())
       {
-        cout  << *bnd_discret_->DofRowMap();
+        std::cout  << *bnd_discret_->DofRowMap();
 
         dserror("DofRowMap  of bnd dis is not unique (global)");
       }

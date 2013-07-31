@@ -13,7 +13,7 @@ Maintainer: Thomas Kloeppel
 
 
 #include "monitor.H"
-#include "iostream"
+#include <iostream>
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 
@@ -22,7 +22,7 @@ Maintainer: Thomas Kloeppel
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::Monitor::Monitor(RCP<DRT::Discretization> discr,
-        const string& conditionname,
+        const std::string& conditionname,
         int& minID,
         int& maxID):
 actdisc_(discr)
@@ -33,7 +33,7 @@ actdisc_(discr)
     montype_=GetMoniType(conditionname);
     for (unsigned int i=0; i<moncond_.size();i++)
     {
-      //moncond_[i]->Print(cout);
+      //moncond_[i]->Print(std::cout);
       int condID=(*(moncond_[i]->Get<std::vector<int> >("ConditionID")))[0];
       if (condID>maxID)
       {
@@ -55,7 +55,7 @@ actdisc_(discr)
 /*-----------------------------------------------------------------------*
 |(private)                                                       tk 07/08|
 *-----------------------------------------------------------------------*/
-UTILS::Monitor::MoniType UTILS::Monitor::GetMoniType(const string& name)
+UTILS::Monitor::MoniType UTILS::Monitor::GetMoniType(const std::string& name)
 {
  if (name=="VolumeMonitor_3D")
     return volmonitor3d;
@@ -167,7 +167,7 @@ void UTILS::Monitor::EvaluateMonitor
  *-----------------------------------------------------------------------*/
 void UTILS::Monitor::SetState
 (
-  const string& state,  ///< name of state to set
+  const std::string& state,  ///< name of state to set
   RCP<Epetra_Vector> V  ///< values to set
 )
 {

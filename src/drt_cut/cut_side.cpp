@@ -698,7 +698,7 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
   {
     // The main decision if the side lies closer to the start-point than the other side
 
-    //cout << "line_xi " << line_xi << endl;
+    //std::cout << "line_xi " << line_xi << std::endl;
 
     if(line_xi > 1.0+TOLERANCE)
     {
@@ -712,8 +712,8 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
       // in that case both sides lie within one plane
       // this case is catched in SameNormal afterwards
 
-      // std::cout << "line_xi " << line_xi << endl;
-      // std::cout << "check if both sides lie in one plane " << endl;
+      // std::cout << "line_xi " << line_xi << std::endl;
+      // std::cout << "check if both sides lie in one plane " << std::endl;
 
       return false;
     }
@@ -730,9 +730,9 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
       // in that case the line between the start-point and the cut-point lies in the second side
       // then the side is orthogonal to the line
       // this side should be removed in
-      std::cout << "line_xi " << line_xi << endl;
-      std::cout << "start-point: " << startpoint_xyz << endl;
-      std::cout << "side orthogonal ? " << endl; other->Print();
+      std::cout << "line_xi " << line_xi << std::endl;
+      std::cout << "start-point: " << startpoint_xyz << std::endl;
+      std::cout << "side orthogonal ? " << std::endl; other->Print();
 
       throw std::runtime_error("IsCloserSide along the ray-tracing line failed! ");
 
@@ -748,8 +748,8 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
     {
       // undermined range of local coordinates!
 
-      std::cout << "line_xi " << line_xi << endl;
-      std::cout << "cut point found, but the local line coordinates along the ray-tracing line lies in undefined region" << endl;
+      std::cout << "line_xi " << line_xi << std::endl;
+      std::cout << "cut point found, but the local line coordinates along the ray-tracing line lies in undefined region" << std::endl;
 
       throw std::runtime_error("IsCloserSide along the ray-tracing line failed! ");
     }

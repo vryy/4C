@@ -43,8 +43,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -220,7 +220,7 @@ public:
   */
   virtual int NumDofPerElement() const { return 0; }
 
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return Vele3Type::Instance(); }
@@ -374,7 +374,7 @@ public:
 
   virtual int NumDofPerNode(const DRT::Node&) const {return 3;}
   virtual int NumDofPerElement() const { return 0; }
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
   virtual DRT::ElementType & ElementType() const
   { return Vele3SurfaceType::Instance(); }
 
@@ -534,7 +534,7 @@ public:
 
   virtual int NumDofPerElement() const { return 0; }
 
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return Vele3LineType::Instance(); }

@@ -75,8 +75,8 @@ int LINALG::SOLVER::StratimikosSolver::Solve()
 {
   Teuchos::RCP<Teuchos::ParameterList> stratimikoslist = Teuchos::rcp(new Teuchos::ParameterList(Params().sublist("Stratimikos Parameters")));
       //Teuchos::rcp(&(Params().sublist("Stratimikos Parameters")));
-  cout << "Stratimikos List from dat file" << endl;
-  cout << *stratimikoslist << endl << endl;
+  std::cout << "Stratimikos List from dat file" << std::endl;
+  std::cout << *stratimikoslist << std::endl << std::endl;
 
 
   //std::string xmlfile = stratimikoslist.get<std::string>("xml file");
@@ -85,8 +85,8 @@ int LINALG::SOLVER::StratimikosSolver::Solve()
   Stratimikos::DefaultLinearSolverBuilder linearSolverBuilder;
   linearSolverBuilder.setParameterList(stratimikoslist);
   //Stratimikos::DefaultLinearSolverBuilder linearSolverBuilder(xmlfile);
-  linearSolverBuilder.readParameters(&cout);
-  cout << *(linearSolverBuilder.getParameterList()) << endl;
+  linearSolverBuilder.readParameters(&std::cout);
+  std::cout << *(linearSolverBuilder.getParameterList()) << std::endl;
 
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> epetra_A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
@@ -119,7 +119,7 @@ int LINALG::SOLVER::StratimikosSolver::Solve()
   // Solve the linear system (note: the initial guess in 'x' is critical)
   Thyra::SolveStatus<double> status =
        Thyra::solve<double>(*lows, Thyra::NOTRANS, *b, x.ptr());
-  cout << "\nSolve status:\n" << status << endl;
+  std::cout << "\nSolve status:\n" << status << std::endl;
 
 
   // Wipe out the Thyra wrapper for x to guarantee that the solution will be

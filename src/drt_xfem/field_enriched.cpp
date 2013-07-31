@@ -64,7 +64,7 @@ XFEM::FieldEnr& XFEM::FieldEnr::operator = (const XFEM::FieldEnr& old)
 
 
 /*----------------------------------------------------------------------*
- |  transform to a string                                       ag 11/07|
+ |  transform to a std::string                                       ag 11/07|
  *----------------------------------------------------------------------*/
 std::string XFEM::FieldEnr::toString() const
 {

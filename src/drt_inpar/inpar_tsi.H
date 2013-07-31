@@ -89,7 +89,7 @@ namespace TSI
     norm_inf  //!< Maximum/infinity norm
   };
 
-  //! map enum term to string
+  //! map enum term to std::string
   static inline const std::string VectorNormString(
     const enum VectorNorm norm  //!< input enum term
     )
@@ -115,7 +115,7 @@ namespace TSI
       return "Inf";
       break;
     default:
-      dserror("Cannot make string to vector norm %d", norm);
+      dserror("Cannot make std::string to vector norm %d", norm);
       return "";
     }
   }

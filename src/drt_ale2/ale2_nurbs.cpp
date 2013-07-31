@@ -80,7 +80,7 @@ DRT::ELEMENTS::NURBS::Ale2Nurbs::~Ale2Nurbs()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Ale2Nurbs::Print(ostream& os) const
+void DRT::ELEMENTS::NURBS::Ale2Nurbs::Print(std::ostream& os) const
 {
   os << "Ale2Nurbs ";
   Element::Print(os);

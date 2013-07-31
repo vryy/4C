@@ -49,7 +49,7 @@ int DRT::ELEMENTS::Truss2::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_ptcstiff") act = Truss2::calc_struct_ptcstiff;
   else 
     {
-      cout<<action<<endl;
+      std::cout<<action<<std::endl;
       dserror("Unknown type of action for Truss2");
     }
   

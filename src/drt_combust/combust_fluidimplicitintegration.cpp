@@ -2057,7 +2057,7 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 //        // print to  le in matlab format + const std::string fname = "sparsematrix.mtl";
 //        LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
 //        // print to screen
-//        // (A->EpetraMatrix())->Print(cout);
+//        // (A->EpetraMatrix())->Print(std::cout);
 //        // print sparsity pattern to  le
 //        //LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
 //      }
@@ -2176,7 +2176,7 @@ void FLD::CombustFluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition
   kspsplitter_->Setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
-  const string* weighttype = kspcond->Get<string>("weight vector definition");
+  const std::string* weighttype = kspcond->Get<std::string>("weight vector definition");
 
   // set flag for projection update true
   // (safe option - normally only necessary for moving interfaces)
@@ -2546,7 +2546,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
+      //std::cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==163) //or
           //lnode->Id()==498 or
           //lnode->Id()==726 or
@@ -2583,7 +2583,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
+      //std::cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==149)
 
       {
@@ -2618,7 +2618,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
+      //std::cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==227)
       {
         IO::cout << "node " << lnode->Id() << " ";
@@ -2652,7 +2652,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
       const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
       std::vector<int> lids(3);
-      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
+      //std::cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
       if (lnode->Id()==59)
       {
         IO::cout << "node " << lnode->Id() << " ";
@@ -2687,7 +2687,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 //      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
 //      const std::vector<int> dofids = (*standarddofset_).Dof(lnode);
 //      std::vector<int> lids(3);
-//      //cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
+//      //std::cout << "mindist " << std::setw(18) << std::setprecision(12) << std::scientific << mindist << IO::endl;
 //      if (lnode->Id()==517 or
 //          lnode->Id()==725 or
 //          lnode->Id()==451 or
@@ -3197,7 +3197,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
                   const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
                   const double fac = intpoints.qwgt[iquad]*deform_factor;
-                  //cout << "fac " << fac << IO::endl;
+                  //std::cout << "fac " << fac << IO::endl;
                   presjumpnorm += fac*presjump*presjump;
                 }
 #endif // computation average pressure
@@ -3660,7 +3660,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
                 const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
                 const double fac = intpoints.qwgt[iquad]*deform_factor;
-                //cout << "fac " << fac << IO::endl;
+                //std::cout << "fac " << fac << IO::endl;
                 locflamearea += fac; // *1.0
               }
             }
@@ -3735,7 +3735,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
                 const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
                 const double fac = intpoints.qwgt[iquad]*deform_factor;
-                //cout << "fac " << fac << IO::endl;
+                //std::cout << "fac " << fac << IO::endl;
                 locflamearea += fac; // *1.0
               }
             }
@@ -3766,7 +3766,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(filename.c_str(),std::ios::app));
       (*log) <<  " "  << std::setw(6) << step_ << "  " << std::setw(6) << std::setprecision(6) << time_ << "  " << std::setprecision(13) << globflamearea;
-      (*log) << &endl;
+      (*log) << &std::endl;
       log->flush();
 
       IO::cout << " done" << IO::endl;
@@ -3933,7 +3933,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputInstabAmplitude(
       (*log) << "  " << std::setw(15) << std::setprecision(13) << amplitudeleft;
       (*log) << "  " << std::setw(15) << std::setprecision(13) << amplitudemiddle;
       (*log) << "  " << std::setw(15) << std::setprecision(13) << amplitude;
-      (*log) << &endl;
+      (*log) << &std::endl;
       log->flush();
 
       IO::cout << " done" << IO::endl;
@@ -4707,9 +4707,9 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
     //const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-//cout << *dofrowmap << IO::endl;
-//cout << *(standarddofset_->DofRowMap()) << IO::endl;
-//cout << (state_.velnp_->Map()) << IO::endl;
+//std::cout << *dofrowmap << IO::endl;
+//std::cout << *(standarddofset_->DofRowMap()) << IO::endl;
+//std::cout << (state_.velnp_->Map()) << IO::endl;
 
     //--------------------------------
     // loop all nodes on the processor
@@ -4854,9 +4854,9 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
     //const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-//cout << *dofrowmap << IO::endl;
-//cout << *(standarddofset_->DofRowMap()) << IO::endl;
-//cout << (state_.velnp_->Map()) << IO::endl;
+//std::cout << *dofrowmap << IO::endl;
+//std::cout << *(standarddofset_->DofRowMap()) << IO::endl;
+//std::cout << (state_.velnp_->Map()) << IO::endl;
 
     //--------------------------------
     // loop all nodes on the processor

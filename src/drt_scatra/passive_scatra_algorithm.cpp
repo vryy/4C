@@ -83,9 +83,9 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
 
   if (Comm().MyPID()==0)
   {
-    cout<<"\n******************\n   TIME STEP     \n******************\n";
-    cout<<"\nStep:   " << Step() << " / " << NStep() << "\n";
-    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
+    std::cout<<"\n******************\n   TIME STEP     \n******************\n";
+    std::cout<<"\nStep:   " << Step() << " / " << NStep() << "\n";
+    std::cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
   }
 
   return;
@@ -114,7 +114,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
 {
   if (Comm().MyPID()==0)
   {
-    cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
+    std::cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
   }
 
   // transfer velocities to scalar transport field solver

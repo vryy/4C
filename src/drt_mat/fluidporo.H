@@ -48,7 +48,7 @@ namespace MAT
         /// permeability
         const double permeability_;
         /// problem type: Darcy or Darcy-Brinkman
-        const string* type_;
+        const std::string* type_;
 
         //@}
 
@@ -154,7 +154,7 @@ namespace MAT
       double EffectiveViscosity() const;
 
       /// return type
-      string Type() const { return *params_->type_; }
+      std::string Type() const { return *params_->type_; }
 
       /// return viscosity
       double Viscosity() const

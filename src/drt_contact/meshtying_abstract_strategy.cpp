@@ -86,7 +86,7 @@ dualquadslave3d_(false)
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy)
+std::ostream& operator << (std::ostream& os, const CONTACT::MtAbstractStrategy& strategy)
 {
   strategy.Print(os);
   return os;
@@ -1092,12 +1092,12 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 /*----------------------------------------------------------------------*
  |  print interfaces (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Print(ostream& os) const
+void CONTACT::MtAbstractStrategy::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
   {
     os << "--------------------------------- CONTACT::MtAbstractStrategy\n"
-       << "Meshtying interfaces: " << (int)interface_.size() << endl
+       << "Meshtying interfaces: " << (int)interface_.size() << std::endl
        << "-------------------------------------------------------------\n";
   }
   Comm().Barrier();

@@ -86,7 +86,7 @@ std::map<int,std::map<int,std::vector<std::vector<double> > > > EXODUS::EleCente
         centerlineid = i_ns->first;
         clbool=true;
       }
-      else if (myname.find("centerpoint") != string::npos)
+      else if (myname.find("centerpoint") != std::string::npos)
       {
         clbool=false;
         centerlineid = i_ns->first;
@@ -193,19 +193,19 @@ std::map<int,std::map<int,std::vector<std::vector<double> > > > EXODUS::EleCente
       if (found!=std::string::npos) eb_ids.push_back(i_eb->first);
     }
 
-    cout << "Generating local cosys..." << endl;
+    std::cout << "Generating local cosys..." << std::endl;
     myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
     //generation of coordinate systems
     std::map<int,std::map<int,std::vector<std::vector<double> > > > centlineinfo = EXODUS::element_cosys(myCLine,mymesh,eb_ids);
-    cout << "...done" << endl;
+    std::cout << "...done" << std::endl;
 
-//    cout << "Generating gmsh plots..." << endl;
+//    std::cout << "Generating gmsh plots..." << std::endl;
 //    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
 //
 //    // plot mesh to gmsh
 //    std::string meshname = "centerlinemesh.gmsh";
 //    mymesh.PlotElementBlocksGmsh(meshname,mymesh,eb_ids);
-//    cout << "...done" << endl;
+//    std::cout << "...done" << std::endl;
 
 
     return centlineinfo;
@@ -224,7 +224,7 @@ std::map<int,double> EXODUS::NdCenterlineThickness(std::string cline,const std::
   std::set<int>::const_iterator i_node;
 
   // create centerline object with diameter info
-  cout << "Reading centerline and generating variable nodal thicknesses..." << endl;
+  std::cout << "Reading centerline and generating variable nodal thicknesses..." << std::endl;
   EXODUS::Centerline mycline(cline,coordcorr);
   std::map<int,std::vector<double> > clpoints = *(mycline.GetPoints());
   std::map<int,double> cldiams = *(mycline.GetDiams());
@@ -257,7 +257,7 @@ std::map<int,double> EXODUS::NdCenterlineThickness(std::string cline,const std::
     ndthick.insert(std::pair<int,double>(*i_node,thickness));
 
   }
-  cout << "...done" << endl;
+  std::cout << "...done" << std::endl;
 
   return ndthick;
 }
@@ -279,7 +279,7 @@ EXODUS::Centerline::Centerline(std::string filename,std::vector<double> coordcor
 
 	// check
 	if(!infile){
-	  cout << "Could not open Centerline file: " << filename << endl;
+	  std::cout << "Could not open Centerline file: " << filename << std::endl;
 	  dserror("Could not open Centerline file!");
 	}
 
@@ -321,7 +321,7 @@ EXODUS::Centerline::Centerline(std::string filename,std::vector<double> coordcor
     }
   }
 
-  //PrintMap(cout,*points_);
+  //PrintMap(std::cout,*points_);
 
   /* Stefans old code to read matlab file and shift coords
 	//auxiliary variables
@@ -368,7 +368,7 @@ EXODUS::Centerline::Centerline(const EXODUS::NodeSet& ns, const Teuchos::RCP<std
   std::set<int> nodeset = ns.GetNodeSet();
   std::set<int>::const_iterator it;
   int id = 0;
-  //ns.Print(cout,true);
+  //ns.Print(std::cout,true);
   for(it=nodeset.begin(); it!=nodeset.end(); ++it){
     std::vector<double> node = nodes->find(*it)->second;
     points_->insert(std::pair<int,std::vector<double> >(id,node));
@@ -391,7 +391,7 @@ void EXODUS::Centerline::PrintPoints()
 {
 	for(std::map<int,std::vector<double> >::const_iterator it = points_->begin(); it !=points_->end(); ++it)
 	{
-		cout << it->first << ": " << it->second[0] << " " << it->second[1] << " " << it->second[2] << endl;
+		std::cout << it->first << ": " << it->second[0] << " " << it->second[1] << " " << it->second[2] << std::endl;
 	}
 }
 
@@ -401,13 +401,13 @@ void EXODUS::Centerline::PrintPoints()
 void EXODUS::Centerline::PlotCL_Gmsh()
 {
   std::ofstream gmshFile("centerline.gmsh");
-	gmshFile << "View \" Centerline \" {" << endl;
+	gmshFile << "View \" Centerline \" {" << std::endl;
 
 	for(std::map<int,std::vector<double> >::const_iterator it = points_->begin(); it != points_->end(); ++it)
 	{
 		gmshFile << "SP(" << it->second[0] << "," << it->second[1] << "," << it->second[2] << "){";
-		//gmshFile << it->first << "};" << endl;  // id as color
-		gmshFile << diam_->find(it->first)->second << "};" << endl;  // diameter as color
+		//gmshFile << it->first << "};" << std::endl;  // id as color
+		gmshFile << diam_->find(it->first)->second << "};" << std::endl;  // diameter as color
 	}
 
 	gmshFile << "};";
@@ -1025,7 +1025,7 @@ void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, c
 	//
 	std::ofstream gmshFile("local_coordinate_systems.gmsh");
 
-	gmshFile << "View \" local coordinate systems \" {" << endl;
+	gmshFile << "View \" local coordinate systems \" {" << std::endl;
 
 	for(std::map<int,std::vector<std::vector<double> > >::iterator iti = mpID_directions.begin(); iti != mpID_directions.end(); ++iti)
 	{
@@ -1033,17 +1033,17 @@ void EXODUS::PlotCosys(EXODUS::Centerline& mycline,const EXODUS::Mesh& mymesh, c
 	  std::vector<double> r1 = iti->second[0];
     std::vector<double> r2 = iti->second[1];
     std::vector<double> r3 = iti->second[2];
-	  gmshFile << "VP(" << mp[0] << "," << mp[1] << "," << mp[2] << "){" << r1[0] << "," << r1[1] << "," << r1[2] << "};" << endl;
-    gmshFile << "VP(" << mp[0] << "," << mp[1] << "," << mp[2] << "){" << 2.* r2[0] << "," << 2.* r2[1] << "," << 2.* r2[2] << "};" << endl;
-    gmshFile << "VP(" << mp[0] << "," << mp[1] << "," << mp[2] << "){" << 3.* r3[0] << "," << 3.* r3[1] << "," << 3.* r3[2] << "};" << endl;
+	  gmshFile << "VP(" << mp[0] << "," << mp[1] << "," << mp[2] << "){" << r1[0] << "," << r1[1] << "," << r1[2] << "};" << std::endl;
+    gmshFile << "VP(" << mp[0] << "," << mp[1] << "," << mp[2] << "){" << 2.* r2[0] << "," << 2.* r2[1] << "," << 2.* r2[2] << "};" << std::endl;
+    gmshFile << "VP(" << mp[0] << "," << mp[1] << "," << mp[2] << "){" << 3.* r3[0] << "," << 3.* r3[1] << "," << 3.* r3[2] << "};" << std::endl;
 //		//VL(mp,mp,mp,mp+r_3,mp+r_3,mp+r_3){1,1,1,1,1,1};
-//		gmshFile << "SL(" << midpoints.find(iti->first)->second[0] << "," << midpoints.find(iti->first)->second[1] << "," << midpoints.find(iti->first)->second[2] << "," << midpoints.find(iti->first)->second[0] + iti->second[0][0] << "," << midpoints.find(iti->first)->second[1] + iti->second[0][1] << "," << midpoints.find(iti->first)->second[2] + iti->second[0][2] << "){1,1,1,1,1,1};" << endl;
+//		gmshFile << "SL(" << midpoints.find(iti->first)->second[0] << "," << midpoints.find(iti->first)->second[1] << "," << midpoints.find(iti->first)->second[2] << "," << midpoints.find(iti->first)->second[0] + iti->second[0][0] << "," << midpoints.find(iti->first)->second[1] + iti->second[0][1] << "," << midpoints.find(iti->first)->second[2] + iti->second[0][2] << "){1,1,1,1,1,1};" << std::endl;
 //
 //		//VL(mp,mp,mp,mp+r_1,mp+r_1,mp+r_1){2,2,2,2,2,2};
-//		gmshFile << "SL(" << midpoints.find(iti->first)->second[0] << "," << midpoints.find(iti->first)->second[1] << "," << midpoints.find(iti->first)->second[2] << "," << midpoints.find(iti->first)->second[0] + iti->second[1][0] << "," << midpoints.find(iti->first)->second[1] + iti->second[1][1] << "," << midpoints.find(iti->first)->second[2] + iti->second[1][2] << "){2,2,2,2,2,2};" << endl;
+//		gmshFile << "SL(" << midpoints.find(iti->first)->second[0] << "," << midpoints.find(iti->first)->second[1] << "," << midpoints.find(iti->first)->second[2] << "," << midpoints.find(iti->first)->second[0] + iti->second[1][0] << "," << midpoints.find(iti->first)->second[1] + iti->second[1][1] << "," << midpoints.find(iti->first)->second[2] + iti->second[1][2] << "){2,2,2,2,2,2};" << std::endl;
 //
 //		//VL(mp,mp,mp,mp+r_2,mp+r_2,mp+r_2){3,3,3,3,3,3};
-//		gmshFile << "SL(" << midpoints.find(iti->first)->second[0] << "," << midpoints.find(iti->first)->second[1] << "," << midpoints.find(iti->first)->second[2] << "," << midpoints.find(iti->first)->second[0] + iti->second[2][0] << "," << midpoints.find(iti->first)->second[1] + iti->second[2][1] << "," << midpoints.find(iti->first)->second[2] + iti->second[2][2] << "){3,3,3,3,3,3};" << endl;
+//		gmshFile << "SL(" << midpoints.find(iti->first)->second[0] << "," << midpoints.find(iti->first)->second[1] << "," << midpoints.find(iti->first)->second[2] << "," << midpoints.find(iti->first)->second[0] + iti->second[2][0] << "," << midpoints.find(iti->first)->second[1] + iti->second[2][1] << "," << midpoints.find(iti->first)->second[2] + iti->second[2][2] << "){3,3,3,3,3,3};" << std::endl;
 
 	}
 	gmshFile << "};";

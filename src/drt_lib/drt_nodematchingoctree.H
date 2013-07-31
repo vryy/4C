@@ -341,7 +341,7 @@ public:
 
   <pre>
 
-  cout the node coordinates associated to a leaf
+  std::cout the node coordinates associated to a leaf
                                                    gammi 05/07
 
   </pre>
@@ -351,7 +351,7 @@ public:
   \return void
 
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   //@}
 protected:

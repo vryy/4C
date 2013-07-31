@@ -290,7 +290,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const LINALG::SerialDenseMatrix
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::AddtoPack(PackBuffer& data, const string& stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::string& stuff)
 {
   int numele = stuff.size();
   AddtoPack(data,numele);
@@ -524,7 +524,7 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, con
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, string& stuff)
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::string& stuff)
 {
   int dim = 0;
   ExtractfromPack(position,data,dim);

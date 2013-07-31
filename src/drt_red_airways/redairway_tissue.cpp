@@ -182,14 +182,14 @@ void AIRWAY::RedAirwayTissue::OutputIteration(double pres_inc_norm, double flux_
 {
   if (couppres_ip_->Comm().MyPID() == 0)
   {
-    cout << "-------------------------  FIELD ITERATION ---------------------------" << endl;
+    std::cout << "-------------------------  FIELD ITERATION ---------------------------" << std::endl;
     for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
     {
-      //            cout << "\t time:\t" << Time() << "\t ID:\t" << couppres_ip_->Map().GID(i) << "\t P:\t" <<  (*couppres_ip_)[i]
-      //        << "\t Q:\t" <<  (*coupflux_ip_)[i] << "\t DP2:\t" << pres_inc_norm << "\t DQ2:\t" << flux_inc_norm << endl;
+      //            std::cout << "\t time:\t" << Time() << "\t ID:\t" << couppres_ip_->Map().GID(i) << "\t P:\t" <<  (*couppres_ip_)[i]
+      //        << "\t Q:\t" <<  (*coupflux_ip_)[i] << "\t DP2:\t" << pres_inc_norm << "\t DQ2:\t" << flux_inc_norm << std::endl;
             printf("\t time:\t%f\t ID:\t%d\t P:\t%f\t Q:\t%f\t V:\t%f\t DP2:\t%f \t DQ2:\t %f\n", Time(), couppres_ip_->Map().GID(i), (*couppres_ip_)[i],  (*coupflux_ip_)[i], (*coupvol_ip_)[i], pres_inc_norm , flux_inc_norm);
     }
-    cout << "---------------------------------------------------------------------" << endl;
+    std::cout << "---------------------------------------------------------------------" << std::endl;
   }
 }
 

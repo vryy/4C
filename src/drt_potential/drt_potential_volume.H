@@ -147,7 +147,7 @@ private:
       RCP<Epetra_Vector>              systemvector1,
       Teuchos::RCP<Epetra_Vector>             systemvector2,
       Teuchos::RCP<Epetra_Vector>             systemvector3,
-      const string&                           condstring
+      const std::string&                           condstring
       );
   
 

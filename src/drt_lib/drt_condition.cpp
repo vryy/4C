@@ -111,7 +111,7 @@ DRT::Condition::~Condition()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::Condition& cond)
+std::ostream& operator << (std::ostream& os, const DRT::Condition& cond)
 {
   cond.Print(os);
   return os;
@@ -121,7 +121,7 @@ ostream& operator << (ostream& os, const DRT::Condition& cond)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Condition::Print(ostream& os) const
+void DRT::Condition::Print(std::ostream& os) const
 {
   os << "Condition " << Id() << " ";
   if      (Type()==PointDirichlet)                os << "Point Dirichlet boundary condition: ";
@@ -231,11 +231,11 @@ void DRT::Condition::Print(ostream& os) const
   Container::Print(os);
   if ((int)geometry_.size())
   {
-    os << endl;
+    os << std::endl;
     os << "Elements of this condition:\n";
     std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator curr;
     for (curr=geometry_.begin(); curr!=geometry_.end(); ++curr)
-      os << "      " << *(curr->second) << endl;
+      os << "      " << *(curr->second) << std::endl;
   }
   return;
 }

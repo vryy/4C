@@ -458,9 +458,9 @@ void SysmatTwoPhaseFlow(
       //              if (not valid_spacetime_cell_found)
       //                continue;
       //            }
-      //            cout << gpvelnp << endl;
-      //            cout << evelnp << endl;
-      //            cout << shp << endl;
+      //            std::cout << gpvelnp << std::endl;
+      //            std::cout << evelnp << std::endl;
+      //            std::cout << shp << std::endl;
 
       // get history data (n) at integration point
       //            LINALG::Matrix<3,1> histvec;
@@ -492,9 +492,9 @@ void SysmatTwoPhaseFlow(
       //if (ele->Id()==1216)
       //{
       //  const double vdiv = vderxy(0,0) + vderxy(1,1) + vderxy(2,2);
-      //  cout << "element " << ele->Id() << "GP " << iquad << " " << vdiv << endl;
+      //  std::cout << "element " << ele->Id() << "GP " << iquad << " " << vdiv << std::endl;
       //}
-      //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
+      //std::cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< std::endl;
 
       // calculate 2nd velocity derivatives at integration point
       static LINALG::Matrix<3,6> vderxy2;
@@ -547,7 +547,7 @@ void SysmatTwoPhaseFlow(
       // get bodyforce in gausspoint
       //            LINALG::Matrix<3,1> bodyforce;
       //            bodyforce = 0.0;
-      //            cout << bodyforce << endl;
+      //            std::cout << bodyforce << std::endl;
       ///////////////LINALG::SerialDenseVector bodyforce_(enr_edeadng_(i,j)*enr_funct_(j));
 
       // compute stabilization parameters (3 taus)
@@ -795,7 +795,7 @@ void SysmatTwoPhaseFlow(
       enr_conv_c_sg.Clear();
       for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
         enr_conv_c_sg(iparam) = enr_conv_c_(iparam) + sgconv_c(iparam);
-      // Note: linearisation of sub-grid scale is taken into accout only in convective part
+      // Note: linearisation of sub-grid scale is taken into acstd::cout only in convective part
       //----------------------------------------------------------------------
 
 #if 1

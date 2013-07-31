@@ -214,7 +214,7 @@ void FS3I::BiofilmFSI::Timeloop()
 
       if (Comm().MyPID()==0)
       {
-        cout<<"\n***********************\n     GROWTH STEP \n***********************\n";
+        std::cout<<"\n***********************\n     GROWTH STEP \n***********************\n";
         printf(" growth step = %3d   \n",step_bio);
         printf(" Total time = %3f   \n",time_);
       }
@@ -306,7 +306,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
     if (Comm().MyPID()==0)
     {
-      cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
+      std::cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
     }
 
     // first scatra field is associated with fluid, second scatra field is
@@ -800,28 +800,28 @@ void FS3I::BiofilmFSI::StructGmshOutput()
   Teuchos::RCP<Epetra_Vector> structdisp = fsi_->StructureField()->ExtractDispn();
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "struct displacement \" {" << endl;
+    gmshfilecontent << "View \" " << "struct displacement \" {" << std::endl;
     // draw vector field 'struct displacement' for every element
     IO::GMSH::VectorFieldDofBasedToGmsh(structdis,structdisp,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   Teuchos::RCP<Epetra_Vector> structaledisp = ale_->ExtractDispnp();
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "struct ale displacement \" {" << endl;
+    gmshfilecontent << "View \" " << "struct ale displacement \" {" << std::endl;
     // draw vector field 'struct ale displacement' for every element
     IO::GMSH::VectorFieldDofBasedToGmsh(structaledis,structaledisp,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   Teuchos::RCP<Epetra_Vector> structphi = scatravec_[1]->ScaTraField().Phinp();
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "struct phi \" {" << endl;
+    gmshfilecontent << "View \" " << "struct phi \" {" << std::endl;
     // draw vector field 'struct phi' for every element
     IO::GMSH::ScalarFieldToGmsh(struscatradis,structphi,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   gmshfilecontent.close();
@@ -843,28 +843,28 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
   Teuchos::RCP<const Epetra_Vector> fluidvel = fsi_->FluidField().Velnp();
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "fluid velocity \" {" << endl;
+    gmshfilecontent << "View \" " << "fluid velocity \" {" << std::endl;
     // draw vector field 'fluid velocity' for every element
     IO::GMSH::VectorFieldDofBasedToGmsh(fluiddis,fluidvel,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().ExtractDispnp();
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "fluid ale displacement \" {" << endl;
+    gmshfilecontent << "View \" " << "fluid ale displacement \" {" << std::endl;
     // draw vector field 'fluid ale displacement' for every element
     IO::GMSH::VectorFieldDofBasedToGmsh(fluidaledis,fluidaledisp,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   Teuchos::RCP<Epetra_Vector> fluidphi = scatravec_[0]->ScaTraField().Phinp();
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "fluid phi \" {" << endl;
+    gmshfilecontent << "View \" " << "fluid phi \" {" << std::endl;
     // draw vector field 'fluid phi' for every element
     IO::GMSH::ScalarFieldToGmsh(struscatradis,fluidphi,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   gmshfilecontent.close();

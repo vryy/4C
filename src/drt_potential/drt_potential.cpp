@@ -712,7 +712,7 @@ void POTENTIAL::Potential::EvaluateVanDerWaals_Approx1(
   for(int i = 0; i < 3; i++)
   {
     potderiv1(i) = dpotdr*distance_unit(i);
-    cout << "potderiv1(i) = " << potderiv1(i) << endl;
+    std::cout << "potderiv1(i) = " << potderiv1(i) << std::endl;
   }
   //----------------------------------------------------------------------
   // evaluate 2. derivative
@@ -1148,7 +1148,7 @@ void POTENTIAL::Potential::InvertElementsPerLabel(
  *----------------------------------------------------------------------*/
 double POTENTIAL::Potential::GetAtomicDensity(
     const int                       elementId,
-    const string&                   conditionName,
+    const std::string&                   conditionName,
     const std::map<int,int >&       labelByElements)
 {
   std::vector<DRT::Condition*> potentialcond;
@@ -1206,10 +1206,10 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
     
     if(label == 0 || label == 1)
     {
-      cout << "force sphere = "  <<  label << endl;
+      std::cout << "force sphere = "  <<  label << std::endl;
       vol_sphere_local[label] = computeLocalForceAndCOG(potentialsurfdis, fpot[label], cog[label], fint, disp, 
 			elementsByLabel_Vol.find(label)->second, surf_ele_set);
-      cout << endl;
+      std::cout << std::endl;
     }
     else
       dserror("set label to zero and 1");
@@ -1220,7 +1220,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
   //const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
   computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
-  cout << "force sphere 1"  << endl;
+  std::cout << "force sphere 1"  << std::endl;
   computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
 
   if(discretRCP_->Comm().MyPID() == 0)
@@ -1240,7 +1240,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
     const double radius = vdw_radius;
     //double globalv = 63527.0;
     // const double radius_test = std::pow( ((3*globalv)/(4*M_PI) ) ,(1.0/3.0));
-    //cout << "radius_test = " << radius_test << endl;
+    //std::cout << "radius_test = " << radius_test << std::endl;
     const double d = distance - 2.0*radius;
     const double x = d/(2.0*radius);
     // A_ham = pi*pi*lambda*beta*beta
@@ -1254,13 +1254,13 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
                         ( 1.0/pow((x + 1.0),3) )
                         );
   
-    cout << endl << "The analytical sphere solution = " << force_analytical << endl;
+    std::cout << std::endl << "The analytical sphere solution = " << force_analytical << std::endl;
     // write output
-    cout<<"distance = "<< distance << endl;  
-    cout<<"force sphere 1 = "<< force1 <<endl;
-    // fpot_global[0].Print(cout);
-    cout<<"force sphere 2 = "<< force2 <<endl;
-    // fpot_global[1].Print(cout);
+    std::cout<<"distance = "<< distance << std::endl;  
+    std::cout<<"force sphere 1 = "<< force1 <<std::endl;
+    // fpot_global[0].Print(std::cout);
+    std::cout<<"force sphere 2 = "<< force2 <<std::endl;
+    // fpot_global[1].Print(std::cout);
     //write output and test with paraview
     WriteTestOutput(distance, force1, force2, force_analytical, time, step, "Sphere");
   }
@@ -1316,10 +1316,10 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
   // compute global values for the center of gravity and potential force
   std::vector< LINALG::Matrix<3,1> > fpot_global(2, LINALG::Matrix<3,1>(true));
   std::vector< LINALG::Matrix<3,1> > cog_global(2, LINALG::Matrix<3,1>(true));
-  cout << "force sphere 0"  << endl;
+  std::cout << "force sphere 0"  << std::endl;
   //const double globalvolume = computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
   computeGlobalForceAndCOG(vol_sphere_local[0], fpot[0], cog[0], fpot_global[0], cog_global[0]);
-  cout << "force sphere 1"  << endl;
+  std::cout << "force sphere 1"  << std::endl;
   computeGlobalForceAndCOG(vol_sphere_local[1], fpot[1], cog[1], fpot_global[1], cog_global[1]);
 
   if(discretRCP_->Comm().MyPID() == 0)
@@ -1337,10 +1337,10 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
     // compute analytical solution
     // d = distance - 2* radius
     const double radius = vdw_radius;
-    cout << "Analytical volume = " << 4.0*M_PI*pow(radius,3)/3.0 -4.0*M_PI*pow((radius-thickness),3)/3.0 << endl;
+    std::cout << "Analytical volume = " << 4.0*M_PI*pow(radius,3)/3.0 -4.0*M_PI*pow((radius-thickness),3)/3.0 << std::endl;
     //double globalv = 63527.0;
     // const double radius_test = std::pow( ((3*globalv)/(4*M_PI) ) ,(1.0/3.0));
-    //cout << "radius_test = " << radius_test << endl;
+    //std::cout << "radius_test = " << radius_test << std::endl;
     const double d = distance - 2.0*radius;
     const double x = d/(2.0*radius);
     // A_ham = pi*pi*lambda*beta*beta
@@ -1356,7 +1356,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
                         ( 1.0/pow((x + 1.0),3) )
                         );
     
-    cout << "force_o1o2 = " << force_o1o2 << endl;
+    std::cout << "force_o1o2 = " << force_o1o2 << std::endl;
    
     // force between inner spheres i1 and i2
     const double radius_i = radius - thickness;
@@ -1369,7 +1369,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
                             ( 1.0/pow((x_i + 1.0),3) )
                             );
    
-    cout << "force_i1i2 = " << force_i1i2 << endl;
+    std::cout << "force_i1i2 = " << force_i1i2 << std::endl;
     // force between inner sphere i1 and outer sphere o2 radius_i < radius
     const double d_io = d + thickness;
     double x_io = d_io/(2.0*radius_i);
@@ -1382,7 +1382,7 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
         ( ( y_io*(2.0*x_io + (y_io + 1.0)) )/pow((x_io*x_io + x_io*(y_io + 1.0)),2))
         );
    
-    cout << "force_i1o2 = " << force_i1o2 << endl;
+    std::cout << "force_i1o2 = " << force_i1o2 << std::endl;
     // force between outer sphere o1 and inner sphere i2
     x_io = d_io/(2.0*radius);
     y_io = radius_i/radius;
@@ -1393,18 +1393,18 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
         ( ( y_io*(2.0*x_io + (y_io + 1.0)) )/pow((x_io*x_io + x_io*(y_io + 1.0)),2))
         );
            
-    cout << "force_o1i2 = " << force_o1i2 << endl;
+    std::cout << "force_o1i2 = " << force_o1i2 << std::endl;
     // total force
     const double force_analytical = force_o1o2 - force_i1o2 - force_o1i2 + force_i1i2;
   
-    cout << "The hamaker constant = "<< A_ham <<  endl;
-    cout << endl << "The analytical membrane solution = " << force_analytical << endl;
+    std::cout << "The hamaker constant = "<< A_ham <<  std::endl;
+    std::cout << std::endl << "The analytical membrane solution = " << force_analytical << std::endl;
     // write output
-    cout<<"distance = "<< distance << endl;  
-    cout<<"force sphere 1 = "<< force1 <<endl;
-    // fpot_global[0].Print(cout);
-    cout<<"force sphere 2 = "<< force2 <<endl;
-    // fpot_global[1].Print(cout);
+    std::cout<<"distance = "<< distance << std::endl;  
+    std::cout<<"force sphere 1 = "<< force1 <<std::endl;
+    // fpot_global[0].Print(std::cout);
+    std::cout<<"force sphere 2 = "<< force2 <<std::endl;
+    // fpot_global[1].Print(std::cout);
     //write output and test with paraview
     WriteTestOutput(distance, force1, force2, force_analytical, time, step, "Membrane");
   }
@@ -1501,7 +1501,7 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
         const int local_dofId = (discretRCP_->DofRowMap())->LID(dofId[dim]);
         fpot_sphere(dim) = fpot_sphere(dim)+ (*fint)[local_dofId];// [dofId[dim]];
         if(dim == 0)
-        cout << " f = "  << (*fint)[local_dofId] <<  "     dof = " << local_dofId << endl;
+        std::cout << " f = "  << (*fint)[local_dofId] <<  "     dof = " << local_dofId << std::endl;
       }
     } 
   }
@@ -1528,7 +1528,7 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
         const int local_dofId = (discretRCP_->DofRowMap())->LID(dofId[dim]); 
         fpot_sphere(dim) = fpot_sphere(dim)+ (*fint)[local_dofId];// [dofId[dim]];
         //if(dim == 0)
-        //        cout << " f = "  << (*fint)[local_dofId] <<  "     dof = " << local_dofId << endl;
+        //        std::cout << " f = "  << (*fint)[local_dofId] <<  "     dof = " << local_dofId << std::endl;
 
       }
     }
@@ -1553,7 +1553,7 @@ double POTENTIAL::Potential::computeGlobalForceAndCOG(
   (discretRCP_->Comm()).SumAll(&vol_sphere_local,&vol_sphere_global, 1);
 
   if(discretRCP_->Comm().MyPID() == 0)
-    cout<< "volume = " << vol_sphere_global <<endl;
+    std::cout<< "volume = " << vol_sphere_global <<std::endl;
 
   // compute global center of gravity for one sphere
   (discretRCP_->Comm()).SumAll(&cog_sphere_local(0),&cog_sphere_global(0), 1);
@@ -1622,9 +1622,9 @@ void POTENTIAL::Potential::WriteTestOutput(
     {  
       std::ofstream file;
       file.open(fname.c_str(), std::fstream::trunc);
-      file << "Van Der Waals Potential" << endl;
-      file << "Time\t\t\tDistance\t\tForce_numerical\t\t\tForce_analytical" << endl;
-      file << time << "\t\t\t" <<  distance << "\t\t\t" <<  force1 << "\t\t\t" << force_analytical << endl; 
+      file << "Van Der Waals Potential" << std::endl;
+      file << "Time\t\t\tDistance\t\tForce_numerical\t\t\tForce_analytical" << std::endl;
+      file << time << "\t\t\t" <<  distance << "\t\t\t" <<  force1 << "\t\t\t" << force_analytical << std::endl; 
       file.close();
     }
     else
@@ -1637,7 +1637,7 @@ void POTENTIAL::Potential::WriteTestOutput(
       std::ofstream out;
       out.open(tmpoutfile.c_str());
       
-      // convert time to string
+      // convert time to std::string
       std::stringstream timess;
       timess << time;
            
@@ -1652,8 +1652,8 @@ void POTENTIAL::Potential::WriteTestOutput(
           break;
         size_t found_tab = line.find('\t');
         size_t found_time = line.find(timess.str());
-        if((found_time == string::npos || found_time > found_tab ) && line.length() > 0)
-          out << line << endl;
+        if((found_time == std::string::npos || found_time > found_tab ) && line.length() > 0)
+          out << line << std::endl;
       }
       
       // delete original file
@@ -1665,7 +1665,7 @@ void POTENTIAL::Potential::WriteTestOutput(
       // open file again and write new timestep
       std::ofstream file;
       file.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      file << time << "\t\t\t" <<  distance << "\t\t\t" <<  force1 << "\t\t\t" << force_analytical << endl; 
+      file << time << "\t\t\t" <<  distance << "\t\t\t" <<  force1 << "\t\t\t" << force_analytical << std::endl; 
       file.close();
     }
   }

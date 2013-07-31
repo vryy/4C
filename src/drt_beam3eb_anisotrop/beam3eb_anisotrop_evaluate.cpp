@@ -41,7 +41,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
 {
   DRT::ELEMENTS::Beam3ebanisotrop::ActionType act = Beam3ebanisotrop::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
 
   if 	  (action == "calc_none") 				dserror("No action supplied");
   else if (action=="calc_struct_linstiff") 		act = Beam3ebanisotrop::calc_struct_linstiff;
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_energy")     act = Beam3ebanisotrop::calc_struct_energy;
   else 	  dserror("Unknown type of action for Beam3ebanisotrop");
 
-  string test = params.get<string>("action","calc_none");
+  std::string test = params.get<std::string>("action","calc_none");
 
   switch(act)
   {

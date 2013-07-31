@@ -470,7 +470,7 @@ void WriteLiftDragToFile(
 std::map<int,double> ComputeFlowRates(
     DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
     const RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
-    const string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
+    const std::string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
     );
 
 

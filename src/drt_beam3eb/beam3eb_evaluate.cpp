@@ -877,7 +877,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     //assemble massmatrix if requested
     if (massmatrix != NULL)
     {
-      cout << "\n\nWarning: Massmatrix not implemented yet!";
+      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
     }//if (massmatrix != NULL)
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
@@ -1401,7 +1401,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     //assemble massmatrix if requested
     if (massmatrix != NULL)
     {
-      cout << "\n\nWarning: Massmatrix not implemented yet!";
+      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
     }//if (massmatrix != NULL)
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
@@ -1466,7 +1466,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
  *------------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::lumpmass(Epetra_SerialDenseMatrix* emass)
 {
-  cout << "\n\nWarning: Massmatrix not implemented yet!";
+  std::cout << "\n\nWarning: Massmatrix not implemented yet!";
 }
 
 //***************************************************************************************
@@ -1757,7 +1757,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     } //for(int line=0; line<3*nnode; line++)
 
 
-    std::cout<<"\n\n original stiffness matrix: "<< endl;
+    std::cout<<"\n\n original stiffness matrix: "<< std::endl;
     for(int i = 0; i< 12; i++)
     {
       for(int j = 0; j< 12; j++)
@@ -1767,20 +1767,20 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       cout<<endl;
     }
 
-    std::cout<<"\n\n analytical stiffness matrix: "<< endl;
+    std::cout<<"\n\n analytical stiffness matrix: "<< std::endl;
     for(int i = 0; i< 12; i++)
     {
       for(int j = 0; j< 12; j++)
       {
-        cout << std::setw(9) << std::setprecision(4) << std::scientific << (stiffmatrix_check)(i,j);
+        std::cout << std::setw(9) << std::setprecision(4) << std::scientific << (stiffmatrix_check)(i,j);
       }
-      cout<<endl;
+      std::cout<<std::endl;
     }
 
     //std::cout<<"\n\n FAD stiffness matrix"<< stiffmatrix_check;
     std::cout<<"\n\n rel error of stiffness matrix"<< stiff_relerr;
-    std::cout<<"Force_FAD: "<< force_check << endl;
-    std::cout<<"Force_original: "<< *force << endl;
+    std::cout<<"Force_FAD: "<< force_check << std::endl;
+    std::cout<<"Force_original: "<< *force << std::endl;
   }
   #else
   {
@@ -2038,8 +2038,8 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
 
       Res_bending.Scale(ym * Izz_ * jacobi_ * wgt);
 
-      cout << "Resbending: " << Res_bending << endl;
-      cout << "Restension: " << Res_tension << endl;
+      std::cout << "Resbending: " << Res_bending << std::endl;
+      std::cout << "Restension: " << Res_tension << std::endl;
 
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
@@ -2075,29 +2075,29 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     } //for(int line=0; line<3*nnode; line++)
 
 
-    std::cout<<"\n\n original stiffness matrix: "<< endl;
+    std::cout<<"\n\n original stiffness matrix: "<< std::endl;
     for(int i = 0; i< 12; i++)
     {
       for(int j = 0; j< 12; j++)
       {
-        cout << std::setw(9) << std::setprecision(4) << std::scientific << (*stiffmatrix)(i,j);
+        std::cout << std::setw(9) << std::setprecision(4) << std::scientific << (*stiffmatrix)(i,j);
       }
-      cout<<endl;
+      std::cout<<std::endl;
     }
 
-    std::cout<<"\n\n analytical stiffness matrix: "<< endl;
+    std::cout<<"\n\n analytical stiffness matrix: "<< std::endl;
     for(int i = 0; i< 12; i++)
     {
       for(int j = 0; j< 12; j++)
       {
-        cout << std::setw(9) << std::setprecision(4) << std::scientific << (stiffmatrix_check)(i,j);
+        std::cout << std::setw(9) << std::setprecision(4) << std::scientific << (stiffmatrix_check)(i,j);
       }
-      cout<<endl;
+      std::cout<<std::endl;
     }
 
     std::cout<<"\n\n FAD stiffness matrix"<< stiffmatrix_check;
     std::cout<<"\n\n rel error of stiffness matrix"<< stiff_relerr;
-    std::cout<<"Force: "<< force_check << endl;
+    std::cout<<"Force: "<< force_check << std::endl;
   }
   #endif
 }
@@ -2300,7 +2300,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
   {
     force_relerr(line,0)= fabs(pow(force_check(line,0).val(),2.0) - pow((elevec1)(line),2.0 ));
   }
-  std::cout<<"\n\n Rel error stiffness matrix Neumann: "<< stiff_relerr << endl;
+  std::cout<<"\n\n Rel error stiffness matrix Neumann: "<< stiff_relerr << std::endl;
 
 }
 
@@ -2711,14 +2711,14 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
     }
     for (int lastschritt=0; lastschritt<NUMLOADSTEP; lastschritt++)
     {
-      cout << "Lastschritt: " << lastschritt + 1 << endl;
+      std::cout << "Lastschritt: " << lastschritt + 1 << std::endl;
       fextstep=fext*cl_float((lastschritt+1),float_format(40))/cl_float(NUMLOADSTEP,float_format(40));
       for (int j=0;j<3;j++)
       {
         mextvecstep(j)=mextvec(j)*cl_float((lastschritt+1),float_format(40))/cl_float(NUMLOADSTEP,float_format(40));
       }
 
-      cout << "begin of Newton Iteration" << endl;
+      std::cout << "begin of Newton Iteration" << std::endl;
       int iter=0;
       resnorm="1.0_40";
 
@@ -3055,15 +3055,15 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
         resnorm = sqrt(resnorm)/sqrt(cl_float(numnode*6,float_format(40)));
         dispnorm = sqrt(dispnorm)/sqrt(cl_float(numnode*6,float_format(40)));
         linsolverrornorm = sqrt(linsolverrornorm)/sqrt(cl_float(numnode*6,float_format(40)));
-        cout << "iter: " << iter << "   resnorm: " << double_approx(resnorm) << "   dispnorm: " << double_approx(dispnorm) << "   linsolverrornorm: " << double_approx(linsolverrornorm) << endl;
+        std::cout << "iter: " << iter << "   resnorm: " << double_approx(resnorm) << "   dispnorm: " << double_approx(dispnorm) << "   linsolverrornorm: " << double_approx(linsolverrornorm) << std::endl;
         //End: Berechnung und Ausgabe der Normen
 
       }//End: Newton
 
-      cout << "end of Newton Iteration" << endl;
-      cout << "dispglobalx: " << dispglobal(6*numnode-6) << endl;
-      cout << "dispglobaly: " << dispglobal(6*numnode-5) << endl;
-      cout << "dispglobalz: " << dispglobal(6*numnode-4) << endl;
+      std::cout << "end of Newton Iteration" << std::endl;
+      std::cout << "dispglobalx: " << dispglobal(6*numnode-6) << std::endl;
+      std::cout << "dispglobaly: " << dispglobal(6*numnode-5) << std::endl;
+      std::cout << "dispglobalz: " << dispglobal(6*numnode-4) << std::endl;
 
     }//End Load steps
 

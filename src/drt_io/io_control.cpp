@@ -60,7 +60,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     {
       int number = 0;
       size_t pos = filename_.rfind('-');
-      if (pos!=string::npos)
+      if (pos!=std::string::npos)
       {
         number = atoi(filename_.substr(pos+1).c_str());
         filename_ = filename_.substr(0,pos);
@@ -131,7 +131,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     {
       size_t pos = outputname.rfind('/');
       controlfile_ << "restarted_run = \""
-                   << ((pos!=string::npos) ? outputname.substr(pos+1) : outputname)
+                   << ((pos!=std::string::npos) ? outputname.substr(pos+1) : outputname)
                    << "\"\n\n";
     }
 
@@ -168,7 +168,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;
       size_t pos = filename_.rfind('-');
-      if (pos!=string::npos)
+      if (pos!=std::string::npos)
       {
         number = atoi(filename_.substr(pos+1).c_str());
         filename_ = filename_.substr(0,pos);
@@ -260,7 +260,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
       {
         size_t pos = restartname_.rfind('/');
         controlfile_ << "restarted_run = \""
-                     << ((pos!=string::npos) ? restartname_.substr(pos+1) : restartname_)
+                     << ((pos!=std::string::npos) ? restartname_.substr(pos+1) : restartname_)
                      << "\"\n\n";
       }
 
@@ -308,10 +308,10 @@ void IO::OutputControl::OverwriteResultFile()
 /*----------------------------------------------------------------------*/
 void IO::OutputControl::NewResultFile(int numb_run)
 {
-  if (filename_.rfind("_run_")!=string::npos)
+  if (filename_.rfind("_run_")!=std::string::npos)
   {
     size_t pos = filename_.rfind("_run_");
-    if (pos==string::npos)
+    if (pos==std::string::npos)
       dserror("inconsistent file name");
     filename_ = filename_.substr(0, pos);
   }
@@ -349,7 +349,7 @@ void IO::OutputControl::NewResultFile(int numb_run)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::OutputControl::NewResultFile(string name_appendix, int numb_run)
+void IO::OutputControl::NewResultFile(std::string name_appendix, int numb_run)
 {
   std::stringstream name;
   name  << name_appendix;
@@ -444,7 +444,7 @@ IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;
       size_t pos = filename_.rfind('-');
-      if (pos!=string::npos)
+      if (pos!=std::string::npos)
       {
         number = atoi(filename_.substr(pos+1).c_str());
         filename_ = filename_.substr(0,pos);

@@ -534,7 +534,7 @@ public:
   Prints basic information about this element to ostream. This method would
   usually be called by the print method of a derived class.
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Return the material of this element
@@ -562,7 +562,7 @@ public:
                       key names of data it wants to visualize and with int dimensions
                       of that data.
   */
-  virtual void VisNames(std::map<string,int>& names)
+  virtual void VisNames(std::map<std::string,int>& names)
   { return; }
 
   /*!
@@ -570,9 +570,9 @@ public:
 
   \param names (out): Owner is added to the key names
   */
-  virtual void VisOwner(std::map<string,int>& names)
+  virtual void VisOwner(std::map<std::string,int>& names)
   {
-    names.insert(std::pair<string,int>("Owner",1));
+    names.insert(std::pair<std::string,int>("Owner",1));
     //names.insert(std::pair<string,int>("EleGId",1));
     return; }
 
@@ -591,7 +591,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if it recognizes the name
   */
-  virtual bool VisData(const string& name, std::vector<double>& data)
+  virtual bool VisData(const std::string& name, std::vector<double>& data)
   {
     if (name=="Owner")
     {
@@ -697,8 +697,8 @@ public:
            NOT be overwritten but stored twice in the element
 
   */
-  virtual void SetCondition(const string& name,Teuchos::RCP<Condition> cond)
-  { condition_.insert(std::pair<string,Teuchos::RCP<Condition> >(name,cond)); return; }
+  virtual void SetCondition(const std::string& name,Teuchos::RCP<Condition> cond)
+  { condition_.insert(std::pair<std::string,Teuchos::RCP<Condition> >(name,cond)); return; }
 
   /*!
   \brief Get all conditions with a certain name
@@ -711,7 +711,7 @@ public:
   \param out  (out): vector of pointers to all conditions with that name
 
   */
-  virtual void GetCondition(const string& name, std::vector<DRT::Condition*>& out) const;
+  virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -726,7 +726,7 @@ public:
 
   \return Returns NULL if condition with that name does not exist
   */
-  virtual DRT::Condition* GetCondition(const string& name) const;
+  virtual DRT::Condition* GetCondition(const std::string& name) const;
 
   /*!
   \brief Delete all conditions set to this element
@@ -1067,7 +1067,7 @@ private:
  */
 inline std::string DistypeToString(const DRT::Element::DiscretizationType distype)
 {
-    string s = "";
+    std::string s = "";
     switch (distype)
     {
     case DRT::Element::dis_none:   s = "DIS_NONE";  break;
@@ -1095,7 +1095,7 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     case DRT::Element::nurbs27:    s = "NURBS27";  break;
     case DRT::Element::max_distype:s = "MAX_DISTYPE";  break;
     default:
-        cout << distype << endl;
+        std::cout << distype << std::endl;
         dserror("no string for this distype defined!");
         break;
     };
@@ -1110,7 +1110,7 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Element& ele);
+std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 
 

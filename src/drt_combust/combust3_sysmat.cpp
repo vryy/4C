@@ -725,7 +725,7 @@ void COMBUST::BlendMaterial(
   {
     // get the domain to blend
     bool blenddomain = true;
-    const string* sblenddomain = cond[0]->Get<string>("domain");
+    const std::string* sblenddomain = cond[0]->Get<std::string>("domain");
     if (sblenddomain->compare("plus") == 0)
       blenddomain = true;
     else if (sblenddomain->compare("minus") == 0)
@@ -949,7 +949,7 @@ void Sysmat(
         COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 //    }
 
-//cout << "phi gradient danach" << ele->Id() << " " << egradphi << endl;
+//std::cout << "phi gradient danach" << ele->Id() << " " << egradphi << std::endl;
 
     COMBUST::SysmatDomainStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi, etensor, ediscpres,

@@ -177,12 +177,12 @@ DRT::ELEMENTS::So_sh8::~So_sh8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::Print(ostream& os) const
+void DRT::ELEMENTS::So_sh8::Print(std::ostream& os) const
 {
   os << "So_sh8 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 

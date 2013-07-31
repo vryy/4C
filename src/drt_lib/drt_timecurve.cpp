@@ -498,29 +498,29 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractString("FUNC",buffer);
 
         int numex = 0;
-        if (string(buffer)=="f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1")
+        if (std::string(buffer)=="f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1")
           numex=-1;
-        else if (string(buffer)=="f(t)=exp(1-1:t)_for_t<C1_else_const.")
+        else if (std::string(buffer)=="f(t)=exp(1-1:t)_for_t<C1_else_const.")
           numex=-2;
-        else if (string(buffer)=="f(t)=1-cos(2*PI*C1*t)")
+        else if (std::string(buffer)=="f(t)=1-cos(2*PI*C1*t)")
           numex=-3;
-        else if (string(buffer)=="f(t)=C2*sin(2PI*C1*t)")
+        else if (std::string(buffer)=="f(t)=C2*sin(2PI*C1*t)")
           numex=-4;
-        else if (string(buffer)=="f(t)=(sin(PI(t:C1-0.5))+1)*0.5")
+        else if (std::string(buffer)=="f(t)=(sin(PI(t:C1-0.5))+1)*0.5")
           numex=-5;
-        else if (string(buffer)=="BELTRAMI")
+        else if (std::string(buffer)=="BELTRAMI")
           numex=-6;
-        else if (string(buffer)=="KIM-MOIN")
+        else if (std::string(buffer)=="KIM-MOIN")
           numex=-7;
-        else if (string(buffer)=="f(t)=(C2:2PI*C1)*cos(2PI*C1*t)")
+        else if (std::string(buffer)=="f(t)=(C2:2PI*C1)*cos(2PI*C1*t)")
           numex=-8;
-        else if (string(buffer)=="f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2)")
+        else if (std::string(buffer)=="f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2)")
           numex=-9; /* time integral of numex -5 */
-        else if (string(buffer)=="f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5")
+        else if (std::string(buffer)=="f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5")
           numex=-11; /* ramp function with horizontal slopes */
-        else if (string(buffer)=="f(t)=(1-C2/C1)*T+C2")
+        else if (std::string(buffer)=="f(t)=(1-C2/C1)*T+C2")
           numex=-12; /* linearly increasing function with non-zero initial value */
-        else if (string(buffer)=="f(t)=0.5+0.5*cos(PI*(T-C1)/(C2-C1))")
+        else if (std::string(buffer)=="f(t)=0.5+0.5*cos(PI*(T-C1)/(C2-C1))")
           numex=-13;
         else
           dserror("Cannot read function of CURVE%d: %s",i,std::string(buffer).c_str());
@@ -1174,8 +1174,8 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
   res[0] = f(t);
   if (std::isnan(res[0]))
   {
-    cout << (*this) << endl;
-    cout << "0. derivative at t = "<< t <<": " << res[0] << endl;
+    std::cout << (*this) << std::endl;
+    std::cout << "0. derivative at t = "<< t <<": " << res[0] << std::endl;
     dserror("");
   }
 
@@ -1200,8 +1200,8 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
     res[1] = fdfad.dx(ivar).val();
     if (std::isnan(res[1]))
     {
-      cout << (*this) << endl;
-      cout << "1. derivative at t = "<< t <<": " << res[1] << endl;
+      std::cout << (*this) << std::endl;
+      std::cout << "1. derivative at t = "<< t <<": " << res[1] << std::endl;
       dserror("");
     }
 
@@ -1212,8 +1212,8 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
       res[2] = fdfad.dx(ivar).dx(ivar);
       if (std::isnan(res[2]))
       {
-        cout << (*this) << endl;
-        cout << "2. derivative at t = "<< t <<": " << res[2] << endl;
+        std::cout << (*this) << std::endl;
+        std::cout << "2. derivative at t = "<< t <<": " << res[2] << std::endl;
         dserror("");
       }
     }

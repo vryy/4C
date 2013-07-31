@@ -83,7 +83,7 @@ void STR::INVANA::MatParManager::InitParams()
         for (jt = it->second.begin(); jt != it->second.end(); jt++)
         {
           (*params_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( actmat->GetDouble(*jt) );
-          cout << *params_ << endl;
+          std::cout << *params_ << std::endl;
         }
       }
       break;
@@ -114,16 +114,16 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
   while (pstream >> word2)
   {
     matid = std::strtol(&word2[0],&pEnd,10);
-    //cout << *pEnd << endl;
+    //std::cout << *pEnd << std::endl;
     if (*pEnd=='\0') //if (matid != 0)
     {
-      cout <<  "matid " << matid << endl;
+      std::cout <<  "matid " << matid << std::endl;
       actmatid = matid;
-      cout << "this" << endl;
+      std::cout << "this" << std::endl;
       continue;
     }
 
-    cout << "testoutput: " << word2 << endl;
+    std::cout << "testoutput: " << word2 << std::endl;
     if (word2!="none" && actmatid!=0)
     {
       paramap_[actmatid].push_back(word2);
@@ -134,7 +134,7 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
       dserror("Give the parameters for the respective materials");
   }
 
-  cout << "the number of parameters is: " << numparams_ << endl;
+  std::cout << "the number of parameters is: " << numparams_ << std::endl;
 
   /* ------------------------------*/
   /*    check input consistency    */
@@ -222,8 +222,8 @@ void STR::INVANA::MatParManager::Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint
 
       actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
-      //cout << "this elevector " << elevector1 << endl;
-      //cout << "dual solution  " << *disdual << endl;
+      //std::cout << "this elevector " << elevector1 << std::endl;
+      //std::cout << "dual solution  " << *disdual << std::endl;
 
       // derivativ w.r.t the actual parameter
       Epetra_Vector dfinti(*dofrowmap_,true);
@@ -233,7 +233,7 @@ void STR::INVANA::MatParManager::Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint
         if (err!=0) dserror("gid %d is not on this processor", la[0].lm_.at(l));
       }
 
-      //cout << "dfinti  " << dfinti << endl;
+      //std::cout << "dfinti  " << dfinti << std::endl;
 
       //wait for all processors to be able to perform the scalar multiplication
       discret_->Comm().Barrier();

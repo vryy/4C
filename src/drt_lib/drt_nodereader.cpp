@@ -69,7 +69,7 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Read, create and partition nodes\n" << flush;
+    std::cout << "Read, create and partition nodes\n" << std::flush;
 #if defined(PARALLEL) && defined(PARMETIS)
 //    cout << "block " << flush;
 #else

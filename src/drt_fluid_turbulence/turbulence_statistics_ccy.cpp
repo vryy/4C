@@ -61,9 +61,9 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
 
   // get the plane normal direction from the parameterlist
   {
-    std::string planestring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
+    std::string plainstring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
 
-    if(planestring == "z")
+    if(plainstring == "z")
     {
       dim_ = 2;
     }
@@ -627,8 +627,8 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
     if (not (scatranurbsdis->DofRowMap())->SameAs(meanfullphinp_->Map()))
     {
-      scatranurbsdis->DofRowMap()->Print(cout);
-      meanfullphinp_->Map().Print(cout);
+      scatranurbsdis->DofRowMap()->Print(std::cout);
+      meanfullphinp_->Map().Print(std::cout);
       dserror("Global dof numbering in maps does not match");
     }
   }
@@ -1570,21 +1570,21 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
 
     if(discret_->Comm().MyPID()==0)
     {
-      cout<<endl<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
-      cout<<"TurbulenceStatisticsCcy:    added access to ScaTra results"<<endl;
-      cout<<" | nodeshellsize       = "<<nodeshells_->size()<<endl
-          <<" | numshellcoordinates = "<<size<<" (4 subdivisions per element)"<<endl
-          <<" | numscatradofpernode = "<<numscatradofpernode_<<endl;
-      cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl<<endl;
+      std::cout<<std::endl<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
+      std::cout<<"TurbulenceStatisticsCcy:    added access to ScaTra results"<<std::endl;
+      std::cout<<" | nodeshellsize       = "<<nodeshells_->size()<<std::endl
+          <<" | numshellcoordinates = "<<size<<" (4 subdivisions per element)"<<std::endl
+          <<" | numscatradofpernode = "<<numscatradofpernode_<<std::endl;
+      std::cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl<<std::endl;
     }
   }
   else
   {
     if(discret_->Comm().MyPID()==0)
     {
-      cout<<"------------------------------------------------------------"<<endl;
-      cout<<"TurbulenceStatisticsCcy: NO access to ScaTra results !"<<endl;
-      cout<<"------------------------------------------------------------"<<endl;
+      std::cout<<"------------------------------------------------------------"<<std::endl;
+      std::cout<<"TurbulenceStatisticsCcy: NO access to ScaTra results !"<<std::endl;
+      std::cout<<"------------------------------------------------------------"<<std::endl;
     }
   }
 

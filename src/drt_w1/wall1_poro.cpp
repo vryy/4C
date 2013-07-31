@@ -169,12 +169,12 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::Print(ostream& os) const
+void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_Poro ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string,int>& nam
  |  Return visualization data (public)                         |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name,data))

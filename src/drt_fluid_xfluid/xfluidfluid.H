@@ -365,7 +365,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { return aletrueresidual_; }
     Teuchos::RCP<const Epetra_Vector> Velnp() { return alevelnp_; }
     Teuchos::RCP<      Epetra_Vector> ViewofVelnp() { return alevelnp_; }
-    Teuchos::RCP<const Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
+    Teuchos::RCP<const Epetra_Vector> Velaf() { std::cout << "Velaf" << std::endl;return alevelaf_; }
     Teuchos::RCP<const Epetra_Vector> Veln() { return aleveln_; } //return state_->fluidfluidveln_ ;}/
     Teuchos::RCP<const Epetra_Vector> GridVel() {return gridv_; }
     Teuchos::RCP<      Epetra_Vector> ViewOfGridVel() {return gridv_; }
@@ -725,7 +725,7 @@ namespace FLD
     double thermpressdtam_;
 
     //! kind of predictor used in nonlinear iteration
-    string  predictor_;
+    std::string  predictor_;
 
     //! @name time step sizes
     double dtp_;
@@ -776,9 +776,9 @@ namespace FLD
     int gmsh_count_;
 
     // action used for boundary coupling approach (stress based or nitsche)
-    string action_;
+    std::string action_;
 
-    string monotype_;
+    std::string monotype_;
 
     //! map of embedded element to nitsche parameter
     Teuchos::RCP<std::map<int,double> >   nitschepar_;

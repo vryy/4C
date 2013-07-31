@@ -85,7 +85,7 @@ namespace UTILS
                         +-                                      -+
   */
   void ExplicitPredictor(
-      const string                               predictor,
+      const std::string                               predictor,
       const Teuchos::RCP<const Epetra_Vector>    veln,
       const Teuchos::RCP<const Epetra_Vector>    velnm,
       const Teuchos::RCP<const Epetra_Vector>    accn,

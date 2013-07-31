@@ -481,16 +481,16 @@ DRT::ELEMENTS::Transport::~Transport()
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::Print(ostream& os) const
+void DRT::ELEMENTS::Transport::Print(std::ostream& os) const
 {
   os << "Transport element";
   Element::Print(os);
-  cout << endl;
-  cout << "DiscretizationType:  "<<distype_<<endl;
-  cout << endl;
-  cout << "Number DOF per Node: "<<numdofpernode_<<endl;
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << "DiscretizationType:  "<<distype_<<std::endl;
+  std::cout << std::endl;
+  std::cout << "Number DOF per Node: "<<numdofpernode_<<std::endl;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 
@@ -610,7 +610,7 @@ void DRT::ELEMENTS::Transport::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         gjb 01/09|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Transport ::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::Transport ::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -719,13 +719,13 @@ DRT::ELEMENTS::TransportBoundary::~TransportBoundary()
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TransportBoundary::Print(ostream& os) const
+void DRT::ELEMENTS::TransportBoundary::Print(std::ostream& os) const
 {
   os << "TransportBoundary element";
   Element::Print(os);
-  cout << endl;
-  cout << "DiscretizationType:  "<<Shape()<<endl;
-  cout << endl;
+  std::cout << std::endl;
+  std::cout << "DiscretizationType:  "<<Shape()<< std::endl;
+  std::cout << std::endl;
   return;
 }
 

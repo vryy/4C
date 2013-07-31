@@ -451,13 +451,13 @@ void CONTACT::SelfBinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
 void CONTACT::SelfBinaryTreeNode::PrintType()
 {
   if (type_ == SELFCO_INNER)
-    std::cout << endl << "SELFCO_INNER ";
+    std::cout << std::endl << "SELFCO_INNER ";
   else if (type_ == SELFCO_LEAF)
-    std::cout << endl << "SELFCO_LEAF ";
+    std::cout << std::endl << "SELFCO_LEAF ";
   else if (type_ == SELFCO_NO_ELEMENTS)
-    std::cout << endl << "TreeNode contains no elements = SELFCO_NO_ELEMENTS ";
+    std::cout << std::endl << "TreeNode contains no elements = SELFCO_NO_ELEMENTS ";
   else
-    std::cout << endl << "SELFCO_UNDEFINED ";
+    std::cout << std::endl << "SELFCO_UNDEFINED ";
 
   return;
 }
@@ -467,7 +467,7 @@ void CONTACT::SelfBinaryTreeNode::PrintType()
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTreeNode::PrintSlabs()
 {
-   std::cout << endl << Comm().MyPID() << "************************************************************";
+   std::cout << std::endl << Comm().MyPID() << "************************************************************";
    PrintType();
    std::cout << "slabs:";
    for (int i=0;i<slabs_.M();++i)
@@ -780,7 +780,7 @@ eps_(eps)
   }
 
   if (elelist.size()<=1) dserror("ERROR: Less than 2 elements for binary tree initialization!");
-  //std::cout << "Elelistsize: " << (int)elelist.size() << endl;
+  //std::cout << "Elelistsize: " << (int)elelist.size() << std::endl;
 
 
   // build local element list and create leaf nodes
@@ -1121,7 +1121,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(std::map<Teuchos::RCP<SelfD
 {
   // vector collecting root nodes
   roots_.resize(0);
-  //std::cout << "Initial dual graph size: " << (*dualGraph).size() << endl;
+  //std::cout << "Initial dual graph size: " << (*dualGraph).size() << std::endl;
 
   //**********************************************************************
   // the idea is to empty the dual graph step by step
@@ -1164,11 +1164,11 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(std::map<Teuchos::RCP<SelfD
     // in this case the treenode has saved itself as adjacent edge
     if (adjEdges[0] == contractedEdge)
     {
-      //std::cout << "Found root node (size " << (int)newNode->Elelist().size() << ")" << endl;
+      //std::cout << "Found root node (size " << (int)newNode->Elelist().size() << ")" << std::endl;
       //std::cout << "Elelist: ";
       //for (int a=0;a<(int)newNode->Elelist().size();++a)
       //  std::cout << newNode->Elelist()[a] << " ";
-      //std::cout << endl;
+      //std::cout << std::endl;
 
       // save the tree node as root and continue the loop
       roots_.push_back(newNode);
@@ -1176,11 +1176,11 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(std::map<Teuchos::RCP<SelfD
       continue;
     }
 
-    //std::cout << "Found non-root node (size " << (int)newNode->Elelist().size() << ")" << endl;
+    //std::cout << "Found non-root node (size " << (int)newNode->Elelist().size() << ")" << std::endl;
     //std::cout << "Elelist: ";
     //for (int a=0;a<(int)newNode->Elelist().size();++a)
     //  std::cout << newNode->Elelist()[a] << " ";
-    //std::cout << endl;
+    //std::cout << std::endl;
 
     // vector of all new edges
     std::vector<Teuchos::RCP<SelfDualEdge> > newAdjEdges;
@@ -1400,7 +1400,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(std::map<Teuchos::RCP<SelfD
 
   // output to screen
   if (Comm().MyPID()==0)
-    std::cout << "\nFound " << (int)roots_.size() << " root node(s) for binary tree." << endl;
+    std::cout << "\nFound " << (int)roots_.size() << " root node(s) for binary tree." << std::endl;
 
   // in 3D we have to calculate adjacent treenodes
   if (dim_== 3)
@@ -1439,7 +1439,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(std::map<Teuchos::RCP<SelfD
         std::cout << ") ";
       }
     }
-    std::cout << endl;
+    std::cout << std::endl;
   }
   */
 
@@ -2166,7 +2166,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   //**********************************************************************
   for (int k=0;k<(int)myroots.size();++k)
   {
-    //std::cout << "Self search for root node " << myroots[k] << endl;
+    //std::cout << "Self search for root node " << myroots[k] << std::endl;
     SearchSelfContactSeparate(roots_[myroots[k]]);
   }
 
@@ -2184,7 +2184,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   {
     for (int m=myroots[k]+1;m<(int)roots_.size();++m)
     {
-      //std::cout << "-> Root search for pair " << myroots[k] << " " << m << endl;
+      //std::cout << "-> Root search for pair " << myroots[k] << " " << m << std::endl;
       SearchRootContactSeparate(roots_[myroots[k]],roots_[m]);
     }
   }
@@ -2356,7 +2356,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   //**********************************************************************
   for (int k=0;k<(int)myroots.size();++k)
   {
-    //std::cout << "Self search for root node " << myroots[k] << endl;
+    //std::cout << "Self search for root node " << myroots[k] << std::endl;
     SearchSelfContactSeparate(roots_[myroots[k]]);
   }
 
@@ -2367,7 +2367,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   {
     for (int m=myroots[k]+1;m<(int)roots_.size();++m)
     {
-      //std::cout << "-> Root search for pair " << myroots[k] << " " << m << endl;
+      //std::cout << "-> Root search for pair " << myroots[k] << " " << m << std::endl;
       SearchRootContactSeparate(roots_[myroots[k]],roots_[m]);
     }
   }

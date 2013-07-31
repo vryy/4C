@@ -55,10 +55,10 @@ namespace MAT
       const double dt_deriv;
 
       /// Model type. Possibilities are: "MV", "TNNP"
-      const string* model;
+      const std::string* model;
 
       /// Tissue type. Possibilities are: "M", "Endo", "Epi"
-      const string* tissue;
+      const std::string* tissue;
 
       //@}
 

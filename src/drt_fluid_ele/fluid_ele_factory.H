@@ -43,26 +43,26 @@ public:
   virtual ~FluidFactory(){ return; }
 
   //! ProvideImpl
-  static FluidEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype, string problem);
+  static FluidEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem);
 
   //! special ProvideImpl for XFEM problems to reduce created template combinations
-  static FluidEleInterface* ProvideImplXFEM(DRT::Element::DiscretizationType distype, string problem);
+  static FluidEleInterface* ProvideImplXFEM(DRT::Element::DiscretizationType distype, std::string problem);
 
   //! special ProvideImpl for meshfree problems to reduce created template combinations
-  static FluidEleInterface* ProvideImplMeshfree(DRT::Element::DiscretizationType distype, string problem);
+  static FluidEleInterface* ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem);
 
 private:
   //! define FluidEle instances dependent on problem
   template<DRT::Element::DiscretizationType distype>
-  static FluidEleInterface* DefineProblemType(string problem);
+  static FluidEleInterface* DefineProblemType(std::string problem);
 
   //! special DefineProblemTypeXFEM for XFEM problems
   template<DRT::Element::DiscretizationType distype>
-  static FluidEleInterface* DefineProblemTypeXFEM(string problem);
+  static FluidEleInterface* DefineProblemTypeXFEM(std::string problem);
 
   //! special DefineProblemTypeMeshfree for Meshfree problems
   template<DRT::Element::DiscretizationType distype>
-  static FluidEleInterface* DefineProblemTypeMeshfree(string problem);
+  static FluidEleInterface* DefineProblemTypeMeshfree(std::string problem);
 
 }; // end class FluidFactory
 

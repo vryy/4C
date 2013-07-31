@@ -20,7 +20,7 @@ Maintainer: Lena Yoshihara
 */
 namespace STRUMULTI
 {
-  // endless loop for supporting procs in multi scale problems
+  // std::endless loop for supporting procs in multi scale problems
   void np_support_drt();
 
 

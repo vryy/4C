@@ -35,7 +35,7 @@ namespace STR
   class TimIntAB2 : public TimIntExpl
   {
 
-    //! A friendly relation to adaptive partner
+    //! A fristd::endly relation to adaptive partner
     friend class TimAdaAB2;
 
   public:

@@ -249,7 +249,7 @@ DRT::ELEMENTS::Beam3ii::~Beam3ii()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::Print(ostream& os) const
+void DRT::ELEMENTS::Beam3ii::Print(std::ostream& os) const
 {
   return;
 }

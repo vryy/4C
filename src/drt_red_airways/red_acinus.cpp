@@ -203,7 +203,7 @@ DRT::ELEMENTS::RedAcinus::~RedAcinus()
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::Print(ostream& os) const
+void DRT::ELEMENTS::RedAcinus::Print(std::ostream& os) const
 {
   os << "RedAcinus ";
   Element::Print(os);
@@ -237,7 +237,7 @@ void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAcinus::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))

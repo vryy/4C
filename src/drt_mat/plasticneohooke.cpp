@@ -352,7 +352,7 @@ void MAT::PlasticNeoHooke::Evaluate
   // kinematic hardening parameter
   double Hkin =     params_->kinhard_;
 
-  //cout << "\nisohardening " << H << " kinhardening " << Hkin << "\n";
+  //std::cout << "\nisohardening " << H << " kinhardening " << Hkin << "\n";
 
   // initialize scalars
   // lame constant
@@ -666,8 +666,8 @@ void MAT::PlasticNeoHooke::Evaluate
 
     if (abs(Rdj) > convtol)
     {
-      cout << "Local Newton not converged in " << maxiter << " steps!" << endl;
-      cout << "Residual still at " << Rdj << endl;
+      std::cout << "Local Newton not converged in " << maxiter << " steps!" << std::endl;
+      std::cout << "Residual still at " << Rdj << std::endl;
       dserror("ERROR: Local Newton not converged!");
     }
 
@@ -916,7 +916,7 @@ void MAT::PlasticNeoHooke::Evaluate
   if (f > 0.0) // Plastic
   //**********************************************************************
   {
-    //cout << " plastic ";
+    //std::cout << " plastic ";
 
     //! Update plastic right Cauchy-Green tensor
     (histplasticrcgcurr_->at(gp))(0,0) = temp4(0,0);
@@ -941,7 +941,7 @@ void MAT::PlasticNeoHooke::Evaluate
   {
     // History variables stay constant
 
-    //cout << " elastic ";
+    //std::cout << " elastic ";
 
     //! Update plastic right Cauchy-Green tensor C_{p,n+1} = C_{p,n}
     (histplasticrcgcurr_->at(gp))(0,0) = (histplasticrcglast_->at(gp))(0,0);

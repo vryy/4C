@@ -55,7 +55,7 @@ int NOX::FSI::FSIMatrixFree::SetUseTranspose(bool UseTranspose)
 {
   if (UseTranspose == true) {
     utils.out() << "ERROR: FSIMatrixFree::SetUseTranspose() - Transpose is unavailable in Matrix-Free mode!"
-                << endl;
+                << std::endl;
     throw "NOX Error";
   }
   return (-1);
@@ -124,7 +124,7 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
 int NOX::FSI::FSIMatrixFree::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   utils.out() << "ERROR: FSIMatrixFree::ApplyInverse - Not available for Matrix Free!"
-              << endl;
+              << std::endl;
   throw "NOX Error";
   return (-1);
 }
@@ -132,7 +132,7 @@ int NOX::FSI::FSIMatrixFree::ApplyInverse(const Epetra_MultiVector& X, Epetra_Mu
 
 double NOX::FSI::FSIMatrixFree::NormInf() const
 {
-  utils.out() << "ERROR: FSIMatrixFree::NormInf() - Not Available for Matrix-Free mode!" << endl;
+  utils.out() << "ERROR: FSIMatrixFree::NormInf() - Not Available for Matrix-Free mode!" << std::endl;
   throw "NOX Error";
   return 1.0;
 }

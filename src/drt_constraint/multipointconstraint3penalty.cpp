@@ -30,7 +30,7 @@
 UTILS::MPConstraint3Penalty::MPConstraint3Penalty
 (
     RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-    const string& CondName ///< Name of condition to create constraint from
+    const std::string& CondName ///< Name of condition to create constraint from
 ):
 MPConstraint
 (
@@ -47,7 +47,7 @@ MPConstraint
       const int condID = (*conditer)->GetInt("ConditionID");
       const std::vector<double>* mypenalties = (*conditer)->Get<std::vector<double> >("penalty");
       penalties_[condID] = (*mypenalties)[0];
-      const string* type = (*conditer)->Get<string>("control");
+      const std::string* type = (*conditer)->Get<std::string>("control");
       if (*type == "abs")
         absconstraint_[condID]=true;
       else
@@ -107,8 +107,8 @@ void UTILS::MPConstraint3Penalty::Initialize(const double& time)
       activecons_.find(condID)->second = true;
       if (actdisc_->Comm().MyPID() == 0)
       {
-        cout << "Encountered another active condition (Id = " << condID 
-            << ")  for restart time t = "<< time << endl;
+        std::cout << "Encountered another active condition (Id = " << condID 
+            << ")  for restart time t = "<< time << std::endl;
       }
     }
   }
@@ -157,10 +157,10 @@ void UTILS::MPConstraint3Penalty::Initialize
     activecons_.find(condID)->second=true;
     if (actdisc_->Comm().MyPID()==0)
     {
-      cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+      std::cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       
     }
-//    cout << "initial error "<< *initerror_<<endl;
+//    std::cout << "initial error "<< *initerror_<<std::endl;
   }
 }
     
@@ -195,7 +195,7 @@ void UTILS::MPConstraint3Penalty::Evaluate
     
     EvaluateError(discriter->second, params, acterror_);
   
-//    cout << "current error "<< *acterror_<<endl;
+//    std::cout << "current error "<< *acterror_<<std::endl;
   
   switch (Type())
   {
@@ -220,8 +220,8 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
 (
     RCP<DRT::Discretization> actdisc, 
     std::vector<DRT::Condition*> constrcondvec,
-    const string& discret_name, 
-    const string& element_name,
+    const std::string& discret_name, 
+    const std::string& element_name,
     int& startID
 )
 {
@@ -524,7 +524,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
 
       if (actdisc_->Comm().MyPID()==0 && (!(activecons_.find(condID)->second)))
       {
-        cout << "Encountered a new active penalty mp condition (Id = " << condID << ")  at time t = "<< time << endl;
+        std::cout << "Encountered a new active penalty mp condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       }
     }
     

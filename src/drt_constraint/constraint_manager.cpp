@@ -316,8 +316,8 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
     {
       if (constrmap_->LID(int(i-offsetID_))!=-1)
       {
-        cout<< "Multiplier for Volume Constraint: "<<volconID.at(i)<<":  "<<
-              (*lagrMultVec_)[constrmap_->LID(int(i-offsetID_))]<<endl;
+        std::cout<< "Multiplier for Volume Constraint: "<<volconID.at(i)<<":  "<<
+              (*lagrMultVec_)[constrmap_->LID(int(i-offsetID_))]<<std::endl;
       }
     }
   }

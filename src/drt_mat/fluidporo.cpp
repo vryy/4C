@@ -22,7 +22,7 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   viscosity_(matdata->GetDouble("DYNVISCOSITY")),
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY")),
-  type_(matdata->Get<string>("TYPE"))
+  type_(matdata->Get<std::string>("TYPE"))
 {
 }
 

@@ -858,7 +858,7 @@ namespace STR
     void ApplyCouplingState
     (
       Teuchos::RCP<const Epetra_Vector> state,  //!< (i) current state
-      const string& name,                       //!< (i) name of state
+      const std::string& name,                       //!< (i) name of state
       unsigned dofset=1                         //!< (i) number of dofset state is applied to
     );
     //@}
@@ -1105,7 +1105,7 @@ namespace STR
     //! @name volume coupling specific stuff
     //@{
     // global coupling variable
-    std::vector<std::map<string,Teuchos::RCP<const Epetra_Vector> > > couplstate_; // map of references to coupling states
+    std::vector<std::map<std::string,Teuchos::RCP<const Epetra_Vector> > > couplstate_; // map of references to coupling states
     //@}
 
     //! @name Patient specific stuff

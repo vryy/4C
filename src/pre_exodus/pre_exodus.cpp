@@ -180,15 +180,15 @@ int main(
     }
     else
     {
-      My_CLP.printHelpMessage(argv[0],cout);
+      My_CLP.printHelpMessage(argv[0],std::cout);
       dserror("No Exodus II file was found");
     }
   }
 
   // create mesh object based on given exodus II file
   EXODUS::Mesh mymesh(exofile);
-  // print infos to cout
-  mymesh.Print(cout);
+  // print infos to std::cout
+  mymesh.Print(std::cout);
 
   /**************************************************************************
    * Edit a existing Mesh, e.g. extrusion of surface
@@ -237,7 +237,7 @@ int main(
 
     int sum = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
     int test = eledefs.size() + condefs.size();
-    if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl << "(This is OK, if more than one BC is applied to an entity, e.g in FSI simulations)" << endl;
+    if (test != sum) std::cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<std::endl << "(This is OK, if more than one BC is applied to an entity, e.g in FSI simulations)" << std::endl;
   }
 
   /**************************************************************************
@@ -247,7 +247,7 @@ int main(
   if (headfile=="")
   {
     const std::string defaultheadfilename = "default.head";
-    cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
+    std::cout << "found no header file           --> creating "<<defaultheadfilename<< std::endl;
 
     // open default header file
     std::ofstream defaulthead(defaultheadfilename.c_str());
@@ -280,10 +280,10 @@ int main(
 
     // print time curves
     defaulthead <<
-    "-------------------------------------------------------------CURVE1"<<endl<<
-    "-------------------------------------------------------------CURVE2"<<endl<<
-    "-------------------------------------------------------------CURVE3"<<endl<<
-    "-------------------------------------------------------------CURVE4"<<endl;
+    "-------------------------------------------------------------CURVE1"<<std::endl<<
+    "-------------------------------------------------------------CURVE2"<<std::endl<<
+    "-------------------------------------------------------------CURVE3"<<std::endl<<
+    "-------------------------------------------------------------CURVE4"<<std::endl;
     {
       std::stringstream tmp;
       DRT::UTILS::TimeCurveManager timecurvemanager;
@@ -301,10 +301,10 @@ int main(
 
     // print spatial functions
     defaulthead<<
-    "-------------------------------------------------------------FUNCT1"<<endl<<
-    "-------------------------------------------------------------FUNCT2"<<endl<<
-    "-------------------------------------------------------------FUNCT3"<<endl<<
-    "-------------------------------------------------------------FUNCT4"<<endl;
+    "-------------------------------------------------------------FUNCT1"<<std::endl<<
+    "-------------------------------------------------------------FUNCT2"<<std::endl<<
+    "-------------------------------------------------------------FUNCT3"<<std::endl<<
+    "-------------------------------------------------------------FUNCT4"<<std::endl;
     {
       std::stringstream tmp;
       DRT::UTILS::FunctionManager functionmanager;
@@ -344,16 +344,16 @@ int main(
     }
 
     // screen info
-    cout << "creating and checking BACI input file       --> " << datfile << endl;
+    std::cout << "creating and checking BACI input file       --> " << datfile << std::endl;
     Teuchos::RCP<Teuchos::Time> timer = Teuchos::TimeMonitor::getNewTimer("pre-exodus timer");
 
     // check for positive Element-Center-Jacobians and otherwise rewind them
     {
-      cout << "...Ensure positive element jacobians";
+      std::cout << "...Ensure positive element jacobians";
       timer->start();
       ValidateMeshElementJacobians(mymesh);
       timer->stop();
-      cout << "        in...." << timer->totalElapsedTime() <<" secs" << endl;
+      std::cout << "        in...." << timer->totalElapsedTime() <<" secs" << std::endl;
       timer->reset();
     }
 
@@ -365,11 +365,11 @@ int main(
     {
       if(PeriodicBoundaryConditionsFound(condefs))
       {
-        cout << "...Ensure high quality p.b.c.";
+        std::cout << "...Ensure high quality p.b.c.";
         timer->start();
         CorrectNodalCoordinatesForPeriodicBoundaryConditions(mymesh,condefs);
         timer->stop();
-        cout << "               in...." << timer->totalElapsedTime() <<" secs" << endl;
+        std::cout << "               in...." << timer->totalElapsedTime() <<" secs" << std::endl;
         timer->reset();
       }
     }
@@ -378,11 +378,11 @@ int main(
     {
       if (twodim)
       mymesh.SetNsd(2);
-      cout << "...Writing dat-file";
+      std::cout << "...Writing dat-file";
       timer->start();
       EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs,elecenterlineinfo);
       timer->stop();
-      cout << "                         in...." << timer->totalElapsedTime() << " secs" << endl;
+      std::cout << "                         in...." << timer->totalElapsedTime() << " secs" << std::endl;
       timer->reset();
     }
 
@@ -465,7 +465,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "Property Name: INFLOW"<<std::endl<<
   "has 45107 Nodes"<<std::endl<<
   "'*ns0=\"CONDITION\"'"<<std::endl<<
-  "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<endl<<
+  "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<std::endl<<
   "description=\"NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0\""
   <<std::endl<<std::endl;
 
@@ -483,7 +483,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
     <<"description=\"\""<<std::endl
     <<"elementname=\"\""<<std::endl
     //<<"elementshape=\""
-    //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<endl
+    //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
     <<std::endl;
   }
 

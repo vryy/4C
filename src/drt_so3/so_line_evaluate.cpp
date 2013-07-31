@@ -50,7 +50,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
   //};
   //Configuration config = config_none;
 
-  const string* type = condition.Get<string>("type");
+  const std::string* type = condition.Get<std::string>("type");
   if (*type == "neum_live")
   {
     ltype  = neum_live;

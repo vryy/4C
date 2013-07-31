@@ -104,7 +104,7 @@ DRT::Element* DRT::ELEMENTS::NURBS::Wall1Nurbs::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(ostream& os) const
+void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(std::ostream& os) const
 {
   os << "Wall1Nurbs ";
   Element::Print(os);

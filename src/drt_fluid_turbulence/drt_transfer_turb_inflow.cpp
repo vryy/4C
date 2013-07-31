@@ -362,7 +362,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
   const std::vector<int>* myid = cond->Get<std::vector<int> >("id");
   id=(*myid)[0];
 
-  const string* mydirection = cond->Get<string>("transfer direction");
+  const std::string* mydirection = cond->Get<std::string>("transfer direction");
   if      (*mydirection == "x")
   {
     direction=0;
@@ -380,7 +380,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
     dserror("unknown direction");
   }
 
-  const string* mytoggle = cond->Get<string>("toggle");
+  const std::string* mytoggle = cond->Get<std::string>("toggle");
   if      (*mytoggle == "master")
   {
     type=master;

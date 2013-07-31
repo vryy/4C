@@ -124,9 +124,9 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
     }
     if (nodecount < 4)
       //dserror("number of enriched nodes of touched element less than four %d ", nodecount);
-      cout << "/!\\ touched element " << xfemele->Id() << " has less than four enriched nodes: " << nodecount << endl;
+      std::cout << "/!\\ touched element " << xfemele->Id() << " has less than four enriched nodes: " << nodecount << std::endl;
     if (nodecount != 4)
-      cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << endl;
+      std::cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << std::endl;
 #ifdef COMBUST_SXFEM
     if (nodecount != 8)
       dserror("Enrichment function probably not evaluated correctly if not all nodes of the element are enriched");
@@ -160,7 +160,7 @@ bool XFEM::ApplyKinkEnrichment(
         {
 //          // if (*field != XFEM::PHYSICS::Pres)
 //          nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
-//          //cout << "Kink Enrichment applied for velocity fields only" << endl;
+//          //std::cout << "Kink Enrichment applied for velocity fields only" << std::endl;
 
           if (selectedEnrichment == INPAR::COMBUST::selectedenrichment_both)
              nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, kinkenr));
@@ -263,9 +263,9 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 
   if (nodecount < 4)
     //dserror("number of enriched nodes of touched element less than four %d ", nodecount);
-    cout << "/!\\ touched element " << xfemele->Id() << " has less than four enriched nodes: " << nodecount << endl;
+    std::cout << "/!\\ touched element " << xfemele->Id() << " has less than four enriched nodes: " << nodecount << std::endl;
   if (nodecount != 4)
-    cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << endl;
+    std::cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << std::endl;
 #ifdef COMBUST_SXFEM
   if (nodecount != 8)
     dserror("Enrichment function probably not evaluated correctly if not all nodes of the element are enriched");
@@ -523,9 +523,9 @@ void XFEM::createDofMapCombust(
 #endif
 
   if (skipped_node_enr_count > 0)
-    cout << " skipped "<< skipped_node_enr_count << " node unknowns" << endl;
+    std::cout << " skipped "<< skipped_node_enr_count << " node unknowns" << std::endl;
   if (skipped_elem_enr_count > 0)
-    cout << " skipped "<< skipped_elem_enr_count << " element unknowns" << endl;
+    std::cout << " skipped "<< skipped_elem_enr_count << " element unknowns" << std::endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -548,7 +548,7 @@ void XFEM::ApplyStandardEnrichmentCombust(
   for (int inode = 0; inode<numnodes; ++inode)
   {
     const int nodeid = nodeidptrs[inode];
-    //std::cout << "element " << xfemele->Id() << " node ID: " << nodeid << endl;
+    //std::cout << "element " << xfemele->Id() << " node ID: " << nodeid << std::endl;
     for (std::set<XFEM::PHYSICS::Field>::const_iterator fields = fieldset.begin();fields != fieldset.end();++fields)
     {
 #ifdef COMBUST_NORMAL_ENRICHMENT
@@ -581,7 +581,7 @@ void XFEM::ApplyElementEnrichmentCombust(
   {
     elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr1));
     elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr2));
-    cout << "added element enrichment on crearedofmapCombust" << endl;
+    std::cout << "added element enrichment on crearedofmapCombust" << std::endl;
   }
 }
 

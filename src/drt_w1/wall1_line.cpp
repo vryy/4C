@@ -107,7 +107,7 @@ DRT::ELEMENTS::Wall1Line::~Wall1Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Print(ostream& os) const
+void DRT::ELEMENTS::Wall1Line::Print(std::ostream& os) const
 {
   os << "Wall1Line ";
   Element::Print(os);

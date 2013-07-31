@@ -1512,8 +1512,8 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         if (micro_inputfile_name[0]!='/')
         {
           std::string filename = reader.MyInputfileName();
-          string::size_type pos = filename.rfind('/');
-          if (pos!=string::npos)
+          std::string::size_type pos = filename.rfind('/');
+          if (pos!=std::string::npos)
           {
             std::string path = filename.substr(0,pos+1);
             micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());

@@ -214,13 +214,13 @@ public:
 
   /*!
   \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.
-  The output string will be either "outside", "inside" or "onBoundary"
+  The output std::string will be either "outside", "inside" or "onBoundary"
    */
   std::string IsThisPointInside( Point *pt );
 
   /*!
   \brief Chcek whether this Global coordinate point is inside, outside or on boundary of this this volumecell.
-  The output string will be either "outside", "inside" or "onBoundary"
+  The output std::string will be either "outside", "inside" or "onBoundary"
    */
   std::string IsThisPointInside( LINALG::Matrix<3,1>& x );
 

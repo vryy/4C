@@ -103,10 +103,10 @@ namespace XFEM
       //!assignment operator
       Enrichment& operator = (const Enrichment& old) ;
 
-      //! return string representation of the Enrichment
+      //! return std::string representation of the Enrichment
       std::string toString() const;
 
-      //! return string representation of an EnrType
+      //! return std::string representation of an EnrType
       std::string enrTypeToString(const EnrType type) const;
 
       //! return label of the condition that this enrichment belongs to

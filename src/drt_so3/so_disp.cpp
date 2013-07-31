@@ -288,11 +288,11 @@ DRT::ELEMENTS::SoDisp::~SoDisp()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoDisp::Print(ostream& os) const
+void DRT::ELEMENTS::SoDisp::Print(std::ostream& os) const
 {
   os << "SoDisp ";
   Element::Print(os);
-  cout << endl;
+  std::cout << std::endl;
   return;
 }
 

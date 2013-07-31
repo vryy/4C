@@ -289,12 +289,12 @@ DRT::ELEMENTS::So_tet10::~So_tet10()
 /*----------------------------------------------------------------------***
  |  print this element (public)                             	 		|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::Print(ostream& os) const
+void DRT::ELEMENTS::So_tet10::Print(std::ostream& os) const
 {
   os << "So_tet10 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 
@@ -456,7 +456,7 @@ void DRT::ELEMENTS::So_tet10::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                          st 01/10|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_tet10::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So_tet10::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name,data))

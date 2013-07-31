@@ -78,21 +78,21 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   // get the plane normal direction from the parameterlist
   {
-    std::string planestring;
+    std::string plainstring;
     if (inflowchannel_)
-      planestring = params_.sublist("TURBULENT INFLOW").get<std::string>("INFLOW_HOMDIR","not_specified");
+      plainstring = params_.sublist("TURBULENT INFLOW").get<std::string>("INFLOW_HOMDIR","not_specified");
     else
-      planestring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
+      plainstring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
 
-    if(planestring == "xz")
+    if(plainstring == "xz")
     {
       dim_ = 1;
     }
-    else if(planestring == "yz")
+    else if(plainstring == "yz")
     {
       dim_ = 0;
     }
-    else if(planestring == "xy")
+    else if(plainstring == "xy")
     {
       dim_ = 2;
     }
@@ -128,7 +128,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       if(discret_->Comm().MyPID()==0)
       {
-        cout << "                             Initialising output for Smagorinsky type models\n\n\n";
+        std::cout << "                             Initialising output for Smagorinsky type models\n\n\n";
         fflush(stdout);
       }
 
@@ -141,7 +141,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       if(discret_->Comm().MyPID()==0)
       {
-        cout << "                             Initializing output for scale similarity type models\n\n\n";
+        std::cout << "                             Initializing output for scale similarity type models\n\n\n";
         fflush(stdout);
       }
 
@@ -159,7 +159,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       {
         if(discret_->Comm().MyPID()==0)
         {
-          cout << "                             Initializing output for multifractal subgrid scales type models\n\n\n";
+          std::cout << "                             Initializing output for multifractal subgrid scales type models\n\n\n";
           fflush(stdout);
         }
 
@@ -1273,7 +1273,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for dynamic Smagorinsky model
       if (smagorinsky_)
       {
-        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
         s_smag.append(".Cs_statistics");
 
         log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -2559,8 +2559,8 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
             unsigned ntimesmaster = 0;
             for (unsigned numcond=0;numcond<mypbc.size();++numcond)
             {
-              const string* mymasterslavetoggle
-              = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
+              const std::string* mymasterslavetoggle
+              = mypbc[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
               if(*mymasterslavetoggle=="Master")
               {
@@ -3960,7 +3960,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
     (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/dens_/area;
     (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/dens_/area;
     (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/dens_/area;
-    (*log) << &endl;
+    (*log) << &std::endl;
 
 
     (*log) << "#|-------------------";
@@ -4037,7 +4037,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_Cs) << "    diffeff  ";
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
-      (*log_Cs) << &endl;
+      (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
@@ -4052,7 +4052,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &std::endl;
       }
       log_Cs->flush();
     } // end smagorinsky_
@@ -4076,7 +4076,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
 
       (*log_SSM) << "#     y      ";
       (*log_SSM) << "  tauSFS 12  ";
-      (*log_SSM) << &endl;
+      (*log_SSM) << &std::endl;
       (*log_SSM) << std::scientific;
       for (unsigned rr=0;rr<sumstress12_->size();++rr)
       {
@@ -4084,7 +4084,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
         (*log_SSM) << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[rr] << "  " ;
 
         // the values to be visualised
-        (*log_SSM) << std::setw(11) << std::setprecision(4) << ((*sumstress12_         )[rr])/(numele_*numsamp_)   << &endl;
+        (*log_SSM) << std::setw(11) << std::setprecision(4) << ((*sumstress12_         )[rr])/(numele_*numsamp_)   << &std::endl;
       }
       log_SSM->flush();
     } // end scalesimilarity_
@@ -4115,7 +4115,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_mf) << "  B_span     ";
       (*log_mf) << "    Csgs     ";
       (*log_mf) << "    sgvisc   ";
-      (*log_mf) << &endl;
+      (*log_mf) << &std::endl;
       (*log_mf) << std::scientific;
       for (unsigned rr=0;rr<sumN_stream_->size();++rr)
       {
@@ -4130,7 +4130,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
         (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_normal_     )[rr])/(numele_*numsamp_)   << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumB_span_     )[rr])/(numele_*numsamp_)   << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumCsgs_     )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumsgvisc_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumsgvisc_)[rr])/(numele_*numsamp_)   << &std::endl;
       }
       log_mf->flush();
     } // end multifractal_
@@ -4284,7 +4284,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
 
-        (*log_res)  << &endl;
+        (*log_res)  << &std::endl;
       }
       log_res->flush();
     } // end subgrid_dissipation_
@@ -4372,7 +4372,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
     (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_);
     (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_);
     (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_);
-    (*log) << &endl;
+    (*log) << &std::endl;
 
     (*log) << "#     y            y+";
     (*log) << "           umean         vmean         wmean         pmean";
@@ -4430,7 +4430,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       (*log_Cs) << "    diffeff  ";
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
-      (*log_Cs) << &endl;
+      (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
@@ -4445,7 +4445,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &std::endl;
       }
       log_Cs->flush();
     } // end smagorinsky_
@@ -4599,7 +4599,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
 
-        (*log_res)  << &endl;
+        (*log_res)  << &std::endl;
       }
       log_res->flush();
     } // end subgrid_dissipation_
@@ -4697,7 +4697,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
     (*log) << "   " << std::setw(17) << std::setprecision(10) << utaub;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << qwb;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaub;
-    (*log) << &endl;
+    (*log) << &std::endl;
 
     (*log) << "# top wall:    tauwt, rhowt, u_taut, qwt, Ttaut : ";
     (*log) << "   " << std::setw(17) << std::setprecision(10) << tauwt;
@@ -4705,7 +4705,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
     (*log) << "   " << std::setw(17) << std::setprecision(10) << utaut;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << qwt;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaut;
-    (*log) << &endl;
+    (*log) << &std::endl;
 
     (*log) << "#        y";
     (*log) << "                  umean               vmean               wmean               pmean             rhomean               Tmean             mommean           rhouTmean";
@@ -4893,7 +4893,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
 
-        (*log_res)  << &endl;
+        (*log_res)  << &std::endl;
       }
       log_res->flush();
 
@@ -4989,7 +4989,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       (*log_Cs) << "    diffeff  ";
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
-      (*log_Cs) << &endl;
+      (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
@@ -5004,7 +5004,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &std::endl;
       }
       log_Cs->flush();
     } // end smagorinsky_
@@ -5099,14 +5099,14 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
     (*log) << "   " << std::setw(17) << std::setprecision(10) << utaub;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << qwb;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaub;
-    (*log) << &endl;
+    (*log) << &std::endl;
 
     (*log) << "# top wall:    tauwt, u_taut, qwt, Ttaut : ";
     (*log) << "   " << std::setw(17) << std::setprecision(10) << tauwt;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << utaut;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << qwt;
     (*log) << "   " << std::setw(17) << std::setprecision(10) << Ttaut;
-    (*log) << &endl;
+    (*log) << &std::endl;
 
     (*log) << "#        y";
     (*log) << "                  umean               vmean               wmean               pmean               Tmean";
@@ -5389,7 +5389,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_mf) << "    Dphi     ";
       (*log_mf) << "  Csgs_phi   ";
       (*log_mf) << "    sgvisc   ";
-      (*log_mf) << &endl;
+      (*log_mf) << &std::endl;
       (*log_mf) << std::scientific;
       for (unsigned rr=0;rr<sumN_stream_->size();++rr)
       {
@@ -5407,7 +5407,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
         (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumNphi_     )[rr])/aux   << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumDphi_     )[rr])/aux   << "  ";
         (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumCsgs_phi_     )[rr])/aux   << "  ";
-        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumsgvisc_)[rr])/aux   << &endl;
+        (*log_mf) << std::setw(11) << std::setprecision(4) << ((*sumsgvisc_)[rr])/aux   << &std::endl;
       }
       log_mf->flush();
     } // end multifractal_
@@ -5439,7 +5439,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_Cs) << "    diffeff  ";
       (*log_Cs) << "     Ci      ";
       (*log_Cs) << "   (Ci*hk)^2 ";
-      (*log_Cs) << &endl;
+      (*log_Cs) << &std::endl;
       (*log_Cs) << std::scientific;
       for (unsigned rr=0;rr<sumCs_->size();++rr)
       {
@@ -5454,7 +5454,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCs_delta_sq_Prt_)[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumdiffeff_    )[rr])/(numele_*numsamp_)   << "  " ;
         (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_         )[rr])/(numele_*numsamp_)   << "  ";
-        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &endl;
+        (*log_Cs) << std::setw(11) << std::setprecision(4) << ((*sumCi_delta_sq_)[rr])/(numele_*numsamp_)   << &std::endl;
       }
       log_Cs->flush();
     } // end smagorinsky_

@@ -108,8 +108,8 @@ void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
 
     if(myrank==0)
     {
-      cout << endl;
-      cout <<"   Discretization: " << dis.Name() << endl;
+      std::cout << std::endl;
+      std::cout <<"   Discretization: " << dis.Name() << std::endl;
       printf("   +-----+---------------+--------------+-----------------+----------------+\n");
       printf("   | PID |  n_rownodes   | n_ghostnodes |  n_rowelements  |   n_ghostele   |\n");
       printf("   +-----+---------------+--------------+-----------------+----------------+\n");
@@ -118,7 +118,7 @@ void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
         printf("   | %3d | %13d | %12d | %15d | %14d |\n",npid,n_nodes[npid],n_ghostnodes[npid],n_elements[npid],n_ghostele[npid]);
         printf("   +-----+---------------+--------------+-----------------+----------------+\n");
       }
-      cout << endl;
+      std::cout << std::endl;
     }
   }
 }

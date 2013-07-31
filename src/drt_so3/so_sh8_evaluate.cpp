@@ -546,7 +546,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
   } else if (eastype_ == soh8_easnone){
-  //cout << "Warning: Solid-Shell8 without EAS" << endl;
+  //std::cout << "Warning: Solid-Shell8 without EAS" << std::endl;
   } else dserror("Solid-Shell8 only with eas_sosh8");// ------------------- EAS
 
   /*
@@ -689,7 +689,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       double dzdt_G = 0.0; double dZdt_G = 0.0;
       double dzdt_H = 0.0; double dZdt_H = 0.0;
 
-      // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
+      // vector product of rows of jacobians at corresponding sampling point    std::cout << jac_cur_sps;
       for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
         dxdt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);  // g_13^A
         dXdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);      // G_13^A
@@ -1179,7 +1179,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STR
   //LINALG::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
   //stretch_disp.Multiply('N','T',1.0,temp,v,0.0);
   //defgrd.Multiply('N','N',1.0,rot,stretch_disp,0.0);
-  //cout << defgrd;
+  //std::cout << defgrd;
 
   // get modified squared stretch (U^mod)^2 from glstrain
   LINALG::SerialDenseMatrix Usq_mod(NUMDIM_SOH8,NUMDIM_SOH8);
@@ -1205,8 +1205,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STR
   double mod1 = defgrd.NormOne();
   double modinf = defgrd.NormInf();
   if(((mod1-disp1)/mod1 > 0.03) || ((modinf-dispinf)/modinf > 0.03)){
-    cout << "difference in F! mod1= " << mod1 << " disp1= " << disp1 << " modinf= " << modinf << " dispinf= " << dispinf << endl;
-    cout << "Fmod" << endl << defgrd;
+    std::cout << "difference in F! mod1= " << mod1 << " disp1= " << disp1 << " modinf= " << modinf << " dispinf= " << dispinf << std::endl;
+    std::cout << "Fmod" << std::endl << defgrd;
   }
   */
 #endif
@@ -1764,12 +1764,12 @@ int DRT::ELEMENTS::So_sh8Type::Initialize(DRT::Discretization& dis)
 
   if (num_morphed_so_hex8_easmild>0)
   {
-    cout << endl << num_morphed_so_hex8_easmild
-    << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
+    std::cout << std::endl << num_morphed_so_hex8_easmild
+    << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << std::endl;
   }
   if (num_morphed_so_hex8_easnone>0){
-    cout << endl << num_morphed_so_hex8_easnone
-    << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_none" << endl;
+    std::cout << std::endl << num_morphed_so_hex8_easnone
+    << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_none" << std::endl;
   }
 
   // fill complete again to reconstruct element-node pointers,

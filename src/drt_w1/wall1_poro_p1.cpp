@@ -89,12 +89,12 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_PoroP1<distype>::Print(ostream& os) const
+void DRT::ELEMENTS::Wall1_PoroP1<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_PoroP1 ";
   Element::Print(os);
-  cout << endl;
-  cout << my::data_;
+  std::cout << std::endl;
+  std::cout << my::data_;
   return;
 }
 

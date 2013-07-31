@@ -478,7 +478,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
               timefacfacprerhs);
 
           estif+=estif_r_q;
-//          if (eid==0) cout << "entry is " << estif << endl;
+//          if (eid==0) std::cout << "entry is " << estif << std::endl;
         }
 
         // 9) SUPG term

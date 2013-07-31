@@ -415,13 +415,13 @@ void SysmatDomainStress(
   // in the xfem assembly, numparam is determined by the dofmanager
   const size_t numparamepsilonxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Epsilonxx);
 // TODO @Florian clarify
-//cout << "standard element: numparamepsilonxx " << numparamepsilonxx << endl;
-//cout << "epsilonele_unknowns_present " << epsilonele_unknowns_present << endl;
+//std::cout << "standard element: numparamepsilonxx " << numparamepsilonxx << std::endl;
+//std::cout << "epsilonele_unknowns_present " << epsilonele_unknowns_present << std::endl;
   const size_t numparamdiscpres = XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
-//cout << "standard element: numparamdiscpres " << numparamdiscpres << endl;
-//cout << "discpres_unknowns_present " <<  discpres_unknowns_present << endl;
+//std::cout << "standard element: numparamdiscpres " << numparamdiscpres << std::endl;
+//std::cout << "discpres_unknowns_present " <<  discpres_unknowns_present << std::endl;
   const size_t numparamsigmaxx = XFEM::NumParam<1,ASSTYPE>::get(dofman, XFEM::PHYSICS::Sigmaxx);
-//cout << "sigmaele_unknowns_present " << sigmaele_unknowns_present << endl;
+//std::cout << "sigmaele_unknowns_present " << sigmaele_unknowns_present << std::endl;
 
   // stabilization parameter
   const double hk = COMBUST::UTILS::HK<DISTYPE>(evelnp,xyze);
@@ -477,7 +477,7 @@ void SysmatDomainStress(
 #ifdef DEBUG
       if (detcell < 0.0)
       {
-        cout << "detcell :  " << detcell << endl;
+        std::cout << "detcell :  " << detcell << std::endl;
         dserror("negative detcell!");
       }
 #endif
@@ -530,7 +530,7 @@ void SysmatDomainStress(
 
       const double det = xjm.Determinant();
       const double fac = intpoints.qwgt[iquad]*det*detcell;
-      //cout << "domain spatial factor " << fac << endl;
+      //std::cout << "domain spatial factor " << fac << std::endl;
 
       if (det < 0.0)
       {
@@ -576,7 +576,7 @@ void SysmatDomainStress(
 
       if (ASSTYPE == XFEM::xfem_assembly)
       {
-        //cout << "this is a fully or partially enriched element" << endl;
+        //std::cout << "this is a fully or partially enriched element" << std::endl;
         // temporary arrays holding enriched shape functions (N * \Psi)
         static LINALG::Matrix<shpVecSize,1> enr_funct;
         enr_funct.Clear();
@@ -770,8 +770,8 @@ void SysmatDomainStress(
       if (epsilonele_unknowns_present)
       {
         XFEM::fill_tensor(numparamepsilonxx, shp_epsilon.d0, eepsilon, epsilon);
-//cout << "epsilon " << epsilon << endl;
-//cout << "discpres " << discpres << endl;
+//std::cout << "epsilon " << epsilon << std::endl;
+//std::cout << "discpres " << discpres << std::endl;
       }
       else
       {
@@ -783,7 +783,7 @@ void SysmatDomainStress(
       if (sigmaele_unknowns_present)
       {
         XFEM::fill_tensor(numparamsigmaxx, shp_sigma.d0, eepsilon, sigma);
-//cout << "sigma " << sigma << endl;
+//std::cout << "sigma " << sigma << std::endl;
       }
       else
       {
@@ -1029,12 +1029,12 @@ void SysmatBoundaryStress(
   //---------------------------------------------------------------------------
   // density \rho
   double dens_plus = -1.0;
-  //cout << "plus density: " << dens_plus << endl;
+  //std::cout << "plus density: " << dens_plus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_plus = -1.0;
   // density \rho
   double dens_minus = -1.0;
-  //cout << "minus density: " << dens_minus << endl;
+  //std::cout << "minus density: " << dens_minus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_minus = -1.0;
   // set density and dynamic viscosity
@@ -1225,7 +1225,7 @@ void SysmatBoundaryStress(
       ju(0) = ju_n*normal(0);
       ju(1) = ju_n*normal(1);
       ju(2) = ju_n*normal(2);
-      //cout << "ju " << ju << endl;
+      //std::cout << "ju " << ju << std::endl;
 #ifdef COMBUST_TESTCOUETTEFLOW
       // overwrite velocity jump condition for shear flow test case
       ju(0) = -2.0;
@@ -1242,7 +1242,7 @@ void SysmatBoundaryStress(
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-      //cout << "jflux " << jflux << endl;
+      //std::cout << "jflux " << jflux << std::endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;
@@ -1405,9 +1405,9 @@ void SysmatBoundaryStress(
       for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
       {
         shp_jump.d0(iparam) = enrfunct_minus(iparam) - enrfunct_plus(iparam);
-        //cout << "shp_jump.d0: " << shp_jump.d0(iparam) << endl;
+        //std::cout << "shp_jump.d0: " << shp_jump.d0(iparam) << std::endl;
         shp_mean.d0(iparam) = 0.5*(enrfunct_plus(iparam) + enrfunct_minus(iparam));
-        //cout << "shp_mean.d0: " << shp_mean.d0(iparam) << endl;
+        //std::cout << "shp_mean.d0: " << shp_mean.d0(iparam) << std::endl;
       }
 
       //static XFEM::ApproxFunc<0,shpVecSizeStress> shp_epsilon_jump;
@@ -1463,8 +1463,8 @@ void SysmatBoundaryStress(
       for (size_t iparam = 0; iparam != numparampres; ++iparam)
         pdiscmean += shp_discpres_mean.d0(iparam)*ediscpres(iparam);
 
-//cout << "pdiscjump " << pdiscjump << endl;
-//cout << "pdiscmean " << pdiscmean << endl;
+//std::cout << "pdiscjump " << pdiscjump << std::endl;
+//std::cout << "pdiscmean " << pdiscmean << std::endl;
 
       // get viscous stress unknowns
       //static LINALG::Matrix<nsd,nsd> epsilonjump;
@@ -1475,14 +1475,14 @@ void SysmatBoundaryStress(
       epsilonmean.Clear();
       XFEM::fill_tensor(numparamepsilonxx, shp_eps_visc_mean.d0, eepsilon, epsilonmean);
 
-//cout << "epsilonjump " << epsilonjump << endl;
-//cout << "epsilonmean " << epsilonmean << endl;
+//std::cout << "epsilonjump " << epsilonjump << std::endl;
+//std::cout << "epsilonmean " << epsilonmean << std::endl;
 #ifdef COMBUST_EPSPRES_BASED_NEUMANN_INFLOW
 //      static XFEM::ApproxFunc<0,shpVecSize> shp_inflow;
 //      const double direction = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
 //      if (direction < 0.0)
 //      {
-////        cout << "inflow right" << endl;
+////        std::cout << "inflow right" << std::endl;
 //        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
 //        {
 //          shp_inflow.d0(iparam) = enrfunct_minus(iparam);
@@ -1490,7 +1490,7 @@ void SysmatBoundaryStress(
 //      }
 //      else
 //      {
-////        cout << "inflow left" << endl;
+////        std::cout << "inflow left" << std::endl;
 //        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
 //        {
 //          shp_inflow.d0(iparam) = enrfunct_plus(iparam);
@@ -1500,7 +1500,7 @@ void SysmatBoundaryStress(
 //      static LINALG::Matrix<nsd,1> velinflow(true);
 //      velinflow.Clear();
 //      velinflow = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_inflow.d0, numparamvelx);
-//      //cout << velinflow << endl;
+//      //std::cout << velinflow << std::endl;
 #endif
 
 #ifdef COMBUST_EPSPRES_BASED_ADVECTIVEFLUX
@@ -1781,7 +1781,7 @@ void SysmatBoundaryStress(
       //-----------------    |                       |
       const double inflowvel = -1.0*(velmean(0)*normal(0) + velmean(1)*normal(1) + velmean(2)*normal(2));
       //const double inflowvel = 1000*(veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2));
-//      cout << "inflowvel" << inflowvel << endl;
+//      std::cout << "inflowvel" << inflowvel << std::endl;
 //      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 //      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 //      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
@@ -1955,12 +1955,12 @@ void SysmatBoundarySigma(
   //---------------------------------------------------------------------------
   // density \rho
   double dens_plus = -1.0;
-  //cout << "plus density: " << dens_plus << endl;
+  //std::cout << "plus density: " << dens_plus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_plus = -1.0;
   // density \rho
   double dens_minus = -1.0;
-  //cout << "minus density: " << dens_minus << endl;
+  //std::cout << "minus density: " << dens_minus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_minus = -1.0;
   // set density and dynamic viscosity
@@ -2145,7 +2145,7 @@ void SysmatBoundarySigma(
       ju(0) = ju_n*normal(0);
       ju(1) = ju_n*normal(1);
       ju(2) = ju_n*normal(2);
-      //cout << "ju " << ju << endl;
+      //std::cout << "ju " << ju << std::endl;
 #ifdef COMBUST_TESTCOUETTEFLOW
       // overwrite velocity jump condition for shear flow test case
       ju(0) = -2.0;
@@ -2162,7 +2162,7 @@ void SysmatBoundarySigma(
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-      //cout << "jflux " << jflux << endl;
+      //std::cout << "jflux " << jflux << std::endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;
@@ -2315,7 +2315,7 @@ void SysmatBoundarySigma(
       for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
       {
         shp_mean.d0(iparam) = 0.5*(enrfunct_plus(iparam) + enrfunct_minus(iparam));
-        //cout << "shp_mean.d0: " << shp_mean.d0(iparam) << endl;
+        //std::cout << "shp_mean.d0: " << shp_mean.d0(iparam) << std::endl;
       }
 
       static XFEM::ApproxFunc<0,shpVecSizeStress> shp_sigma_mean;
@@ -2353,14 +2353,14 @@ void SysmatBoundarySigma(
       static LINALG::Matrix<nsd,nsd> sigmamean;
       sigmamean.Clear();
       XFEM::fill_tensor(numparamsigmaxx, shp_sigma_mean.d0, esigma, sigmamean);
-//cout << "sigmamean " << sigmamean << endl;
+//std::cout << "sigmamean " << sigmamean << std::endl;
 
 #ifdef COMBUST_SIGMA_BASED_NEUMANN_INFLOW
 //      static XFEM::ApproxFunc<0,shpVecSize> shp_inflow;
 //      const double direction = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
 //      if (direction < 0.0)
 //      {
-////        cout << "inflow right" << endl;
+////        std::cout << "inflow right" << std::endl;
 //        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
 //        {
 //          shp_inflow.d0(iparam) = enrfunct_minus(iparam);
@@ -2368,7 +2368,7 @@ void SysmatBoundarySigma(
 //      }
 //      else
 //      {
-////        cout << "inflow left" << endl;
+////        std::cout << "inflow left" << std::endl;
 //        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
 //        {
 //          shp_inflow.d0(iparam) = enrfunct_plus(iparam);
@@ -2378,7 +2378,7 @@ void SysmatBoundarySigma(
 //      static LINALG::Matrix<nsd,1> velinflow(true);
 //      velinflow.Clear();
 //      velinflow = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_inflow.d0, numparamvelx);
-//      //cout << velinflow << endl;
+//      //std::cout << velinflow << std::endl;
 #endif
 
 #ifdef COMBUST_SIGMA_BASED_ADVECTIVEFLUX
@@ -2554,7 +2554,7 @@ void SysmatBoundarySigma(
       //-----------------    |                       |
       const double inflowvel = -1.0*(velmean(0)*normal(0) + velmean(1)*normal(1) + velmean(2)*normal(2));
       //const double inflowvel = 1000*(veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2));
-//      cout << "inflowvel" << inflowvel << endl;
+//      std::cout << "inflowvel" << inflowvel << std::endl;
 //      assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 //      assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
 //      assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_mean.d0, -timefacfac*inflowvel, shp_jump.d0);
@@ -2715,7 +2715,7 @@ void SysmatBoundaryStressDoubleOneSided(
   const double kinvisc_plus = mat->Viscosity();
   // get the density \rho
   const double dens_plus = mat->Density();
-  //cout << "plus density: " << dens_plus << endl;
+  //std::cout << "plus density: " << dens_plus << std::endl;
 
   // index minus = unburnt material
   const int matid_minus = 4;
@@ -2728,7 +2728,7 @@ void SysmatBoundaryStressDoubleOneSided(
   const double kinvisc_minus = mat->Viscosity();
   // get the density \rho
   const double dens_minus = mat->Density();
-  //cout << "minus density: " << dens_minus << endl;
+  //std::cout << "minus density: " << dens_minus << std::endl;
 
   //--------------------
   // compute jump values
@@ -2736,11 +2736,11 @@ void SysmatBoundaryStressDoubleOneSided(
   // velocity jump value
   const double juplus = 2.0; // -flamespeed*dens_minus*(1/dens_plus - 1/dens_minus);
   const double juminus = -4.0;
-  //cout << "ju: " << ju << endl;
+  //std::cout << "ju: " << ju << std::endl;
   // pressure jump value
   const double jpplus = 0.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
   const double jpminus = 0.0;
-  //cout << "jp: " << jp << endl;
+  //std::cout << "jp: " << jp << std::endl;
 
   const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
   const DRT::Element::DiscretizationType discpresdistype = COMBUST::DiscPressureInterpolation3D<DISTYPE>::distype;
@@ -2924,10 +2924,10 @@ void SysmatBoundaryStressDoubleOneSided(
       //----------------------------
       // compute spatial integration factor
       const double fac = intpoints.qwgt[iquad]*detXtoXi*detXitoEta;
-      //cout << "boundary spatial factor " << fac << endl;
+      //std::cout << "boundary spatial factor " << fac << std::endl;
       // compute total (time and spatial) integration factor (and coefficients of single terms)?
       const double timefacfac = timefac * fac;
-      //cout << "boundary time and spatial factor " << timefacfac << endl;
+      //std::cout << "boundary time and spatial factor " << timefacfac << std::endl;
 
       //--------------------------------------------------------------------------------
       // rearrange (enriched) shape functions and derivatives as approximation functions

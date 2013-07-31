@@ -1172,7 +1172,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::PrintEleMatToExcel(
   std::ostringstream oss;
   oss << eid_;
   std::string value = oss.str();
-  //ostringstream temp;
+  //ostd::stringstream temp;
 
   {
     const std::string output = "Matrix"+value+".csv";
@@ -1208,7 +1208,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::PrintEleMatToExcel(
   }
 
   {
-    //ostringstream temp;
+    //ostd::stringstream temp;
     const std::string output = "residual"+value+".csv";
 
     std::ofstream f;

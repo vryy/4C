@@ -396,27 +396,27 @@ void GEO::SearchTree::printTree(
     const std::string  prefix,
     const int     step) const
 {
-  cout << endl << "writing... ";
+  std::cout << std::endl << "writing... ";
   if (treeRoot_ == Teuchos::null) {
-    cout << "nothing to write, tree not initialized yet -> done" << endl;
+    std::cout << "nothing to write, tree not initialized yet -> done" << std::endl;
     return;
   }
   if (treeRoot_->getElementList().empty()){
-    cout << "nothing to write, tree empty -> done" << endl;
+    std::cout << "nothing to write, tree empty -> done" << std::endl;
     return;
   }
 
   std::stringstream filename;
   std::stringstream node_string;
   filename << prefix << "_octtree" << std::setw(5) << std::setfill('0') << step << ".pos";
-  cout << " " << filename.str() << " ...";
-  node_string << "View \" " << "XFEM_FSI_Octree \" {" << endl;
+  std::cout << " " << filename.str() << " ...";
+  node_string << "View \" " << "XFEM_FSI_Octree \" {" << std::endl;
   treeRoot_->printTreeNode(max_depth_,node_string);
-  node_string << "};" << endl;
+  node_string << "};" << std::endl;
   std::ofstream f_system(filename.str().c_str());
   f_system << node_string.str();
   f_system.close();
-  cout << " done" << endl;
+  std::cout << " done" << std::endl;
 }
 
 
@@ -427,18 +427,18 @@ void GEO::SearchTree::printTree(
 void GEO::SearchTree::evaluateTreeMetrics(
     const int     step) const
 {
-  cout << "\t********************* TREE METRICS ******************" << endl;
+  std::cout << "\t********************* TREE METRICS ******************" << std::endl;
 
   if (treeRoot_ == Teuchos::null)
   {
-    cout << "tree root was not initialized yet, nothing to print" << endl;
+    std::cout << "tree root was not initialized yet, nothing to print" << std::endl;
     return;
   }
 
-  cout.precision(5);
-  cout << "\tnumber tree nodes        : " << treeRoot_->getNumNodesInTree() << endl;
-  cout << "\ttree depth               : " << max_depth_-treeRoot_->getDepth() << " (max: "<< max_depth_<<")"<< endl;
-  cout << "\t***************************************************" << endl;
+  std::cout.precision(5);
+  std::cout << "\tnumber tree nodes        : " << treeRoot_->getNumNodesInTree() << std::endl;
+  std::cout << "\ttree depth               : " << max_depth_-treeRoot_->getDepth() << " (max: "<< max_depth_<<")"<< std::endl;
+  std::cout << "\t***************************************************" << std::endl;
   return;
 }
 
@@ -1823,13 +1823,13 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
         int xfemLabel = GEO::getXFEMLabelAndNearestObject(dis, currentpositions, point, elementList_, nearestObjectInNode);
 
         const TreeNode* workingNode = this;
-        //cout << "point = " << nearestObjectInNode.getPhysCoord() <<  endl;
-        //cout << "nodebox = " << workingNode->nodeBox_ <<  endl;
+        //std::cout << "point = " << nearestObjectInNode.getPhysCoord() <<  std::endl;
+        //std::cout << "nodebox = " << workingNode->nodeBox_ <<  std::endl;
 
         while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
         {
-          //cout << "point = " << nearestObjectInNode.getPhysCoord() <<  endl;
-          //cout << "nodebox = " << workingNode->nodeBox_ <<  endl;
+          //std::cout << "point = " << nearestObjectInNode.getPhysCoord() <<  std::endl;
+          //std::cout << "nodebox = " << workingNode->nodeBox_ <<  std::endl;
 
 
           if(!workingNode->hasParent())
@@ -1913,7 +1913,7 @@ void GEO::SearchTree::TreeNode::moveContactNodes(
         const TreeNode* workingNode = this;
         while(!GEO::pointInTreeNode(nearestObjectInNode.getPhysCoord(), workingNode->nodeBox_))
         {
-          cout << "step up" << endl;
+          std::cout << "step up" << std::endl;
           if(!workingNode->hasParent())
             dserror("this treenode has no parent");
 
@@ -2324,7 +2324,7 @@ void GEO::SearchTree::TreeNode::printTreeNode(
     printBox(0,5) = nodeBox_(0,1); printBox(1,5) = nodeBox_(1,1); printBox(2,5) = nodeBox_(2,0);
     printBox(0,6) = nodeBox_(0,1); printBox(1,6) = nodeBox_(1,1); printBox(2,6) = nodeBox_(2,1);
     printBox(0,7) = nodeBox_(0,1); printBox(1,7) = nodeBox_(1,0); printBox(2,7) = nodeBox_(2,1);
-    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, 0, printBox)<< endl;
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, 0, printBox)<< std::endl;
   }
 
   if(treeNodeType_== GEO::INNER_NODE)
@@ -2353,7 +2353,7 @@ void GEO::SearchTree::TreeNode::printTreeNode(
     printBox(0,5) = nodeBox_(0,1); printBox(1,5) = nodeBox_(1,1); printBox(2,5) = nodeBox_(2,0);
     printBox(0,6) = nodeBox_(0,1); printBox(1,6) = nodeBox_(1,1); printBox(2,6) = nodeBox_(2,1);
     printBox(0,7) = nodeBox_(0,1); printBox(1,7) = nodeBox_(1,0); printBox(2,7) = nodeBox_(2,1);
-    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor + treedepth_ + max_depth, printBox)<< endl;
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor + treedepth_ + max_depth, printBox)<< std::endl;
   }
 }
 

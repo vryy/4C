@@ -341,10 +341,10 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 
     // case of xfem check whether additional xfem-stabilization terms in the form of
     // edge-based terms are activated (i.e., ghost penalties)
-    if (stablist_edgebased.get<string>("EOS_PRES") == "xfem_gp" or
-        stablist_edgebased.get<string>("EOS_CONV_STREAM") == "xfem_gp" or
-        stablist_edgebased.get<string>("EOS_CONV_CROSS") == "xfem_gp" or
-        stablist_edgebased.get<string>("EOS_DIV") == "xfem_gp")
+    if (stablist_edgebased.get<std::string>("EOS_PRES") == "xfem_gp" or
+        stablist_edgebased.get<std::string>("EOS_CONV_STREAM") == "xfem_gp" or
+        stablist_edgebased.get<std::string>("EOS_CONV_CROSS") == "xfem_gp" or
+        stablist_edgebased.get<std::string>("EOS_DIV") == "xfem_gp")
     {
         EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
         EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");

@@ -109,7 +109,7 @@ static inline void elementToCurrentCoordinatesInPlace(
       elementToCurrentCoordinatesInPlaceT<DRT::Element::pyramid5>(xyze, eleCoord);
       break;
   default:
-      std::cout << DistypeToString(distype) << endl;
+      std::cout << DistypeToString(distype) << std::endl;
       dserror("add your 3D distype to this switch!"); break;
   }
   return;
@@ -211,7 +211,7 @@ static inline void elementToCurrentCoordinates(
       elementToCurrentCoordinatesT<DRT::Element::pyramid5>(xyze, xsi, x);
       break;
   default:
-      std::cout << DistypeToString(distype) << endl;
+      std::cout << DistypeToString(distype) << std::endl;
       dserror("add your 3D distype to this switch!"); break;
   }
   return;
@@ -511,7 +511,7 @@ bool currentToVolumeElementCoordinates(
         nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::pyramid5>(xyze, x, xsi);
         break;
     default:
-        std::cout << DistypeToString(distype) << endl;
+        std::cout << DistypeToString(distype) << std::endl;
         dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
         break;
@@ -765,7 +765,7 @@ static void currentToSurfaceElementCoordinatesT(
     eleCoord += dx;
   }
 
-//  cout << "nodeWithinElement: " << nodeWithinElement << endl;
+//  std::cout << "nodeWithinElement: " << nodeWithinElement << std::endl;
 //  printf("iter = %d\n", iter);
 //  printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", eleCoord(0),eleCoord(1), residual, GEO::TOL14);
 //  exit(1);
@@ -871,9 +871,9 @@ static void currentToLineElementCoordinatesT(
 
     F -= physCoord;
 
-    //cout << "F " << F << endl;
-    //cout << "F_deriv1 " << F_deriv1 << endl;
-    //cout << "F_deriv2 " << F_deriv2 << endl;
+    //std::cout << "F " << F << std::endl;
+    //std::cout << "F_deriv1 " << F_deriv1 << std::endl;
+    //std::cout << "F_deriv2 " << F_deriv2 << std::endl;
 
     // determine system matrix A and rhs b
     double A = 0.0;
@@ -893,9 +893,9 @@ static void currentToLineElementCoordinatesT(
     // solve scalar linear equation  Delta_x = -b/A
     eleCoord(0) += (-1)*b/A;
 
-    //cout << " A = " << A << endl;
-    //cout << " b = " << b << endl;
-    //cout << " x = " << eleCoord(0) << endl;
+    //std::cout << " A = " << A << std::endl;
+    //std::cout << " b = " << b << std::endl;
+    //std::cout << " x = " << eleCoord(0) << std::endl;
 
     if(iter >= maxiter || fabs(eleCoord(0)) > GEO::TOLPLUS8)
       break;

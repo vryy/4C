@@ -120,7 +120,7 @@ DRT::ELEMENTS::Torsion2::~Torsion2()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion2::Print(ostream& os) const
+void DRT::ELEMENTS::Torsion2::Print(std::ostream& os) const
 {
 
 }

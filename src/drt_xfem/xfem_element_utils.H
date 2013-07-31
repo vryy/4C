@@ -459,7 +459,7 @@ public:
 
   void Print()
   {
-    std::cout << "  d0" << endl; d0.Print();
+    std::cout << "  d0" << std::endl; d0.Print();
   }
 
   /// pair of approximation functions belonging to this set
@@ -493,10 +493,10 @@ public:
 
   void Print()
   {
-    std::cout << "  d0" << endl; d0.Print();
-    std::cout << "  dx" << endl; dx.Print();
-    std::cout << "  dy" << endl; dy.Print();
-    std::cout << "  dz" << endl; dz.Print();
+    std::cout << "  d0" << std::endl; d0.Print();
+    std::cout << "  dx" << std::endl; dx.Print();
+    std::cout << "  dy" << std::endl; dy.Print();
+    std::cout << "  dz" << std::endl; dz.Print();
   }
 
   /// pairs of approximation functions belonging to this set
@@ -551,19 +551,19 @@ public:
 
   void Print()
   {
-    std::cout << "  d0"   << endl;   d0.Print();
-    std::cout << "  dx"   << endl;   dx.Print();
-    std::cout << "  dy"   << endl;   dy.Print();
-    std::cout << "  dz"   << endl;   dz.Print();
-    std::cout << "  dxdx" << endl; dxdx.Print();
-    std::cout << "  dxdy" << endl; dxdy.Print();
-    std::cout << "  dxdz" << endl; dxdz.Print();
-    std::cout << "  dydx" << endl; dydx.Print();
-    std::cout << "  dydy" << endl; dydy.Print();
-    std::cout << "  dydz" << endl; dydz.Print();
-    std::cout << "  dzdx" << endl; dzdx.Print();
-    std::cout << "  dzdy" << endl; dzdy.Print();
-    std::cout << "  dzdz" << endl; dzdz.Print();
+    std::cout << "  d0"   << std::endl;   d0.Print();
+    std::cout << "  dx"   << std::endl;   dx.Print();
+    std::cout << "  dy"   << std::endl;   dy.Print();
+    std::cout << "  dz"   << std::endl;   dz.Print();
+    std::cout << "  dxdx" << std::endl; dxdx.Print();
+    std::cout << "  dxdy" << std::endl; dxdy.Print();
+    std::cout << "  dxdz" << std::endl; dxdz.Print();
+    std::cout << "  dydx" << std::endl; dydx.Print();
+    std::cout << "  dydy" << std::endl; dydy.Print();
+    std::cout << "  dydz" << std::endl; dydz.Print();
+    std::cout << "  dzdx" << std::endl; dzdx.Print();
+    std::cout << "  dzdy" << std::endl; dzdy.Print();
+    std::cout << "  dzdz" << std::endl; dzdz.Print();
   };
 
   /// pairs of approximation functions belonging to this set
@@ -607,9 +607,9 @@ public:
 
   void Print()
   {
-    std::cout << "velx" << endl; velx.Print();
-    std::cout << "vely" << endl; vely.Print();
-    std::cout << "velz" << endl; velz.Print();
+    std::cout << "velx" << std::endl; velx.Print();
+    std::cout << "vely" << std::endl; vely.Print();
+    std::cout << "velz" << std::endl; velz.Print();
   };
 
   /// sets of approximation functions belonging to this vector

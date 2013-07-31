@@ -32,7 +32,7 @@ void SSI::SSI_Part1WC::DoStructStep()
 
   if (Comm().MyPID() == 0)
   {
-    cout
+    std::cout
         << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
@@ -55,7 +55,7 @@ void SSI::SSI_Part1WC::DoScatraStep()
 
   if (Comm().MyPID() == 0)
   {
-    cout
+    std::cout
         << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
   }
 

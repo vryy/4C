@@ -29,7 +29,7 @@ Validate a given BACI input file (after all preprocessing steps)
 void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
 {
   // read and check the provided header file
-  //cout << "checking BACI input file       --> "<<datfile<< endl;
+  //std::cout << "checking BACI input file       --> "<<datfile<< std::endl;
 
   // access our problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -38,22 +38,22 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   DRT::INPUT::DatFileReader reader(datfile,comm, 0);
 
   // read and validate dynamic and solver sections
-  cout<<"...Read parameters"<<endl;
+  std::cout<<"...Read parameters"<<std::endl;
   problem->ReadParameter(reader);
 
   // read and validate all material definitions
-  cout<<"...Read materials"<<endl;
+  std::cout<<"...Read materials"<<std::endl;
   problem->ReadMaterials(reader);
 
   // do NOT allocate the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
   // But, we have to perform at least the problem-specific setup since
   // some reading procedures depend on the number of fields (e.g., ReadKnots())
-  cout<<"...Read field setup"<<endl;
+  std::cout<<"...Read field setup"<<std::endl;
   problem->ReadFields(reader,false);  // option false is important here!
 
   // read and validate all condition definitions
-  cout<<"...";
+  std::cout<<"...";
   problem->ReadTimeFunctionResult(reader);
   problem->ReadConditions(reader);
 
@@ -69,7 +69,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   reader.PrintUnknownSections();
 
   // the input file seems to be valid
-  cout<<"...OK"<<endl<<endl;
+  std::cout<<"...OK"<<std::endl<<std::endl;
 
   return;
 }
@@ -90,7 +90,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
     ValidateElementJacobian(mymesh,distype,eb);
     // full check at all gausspoints
     int invalid_dets = ValidateElementJacobian_fullgp(mymesh,distype,eb);
-    if (invalid_dets > 0) cout << invalid_dets << " negative Jacobian determinants in EB of shape " << ShapeToString(eb->GetShape()) << endl;
+    if (invalid_dets > 0) std::cout << invalid_dets << " negative Jacobian determinants in EB of shape " << ShapeToString(eb->GetShape()) << std::endl;
   }
   return;
 }
@@ -162,7 +162,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
     }
   }
   if (numrewindedeles>0)
-    cout<<"...Successfully rewinded "<<numrewindedeles<<" elements. For details see *.err file"<<endl;
+    std::cout<<"...Successfully rewinded "<<numrewindedeles<<" elements. For details see *.err file"<<std::endl;
 
   return;
 }

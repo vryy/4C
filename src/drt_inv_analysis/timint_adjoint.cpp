@@ -186,7 +186,7 @@ void STR::TimIntAdjoint::UpdateStep()
   (*disdual_)(stepn_)->Update(1.0,*disdualn_,0.0);
 
   if ( printtoscreen_ and stepn_%printtoscreen_==0 )
-    cout << "Finalized step " << stepn_+1 << " / " << msteps_ << endl;
+    std::cout << "Finalized step " << stepn_+1 << " / " << msteps_ << std::endl;
 
   return;
 }

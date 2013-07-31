@@ -81,7 +81,7 @@ int GEO::IntCell::NumNode() const
 
 
 /*----------------------------------------------------------------------*
- * to string                                                            *
+ * to std::string                                                            *
  *----------------------------------------------------------------------*/
 std::string GEO::IntCell::toString() const
 {
@@ -196,23 +196,23 @@ static std::string PosToString(double x, double y, double z)
 
 
 /*----------------------------------------------------------------------*
- *  to string                                                           *
+ *  to std::string                                                           *
  *----------------------------------------------------------------------*/
 std::string GEO::DomainIntCell::toString() const
 {
   std::ostringstream s;
   int numpoints = nodalpos_xi_domain_.N();
-  s << "DomainIntCell:" << endl;
-  s << " position in xi coordinates: " << endl;
+  s << "DomainIntCell:" << std::endl;
+  s << " position in xi coordinates: " << std::endl;
   for (int inode = 0; inode < numpoints; ++inode)
-    s << "   " << PosToString(nodalpos_xi_domain_(0,inode),nodalpos_xi_domain_(1,inode),nodalpos_xi_domain_(2,inode)) << endl;
-  s << " position in xyz coordinates: " << endl;
+    s << "   " << PosToString(nodalpos_xi_domain_(0,inode),nodalpos_xi_domain_(1,inode),nodalpos_xi_domain_(2,inode)) << std::endl;
+  s << " position in xyz coordinates: " << std::endl;
   for (int inode = 0; inode < numpoints; ++inode)
-    s << "   " << PosToString(nodalpos_xyz_domain_(0,inode),nodalpos_xyz_domain_(1,inode),nodalpos_xyz_domain_(2,inode)) << endl;
+    s << "   " << PosToString(nodalpos_xyz_domain_(0,inode),nodalpos_xyz_domain_(1,inode),nodalpos_xyz_domain_(2,inode)) << std::endl;
 
-  s << endl << " Center : " << PosToString(phys_center_(0),phys_center_(1),phys_center_(2)) << endl;
+  s << std::endl << " Center : " << PosToString(phys_center_(0),phys_center_(1),phys_center_(2)) << std::endl;
 
-//  s << phys_center_ << endl;
+//  s << phys_center_ << std::endl;
   return s.str();
 }
 
@@ -262,7 +262,7 @@ double GEO::DomainIntCell::VolumeInXiDomain(
   const double volume_cell = GEO::ElementVolume(this->Shape(), nodalpos_xi_domain_);
   if(volume_cell <= 0.0)
   {
-    cout << this->toString() << endl;
+    std::cout << this->toString() << std::endl;
     this->xiToGmsh("cell_with_negative_volume.pos");
     dserror("GLOBAL ELEMENT NO.%i\n NEGATIVE VOLUME OF INTEGRATION CELL: %20.16f", ele.Id(), volume_cell);
   }
@@ -367,13 +367,13 @@ GEO::BoundaryIntCell& GEO::BoundaryIntCell::operator=(const GEO::BoundaryIntCell
 
 
 /*----------------------------------------------------------------------*
- * to string                                                            *
+ * to std::string                                                            *
  *----------------------------------------------------------------------*/
 std::string GEO::BoundaryIntCell::toString() const
 {
   std::ostringstream s;
-  s << "BoundaryIntCell" << endl;
-  s << nodalpos_xi_domain_ << endl;
+  s << "BoundaryIntCell" << std::endl;
+  s << nodalpos_xi_domain_ << std::endl;
   return s.str();
 }
 

@@ -197,7 +197,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
         eleJumpAndKinks.push_back(currentJumpsAndKinks);
       } // end loop over vectorfield size
 
-      //      cout << "in bisected " << *ele << " final old jumps and kinks are " << eleJumpAndKinks[0];
+      //      std::cout << "in bisected " << *ele << " final old jumps and kinks are " << eleJumpAndKinks[0];
       eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element bisected
     else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
@@ -232,7 +232,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
         eleJumpAndKinks.push_back(currentJumpsAndKinks);
       } // end loop over vectorfield size
 
-      //      cout << "final old jumps and kinks at touched " << *ele << " are " << eleJumpAndKinks[0];
+      //      std::cout << "final old jumps and kinks at touched " << *ele << " are " << eleJumpAndKinks[0];
       eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element touchedminus
   }
@@ -296,7 +296,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
         eleJumpAndKinks.push_back(currentJumpsAndKinks);
       } // end loop over vectorfield size
 
-//      cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[0] << endl;
+//      std::cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[0] << std::endl;
       eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element bisected
     else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
@@ -342,7 +342,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
 
         eleJumpAndKinks.push_back(currentJumpsAndKinks);
       } // end loop over vectorfield size
-      //      cout << "final old jumps and kinks at touched " << *ele << " are " << eleJumpAndKinks[0] << endl;
+      //      std::cout << "final old jumps and kinks at touched " << *ele << " are " << eleJumpAndKinks[0] << std::endl;
       eleJumpsAndKinks_.insert(std::make_pair(ele->Id(),eleJumpAndKinks));
     } // end if element touchedminus
   }
@@ -386,7 +386,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
         } // end loop over enrichment number
         eleKinks.push_back(currKinks);
       } // end loop over vectorfield size
-      //      cout << "final old kink values at bisected " << *ele << " are " << eleKinks[0];
+      //      std::cout << "final old kink values at bisected " << *ele << " are " << eleKinks[0];
       eleKinks_.insert(std::make_pair(ele->Id(),eleKinks));
     } // end if element bisected
     else
@@ -434,7 +434,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
 
         eleKinks.push_back(currKinks);
       } // end loop over vectorfield size
-      //      cout << "final old kink values at bisected element are " << eleKinks[0];
+      //      std::cout << "final old kink values at bisected element are " << eleKinks[0];
       eleKinks_.insert(std::make_pair(ele->Id(),eleKinks));
     } // end if element bisected
     else
@@ -445,7 +445,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
         eleKinks.push_back(currKinks);
 
-      //      cout << "final old kink values at touched " << *ele << " are " << eleKinks[0];
+      //      std::cout << "final old kink values at touched " << *ele << " are " << eleKinks[0];
       eleKinks_.insert(std::make_pair(ele->Id(),eleKinks));
     } // end if element touched
   }
@@ -497,7 +497,7 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
           }
         } // end if element bisected
       } // end loop over elements containing the node
-      //      cout << "summed jumps and kinks are " << averageJumpsAndKinks[0] << endl;
+      //      std::cout << "summed jumps and kinks are " << averageJumpsAndKinks[0] << std::endl;
 
       std::vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true));
       if (numOldIntersectedEle > 0) // >=1 elements around the node where enriched -> computed value can be used
@@ -618,7 +618,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 
           if (numOldIntersectedEle==0)
           {
-            cout << *currOldNode << " is enriched at old timestep" << endl;
+            std::cout << *currOldNode << " is enriched at old timestep" << std::endl;
             dserror("Enriched node shall have an intersected element around");
           }
 
@@ -674,7 +674,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 
           if (numOldIntersectedEle==0)
           {
-            cout << *currOldNode << " is enriched at old timestep" << endl;
+            std::cout << *currOldNode << " is enriched at old timestep" << std::endl;
             dserror("Enriched node shall have an intersected element around");
           }
 
@@ -772,7 +772,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
   } // end loop over elements containing the node
   if (numNewIntersectedEle==0)
   {
-    cout << endl << endl << *node << endl;
+    std::cout << std::endl << std::endl << *node << std::endl;
     dserror("node is enriched at new time step but has no intersected or touched element around");
   }
   for (size_t ivector=0;ivector<newVectors_.size();ivector++)
@@ -791,7 +791,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
       const int lid = newdofrowmap_.LID(newdofpos);
 
-      //      cout << *node << ": enrichment value "<< (*newVectors_[0])[lid] << " becomes " << finalEnrichmentValues[0](0,indexJumpEnr) << endl;
+      //      std::cout << *node << ": enrichment value "<< (*newVectors_[0])[lid] << " becomes " << finalEnrichmentValues[0](0,indexJumpEnr) << std::endl;
       for (size_t index=0;index<vectorSize(TimeIntData::predictor_);index++)
         (*newVectors_[index])[lid] = finalEnrichmentValues[index](0,indexJumpEnr);
       indexJumpEnr++;
@@ -855,7 +855,7 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
   } // end loop over elements containing the node
   for (size_t ivector=0;ivector<newVectors_.size();ivector++)
     finalEnrichmentValues[ivector].Scale(1.0/static_cast<double>(numNewIntersectedEle));
-  //  cout << *node << " has final enr values " << finalEnrichmentValues[0] << endl;
+  //  std::cout << *node << " has final enr values " << finalEnrichmentValues[0] << std::endl;
 
   int indexKinkEnr=0; // index which entry has to be used
   // set nodal velocities and pressures with help of the field set of node
@@ -1082,7 +1082,7 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
   std::vector<char> dataRecv;
   sendData(dataSend,dest,source,dataRecv);
 
-  // pointer to current position of group of cells in global string (counts bytes)
+  // pointer to current position of group of cells in global std::string (counts bytes)
   std::vector<char>::size_type posinData = 0;
 
   // clear vector that should be filled

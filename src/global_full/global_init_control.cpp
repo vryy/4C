@@ -97,7 +97,7 @@ void ntaini_ccadiscret(
     infilename << inout[0];
     // check whether outfilekenner includes a dash and in case separate the number at the end
     size_t pos = inout[1].rfind('-');
-    if (pos!=string::npos)
+    if (pos!=std::string::npos)
     {
       int number = atoi(inout[1].substr(pos+1).c_str());
       inout[1] = inout[1].substr(0,pos);
@@ -130,7 +130,7 @@ void ntaini_ccadiscret(
   // inform user
   if (myrank==0)
   {
-    cout << "input is read from     " << infilename.str() << endl;
+    std::cout << "input is read from     " << infilename.str() << std::endl;
   }
 
 
@@ -162,7 +162,7 @@ void ntaini_ccadiscret(
       {
         // check whether restartfilekenner includes a dash and in case separate the number at the end
         size_t pos = restartfilekenner.str().rfind('-');
-        if (pos!=string::npos)
+        if (pos!=std::string::npos)
         {
           int number = atoi(restartfilekenner.str().substr(pos+1).c_str());
           std::string kenner = restartfilekenner.str().substr(0,pos);

@@ -166,7 +166,7 @@ DRT::ELEMENTS::Dcohesive::~Dcohesive()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Dcohesive::Print(ostream& os) const
+void DRT::ELEMENTS::Dcohesive::Print(std::ostream& os) const
 {
   os << "Dcohesive ";
   Element::Print(os);

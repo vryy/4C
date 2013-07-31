@@ -145,7 +145,7 @@ DRT::ELEMENTS::Beam3eb::~Beam3eb()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::Print(ostream& os) const
+void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 {
   return;
 }

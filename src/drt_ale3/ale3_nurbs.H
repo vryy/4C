@@ -113,7 +113,7 @@ public:
   { return Ale3_NurbsType::Instance(); }
 
   /// Print this element
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
 
   /*!

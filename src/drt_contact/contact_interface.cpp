@@ -101,7 +101,7 @@ tsi_(false)
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::CoInterface& interface)
+std::ostream& operator << (std::ostream& os, const CONTACT::CoInterface& interface)
 {
   interface.Print(os);
   return os;
@@ -110,7 +110,7 @@ ostream& operator << (ostream& os, const CONTACT::CoInterface& interface)
 /*----------------------------------------------------------------------*
  |  print interface (public)                                 mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::Print(ostream& os) const
+void CONTACT::CoInterface::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
     os << "Contact ";
@@ -496,7 +496,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   Discret().ExportColumnElements(*coleles);
 
   // print message
-  if (!myrank) std::cout << "done!" << endl;
+  if (!myrank) std::cout << "done!" << std::endl;
 
   return true;
 }
@@ -651,7 +651,7 @@ void CONTACT::CoInterface::Initialize()
         (cnode->CoData().GetD2()).resize(0);
       }
   //    else
-  //      cout << "this was a slave node" << endl;
+  //      std::cout << "this was a slave node" << std::endl;
 
     }
   }
@@ -1061,7 +1061,7 @@ void CONTACT::CoInterface::ExportNodalNormals()
     // one proc after the other
     if (p==Comm().MyPID())
     {
-      std::cout << "\n*****\nPROC " << p << "\n*****" << endl;
+      std::cout << "\n*****\nPROC " << p << "\n*****" << std::endl;
       for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
       {
         int gid = snodecolmapbound_->GID(i);
@@ -1072,29 +1072,29 @@ void CONTACT::CoInterface::ExportNodalNormals()
         // print normal and tangents at each slave node
         std::cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
              << " Normal: " << cnode->MoData().n()[0]
-             << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << endl;
+             << " " << cnode->MoData().n()[1] << " " << cnode->MoData().n()[2] << std::endl;
         std::cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
              << " TXi: " << cnode->CoData().txi()[0]
-             << " " << cnode->CoData().txi()[1] << " " << cnode->CoData().txi()[2] << endl;
+             << " " << cnode->CoData().txi()[1] << " " << cnode->CoData().txi()[2] << std::endl;
         std::cout << "Proc: " << p << " Node: " << gid << " Owner: " << cnode->Owner()
              << " TEta: " << cnode->CoData().teta()[0]
-             << " " << cnode->CoData().teta()[1] << " " << cnode->CoData().teta()[2] << endl;
+             << " " << cnode->CoData().teta()[1] << " " << cnode->CoData().teta()[2] << std::endl;
 
         // print linearizations at each slave node
         std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinN: ";
         for (iter=cnode->CoData().GetDerivN()[0].begin();iter!=cnode->CoData().GetDerivN()[0].end();++iter)
           std::cout << "\n" << iter->first << "\t" << iter->second;
-        std::cout << endl;
+        std::cout << std::endl;
         std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTxi: ";
         for (iter=cnode->CoData().GetDerivTxi()[0].begin();iter!=cnode->CoData().GetDerivTxi()[0].end();++iter)
           std::cout << "\n" << iter->first << "\t" << iter->second;
-        std::cout << endl;
+        std::cout << std::endl;
         std::cout << "Proc: " << p << " Node: " << gid  << " Owner: " << cnode->Owner() << " LinTeta: ";
         for (iter=cnode->CoData().GetDerivteta()[0].begin();iter!=cnode->CoData().GetDerivTeta()[0].end();++iter)
           std::cout << "\n" << iter->first << "\t" << iter->second;
-        std::cout << endl;
+        std::cout << std::endl;
       }
-      std::cout << endl << endl;
+      std::cout << std::endl << std::endl;
     }
 
     // barrier
@@ -1981,7 +1981,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
         //std::cout << "node #" << gid << " is now active (";
         //for( int j=0; j<dim; j++)
         //  std::cout << " " << cnode->Dofs()[j] << " ";
-        //std::cout << ") gap=" << gap << endl;
+        //std::cout << ") gap=" << gap << std::endl;
     }
 
     else if( (cnode->Active() == true) && (lmuzawan - kappa * pp * gap < 0) )
@@ -1989,7 +1989,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
         cnode->Active() = false;
         localactivesetchange = true;
 
-        //std::cout << "node #" << gid << " is now inactive, gap=" << gap << endl;
+        //std::cout << "node #" << gid << " is now inactive, gap=" << gap << std::endl;
     }
     //********************************************************************
 
@@ -1999,9 +1999,9 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
     if( cnode->Active()==true )
     {
 
-//      std::cout << "GID " << gid << endl;
-//      std::cout << "LMUZAWAN " << lmuzawan << endl;
-//      std::cout << "GAP " << gap << endl;
+//      std::cout << "GID " << gid << std::endl;
+//      std::cout << "LMUZAWAN " << lmuzawan << std::endl;
+//      std::cout << "GAP " << gap << std::endl;
 
       localisincontact = true;
 
@@ -2149,7 +2149,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     }
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))
     {
-      //std::cout << "Node " << gid << " is stick" << endl;
+      //std::cout << "Node " << gid << " is stick" << std::endl;
       cnode->FriData().Slip() = false;
 
       // in the stick case, traction is trailtraction
@@ -2162,7 +2162,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     }
     else
     {
-      //std::cout << "Node " << gid << " is slip" << endl;
+      //std::cout << "Node " << gid << " is slip" << std::endl;
       cnode->FriData().Slip() = true;
 
       // in the slip case, traction is evaluated with a return map algorithm
@@ -2497,7 +2497,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     {
     }
     else if (cnode->Active()==true && ((abs(maxtantrac) - magnitude >= 0)or ftype==INPAR::CONTACT::friction_stick))    {
-      //std::cout << "Node " << gid << " is stick" << endl;
+      //std::cout << "Node " << gid << " is stick" << std::endl;
       cnode->FriData().Slip() = false;
 
       // compute lagrange multipliers and store into node
@@ -2506,7 +2506,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
     }
     else
     {
-      //std::cout << "Node " << gid << " is slip" << endl;
+      //std::cout << "Node " << gid << " is slip" << std::endl;
       cnode->FriData().Slip() = true;
 
       // compute lagrange multipliers and store into node
@@ -3058,7 +3058,7 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     {
       int col = colcurr->first;
       double val = colcurr->second;
-      //std::cout << "Assemble S: " << row << " " << col << " " << val << endl;
+      //std::cout << "Assemble S: " << row << " " << col << " " << val << std::endl;
       // do not assemble zeros into s matrix
       if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
     }
@@ -3125,7 +3125,7 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
           dserror("ERROR: AssembleP: Column dim. of nodal DerivT-map is inconsistent!");
 
       // begin assembly of P-matrix
-      //std::cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
+      //std::cout << std::endl << "->Assemble P for Node ID: " << cnode->Id() << std::endl;
 
       // loop over all derivative maps (=dimensions)
       for (int j=0;j<mapsize;++j)
@@ -3137,8 +3137,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         {
           int col = colcurr->first;
           double val = cnode->MoData().lm()[j]*(colcurr->second);
-          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
-          //std::cout << "Assemble P: " << row << " " << col << " " << val << endl;
+          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
+          //std::cout << "Assemble P: " << row << " " << col << " " << val << std::endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
           ++k;
@@ -3170,7 +3170,7 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
           dserror("ERROR: AssembleS: Column dim. of nodal DerivTEta-map is inconsistent!");
 
       // begin assembly of P-matrix
-      //std::cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
+      //std::cout << std::endl << "->Assemble P for Node ID: " << cnode->Id() << std::endl;
 
       // loop over all derivative maps (=dimensions) for TXi
       for (int j=0;j<mapsizexi;++j)
@@ -3182,8 +3182,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         {
           int col = colcurr->first;
           double val = cnode->MoData().lm()[j]*(colcurr->second);
-          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
-          //std::cout << "Assemble P: " << rowxi << " " << col << " " << val << endl;
+          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
+          //std::cout << "Assemble P: " << rowxi << " " << col << " " << val << std::endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,rowxi,col);
           ++k;
@@ -3203,8 +3203,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal)
         {
           int col = colcurr->first;
           double val = cnode->MoData().lm()[j]*(colcurr->second);
-          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << endl;
-          //std::cout << "Assemble P: " << roweta << " " << col << " " << val << endl;
+          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
+          //std::cout << "Assemble P: " << roweta << " " << col << " " << val << std::endl;
           // do not assemble zeros into P matrix
           if (abs(val)>1.0e-12) pglobal.Assemble(val,roweta,col);
           ++k;
@@ -3378,7 +3378,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           // owner of LM slave node can do the assembly, although it actually
           // might not own the corresponding rows in lindglobal (DISP slave node)
           // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
-          //std::cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
+          //std::cout << "Assemble LinD: " << row << " " << col << " " << val << std::endl;
           if (abs(val)>1.0e-12) lindglobal.FEAssemble(val,row,col);
         }
 
@@ -3425,7 +3425,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           // owner of LM slave node can do the assembly, although it actually
           // might not own the corresponding rows in lindglobal (DISP slave node)
           // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
-          //std::cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
+          //std::cout << "Assemble LinM: " << row << " " << col << " " << val << std::endl;
           if (abs(val)>1.0e-12) linmglobal.FEAssemble(-val,row,col);
         }
 
@@ -3470,7 +3470,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       double gap = cnode->CoData().Getg();
 
       // std::cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
-      //      << " IsActive: " << cnode->Active() << " Gap: " << gap << endl;
+      //      << " IsActive: " << cnode->Active() << " Gap: " << gap << std::endl;
 
       // check if this inactive node has a feasible projection
       // else, it cannot be in contact and weighted gap should be positive
@@ -4084,7 +4084,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            {
               int col = colcurr->first;
 
-              //std::cout << "val " << colcurr->second << endl;
+              //std::cout << "val " << colcurr->second << std::endl;
 
               double valtxi = (-1)*(frcoeff*(znor-cn*wgap))*ct*txi[dim]*colcurr->second;
               double valteta = (-1)*(frcoeff*(znor-cn*wgap))*ct*teta[dim]*colcurr->second;
@@ -4507,7 +4507,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int col = cnode->Dofs()[dim];
           double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
-         //std::cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+         //std::cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
   #ifdef CONTACTFRICTIONLESSFIRST
           if (cnode->FriData().ActiveOld()==false) val = 0;
   #endif
@@ -4556,7 +4556,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = cmnode->Dofs()[dim];
             double val = prefactor*(+1)*ct*txi[dim]*(mik-mikold)*ztan;
-            //std::cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
           if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4574,7 +4574,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int col = cnode->Dofs()[dim];
           double val = frbound*ct*txi[dim]*(D-Dold);
-          //std::cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
           if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4603,7 +4603,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = cmnode->Dofs()[dim];
             double val = frbound*(-1)*ct*txi[dim]*(mik-mikold);
-            //std::cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
             if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4625,7 +4625,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = sum*(colcurr->second)*z[j];
-            //std::cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
             if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4652,7 +4652,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = prefactor*(colcurr->second)*z[j]*ztan;
-            //std::cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
           if (cnode->FriData().ActiveOld()==false) val = (colcurr->second)*z[j];
@@ -4679,7 +4679,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = prefactor*ct*(colcurr->second)*jump[j]*ztan;
-            //std::cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4709,7 +4709,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int col = colcurr->first;
           double val = (-1)*prefactor*ct*tdotx*colcurr->second*ztan;
-          //std::cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+          //std::cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4747,7 +4747,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = prefactor*ct*tdotx*colcurr->second*ztan;
-            //std::cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4770,7 +4770,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = (-1)*frbound*(colcurr->second)*z[j];
-            //std::cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4797,7 +4797,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           {
             int col = colcurr->first;
             double val = (-1)*frbound*ct*(colcurr->second)*jump[j];
-            //std::cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4824,7 +4824,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
          {
            int col = colcurr->first;
            double val = (-1)*(-1)*frbound*ct*tdotx*colcurr->second;
-           //std::cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+           //std::cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;
@@ -4858,7 +4858,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            {
              int col = colcurr->first;
              double val = (-1)*frbound*ct*tdotx*colcurr->second;
-            //std::cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << endl;
+            //std::cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
         if (cnode->FriData().ActiveOld()==false) val = 0;

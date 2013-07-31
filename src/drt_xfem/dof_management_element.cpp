@@ -155,11 +155,11 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
   for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
   {
     const XFEM::PHYSICS::Field field = enrfield->getField();
-    //cout << physVarToString(field) << endl;
+    //std::cout << physVarToString(field) << std::endl;
     std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator schnack = element_ansatz.find(field);
     if (schnack == element_ansatz.end())
     {
-      cout << XFEM::PHYSICS::physVarToString(field) << endl;
+      std::cout << XFEM::PHYSICS::physVarToString(field) << std::endl;
       dserror("field not found -> bug");
     }
 
@@ -198,7 +198,7 @@ std::string XFEM::ElementDofManager::toString() const
     const std::set <XFEM::FieldEnr> actset = tmp->second;
     for ( std::set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
     {
-      s << "Node: " << gid << ", " << var->toString() << endl;
+      s << "Node: " << gid << ", " << var->toString() << std::endl;
     }
   }
   return s.str();
@@ -214,7 +214,7 @@ const std::set<XFEM::FieldEnr>& XFEM::ElementDofManager::FieldEnrSetPerNode(
   std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
   if (tmp == nodalDofSet_.end())
   {
-    std::cout << gid << endl;
+    std::cout << gid << std::endl;
     // let this always be here so we can recognize errors early
     dserror("FieldEnrSetPerNode: global node id not found!");
     //return std::set<FieldEnr>();
@@ -245,7 +245,7 @@ std::size_t XFEM::ElementDofManager::NumDofPerField(
   std::map<XFEM::PHYSICS::Field, std::vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
   //map<XFEM::PHYSICS::Field, std::size_t>::const_iterator tmp = numParamsPerField_.find(field);
   if (tmp == paramsLocalEntries_.end()){
-    //cout << XFEM::PHYSICS::physVarToString(field) << endl;
+    //std::cout << XFEM::PHYSICS::physVarToString(field) << std::endl;
     return 0;
   }
   return tmp->second.size();

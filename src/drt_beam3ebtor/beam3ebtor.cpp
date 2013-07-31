@@ -34,8 +34,8 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebtorType::Create( const std::vector<char> &
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create(const string eletype,
-																 															const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create(const std::string eletype,
+																 															const std::string eledistype,
 																 															const int id,
 																 															const int owner )
 {
@@ -143,7 +143,7 @@ DRT::ELEMENTS::Beam3ebtor::~Beam3ebtor()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebtor::Print(ostream& os) const
+void DRT::ELEMENTS::Beam3ebtor::Print(std::ostream& os) const
 {
   return;
 }

@@ -509,16 +509,16 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     {
       // warnings
 #ifdef CONTACTPSEUDO2D
-      cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
-           << "is a real 3D problem, switch it off!" << END_COLOR << endl;
+      std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
+           << "is a real 3D problem, switch it off!" << END_COLOR << std::endl;
 #else
-      cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
-           << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << endl;
+      std::cout << RED << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
+           << "is a 2D problem modeled pseudo-3D, switch it on!" << END_COLOR << std::endl;
 #endif // #ifdef CONTACTPSEUDO2D
 
 //      if (probtype!=prb_tsi)
-//        cout << RED << "WARNING: Contact and Meshtying are still experimental "
-//             << "for the chosen problem type \"" << probname << "\"!\n" << END_COLOR << endl;
+//        std::cout << RED << "WARNING: Contact and Meshtying are still experimental "
+//             << "for the chosen problem type \"" << probname << "\"!\n" << END_COLOR << std::endl;
 
       // errors
       if (probtype!=prb_tsi and probtype!=prb_struct_ale)
@@ -616,19 +616,19 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       if (!myrank_)
       {
         if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
-          cout << "===== Standard Lagrange multiplier strategy ====================\n" << endl;
+          std::cout << "===== Standard Lagrange multiplier strategy ====================\n" << std::endl;
         else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
-          cout << "===== Dual Lagrange multiplier strategy ========================\n" << endl;
+          std::cout << "===== Dual Lagrange multiplier strategy ========================\n" << std::endl;
         else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
-          cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n" << endl;
+          std::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n" << std::endl;
         else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
-          cout << "===== Standard Penalty strategy ================================\n" << endl;
+          std::cout << "===== Standard Penalty strategy ================================\n" << std::endl;
         else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
-          cout << "===== Dual Penalty strategy ====================================\n" << endl;
+          std::cout << "===== Dual Penalty strategy ====================================\n" << std::endl;
         else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_standard)
-          cout << "===== Standard Augmented Lagrange strategy =====================\n" << endl;
+          std::cout << "===== Standard Augmented Lagrange strategy =====================\n" << std::endl;
         else if (soltype == INPAR::CONTACT::solution_auglag && shapefcn == INPAR::MORTAR::shape_dual)
-          cout << "===== Dual Augmented Lagrange strategy =========================\n" << endl;
+          std::cout << "===== Dual Augmented Lagrange strategy =========================\n" << std::endl;
       }
     }
   }
@@ -680,17 +680,17 @@ void STR::TimInt::PrepareStatMech()
       switch(tbtype)
       {
         case INPAR::STATMECH::thermalbath_uniform:
-          cout << "========= Statistical Mechanics: uniform thermal bath ==========\n" << endl;
+          std::cout << "========= Statistical Mechanics: uniform thermal bath ==========\n" << std::endl;
           break;
         case INPAR::STATMECH::thermalbath_shearflow:
-          cout << "======== Statistical Mechanics: thermal bath, shearflow ========\n" << endl;
+          std::cout << "======== Statistical Mechanics: thermal bath, shearflow ========\n" << std::endl;
           break;
         default: dserror("Undefined thermalbath type!");
         break;
       }
       Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
       if(!ioparams.get<int>("STDOUTEVRY",0))
-        cout<<"STDOUT SUPPRESSED!"<<endl;
+        std::cout<<"STDOUT SUPPRESSED!"<<std::endl;
     }
   }
   return;
@@ -1906,9 +1906,9 @@ void STR::TimInt::OutputNodalPositions()
   if (discret_->Comm().NumProc() != 1)
     dserror("The flag PRINTSTRUCTDEFORMEDNODECOORDS is on and only works with 1 processor");
 
-  cout << "STRUCT DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
+  std::cout << "STRUCT DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << std::endl;
   // does discret_ exist here?
-  //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
+  //std::cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << std::endl;
 
   //RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
   //RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
@@ -1924,15 +1924,15 @@ void STR::TimInt::OutputNodalPositions()
     gid = noderowmap->GID(lid);
     // get the node
     DRT::Node * node = discret_->gNode(gid);
-    //cout<<"mynode"<<*node<<endl;
+    //std::cout<<"mynode"<<*node<<std::endl;
 
     // get the coordinates of the node
     const double * X = node->X();
     // get degrees of freedom of a node
 
     std::vector<int> gdofs = discret_->Dof(node);
-    //cout << "for node:" << *node << endl;
-    //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
+    //std::cout << "for node:" << *node << std::endl;
+    //std::cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << std::endl;
 
     // get displacements of a node
     std::vector<double> mydisp (3,0.0);
@@ -1940,9 +1940,9 @@ void STR::TimInt::OutputNodalPositions()
     {
       int displid = dofrowmap->LID(gdofs[ldof]);
 
-      //cout << "displacement local id - in the rowmap" << displid << endl;
+      //std::cout << "displacement local id - in the rowmap" << displid << std::endl;
       mydisp[ldof] = ((*dis_)[0])[displid];
-      //cout << "at node" << gid << "mydisplacement in each direction" << mydisp[ldof] << endl;
+      //std::cout << "at node" << gid << "mydisplacement in each direction" << mydisp[ldof] << std::endl;
       //make zero if it is too small
       if (abs(mydisp[ldof]) < 0.00001)
       {
@@ -1954,8 +1954,8 @@ void STR::TimInt::OutputNodalPositions()
     double newX = mydisp[0]+X[0];
     double newY = mydisp[1]+X[1];
     double newZ = mydisp[2]+X[2];
-    //cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
-    cout << gid << " " << newX << " " << newY << " " << newZ << endl;
+    //std::cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << std::endl;
+    std::cout << gid << " " << newX << " " << newY << " " << newZ << std::endl;
   }
 
 #endif //PRINTSTRUCTDEFORMEDNODECOORDS
@@ -2062,7 +2062,7 @@ void STR::TimInt::ApplyForceStiffInternal
 
 #if 0
   if (pressure_ != Teuchos::null)
-    cout << "Total volume=" << std::scientific << p.get<double>("volume") << endl;
+    std::cout << "Total volume=" << std::scientific << p.get<double>("volume") << std::endl;
 #endif
 
   // *********** time measurement ***********
@@ -2349,7 +2349,7 @@ bool STR::TimInt::UseContactSolver()
 /* set volume coupling state from other discretization  vuong 01/12*/
 void STR::TimInt::ApplyCouplingState(
   Teuchos::RCP<const Epetra_Vector> state,
-  const string& name,
+  const std::string& name,
   unsigned dofset
   )
 {
@@ -2378,7 +2378,7 @@ void STR::TimInt::ApplyCouplingState(
 /* set coupling state for volume coupled problems          */
 void STR::TimInt::SetCouplingState()
 {
-  std::map<string,Teuchos::RCP<const Epetra_Vector> >::iterator it;
+  std::map<std::string,Teuchos::RCP<const Epetra_Vector> >::iterator it;
 
   //loop over dofsets
   for (unsigned int iter = 0; iter<couplstate_.size();  ++iter)

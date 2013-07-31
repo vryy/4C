@@ -343,7 +343,7 @@ void DRT::ELEMENTS::NStet5::so_nstet5_expol(LINALG::Matrix<1,6>& stresses,
 /*----------------------------------------------------------------------*
  |  print this element (public)                                gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::Print(ostream& os) const
+void DRT::ELEMENTS::NStet5::Print(std::ostream& os) const
 {
   os << "NStet5 ";
   Element::Print(os);

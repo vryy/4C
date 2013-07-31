@@ -204,7 +204,50 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   if (velpressplitter_.CondMap()->NumGlobalElements()<1)
     dserror("Pressure map empty. Wrong DIM value in input file?");
 
+#if 0
   // -------------------------------------------------------------------
+  // setup Krylov space projection if necessary
+  // -------------------------------------------------------------------
+
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+
+  // get condition "KrylovSpaceProjection" from discretization
+  std::vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+
+  DRT::Condition* kspcond = NULL;
+  // check if for fluid Krylov projection is required
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid")
+    {
+      numfluid++;
+      kspcond = KSPcond[icond];
+    }
+  }
+
+  // initialize variables for Krylov projection if necessary
+  if (numfluid == 1)
+  {
+    SetupKrylovSpaceProjection(kspcond);
+    if (myrank_ == 0)
+      std::cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << std::endl;
+  }
+  else if (numfluid == 0)
+  {
+    updateprojection_ = false;
+    projector_ = Teuchos::null;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
+
+  // -------------------------------------------------------------------
+#endif
   // create empty vectors
   // -------------------------------------------------------------------
   // additional rhs vector for robin-BC and vector for copying the residual
@@ -612,12 +655,12 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     if (myrank_ == 0)
     {
       // Output
-      cout << "FLUID: Fine-scale subgrid-viscosity approach based on AVM3: ";
-      cout << &endl << &endl;
-      cout << fssgv_;
-      cout << " with Smagorinsky constant Cs= ";
-      cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
-      cout << &endl << &endl << &endl;
+      std::cout << "FLUID: Fine-scale subgrid-viscosity approach based on AVM3: ";
+      std::cout << &std::endl << &std::endl;
+      std::cout << fssgv_;
+      std::cout << " with Smagorinsky constant Cs= ";
+      std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+      std::cout << &std::endl << &std::endl << &std::endl;
     }
   }
 
@@ -747,57 +790,55 @@ void FLD::FluidImplicitTimeInt::Integrate()
   Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
   if (myrank_==0)
   {
-    cout << "Stabilization type         : " << stabparams->get<std::string>("STABTYPE") << "\n";
-    cout << "                             " << "Evaluation Tau  = " << stabparams->get<std::string>("EVALUATION_TAU") <<"\n";
-    cout << "                             " << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") <<"\n";
-    cout << "\n";
-
+    std::cout << "Stabilization type         : " << stabparams->get<std::string>("STABTYPE") << "\n";
+    std::cout << "                             " << "Evaluation Tau  = " << stabparams->get<std::string>("EVALUATION_TAU") <<"\n";
+    std::cout << "                             " << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") <<"\n";
+    std::cout << "\n";
 
     if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
     {
 
-      cout << "                             " << stabparams->get<std::string>("TDS")<< "\n";
-      cout << "\n";
-      cout << "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
+      std::cout << "                             " << stabparams->get<std::string>("TDS")<< "\n";
+      std::cout << "\n";
+      std::cout << "                             " << "Tau Type        = " << stabparams->get<std::string>("DEFINITION_TAU") <<"\n";
 
-      if(stabparams->get<string>("TDS") == "quasistatic")
+      if(stabparams->get<std::string>("TDS") == "quasistatic")
       {
-        if(stabparams->get<string>("TRANSIENT")=="yes_transient")
+        if(stabparams->get<std::string>("TRANSIENT")=="yes_transient")
         {
           dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
         }
       }
 
-      cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-      cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-      cout <<  "                             " << "GRAD_DIV        = " << stabparams->get<string>("GRAD_DIV")          <<"\n";
-      cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-      cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-      cout <<  "                             " << "RSTAB           = " << stabparams->get<string>("RSTAB")          <<"\n";
-      cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-      cout << "\n";
-      cout << endl;
+      std::cout <<  "                             " << "SUPG            = " << stabparams->get<std::string>("SUPG")           <<"\n";
+      std::cout <<  "                             " << "PSPG            = " << stabparams->get<std::string>("PSPG")           <<"\n";
+      std::cout <<  "                             " << "GRAD_DIV        = " << stabparams->get<std::string>("GRAD_DIV")          <<"\n";
+      std::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<std::string>("CROSS-STRESS")   <<"\n";
+      std::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<std::string>("REYNOLDS-STRESS")<<"\n";
+      std::cout <<  "                             " << "VSTAB           = " << stabparams->get<std::string>("VSTAB")          <<"\n";
+      std::cout <<  "                             " << "RSTAB           = " << stabparams->get<std::string>("RSTAB")          <<"\n";
+      std::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<std::string>("TRANSIENT")      <<"\n";
+      std::cout << "\n";
+      std::cout << std::endl;
     }
     else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
     {
       Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
 
-      cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
+      std::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
 
-      cout << "+---------------------------------------------------------------------------------+\n";
-      cout << "|  WARNING: edge-based stabilization requires face discretization                 |\n";
-      cout << "|           face discretization currently only available for pure fluid problems  |\n";
-      cout << "+---------------------------------------------------------------------------------+\n";
+      std::cout << "+---------------------------------------------------------------------------------+\n";
+      std::cout << "|  WARNING: edge-based stabilization requires face discretization                 |\n";
+      std::cout << "|           face discretization currently only available for pure fluid problems  |\n";
+      std::cout << "+---------------------------------------------------------------------------------+\n";
 
-      cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
-      cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
-      cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
-      cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
-      cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
-      cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
-      cout << "+---------------------------------------------------------------------------------+\n" << endl;
-
+      std::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
+      std::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
+      std::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
+      std::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
+      std::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
+      std::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
+      std::cout << "+---------------------------------------------------------------------------------+\n" << std::endl;
     }
 
   }
@@ -995,9 +1036,9 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
       {
         if (myrank_==0)
         {
-          cout<<"Starting algorithm for Af_GenAlpha active."
+          std::cout<<"Starting algorithm for Af_GenAlpha active."
               <<"Performing step "<<step_ <<" of "<<numstasteps_
-              <<" Backward Euler starting steps"<<endl;
+              <<" Backward Euler starting steps"<<std::endl;
         }
         alphaM_ = 1.0;
         alphaF_ = 1.0;
@@ -2073,7 +2114,7 @@ void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspco
   kspsplitter_->Setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
-  const string* weighttype = kspcond->Get<string>("weight vector definition");
+  const std::string* weighttype = kspcond->Get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype=="integration"))
@@ -2893,7 +2934,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
     if(myrank_==0)
     {
-      cout << "time update for subscales";
+      std::cout << "time update for subscales";
     }
 
     // call elements to calculate system matrix and rhs and assemble
@@ -2932,7 +2973,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
 
     if(myrank_==0)
     {
-      cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
+      std::cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
     }
   }}
 
@@ -3321,7 +3362,7 @@ void FLD::FluidImplicitTimeInt::Output()
       RCP<Epetra_Vector> traction = CalcStresses();
       output_->WriteVector("traction",traction);
       if (myrank_==0)
-        cout<<"Writing stresses"<<endl;
+        std::cout<<"Writing stresses"<<std::endl;
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
@@ -3561,9 +3602,9 @@ void FLD::FluidImplicitTimeInt::Output()
   if (discret_->Comm().NumProc() != 1)
     dserror("The flag PRINTALEDEFORMEDNODECOORDS has been switched on, and only works for 1 processor");
 
-  cout << "ALE DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
+  std::cout << "ALE DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << std::endl;
   // does discret_ exist here?
-  //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
+  //std::cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << std::endl;
 
   //RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
   //RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
@@ -3582,15 +3623,15 @@ void FLD::FluidImplicitTimeInt::Output()
     const double * X = node->X();
     // get degrees of freedom of a node
     std::vector<int> gdofs = discret_->Dof(node);
-    //cout << "for node:" << *node << endl;
-    //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
+    //std::cout << "for node:" << *node << std::endl;
+    //std::cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << std::endl;
 
     // get displacements of a node
     std::vector<double> mydisp (3,0.0);
     for (int ldof = 0; ldof<3; ldof ++)
     {
       int displid = dofrowmap->LID(gdofs[ldof]);
-      //cout << "displacement local id - in the rowmap" << displid << endl;
+      //std::cout << "displacement local id - in the rowmap" << displid << std::endl;
       mydisp[ldof] = (*dispnp_)[displid];
       //make zero if it is too small
       if (abs(mydisp[ldof]) < 0.00001)
@@ -3602,8 +3643,8 @@ void FLD::FluidImplicitTimeInt::Output()
     double newX = mydisp[0]+X[0];
     double newY = mydisp[1]+X[1];
     double newZ = mydisp[2]+X[2];
-    //cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
-    cout << gid << " " << newX << " " << newY << " " << newZ << endl;
+    //std::cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << std::endl;
+    std::cout << gid << " " << newX << " " << newY << " " << newZ << std::endl;
   }
 #endif //PRINTALEDEFORMEDNODECOORDS
 
@@ -3692,19 +3733,19 @@ void FLD::FluidImplicitTimeInt::OutputToGmsh(
 
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "velocity solution \" {" << endl;
+    gmshfilecontent << "View \" " << "velocity solution \" {" << std::endl;
     IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_ , "velocity", gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "pressure solution\" {" << endl;
+    gmshfilecontent << "View \" " << "pressure solution\" {" << std::endl;
     IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_, "pressure",gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   gmshfilecontent.close();
-  if (screen_out) std::cout << " done" << endl;
+  if (screen_out) std::cout << " done" << std::endl;
 
  return;
 }
@@ -4178,8 +4219,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       // out to screen
       if (myrank_==0)
       {
-        cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
-        cout << "\n\n";
+        std::cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
+        std::cout << "\n\n";
       }
 
       double bmvel=0;
@@ -4825,13 +4866,13 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     if (myrank_ == 0)
     {
       {
-        cout.precision(8);
-        cout << endl << "----relative L_2 error norm for analytical solution Nr. " <<
+        std::cout.precision(8);
+        std::cout << std::endl << "----relative L_2 error norm for analytical solution Nr. " <<
           DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
-          " ----------" << endl;
-        cout << "| velocity:  " << velerr/velint << endl;
-        cout << "| pressure:  " << preerr/pint << endl;
-        cout << "--------------------------------------------------------------------" << endl << endl;
+          " ----------" << std::endl;
+        std::cout << "| velocity:  " << velerr/velint << std::endl;
+        std::cout << "| pressure:  " << preerr/pint << std::endl;
+        std::cout << "--------------------------------------------------------------------" << std::endl << std::endl;
       }
 
       //velerrx = sqrt((*errors)[4]);
@@ -4932,10 +4973,10 @@ void FLD::FluidImplicitTimeInt::EvaluateDivU()
 
     if(myrank_==0)
     {
-      cout << "---------------------------------------------------" << endl;
-      cout << "| divergence-free condition:                      |" << endl;
-      cout << "| Norm(inf) = " << maxdivu <<  " | Norm(1) = " << sumdivu << "  |" << endl ;
-      cout << "---------------------------------------------------" << endl << endl;
+      std::cout << "---------------------------------------------------" << std::endl;
+      std::cout << "| divergence-free condition:                      |" << std::endl;
+      std::cout << "| Norm(inf) = " << maxdivu <<  " | Norm(1) = " << sumdivu << "  |" << std::endl ;
+      std::cout << "---------------------------------------------------" << std::endl << std::endl;
 
 
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -6109,7 +6150,7 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
     const INPAR::POROELAST::InitialField init,
     const int startfuncno)
 {
-  cout<<"FLD::FluidImplicitTimeInt::SetInitialPorosityField()"<<endl;
+  std::cout<<"FLD::FluidImplicitTimeInt::SetInitialPorosityField()"<<std::endl;
 
   switch(init)
   {
@@ -6258,31 +6299,31 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
 
     if (myrank_ == 0 and turbmodel_!=INPAR::FLUID::no_model)
     {
-      cout << "Turbulence model        : ";
-      cout << params_->sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model");
-      cout << &endl;
+      std::cout << "Turbulence model        : ";
+      std::cout << params_->sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model");
+      std::cout << &std::endl;
 
       if (turbmodel_ == INPAR::FLUID::smagorinsky)
       {
-        cout << "                             " ;
-        cout << "with Smagorinsky constant Cs= ";
-        cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") << "\n";
+        std::cout << "                             " ;
+        std::cout << "with Smagorinsky constant Cs= ";
+        std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") << "\n";
         if (physicaltype_==INPAR::FLUID::loma)
         {
           if (DRT::INPUT::IntegralValue<int>(params_->sublist("SUBGRID VISCOSITY"),"C_INCLUDE_CI"))
           {
             if (params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA")>0.0)
             {
-              cout << "with Yoshizawa constant Ci= ";
-              cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") << "\n";
+              std::cout << "with Yoshizawa constant Ci= ";
+              std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") << "\n";
             }
             else
               dserror("Ci expected!");
           }
           else
-            cout << "Yoshizawa constant Ci not included";
+            std::cout << "Yoshizawa constant Ci not included";
         }
-        cout << &endl;
+        std::cout << &std::endl;
       }
       else if(turbmodel_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
         {
@@ -6293,54 +6334,54 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
             dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
           }
 
-          cout << "                             "          ;
-          cout << "\n";
-          cout << "- Smagorinsky constant:   Cs   = "      ;
-          cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
-          cout << &endl;
-          cout << "- viscous length      :   l_tau= "      ;
-          cout << params_->sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU") << "\n";
-          cout << &endl;
+          std::cout << "                             "          ;
+          std::cout << "\n";
+          std::cout << "- Smagorinsky constant:   Cs   = "      ;
+          std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
+          std::cout << &std::endl;
+          std::cout << "- viscous length      :   l_tau= "      ;
+          std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU") << "\n";
+          std::cout << &std::endl;
         }
         else if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
         {
           if (homdir == "not_specified")
           {
-            cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
-            cout << &endl;
+            std::cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
+            std::cout << &std::endl;
           }
         }
         else if(turbmodel_ == INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
         {
-          cout << "                             "      ;
-          cout << "\n";
-          cout << "- Constant:  Cl   = "      ;
-          cout << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
-          cout << "- Scale separation:  " << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
-          cout << &endl;
+          std::cout << "                             "      ;
+          std::cout << "\n";
+          std::cout << "- Constant:  Cl   = "      ;
+          std::cout << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
+          std::cout << "- Scale separation:  " << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
+          std::cout << &std::endl;
         }
         else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
         {
           Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
-          cout << "                             "      ;
-          cout << "\n";
-          cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
-          cout << "- Scale separation:  " << modelparams->get<std::string>("SCALE_SEPARATION") << "\n";
+          std::cout << "                             "      ;
+          std::cout << "\n";
+          std::cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
+          std::cout << "- Scale separation:  " << modelparams->get<std::string>("SCALE_SEPARATION") << "\n";
           if ((DRT::INPUT::IntegralValue<int>(*modelparams,"CALC_N")))
           {
-            cout << "- Re_length:         " << modelparams->get<std::string>("REF_LENGTH") << "\n";
-            cout << "- Re_vel:            " << modelparams->get<std::string>("REF_VELOCITY") << "\n";
-            cout << "- c_nu:              " << modelparams->get<double>("C_NU") << "\n";
+            std::cout << "- Re_length:         " << modelparams->get<std::string>("REF_LENGTH") << "\n";
+            std::cout << "- Re_vel:            " << modelparams->get<std::string>("REF_VELOCITY") << "\n";
+            std::cout << "- c_nu:              " << modelparams->get<double>("C_NU") << "\n";
           }
           else
-            cout << "- N:                 " << modelparams->get<double>("N") << "\n";
-          cout << "- near-wall limit:   " << DRT::INPUT::IntegralValue<int>(*modelparams,"NEAR_WALL_LIMIT") << "\n";
-          cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
-          cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
-          cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
+            std::cout << "- N:                 " << modelparams->get<double>("N") << "\n";
+          std::cout << "- near-wall limit:   " << DRT::INPUT::IntegralValue<int>(*modelparams,"NEAR_WALL_LIMIT") << "\n";
+          std::cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
+          std::cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
+          std::cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
           if ((DRT::INPUT::IntegralValue<int>(*modelparams,"SET_FINE_SCALE_VEL")))
-              cout << "WARNING: fine-scale velocity is set for nightly tests!" << "\n";
-          cout << &endl;
+              std::cout << "WARNING: fine-scale velocity is set for nightly tests!" << "\n";
+          std::cout << &std::endl;
         }
       }
 

@@ -128,7 +128,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3LineType::Create( const int id
 
 
 /*----------------------------------------------------------------------*/
-// map to convert strings to actions (stabilization)
+// map to convert std::strings to actions (stabilization)
 /*----------------------------------------------------------------------*/
 std::map<std::string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3::stabstrtoact_;
 
@@ -301,13 +301,13 @@ DRT::ELEMENTS::Combust3::~Combust3()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Combust3::Print(ostream& os) const
+void DRT::ELEMENTS::Combust3::Print(std::ostream& os) const
 {
   os << "Combust3 ";
   if (standard_mode_)
     os << "(outputmode=true)";
   Element::Print(os);
-  cout << endl;
+  std::cout << std::endl;
   return;
 }
 

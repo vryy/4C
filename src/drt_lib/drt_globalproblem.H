@@ -351,7 +351,7 @@ public:
 
   //@}
 
-  std::map<std::pair<string,string>,std::map<int,int> > CloningMaterialMap()
+  std::map<std::pair<std::string,std::string>,std::map<int,int> > CloningMaterialMap()
       { return clonefieldmatmap_; }
 
   /// @name Spatial Functions
@@ -430,7 +430,7 @@ private:
 
   /// map of coupled fields and corresponding material IDs (needed for cloning
   /// of discretizations)
-  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap_;
+  std::map<std::pair<std::string,std::string>,std::map<int,int> > clonefieldmatmap_;
 
   /// nested parallelism group
   Teuchos::RCP<COMM_UTILS::NestedParGroup> npgroup_;

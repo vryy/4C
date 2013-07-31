@@ -367,7 +367,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         // update of theta
         omega = omega/2.0;
         thetatemp = theta + omega*residual/thetaquer;
-        //cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << endl;
+        //std::cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << std::endl;
 
         // update elastic variables
         Cdach = C;
@@ -395,14 +395,14 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
       theta = thetatemp;
       if (omega <= omegamin && abs(residualtemp) > (1.0-0.5*omega)*abs(residual))
       {
-        cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << endl;
+        std::cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << std::endl;
         //dserror("no damping coefficient found");
       }
 
     } // end of local Newton iteration
-    //cout.precision(13);
-    //if ((time-1.2) > 1.0E-8) cout << gp << " strain " << *glstrain << endl;
-    //if ((time-2.1E-4) > 1.0E-8) cout << gp << ": theta " << theta << " thetaold " << thetaold << endl;
+    //std::cout.precision(13);
+    //if ((time-1.2) > 1.0E-8) std::cout << gp << " strain " << *glstrain << std::endl;
+    //if ((time-2.1E-4) > 1.0E-8) std::cout << gp << ": theta " << theta << " thetaold " << thetaold << std::endl;
     if (localistep == maxstep && abs(residual) > abstol) dserror("local Newton iteration did not converge %e %f %f %e", residual, thetaold, theta, mandel);
 
     double temp = 0.0;
@@ -433,8 +433,8 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     // store theta
     theta_->at(gp) = theta;
     mandel_->at(gp) = mandel;
-    //cout.precision(10);
-    //cout << gp << ": theta " << theta << " thetaold " << thetaold << " residual " << residual << endl;
+    //std::cout.precision(10);
+    //std::cout << gp << ": theta " << theta << " thetaold " << thetaold << " residual " << residual << std::endl;
 
   } else if (time > endtime + eps) {  // turn off growth or calculate stresses for output
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
@@ -525,9 +525,9 @@ void MAT::Growth::EvaluateGrowthLaw
 /*----------------------------------------------------------------------*
  |  Names of gp data to be visualized             (public)         03/13|
  *----------------------------------------------------------------------*/
-void MAT::Growth::VisNames(std::map<string,int>& names)
+void MAT::Growth::VisNames(std::map<std::string,int>& names)
 {
-  string fiber = "Theta";
+  std::string fiber = "Theta";
   names[fiber] = 1;
   fiber = "Mandel";
   names[fiber] = 1;
@@ -537,7 +537,7 @@ void MAT::Growth::VisNames(std::map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  gp data to be visualized                      (public)         03/13|
  *----------------------------------------------------------------------*/
-bool MAT::Growth::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::Growth::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (name == "Theta")
   {
@@ -587,14 +587,14 @@ void MAT::GrowthOutputToGmsh
   filename_mandel << filebase << "_mandel" << std::setw(3) << std::setfill('0') << timestep << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system_mandel(filename_mandel.str().c_str());
   std::stringstream gmshfilecontent_mandel;
-  gmshfilecontent_mandel << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
+  gmshfilecontent_mandel << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << std::endl;
 
   // file for theta
   std::stringstream filename_theta;
   filename_theta << filebase << "_theta" << std::setw(3) << std::setfill('0') << timestep << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system_theta(filename_theta.str().c_str());
   std::stringstream gmshfilecontent_theta;
-  gmshfilecontent_theta << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
+  gmshfilecontent_theta << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << std::endl;
 
   for (int iele=0; iele<dis->NumMyColElements(); ++iele)
   {
@@ -675,7 +675,7 @@ void MAT::GrowthOutputToGmsh
       gmshfilecontent_mandel << std::scientific << point(0,2) << ")";
       gmshfilecontent_mandel << "{" << std::scientific
       << mandelgp
-      << "};" << endl;
+      << "};" << std::endl;
 
       // write theta
       double thetagp = theta->at(gp);
@@ -684,14 +684,14 @@ void MAT::GrowthOutputToGmsh
       gmshfilecontent_theta << std::scientific << point(0,2) << ")";
       gmshfilecontent_theta << "{" << std::scientific
       << thetagp
-      << "};" << endl;
+      << "};" << std::endl;
     }
   }
-  gmshfilecontent_mandel << "};" << endl;
+  gmshfilecontent_mandel << "};" << std::endl;
   f_system_mandel << gmshfilecontent_mandel.str();
   f_system_mandel.close();
 
-  gmshfilecontent_theta << "};" << endl;
+  gmshfilecontent_theta << "};" << std::endl;
   f_system_theta << gmshfilecontent_theta.str();
   f_system_theta.close();
 

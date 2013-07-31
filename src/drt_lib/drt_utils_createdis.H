@@ -75,7 +75,7 @@ protected:
   void CopyConditions(
       const Teuchos::RCP<DRT::Discretization> sourcedis,
       Teuchos::RCP<DRT::Discretization> targetdis,
-      const std::map<string,string>& conditions_to_copy);
+      const std::map<std::string,std::string>& conditions_to_copy);
 
   void Finalize(
       const Teuchos::RCP<DRT::Discretization> sourcedis,
@@ -168,7 +168,7 @@ public:
     CreateElements(sourcedis,targetdis,matmap,isnurbsdis);
 
     // copy desired conditions from source to target discretization
-    std::map<string,string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
+    std::map<std::string,std::string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
     CopyConditions(sourcedis,targetdis,conditions_to_copy);
 
     // call Redistribute, FillComplete etc.
@@ -177,10 +177,10 @@ public:
 
 private:
 
-  /// get element type strings and global id's and nodes from source discretization
+  /// get element type std::strings and global id's and nodes from source discretization
   void AnalyzeSourceDis(
       Teuchos::RCP<DRT::Discretization> sourcedis,
-      std::vector<string>& eletype,
+      std::vector<std::string>& eletype,
       std::vector<int>& egid,
       std::set<int>& rownodeset,
       std::set<int>& colnodeset
@@ -198,7 +198,7 @@ private:
       DRT::Element* actele = sourcedis->lColElement(i);
       bool ismyele = sourcedis->ElementRowMap()->MyGID(actele->Id());
 
-      // we get the element type string and a boolean if this element
+      // we get the element type std::string and a boolean if this element
       // is considered! (see submeshes for Fluid-ALE case!)
       if(CloneStrategy::DetermineEleType(actele, ismyele, eletype_))
       {
@@ -245,7 +245,7 @@ private:
     {
       DRT::Element* sourceele = sourcedis->gElement(egid_[i]);
 
-      string approxtype = "Polynomial";
+      std::string approxtype = "Polynomial";
       if(isnurbsdis)
       {
         if(sourceele->NumNode()==8)
@@ -308,9 +308,9 @@ private:
       else
       {
         // before we stop, print the material id map
-        cout<<"Material map on PROC "<<myrank<<":"<<endl;
+        std::cout<<"Material map on PROC "<<myrank<<":"<<std::endl;
         for(mat_iter=matmap.begin(); mat_iter != matmap.end(); mat_iter++)
-          cout<<mat_iter->first<<" -> "<<mat_iter->second<<endl;
+          std::cout<<mat_iter->first<<" -> "<<mat_iter->second<<std::endl;
 
         dserror("no matching material ID (%d) in map",src_matid);
       }
@@ -323,8 +323,8 @@ private:
   std::set<int> colnodeset_;
   //! vector for holding global element ids
   std::vector<int> egid_;
-  //! vector for holding each (desired) element type string
-  std::vector<string> eletype_;
+  //! vector for holding each (desired) element type std::string
+  std::vector<std::string> eletype_;
 
 }; // class DiscretizationCreator
 
@@ -345,12 +345,12 @@ private:
      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<CloneStrategy> > clonewizard =
          Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>() );
 
-     std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap
+     std::map<std::pair<std::string,std::string>,std::map<int,int> > clonefieldmatmap
      = DRT::Problem::Instance()->CloningMaterialMap();
      if (clonefieldmatmap.size() < 1)
        dserror("At least one material pairing required in --CLONING MATERIAL MAP.");
 
-     std::pair<string,string> key(sourcedis->Name(),targetdis->Name());
+     std::pair<std::string,std::string> key(sourcedis->Name(),targetdis->Name());
      std::map<int,int> matmap = clonefieldmatmap[key];
      if (matmap.size() < 1)
        dserror("Key pair '%s/%s' not defined in --CLONING MATERIAL MAP.",sourcedis->Name().c_str(),targetdis->Name().c_str());

@@ -48,8 +48,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -213,7 +213,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return So_hex27Type::Instance(); }
@@ -237,15 +237,15 @@ public:
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<string,int>("Owner",1));
+    names.insert(std::pair<std::string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<string,int>("StressesXYZ",6));
+    names.insert(std::pair<std::string,int>("StressesXYZ",6));
   \endcode
 
   */
   virtual void VisNames
   (
-    std::map<string,int>& names  ///< to be filled with key names of data to visualize and with int dimensions
+    std::map<std::string,int>& names  ///< to be filled with key names of data to visualize and with int dimensions
   );
 
   /*!
@@ -262,7 +262,7 @@ public:
   */
   virtual bool VisData
   (
-    const string& name, ///< Name of data that is currently processed for visualization
+    const std::string& name, ///< Name of data that is currently processed for visualization
     std::vector<double>& data   ///<d ata to be filled by element if element recognizes the name
   );
 

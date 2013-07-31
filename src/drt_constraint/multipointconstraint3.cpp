@@ -32,7 +32,7 @@ Maintainer: Thomas Kloeppel
 UTILS::MPConstraint3::MPConstraint3
 (
   RCP<DRT::Discretization> discr,
-  const string& conditionname,
+  const std::string& conditionname,
   int& offsetID,
   int& maxID
 ):
@@ -56,7 +56,7 @@ MPConstraint
 //        absconstraint_[condID]=true;
 //      else
 //      {
-        const string* type = (*conditer)-> Get<string>("control");
+        const std::string* type = (*conditer)-> Get<std::string>("control");
         if (*type == "abs")
           absconstraint_[condID]=true;
         else
@@ -104,8 +104,8 @@ void UTILS::MPConstraint3::Initialize
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered another active condition (Id = " << condID 
-            << ")  for restart time t = "<< time << endl;
+        std::cout << "Encountered another active condition (Id = " << condID 
+            << ")  for restart time t = "<< time << std::endl;
       }
     }
   }
@@ -169,7 +169,7 @@ void UTILS::MPConstraint3::Initialize(
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+        std::cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       }
     }
   }
@@ -218,8 +218,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
 (
   RCP<DRT::Discretization> actdisc,
   std::vector< DRT::Condition* >      constrcondvec,
-  const string&             discret_name,
-  const string&             element_name,
+  const std::string&             discret_name,
+  const std::string&             element_name,
   int& startID
 )
 {

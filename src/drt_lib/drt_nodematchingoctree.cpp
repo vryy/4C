@@ -980,7 +980,7 @@ bool DRT::UTILS::OctreeElement::IsLeaf()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void DRT::UTILS::OctreeElement::Print(ostream& os) const
+void DRT::UTILS::OctreeElement::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Leaf in Layer " << layer_ << " Nodes ";
@@ -989,7 +989,7 @@ void DRT::UTILS::OctreeElement::Print(ostream& os) const
   {
     os << nodeids_[nn] << " ";
   }
-  os << endl;
+  os << std::endl;
   return;
 } // OctreeElement::Print(ostream& os)
 

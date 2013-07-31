@@ -84,7 +84,7 @@ DRT::DofSet::~DofSet()
 /*----------------------------------------------------------------------*
  |  << operator                                               ukue 04/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::DofSet& dofset)
+std::ostream& operator << (std::ostream& os, const DRT::DofSet& dofset)
 {
   dofset.Print(os);
   return os;
@@ -94,7 +94,7 @@ ostream& operator << (ostream& os, const DRT::DofSet& dofset)
 /*----------------------------------------------------------------------*
  |  print this  (public)                                      ukue 04/07|
  *----------------------------------------------------------------------*/
-void DRT::DofSet::Print(ostream& os) const
+void DRT::DofSet::Print(std::ostream& os) const
 {
   for (int proc=0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
   {

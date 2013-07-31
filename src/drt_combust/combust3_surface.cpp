@@ -112,7 +112,7 @@ DRT::ELEMENTS::Combust3Surface::~Combust3Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Combust3Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Combust3Surface::Print(std::ostream& os) const
 {
   os << "Combust3Surface ";
   Element::Print(os);

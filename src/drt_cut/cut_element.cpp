@@ -272,7 +272,7 @@ void GEO::CUT::Element::FindNodePositions()
     Point::PointPosition pos = p->Position();
 
 #ifdef check_for_all_nodes
-    std::cout << "Position for node " << n->Id() << endl;
+    std::cout << "Position for node " << n->Id() << std::endl;
     // do the computation in all cases
 #else
     if ( pos==Point::undecided )
@@ -458,7 +458,7 @@ void GEO::CUT::Element::FindNodePositions()
                     if ( (d > 0) and (fabs( d ) < fabs( smallest_dist )) ) // new smaller distance found for the same facet with another side
                     {
 #ifdef DEBUG
-                        if( pos == Point::inside) cout << "!!! position of node " << n->Id()  << " has changed from inside to outside" << endl;
+                        if( pos == Point::inside) std::cout << "!!! position of node " << n->Id()  << " has changed from inside to outside" << std::endl;
 #endif
                         // set new position
                         pos = Point::outside;
@@ -469,7 +469,7 @@ void GEO::CUT::Element::FindNodePositions()
                     else if((d < 0) and (fabs( d ) < fabs( smallest_dist ))) //new smaller distance found for the same facet with another side
                     {
 #ifdef DEBUG
-                        if( pos == Point::outside) cout << "!!! position of node " << n->Id()  << " has changed from outside to inside" << endl;
+                        if( pos == Point::outside) std::cout << "!!! position of node " << n->Id()  << " has changed from outside to inside" << std::endl;
 #endif
 
                         // set new position
@@ -650,13 +650,13 @@ bool GEO::CUT::Element::ComputePosition(Point * p,                        // the
 
   if(adjacent_cells.size()> 1)
   {
-    std::cout << "Warning: there is not a unique element's volumecell, number="  << adjacent_cells.size() << ", the line and facet is adjacent to-> Check this" << endl;
+    std::cout << "Warning: there is not a unique element's volumecell, number="  << adjacent_cells.size() << ", the line and facet is adjacent to-> Check this" << std::endl;
     throw std::runtime_error("Warning: there is not a unique element's volumecell");
   }
   else if(adjacent_cells.size()==0)
   {
-    std::cout << "facet cells" << facet_cells.size() << endl;
-    std::cout << "Warning: there is no adjacent volumecell, the line and facet is adjacent to-> Check this" << endl;
+    std::cout << "facet cells" << facet_cells.size() << std::endl;
+    std::cout << "Warning: there is no adjacent volumecell, the line and facet is adjacent to-> Check this" << std::endl;
     throw std::runtime_error("Warning: there is no adjacent volumecell");
   }
 
@@ -684,7 +684,7 @@ bool GEO::CUT::Element::ComputePosition(Point * p,                        // the
     }
   }
 
-  //std::cout << "how many cut_sides found? " << point_cut_sides.size() << endl;
+  //std::cout << "how many cut_sides found? " << point_cut_sides.size() << std::endl;
 
 
   if(point_cut_sides.size()==0)
@@ -711,8 +711,8 @@ bool GEO::CUT::Element::ComputePosition(Point * p,                        // the
   //------------------------------------------------------------------------
 
 
-  //if(successful) std::cout << "set position to " << p->Position() << endl;
-  //else std::cout << "not successful" << endl;
+  //if(successful) std::cout << "set position to " << p->Position() << std::endl;
+  //else std::cout << "not successful" << std::endl;
 
   return successful;
 }
@@ -741,9 +741,9 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s )
 
   if(!within_side)
   {
-    std::cout << "Side: " << endl; s->Print();
-    std::cout << "Point: " << endl; p->Print(std::cout);
-    std::cout << "local coordinates " << rs << " dist " << dist << endl;
+    std::cout << "Side: " << std::endl; s->Print();
+    std::cout << "Point: " << std::endl; p->Print(std::cout);
+    std::cout << "local coordinates " << rs << " dist " << dist << std::endl;
     throw std::runtime_error("cut-point does not lie on side! That's wrong, because it is a side's cut-point!");
   }
 
@@ -769,13 +769,13 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s )
   if( cosine > 0.0)
   {
     p->Position(Point::outside);
-    // cout << " set position to outside" << endl;
+    // std::cout << " set position to outside" << std::endl;
     return true;
   }
   else if ( cosine < 0.0 )
   {
     p->Position(Point::inside);
-    // cout << " set position to inside" << endl;
+    // std::cout << " set position to inside" << std::endl;
     return true;
   }
   else
@@ -812,14 +812,14 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
     }
     else
     {
-      std::cout << "point: " << p_xyz << endl;
-      std::cout << "cutpoint: " << cut_point_xyz << endl;
+      std::cout << "point: " << p_xyz << std::endl;
+      std::cout << "cutpoint: " << cut_point_xyz << std::endl;
       dserror("the line has nearly zero length: %d", line_norm);
     }
 
     if(s->Shape() != DRT::Element::tri3)
     {
-      std::cout << "HERE !tri3 cutsides are used!!!" << endl;
+      std::cout << "HERE !tri3 cutsides are used!!!" << std::endl;
 //      throw std::runtime_error("expect only tri3 cutsides!");
     }
 

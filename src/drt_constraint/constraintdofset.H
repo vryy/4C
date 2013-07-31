@@ -128,7 +128,7 @@ protected:
 
 
 // << operator
-ostream& operator << (ostream& os, const UTILS::ConstraintDofSet& dofset);
+std::ostream& operator << (std::ostream& os, const UTILS::ConstraintDofSet& dofset);
 
 
 #endif  // #ifndef DOFSET_H

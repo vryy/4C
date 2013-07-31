@@ -1425,7 +1425,7 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
           << "vc=" << cv << "  "
           << "vd= "<< ev-cv << "  "
           << "err=" << volume_error;
-      cout << err.str() << endl;
+      std::cout << err.str() << std::endl;
 //      throw std::runtime_error( err.str() );
     }
   }
@@ -1800,7 +1800,7 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   {
     VolumeCell * vc = &**i;
 
-//    if ( true  ) // cout all volumecells - inside and outside
+//    if ( true  ) // std::cout all volumecells - inside and outside
     if ( include_inner or vc->Position()!=Point::inside )
     {
       const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
@@ -1886,7 +1886,7 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   {
     VolumeCell * vc = &**i;
 
-//    if ( true  ) // cout all volumecells - inside and outside
+//    if ( true  ) // std::cout all volumecells - inside and outside
     if ( include_inner or vc->Position()!=Point::inside )
     {
       PointSet points;

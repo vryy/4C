@@ -115,7 +115,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epe
                                                                       double dt)
 {
 
-  std::cout << "WARNING: RelaxationSolve for XFEM useful?" << endl;
+  std::cout << "WARNING: RelaxationSolve for XFEM useful?" << std::endl;
 
   // the displacement -> velocity conversion at the interface
   idisp->Scale(1./dt);

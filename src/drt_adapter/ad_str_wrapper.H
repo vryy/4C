@@ -280,7 +280,7 @@ namespace ADAPTER
     { structure_->SetCouplingState(); }
 
     //! apply volume coupling state (e.g. temperatures for tsi, fluid velocities for poro) in structural time integrator
-    virtual void ApplyCouplingState(Teuchos::RCP<const Epetra_Vector> velnp,   const string& name, unsigned dofset=1)
+    virtual void ApplyCouplingState(Teuchos::RCP<const Epetra_Vector> velnp,   const std::string& name, unsigned dofset=1)
     { structure_->ApplyCouplingState(velnp,name,dofset); }
 
     /// set forces due to interface with fluid, the force is expected external-force-like

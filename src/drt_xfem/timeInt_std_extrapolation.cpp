@@ -84,7 +84,7 @@ void XFEM::ExtrapolationOld::compute(std::vector<RCP<Epetra_Vector> > newRowVect
 {
   if (oldVectors_.size() != newRowVectors.size())
   {
-    cout << "sizes are " << oldVectors_.size() << " and " << newRowVectors.size() << endl;
+    std::cout << "sizes are " << oldVectors_.size() << " and " << newRowVectors.size() << std::endl;
     dserror("Number of state-vectors at new and old discretization are different!");
   }
 
@@ -141,12 +141,12 @@ void XFEM::ExtrapolationOld::extrapolationMain(
 
   LINALG::Matrix<nsd,1> endpoint(data->node_.X());
 
-//    cout << "searching node = endpoint = " << endpoint << endl;
+//    std::cout << "searching node = endpoint = " << endpoint << std::endl;
   // identify final element and local coordinates of startpoint and midpoint for extrapolation
   bisection(data,startele,startpoint,xistartpoint,midele,midpoint,ximidpoint);
 
-//    cout << endl << "startpoint is " << startpoint;
-//    cout << "midpoint is " << midpoint;
+//    std::cout << std::endl << "startpoint is " << startpoint;
+//    std::cout << "midpoint is " << midpoint;
 
   // compute the constants for the extrapolation:
   // value = c1*valuestartpoint + c2*valuemidpoint
@@ -155,8 +155,8 @@ void XFEM::ExtrapolationOld::extrapolationMain(
 
   dist1.Update(1.0,midpoint,-1.0,startpoint);
   dist2.Update(1.0,endpoint,-1.0,midpoint);
-//  cout << "distance from startpoint to midpoint is " << dist1;
-//  cout << "distance from midpoint to endpoint is " << dist2;
+//  std::cout << "distance from startpoint to midpoint is " << dist1;
+//  std::cout << "distance from midpoint to endpoint is " << dist2;
 
   if (dist1.Norm2()<1e-14 or dist2.Norm2()<1e-14)
     dserror("something wrong in bisection");
@@ -174,8 +174,8 @@ void XFEM::ExtrapolationOld::extrapolationMain(
   callInterpolation(startele,xistartpoint,velstartpoint,presstartpoint);
   callInterpolation(midele,ximidpoint,velmidpoint,presmidpoint);
 
-  //  cout << "pres at startpoint is " << presstartpoint[0];
-  //  cout << "pres at midpoint is " << presmidpoint[0];
+  //  std::cout << "pres at startpoint is " << presstartpoint[0];
+  //  std::cout << "pres at midpoint is " << presmidpoint[0];
 
   // compute the final velocities and pressure due to the extrapolation
   std::vector<LINALG::Matrix<nsd,1> > velendpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
@@ -187,7 +187,7 @@ void XFEM::ExtrapolationOld::extrapolationMain(
     presendpoint[index] = c1*presstartpoint[index] + c2*presmidpoint[index];
 
     //	if (index == 0)
-    //		cout << "final pressure is " << presendpoint[index] <<
+    //		std::cout << "final pressure is " << presendpoint[index] <<
     //				" and final velocity is " << velendpoint[index];
 
   } // loop over vectors to be set
@@ -320,7 +320,7 @@ void XFEM::ExtrapolationOld::setJump(
       }
       else
       {
-        //cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
+        //std::cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << std::endl;
         //dserror("not implemented physical field!");
       }
     }
@@ -359,7 +359,7 @@ void XFEM::ExtrapolationOld::bisection(
   startpoint = nodecoords; // first point used for extrapolation
   midpoint = nodecoords; // second point used for extrapolation
   LINALG::Matrix<nsd,1> endpoint(data->node_.X()); // coordinates of data-requiring node
-//    cout << endl << "initial startpoint and midpoint is " << nodecoords;
+//    std::cout << std::endl << "initial startpoint and midpoint is " << nodecoords;
 
   LINALG::Matrix<nsd,1> pointTmp; // temporarily point used for computations and for bisection
   pointTmp.Update(0.5,startpoint,0.5,endpoint); // midpoint of startpoint and endpoint
@@ -381,7 +381,7 @@ void XFEM::ExtrapolationOld::bisection(
   // prework: search for the element around "startpoint" into "endpoint"-direction
   while(true)
   {
-//    cout << "potential midpoint is " << pointTmp;
+//    std::cout << "potential midpoint is " << pointTmp;
     iter++;
     for (int i=0; i<numele; i++)
     {
@@ -416,7 +416,7 @@ void XFEM::ExtrapolationOld::bisection(
   //	gives back either a point between pend and p1 or p2 = p1
   for (int i=iter;i<=curr_max_iter;i++)
   {
-//    cout << "potential midpoint is " << pointTmp;
+//    std::cout << "potential midpoint is " << pointTmp;
     callXToXiCoords(midele,pointTmp,xipointTmp,elefound);
 
     if (!elefound)
@@ -425,7 +425,7 @@ void XFEM::ExtrapolationOld::bisection(
 
     if (interfaceSideCompare(midele,pointTmp,0,data->phiValue_) == true) // Lagrangian origin and original node on different interface sides
     {
-//      cout << "current midpoint is " << pointTmp;
+//      std::cout << "current midpoint is " << pointTmp;
       curr_max_iter = std_max_iter; // usable point found
       midpoint = pointTmp; // possible point
       ximidpoint = xipointTmp;
@@ -438,11 +438,11 @@ void XFEM::ExtrapolationOld::bisection(
   // if element is (nearly) touched, the above bisection might fail
   if (midpoint == nodecoords) // nothing was changed above
   {
-    cout << endl << endl << "WARNING: this case should no more happen!" << endl << endl;
+    std::cout << std::endl << std::endl << "WARNING: this case should no more happen!" << std::endl << std::endl;
     midele = (DRT::Element*)eles[0];
     callXToXiCoords(midele,midpoint,ximidpoint,elefound);
   }
-//  cout << "final midpoint is " << midpoint << " in " << *midele;
+//  std::cout << "final midpoint is " << midpoint << " in " << *midele;
 
   // get current distances of the three points
   LINALG::Matrix<nsd,1> dist1; // distance from startpoint to midpoint
@@ -598,7 +598,7 @@ void XFEM::ExtrapolationOld::bisection(
       }
     }
   }
-//  cout << "final startpoint is " << startpoint << " in " << *startele;
+//  std::cout << "final startpoint is " << startpoint << " in " << *startele;
 
 } // end bisection
 
@@ -762,7 +762,7 @@ void XFEM::ExtrapolationOld::interpolation(
         }
         else
         {
-          cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
+          std::cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << std::endl;
           dserror("not implemented physical field!");
         }
         break;
@@ -770,7 +770,7 @@ void XFEM::ExtrapolationOld::interpolation(
       case XFEM::Enrichment::typeUndefined :
       default :
       {
-        cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+        std::cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << std::endl;
         dserror("unknown enrichment type");
         break;
       }
@@ -859,7 +859,7 @@ void XFEM::ExtrapolationNew::compute(std::vector<RCP<Epetra_Vector> > newRowVect
 
   if (oldVectors_.size() != newRowVectors.size())
   {
-    cout << "sizes are " << oldVectors_.size() << " and " << newRowVectors.size() << endl;
+    std::cout << "sizes are " << oldVectors_.size() << " and " << newRowVectors.size() << std::endl;
     dserror("Number of state-vectors at new and old discretization are different!");
   }
 
@@ -905,14 +905,14 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
 
   LINALG::Matrix<3,1> dummynormal(true);
 
-//    cout << "searching node = endpoint = " << endpoint << endl;
+//    std::cout << "searching node = endpoint = " << endpoint << std::endl;
   // identify final element and local coordinates of startpoint and midpoint for Extrapol
   Cases extrapolcase = EvalPoints(data,ele,midpoint,ximidpoint,startpoint,xistartpoint);
 
   if (extrapolcase==extrapol)
   {
-    //    cout << endl << "startpoint is " << startpoint;
-    //    cout << "midpoint is " << midpoint;
+    //    std::cout << std::endl << "startpoint is " << startpoint;
+    //    std::cout << "midpoint is " << midpoint;
 
     // compute the constants for the Extrapol:
     // value = c1*valuestartpoint + c2*valuemidpoint
@@ -921,8 +921,8 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
 
     dist1.Update(1.0,midpoint,-1.0,startpoint);
     dist2.Update(1.0,endpoint,-1.0,midpoint);
-    //  cout << "distance from startpoint to midpoint is " << dist1;
-    //  cout << "distance from midpoint to endpoint is " << dist2;
+    //  std::cout << "distance from startpoint to midpoint is " << dist1;
+    //  std::cout << "distance from midpoint to endpoint is " << dist2;
 
     double c1 = - dist2.Norm2()/dist1.Norm2(); // 1 + dist2/dist1
     double c2 = 1.0 + dist2.Norm2()/dist1.Norm2(); // dist2/dist1
@@ -938,8 +938,8 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
     callInterpolation(ele,xistartpoint,velstartpoint,presstartpoint,side);
     callInterpolation(ele,ximidpoint,velmidpoint,presmidpoint,side);
 
-    //  cout << "pres at startpoint is " << presstartpoint[0];
-    //  cout << "pres at midpoint is " << presmidpoint[0];
+    //  std::cout << "pres at startpoint is " << presstartpoint[0];
+    //  std::cout << "pres at midpoint is " << presmidpoint[0];
 
     // compute the final velocities and pressure due to the Extrapol
     std::vector<LINALG::Matrix<nsd,1> > velendpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
@@ -951,7 +951,7 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
       presendpoint[index] = c1*presstartpoint[index] + c2*presmidpoint[index];
 
       //  if (index == 0)
-      //    cout << "final pressure is " << presendpoint[index] <<
+      //    std::cout << "final pressure is " << presendpoint[index] <<
       //        " and final velocity is " << velendpoint[index];
 
     } // loop over vectors to be set
@@ -1039,14 +1039,14 @@ XFEM::ExtrapolationNew::Cases XFEM::ExtrapolationNew::EvalPoints(
     callXToXiCoords(ele,midpoint,ximidpoint,pointInDomain);
     if (!pointInDomain)
     {
-      cout.precision(16);
-      cout << "midpoint is " << midpoint;
-      cout << "ele is " << *ele << endl;
+      std::cout.precision(16);
+      std::cout << "midpoint is " << midpoint;
+      std::cout << "ele is " << *ele << std::endl;
       const DRT::Node*const* nodes = ele->Nodes();
       for (int i=0;i<ele->NumNode();i++)
-        cout << " ele node is " << *nodes[i] << endl;
+        std::cout << " ele node is " << *nodes[i] << std::endl;
 
-      cout << "local coords are " << ximidpoint;
+      std::cout << "local coords are " << ximidpoint;
       dserror("point shall be in element");
     }
 
@@ -1247,7 +1247,7 @@ void XFEM::ExtrapolationNew::interpolation(
         }
         else
         {
-          cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
+          std::cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << std::endl;
           dserror("not implemented physical field!");
         }
         break;
@@ -1255,7 +1255,7 @@ void XFEM::ExtrapolationNew::interpolation(
       case XFEM::Enrichment::typeUndefined :
       default :
       {
-        cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+        std::cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << std::endl;
         dserror("unknown enrichment type");
         break;
       }
@@ -1362,7 +1362,7 @@ void XFEM::ExtrapolationNew::exportDataToNodeProc()
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
 
     // unpack received data

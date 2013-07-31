@@ -32,7 +32,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
   for (unsigned i=0; i<temp.size(); ++i)
   {
     DRT::Condition& cond = *(temp[i]);
-    if (*(cond.Get<string>("field")) == "fluid")
+    if (*(cond.Get<std::string>("field")) == "fluid")
       constrcond_.push_back(temp[i]);
   }
   if (constrcond_.size() == 0) dserror("No structure-fluid volume constraints found for lung fsi");

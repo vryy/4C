@@ -359,18 +359,18 @@ void GEO::moveNodeOutOfStructure(
 
   LINALG::Matrix<3,1> querypoint = pointList[querypointId].getCoord();
 
-  // cout << "query point" << querypoint << endl;
+  // std::cout << "query point" << querypoint << std::endl;
 
   // compute the distance to the nearest object (surface, line, node) return label of nearest object
   // returns the label of the surface element structure the projection of the query point is lying on
   // nearestObjectInNode(triangleList, pointList, elementList, querypoint, pointLabel, minDistanceVec, nearestObject);
 
-  cout << "minDistanceVec" << minDistanceVec << endl;
+  std::cout << "minDistanceVec" << minDistanceVec << std::endl;
 
   // compute normal in the point found on or in the object
   LINALG::Matrix<3,1> normal = getNormalAtSurfacePoint(triangleList, pointList, nearestObject);
 
-  cout << "normal" << normal << endl;
+  std::cout << "normal" << normal << std::endl;
 
   // compare normals and set label
   const double scalarproduct = minDistanceVec(0)*normal(0) + minDistanceVec(1)*normal(1) + minDistanceVec(2)*normal(2);
@@ -378,17 +378,17 @@ void GEO::moveNodeOutOfStructure(
   const double length = minDistanceVec.Norm2();
   minDistanceVec.Scale(1.0/length);
 
-  cout << "length =" << length <<  endl;
-  cout << "scalarproduct =" << scalarproduct << endl;
+  std::cout << "length =" << length <<  std::endl;
+  std::cout << "scalarproduct =" << scalarproduct << std::endl;
 
   // minDistanceVec.Norm2() < GEO::TOL7  &&
   // !(scalarproduct > (-1)*GEO::TOL13)
   if(scalarproduct < 0.0)
   {
-    cout << "MOVE NODE = " << querypointId << endl;
-    cout << "length =" << length <<  endl;
+    std::cout << "MOVE NODE = " << querypointId << std::endl;
+    std::cout << "length =" << length <<  std::endl;
 
-    cout << "scalarproduct =" << scalarproduct << endl;
+    std::cout << "scalarproduct =" << scalarproduct << std::endl;
     minDistanceVec.Scale((1.0 + 2*GEO::TOL7)*length);
     querypoint += minDistanceVec;
     pointList[querypointId].setCoord(querypoint);
@@ -1104,13 +1104,13 @@ int GEO::nearestObjectInNode(
   if(nearestObject.getObjectType()== GEO::NOTYPE_OBJECT)
     dserror("no nearest object obtained");
 
-   cout << "point = " << point << endl;
-   cout << "nearestObject.getPhysCoord() = " << nearestObject.getPhysCoord() << endl;
+   std::cout << "point = " << point << std::endl;
+   std::cout << "nearestObject.getPhysCoord() = " << nearestObject.getPhysCoord() << std::endl;
 
 
   // compute distance vector pointing away from the surface element
   minDistanceVec.Update(1.0, point, -1.0, nearestObject.getPhysCoord());
-  cout << "minDistanceVec = " << minDistanceVec << endl;
+  std::cout << "minDistanceVec = " << minDistanceVec << std::endl;
 
   return nearestObject.getLabel();
 }

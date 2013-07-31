@@ -474,11 +474,11 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
 #if 0
   // VERIFIED
 
-//  cout << endl;
-//  cout << endl;
+//  std::cout << std::endl;
+//  std::cout << std::endl;
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
-//    cout << "[";
+//    std::cout << "[";
     const int i = VOIGT6ROW_[ij];
     const int j = VOIGT6COL_[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
@@ -486,24 +486,24 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
       const int k = VOIGT6ROW_[kl];
       const int l = VOIGT6COL_[kl];
       invfderf(ij,kl) = -0.5*(invfmat(i,k)*invfmat(l,j) + invfmat(i,l)*invfmat(k,j));
-//      cout << "invfderf("<<ij<<","<<kl<<") = ";
-//      cout << "-0.5*(invfmat("<<i<<","<<k<<")*invfmat("<<l<<","<<j<<")+invfmat("<<i<<","<<l<<")*invfmat("<<k<<","<<j<<"));";
-//      cout << "ct["<<i+1<<","<<k+1<<"]*ct["<<l+1<<","<<j+1<<"]+ct["<<i+1<<","<<l+1<<"]*ct["<<k+1<<","<<j+1<<"]";
-//      cout << endl;
+//      std::cout << "invfderf("<<ij<<","<<kl<<") = ";
+//      std::cout << "-0.5*(invfmat("<<i<<","<<k<<")*invfmat("<<l<<","<<j<<")+invfmat("<<i<<","<<l<<")*invfmat("<<k<<","<<j<<"));";
+//      std::cout << "ct["<<i+1<<","<<k+1<<"]*ct["<<l+1<<","<<j+1<<"]+ct["<<i+1<<","<<l+1<<"]*ct["<<k+1<<","<<j+1<<"]";
+//      std::cout << std::endl;
       if (ij >= NUMDIM_)
       {
 #if 0
         invfderf(ij,kl) += -0.5*(invfmat(j,k)*invfmat(l,i) + invfmat(j,l)*invfmat(k,i));
-//        cout << "+ct["<<j+1<<","<<k+1<<"]*ct["<<l+1<<","<<i+1<<"]+ct["<<j+1<<","<<l+1<<"]*ct["<<k+1<<","<<i+1<<"]";
+//        std::cout << "+ct["<<j+1<<","<<k+1<<"]*ct["<<l+1<<","<<i+1<<"]+ct["<<j+1<<","<<l+1<<"]*ct["<<k+1<<","<<i+1<<"]";
 #else
         invfderf(ij,kl) *= 2.0;
-//        cout << "invfderf("<<ij<<","<<kl<<") *= 2.0;";
-//        cout << endl;
+//        std::cout << "invfderf("<<ij<<","<<kl<<") *= 2.0;";
+//        std::cout << std::endl;
 #endif
       }
-//      cout << ", ";
+//      std::cout << ", ";
     }
-//    cout << "]," << endl;
+//    std::cout << "]," << std::endl;
   }
 #else
   invfderf(0,0) = -0.5*(invfmat(0,0)*invfmat(0,0)+invfmat(0,0)*invfmat(0,0));
@@ -561,8 +561,8 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 {
   // VERIFIED
 
-//  cout << endl;
-//  cout << endl;
+//  std::cout << std::endl;
+//  std::cout << std::endl;
 
   for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
   {
@@ -576,7 +576,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
       const int mnkl = MAT::NUM_STRESS_3D*mn + kl;
       for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
       {
-//    cout << "[\n";
+//    std::cout << "[\n";
         const int i = VOIGT6ROW_[ij];
         const int j = VOIGT6COL_[ij];
         double invbvdderb_ijklmn;
@@ -586,7 +586,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
             + ( ibt(i,m)*ibt(n,l) + ibt(i,n)*ibt(m,l) )*ibt(k,j)
             + ibt(i,l)*( ibt(k,m)*ibt(n,j) + ibt(k,n)*ibt(m,j) )
           );
-//        cout << ""
+//        std::cout << ""
 //             << "(ct["<<i+1<<","<<m+1<<"]*ct["<<n+1<<","<<k+1<<"]+ct["<<i+1<<","<<n+1<<"]*ct["<<m+1<<","<<k+1<<"])*ct["<<l+1<<","<<j+1<<"]"
 //             << "+ct["<<i+1<<","<<k+1<<"]*(ct["<<l+1<<","<<m+1<<"]*ct["<<n+1<<","<<j+1<<"]+ct["<<l+1<<","<<n+1<<"]*ct["<<m+1<<","<<j+1<<"])"
 //             << "+(ct["<<i+1<<","<<m+1<<"]*ct["<<n+1<<","<<l+1<<"]+ct["<<i+1<<","<<n+1<<"]*ct["<<m+1<<","<<l+1<<"])*ct["<<k+1<<","<<j+1<<"]"
@@ -601,7 +601,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
               + ( ibt(j,m)*ibt(n,l) + ibt(j,n)*ibt(m,l) )*ibt(k,i)
               + ibt(j,l)*( ibt(k,m)*ibt(n,i) + ibt(k,n)*ibt(m,i) )
             );
-//          cout << ""
+//          std::cout << ""
 //               << "+(ct["<<j+1<<","<<m+1<<"]*ct["<<n+1<<","<<k+1<<"]+ct["<<j+1<<","<<n+1<<"]*ct["<<m+1<<","<<k+1<<"])*ct["<<l+1<<","<<i+1<<"]"
 //               << "+ct["<<j+1<<","<<k+1<<"]*(ct["<<l+1<<","<<m+1<<"]*ct["<<n+1<<","<<i+1<<"]+ct["<<l+1<<","<<n+1<<"]*ct["<<m+1<<","<<i+1<<"])"
 //               << "+(ct["<<j+1<<","<<m+1<<"]*ct["<<n+1<<","<<l+1<<"]+ct["<<j+1<<","<<n+1<<"]*ct["<<m+1<<","<<l+1<<"])*ct["<<k+1<<","<<i+1<<"]"
@@ -614,11 +614,11 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
         invbvdderb(ij,klmn) = invbvdderb_ijklmn;
         if (mn != kl)
           invbvdderb(ij,mnkl) = invbvdderb_ijklmn;
-//        cout << ",\n";
+//        std::cout << ",\n";
       }
-//      cout << "";
+//      std::cout << "";
     }
-//    cout << "],\n";
+//    std::cout << "],\n";
   }
 
   return;
@@ -641,10 +641,10 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
   for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
 
   // (F.F)_{,F} with F^T=F
-//  cout << endl;
+//  std::cout << std::endl;
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
-//    cout << "[";
+//    std::cout << "[";
     const int i = VOIGT6ROW_[ij];
     const int j = VOIGT6COL_[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
@@ -652,15 +652,15 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
       const int k = VOIGT6ROW_[kl];
       const int l = VOIGT6COL_[kl];
       sqfderf(ij,kl) = id(i,k)*fmat(l,j) + id(j,l)*fmat(i,k);
-//      cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
+//      std::cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
       if ( (outvoigt6 == voigt6_strain) and (ij >= NUMDIM_) )
       {
         sqfderf(ij,kl) += id(j,k)*fmat(l,i) + id(i,l)*fmat(j,k);
-//        cout << "+id["<<j+1<<","<<k+1<<"]*St["<<l+1<<","<<i+1<<"]+id["<<i+1<<","<<l+1<<"]*St["<<j+1<<","<<k+1<<"]";
+//        std::cout << "+id["<<j+1<<","<<k+1<<"]*St["<<l+1<<","<<i+1<<"]+id["<<i+1<<","<<l+1<<"]*St["<<j+1<<","<<k+1<<"]";
       }
-//      cout << ", ";
+//      std::cout << ", ";
     }
-//    cout << "]," << endl;
+//    std::cout << "]," << std::endl;
   }
 #else
   if (outvoigt6 != voigt6_strain)
@@ -726,25 +726,25 @@ void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
   for (int i=0; i<NUMDIM_; ++i) id(i,i) = 1.0;
 
   // (F^T.F)_{,F}
-//  cout << endl;
+//  std::cout << std::endl;
   for (int ij=0; ij<NUMDFGR_; ++ij)
   {
-//    cout << "[";
+//    std::cout << "[";
     const int i = VOIGT9ROW_[ij];
     const int j = VOIGT9COL_[ij];
     for (int kl=0; kl<NUMDFGR_; ++kl)
     {
       const int k = VOIGT9ROW_[kl];
       const int l = VOIGT9COL_[kl];
-//      cout << "i=" << i << ", j=" << j << ", k=" << k << ", l=" << l << endl;
+//      std::cout << "i=" << i << ", j=" << j << ", k=" << k << ", l=" << l << std::endl;
       if (transpose)  // swap indices of fmat
         sqfderf(ij,kl) = id(i,k)*fmat(j,l) + id(j,l)*fmat(k,i);
       else
         sqfderf(ij,kl) = id(i,k)*fmat(l,j) + id(j,l)*fmat(i,k);
-//      cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
-//      cout << ", ";
+//      std::cout << "id["<<i+1<<","<<k+1<<"]*St["<<l+1<<","<<j+1<<"]+id["<<j+1<<","<<l+1<<"]*St["<<i+1<<","<<k+1<<"]";
+//      std::cout << ", ";
     }
-//    cout << "]," << endl;
+//    std::cout << "]," << std::endl;
   }
 
   return;
@@ -766,10 +766,10 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
   // VERIFIED
 
   // (F^T.F)_{,FF} with F^T=F
-//  cout << endl;
+//  std::cout << std::endl;
   for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
-//    cout << "[";
+//    std::cout << "[";
     const int i = VOIGT6ROW_[ij];
     const int j = VOIGT6COL_[ij];
     for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
@@ -793,12 +793,12 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
                                    +id(j,l)*id(k,n)*id(i,m)+id(i,k)*id(j,n)*id(l,m) );  // swap 'i' and 'j' as well as 'm' and 'n' as well as 'k' and 'l'
         }
         sqfdderf(ij,klmn) = sqfdderf_ijklmn;
-//        cout << sqfdderf_ijklmn;
-//        cout << ", ";
+//        std::cout << sqfdderf_ijklmn;
+//        std::cout << ", ";
       }
-//      cout << "\n";
+//      std::cout << "\n";
     }
-//    cout << "],\n";
+//    std::cout << "],\n";
   }
 #else
   sqfdderf.Clear();
@@ -903,21 +903,21 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
 {
   // VERIFIED
 
-//  cout << endl;
+//  std::cout << std::endl;
   for (int kl=0; kl<NUMDFGR_; ++kl)
   {
     const int k = VOIGT9ROW_[kl];
     const int l = VOIGT9COL_[kl];
     for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
     {
-//    cout << "[";
+//    std::cout << "[";
       const int i = VOIGT6ROW_[ij];
       const int j = VOIGT6COL_[ij];
       if (j == l)
         if (transpose)
         {
           bm(ij,kl) = bt(k,i);
-//      cout << "bt["<<k+1<<","<<i+1<<"]";
+//      std::cout << "bt["<<k+1<<","<<i+1<<"]";
         }
         else
           bm(ij,kl) = bt(i,k);
@@ -925,18 +925,18 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
         if (transpose)
         {
           bm(ij,kl) = bt(k,j);
-//      cout << "bt["<<k+1<<","<<j+1<<"]";
+//      std::cout << "bt["<<k+1<<","<<j+1<<"]";
         }
         else
           bm(ij,kl) = bt(j,k);
       else
       {
         bm(ij,kl) = 0.0;
-//      cout << "0";
+//      std::cout << "0";
       }
-//      cout << ", ";
+//      std::cout << ", ";
     }
-//    cout << "]," << endl;
+//    std::cout << "]," << std::endl;
   }
 
   return;

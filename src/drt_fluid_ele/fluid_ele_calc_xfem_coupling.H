@@ -161,7 +161,7 @@ namespace DRT
             const LINALG::Matrix<nsd_,1> &      velint,           ///< bg u^n
             const LINALG::Matrix<nsd_,1> &      ivelint_WDBC_JUMP,///< Dirichlet velocity vector or prescribed jump vector
             INPAR::XFEM::ConvStabScaling        conv_stab_scaling,///< Inflow term strategies
-            string                              coupl_method      ///< coupling method (NIT or MSH)
+            std::string                              coupl_method      ///< coupling method (NIT or MSH)
           ) = 0;
 
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method

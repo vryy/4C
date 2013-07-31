@@ -277,13 +277,13 @@ DRT::ELEMENTS::MeshfreeTransport::~MeshfreeTransport()
 /*--------------------------------------------------------------------------*
  |  print this element                                   (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::ELEMENTS::MeshfreeTransport::Print(ostream& os) const
+void DRT::ELEMENTS::MeshfreeTransport::Print(std::ostream& os) const
 {
   os << "MeshfreeTransportCell ";
   Cell::Print(os);
-  cout << "DisType "<< DRT::DistypeToString(distype_) << " ";
-  cout << "NumDofPerNode " << numdofpernode_ << " ";
-  cout << data_;
+  std::cout << "DisType "<< DRT::DistypeToString(distype_) << " ";
+  std::cout << "NumDofPerNode " << numdofpernode_ << " ";
+  std::cout << data_;
   return;
 }
 
@@ -455,7 +455,7 @@ void DRT::ELEMENTS::MeshfreeTransport::VisNames(std::map<std::string,int>& names
 /*--------------------------------------------------------------------------*
  |  Return visualization data                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::MeshfreeTransport::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::MeshfreeTransport::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -657,12 +657,12 @@ inline int DRT::ELEMENTS::MeshfreeTransportBoundary::UniqueParObjectId() const
 /*---------------------------------------------------------------------------*
  |  print this element                                    (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
-void DRT::ELEMENTS::MeshfreeTransportBoundary::Print(ostream& os) const
+void DRT::ELEMENTS::MeshfreeTransportBoundary::Print(std::ostream& os) const
 {
   os << "MeshfreeTransportBoundary element";
   Element::Print(os);
-  cout << endl;
-  cout << "DiscretizationType:  "<<Shape()<<endl;
-  cout << endl;
+  std::cout << std::endl;
+  std::cout << "DiscretizationType:  "<<Shape()<<std::endl;
+  std::cout << std::endl;
   return;
 }

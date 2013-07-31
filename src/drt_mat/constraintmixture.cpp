@@ -63,12 +63,12 @@ MAT::PAR::ConstraintMixture::ConstraintMixture(
   homstress_(matdata->GetDouble("HOMSTR")),
   growthfactor_(matdata->GetDouble("GROWTHFAC")),
   starttime_(matdata->GetDouble("STARTTIME")),
-  integration_(matdata->Get<string>("INTEGRATION")),
+  integration_(matdata->Get<std::string>("INTEGRATION")),
   abstol_(matdata->GetDouble("TOL")),
-  growthforce_(matdata->Get<string>("GROWTHFORCE")),
-  initstretch_(matdata->Get<string>("INITSTRETCH")),
+  growthforce_(matdata->Get<std::string>("GROWTHFORCE")),
+  initstretch_(matdata->Get<std::string>("INITSTRETCH")),
   timecurve_(matdata->GetInt("CURVE")),
-  degoption_(*(matdata->Get<string>("DEGOPTION"))),
+  degoption_(*(matdata->Get<std::string>("DEGOPTION"))),
   degtol_(1.0e-6)
 {
 }
@@ -454,7 +454,7 @@ void MAT::ConstraintMixture::Update()
     if (eraseiter > 0)
     {
       history_->erase(history_->begin(),history_->begin()+eraseiter);
-      //cout << "erased " << eraseiter << " history variables" << endl;
+      //std::cout << "erased " << eraseiter << " history variables" << std::endl;
     }
 
     // append new collagen
@@ -1307,7 +1307,7 @@ void MAT::ConstraintMixture::MassProduction
   if ((*massprodcomp)(0) < 0.0)
   {
     (*massprodcomp)(0) = 0.0;
-    //cout << "warning negative massproduction rate" << endl;
+    //std::cout << "warning negative massproduction rate" << std::endl;
   }
 
   // Fiber2
@@ -1324,7 +1324,7 @@ void MAT::ConstraintMixture::MassProduction
   if ((*massprodcomp)(1) < 0.0)
   {
     (*massprodcomp)(1) = 0.0;
-    //cout << "warning negative massproduction rate" << endl;
+    //std::cout << "warning negative massproduction rate" << std::endl;
   }
 
   // Fiber3
@@ -1342,7 +1342,7 @@ void MAT::ConstraintMixture::MassProduction
   if ((*massprodcomp)(2) < 0.0)
   {
     (*massprodcomp)(2) = 0.0;
-    //cout << "warning negative massproduction rate" << endl;
+    //std::cout << "warning negative massproduction rate" << std::endl;
   }
 
   // Fiber4
@@ -1360,7 +1360,7 @@ void MAT::ConstraintMixture::MassProduction
   if ((*massprodcomp)(3) < 0.0)
   {
     (*massprodcomp)(3) = 0.0;
-    //cout << "warning negative massproduction rate" << endl;
+    //std::cout << "warning negative massproduction rate" << std::endl;
   }
 
   (*massstress)(0) = massstress1;
@@ -1432,7 +1432,7 @@ void MAT::ConstraintMixture::MassProductionSingleFiber
   if ((*massprodcomp) < 0.0)
   {
     (*massprodcomp) = 0.0;
-    //cout << "warning negative massproduction rate" << endl;
+    //std::cout << "warning negative massproduction rate" << std::endl;
   }
 }
 
@@ -1648,10 +1648,10 @@ void MAT::ConstraintMixture::EvaluateImplicitAll
     if ((massprod(0) < 0.0) || (massprod(1) < 0.0) ||
         (massprod(2) < 0.0) || (massprod(3) < 0.0))
     {
-      cout << "1: " << massprod(0) << endl;
-      cout << "2: " << massprod(1) << endl;
-      cout << "3: " << massprod(2) << endl;
-      cout << "4: " << massprod(3) << endl;
+      std::cout << "1: " << massprod(0) << std::endl;
+      std::cout << "2: " << massprod(1) << std::endl;
+      std::cout << "3: " << massprod(2) << std::endl;
+      std::cout << "4: " << massprod(3) << std::endl;
       dserror("negative mass production computed for at least one collagen fiber family!");
     }
 
@@ -1923,7 +1923,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
 
       if ((massprod(idfiber) < 0.0))
       {
-        cout << idfiber+1 << ": " << massprod(idfiber) << endl;
+        std::cout << idfiber+1 << ": " << massprod(idfiber) << std::endl;
         dserror("negative mass production computed for one collagen fiber family!");
       }
 
@@ -2222,9 +2222,9 @@ void MAT::ConstraintMixture::EvaluateFiberVecs
 /*----------------------------------------------------------------------*
  |  Return names of visualization data            (public)         03/13|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::VisNames(std::map<string,int>& names)
+void MAT::ConstraintMixture::VisNames(std::map<std::string,int>& names)
 {
-  string fiber = "MassStress";
+  std::string fiber = "MassStress";
   names[fiber] = 3;
   fiber = "Fiber1";
   names[fiber] = 3; // 3-dim vector
@@ -2243,7 +2243,7 @@ void MAT::ConstraintMixture::VisNames(std::map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data                     (public)         03/13|
  *----------------------------------------------------------------------*/
-bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::ConstraintMixture::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (name == "MassStress")
   {
@@ -2548,7 +2548,7 @@ void MAT::ConstraintMixtureOutputToGmsh
       << std::setw(2) << std::setfill('0') << iter << ".pos";
   std::ofstream f_system(filename.str().c_str());
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << endl;
+  gmshfilecontent << "View \" Time: " << timestep << " Iter: " << iter << " \" {" << std::endl;
 
 
   for (int iele=0; iele<dis->NumMyColElements(); ++iele)
@@ -2628,12 +2628,12 @@ void MAT::ConstraintMixtureOutputToGmsh
       gmshfilecontent << std::scientific << point(0,2) << ")";
       gmshfilecontent << "{" << std::scientific
       << mandelgp(0)
-      << "};" << endl;
+      << "};" << std::endl;
 
     }
   }
 
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
 

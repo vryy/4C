@@ -49,7 +49,7 @@ class IntCell
     //! brief returns number of nodes
     int NumNode() const;
 
-    //! returns a string representation of the IntCell
+    //! returns a std::string representation of the IntCell
     virtual std::string toString() const;
 
     //! return boolean indicating plus domain
@@ -135,7 +135,7 @@ class DomainIntCell : public IntCell
     //! compute volume of cell from physical coordinates
     double VolumeInPhysicalDomain() const; 
 
-    //! return string representation of the DomainIntCell
+    //! return std::string representation of the DomainIntCell
     virtual std::string toString() const;
 
     //! write Gmsh file of the DomainIntCell in local coordinates
@@ -214,7 +214,7 @@ class BoundaryIntCell : public IntCell
     //! return "parent" cutter element id (global id)
     int GetSurfaceEleGid() const {return surface_ele_gid_;}
 
-    //! return string representation of the BoundaryIntCell
+    //! return std::string representation of the BoundaryIntCell
     virtual std::string toString() const;
     
   private:

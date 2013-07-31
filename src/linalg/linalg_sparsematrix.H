@@ -574,7 +574,7 @@ class SparseMatrix : public SparseMatrixBase
   };
 
   /// output of SparseMatrix
-  ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat);
+  std::ostream& operator << (std::ostream& os, const LINALG::SparseMatrix& mat);
 
   /// matrix matrix multiplication
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,

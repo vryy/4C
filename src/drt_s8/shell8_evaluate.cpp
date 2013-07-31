@@ -587,7 +587,7 @@ void DRT::ELEMENTS::Shell8::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                       mwgee 01/08|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Shell8::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::Shell8::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -820,7 +820,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get type of condition
   LoadType ltype = neum_none;
-  const string* type = condition.Get<string>("type");
+  const std::string* type = condition.Get<std::string>("type");
   if      (*type == "neum_live")          ltype = neum_live;
   else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
   else if (*type == "neum_orthopressure") ltype = neum_orthopressure;

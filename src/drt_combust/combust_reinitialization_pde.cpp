@@ -114,7 +114,7 @@ void COMBUST::ReinitializationPDE::CheckSteadyState(double&    Gradient_Error_ol
       STOP= true;
       if (myrank_ == 0)
       {
-        cout << "reinitialization step not accepted" << endl;
+        std::cout << "reinitialization step not accepted" << std::endl;
       }
       // set last phi-field;
       ScaTraReinitField().Phinp()->Update(1.0,*ScaTraReinitField().Phin(),0.0);
@@ -305,14 +305,14 @@ void COMBUST::ReinitializationPDE::OutputToGmshReinitializationSteps(
   std::ofstream gmshfilecontent(filename.c_str());
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phinp_Reinit_Step \" {" << endl;
+    gmshfilecontent << "View \" " << "Phinp_Reinit_Step \" {" << std::endl;
     // draw scalar field 'Phinp' for every element
     IO::GMSH::ScalarFieldToGmsh(dis,ScaTraReinitField().Phinp(),gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   gmshfilecontent.close();
-  if (screen_out) std::cout << " done" << endl;
+  if (screen_out) std::cout << " done" << std::endl;
 } //COMBUST::ReinitializationPDE::OutputToGmshReinitializationSteps
 
 
@@ -338,21 +338,21 @@ void COMBUST::ReinitializationPDE::OutputToGmshReinit(
   std::ofstream gmshfilecontent(filename.c_str());
   {
       // add 'View' to Gmsh postprocessing file
-      gmshfilecontent << "View \" " << "Phinp_Reinit_start\" {" << endl;
+      gmshfilecontent << "View \" " << "Phinp_Reinit_start\" {" << std::endl;
       // draw scalar field 'phin0_Reinit_Reference' for every element
       IO::GMSH::ScalarFieldToGmsh(dis,ScaTraReinitField().PhiReinitStart(),gmshfilecontent);
-      gmshfilecontent << "};" << endl;
+      gmshfilecontent << "};" << std::endl;
   }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phinp_Reinit_final \" {" << endl;
+    gmshfilecontent << "View \" " << "Phinp_Reinit_final \" {" << std::endl;
     // draw scalar field 'Phinp' for every element
     IO::GMSH::ScalarFieldToGmsh(dis,ScaTraReinitField().Phinp(),gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   gmshfilecontent.close();
-  if (screen_out) std::cout << " done" << endl;
+  if (screen_out) std::cout << " done" << std::endl;
 
 } //COMBUST::ReinitializationPDE::OutputToGmshReinit
 
@@ -366,7 +366,7 @@ void COMBUST::ReinitializationPDE::OutputToGmshReinit(
 void COMBUST::ReinitializationPDE::ReinitializeInfo()
 {
   if (myrank_ == 0) {
-    cout << "\n---------------------------------------  REINITIALIZATION SOLVER  ----------------------------\n";
+    std::cout << "\n---------------------------------------  REINITIALIZATION SOLVER  ----------------------------\n";
   }
 
 
@@ -414,7 +414,7 @@ void COMBUST::ReinitializationPDE::TimeLoop_Reinit()
   if(Gradient_Error_old > STOP_TOL) ReinitializeInfo();
   else
   {
-    cout << "... no reinitialization necessary.\n\n";
+    std::cout << "... no reinitialization necessary.\n\n";
     STOP=true;
   }
 

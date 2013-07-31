@@ -927,7 +927,7 @@ public:
   \param step                 time step
    */
   void printTree(
-      const string  prefix,
+      const std::string  prefix,
       const int     step
       ) const;
 

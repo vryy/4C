@@ -272,13 +272,13 @@ DRT::ELEMENTS::TopOpt::~TopOpt()
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TopOpt::Print(ostream& os) const
+void DRT::ELEMENTS::TopOpt::Print(std::ostream& os) const
 {
   os << "Topology optimization element";
   Element::Print(os);
-  cout << endl;
-  cout << "DiscretizationType:  "<<distype_<<endl;
-  cout << endl;
+  std::cout << std::endl;
+  std::cout << "DiscretizationType:  "<<distype_<<std::endl;
+  std::cout << std::endl;
 
   return;
 }
@@ -458,13 +458,13 @@ DRT::ELEMENTS::TopOptBoundary::~TopOptBoundary()
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TopOptBoundary::Print(ostream& os) const
+void DRT::ELEMENTS::TopOptBoundary::Print(std::ostream& os) const
 {
   os << "Topology optimization boundary element";
   Element::Print(os);
-  cout << endl;
-  cout << "DiscretizationType:  "<<Shape()<<endl;
-  cout << endl;
+  std::cout << std::endl;
+  std::cout << "DiscretizationType:  "<<Shape()<<std::endl;
+  std::cout << std::endl;
   return;
 }
 

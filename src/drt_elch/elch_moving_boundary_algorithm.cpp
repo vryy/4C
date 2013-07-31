@@ -145,26 +145,26 @@ if (not pseudotransient_)
 
       if (Comm().MyPID()==0)
       {
-        cout<<"After outer iteration "<<iter<<" of "<<itmax_
-            <<":  ||idispnpinc|| = "<<incnorm<<endl;
+        std::cout<<"After outer iteration "<<iter<<" of "<<itmax_
+            <<":  ||idispnpinc|| = "<<incnorm<<std::endl;
       }
       if (incnorm < ittol_)
         {
           stopiter = true;
           if (Comm().MyPID()==0)
-            cout<<"   || Outer iteration loop converged! ||\n\n\n";
+            std::cout<<"   || Outer iteration loop converged! ||\n\n\n";
         }
       if (iter==itmax_)
         {
           stopiter = true;
           if (Comm().MyPID()==0)
-            cout<<"   || Maximum number of iterations reached: "<<itmax_<<" ||\n\n\n";
+            std::cout<<"   || Maximum number of iterations reached: "<<itmax_<<" ||\n\n\n";
         }
     }
 
     double normidsinp;
     idispnp_->Norm2(&normidsinp);
-    cout<<"norm of isdispnp = "<<normidsinp<<endl;
+    std::cout<<"norm of isdispnp = "<<normidsinp<<std::endl;
 
     // update all single field solvers
     Update();
@@ -188,10 +188,10 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
   IncrementTimeAndStep();
   if (Comm().MyPID()==0)
   {
-    cout<<"\n";
-    cout<<"*********************\n";
-    cout<<"  FLUID-ALE SOLVER   \n";
-    cout<<"*********************\n";
+    std::cout<<"\n";
+    std::cout<<"*********************\n";
+    std::cout<<"  FLUID-ALE SOLVER   \n";
+    std::cout<<"*********************\n";
   }
 
   FluidField().PrepareTimeStep();
@@ -225,10 +225,10 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
 {
   if (Comm().MyPID()==0)
   {
-    cout<<"\n";
-    cout<<"************************\n";
-    cout<<"       ELCH SOLVER      \n";
-    cout<<"************************\n";
+    std::cout<<"\n";
+    std::cout<<"************************\n";
+    std::cout<<"       ELCH SOLVER      \n";
+    std::cout<<"************************\n";
   }
 
   switch(FluidField().TimIntScheme())

@@ -192,7 +192,7 @@ STR::TimIntImpl::TimIntImpl
   {
     SetupKrylovSpaceProjection(kspcond);
     if (myrank_ == 0)
-      cout << "\nSetup of KrylovSpaceProjection in solid field\n" << endl;
+      std::cout << "\nSetup of KrylovSpaceProjection in solid field\n" << std::endl;
   }
   else  if (numsolid == 0)
   {
@@ -579,7 +579,7 @@ void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
   }
 
   // get from dat-file definition how weights are to be computed
-  const string* weighttype = kspcond->Get<string>("weight vector definition");
+  const std::string* weighttype = kspcond->Get<std::string>("weight vector definition");
 
   // since we only use total Lagrange, no update necessary.
   updateprojection_ = false;
@@ -1485,7 +1485,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     // Apply STC on constraint matrices of desired
     if(stcscale_ != INPAR::STR::stc_none)
     {
-      //cout<<"scaling constraint matrices"<<endl;
+      //std::cout<<"scaling constraint matrices"<<std::endl;
       constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
       if (stcscale_ == INPAR::STR::stc_currsym)
       {
@@ -1741,7 +1741,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       // increase iteration index
       ++uzawaiter;
       if (uzawaiter > maxuzawaiter) dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
-      if (!myrank_) cout << "Starting Uzawa step No. " << uzawaiter << endl;
+      if (!myrank_) std::cout << "Starting Uzawa step No. " << uzawaiter << std::endl;
 
       // for second, third,... Uzawa step: out-of-balance force
       if (uzawaiter>1)
@@ -1943,7 +1943,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
         dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
 
       if (!myrank_)
-        cout << endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << endl;
+        std::cout << std::endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << std::endl;
 
       // for second, third,... Uzawa step: out-of-balance force
       if (beamcman_->GetUzawaIter() > 1)
@@ -2313,7 +2313,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   FILE* ofile
 )
 {
-  // open outstringstream
+  // open outstd::stringstream
   std::ostringstream oss;
 
   // enter converged state etc
@@ -2469,7 +2469,7 @@ void STR::TimIntImpl::PrintNewtonIterText
   FILE* ofile
 )
 {
-  // open outstringstream
+  // open outstd::stringstream
   std::ostringstream oss;
 
   // enter converged state etc
@@ -2606,8 +2606,8 @@ void STR::TimIntImpl::ExportContactQuantities()
   double iteration=(double)iter_+1.0;
   double curinttime=(cmtman_->GetStrategy().Inttime())/(iteration);
 
-  cout << "*** averaged inttime per newton step =  " << curinttime << endl;
-  cout << "*** total inttime per time step= " << curinttime*iteration << endl;
+  std::cout << "*** averaged inttime per newton step =  " << curinttime << std::endl;
+  std::cout << "*** total inttime per time step= " << curinttime*iteration << std::endl;
 
   // write number of active nodes for converged newton in textfile xx x.active
   FILE* MyFile = NULL;
@@ -2699,7 +2699,7 @@ void STR::TimIntImpl::PrintStepText
   FILE* ofile
 )
 {
-  // open outstringstream
+  // open outstd::stringstream
   std::ostringstream oss;
 
   // the text
@@ -2872,7 +2872,7 @@ void STR::TimIntImpl::STCPreconditioning()
   {
     const std::string fname = "unscaled.mtl";
     if (myrank_ == 0)
-      cout<<"Printing unscaled system matrix to file"<<endl;
+      std::cout<<"Printing unscaled system matrix to file"<<std::endl;
       LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
   }
   #endif
@@ -2900,7 +2900,7 @@ void STR::TimIntImpl::STCPreconditioning()
     {
       const std::string fname = "scaled.mtl";
       if (myrank_ == 0)
-        cout<<"Printing scaled system matrix to file"<<endl;
+        std::cout<<"Printing scaled system matrix to file"<<std::endl;
         LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
     }
     #endif
@@ -2933,7 +2933,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
   {
     const std::string fname = "stcmatrix1.mtl";
     if (myrank_ == 0)
-      cout<<"Printing stcmatrix1 to file"<<endl;
+      std::cout<<"Printing stcmatrix1 to file"<<std::endl;
       LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stcmat_))->EpetraMatrix()));
   }
   #endif
@@ -2958,7 +2958,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     {
       const std::string fname = "stcmatrix2.mtl";
       if (myrank_ == 0)
-        cout<<"Printing stcmatrix2 to file"<<endl;
+        std::cout<<"Printing stcmatrix2 to file"<<std::endl;
         LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
     }
     #endif

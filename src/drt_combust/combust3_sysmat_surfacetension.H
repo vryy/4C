@@ -117,7 +117,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
     else // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
     {
       //============================ INTEGRATE BOUNDARY TERM ==============================
-      //    		cout << "boundary line is found:\n" << *line_it;
+      //    		std::cout << "boundary line is found:\n" << *line_it;
 
       // get integration points
       // TODO get the right intrule
@@ -465,7 +465,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
     else // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
     {
       //============================ INTEGRATE BOUNDARY TERM ==============================
-      //    		cout << "boundary line is found:\n" << *line_it;
+      //    		std::cout << "boundary line is found:\n" << *line_it;
 
       // get integration points
       // TODO get the right intrule
@@ -916,7 +916,7 @@ void RHS_SurfaceTension2DIntegrals(
       if (fabs(curvature)<1.0E-9) // spurious velocities for almost planar surfaces observed
       {                           // -> set curvature to zero
         curvature=0.0;
-        cout << "small curvature value < 1.0e-9 set to zero" << endl;
+        std::cout << "small curvature value < 1.0e-9 set to zero" << std::endl;
       }
     }
 
@@ -1024,7 +1024,7 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
 
-    //  cout << "numnode" << numnode << endl;
+    //  std::cout << "numnode" << numnode << std::endl;
 
     // jacobian for coupled transformation
     // get derivatives dxi_3D/deta_2D
@@ -1039,7 +1039,7 @@ void SysmatBoundarySurfaceTensionIntCell(
         for (int k = 0; k < (int)numvertices; k++)
           dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
 
-    //    cout << "dXi3Ddeta2D: " << dXi3Ddeta2D << endl;
+    //    std::cout << "dXi3Ddeta2D: " << dXi3Ddeta2D << std::endl;
 
     // transform Gauss point to xi3D space (element parameter space)
     static LINALG::Matrix<nsd,1> gpinXi3D;
@@ -1047,12 +1047,12 @@ void SysmatBoundarySurfaceTensionIntCell(
     // coordinates of this integration point in element coordinates \xi^domain
     GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
 
-    //        cout << "gpinXi3D" << gpinXi3D << endl;
+    //        std::cout << "gpinXi3D" << gpinXi3D << std::endl;
 
     static LINALG::Matrix<3,numnode> deriv_xi3D;
     DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DISTYPE);
 
-    //    cout << "deriv_xi3D" << deriv_xi3D << endl;
+    //    std::cout << "deriv_xi3D" << deriv_xi3D << std::endl;
 
     // calculate dx3Ddxi3D
     static LINALG::Matrix<3,3> dX3DdXi3D;
@@ -1061,7 +1061,7 @@ void SysmatBoundarySurfaceTensionIntCell(
       for (int j = 0; j < 3; j++) // derivatives
         for (int k = 0; k < (int)numnode; k++)
           dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
-    //    cout << "dX3DdXi3D: " << dX3DdXi3D << endl;
+    //    std::cout << "dX3DdXi3D: " << dX3DdXi3D << std::endl;
 
     // get the couped Jacobian dx3Ddeta2D
     static LINALG::Matrix<3,2> dx3Ddeta2D;
@@ -1070,14 +1070,14 @@ void SysmatBoundarySurfaceTensionIntCell(
       for (int j = 0; j < 2; j++) // derivatives
         for (int k = 0; k < 3; k++)
           dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
-    //    cout << "dx3Ddeta2D: " << dx3Ddeta2D << endl;
+    //    std::cout << "dx3Ddeta2D: " << dx3Ddeta2D << std::endl;
     // get deformation factor
     static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
     Jac_tmp.Clear();
     Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
 
     if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
-    //    cout << "jac_det" << Jac_tmp.Determinant() << endl;
+    //    std::cout << "jac_det" << Jac_tmp.Determinant() << std::endl;
     const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
     const double fac = intpoints.qwgt[iquad]*deform_factor;
@@ -1096,7 +1096,7 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     // compute total (time and spatial) integration factor (and coefficients of single terms)?
     const double timefacfac = timefac * fac;
-    //cout << "boundary time and spatial factor " << timefacfac << endl;
+    //std::cout << "boundary time and spatial factor " << timefacfac << std::endl;
 
     //--------------------------------------------------------------------------------------------
     // compute normal vector (in physical coordinates)

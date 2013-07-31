@@ -166,22 +166,22 @@ void POTENTIAL::PotentialElementContainer::Unpack(
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Print()
 {
-  cout << "Print: Potential Element Container "           << endl;
-  cout << "PEC: global Id = "             << gid_         << endl;
-  cout << "PEC: discretization type = "   << distype_     << endl;
-  cout << "PEC: label = "                 << body_label_  << endl;
-  cout << "PEC: beta = "                  << beta_  	  << endl;
-  cout << "PEC: number of nodes = "       << xyz_e_.M()   << endl;
-  cout << endl;
-  cout << "PEC: spatial configuration";
-  xyz_e_.Print(cout); cout << endl;
-  cout << "PEC: reference configuration";
-  XYZ_e_.Print(cout); cout << endl;
+  std::cout << "Print: Potential Element Container "           << std::endl;
+  std::cout << "PEC: global Id = "             << gid_         << std::endl;
+  std::cout << "PEC: discretization type = "   << distype_     << std::endl;
+  std::cout << "PEC: label = "                 << body_label_  << std::endl;
+  std::cout << "PEC: beta = "                  << beta_  	  << std::endl;
+  std::cout << "PEC: number of nodes = "       << xyz_e_.M()   << std::endl;
+  std::cout << std::endl;
+  std::cout << "PEC: spatial configuration";
+  xyz_e_.Print(std::cout); std::cout << std::endl;
+  std::cout << "PEC: reference configuration";
+  XYZ_e_.Print(std::cout); std::cout << std::endl;
 
-  cout << "PEC: global dof ids " << endl;
+  std::cout << "PEC: global dof ids " << std::endl;
   for(int i_lm = 0; i_lm < (int) lm_.size(); i_lm++)
-    cout << "lm[" << i_lm << "] =      " << lm_[i_lm] << endl;
-  cout << endl;
+    std::cout << "lm[" << i_lm << "] =      " << lm_[i_lm] << std::endl;
+  std::cout << std::endl;
 }
 
 

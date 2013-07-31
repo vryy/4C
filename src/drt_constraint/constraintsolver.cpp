@@ -178,7 +178,7 @@ void UTILS::ConstraintSolver::SolveUzawa
     const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
     const int sign_digits = (int)floor(tmp);
     if (!myrank)
-      cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits;
+      std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits;
     #endif
 
     // solve for disi
@@ -250,7 +250,7 @@ void UTILS::ConstraintSolver::SolveUzawa
       if (iterationparam_<=minparam_)
       {
         if (!myrank)
-          cout<<"leaving uzawa loop since Uzawa parameter is too low"<<endl;
+          std::cout<<"leaving uzawa loop since Uzawa parameter is too low"<<std::endl;
         iterationparam_*=1E2;
         break;
       }
@@ -262,8 +262,8 @@ void UTILS::ConstraintSolver::SolveUzawa
 
   if (!myrank)
   {
-     cout<<"Uzawa steps "<<numiter_uzawa<<", Uzawa parameter: "<< iterationparam_;
-     cout<<", residual norms for linear system: "<< norm_constr_uzawa<<" and "<<norm_uzawa<<endl;
+     std::cout<<"Uzawa steps "<<numiter_uzawa<<", Uzawa parameter: "<< iterationparam_;
+     std::cout<<", residual norms for linear system: "<< norm_constr_uzawa<<" and "<<norm_uzawa<<std::endl;
   }
   counter_++;
   return;
@@ -317,7 +317,7 @@ void UTILS::ConstraintSolver::SolveDirect
     const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
     const int sign_digits = (int)floor(tmp);
     if (!myrank)
-      cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<endl;
+      std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
 #endif
 
   // solve
@@ -393,11 +393,11 @@ void UTILS::ConstraintSolver::SolveSimple
   if(!solver_->Params().isSublist("Aztec Parameters") &&
      !solver_->Params().isSublist("Belos Parameters"))
   {
-    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-    cout << "You need a \'CONTACT SOLVER\' block within your dat file with either \'Aztec_MSR\' or \'Belos\' as SOLVER." << endl;
-    cout << "The \'STRUCT SOLVER\' block is then used for the primary inverse within CheapSIMPLE and the \'FLUID PRESSURE SOLVER\' " << endl;
-    cout << "block for the constraint block" << endl;
-    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << "You need a \'CONTACT SOLVER\' block within your dat file with either \'Aztec_MSR\' or \'Belos\' as SOLVER." << std::endl;
+    std::cout << "The \'STRUCT SOLVER\' block is then used for the primary inverse within CheapSIMPLE and the \'FLUID PRESSURE SOLVER\' " << std::endl;
+    std::cout << "block for the constraint block" << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("Please edit your dat file");
   }
   solver_->Params().set<bool>("CONSTRAINT",true);      // handling of constraint null space within Simple type preconditioners

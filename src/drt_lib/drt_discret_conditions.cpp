@@ -530,7 +530,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
   std::set<int> VolEleIDs;
   if (cond->Type() == DRT::Condition::StructFluidSurfCoupling)
   {
-    if (*(cond->Get<string>("field")) == "structure")
+    if (*(cond->Get<std::string>("field")) == "structure")
     {
       FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
     }

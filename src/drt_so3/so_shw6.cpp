@@ -182,12 +182,12 @@ DRT::ELEMENTS::So_shw6::~So_shw6()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::Print(ostream& os) const
+void DRT::ELEMENTS::So_shw6::Print(std::ostream& os) const
 {
   os << "So_shw6 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 

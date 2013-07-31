@@ -50,7 +50,7 @@ class FieldEnr
     //! assignment operator
     FieldEnr& operator = (const FieldEnr& old);
 
-    //! return string representation
+    //! return std::string representation
     std::string toString() const;
 
     //! return physical field

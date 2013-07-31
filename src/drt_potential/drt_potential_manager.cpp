@@ -52,7 +52,7 @@ POTENTIAL::PotentialManager::PotentialManager(
   if(volume_)
     volumePotential_ = Teuchos::rcp(new POTENTIAL::VolumePotential(discretRCP,discret,treetype_));
 
-  cout << "Potential manager constructed" << endl;
+  std::cout << "Potential manager constructed" << std::endl;
   return;
 }
 
@@ -69,25 +69,25 @@ void POTENTIAL::PotentialManager::ReadParameter()
   switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::PotentialType>(intpot,"POTENTIAL_TYPE"))
   {
     case INPAR::POTENTIAL::potential_surface:
-      params_.set<string>("potential type","Surface");
+      params_.set<std::string>("potential type","Surface");
     break;
     case INPAR::POTENTIAL::potential_volume:
-      params_.set<string>("potential type","Volume");
+      params_.set<std::string>("potential type","Volume");
     break;
     case INPAR::POTENTIAL::potential_surfacevolume:
-      params_.set<string>("potential type","Surfacevolume");
+      params_.set<std::string>("potential type","Surfacevolume");
     break;
     case INPAR::POTENTIAL::potential_surface_fsi:
-      params_.set<string>("potential type","Surface_fsi");
+      params_.set<std::string>("potential type","Surface_fsi");
     break;
     case INPAR::POTENTIAL::potential_volume_fsi:
-      params_.set<string>("potential type","Volume_fsi");
+      params_.set<std::string>("potential type","Volume_fsi");
     break;
     case INPAR::POTENTIAL::potential_surfacevolume_fsi:
-      params_.set<string>("potential type","Surfacevolume_fsi");
+      params_.set<std::string>("potential type","Surfacevolume_fsi");
     break;
     default:
-      params_.set<string>("potential type","Surface");
+      params_.set<std::string>("potential type","Surface");
     break;
   }
  
@@ -95,16 +95,16 @@ void POTENTIAL::PotentialManager::ReadParameter()
   switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::ApproximationType>(intpot,"APPROXIMATION_TYPE"))
   {
     case INPAR::POTENTIAL::approximation_none:
-      params_.set<string>("approximation type","None");
+      params_.set<std::string>("approximation type","None");
     break;
     case INPAR::POTENTIAL::approximation_surface:
-      params_.set<string>("approximation type","Surface_approx");
+      params_.set<std::string>("approximation type","Surface_approx");
     break;
     case INPAR::POTENTIAL::approximation_point:
-      params_.set<string>("approximation type","Point_approx");
+      params_.set<std::string>("approximation type","Point_approx");
     break;
     default:
-      params_.set<string>("approximation type","None");
+      params_.set<std::string>("approximation type","None");
     break;
   }
   
@@ -112,16 +112,16 @@ void POTENTIAL::PotentialManager::ReadParameter()
   switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
   {
     case INPAR::POTENTIAL::solution_none:
-      params_.set<string>("solution type","None");
+      params_.set<std::string>("solution type","None");
     break;
     case INPAR::POTENTIAL::solution_sphere:
-      params_.set<string>("solution type","Sphere");
+      params_.set<std::string>("solution type","Sphere");
     break;
     case INPAR::POTENTIAL::solution_membrane:
-      params_.set<string>("solution type","Membrane");
+      params_.set<std::string>("solution type","Membrane");
     break;
     default:
-      params_.set<string>("solution type","None");
+      params_.set<std::string>("solution type","None");
     break;
   }
   
@@ -190,7 +190,7 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  Teuchos::ParameterList
                                                           const double                      time,
                                                           const int                         step)
 {
-  cout << "EVALUATE" << endl;
+  std::cout << "EVALUATE" << std::endl;
   const double vdw_radius = params_.get<double>("vdw_radius",0.0);
   const double n_offset = params_.get<double>("n_offset",0.0);
   const double thickness = params_.get<double>("thickness",0.0);
@@ -202,16 +202,16 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  Teuchos::ParameterList
   switch(DRT::INPUT::IntegralValue<INPAR::POTENTIAL::SolutionType>(intpot,"ANALYTICALSOLUTION"))
   {
     case INPAR::POTENTIAL::solution_none:
-      p.set<string>("solution type","None");
+      p.set<std::string>("solution type","None");
     break;
     case INPAR::POTENTIAL::solution_sphere:
-      p.set<string>("solution type","Sphere");
+      p.set<std::string>("solution type","Sphere");
     break;
     case INPAR::POTENTIAL::solution_membrane:
-      p.set<string>("solution type","Membrane");
+      p.set<std::string>("solution type","Membrane");
     break;
     default:
-      p.set<string>("solution type","None");
+      p.set<std::string>("solution type","None");
     break;
   }
   

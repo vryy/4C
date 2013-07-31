@@ -151,7 +151,7 @@ void FS3I::PartFS3I_2WC::OuterLoop()
 
   if (comm.MyPID()==0)
   {
-    cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
            fluidscatra_->ScaTraField().Time(),timemax_,dt_,fluidscatra_->ScaTraField().MethodTitle().c_str(),fluidscatra_->ScaTraField().Step(),numstep_);
@@ -163,7 +163,7 @@ void FS3I::PartFS3I_2WC::OuterLoop()
 
   // initially solve coupled scalar transport equation system
   // (values for intermediate time steps were calculated at the end of PrepareTimeStep)
-  if (comm.MyPID()==0) cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+  if (comm.MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
   ScatraEvaluateSolveIterUpdate();
 
   while (stopnonliniter==false)
@@ -181,7 +181,7 @@ void FS3I::PartFS3I_2WC::OuterLoop()
     SetScaTraValuesInFSI();
 
     // solve FSI system
-    if (comm.MyPID()==0) cout<<"\n****************************************\n               FSI SOLVER\n****************************************\n";
+    if (comm.MyPID()==0) std::cout<<"\n****************************************\n               FSI SOLVER\n****************************************\n";
     fsi_->TimeStep(fsi_);
 
     // set FSI values required in scatra (will be done in the following
@@ -191,7 +191,7 @@ void FS3I::PartFS3I_2WC::OuterLoop()
     SetFSISolution();
 
     // solve scalar transport equation
-    if (comm.MyPID()==0) cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+    if (comm.MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
     ScatraEvaluateSolveIterUpdate();
 
     // check convergence for all fields and stop iteration loop if
@@ -277,7 +277,7 @@ bool FS3I::PartFS3I_2WC::ConvergenceCheck(int itnum)
   bool scatrastopnonliniter = false;
 
   // dump on screen
-  if (comm.MyPID()==0) cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
+  if (comm.MyPID()==0) std::cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
 
   // fsi convergence check
   if (fsi_->NoxStatus() == NOX::StatusTest::Converged) fluidstopnonliniter = true;
@@ -320,12 +320,12 @@ bool FS3I::PartFS3I_2WC::ScatraConvergenceCheck(int itnum)
   // convergence check of scatra fields
   if (comm.MyPID() == 0)
   {
-    cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
-    cout<<"\n****************************************\n   FLUID-BASED SCALAR TRANSPORT CHECK\n****************************************\n";
+    std::cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
+    std::cout<<"\n****************************************\n   FLUID-BASED SCALAR TRANSPORT CHECK\n****************************************\n";
   }
   scatra1stopnonliniter = scatravec_[0]->ScaTraField().ConvergenceCheck(itnum,itmax_,ittol_);
 
-  if (comm.MyPID() == 0) cout<<"\n****************************************\n STRUCTURE-BASED SCALAR TRANSPORT CHECK\n****************************************\n";
+  if (comm.MyPID() == 0) std::cout<<"\n****************************************\n STRUCTURE-BASED SCALAR TRANSPORT CHECK\n****************************************\n";
   scatra2stopnonliniter = scatravec_[1]->ScaTraField().ConvergenceCheck(itnum,itmax_,ittol_);
 
   if (scatra1stopnonliniter == true and scatra2stopnonliniter == true) return true;

@@ -79,7 +79,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   case INPAR::SCATRA::timeint_tg4_leapfrog:
   case INPAR::SCATRA::timeint_tg4_onestep:
   {
-    cout << "Fluid and Scatra time integration do not match!" << endl;
+    std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
     break;
   }
   default: dserror("Fluid and Scatra time integration schemes do not match"); break;

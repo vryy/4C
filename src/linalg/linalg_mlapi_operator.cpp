@@ -127,17 +127,17 @@ void LINALG::AMG_Operator::SetupNonSymStab()
     Teuchos::ParameterList p;
     char levelstr[11];
     sprintf(levelstr,"(level %d)",level);
-    std::string type = Params().get("smoother: type "+(string)levelstr,"symmetric Gauss-Seidel");
+    std::string type = Params().get("smoother: type "+(std::string)levelstr,"symmetric Gauss-Seidel");
     if (type=="Jacobi" || type=="symmetric Gauss-Seidel")
     {
-      int sweeps = Params().get("smoother: sweeps "+(string)levelstr,1);
-      double damping = Params().get("smoother: damping factor "+(string)levelstr,1.0);
+      int sweeps = Params().get("smoother: sweeps "+(std::string)levelstr,1);
+      double damping = Params().get("smoother: damping factor "+(std::string)levelstr,1.0);
       p.set<int>("smoother: sweeps",sweeps);
       p.set<double>("smoother: damping factor",damping);
     }
     else if (type=="IFPACK")
     {
-      type = Params().get("smoother: ifpack type "+(string)levelstr,"ILU");
+      type = Params().get("smoother: ifpack type "+(std::string)levelstr,"ILU");
       int lof = Params().sublist("smoother: ifpack list").get("fact: level-of-fill",0);
       p.set<int>("fact: level-of-fill",lof);
     }
@@ -146,7 +146,7 @@ void LINALG::AMG_Operator::SetupNonSymStab()
       dserror("Amesos-Superludist not supported by MLAPI");
     else if (type=="MLS")
     {
-      int sweeps = Params().get("smoother: MLS polynomial order "+(string)levelstr,1);
+      int sweeps = Params().get("smoother: MLS polynomial order "+(std::string)levelstr,1);
       p.set("smoother: MLS polynomial order",sweeps);
     }
     S.Reshape(mlapiA,type,p);

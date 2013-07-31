@@ -89,7 +89,7 @@ namespace IO
     /// creates new result files for the inverse analysis
     void NewResultFile(int numb_run);
     /// creates new result files for the mlmc
-    void NewResultFile(string name_appendix, int numb_run);
+    void NewResultFile(std::string name_appendix, int numb_run);
 
   private:
     std::string problemtype_;

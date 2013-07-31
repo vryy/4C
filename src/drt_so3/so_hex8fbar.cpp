@@ -164,12 +164,12 @@ DRT::ELEMENTS::So_hex8fbar::~So_hex8fbar()
 /*----------------------------------------------------------------------*
  |  print this element (public)                               popp 07/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::Print(ostream& os) const
+void DRT::ELEMENTS::So_hex8fbar::Print(std::ostream& os) const
 {
   os << "So_hex8fbar ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 

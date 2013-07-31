@@ -72,7 +72,7 @@ XFEM::DofManager::DofManager(
       for (size_t islave = 0; islave < pbciter->second.size(); islave++)
       {
         const int slavegid  = pbciter->second[islave];
-        //cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " mastergid " << mastergid << " slavegid " << slavegid << endl;
+        //std::cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " mastergid " << mastergid << " slavegid " << slavegid << std::endl;
 
         std::set<FieldEnr> masterfieldenr = emptyset_;
         std::set<FieldEnr> slavefieldenr = emptyset_;
@@ -90,9 +90,9 @@ XFEM::DofManager::DofManager(
 
         //if (slaveentry->second != masterentry->second)
         //{
-        //  cout << mastergid << " das passt nicht zusammen" << endl;
-        //  cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " master dofs " << masterfieldenr.size() << endl;
-        //  cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " slave dofs " << slavefieldenr.size() << endl;
+        //  std::cout << mastergid << " das passt nicht zusammen" << std::endl;
+        //  std::cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " master dofs " << masterfieldenr.size() << std::endl;
+        //  std::cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " slave dofs " << slavefieldenr.size() << std::endl;
         //}
 
         // if slave is enriched, but master is not (slave has more dofs)
@@ -247,8 +247,8 @@ void XFEM::DofManager::fillDofRowDistributionMaps(
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
-      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
-      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
+      std::cout << "numdof node (Discretization): " <<  gdofs.size() << std::endl;
+      std::cout << "numdof node (DofManager):     " <<  dofset.size() << std::endl;
       dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");
     }
 
@@ -285,9 +285,9 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
-      cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " node " << actnode->Id() << endl;
-      cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
-      cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
+      std::cout << "proc " << ih_->FluidDis()->Comm().MyPID() << " node " << actnode->Id() << std::endl;
+      std::cout << "numdof node (Discretization): " <<  gdofs.size() << std::endl;
+      std::cout << "numdof node (DofManager):     " <<  dofset.size() << std::endl;
       dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");
     }
 
@@ -670,7 +670,7 @@ void XFEM::DofManager::toGmsh(
     }
 
     gmshfilecontent.close();
-    if (screen_out) std::cout << " done" << endl;
+    if (screen_out) std::cout << " done" << std::endl;
   }
 #if 1
   if (gmshdebugout)
@@ -688,7 +688,7 @@ void XFEM::DofManager::toGmsh(
         gmshfilecontent << "};\n";
       }
       gmshfilecontent.close();
-      if (screen_out) std::cout << " done" << endl;
+      if (screen_out) std::cout << " done" << std::endl;
   }
 #endif
 #endif

@@ -87,7 +87,7 @@ namespace COMBUST
     //! tell me, whether the element is trisected or not
     bool ElementTrisected(const int xfemeleid) const;
 
-    //! return string representation of the interface handle
+    //! return std::string representation of the interface handle
     std::string toString() const;
 
     //! tell me, whether the element is intersected or not

@@ -65,7 +65,7 @@ bool DRT::ELEMENTS::So_shw6::ReadElement(const std::string& eletype,
   {
     eastype_ = soshw6_easnone;
     neas_ = 0;    // number of eas parameters
-    cout << "Warning: Solid-Shell Wegde6 without EAS" << endl;
+    std::cout << "Warning: Solid-Shell Wegde6 without EAS" << std::endl;
   }
   else dserror("Reading of SOLIDSHW6 EAS technology failed");
 

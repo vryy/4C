@@ -207,12 +207,12 @@ DRT::ELEMENTS::NURBS::So_nurbs27::~So_nurbs27()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::Print(ostream& os) const
+void DRT::ELEMENTS::NURBS::So_nurbs27::Print(std::ostream& os) const
 {
   os << "So_nurbs27 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 

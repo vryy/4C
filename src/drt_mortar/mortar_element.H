@@ -390,7 +390,7 @@ public:
   \brief Print this element
 
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Return slave (true) or master status
@@ -773,6 +773,6 @@ protected:
 } // namespace MORTAR
 
 // << operator
-ostream& operator << (ostream& os, const MORTAR::MortarElement& ele);
+std::ostream& operator << (std::ostream& os, const MORTAR::MortarElement& ele);
 
 #endif  // #ifndef MORTAR_ELEMENT_H

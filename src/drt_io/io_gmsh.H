@@ -6,8 +6,8 @@
  *
  * For a complete description, see the section about post processing formats in the Gmsh documentation.
  *
- * Most routines come in pairs: one gives a string as return argument, another pipes
- * the same string directly to an output stream. The latter avoid numerous string copies
+ * Most routines come in pairs: one gives a std::string as return argument, another pipes
+ * the same std::string directly to an output stream. The latter avoid numerous std::string copies
  * and should be much faster when large discretizations are piped into a file.
  *
  * <pre>
@@ -68,7 +68,7 @@ namespace IO
     void VelocityPressureFieldDofBasedToGmsh(
         const Teuchos::RCP<DRT::Discretization> discret,
         const Teuchos::RCP<Epetra_Vector>       vectorfield,
-        const string                            field,  //< "velocity" or "pressure"
+        const std::string                            field,  //< "velocity" or "pressure"
         std::ostream&                           s
         );
 

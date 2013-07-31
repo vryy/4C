@@ -206,18 +206,18 @@ void elch_dyn(int restart)
 void printlogo()
 {
     // more at http://www.ascii-art.de under entry "moose" (or "elk")
-    cout<<"     ___            ___    "<<endl;
-    cout<<"    /   \\          /   \\ "<<endl;
-    cout<<"    \\_   \\        /  __/ "<<endl;
-    cout<<"     _\\   \\      /  /__  "<<"     _____ _     _____  _   _   "<<endl;
-    cout<<"     \\___  \\____/   __/  "<<"    |  ___| |   /  __ \\| | | |  "<<endl;
-    cout<<"         \\_       _/      "<<"   | |__ | |   | /  \\/| |_| |  "<<endl;
-    cout<<"           | @ @  \\_      "<<"   |  __|| |   | |    |  _  |   "<<endl;
-    cout<<"           |               "<<"  | |___| |___| \\__/\\| | | | "<<endl;
-    cout<<"         _/     /\\        "<<"   \\____/\\_____/\\____/\\_| |_/ "<<endl;
-    cout<<"        /o)  (o/\\ \\_     "<<endl;
-    cout<<"        \\_____/ /         "<<endl;
-    cout<<"          \\____/          "<<endl;
-    cout<<"                           "<<endl;
+    std::cout<<"     ___            ___    "<<std::endl;
+    std::cout<<"    /   \\          /   \\ "<<std::endl;
+    std::cout<<"    \\_   \\        /  __/ "<<std::endl;
+    std::cout<<"     _\\   \\      /  /__  "<<"     _____ _     _____  _   _   "<<std::endl;
+    std::cout<<"     \\___  \\____/   __/  "<<"    |  ___| |   /  __ \\| | | |  "<<std::endl;
+    std::cout<<"         \\_       _/      "<<"   | |__ | |   | /  \\/| |_| |  "<<std::endl;
+    std::cout<<"           | @ @  \\_      "<<"   |  __|| |   | |    |  _  |   "<<std::endl;
+    std::cout<<"           |               "<<"  | |___| |___| \\__/\\| | | | "<<std::endl;
+    std::cout<<"         _/     /\\        "<<"   \\____/\\_____/\\____/\\_| |_/ "<<std::endl;
+    std::cout<<"        /o)  (o/\\ \\_     "<<std::endl;
+    std::cout<<"        \\_____/ /         "<<std::endl;
+    std::cout<<"          \\____/          "<<std::endl;
+    std::cout<<"                           "<<std::endl;
 }
 

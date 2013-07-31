@@ -665,15 +665,15 @@ void MORTAR::IntCell::DerivJacobian(double* xi, std::vector<double>& derivjac)
   /*
   // finite difference check
   typedef std::map<int,double>::const_iterator CI;
-  std::cout << "Analytical IntCell jac derivative:" << endl;
+  std::cout << "Analytical IntCell jac derivative:" << std::endl;
   for (CI p = derivjac.begin(); p != derivjac.end(); ++p)
   {
-    std::cout << "dof: " << p->first << " " << p->second << endl;
+    std::cout << "dof: " << p->first << " " << p->second << std::endl;
   }
 
   double delta = 1.0e-8;
   double jacfd = 0.0;
-  std::cout << "FD IntCell jac derivative:" << endl;
+  std::cout << "FD IntCell jac derivative:" << std::endl;
 
   for (int i=0;i<nnodes;++i)
   {
@@ -694,11 +694,11 @@ void MORTAR::IntCell::DerivJacobian(double* xi, std::vector<double>& derivjac)
       cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
 
       jacfd = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-      std::cout << "dof: " << 2*i+j << " " << (jacfd-jac)/delta << endl;
+      std::cout << "dof: " << 2*i+j << " " << (jacfd-jac)/delta << std::endl;
       Coords()(j,i) -= delta;
     }
   }
-  std::cout << endl;
+  std::cout << std::endl;
   */
 
   return;

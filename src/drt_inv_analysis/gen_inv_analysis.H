@@ -177,7 +177,7 @@ private:
   int check_neg_params_;
 
 
-  string filename_;
+  std::string filename_;
 
   double kappa_multi_;
 

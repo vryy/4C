@@ -105,7 +105,7 @@ DRT::ELEMENTS::Vele3Surface::~Vele3Surface()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
 {
   os << "Vele3Surface " << DRT::DistypeToString(Shape());
   Element::Print(os);

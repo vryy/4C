@@ -158,7 +158,7 @@ namespace MAT
       /// Return material name
       inline virtual std::string Name() const { return name_; }
 
-      /// Print this Condition (ostream << is also implemented for DRT::Condition)
+      /// Print this Condition (std::ostream << is also implemented for DRT::Condition)
       virtual void Print(std::ostream& os) const;
 
       /// Return type of condition

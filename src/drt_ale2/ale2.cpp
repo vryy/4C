@@ -174,11 +174,11 @@ DRT::ELEMENTS::Ale2::~Ale2()
 }
 
 
-void DRT::ELEMENTS::Ale2::Print(ostream& os) const
+void DRT::ELEMENTS::Ale2::Print(std::ostream& os) const
 {
   os << "Ale2 ";
   Element::Print(os);
-  cout << endl;
+  std::cout << std::endl;
   return;
 }
 

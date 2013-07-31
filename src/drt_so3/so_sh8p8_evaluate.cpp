@@ -89,7 +89,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
   else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
   else
     {
-      cout<<action<<endl;
+      std::cout<<action<<std::endl;
       dserror("Unknown type of action for So_hex8");
     }
   // what should the element do
@@ -696,7 +696,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     AxialMetricsAtOrigin(xrefe,*jac0,*axmetr0);
     hths = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(1)));
     hthr = Teuchos::rcp(new double((*axmetr0)(2)/(*axmetr0)(0)));
-//    cout << "hths=" << *hths << ", hthr=" << *hthr << endl;
+//    std::cout << "hths=" << *hths << ", hthr=" << *hthr << std::endl;
 #if 0
     metr_sps.resize(NUMSP_);
     for (int sp=0; sp<NUMSP_; ++sp)
@@ -922,7 +922,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
       double dzdt_G = 0.0; double dZdt_G = 0.0;
       double dzdt_H = 0.0; double dZdt_H = 0.0;
 
-      // vector product of rows of jacobians at corresponding sampling point    cout << jac_cur_sps;
+      // vector product of rows of jacobians at corresponding sampling point    std::cout << jac_cur_sps;
       for (int dim = 0; dim < NUMDIM_; ++dim) {
         dxdt_A += jac_cur_sps[0](0,dim) * jac_cur_sps[0](2,dim);  // g_13^A
         dXdt_A += jac_sps[0](0,dim)     * jac_sps[0](2,dim);      // G_13^A
@@ -987,7 +987,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
         const double atas_D = 1;///(1-metr_sps[3](0,2)/std::sqrt(metr_sps[3](0,0)*metr_sps[3](2,2)));
         const double atar_A = 1;///(1-metr_sps[0](1,2)/std::sqrt(metr_sps[0](1,1)*metr_sps[0](2,2)));
         const double atar_C = 1;///(1-metr_sps[2](1,2)/std::sqrt(metr_sps[2](1,1)*metr_sps[2](2,2)));
-//        cout << "atas_B="  << atas_B << ", atas_D" << atas_D << ", atar_A=" << atar_A << "atar_C=" << atar_C << endl;
+//        std::cout << "atas_B="  << atas_B << ", atas_D" << atas_D << ", atar_A=" << atar_A << "atar_C=" << atar_C << std::endl;
         // E23: remedy of transverse shear locking
         // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
         lstrain(4)
@@ -2608,9 +2608,9 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
   }
 
   if (num_morphed_so_hex8_easnone>0){
-    std::cout << endl << num_morphed_so_hex8_easnone
+    std::cout << std::endl << num_morphed_so_hex8_easnone
               << " Sosh8p8-Elements have no clear 'thin' direction and ANS is disabled!"
-              << endl;
+              << std::endl;
   }
 
   // fill complete again to reconstruct element-node pointers,

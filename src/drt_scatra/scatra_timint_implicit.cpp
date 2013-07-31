@@ -390,9 +390,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   {
     DRT::Condition* cond = discret_->GetCondition("TransportDirichlet");
-    if (cond) dserror("Found a Transport Dirichlet condition. Remove Transport string!");
+    if (cond) dserror("Found a Transport Dirichlet condition. Remove Transport std::string!");
     cond = discret_->GetCondition("TransportNeumann");
-    if (cond) dserror("Found a Transport Neumann condition. Remove Transport string!");
+    if (cond) dserror("Found a Transport Neumann condition. Remove Transport std::string!");
   }
 
   // -------------------------------------------------------------------
@@ -476,11 +476,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // Output
     if (myrank_ == 0)
     {
-      cout << "SCATRA: Fine-scale subgrid-diffusivity approach based on AVM3: ";
-      cout << fssgd_;
-      cout << " with turbulent Prandtl number Prt= ";
-      cout << extraparams_->sublist("SUBGRID VISCOSITY").get<double>("C_TURBPRANDTL") ;
-      cout << &endl << &endl;
+      std::cout << "SCATRA: Fine-scale subgrid-diffusivity approach based on AVM3: ";
+      std::cout << fssgd_;
+      std::cout << " with turbulent Prandtl number Prt= ";
+      std::cout << extraparams_->sublist("SUBGRID VISCOSITY").get<double>("C_TURBPRANDTL") ;
+      std::cout << &std::endl << &std::endl;
     }
 
     if ((scatratype_ == INPAR::SCATRA::scatratype_loma or
@@ -511,9 +511,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       // Output
       if (turbmodel_ and myrank_ == 0)
       {
-        cout << "All-scale subgrid-diffusivity model: ";
-        cout << turbparams->get<std::string>("PHYSICAL_MODEL");
-        cout << &endl << &endl;
+        std::cout << "All-scale subgrid-diffusivity model: ";
+        std::cout << turbparams->get<std::string>("PHYSICAL_MODEL");
+        std::cout << &std::endl << &std::endl;
       }
     }
     else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
@@ -540,9 +540,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       // Output
       if (turbmodel_ and myrank_ == 0)
       {
-        cout << "Multifractal subgrid-scale model: ";
-        cout << turbparams->get<std::string>("PHYSICAL_MODEL");
-        cout << &endl << &endl;
+        std::cout << "Multifractal subgrid-scale model: ";
+        std::cout << turbparams->get<std::string>("PHYSICAL_MODEL");
+        std::cout << &std::endl << &std::endl;
       }
     }
 
@@ -599,9 +599,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
     if (myrank_==0)
     {
-      cout<<"\nSetup of splitter: numscal = "<<numscal_<<endl;
-      cout<<"Temperature value T (Kelvin)     = "<<extraparams_->get<double>("TEMPERATURE")<<endl;
-      cout<<"Constant F/RT                    = "<<frt_<<endl;
+      std::cout<<"\nSetup of splitter: numscal = "<<numscal_<<std::endl;
+      std::cout<<"Temperature value T (Kelvin)     = "<<extraparams_->get<double>("TEMPERATURE")<<std::endl;
+      std::cout<<"Constant F/RT                    = "<<frt_<<std::endl;
     }
 
     // setup of magnetic field (always three(!) components per node)
@@ -622,7 +622,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     {
       for (int k=0;k < numscal_;k++)
       {
-        cout<<"Electrolyte conductivity (species "<<k+1<<")    = "<<sigma_[k]<<endl;
+        std::cout<<"Electrolyte conductivity (species "<<k+1<<")    = "<<sigma_[k]<<std::endl;
       }
       if (scatratype_==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
       {
@@ -631,9 +631,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
         {
           diff += sigma_[k];
         }
-        cout<<"Electrolyte conductivity (species elim) = "<<sigma_[numscal_]-diff<<endl;
+        std::cout<<"Electrolyte conductivity (species elim) = "<<sigma_[numscal_]-diff<<std::endl;
       }
-      cout<<"Electrolyte conductivity (all species)  = "<<sigma_[numscal_]<<endl<<endl;
+      std::cout<<"Electrolyte conductivity (all species)  = "<<sigma_[numscal_]<<std::endl<<std::endl;
     }
   }
 
@@ -667,7 +667,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   {
     SetupKrylovSpaceProjection(kspcond);
     if (myrank_ == 0)
-      cout << "\nSetup of KrylovSpaceProjection in scatra field\n" << endl;
+      std::cout << "\nSetup of KrylovSpaceProjection in scatra field\n" << std::endl;
   }
   else if (numscatra == 0)
   {
@@ -1298,7 +1298,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     dserror("No redistribution for the elch.");
 
   if(discret_->Comm().MyPID()==0)
-    cout << "done" << endl;
+    std::cout << "done" << std::endl;
 
   return;
 } // SCATRA::ScaTraTimIntImpl::Redistribute
@@ -1648,8 +1648,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // out to screen
       if (myrank_==0)
       {
-        cout << "Disturbed initial scalar profile:   max. " << perc*100 << "% random perturbation\n";
-        cout << "\n\n";
+        std::cout << "Disturbed initial scalar profile:   max. " << perc*100 << "% random perturbation\n";
+        std::cout << "\n\n";
       }
 
       // get overall max and min values and range between min and max
@@ -2112,7 +2112,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
   }
 
   // get from dat-file definition how weights are to be computed
-  const string* weighttype = kspcond->Get<string>("weight vector definition");
+  const std::string* weighttype = kspcond->Get<std::string>("weight vector definition");
 
   // set flag for projection update true only if ALE and integral weights
   if (isale_ and (*weighttype=="integration"))
@@ -2543,7 +2543,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   else
     discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
-//  (SystemMatrix()->EpetraMatrix())->Print(cout); // kn nis
+//  (SystemMatrix()->EpetraMatrix())->Print(std::cout); // kn nis
 
   discret_->ClearState();
 
@@ -2827,7 +2827,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         const std::string fname = "sparsematrix.mtl";
         LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
         // print to screen
-        (A->EpetraMatrix())->Print(cout);
+        (A->EpetraMatrix())->Print(std::cout);
         // print sparsity pattern to file
         LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
       }
@@ -3246,9 +3246,9 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
       }
     } // for (int r=0;r < w->MyLength(); r++)
 #if 0
-    scalefactors->Print(cout);
-    d->Print(cout);
-    (((BlockSystemMatrix()->Matrix(0,0)).EpetraMatrix()->Print(cout)));
+    scalefactors->Print(std::cout);
+    d->Print(std::cout);
+    (((BlockSystemMatrix()->Matrix(0,0)).EpetraMatrix()->Print(std::cout)));
 #endif
     // scale the complete rows and rhs
     int err = BlockSystemMatrix()->Matrix(0,0).LeftScale(*scalefactors);
@@ -3258,10 +3258,10 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
 
     Teuchos::RCP<Epetra_Vector> onlyconc = splitter_->ExtractOtherVector(residual_);
 #if 0
-    cout<<"residual:\n";
-    residual_->Print(cout);
-    cout<<"non-modified onlyconc:\n";
-    onlyconc->Print(cout);
+    std::cout<<"residual:\n";
+    residual_->Print(std::cout);
+    std::cout<<"non-modified onlyconc:\n";
+    onlyconc->Print(std::cout);
 #endif
     //Multiply a Epetra_MultiVector with another, element-by-element.
     onlyconc->Multiply(1.0,*onlyconc,*scalefactors,0.0);
@@ -3275,10 +3275,10 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
     splitter_->InsertCondVector(onlypot,residual_);
 
 #if 0
-    cout<<"modified onlyconc:\n";
-    onlyconc->Print(cout);
-    cout<<"modified residual:\n";
-    residual_->Print(cout);
+    std::cout<<"modified onlyconc:\n";
+    onlyconc->Print(std::cout);
+    std::cout<<"modified residual:\n";
+    residual_->Print(std::cout);
 #endif
     if (err>0) dserror("Error during pre-scaling of linear system");
 
@@ -3298,9 +3298,9 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
     }
 
     if (myrank_==0)
-    cout<<"Pre-Scaling of Linear System done."<<endl;
+    std::cout<<"Pre-Scaling of Linear System done."<<std::endl;
 
-    //scalefactors->Print(cout);
+    //scalefactors->Print(std::cout);
 
     }
   } // pre-scale equation system for ELCH applications

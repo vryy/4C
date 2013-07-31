@@ -179,7 +179,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
  |  print this element (public)                              vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Print(ostream& os) const
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Print(std::ostream& os) const
 {
   os << "So3_poro ";
   return;
@@ -215,7 +215,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisNames(std::map<std::string,int
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   return so3_ele::VisData(name, data);
 }

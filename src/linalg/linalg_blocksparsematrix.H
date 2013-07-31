@@ -445,7 +445,7 @@ private:
  *----------------------------------------------------------------------*/
 
 /// output of BlockSparseMatrixBase
-ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat);
+std::ostream& operator << (std::ostream& os, const LINALG::BlockSparseMatrixBase& mat);
 
 
 //////////////////////////////////

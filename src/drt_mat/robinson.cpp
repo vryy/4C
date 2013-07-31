@@ -800,7 +800,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //-------------------------------------------------------------------
   if ( (ff > 0.0) and (se > 0.0) )
   {
-//    cout << "plastic step: viscous strain rate strain_p'!= 0" << endl;
+//    std::cout << "plastic step: viscous strain rate strain_p'!= 0" << std::endl;
 
     // inelastic/viscous strain residual
     // epsilon_p' = F^n / sqrt(j2) . eta
@@ -1192,7 +1192,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   //-------------------------------------------------------------------
   if ( (gg > gg0) and (sa > 0.0) )
   {
-//     cout << "plastic step: back stress rate alpha'!= 0" << endl;
+//     std::cout << "plastic step: back stress rate alpha'!= 0" << std::endl;
 
     double fctv = hh / pow(gg, beta);
     double fcta = rr * pow(gg, (mm-beta)) / sqrt(i2);

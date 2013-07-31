@@ -519,11 +519,11 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
     // usually we choose SearchTOL = 0.1
     //========================================================================================
     const double SearchTOL = 0.1;
-    //cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << IO::endl;
+    //std::cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << IO::endl;
 
     // tolerance for which we interpret a value as zero-> these phi-values are set to zero!
     const double TOL_zero = 1e-14;
-    //cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << IO::endl;
+    //std::cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << IO::endl;
 
     // number space dimensions for 3d combustion element
     const size_t nsd = 3;
@@ -595,12 +595,12 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         static LINALG::Matrix<nsd,numnode> xyze_adj;
         GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
 
-        //cout << xyze_adj << IO::endl;
+        //std::cout << xyze_adj << IO::endl;
 
         // calculate element diameter
         const double hk_current = COMBUST::getEleDiameter<DISTYPE>(xyze_adj);
 
-        //cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << IO::endl;
+        //std::cout << "ele-diameter for element" << ele_adj->Id() << " is " << hk_current << IO::endl;
 
         //-------------------------------------------------------------
         // update maxEleDiam
@@ -618,7 +618,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
       if ( (fabs(phinp_current - 0.0) < SearchTOL * maxEleDiam) and (phinp_current != 0.0) )
       {
         modify_phinp_pot = true;
-        //cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << IO::endl;
+        //std::cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << IO::endl;
       }
 
       if ( (fabs(phin_current - 0.0) < SearchTOL * maxEleDiam)  and (phin_current  != 0.0) )
@@ -1500,7 +1500,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //
   //
   //    	const int numberOfTwoRingElements = elesinTwoRing.size();
-  ////    	cout << "numberOfTwoRingElements" << numberOfTwoRingElements << IO::endl;
+  ////    	std::cout << "numberOfTwoRingElements" << numberOfTwoRingElements << IO::endl;
   //      Epetra_SerialDenseMatrix RHS_LS(numberOfTwoRingElements,1);
   //      Epetra_SerialDenseMatrix MAT_LS(numberOfTwoRingElements, 9);
   //
@@ -2958,7 +2958,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
           // remark: this is unusual, since the
           if (numvolcells==1)
           {
-            //cout << "element " << rootcell->Ele()->Id() << " is really touched" << IO::endl;
+            //std::cout << "element " << rootcell->Ele()->Id() << " is really touched" << IO::endl;
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             // store boundary integration cells
@@ -2967,12 +2967,12 @@ void COMBUST::FlameFront::CaptureFlameFront(
             if (numstoredvol==1 and numstoredbound==0)
             {
               cutstat = COMBUST::InterfaceHandleCombust::uncut;
-              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
             }
             else if (numstoredvol==1 and numstoredbound==1)
             {
               cutstat = COMBUST::InterfaceHandleCombust::touched;
-              //cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
             }
             else
               dserror("there should be a volume cell for a touched element");
@@ -2982,33 +2982,33 @@ void COMBUST::FlameFront::CaptureFlameFront(
           //-----------------
           else if (numvolcells==2)
           {
-            //cout << "element " << rootcell->Ele()->Id() << " is really bisected" << IO::endl;
+            //std::cout << "element " << rootcell->Ele()->Id() << " is really bisected" << IO::endl;
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             // store boundary integration cells
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
 
-            //cout << "storedvol " << numstoredvol << IO::endl;
-            //cout << "storedbound " << numstoredbound << IO::endl;
+            //std::cout << "storedvol " << numstoredvol << IO::endl;
+            //std::cout << "storedbound " << numstoredbound << IO::endl;
 
             // all volume cells and boundary cells have been stored
             if (numstoredvol==2 and numstoredbound==1)
             {
               cutstat = COMBUST::InterfaceHandleCombust::bisected;
-              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
             }
             // a volume cell has been deleted, because is was too small
             else if (numstoredvol==1 and numstoredbound==1)
             {
               cutstat = COMBUST::InterfaceHandleCombust::touched;
-              //cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
               //FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             }
             // a volume cell and all boundary cells have been deleted, because they were too small
             else if (numstoredvol==1 and numstoredbound==0)
             {
               cutstat = COMBUST::InterfaceHandleCombust::uncut;
-              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
             }
             // something went wrong
             else
@@ -3027,14 +3027,14 @@ void COMBUST::FlameFront::CaptureFlameFront(
             // there are three volume cells:
             // - an inner (middle) volume cell (belongs to one domain (e.g. plus))
             // - two outer volume cells separated by the inner cell (belong to the other domain (e.g. minus))
-            //cout << "element " << rootcell->Ele()->Id() << " is really trisected and consists of " << numvolcells << " volume cells" << IO::endl;
+            //std::cout << "element " << rootcell->Ele()->Id() << " is really trisected and consists of " << numvolcells << " volume cells" << IO::endl;
 
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
-            //cout << "number of stored volumes " << numstoredvol << IO::endl;
+            //std::cout << "number of stored volumes " << numstoredvol << IO::endl;
             // store boundary integration cells
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
-            //cout << "number of stored boundaries " << numstoredbound << IO::endl;
+            //std::cout << "number of stored boundaries " << numstoredbound << IO::endl;
 
             // regular cases: one volume more than boundaries
             if ( (numstoredvol==3 and numstoredbound==2) or // trisected in 2D
@@ -3044,7 +3044,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
               // update cut status of root cell (element)
               //cutstat = COMBUST::InterfaceHandleCombust::trisected;
               cutstat = COMBUST::InterfaceHandleCombust::bisected;
-              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
             }
 
             // one outer volume cell is large enough, the other outer volume cell is too small
@@ -3068,7 +3068,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             {
               // update cut status of root cell (element)
               cutstat = COMBUST::InterfaceHandleCombust::bisected;
-              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
             }
             // both outer volume cells are too small, but the boundary cells are not small
             // -> element is touched or double touched; stored boundary
@@ -3085,7 +3085,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             {
               // update cut status of root cell (element)
               cutstat = COMBUST::InterfaceHandleCombust::touched;
-              //cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
             }
             // both outer volume cells are too small
             // -> stored the middle volume cell
@@ -3093,7 +3093,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             {
               // update cut status of root cell (element)
               cutstat = COMBUST::InterfaceHandleCombust::uncut;
-              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is uncut" << IO::endl;
             }
             else
             {
@@ -3504,7 +3504,7 @@ bool projectMidpoint(
 
     // check convergence
     conv = sqrt(f(0)*f(0)+f(1)*f(1)+f(2)*f(2)+f(3)*f(3));
-    //cout << "iteration " << iter << ": -> |f|=" << conv << IO::endl;
+    //std::cout << "iteration " << iter << ": -> |f|=" << conv << IO::endl;
 
     if (conv <= 1.0E-15) break;
     //----------------------------------------------------
@@ -3541,7 +3541,7 @@ bool projectMidpoint(
     //diff(0) = midpoint[0]-projpoint(0);
     //diff(1) = midpoint[1]-projpoint(1);
     //diff(2) = midpoint[2]-projpoint(2);
-    //cout << diff << IO::endl;
+    //std::cout << diff << IO::endl;
   }
   return converged;
 }
@@ -4417,7 +4417,7 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
       {
         //get id of the intersectionpoint and store it in segmentpoints vector
         segmentpoints.push_back(it_intersectionpoint->second);
-        //cout << "Intersectionpoint found on line: " << surface[surfaceNo][lineNo] << " with ID: " << it_intersectionpoint->second << IO::endl;
+        //std::cout << "Intersectionpoint found on line: " << surface[surfaceNo][lineNo] << " with ID: " << it_intersectionpoint->second << IO::endl;
 
         if(oldline != lineNo)
         {
@@ -5284,7 +5284,7 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
   for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
     GEO::CUT::VolumeCell * volcell = *ivolcell;
-    //cout << "volumen " << std::setw(24)<< std::setprecision(20) << volcell->Volume() << IO::endl;
+    //std::cout << "volumen " << std::setw(24)<< std::setprecision(20) << volcell->Volume() << IO::endl;
 
     if (volcell->Volume()/refvol >= voltol) // volume cell is large enough
     {
@@ -5334,8 +5334,8 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
         }
         else
         {
-          //cout << "small domain cell not stored" << IO::endl;
-          //cout << "volume" << ic->Volume() << IO::endl;
+          //std::cout << "small domain cell not stored" << IO::endl;
+          //std::cout << "volume" << ic->Volume() << IO::endl;
         }
       }
 
@@ -5451,8 +5451,8 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
         GEO::CUT::BoundaryCell * bcell = *ibcell;
         boundarea += bcell->Area();
       }
-      //cout << "refarea " << refarea << IO::endl;
-      //cout << "boundarea " << boundarea << IO::endl;
+      //std::cout << "refarea " << refarea << IO::endl;
+      //std::cout << "boundarea " << boundarea << IO::endl;
       // check if there is a small boundary integration cell for a small volume
       // remark: if there is a large boundary integration cell for a small volume, we want to keep it
       bool smallvolbound = false;
@@ -5477,9 +5477,9 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
         {
           // do not store boundary cells for small volumes, but do store large boundary cells for
           // small volumes -> this will be a touched element, we have to keep its boundary cell
-          //cout << "small boundary cell not stored" << IO::endl;
-          //cout << "volumen "  << std::setw(24)<< std::setprecision(20) << volume << IO::endl;
-          //cout << "flaeche "  << std::setw(24)<< std::setprecision(20) << bcell->Area() << IO::endl;
+          //std::cout << "small boundary cell not stored" << IO::endl;
+          //std::cout << "volumen "  << std::setw(24)<< std::setprecision(20) << volume << IO::endl;
+          //std::cout << "flaeche "  << std::setw(24)<< std::setprecision(20) << bcell->Area() << IO::endl;
         }
         else if (bcell->Area()/refarea < 1.0E-8)
         {

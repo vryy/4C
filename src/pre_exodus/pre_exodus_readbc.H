@@ -69,8 +69,8 @@ inline EXODUS::cond_type CheckCondType(const std::string buffer);
 inline std::string CondTypeToString(const EXODUS::cond_type);
 
 //! Print bc_entity
-void PrintBCDef(ostream& os, const EXODUS::elem_def& def);
-void PrintBCDef(ostream& os, const EXODUS::cond_def& def);
+void PrintBCDef(std::ostream& os, const EXODUS::elem_def& def);
+void PrintBCDef(std::ostream& os, const EXODUS::cond_def& def);
 
 // ! Check if periodic boundary conditions are defined
 bool PeriodicBoundaryConditionsFound(std::vector<EXODUS::cond_def> condefs);

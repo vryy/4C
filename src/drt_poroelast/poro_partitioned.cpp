@@ -83,7 +83,7 @@ void POROELAST::Partitioned::Solve()
 
   if (Comm().MyPID()==0)
   {
-    cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
   }
 
   // initially solve coupled scalar transport equation system
@@ -152,7 +152,7 @@ void POROELAST::Partitioned::DoStructStep()
 {
   if (Comm().MyPID() == 0)
   {
-    cout
+    std::cout
         << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
@@ -166,7 +166,7 @@ void POROELAST::Partitioned::DoFluidStep()
 {
   if (Comm().MyPID() == 0)
   {
-    cout
+    std::cout
         << "\n***********************\n FLUID SOLVER \n***********************\n";
   }
 
@@ -230,10 +230,10 @@ bool POROELAST::Partitioned::ConvergenceCheck(
   // print the incremental based convergence check to the screen
   if (Comm().MyPID()==0 )//and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
   {
-    cout<<"\n";
-    cout<<"***********************************************************************************\n";
-    cout<<"    OUTER ITERATION STEP    \n";
-    cout<<"***********************************************************************************\n";
+    std::cout<<"\n";
+    std::cout<<"***********************************************************************************\n";
+    std::cout<<"    OUTER ITERATION STEP    \n";
+    std::cout<<"***********************************************************************************\n";
     printf("+--------------+------------------------+--------------------+--------------------+\n");
     printf("|-  step/max  -|-  tol      [norm]     -|--  fluid-inc      --|--  disp-inc      --|\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
@@ -338,7 +338,7 @@ dserror("Aitken Relaxation not yet implemented");
   double relax = 1.0 - omeganp_;
 
   if(Comm().MyPID() == 0)
-  cout<<"Aitken relaxation with omega_relax = "<<relax<<endl;
+  std::cout<<"Aitken relaxation with omega_relax = "<<relax<<std::endl;
 
   // relax displacement solution for next iteration step
   // overwrite temp_ with relaxed solution vector

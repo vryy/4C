@@ -255,7 +255,7 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     {
       // t aligned
       elenormdirect =2;
-      cout << "upsidedown false" <<&endl;
+      std::cout << "upsidedown false" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
     {
@@ -269,11 +269,11 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     }
     else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
     {
-      cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
+      std::cout << xyze(normdirect,4)-xyze(normdirect,0) << &std::endl;
       // -t aligned
       elenormdirect =2;
       upsidedown =true;
-      cout << "upsidedown true" <<&endl;
+      std::cout << "upsidedown true" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
     {
@@ -893,7 +893,7 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     {
       // t aligned
       elenormdirect =2;
-      cout << "upsidedown false" <<&endl;
+      std::cout << "upsidedown false" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
     {
@@ -907,11 +907,11 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     }
     else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
     {
-      cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
+      std::cout << xyze(normdirect,4)-xyze(normdirect,0) << &std::endl;
       // -t aligned
       elenormdirect =2;
       upsidedown =true;
-      cout << "upsidedown true" <<&endl;
+      std::cout << "upsidedown true" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
     {
@@ -1286,7 +1286,7 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
     {
       // t aligned
       elenormdirect =2;
-      cout << "upsidedown false" <<&endl;
+      std::cout << "upsidedown false" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
     {
@@ -1300,11 +1300,11 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
     }
     else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
     {
-      cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
+      std::cout << xyze(normdirect,4)-xyze(normdirect,0) << &std::endl;
       // -t aligned
       elenormdirect =2;
       upsidedown =true;
-      cout << "upsidedown true" <<&endl;
+      std::cout << "upsidedown true" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
     {
@@ -2533,10 +2533,10 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   // set input parameters
   double Csgs = turbmodelparamsmfs->get<double>("CSGS");
   double alpha = 0.0;
-  if (turbmodelparamsmfs->get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+  if (turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
    alpha = 3.0;
-  else if (turbmodelparamsmfs->get<string>("SCALE_SEPARATION") == "box_filter"
-        or turbmodelparamsmfs->get<string>("SCALE_SEPARATION") == "geometric_multigrid_operator")
+  else if (turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "box_filter"
+        or turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "geometric_multigrid_operator")
    alpha = 2.0;
   else
    dserror("Unknown filter type!");
@@ -2602,15 +2602,15 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   // calculate characteristic element length
   // cf. stabilization parameters
   INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
-  if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "cube_edge")
+  if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "cube_edge")
    reflength = INPAR::FLUID::cube_edge;
-  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "sphere_diameter")
+  else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "sphere_diameter")
    reflength = INPAR::FLUID::sphere_diameter;
-  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "streamlength")
+  else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "streamlength")
    reflength = INPAR::FLUID::streamlength;
-  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "gradient_based")
+  else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "gradient_based")
    reflength = INPAR::FLUID::gradient_based;
-  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "metric_tensor")
+  else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "metric_tensor")
    reflength = INPAR::FLUID::metric_tensor;
   else
    dserror("Unknown length!");
@@ -2838,11 +2838,11 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
 
   // get reference velocity
   INPAR::FLUID::RefVelocity refvel = INPAR::FLUID::strainrate;
-  if (turbmodelparamsmfs->get<string>("REF_VELOCITY") == "strainrate")
+  if (turbmodelparamsmfs->get<std::string>("REF_VELOCITY") == "strainrate")
    refvel = INPAR::FLUID::strainrate;
-  else if (turbmodelparamsmfs->get<string>("REF_VELOCITY") == "resolved")
+  else if (turbmodelparamsmfs->get<std::string>("REF_VELOCITY") == "resolved")
    refvel = INPAR::FLUID::resolved;
-  else if (turbmodelparamsmfs->get<string>("REF_VELOCITY") == "fine_scale")
+  else if (turbmodelparamsmfs->get<std::string>("REF_VELOCITY") == "fine_scale")
    refvel = INPAR::FLUID::fine_scale;
   else
    dserror("Unknown velocity!");
@@ -3076,7 +3076,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
 
   // calculate subgrid-viscosity, if small-scale eddy-viscosity term is included
   double sgvisc = 0.0;
-  if (params.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No") != "No")
+  if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC","No") != "No")
   {
     // get filter width and Smagorinsky-coefficient
     const double hk_sgvisc = std::pow(vol,(1.0/NSD));
@@ -3094,9 +3094,9 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
     velintderxy.MultiplyNT(evel,derxy);
     fsvelintderxy.MultiplyNT(efsvel,derxy);
 
-    if (params.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No") == "Smagorinsky_all")
+    if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC","No") == "Smagorinsky_all")
       velderxy = velintderxy;
-    else if (params.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No") == "Smagorinsky_small")
+    else if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC","No") == "Smagorinsky_small")
       velderxy = fsvelintderxy;
     else
       dserror("fssgvisc-type unknown");

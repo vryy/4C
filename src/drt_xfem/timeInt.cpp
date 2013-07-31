@@ -406,7 +406,7 @@ void XFEM::TIMEINT::sendData(
   int size_one = 1;
 
 #ifdef DEBUG
-  cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
+  std::cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << std::endl;
 #endif
 
   // exporter for sending
@@ -432,7 +432,7 @@ void XFEM::TIMEINT::sendData(
   exporter.Wait(req_data);
 
 #ifdef DEBUG
-  cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
+  std::cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << std::endl;
 #endif
 } // end sendData
 
@@ -630,10 +630,10 @@ void XFEM::STD::elementSearch(
     else
       currele = discret_->lRowElement(ieleid);
 
-    //    cout << "currently analysed element" << *currele;
-    //    cout << "startpoint approximation: " << x;
+    //    std::cout << "currently analysed element" << *currele;
+    //    std::cout << "startpoint approximation: " << x;
     callXToXiCoords(currele,x,xi,found);
-    //    cout << "in local xi-coordinates: " << xi;
+    //    std::cout << "in local xi-coordinates: " << xi;
 
     if (found)
     {
@@ -813,13 +813,13 @@ void XFEM::STD::setFinalData(
         {
           /*
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-          cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](0) << endl;
+          std::cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](0) << std::endl;
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-          cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](1) << endl;
+          std::cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](1) << std::endl;
         else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-          cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](2) << endl;
+          std::cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](2) << std::endl;
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
-          cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[0] << endl;
+          std::cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[0] << std::endl;
            */
 
 
@@ -911,7 +911,7 @@ void XFEM::STD::exportStartData()
   std::vector<char> dataRecv;
   sendData(dataSend,dest,source,dataRecv);
 
-  // pointer to current position of group of cells in global string (counts bytes)
+  // pointer to current position of group of cells in global std::string (counts bytes)
   std::vector<char>::size_type posinData = 0;
 
   // clear vector that should be filled
@@ -1035,7 +1035,7 @@ void XFEM::STD::exportFinalData()
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
 
     // unpack received data
@@ -1160,7 +1160,7 @@ bool XFEM::ENR::newEnrValueNeeded(
   {
     // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
     const int gid = node->Id();
-    //  	cout << "here with node " << *node << endl;
+    //  	std::cout << "here with node " << *node << std::endl;
 
     const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
@@ -1182,7 +1182,7 @@ bool XFEM::ENR::newEnrValueNeeded(
 
         if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard)
           return critCut(node);
-        //      cout << "bool is " << critCut << endl;
+        //      std::cout << "bool is " << critCut << std::endl;
       } // end if dof has non standard enrichment
     } // end loop over fieldset
     break;
@@ -1191,7 +1191,7 @@ bool XFEM::ENR::newEnrValueNeeded(
   {
     // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
     const int gid = node->Id();
-    //  	cout << "here with node " << *node << endl;
+    //  	std::cout << "here with node " << *node << std::endl;
 
     const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
@@ -1279,7 +1279,7 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
       } // end if node in minus domain
     } // end if element bisected or touched
   } // end loop over elements around node
-  //  if (critCut) cout << *node << " is newly set because of critical cut" << endl;
+  //  if (critCut) std::cout << *node << " is newly set because of critical cut" << std::endl;
   return critCut;
 } // end function critCut
 
@@ -1317,7 +1317,7 @@ void XFEM::ENR::getCritCutElements(
 
         if (currVol < 0.0)
         {
-          cout << "negative volume detected and reverted" << endl;
+          std::cout << "negative volume detected and reverted" << std::endl;
           currVol = -currVol;
         }
 
@@ -1327,9 +1327,9 @@ void XFEM::ENR::getCritCutElements(
 
       if (plusVol == 0.0 || minusVol == 0.0) // no domain integration cell in one subdomain
       {
-        cout << "element " << *currEle << " shall be bisected" << endl;
-        cout << "element volume in plus domain is " << plusVol << endl;
-        cout << "element volume in minus domain is " << minusVol << endl;
+        std::cout << "element " << *currEle << " shall be bisected" << std::endl;
+        std::cout << "element volume in plus domain is " << plusVol << std::endl;
+        std::cout << "element volume in minus domain is " << minusVol << std::endl;
         dserror("WARNING!!! Bisected domain shall have integration cells on both interface sides!");
       } // end if no domain integration cell in one subdomain
 
@@ -1528,7 +1528,7 @@ void XFEM::TIMEINT::FindFacingPatchProjCellSpace(
   }
 
   // Newton iteration converged
-  //  cout << "Newton iteration converged in " << iter << " steps!" << endl;
+  //  std::cout << "Newton iteration converged in " << iter << " steps!" << std::endl;
 
   //----------------------------------------------------
   // check if projection lies within boundary cell space
@@ -1551,7 +1551,7 @@ void XFEM::TIMEINT::FindFacingPatchProjCellSpace(
     {
       facenode = true;
       patchdist = alpha;
-      //      cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << endl;
+      //      std::cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << std::endl;
     }
     break;
   }
@@ -1564,7 +1564,7 @@ void XFEM::TIMEINT::FindFacingPatchProjCellSpace(
     {
       facenode = true;
       patchdist = alpha;
-      //      cout << "facing patch found (quad4 patch)!" << endl;
+      //      std::cout << "facing patch found (quad4 patch)!" << std::endl;
     }
     break;
   }
@@ -1573,15 +1573,15 @@ void XFEM::TIMEINT::FindFacingPatchProjCellSpace(
   }
   //  if (!converged)
   //  {
-  //    cout << "node x component " << node(0,0) << endl;
-  //    cout << "node y component " << node(1,0) << endl;
-  //    cout << "node z component " << node(2,0) << endl;
-  //    cout << "eta1 " << eta(0) << endl;
-  //    cout << "eta2 " << eta(1) << endl;
-  //    cout << "alpha " << alpha << endl;
-  //    cout << "patch vertices x component " << patchcoord(0,0) << " " << patchcoord(0,1) << " " << patchcoord(0,2) << endl;
-  //    cout << "patch vertices y component " << patchcoord(1,0) << " " << patchcoord(1,1) << " " << patchcoord(1,2) << endl;
-  //    cout << "patch vertices z component " << patchcoord(2,0) << " " << patchcoord(2,1) << " " << patchcoord(2,2) << endl;
+  //    std::cout << "node x component " << node(0,0) << std::endl;
+  //    std::cout << "node y component " << node(1,0) << std::endl;
+  //    std::cout << "node z component " << node(2,0) << std::endl;
+  //    std::cout << "eta1 " << eta(0) << std::endl;
+  //    std::cout << "eta2 " << eta(1) << std::endl;
+  //    std::cout << "alpha " << alpha << std::endl;
+  //    std::cout << "patch vertices x component " << patchcoord(0,0) << " " << patchcoord(0,1) << " " << patchcoord(0,2) << std::endl;
+  //    std::cout << "patch vertices y component " << patchcoord(1,0) << " " << patchcoord(1,1) << " " << patchcoord(1,2) << std::endl;
+  //    std::cout << "patch vertices z component " << patchcoord(2,0) << " " << patchcoord(2,1) << " " << patchcoord(2,2) << std::endl;
   //  }
 
   return;
@@ -1760,8 +1760,8 @@ void XFEM::TIMEINT::ComputeNormalVectorToFlameFront(
 #endif
 
   //  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
-  //  cout << "proc " << comm.MyPID() << " normal " <<  normal << endl;
-  //  cout << "proc " << comm.MyPID() << " patch " <<  patchcoord << endl;
+  //  std::cout << "proc " << comm.MyPID() << " normal " <<  normal << std::endl;
+  //  std::cout << "proc " << comm.MyPID() << " patch " <<  patchcoord << std::endl;
 
   // compute unit (normed) normal vector
   double norm = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
@@ -1772,7 +1772,7 @@ void XFEM::TIMEINT::ComputeNormalVectorToFlameFront(
 #ifdef COMBUST_2D
   if (!((normal(2) > 0.0-1.0E-8) and (normal(2) < 0.0+1.0E-8)))
   {
-    cout << "z-component of normal: " << normal(2) << endl;
+    std::cout << "z-component of normal: " << normal(2) << std::endl;
     dserror ("pseudo-3D problem not symmetric anymore!");
   }
 #endif

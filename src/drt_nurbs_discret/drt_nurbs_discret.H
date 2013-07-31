@@ -56,7 +56,7 @@ public:
   \param name (in): name of this nurbs discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  NurbsDiscretization(const string name, RCP<Epetra_Comm> comm);
+  NurbsDiscretization(const std::string name, RCP<Epetra_Comm> comm);
 
   /*!
   \brief Destructor

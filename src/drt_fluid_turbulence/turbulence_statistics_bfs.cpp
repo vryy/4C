@@ -1899,7 +1899,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
  |                                                                      |
  *----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(
-          const string& geotype)
+          const std::string& geotype)
 {
   dsassert(geotype != "none", "No geometry supplied");
 

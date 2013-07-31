@@ -340,11 +340,11 @@ public:
   /*!
    * \brief Print this meshfree bin
    *
-   * Prints basic information about this bin to ostream. This method would
+   * Prints basic information about this bin to std::ostream. This method would
    * usually be called by the print method of a derived class.
    *///                                                  (public) ghamm 11/12
   /*------------------------------------------------------------------------*/
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Evaluate a Neumann boundary condition dummy
@@ -402,6 +402,6 @@ private:
 } // namespace DRT
 
 //! << operator
-ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& ele);
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& ele);
 
 #endif  // #ifndef DRT_MESHFREE_MESHFREEMULTIBIN_H

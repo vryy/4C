@@ -321,8 +321,8 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
               actnode->Id() == 110 or
               actnode->Id() == 111)
           {
-            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
-            cout << *actnode << endl;
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << std::endl;
+            cout << *actnode << std::endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
 #ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
@@ -343,8 +343,8 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
                    actnode->Id() == 182 or
                    actnode->Id() == 183)
           {
-            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
-            cout << *actnode << endl;
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << std::endl;
+            cout << *actnode << std::endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
 #ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
@@ -356,7 +356,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           }
           else // free x-velocity dof for all other Dirichlet nodes
           {
-            cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << endl;
+            cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << std::endl;
             const int lid = (*systemvectoraux).Map().LID(dofs[j]);
             if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
             if (toggle!=Teuchos::null)
@@ -372,7 +372,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
 #ifdef COMBUST_XVELFREE
         if ((*onoff)[truncj]!=0 and j==1) // if Dirichlet value is turned on in input file (1)
         {
-          cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << endl;
+          cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << std::endl;
           const int lid = (*systemvectoraux).Map().LID(dofs[j]);
           if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
           if (toggle!=Teuchos::null)
@@ -386,7 +386,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
 #ifdef COMBUST_YVELFREE
         if ((*onoff)[truncj]!=0 and j==3) // if Dirichlet value is turned on in input file (1)
         {
-          cout << "/!\\ warning === no Dirichlet value set for enriched y-velocity dof of node " << actnode->Id() << endl;
+          cout << "/!\\ warning === no Dirichlet value set for enriched y-velocity dof of node " << actnode->Id() << std::endl;
           const int lid = (*systemvectoraux).Map().LID(dofs[j]);
           if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
           if (toggle!=Teuchos::null)
@@ -400,7 +400,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
 #ifdef COMBUST_PRESFREE
         if ((*onoff)[truncj]!=0 and j==7) // if Dirichlet value is turned on in input file (1)
         {
-          cout << "/!\\ warning === no Dirichlet value set for enriched pressure dof of node " << actnode->Id() << endl;
+          cout << "/!\\ warning === no Dirichlet value set for enriched pressure dof of node " << actnode->Id() << std::endl;
           const int lid = (*systemvectoraux).Map().LID(dofs[j]);
           if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
           if (toggle!=Teuchos::null)
@@ -618,8 +618,8 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
               actnode->Id() == 110 or
               actnode->Id() == 111)
           {
-            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
-            cout << *actnode << endl;
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << std::endl;
+            cout << *actnode << std::endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
 #ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
@@ -640,8 +640,8 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
               actnode->Id() == 182 or
               actnode->Id() == 183)
           {
-            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << endl;
-            cout << *actnode << endl;
+            cout << "/!\\ warning === Dirichlet value of enriched x-velocity dof is modified manually for node " << actnode->Id() << std::endl;
+            cout << *actnode << std::endl;
             for (unsigned i=0; i<deg+1; ++i)
             {
 #ifdef COMBUST_TESTCOUETTEFLOWDECOUPLED
@@ -653,7 +653,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           }
           else // free x-velocity dof for all other Dirichlet nodes
           {
-            cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << endl;
+            cout << "/!\\ warning === no Dirichlet value set for enriched x-velocity dof of node " << actnode->Id() << std::endl;
             const int lid = (*systemvectoraux).Map().LID(dofs[j]);
             if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
             if (toggle!=Teuchos::null)
@@ -784,7 +784,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         //if (j%2!=0) // if XFEM dof
         if (j==4) // if XFEM dof
         {
-          cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << endl;
+          cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " is set to 0.0 for node " << actnode->Id() << std::endl;
           for (unsigned i=0; i<deg+1; ++i)
           {
             value[i] = 0.0; // previously assigned DBC value is overwritten by 0.0
@@ -1114,5 +1114,4 @@ void DRT::DiscretizationXFEM::EvaluateDirichletCombust(Teuchos::ParameterList& p
 
   return;
 }
-
 

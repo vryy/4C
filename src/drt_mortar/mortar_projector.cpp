@@ -95,15 +95,15 @@ bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
       //std::cout << "***WARNING*** ProjectNodalNormal:" << " Newton unconverged for NodeID "
-      //     << node.Id() << " and MortarElementID " << ele.Id() << endl;
+      //     << node.Id() << " and MortarElementID " << ele.Id() << std::endl;
     }
 
     /*
     // Newton iteration converged
     else
     {
-      std::cout << "Newton iteration converged in " << k << " step(s)!" << endl
-           << "The result is: " << xi[0] << endl;
+      std::cout << "Newton iteration converged in " << k << " step(s)!" << std::endl
+           << "The result is: " << xi[0] << std::endl;
     }*/
   }
 
@@ -151,15 +151,15 @@ bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
       //std::cout << "***WARNING*** ProjectElementNormal:" << " Newton unconverged for NodeID "
-      //     << node.Id() << " and MortarElementID " << ele.Id() << endl;
+      //     << node.Id() << " and MortarElementID " << ele.Id() << std::endl;
     }
 
     /*
     // Newton iteration converged
     else
     {
-      std::cout << "Newton iteration converged in " << k << " step(s)!" << endl
-           << "The result is: " << xi[0] << endl;
+      std::cout << "Newton iteration converged in " << k << " step(s)!" << std::endl
+           << "The result is: " << xi[0] << std::endl;
     }*/
   }
 
@@ -203,7 +203,7 @@ bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
     {
       EvaluateFElementNormal3D(f,node,ele,eta,alpha);
       conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-      //std::cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+      //std::cout << "Iteration " << k << ": -> |f|=" << conv << std::endl;
       if (conv <= MORTARCONVTOL) break;
       EvaluateGradFElementNormal3D(df,node,ele,eta,alpha);
 
@@ -226,7 +226,7 @@ bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
     xi[0]=eta[0];
     xi[1]=eta[1];
     par=alpha;
-    //std::cout << "Newton iteration converged in " << k << " steps!" << endl;
+    //std::cout << "Newton iteration converged in " << k << " steps!" << std::endl;
   }
 
   else dserror("ERROR: ProjectElementNormal: Called 3D version for 2D problem!");
@@ -307,8 +307,8 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
     /*
     else
     {
-      std::cout << "GP Newton iteration converged in " << k << " step(s)!" << endl
-           << "The result is: " << xi[0] << endl;
+      std::cout << "GP Newton iteration converged in " << k << " step(s)!" << std::endl
+           << "The result is: " << xi[0] << std::endl;
     }*/
   }
 
@@ -424,7 +424,7 @@ bool MORTAR::MortarProjector::CheckProjection4AUXPLANE(MORTAR::MortarElement& el
     proj_gp[0]=lambda1*t0[0] + lambda2*t1[0]+auxc[0];
     proj_gp[1]=lambda1*t0[1] + lambda2*t1[1]+auxc[1];
     proj_gp[2]=lambda1*t0[2] + lambda2*t1[2]+auxc[2];
-    //cout << "proj_gp_AUX4PLANE= " << proj_gp[0] << " "  << proj_gp[1] << " " << proj_gp[2] << endl;
+    //std::cout << "proj_gp_AUX4PLANE= " << proj_gp[0] << " "  << proj_gp[1] << " " << proj_gp[2] << std::endl;
 
     //check
     //edge 1
@@ -627,7 +627,7 @@ bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
     {
       EvaluateFGaussPointAuxn3D(f,globgp,auxn,ele,eta,alpha);
       conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-      //std::cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+      //std::cout << "Iteration " << k << ": -> |f|=" << conv << std::endl;
       if (conv <= MORTARCONVTOL) break;
       EvaluateGradFGaussPointAuxn3D(df,globgp,auxn,ele,eta,alpha);
 
@@ -650,7 +650,7 @@ bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
     xi[0]=eta[0];
     xi[1]=eta[1];
     par = alpha;
-    //std::cout << "Newton iteration converged in " << k << " steps!" << endl;
+    //std::cout << "Newton iteration converged in " << k << " steps!" << std::endl;
   }
 
   else dserror("ERROR: ProjectGaussPoint: Called 3D version for 2D problem!");

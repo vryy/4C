@@ -19,10 +19,10 @@ Maintainer: Martin Winklmaier
 
 
 /*---------------------------------------------------------------------*
-|  converts a string into an action for this element                   |
+|  converts a std::string into an action for this element                   |
 *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TopOpt::ActionType DRT::ELEMENTS::TopOpt::convertStringToActionType(
-    const string& action
+    const std::string& action
 ) const
 {
   dsassert(action != "none", "No action supplied");
@@ -129,10 +129,10 @@ int DRT::ELEMENTS::TopOpt::EvaluateNeumann(Teuchos::ParameterList& params,
 
 
 /*---------------------------------------------------------------------*
-|  converts a string into an action for this element                   |
+|  converts a std::string into an action for this element                   |
 *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TopOptBoundary::ActionType DRT::ELEMENTS::TopOptBoundary::convertStringToActionType(
-    const string& action
+    const std::string& action
 ) const
 {
   dsassert(action != "none", "No action supplied");

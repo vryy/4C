@@ -61,7 +61,7 @@ void STRUMULTI::np_support_drt()
   // bool for checking whether restart has already been called
   bool restart = false;
 
-  // start endless loop
+  // start std::endless loop
   while(true)
   {
     // receive what to do and which element is intended to work

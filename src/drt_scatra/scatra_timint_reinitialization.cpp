@@ -69,7 +69,7 @@ void SCATRA::ScaTraTimIntImpl::AddReinitializationParameters(
   if(timealgo_  == INPAR::SCATRA::timeint_one_step_theta)
   {
     params.set("theta_reinit", 1.0);
-//    if (discret_->Comm().MyPID() == 0) cout << "WARNING: THETA_REINIT is set to 1.0!!!" << endl;
+//    if (discret_->Comm().MyPID() == 0) std::cout << "WARNING: THETA_REINIT is set to 1.0!!!" << std::endl;
   }
 
 

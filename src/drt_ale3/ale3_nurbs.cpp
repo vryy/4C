@@ -94,7 +94,7 @@ DRT::ELEMENTS::NURBS::Ale3Nurbs::~Ale3Nurbs()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 03/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Ale3Nurbs::Print(ostream& os) const
+void DRT::ELEMENTS::NURBS::Ale3Nurbs::Print(std::ostream& os) const
 {
   os << "Ale3Nurbs ";
   Element::Print(os);

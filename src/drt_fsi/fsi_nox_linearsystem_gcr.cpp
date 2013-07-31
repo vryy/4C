@@ -111,7 +111,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
     scaling->scaleLinearSystem(Problem);
 
     if (utils.isPrintType(NOX::Utils::Details)) {
-      utils.out() << *scaling << endl;
+      utils.out() << *scaling << std::endl;
     }
   }
   // ************* End linear system scaling *******************
@@ -131,9 +131,9 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
     status = SolveGCR(input, result, maxit, tol);
   else
   {
-    utils.out() << "ERROR: NOX::FSI::LinearSystemGCR::applyJacobianInverse" << endl
+    utils.out() << "ERROR: NOX::FSI::LinearSystemGCR::applyJacobianInverse" << std::endl
                 << "\"Solver\" parameter \"" << linearSolver
-                <<  "\" is invalid!" << endl;
+                <<  "\" is invalid!" << std::endl;
     throw "NOX Error";
   }
 
@@ -236,7 +236,7 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
                 << " |r0|=" << error0
                 << " |dx|=" << u.back()->norm()*alpha
                 << " |b|=" << normb
-                << " tol=" << tol << endl;
+                << " tol=" << tol << std::endl;
   }
 
   maxit = k;
@@ -321,7 +321,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
                   << "   |b|=" << std::scientific << normb
                   << "   tol=" << std::scientific << tol
                   << "   time=" << std::scientific << t.ElapsedTime()
-                  << endl;
+                  << std::endl;
 
       if ((resid = fabs(s(i+1)) / normb) < tol)
       {
@@ -514,7 +514,7 @@ void NOX::FSI::LinearSystemGCR::throwError(const std::string& functionName, cons
   if (utils.isPrintType(NOX::Utils::Error))
   {
     utils.out() << "NOX::FSI::LinearSystemGCR::" << functionName
-                << " - " << errorMsg << endl;
+                << " - " << errorMsg << std::endl;
   }
   throw "NOX Error";
 }

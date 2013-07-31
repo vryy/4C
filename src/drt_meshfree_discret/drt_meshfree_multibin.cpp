@@ -117,7 +117,7 @@ DRT::Element* DRT::MESHFREE::MeshfreeMultiBin::Clone() const
 /*--------------------------------------------------------------------------*
  |  << operator                                                 ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& bin)
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& bin)
 {
   bin.Print(os);
   return os;
@@ -126,7 +126,7 @@ ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeMultiBin& bin)
 /*--------------------------------------------------------------------------*
  |  print element                                      (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeMultiBin::Print(ostream& os) const
+void DRT::MESHFREE::MeshfreeMultiBin::Print(std::ostream& os) const
 {
   os << "MeshfreeMultiBin ";
   DRT::Element::Print(os);

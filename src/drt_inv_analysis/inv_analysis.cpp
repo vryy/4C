@@ -189,7 +189,7 @@ void STR::InvAnalysis::Integrate()
     Epetra_SerialDenseMatrix cmatrix(nmp_, np_+1);
 
     if (discret_->Comm().MyPID()==0)
-      cout << "-----------------------------making Jacobian matrix-------------------------" <<endl;
+      std::cout << "-----------------------------making Jacobian matrix-------------------------" <<std::endl;
     for (int i=0; i<np_+1;i++)
     {
       bool outputtofile = false;
@@ -212,7 +212,7 @@ void STR::InvAnalysis::Integrate()
       MultiInvAnaInit();
 
       if (discret_->Comm().MyPID()==0)
-        cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<" ---------------------------------" <<endl;
+        std::cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<" ---------------------------------" <<std::endl;
       Epetra_SerialDenseVector p_cur = p_;
       if (i!= np_)
         p_cur[i]=p_[i] + inc[i];
@@ -474,7 +474,7 @@ void STR::InvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetra_Se
   error_s_(numb_run_) = error_;
   // print error and parameter
 
-  cout << endl;
+  std::cout << std::endl;
   printf("################################################");
   printf("##############################################\n");
   printf("############################ Inverse Analysis ##");
@@ -538,7 +538,7 @@ void STR::InvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetra_Se
 
   printf("################################################");
   printf("##############################################\n");
-  cout << endl;
+  std::cout << std::endl;
 }
 
 
@@ -551,10 +551,10 @@ void STR::InvAnalysis::PrintFile()
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   name.append(filename_);
 
-  if (name.rfind("_run_")!=string::npos)
+  if (name.rfind("_run_")!=std::string::npos)
   {
     size_t pos = name.rfind("_run_");
-    if (pos==string::npos)
+    if (pos==std::string::npos)
       dserror("inconsistent file name");
     name = name.substr(0, pos);
   }

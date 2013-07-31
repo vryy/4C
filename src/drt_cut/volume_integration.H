@@ -61,7 +61,7 @@ namespace GEO
 
         /*!
         \brief Check whether the point with this element Local coordinates is inside, outisde or
-        boundary of this volumecell. The output string will be either "outside", "inside" or "onBoundary"
+        boundary of this volumecell. The output std::string will be either "outside", "inside" or "onBoundary"
         */
         std::string IsPointInside( LINALG::Matrix<3,1> & rst );
 
@@ -117,7 +117,7 @@ namespace GEO
         \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with
         in the facet area
         */
-        int pnpoly(std::vector<std::vector<double> >xp, LINALG::Matrix<3,1> pt,string projType);
+        int pnpoly(std::vector<std::vector<double> >xp, LINALG::Matrix<3,1> pt,std::string projType);
 
         /*!
         \brief Adds linear combination of first order base function to the moment fitting system of equations

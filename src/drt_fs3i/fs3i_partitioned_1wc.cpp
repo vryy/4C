@@ -66,7 +66,7 @@ void FS3I::PartFS3I_1WC::DoScatraStep()
 {
   if (Comm().MyPID()==0)
   {
-    cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
+    std::cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
   }
 
   // first scatra field is associated with fluid, second scatra field is

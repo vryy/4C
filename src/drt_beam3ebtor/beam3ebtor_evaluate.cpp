@@ -45,7 +45,7 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
 
   DRT::ELEMENTS::Beam3ebtor::ActionType act = Beam3ebtor::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
 
   if 	  (action == "calc_none") 				dserror("No action supplied");
   else if (action=="calc_struct_linstiff") 		act = Beam3ebtor::calc_struct_linstiff;
@@ -63,7 +63,7 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_ptcstiff")		act = Beam3ebtor::calc_struct_ptcstiff;
   else 	  dserror("Unknown type of action for Beam3ebtor");
 
-  string test = params.get<string>("action","calc_none");
+  std::string test = params.get<std::string>("action","calc_none");
 
   switch(act)
   {
@@ -1104,7 +1104,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
     //assemble massmatrix if requested
     if (massmatrix != NULL)
     {
-      cout << "\n\nWarning: Massmatrix not implemented yet!";
+      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
     }//if (massmatrix != NULL)
 
   }	//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -1134,7 +1134,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
  *------------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebtor::lumpmass(Epetra_SerialDenseMatrix* emass)
 {
-  cout << "\n\nWarning: Massmatrix not implemented yet!";
+  std::cout << "\n\nWarning: Massmatrix not implemented yet!";
 }
 
 void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(std::vector<double>& disp,

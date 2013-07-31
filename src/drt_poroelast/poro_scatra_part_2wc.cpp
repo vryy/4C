@@ -139,7 +139,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::DoPoroStep()
 {
   if (Comm().MyPID() == 0)
   {
-    cout
+    std::cout
         << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
@@ -153,7 +153,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
-    cout
+    std::cout
         << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
   }
 
@@ -208,7 +208,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::OuterLoop()
 
   if (Comm().MyPID()==0)
   {
-    cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
   }
 
   while (stopnonliniter==false)
@@ -288,10 +288,10 @@ bool POROELAST::PORO_SCATRA_Part_2WC::ConvergenceCheck(int itnum)
   // print the incremental based convergence check to the screen
   if (Comm().MyPID()==0 )
   {
-    cout<<"\n";
-    cout<<"***********************************************************************************\n";
-    cout<<"    OUTER ITERATION STEP    \n";
-    cout<<"***********************************************************************************\n";
+    std::cout<<"\n";
+    std::cout<<"***********************************************************************************\n";
+    std::cout<<"    OUTER ITERATION STEP    \n";
+    std::cout<<"***********************************************************************************\n";
     printf("+--------------+------------------------+--------------------+--------------------+--------------------+\n");
     printf("|-  step/max  -|-  tol      [norm]     -|--  scalar-inc      --|--  disp-inc      --|--  fluid-inc      --|\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         | %10.3E         |",

@@ -379,10 +379,10 @@ void OPTI::GCMMA::InitIter(
     *constr_deriv_ = *constraintsgrad;
     obj_ = objective;
     *obj_deriv_ = *objectivegrad;
-//    cout << "new obj is " << obj_ << endl;
-//    cout << "new obj deriv is " << *obj_deriv_ << endl;
-//    cout << "new constr are " << *constr_ << endl;
-//    cout << "new constr deriv are " << *constr_deriv_ << endl;
+//    std::cout << "new obj is " << obj_ << std::endl;
+//    std::cout << "new obj deriv is " << *obj_deriv_ << std::endl;
+//    std::cout << "new constr are " << *constr_ << std::endl;
+//    std::cout << "new constr deriv are " << *constr_deriv_ << std::endl;
 
     // reset optimization variables
     *x_old2_ = *x_old_;
@@ -395,8 +395,8 @@ void OPTI::GCMMA::InitIter(
   }
   else // new inner iter -> new values, update rho
   {
-//cout << "new obj is " << objective << endl;
-//cout << "new constr are " << *constraints << endl;
+//std::cout << "new obj is " << objective << std::endl;
+//std::cout << "new constr are " << *constraints << std::endl;
     UpdateRho(objective,constraints);
   }
 }
@@ -464,8 +464,8 @@ void OPTI::GCMMA::Asymptotes()
       xdiff++;
     }
   }
-//  cout << "low is " << *asymp_min_ << endl;
-//  cout << "upp is " << *asymp_max_ << endl;
+//  std::cout << "low is " << *asymp_min_ << std::endl;
+//  std::cout << "upp is " << *asymp_max_ << std::endl;
 }
 
 
@@ -540,8 +540,8 @@ void OPTI::GCMMA::InitRho()
     rho++;
     rhomin++;
   }
-//  cout << "rho0 is " << rho0_ << endl;
-//  cout << "rho is " << *rho_ << endl;
+//  std::cout << "rho0 is " << rho0_ << std::endl;
+//  std::cout << "rho is " << *rho_ << std::endl;
 }
 
 
@@ -606,8 +606,8 @@ void OPTI::GCMMA::UpdateRho(
     constr_appr++;
     rho++;
   }
-//  cout << "rho0 is " << rho0_ << endl;
-//  cout << "rho is " << *rho_ << endl;
+//  std::cout << "rho0 is " << rho0_ << std::endl;
+//  std::cout << "rho is " << *rho_ << std::endl;
 }
 
 
@@ -1054,9 +1054,9 @@ bool OPTI::GCMMA::InnerConvergence(
   bool finished = true;
   numNotFinished = 0;
 
-//  cout << "obj: diff is " << objective-obj_appr_-tol_sub_ << endl;
-//  cout << "objective is " << objective << endl;
-//  cout << "approximated objective is " << obj_appr_ << endl;
+//  std::cout << "obj: diff is " << objective-obj_appr_-tol_sub_ << std::endl;
+//  std::cout << "objective is " << objective << std::endl;
+//  std::cout << "approximated objective is " << obj_appr_ << std::endl;
 
   if (obj_appr_ + tol_sub_ < objective)
   {
@@ -1069,9 +1069,9 @@ bool OPTI::GCMMA::InnerConvergence(
 
   for (int i=0;i<m_;i++)
   {
-//    cout << "constr: diff is " << *constr-*constr_appr-tol_sub_ << endl;
-//    cout << "constraint is " << (*constraints)(0) << endl;
-//    cout << "approximated constraint is " << *constr_appr << endl;
+//    std::cout << "constr: diff is " << *constr-*constr_appr-tol_sub_ << std::endl;
+//    std::cout << "constraint is " << (*constraints)(0) << std::endl;
+//    std::cout << "approximated constraint is " << *constr_appr << std::endl;
 
     if (*constr_appr + tol_sub_ < *constr)
     {
@@ -1280,13 +1280,13 @@ void OPTI::GCMMA::InitSubSolve()
   *b_ += *constr_;
   b_->Scale(-1.0);
 
-//  cout << "init subsolve: " << endl;
-//  cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_ << endl;
-//  cout << "low asy is " << *asymp_min_ << "upp asy is " << *asymp_max_ << endl;
-//  cout << "alpha is " << *alpha_ << "beta is " << *beta_ << endl;
-//  cout << "p0 is " << *p0_ << "q0 is " << *q0_ << endl;
-//  cout << "p is " << *P_ << "q is " << *Q_ << endl;
-//  cout << "a0 is " << a0_ << ", a is " << *a_ << ", b is " << *b_ << ", c is " << *c_ << ", d is " << *d_ << endl;
+//  std::cout << "init subsolve: " << std::endl;
+//  std::cout << "m is " << m_ << ", n is " << n_ << ", epsimin is " << tol_sub_ << std::endl;
+//  std::cout << "low asy is " << *asymp_min_ << "upp asy is " << *asymp_max_ << std::endl;
+//  std::cout << "alpha is " << *alpha_ << "beta is " << *beta_ << std::endl;
+//  std::cout << "p0 is " << *p0_ << "q0 is " << *q0_ << std::endl;
+//  std::cout << "p is " << *P_ << "q is " << *Q_ << std::endl;
+//  std::cout << "a0 is " << a0_ << ", a is " << *a_ << ", b is " << *b_ << ", c is " << *c_ << ", d is " << *d_ << std::endl;
 }
 
 
@@ -1982,12 +1982,12 @@ void OPTI::GCMMA::SubSolve()
     else
       tol_reached = true;
   }
-//  cout << "after subsolv:" << endl;
-//  cout << "x is " << *x_mma_ << endl;
-//  cout << "y is " << *y_mma_ << ", z is " << z_mma_ << ", lam is " << *lam_ << endl;
-//  cout << "xsi is " << *xsi_ << endl;
-//  cout << "eta is " << *eta_ << endl;
-//  cout << "mu is " << *mu_ << ", zet is " << zet_ << ", s is " << *s_ << endl;
+//  std::cout << "after subsolv:" << std::endl;
+//  std::cout << "x is " << *x_mma_ << std::endl;
+//  std::cout << "y is " << *y_mma_ << ", z is " << z_mma_ << ", lam is " << *lam_ << std::endl;
+//  std::cout << "xsi is " << *xsi_ << std::endl;
+//  std::cout << "eta is " << *eta_ << std::endl;
+//  std::cout << "mu is " << *mu_ << ", zet is " << zet_ << ", s is " << *s_ << std::endl;
 }
 
 
@@ -2283,8 +2283,8 @@ void OPTI::GCMMA::Update(
     constr++;
   }
 
-//  cout << "obj_appr is " << obj_appr_ << endl;
-//  cout << "constr_appr is " << *constr_appr_ << endl;
+//  std::cout << "obj_appr is " << obj_appr_ << std::endl;
+//  std::cout << "constr_appr is " << *constr_appr_ << std::endl;
 }
 
 
@@ -2400,14 +2400,14 @@ void OPTI::GCMMA::OutputToGmsh()
 
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "X \" {" << endl;
+    gmshfilecontent << "View \" " << "X \" {" << std::endl;
     // draw scalar field 'Phinp' for every element
     IO::GMSH::ScalarFieldToGmsh(discret_,x_,gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   gmshfilecontent.close();
-  if (screen_out) std::cout << " done" << endl;
+  if (screen_out) std::cout << " done" << std::endl;
 }
 
 

@@ -109,7 +109,7 @@ MAT::PAR::Material::~Material()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ostream& operator << (std::ostream& os, const MAT::PAR::Material& cond)
+std::ostream& operator << (std::ostream& os, const MAT::PAR::Material& cond)
 {
   cond.Print(os);
   return os;

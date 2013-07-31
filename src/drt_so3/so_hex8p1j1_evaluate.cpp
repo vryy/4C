@@ -1224,7 +1224,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
 
   App_K.Scale(1.0/epsilon);
   App_K.Update(-1.0, K_uu_, 1.0);
-  cout << "A_pp:" << App_K << endl;
+  std::cout << "A_pp:" << App_K << std::endl;
 
 
 //     for (int i=0; i<24; ++i)
@@ -1232,7 +1232,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
 //       for (int j=0; j<24; ++j)
 //       {
 //         if (App_K(i, j) > 0.000001)
-//           cout << "Abweichung in K_" << i << j << ": " << App_K(i, j) << endl;
+//           std::cout << "Abweichung in K_" << i << j << ": " << App_K(i, j) << std::endl;
 //       }
 //     }
 }

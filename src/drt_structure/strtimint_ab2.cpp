@@ -141,7 +141,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // TIMING
-  //if (!myrank_) cout << "\nT_internal: " << timer_->WallTime() -dtcpu << endl;
+  //if (!myrank_) std::cout << "\nT_internal: " << timer_->WallTime() -dtcpu << std::endl;
 
   // viscous forces due Rayleigh damping
   if (damping_ == INPAR::STR::damp_rayleigh)
@@ -160,7 +160,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // TIMING
-  //if (!myrank_) cout << "T_contact:  " << timer_->WallTime() - dtcpu  << endl;
+  //if (!myrank_) std::cout << "T_contact:  " << timer_->WallTime() - dtcpu  << std::endl;
 
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
@@ -209,7 +209,7 @@ int STR::TimIntAB2::IntegrateStep()
   }
 
   // TIMING
-  //if (!myrank_) cout << "T_linsolve: " << timer_->WallTime() - dtcpu << endl;
+  //if (!myrank_) std::cout << "T_linsolve: " << timer_->WallTime() - dtcpu << std::endl;
 
   // apply Dirichlet BCs on accelerations
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);

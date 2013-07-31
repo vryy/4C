@@ -66,7 +66,7 @@ isconverged_(false)
   StatMechPrintDBCType();
 
   if(!discret_->Comm().MyPID())
-    cout<<"StatMech output path: "<<statmechman_->StatMechRootPath()<<"/StatMechOutput/"<<endl;
+    std::cout<<"StatMech output path: "<<statmechman_->StatMechRootPath()<<"/StatMechOutput/"<<std::endl;
 
   // retrieve number of random numbers per element and store them in randomnumbersperelement_
   RandomNumbersPerElement();
@@ -100,40 +100,40 @@ void STR::TimIntStatMech::StatMechPrintDBCType()
     {
       // standard DBC application
       case INPAR::STATMECH::dbctype_std:
-        cout<<"- Conventional Input file based application of DBCs"<<endl;
+        std::cout<<"- Conventional Input file based application of DBCs"<<std::endl;
       break;
       // shear with a fixed Dirichlet node set
       case INPAR::STATMECH::dbctype_shearfixed:
-        cout<<"- DBCs for rheological measurements applied: fixed node set"<<endl;
+        std::cout<<"- DBCs for rheological measurements applied: fixed node set"<<std::endl;
       break;
       case INPAR::STATMECH::dbctype_shearfixeddel:
-        cout<<"- DBCs for rheological measurements applied: fixed node set"<<endl;
+        std::cout<<"- DBCs for rheological measurements applied: fixed node set"<<std::endl;
       break;
       // shear with an updated Dirichlet node set (only DOF in direction of oscillation is subject to BC, others free)
       case INPAR::STATMECH::dbctype_sheartrans:
-        cout<<"- DBCs for rheological measurements applied: transient node set"<<endl;
+        std::cout<<"- DBCs for rheological measurements applied: transient node set"<<std::endl;
       break;
       // pin down and release individual nodes
       case INPAR::STATMECH::dbctype_pinnodes:
-        cout<<"- Special DBCs pinning down selected nodes"<<endl;
+        std::cout<<"- Special DBCs pinning down selected nodes"<<std::endl;
       break;
       // apply affine shear deformation
       case INPAR::STATMECH::dbctype_affineshear:
-        cout<<"- DBCs for affine shear deformation"<<endl;
+        std::cout<<"- DBCs for affine shear deformation"<<std::endl;
       break;
       case INPAR::STATMECH::dbctype_affinesheardel:
-        cout<<"- DBCs for affine shear deformation"<<endl;
+        std::cout<<"- DBCs for affine shear deformation"<<std::endl;
       break;
       // no DBCs at all
       case INPAR::STATMECH::dbctype_none:
-        cout<<"- No application of DBCs (i.e. also no DBCs by Input file)"<<endl;
+        std::cout<<"- No application of DBCs (i.e. also no DBCs by Input file)"<<std::endl;
       break;
       // default: everything involving periodic boundary conditions
       default:
         dserror("Check your DBC type! %i", dbctype);
       break;
     }
-    cout<<"================================================================"<<endl;
+    std::cout<<"================================================================"<<std::endl;
   }
   return;
 }
@@ -289,7 +289,7 @@ int STR::TimIntStatMech::Integrate()
         //pay attention: for a constant predictor an incremental velocity update is necessary, which has
         //been deleted out of the code in order to simplify it
 //        if(!discret_->Comm().MyPID())
-//          cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<endl;
+//          std::cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<std::endl;
         Predict();
 
         if(itertype_==INPAR::STR::soltech_ptc)
@@ -330,15 +330,15 @@ int STR::TimIntStatMech::Integrate()
 #ifdef MEASURETIME
     if(!discret_->Comm().MyPID())
     {
-      cout<<"\n=================Time  Measurement================"<<endl;
-      cout<<"TimIntStatMech::Integrate"<<endl;
-      cout<<"StatMechPrepareStep :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<endl;
-      cout<<"Newton              :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<endl;
-      cout<<"PeriodicShift       :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<endl;
-      cout<<"UpdateAndOutput     :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<endl;
-      cout<<"StatMechOutput      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t4<<"\ts"<<endl;
-      cout<<"=================================================="<<endl;
-      cout<<"total time         :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<endl;
+      std::cout<<"\n=================Time  Measurement================"<<std::endl;
+      std::cout<<"TimIntStatMech::Integrate"<<std::endl;
+      std::cout<<"StatMechPrepareStep :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<std::endl;
+      std::cout<<"Newton              :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<std::endl;
+      std::cout<<"PeriodicShift       :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<std::endl;
+      std::cout<<"UpdateAndOutput     :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<std::endl;
+      std::cout<<"StatMechOutput      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t4<<"\ts"<<std::endl;
+      std::cout<<"=================================================="<<std::endl;
+      std::cout<<"total time         :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<std::endl;
     }
 #endif
   }
@@ -361,18 +361,18 @@ void STR::TimIntStatMech::UpdateAndOutput()
   UpdateStepState();
 
 //  if(!discret_->Comm().MyPID())
-//    cout<<"\n\npre UpdateTimeAndStepSize: time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<endl;
+//    std::cout<<"\n\npre UpdateTimeAndStepSize: time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<std::endl;
   // hand over time step size and time of the latest converged time step
   statmechman_->UpdateTimeAndStepSize((*dt_)[0], timen_);
 
   // update time and step
 //  if(!discret_->Comm().MyPID())
-//    cout<<"pre UpdateStepTime           : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<endl;
+//    std::cout<<"pre UpdateStepTime           : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<std::endl;
   UpdateStepTime();
 
   // update time and step
 //  if(!discret_->Comm().MyPID())
-//    cout<<"pre UpdateStepElement        : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<"\n\n"<<endl;
+//    std::cout<<"pre UpdateStepElement        : time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<"\n\n"<<std::endl;
   // update everything on the element level
   UpdateStepElement();
 
@@ -765,8 +765,8 @@ void STR::TimIntStatMech::NewtonFull()
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
     if(normfres_>1.0e4 && iter_>4)
       break;
-    cout<<"normfres_ = "<<normfres_<<endl;
-    cout<<"normdisi_ = "<<normdisi_<<endl;
+    std::cout<<"normfres_ = "<<normfres_<<std::endl;
+    std::cout<<"normdisi_ = "<<normdisi_<<std::endl;
     dserror("BREAK AFTER NEWTON LOOP 1");
   }  // end equilibrium loop
 
@@ -788,7 +788,7 @@ void STR::TimIntStatMech::NewtonFull()
   // test whether max iterations was hit
   if ( (Converged()) && !myrank_ && printscreen_)
   {
-    cout<<"Newton-Raphson-iteration converged with..."<<endl;
+    std::cout<<"Newton-Raphson-iteration converged with..."<<std::endl;
     PrintNewtonIter();
   }
   else if ( iter_ >= itermax_ && divcontype_==INPAR::STR::divcont_stop )
@@ -1013,7 +1013,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
 //
 //    if (discret_->Comm().MyPID()==0 and printscreen)
 //    {
-//      cout << "====== Restart written in step " << istep << endl;
+//      std::cout << "====== Restart written in step " << istep << std::endl;
 //      fflush(stdout);
 //    }
 //    if (errfile and printerr)
@@ -1350,7 +1350,7 @@ void STR::TimIntStatMech::PTCConvergenceStatus(int& numiter, int& maxiter, bool 
   else
   {
     if(!myrank_ && printscreen_)
-      cout<<"PTC converged with..."<<endl;
+      std::cout<<"PTC converged with..."<<std::endl;
   }
   return;
 }//STR::TimIntStatMech::PTCConvergenceStatus()
@@ -1533,7 +1533,7 @@ void STR::TimIntStatMech::BeamContactAugLag()
 
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
   if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-    cout<<"Predictor:"<<endl;
+    std::cout<<"Predictor:"<<std::endl;
   Predict();
 
   // LOOP2: augmented Lagrangian (Uzawa)
@@ -1547,7 +1547,7 @@ void STR::TimIntStatMech::BeamContactAugLag()
       break;
 
     if (discret_->Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY",0))
-      cout << endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << endl;
+      std::cout << std::endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << std::endl;
 
     if(itertype_==INPAR::STR::soltech_ptc)
       PTC();
@@ -1594,7 +1594,7 @@ bool STR::TimIntStatMech::BeamContactExitUzawaAt(int& maxuzawaiter)
     {
       Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
       if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-        cout << "Uzawa unconverged in "<< beamcman_->GetUzawaIter() << " iterations" << endl;
+        std::cout << "Uzawa unconverged in "<< beamcman_->GetUzawaIter() << " iterations" << std::endl;
     }
     exituzawa = true;
     //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
@@ -1681,7 +1681,7 @@ void STR::TimIntStatMech::StatMechPrintUpdate(const double& t_admin)
   {
     std::cout<<"\nTime for update of crosslinkers                   : " << Teuchos::Time::wallTime() - t_admin<< " seconds";
     std::cout<<"\nTotal number of elements after crosslinker update : "<<discret_->NumGlobalElements();
-    std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechman_->NumberOfUnconvergedSteps()<<"\n"<<endl;
+    std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechman_->NumberOfUnconvergedSteps()<<"\n"<<std::endl;
   }
   return;
 }//StatMechPrintUpdate()

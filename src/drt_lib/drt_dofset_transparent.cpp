@@ -240,8 +240,8 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     DRT::Condition* thiscond= mypbcs[numcond];
 
     // see whether we have a slave condition
-    const string* mymasterslavetoggle
-      = thiscond->Get<string>("Is slave periodic boundary condition");
+    const std::string* mymasterslavetoggle
+      = thiscond->Get<std::string>("Is slave periodic boundary condition");
 
     if(!(*mymasterslavetoggle=="Master"))
     {

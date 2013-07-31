@@ -304,9 +304,9 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
                                                              const int & myrank,
                                                              std::map<int, std::map<int,int> > & procmap)
 {
-//  cout << "==================================" << endl;
-//  cout << "We're in AssignSingleNode()." << endl;
-//  cout << "numele = " << numele << endl;
+//  std::cout << "==================================" << std::endl;
+//  std::cout << "We're in AssignSingleNode()." << std::endl;
+//  std::cout << "numele = " << numele << std::endl;
 
   // initialisiation of auxiliary pointers
   // (kept to minimum because of recursive calling)
@@ -355,8 +355,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
     } // end if new element
   } // end for all elements
 
-//  cout << "End of AssignSingleNode()" << endl;
-//  cout << "==================================" << endl;
+//  std::cout << "End of AssignSingleNode()" << std::endl;
+//  std::cout << "==================================" << std::endl;
   return;
 }
 
@@ -369,7 +369,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
 
   if (assigned_)
   {
-    cout << "Nothing to assign in discret." << endl;
+    std::cout << "Nothing to assign in discret." << std::endl;
     return;
   }
 
@@ -412,7 +412,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
       init = InitAssignSingleNode(node->X(),range,node->NumElement(),node->Elements(),elegid,knotgid,init_knotid);
       if (!init){
         if (node->Owner()==myrank) {
-          cout << "numproccolele = " << NumMyColElements() << endl;
+          std::cout << "numproccolele = " << NumMyColElements() << std::endl;
           init = InitAssignSingleNode(node->X(),range,NumMyColElements(),&elecolptr_[0],elegid,knotgid,init_knotid);
         }
         else {
@@ -479,7 +479,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
 /*--------------------------------------------------------------------------*
  |  << operator for meshfree discretization                        nis Jan12|
  *--------------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeDiscretization& mdis)
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeDiscretization& mdis)
 {
   mdis.Print(os);
   return os;
@@ -488,7 +488,7 @@ ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeDiscretization& 
 /*--------------------------------------------------------------------------*
  |  Print meshfree discretization (public)                         nis Jan12|
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
+void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
 {
   int numglobalelements = 0;
   int numglobalnodes    = 0;
@@ -525,7 +525,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
   if (Comm().MyPID()==0)
   {
     os << "--------------------------------------------------\n";
-    os << "Discretization: " << Name() << endl;
+    os << "Discretization: " << Name() << std::endl;
     os << "--------------------------------------------------\n";
     os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)" << numglobalknots << " Knots (global)\n";
     os << "--------------------------------------------------\n";
@@ -555,9 +555,9 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
             for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
-        os << endl;
+        os << std::endl;
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }
@@ -581,9 +581,9 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
             for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
-        os << endl;
+        os << std::endl;
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }
@@ -607,9 +607,9 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
             for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
-        os << endl;
+        os << std::endl;
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }
@@ -628,10 +628,10 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
         for (curr=condition_.begin(); curr != condition_.end(); ++curr)
         {
           os << curr->first << " ";
-          os << *(curr->second) << endl;
+          os << *(curr->second) << std::endl;
         }
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }

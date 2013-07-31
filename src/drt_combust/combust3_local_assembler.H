@@ -171,7 +171,7 @@ public:
         if (not found_template)
         {
           // this loop does the same thing as the one below, but it is slower
-          //cout << numparamtest << "   " << numparamtrial << endl;
+          //std::cout << numparamtest << "   " << numparamtrial << std::endl;
           //for (std::size_t ui=0; ui<numparamtrial; ++ui)
           //{
           //  const std::size_t trialpos = trialdof[ui];
@@ -246,16 +246,16 @@ public:
 #endif
       //if(numparamtest != numparamtrial) dserror("so nicht");
 
-      //cout << physVarToString(testfield) << endl;
+      //std::cout << physVarToString(testfield) << std::endl;
 
       //for (int i=0;i<numparamtest;i++)
       //{
-      //  cout << "testparam " << i << " " << testdof[i] << endl;
+      //  std::cout << "testparam " << i << " " << testdof[i] << std::endl;
       //}
-      //cout << physVarToString(trialfield) << endl;
+      //std::cout << physVarToString(trialfield) << std::endl;
       //for (int i=0;i<numparamtrial;i++)
       //{
-      //  cout << "trialparam " << i << " " << trialdof[i] << endl;
+      //  std::cout << "trialparam " << i << " " << trialdof[i] << std::endl;
       //}
 
       Matrix<testfield          ,trialfield>         (testshape.s, fac, trialshape.s);

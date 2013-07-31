@@ -170,7 +170,7 @@ void SysmatDomainNitsche(
 #ifdef DEBUG
       if (detcell < 0.0)
       {
-        cout << "detcell :  " << detcell << endl;
+        std::cout << "detcell :  " << detcell << std::endl;
         dserror("negative detcell!");
       }
 #endif
@@ -676,7 +676,7 @@ void SysmatDomainNitscheGalerkin(
 #ifdef DEBUG
       if (detcell < 0.0)
       {
-        cout << "detcell :  " << detcell << endl;
+        std::cout << "detcell :  " << detcell << std::endl;
         dserror("negative detcell!");
       }
 #endif
@@ -1024,96 +1024,96 @@ void SysmatDomainNitscheGalerkin(
       {
         if(ele->Bisected())
         {
-//          cout << "funct" << funct << endl;
-//          cout << "evelnp " << evelnp << endl;
-//          cout << "eprenp " << eprenp << endl;
-//          cout << "shp" << endl;
+//          std::cout << "funct" << funct << std::endl;
+//          std::cout << "evelnp " << evelnp << std::endl;
+//          std::cout << "eprenp " << eprenp << std::endl;
+//          std::cout << "shp" << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSize;++iparam)
 //          {
-//            cout << " " << shp.d0(iparam);
-//          } cout << endl;
-//          cout << "gpvelnp" << gpvelnp << endl;
-//          cout << "vderxy " << vderxy << endl;
-//          cout << "vderxy2" << vderxy2 << endl;
-//          cout << "pres " << pres << endl;
-//          cout << "gradp " << gradp << endl;
-//          cout << "visc_old " << visc_old << endl;
-//          cout << "enr_conv_c" << endl;
+//            std::cout << " " << shp.d0(iparam);
+//          } std::cout << std::endl;
+//          std::cout << "gpvelnp" << gpvelnp << std::endl;
+//          std::cout << "vderxy " << vderxy << std::endl;
+//          std::cout << "vderxy2" << vderxy2 << std::endl;
+//          std::cout << "pres " << pres << std::endl;
+//          std::cout << "gradp " << gradp << std::endl;
+//          std::cout << "visc_old " << visc_old << std::endl;
+//          std::cout << "enr_conv_c" << std::endl;
           //enr_conv_c.Print();
 
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xx " << enr_viscs2.xx.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xx " << enr_viscs2.xx.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xx " << enr_viscs2.xx.n(iparam);
+//            std::cout << "enr_viscs2.xx " << enr_viscs2.xx.n(iparam);
 //          }
-//          cout << endl;
+//          std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xy " << enr_viscs2.xy.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xy " << enr_viscs2.xy.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xy " << enr_viscs2.xy.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xy " << enr_viscs2.xy.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xz " << enr_viscs2.xz.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xz " << enr_viscs2.xz.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xz " << enr_viscs2.xz.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xz " << enr_viscs2.xz.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yx " << enr_viscs2.yx.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yx " << enr_viscs2.yx.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yx " << enr_viscs2.yx.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yx " << enr_viscs2.yx.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yy " << enr_viscs2.yy.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yy " << enr_viscs2.yy.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yy " << enr_viscs2.yy.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yy " << enr_viscs2.yy.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yz " << enr_viscs2.yz.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yz " << enr_viscs2.yz.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yz " << enr_viscs2.yz.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yz " << enr_viscs2.yz.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zx " << enr_viscs2.zx.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zx " << enr_viscs2.zx.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zx " << enr_viscs2.zx.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zx " << enr_viscs2.zx.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zy " << enr_viscs2.zy.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zy " << enr_viscs2.zy.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zy " << enr_viscs2.zy.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zy " << enr_viscs2.zy.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zz " << enr_viscs2.zz.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zz " << enr_viscs2.zz.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zz " << enr_viscs2.zz.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zz " << enr_viscs2.zz.n(iparam);
+//          } std::cout << std::endl;
         }
       }
       //----------------------------------------
@@ -1262,7 +1262,7 @@ if (intpoints.nquad != 8)
       //---------------------------------------------
       // coordinates of the current integration point in cell coordinates \eta^domain
       const LINALG::Matrix<nsd,1> posXiDomain(intpoints.qxg[iquad]);
-//cout << "position of Gauss point " << iquad << " is "<< posXiDomain << endl;
+//std::cout << "position of Gauss point " << iquad << " is "<< posXiDomain << std::endl;
       // coordinates of the current integration point in element coordinates \xi
       //static LINALG::Matrix<nsd,1> posXiDomain;
       //GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
@@ -1270,7 +1270,7 @@ if (intpoints.nquad != 8)
 #ifdef DEBUG
       if (detcell < 0.0)
       {
-        cout << "detcell :  " << detcell << endl;
+        std::cout << "detcell :  " << detcell << std::endl;
         dserror("negative detcell!");
       }
 #endif
@@ -1350,8 +1350,8 @@ if (intpoints.nquad != 8)
             enr_derxy,
             enr_derxy2);
 
-//cout << "funct " << funct << endl;
-//cout << "enr_funct " << enr_funct << endl;
+//std::cout << "funct " << funct << std::endl;
+//std::cout << "enr_funct " << enr_funct << std::endl;
 
         // fill approximation functions for XFEM
         for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
@@ -1477,9 +1477,9 @@ if (intpoints.nquad != 8)
           instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
           tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
-//cout << "tau_stab_Mu " << tau_stab_Mu << endl;
-//cout << "tau_stab_Mp " << tau_stab_Mp << endl;
-//cout << "tau_stab_C " << tau_stab_C << endl << endl;
+//std::cout << "tau_stab_Mu " << tau_stab_Mu << std::endl;
+//std::cout << "tau_stab_Mp " << tau_stab_Mp << std::endl;
+//std::cout << "tau_stab_C " << tau_stab_C << std::endl << std::endl;
 
       //------------------------------------------------------------------------
       // build RHS vector at integration point (scaled with timefac and density)
@@ -1708,7 +1708,7 @@ void Nitsche_SysmatBoundaryCell(
         enrvals_plus,enrvals_minus,
         kappa_plus,kappa_minus,numparamvelx,timefac,surftensapprox,surftenscoeff,assembler);
 #else
-    cout << "RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche deactivated - dont do two-phase flow intersecting the boundary!" << endl;
+    std::cout << "RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche deactivated - dont do two-phase flow intersecting the boundary!" << std::endl;
 #endif
   }
 
@@ -1992,7 +1992,7 @@ void Nitsche_SysmatBoundaryCell(
     ju(0) = ju_n*normal_smooth(0);
     ju(1) = ju_n*normal_smooth(1);
     ju(2) = ju_n*normal_smooth(2);
-    //cout << "ju " << ju << endl;
+    //std::cout << "ju " << ju << std::endl;
 #ifdef COMBUST_TESTCOUETTEFLOW
     // overwrite velocity jump condition for shear flow test case
     ju(0) = -2.0;
@@ -2009,7 +2009,7 @@ void Nitsche_SysmatBoundaryCell(
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-      //cout << "jflux " << jflux << endl;
+      //std::cout << "jflux " << jflux << std::endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;

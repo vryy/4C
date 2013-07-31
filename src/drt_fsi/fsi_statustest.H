@@ -275,7 +275,7 @@ namespace FSI
 
     virtual NOX::StatusTest::StatusType getStatus() const;
 
-    virtual ostream& print(ostream& stream, int indent = 0) const;
+    virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
 
     /* @name Accessor Functions
        Used to query current values of variables in the status test.
@@ -367,7 +367,7 @@ namespace FSI
 
     virtual NOX::StatusTest::StatusType getStatus() const;
 
-    virtual ostream& print(ostream& stream, int indent = 0) const;
+    virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
 
     //! Returns the Minimum number of iterations set in the constructor.
     virtual int getMinIters() const;

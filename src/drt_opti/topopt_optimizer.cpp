@@ -191,10 +191,10 @@ void TOPOPT::Optimizer::ComputeGradients(
 
 //  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
 //      i!=fluidvel_->end();i++)
-//    cout << "in optimizer at gradients fluidvel of step " << i->first << " is " << *i->second << endl;
+//    std::cout << "in optimizer at gradients fluidvel of step " << i->first << " is " << *i->second << std::endl;
 //  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
 //      i!=adjointvel_->end();i++)
-//    cout << "in optimizer at gradients adjointvel of step " << i->first << " is " << *i->second << endl;
+//    std::cout << "in optimizer at gradients adjointvel of step " << i->first << " is " << *i->second << std::endl;
 
   optidis_->ClearState();
 

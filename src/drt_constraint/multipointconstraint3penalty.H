@@ -39,7 +39,7 @@ namespace UTILS
     MPConstraint3Penalty
     (
         RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const string& CondName ///< Name of condition to create constraint from
+        const std::string& CondName ///< Name of condition to create constraint from
     );
     
     /// unused
@@ -79,7 +79,7 @@ namespace UTILS
     MPConstraint3Penalty(const MPConstraint3Penalty& old);
 
     //! Return the ConstrType based on the condition name
-    ConstrType GetConstrType(const string& Name);///<condition name
+    ConstrType GetConstrType(const std::string& Name);///<condition name
 
     //! Evaluate constraint discretization and assemble the results
     void EvaluateConstraint(
@@ -105,8 +105,8 @@ namespace UTILS
     (
       RCP<DRT::Discretization>       actdisc,
       std::vector< DRT::Condition* > constrcond, ///< conditions as discretization basis
-      const string&                  discret_name, ///< name of new discretization
-      const string&                  element_name, ///< name of element type to create
+      const std::string&                  discret_name, ///< name of new discretization
+      const std::string&                  element_name, ///< name of element type to create
       int& startID
     );
 

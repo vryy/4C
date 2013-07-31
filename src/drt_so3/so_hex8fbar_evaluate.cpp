@@ -594,7 +594,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
     prestress_->StoragetoMatrix(NUMGPT_SOH8,invJdef_0,prestress_->JHistory());
     // get derivatives wrt to last spatial configuration
     LINALG::Matrix<3,8> N_xyz_0;
-    N_xyz_0.Multiply(invJdef_0,N_rst_0); //if (!Id()) cout << invJdef_0;
+    N_xyz_0.Multiply(invJdef_0,N_rst_0); //if (!Id()) std::cout << invJdef_0;
 
     // build multiplicative incremental defgrd
     LINALG::Matrix<3,3> defgrd_0(false);

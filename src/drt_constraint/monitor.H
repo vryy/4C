@@ -61,7 +61,7 @@ namespace UTILS
     Monitor
     (
       RCP<DRT::Discretization> discr,  ///< Discretization monitor lives on
-      const string& CondName, ///< Name of condition to creat monitor from
+      const std::string& CondName, ///< Name of condition to creat monitor from
       int& minID,  ///< minimum monitor ID so far
       int& maxID  ///< maximum monitor ID so far
     );
@@ -86,7 +86,7 @@ namespace UTILS
     /// Set state of the underlying discretization
     void SetState
     (
-      const string& state,  ///< name of state to set
+      const std::string& state,  ///< name of state to set
       RCP<Epetra_Vector> V  ///< values to set
     );
 
@@ -123,7 +123,7 @@ namespace UTILS
     //! Return the MoniType based on the condition name
     MoniType GetMoniType
     (
-      const string& Name///<condition name
+      const std::string& Name///<condition name
     );
 
 

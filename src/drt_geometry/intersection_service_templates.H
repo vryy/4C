@@ -308,7 +308,7 @@ namespace GEO
       case DRT::Element::quad8: return computeFastXAABBT<3, DRT::Element::quad8>(xyze, eleGeoType);
       case DRT::Element::quad9: return computeFastXAABBT<3, DRT::Element::quad9>(xyze, eleGeoType);
       default:
-          std::cout << DistypeToString(distype) << endl;
+          std::cout << DistypeToString(distype) << std::endl;
           dserror("add your distype to this switch!");
     }
     return LINALG::Matrix<3,2>(true);

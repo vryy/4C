@@ -49,7 +49,7 @@ namespace UTILS
     ConstraintPenalty
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-      const string& CondName ///< Name of condition to create constraints from
+      const std::string& CondName ///< Name of condition to create constraints from
     );
 
     /*!

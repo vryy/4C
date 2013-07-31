@@ -93,10 +93,10 @@ private:
   // #########################################################################
 
   //! \brief filename of standard control file
-  string filename_ ;
+  std::string filename_ ;
 
   //! \brief meshfilename name which is written to controlfile every run this should be the name of meshfile of first run
-  string meshfilename_;
+  std::string meshfilename_;
 
   // Parameters from input file
 
@@ -190,7 +190,7 @@ private:
   // #########################################################################
 
   //! brief output filename of lower level
-  string filename_lower_level_;
+  std::string filename_lower_level_;
 
   //! brief number of current level
   int num_level_;

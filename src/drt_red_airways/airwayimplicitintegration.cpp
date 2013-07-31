@@ -371,13 +371,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
   {
     NonLin_Solve(CouplingTo3DParams);
     if (!myrank_)
-      cout<<endl;
+      std::cout<<std::endl;
   }
   else if (params_.get<std::string> ("solver type") == "Linear")
   {
     Solve(CouplingTo3DParams);
     if (!myrank_)
-      cout<<endl<<endl;
+      std::cout<<std::endl<<std::endl;
   }
   else
   {
@@ -437,13 +437,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<Teuchos::ParameterList>
   {
     NonLin_Solve(CouplingTo3DParams);
     if (!myrank_)
-      cout<<endl;
+      std::cout<<std::endl;
   }
   else if (params_.get<std::string> ("solver type") == "Linear")
   {
     Solve(CouplingTo3DParams);
     if (!myrank_)
-      cout<<endl<<endl;
+      std::cout<<std::endl<<std::endl;
   }
   else
   {
@@ -508,7 +508,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::Parame
   // print out the total lung volume
   if(!myrank_)
   {
-    cout<<"time: "<<time_-dta_<<" LungVolume: "<<lung_volume_np<<endl;
+    std::cout<<"time: "<<time_-dta_<<" LungVolume: "<<lung_volume_np<<std::endl;
   }
 
   for (int i =1; i<=maxiter_; i++)
@@ -536,7 +536,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::Parame
 
     this->EvalResidual(CouplingTo3DParams);
     residual_->Norm2 (&error_norm2);
-    //    cout<<"Proc: "<<myrank_<<" Norm: "<<error_norm<<" length: "<<p_nonlin_->GlobalLength()<<endl;
+    //    std::cout<<"Proc: "<<myrank_<<" Norm: "<<error_norm<<" length: "<<p_nonlin_->GlobalLength()<<std::endl;
 
     //------------------------------------------------------------------
     // if L2 norm is smaller then tolerance then proceed
@@ -664,15 +664,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 #if 0  // Exporting some values for debugging purposes
 
     {
-      cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
+      std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
       RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
-        (A_debug->EpetraMatrix())->Print(cout);
+        (A_debug->EpetraMatrix())->Print(std::cout);
       }
-      cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
-      cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
+      std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
+      std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
     }
 #endif
 
@@ -697,15 +697,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 #if 0 // Exporting some values for debugging purposes
 
     {
-      cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
+      std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
       RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
-        (A_debug->EpetraMatrix())->Print(cout);
+        (A_debug->EpetraMatrix())->Print(std::cout);
       }
-      cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
-      cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
+      std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
+      std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
     }
 #endif
 
@@ -793,17 +793,17 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 #if 0 // Exporting some values for debugging purposes
 
     {
-      cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
+      std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
       RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
-        (A_debug->EpetraMatrix())->Print(cout);
+        (A_debug->EpetraMatrix())->Print(std::cout);
       }
-      cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
-      cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
+      std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
+      std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
     }
-    cout<<"rhs: "<<*rhs_<<endl;
+    std::cout<<"rhs: "<<*rhs_<<std::endl;
 
 #endif
 
@@ -823,14 +823,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     if (A_debug != Teuchos::null)
     {
       // print to screen
-      (A_debug->EpetraMatrix())->Print(cout);
+      (A_debug->EpetraMatrix())->Print(std::cout);
     }
     //#else
-    cout<<"DOF row map"<<*(discret_->DofRowMap())<<endl;
-    cout<<"bcval: "<<*bcval_<<endl;
-    cout<<"bctog: "<<*dbctog_<<endl;
-    cout<<"pnp: "<<*pnp_<<endl;
-    cout<<"rhs: "<<*rhs_<<endl;
+    std::cout<<"DOF row map"<<*(discret_->DofRowMap())<<std::endl;
+    std::cout<<"bcval: "<<*bcval_<<std::endl;
+    std::cout<<"bctog: "<<*dbctog_<<std::endl;
+    std::cout<<"pnp: "<<*pnp_<<std::endl;
+    std::cout<<"rhs: "<<*rhs_<<std::endl;
 
 #endif
     // call solver
@@ -843,7 +843,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
   if (myrank_ == 0)
   //  printf("te=%f, ts=%4.7f |",dtele_, dtsolve_);
   printf("ts=%4.7f |", dtsolve_);
-  //  cout << "te=" << dtele_ << ", ts=" << dtsolve_ <<" | ";
+  //  std::cout << "te=" << dtele_ << ", ts=" << dtsolve_ <<" | ";
 
   // find the flow rates
   {
@@ -1364,15 +1364,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
 #if 0  // Exporting some values for debugging purposes
 
     {
-      cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
+      std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
       RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
-        (A_debug->EpetraMatrix())->Print(cout);
+        (A_debug->EpetraMatrix())->Print(std::cout);
       }
-      cout<<"Map is: ("<<myrank_<<")"<<endl<<*(discret_->DofRowMap())<<endl;
-      cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
+      std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
+      std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
     }
 #endif
 

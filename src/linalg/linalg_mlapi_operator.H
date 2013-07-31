@@ -222,7 +222,7 @@ private:
   */
   inline const MLAPI::Operator& Anonstab(const int level) const { return Anonstab_[level]; }
 
-  string                           label_;      // name of this operator
+  std::string                      label_;      // name of this operator
   Teuchos::ParameterList&          params_;     // ml parameter list (intput)
   Teuchos::RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix
   int                              nlevel_;     // no. of grids in hierarchy

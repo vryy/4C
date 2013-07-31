@@ -142,7 +142,7 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   if (myrank_==0)
-    cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<endl;
+    std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
 
   // read state vectors that are needed for restart
   reader.ReadVector(phinp_, "phinp");
@@ -176,7 +176,7 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
           mycond->Add("pot",pot);
           read_pot=true;
           if (myrank_==0)
-            cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<endl;
+            std::cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<std::endl;
         }
       }
       if (!read_pot)

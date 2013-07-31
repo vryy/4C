@@ -155,7 +155,7 @@ void SysmatDomainNitscheNormal(
 #ifdef DEBUG
       if (detcell < 0.0)
       {
-        cout << "detcell :  " << detcell << endl;
+        std::cout << "detcell :  " << detcell << std::endl;
         dserror("negative detcell!");
       }
 #endif
@@ -302,15 +302,15 @@ void SysmatDomainNitscheNormal(
         if (norm == 0.0) dserror("norm of normal vector is zero!");
         normal.Scale(1.0/norm);
 #endif
-//      cout << xyze << endl;
-//      cout << "normal "<< normal << endl;
+//      std::cout << xyze << std::endl;
+//      std::cout << "normal "<< normal << std::endl;
 //if (ele->Id()==116)
 ////  or
 ////    ele->Id()==226 or
 ////    ele->Id()==326 or
 ////    ele->Id()==216)
 //{
-//  cout << "Normalenvektor Domain Sysmat Viertelposition" << normal << endl;
+//  std::cout << "Normalenvektor Domain Sysmat Viertelposition" << normal << std::endl;
 //}
 //if (ele->Id()==141)
 ////  or
@@ -318,7 +318,7 @@ void SysmatDomainNitscheNormal(
 ////    ele->Id()==201 or
 ////    ele->Id()==133)
 //{
-//  cout << "Normalenvektor Domain Sysmat Achtelposition" << normal << endl;
+//  std::cout << "Normalenvektor Domain Sysmat Achtelposition" << normal << std::endl;
 //}
         // shape functions and derivatives for nodal parameters (dofs)
         enrvals.ComputeNormalShapeFunction(
@@ -381,17 +381,17 @@ void SysmatDomainNitscheNormal(
 
 //if(ele->Id()==2 and icell == 0 and iquad==0)
 //{
-//  cout << "ele id " << ele->Id() << endl;
-//  cout << posXiDomain << endl;
-//if (cell->getDomainPlus()) cout << "plus" << endl;
-//else cout << "minus" << endl;
-//if (ASSTYPE == XFEM::xfem_assembly) cout << "XFEM assembly" << endl;
-//if (ASSTYPE == XFEM::standard_assembly) cout << "standard assembly" << endl;
+//  std::cout << "ele id " << ele->Id() << std::endl;
+//  std::cout << posXiDomain << std::endl;
+//if (cell->getDomainPlus()) std::cout << "plus" << std::endl;
+//else std::cout << "minus" << std::endl;
+//if (ASSTYPE == XFEM::xfem_assembly) std::cout << "XFEM assembly" << std::endl;
+//if (ASSTYPE == XFEM::standard_assembly) std::cout << "standard assembly" << std::endl;
 //shp.Print();
-//  cout << "pressure d0 " << shp_pres.d0 << endl;
-//  cout << "pressure dx " << shp_pres.dx << endl;
-//  cout << "pressure dy " << shp_pres.dy << endl;
-//  cout << "pressure dz " << shp_pres.dz << endl;
+//  std::cout << "pressure d0 " << shp_pres.d0 << std::endl;
+//  std::cout << "pressure dx " << shp_pres.dx << std::endl;
+//  std::cout << "pressure dy " << shp_pres.dy << std::endl;
+//  std::cout << "pressure dz " << shp_pres.dz << std::endl;
 //
 //  const std::vector<int>& velxdof (dofman.LocalDofPosPerField<SymmetryMangle<XFEM::PHYSICS::Velx>::name>());
 //  const std::vector<int>& velydof (dofman.LocalDofPosPerField<SymmetryMangle<XFEM::PHYSICS::Vely>::name>());
@@ -405,11 +405,11 @@ void SysmatDomainNitscheNormal(
 //  const std::size_t numparamvelnloc = velndof.size();
 //  const std::size_t numparampresloc = presdof.size();
 //
-//  cout << "numparamvelxloc " << numparamvelxloc << endl;
-//  cout << "numparamvelyloc " << numparamvelyloc << endl;
-//  cout << "numparamvelzloc " << numparamvelzloc << endl;
-//  cout << "numparamvelnloc " << numparamvelnloc << "numparamveln "<< numparamveln << endl;
-//  cout << "numparampresloc " << numparampresloc << endl;
+//  std::cout << "numparamvelxloc " << numparamvelxloc << std::endl;
+//  std::cout << "numparamvelyloc " << numparamvelyloc << std::endl;
+//  std::cout << "numparamvelzloc " << numparamvelzloc << std::endl;
+//  std::cout << "numparamvelnloc " << numparamvelnloc << "numparamveln "<< numparamveln << std::endl;
+//  std::cout << "numparampresloc " << numparampresloc << std::endl;
 //
 //}
 
@@ -668,15 +668,15 @@ void SysmatDomainNitscheNormal(
 
 //if(ele->Id()==2 and icell == 0 and iquad==0)
 //{
-//  cout << "ele id " << ele->Id() << endl;
-//  cout << posXiDomain << endl;
-//if (cell->getDomainPlus()) cout << "plus" << endl;
-//else cout << "minus" << endl;
-//if (ASSTYPE == XFEM::xfem_assembly) cout << "XFEM assembly" << endl;
-//if (ASSTYPE == XFEM::standard_assembly) cout << "standard assembly" << endl;
+//  std::cout << "ele id " << ele->Id() << std::endl;
+//  std::cout << posXiDomain << std::endl;
+//if (cell->getDomainPlus()) std::cout << "plus" << std::endl;
+//else std::cout << "minus" << std::endl;
+//if (ASSTYPE == XFEM::xfem_assembly) std::cout << "XFEM assembly" << std::endl;
+//if (ASSTYPE == XFEM::standard_assembly) std::cout << "standard assembly" << std::endl;
 //enr_conv_c.Print();
-//cout << "gpvelnp " << gpvelnp << endl;
-//cout << "evelnp " << evelnp << endl;
+//std::cout << "gpvelnp " << gpvelnp << std::endl;
+//std::cout << "evelnp " << evelnp << std::endl;
 //}
       // viscous term  - grad * epsilon(u)
       /*    /                                              \
@@ -718,94 +718,94 @@ void SysmatDomainNitscheNormal(
 //      {
 //        if(ele->Bisected())
 //        {
-//          cout << "eprenp " << eprenp << endl;
-//          cout << "evelnp " << evelnp << endl;
-//          cout << "funct" << funct << endl;
-//          cout << "derxy" << derxy << endl;
-//          cout << "shp" << endl;
+//          std::cout << "eprenp " << eprenp << std::endl;
+//          std::cout << "evelnp " << evelnp << std::endl;
+//          std::cout << "funct" << funct << std::endl;
+//          std::cout << "derxy" << derxy << std::endl;
+//          std::cout << "shp" << std::endl;
 //          shp.Print();
-//          cout << "gpvelnp" << gpvelnp << endl;
-//          cout << "vderxy " << vderxy << endl;
-//          cout << "vderxy2" << vderxy2 << endl;
-//          cout << "pres " << pres << endl;
-//          cout << "gradp " << gradp << endl;
-//          cout << "visc_old " << visc_old << endl;
-//          cout << "enr_conv_c" << endl;
+//          std::cout << "gpvelnp" << gpvelnp << std::endl;
+//          std::cout << "vderxy " << vderxy << std::endl;
+//          std::cout << "vderxy2" << vderxy2 << std::endl;
+//          std::cout << "pres " << pres << std::endl;
+//          std::cout << "gradp " << gradp << std::endl;
+//          std::cout << "visc_old " << visc_old << std::endl;
+//          std::cout << "enr_conv_c" << std::endl;
 //          enr_conv_c.Print();
 //
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xx " << enr_viscs2.xx.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xx " << enr_viscs2.xx.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xx " << enr_viscs2.xx.n(iparam);
+//            std::cout << "enr_viscs2.xx " << enr_viscs2.xx.n(iparam);
 //          }
-//          cout << endl;
+//          std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xy " << enr_viscs2.xy.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xy " << enr_viscs2.xy.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xy " << enr_viscs2.xy.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xy " << enr_viscs2.xy.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xz " << enr_viscs2.xz.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xz " << enr_viscs2.xz.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.xz " << enr_viscs2.xz.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.xz " << enr_viscs2.xz.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yx " << enr_viscs2.yx.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yx " << enr_viscs2.yx.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yx " << enr_viscs2.yx.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yx " << enr_viscs2.yx.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yy " << enr_viscs2.yy.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yy " << enr_viscs2.yy.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yy " << enr_viscs2.yy.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yy " << enr_viscs2.yy.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yz " << enr_viscs2.yz.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yz " << enr_viscs2.yz.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.yz " << enr_viscs2.yz.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.yz " << enr_viscs2.yz.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zx " << enr_viscs2.zx.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zx " << enr_viscs2.zx.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zx " << enr_viscs2.zx.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zx " << enr_viscs2.zx.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zy " << enr_viscs2.zy.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zy " << enr_viscs2.zy.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zy " << enr_viscs2.zy.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zy " << enr_viscs2.zy.n(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zz " << enr_viscs2.zz.s(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zz " << enr_viscs2.zz.s(iparam);
+//          } std::cout << std::endl;
 //          for(size_t iparam=0;iparam<shpVecSizeVel;++iparam)
 //          {
-//            cout << "enr_viscs2.zz " << enr_viscs2.zz.n(iparam);
-//          } cout << endl;
+//            std::cout << "enr_viscs2.zz " << enr_viscs2.zz.n(iparam);
+//          } std::cout << std::endl;
 //        }
 //      }
       //----------------------------------------------------
@@ -1096,7 +1096,7 @@ void Nitsche_SysmatBoundaryCellNormal(
 ////    ele->Id()==326 or
 ////    ele->Id()==216)
 //{
-//  cout << "Normalenvektor Boundary Sysmat Viertelposition" << normal << endl;
+//  std::cout << "Normalenvektor Boundary Sysmat Viertelposition" << normal << std::endl;
 //}
 //if (ele->Id()==141)
 ////    or
@@ -1104,7 +1104,7 @@ void Nitsche_SysmatBoundaryCellNormal(
 ////    ele->Id()==201 or
 ////    ele->Id()==133)
 //{
-//  cout << "Normalenvektor Boundary Sysmat Achtelposition" << normal << endl;
+//  std::cout << "Normalenvektor Boundary Sysmat Achtelposition" << normal << std::endl;
 //}
     // jump in velocity
     LINALG::Matrix<nsd,1> ju(true);
@@ -1150,7 +1150,7 @@ void Nitsche_SysmatBoundaryCellNormal(
     ju(0) = ju_n*normal(0);
     ju(1) = ju_n*normal(1);
     ju(2) = ju_n*normal(2);
-    //cout << "ju " << ju << endl;
+    //std::cout << "ju " << ju << std::endl;
 #ifdef COMBUST_TESTCOUETTEFLOW
     // overwrite velocity jump condition for shear flow test case
     ju(0) = -2.0;
@@ -1167,7 +1167,7 @@ void Nitsche_SysmatBoundaryCellNormal(
       jflux(0) = jflux_n*normal(0);
       jflux(1) = jflux_n*normal(1);
       jflux(2) = jflux_n*normal(2);
-      //cout << "jflux " << jflux << endl;
+      //std::cout << "jflux " << jflux << std::endl;
       // overwrite velocity jump condition (e.g. for specific test case)
       //jflux(0) = 0.0;
       //jflux(1) = 0.0;
@@ -1741,8 +1741,8 @@ void Nitsche_SysmatBoundaryCellNormal(
       }
       if (velncounter != dofman.NumDofPerField(XFEM::PHYSICS::Veln)) dserror("Alles falsch, du Depp!");
     }
-    //cout << "veljump " << veljump << endl;
-    //cout << "vderxy_mean_visc " << vderxy_mean_visc << endl;
+    //std::cout << "veljump " << veljump << std::endl;
+    //std::cout << "vderxy_mean_visc " << vderxy_mean_visc << std::endl;
 
     // get velocity (np,i) derivatives at integration point
     // vderxy = enr_derxy(j,k)*evelnp(i,k);
@@ -2277,12 +2277,12 @@ void SysmatBoundaryNitscheNormal(
   //---------------------------------------------------------------------------
   // density \rho
   double dens_plus = -1.0;
-  //cout << "plus density: " << dens_plus << endl;
+  //std::cout << "plus density: " << dens_plus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_plus = -1.0;
   // density \rho
   double dens_minus = -1.0;
-  //cout << "minus density: " << dens_minus << endl;
+  //std::cout << "minus density: " << dens_minus << std::endl;
   // dynamic viscosity \mu
   double dynvisc_minus = -1.0;
   // set density and dynamic viscosity
@@ -2344,7 +2344,7 @@ void SysmatBoundaryNitscheNormal(
 
   // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
   const double alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;
-  //cout << "alpha_u: " << alphau << endl;
+  //std::cout << "alpha_u: " << alphau << std::endl;
 
   // Benedikt:
   // the input parameter alphap is used for the stabilization term for convection dominated flows

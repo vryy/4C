@@ -1745,7 +1745,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ostream& LINALG::operator << (ostream& os, const LINALG::SparseMatrix& mat)
+std::ostream& LINALG::operator << (std::ostream& os, const LINALG::SparseMatrix& mat)
 {
   if(mat.GetMatrixtype() == SparseMatrix::CRS_MATRIX)
     os << *(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());

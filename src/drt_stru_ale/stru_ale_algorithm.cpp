@@ -257,7 +257,7 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   // this currently works only for one interface yet
   if (interface.size()>1)
   {
-    cout << "*** Warning: more than 1 contact interface with wear ***" << endl;
+    std::cout << "*** Warning: more than 1 contact interface with wear ***" << std::endl;
     dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
   }
 
@@ -497,8 +497,8 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
     // leave when element is found
     if (found == true)
     {
-      //cout << "coords: " << *XMat1 << "   " << *XMat2 << "   " << *XMat3 << endl;
-      //cout << "*** particle tracking successfull ***" << endl;
+      //std::cout << "coords: " << *XMat1 << "   " << *XMat2 << "   " << *XMat3 << std::endl;
+      //std::cout << "*** particle tracking successfull ***" << std::endl;
       return;
     }
   }

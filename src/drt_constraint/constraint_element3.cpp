@@ -136,12 +136,12 @@ DRT::ELEMENTS::ConstraintElement3::~ConstraintElement3()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ConstraintElement3::Print(ostream& os) const
+void DRT::ELEMENTS::ConstraintElement3::Print(std::ostream& os) const
 {
   os << "ConstraintElement3 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 

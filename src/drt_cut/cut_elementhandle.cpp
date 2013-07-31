@@ -341,7 +341,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::TransformVolumeCe
         LINALG::Matrix<3,1> xyz_p (true);
         p->Coordinates(xyz_p.A());
 
-//        cout << "coordinates of p: " << xyz_p << endl;
+//        std::cout << "coordinates of p: " << xyz_p << std::endl;
 
         for(int r=0; r<3; r++)
         {
@@ -349,7 +349,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::TransformVolumeCe
         }
       }
 
-//      cout << "xyz " << xyz << endl;
+//      std::cout << "xyz " << xyz << std::endl;
 
 //    LINALG::Matrix<nsd,nen> xyz( xyz_cell );
 
@@ -365,7 +365,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::TransformVolumeCe
     LINALG::Matrix<3,1> xi (true); // (true);
     LocalCoordinates( xyz_gp, xi );
 
-//    cout << "xi: " << xi << endl;
+//    std::cout << "xi: " << xi << std::endl;
 
     double det = xjm.Determinant();
 if (det < 0.0 ) dserror( "det is negative");
@@ -449,8 +449,8 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPointsLin( plain_volumecell_set & c
     GEO::CUT::VolumeCell * vc = *i;
 
 
-//    if(vc->Position() == GEO::CUT::Point::outside) cout << "outside vc" << endl;
-//    else cout << "inside vc" << endl;
+//    if(vc->Position() == GEO::CUT::Point::outside) std::cout << "outside vc" << std::endl;
+//    else std::cout << "inside vc" << std::endl;
 
     Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
       Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );

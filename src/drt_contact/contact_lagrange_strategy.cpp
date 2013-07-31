@@ -1211,8 +1211,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       deriv2->Add(*linstickDIS_,false,1.0,1.0);
       deriv2->Complete(*gsmdofrowmap_,*gactivet_);
 
-      std::cout << "DERIV 1 *********** "<< *deriv1 << endl;
-      std::cout << "DERIV 2 *********** "<< *deriv2 << endl;
+      std::cout << "DERIV 1 *********** "<< *deriv1 << std::endl;
+      std::cout << "DERIV 2 *********** "<< *deriv2 << std::endl;
 
       interface_[i]->FDCheckStickDeriv();
     }
@@ -1235,8 +1235,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       deriv2->Add(*linslipDIS_,false,1.0,1.0);
       deriv2->Complete(*gsmdofrowmap_,*gslipt_);
   
-      std::cout << *deriv1 << endl;
-      std::cout << *deriv2 << endl;
+      std::cout << *deriv1 << std::endl;
+      std::cout << *deriv2 << std::endl;
   
       interface_[i]->FDCheckSlipDeriv();
     }
@@ -2597,7 +2597,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   // FD check of tangential LM derivatives (frictionless condition)
   for (int i=0; i<(int)interface_.size();++i)
   {
-    std::cout << *pmatrix_ << endl;
+    std::cout << *pmatrix_ << std::endl;
     interface_[i]->FDCheckTangLMDeriv();
   }
 #endif // #ifdef CONTACTFDTANGLM
@@ -2621,10 +2621,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // if not we make a standard solver call to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
-    //std::cout << "##################################################" << endl;
-    //std::cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
-    //std::cout << fallbacksolver.Params() << endl;
-    //std::cout << "##################################################" << endl;
+    //std::cout << "##################################################" << std::endl;
+    //std::cout << " USE FALLBACK SOLVER (pure structure problem)" << std::endl;
+    //std::cout << fallbacksolver.Params() << std::endl;
+    //std::cout << "##################################################" << std::endl;
 
     // standard solver call
     fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
@@ -3212,7 +3212,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         // check for fulfilment of contact condition
         //if (abs(nz) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
-        //       <<  "for node ID: " << cnode->Id() << endl;
+        //       <<  "for node ID: " << cnode->Id() << std::endl;
 
         // check for penetration
         if (wgap < 0)
@@ -3234,7 +3234,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         // check for fulfilment of contact condition
         //if (abs(wgap) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
-        //       << "for node ID: " << cnode->Id() << endl;
+        //       << "for node ID: " << cnode->Id() << std::endl;
 
         // check for tensile contact forces
         if (nz <= 0) // no averaging of Lagrange multipliers
@@ -3432,7 +3432,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   
           // output to screen
           if (Comm().MyPID()==0)
-            std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << endl;
+            std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << std::endl;
         }
       }
   
@@ -3446,7 +3446,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   
           // output to screen
           if (Comm().MyPID()==0)
-            std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << endl;
+            std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << std::endl;
         }
       }
     }
@@ -3464,10 +3464,10 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   // output of active set status to screen
   if (Comm().MyPID()==0 && activesetconv_==false)
     std::cout << "ACTIVE SET ITERATION " << ActiveSetSteps()-1
-         << " NOT CONVERGED - REPEAT TIME STEP................." << endl;
+         << " NOT CONVERGED - REPEAT TIME STEP................." << std::endl;
   else if (Comm().MyPID()==0 && activesetconv_==true)
     std::cout << "ACTIVE SET CONVERGED IN " << ActiveSetSteps()-zigzagging
-         << " STEP(S)................." << endl;
+         << " STEP(S)................." << std::endl;
 
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
@@ -3595,7 +3595,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         // check for fulfilment of contact condition
         //if (abs(nz) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
-        //       <<  "for node ID: " << cnode->Id() << endl;
+        //       <<  "for node ID: " << cnode->Id() << std::endl;
 
         // check for penetration and/or tensile contact forces
         if (nz - cn*wgap > 0) // no averaging of Lagrange multipliers
@@ -3623,7 +3623,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         // check for fulfilment of contact condition
         //if (abs(wgap) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
-        //       << "for node ID: " << cnode->Id() << endl;
+        //       << "for node ID: " << cnode->Id() << std::endl;
 
         // check for tensile contact forces and/or penetration
         if (nz - cn*wgap <= 0) // no averaging of Lagrange multipliers
@@ -3837,11 +3837,11 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   {
     if (zigzagging==1)
     {
-      std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << endl;
+      std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << std::endl;
     }
     else if (zigzagging==2)
     {
-      std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << endl;
+      std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << std::endl;
     }
     else
     {
@@ -3859,7 +3859,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
   // output of active set status to screen
   if (Comm().MyPID()==0 && activesetconv_==false)
-    std::cout << "ACTIVE SET HAS CHANGED... CHANGE No. " << ActiveSetSteps()-1 << endl;
+    std::cout << "ACTIVE SET HAS CHANGED... CHANGE No. " << ActiveSetSteps()-1 << std::endl;
 
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())

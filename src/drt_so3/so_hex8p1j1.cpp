@@ -184,12 +184,12 @@ DRT::ELEMENTS::So_Hex8P1J1::~So_Hex8P1J1()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                 lw 12/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Print(ostream& os) const
+void DRT::ELEMENTS::So_Hex8P1J1::Print(std::ostream& os) const
 {
   os << "So_Hex8P1J1 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 

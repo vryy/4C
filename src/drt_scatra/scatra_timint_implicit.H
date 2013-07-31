@@ -196,7 +196,7 @@ public:
 
   //! calculate mass/heat normal flux at specified boundaries
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(
-    std::vector<string>& condnames,   //!< ?
+    std::vector<std::string>& condnames,   //!< ?
     const bool           writetofile, //!< ?
     const int            num=0,       //!< field number
     bool                 biogrowth=0
@@ -563,7 +563,7 @@ protected:
   //! export node-based multivector to column map and add it to a parameter list
   void AddMultiVectorToParameterList(
     Teuchos::ParameterList&          p,    //!< parameter list
-    const std::string                name, //!< naming string for added vector
+    const std::string                name, //!< naming std::string for added vector
     Teuchos::RCP<Epetra_MultiVector> vec   //!< Epetra_MultiVector to be added
   );
 
@@ -1125,7 +1125,7 @@ protected:
   bool turbinflow_;
 
   /// flag for special turbulent flow
-  string special_flow_;
+  std::string special_flow_;
 
   //! the vector containing source term externally computed
   //! forcing for homogeneous isotropic turbulence

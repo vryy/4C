@@ -46,11 +46,11 @@ namespace UTILS
 
   protected:
 
-    //! determine element type string and whether element is copied or not
+    //! determine element type std::string and whether element is copied or not
     bool DetermineEleType(
       DRT::Element* actele,
       const bool ismyele,
-      std::vector<string>& eletype
+      std::vector<std::string>& eletype
       );
 
     //! set element-specific data (material etc.)
@@ -62,7 +62,7 @@ namespace UTILS
       );
 
     //! returns conditions names to be copied (source and target name)
-    std::map<string,string> ConditionsToCopy();
+    std::map<std::string,std::string> ConditionsToCopy();
 
     //! check for correct material
     void CheckMaterialType(const int matid);

@@ -55,8 +55,8 @@ namespace ELEMENTS
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-    virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                               const string eledistype,
+    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                               const std::string eledistype,
                                                const int id,
                                                const int owner );
 
@@ -273,9 +273,9 @@ namespace ELEMENTS
     //! Example:
     //! \code
     //!  // Name of data is 'Owner', dimension is 1 (scalar value)
-    //!  names.insert(std::pair<string,int>("Owner",1));
+    //!  names.insert(std::pair<std::string,int>("Owner",1));
     //!  // Name of data is 'HeatfluxXYZ', dimension is 3 (vector value)
-    //!  names.insert(std::pair<string,int>("HeatfluxXYZ",3));
+    //!  names.insert(std::pair<std::string,int>("HeatfluxXYZ",3));
     //! \endcode
     //!
     //! \param names (out): On return, the derived class has filled names with

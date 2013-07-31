@@ -80,7 +80,7 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
   int nRows = A->NumMyRows();  // number of matrix rows for current proc
   if(nvblocks != amal_map_->NumMyElements()) dserror("nvblocks and NumMyElements of amalA_RowMap does not match");
   if(nVerbose_ > 5)
-    cout << "PROC " << A->Comm().MyPID() << " " << globalamalblockids_.size() << " amalgamated rows, " << nRows << " normal rows " << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " " << globalamalblockids_.size() << " amalgamated rows, " << nRows << " normal rows " << std::endl;
 #endif
 
   ////////////// extract information from overlapping column map
@@ -102,7 +102,7 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
       cnt_second_vals[iter->second] = 1;
     }
     int cnt_colblocks = cnt_second_vals.size();    // number of different block nids for cols
-    cout << "PROC " << A->Comm().MyPID() << " col blocks " << cnt_colblocks << " colmap elements " << A->ColMap().NumMyElements() << " domain map elments " << A->DomainMap().NumMyElements() << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " col blocks " << cnt_colblocks << " colmap elements " << A->ColMap().NumMyElements() << " domain map elments " << A->DomainMap().NumMyElements() << std::endl;
   }
 #endif
 
@@ -134,7 +134,7 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
       int err = A->ExtractMyRowView(row,nnz,vals,indices);   // extract local row information
       if(err!=0) dserror("error in ExtractMyRowView");
 
-      if(nnz==0) cout << "PROC " << A->Comm().MyPID() << " row" << " OOPS: nnz == 0???"<< endl << endl;
+      if(nnz==0) std::cout << "PROC " << A->Comm().MyPID() << " row" << " OOPS: nnz == 0???"<< std::endl << std::endl;
       int realnnz = 0;
 
       // loop through all local columns
@@ -207,7 +207,7 @@ int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& ama
         m++;
     }
     amalA->Comm().SumAll(&m,&mg,1);
-    cout << "Aggregation (UC): Phase 0, " << aggr_stat->GlobalLength() - mg << " nodes + " << mg << " boundary nodes = " << aggr_stat->GlobalLength() << endl;
+    std::cout << "Aggregation (UC): Phase 0, " << aggr_stat->GlobalLength() - mg << " nodes + " << mg << " boundary nodes = " << aggr_stat->GlobalLength() << std::endl;
   }
 #endif
 
@@ -227,14 +227,14 @@ int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& ama
       ret = Phase2_minrank(amalA,params,amal_Aggregates,aggr_stat,nLocalAggregates);
   }
 #ifdef DEBUG
-  else if(nVerbose_ > 5) cout << "Aggregation (UC): Phase 1+, PROC " << amalA->Comm().MyPID() << " skip phase 2" << endl;
+  else if(nVerbose_ > 5) std::cout << "Aggregation (UC): Phase 1+, PROC " << amalA->Comm().MyPID() << " skip phase 2" << std::endl;
 #endif
 
   ////////////// phase 3
   if(ret > 0)
     ret = Phase3(amalA,params,amal_Aggregates,aggr_stat,nLocalAggregates);
 #ifdef DEBUG
-  else if(nVerbose_ > 5) cout << "Aggregation (UC): Phase 2+, PROC " << amalA->Comm().MyPID() << " skip phase 3" << endl;
+  else if(nVerbose_ > 5) std::cout << "Aggregation (UC): Phase 2+, PROC " << amalA->Comm().MyPID() << " skip phase 3" << std::endl;
 #endif
 
   ////////////// phase 4
@@ -399,7 +399,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
   }
   amalA->Comm().SumAll(&m,&mg,1);
   if(mg > 0)
-    cout << "Aggregation (UC): Phase 1 (WARNING) " << mg << " unaggregated nodes left (status READY)" << endl;
+    std::cout << "Aggregation (UC): Phase 1 (WARNING) " << mg << " unaggregated nodes left (status READY)" << std::endl;
 
   if(nVerbose_>5)
   {
@@ -413,8 +413,8 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
     amalA->Comm().SumAll(&m,&mg,1);
     int gk = 0; // number of global aggs
     amalA->Comm().SumAll(&aggr_count,&gk,1);
-    cout << "Aggregation (UC): Phase 1, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
-    cout << "Aggregation (UC): Phase 1, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
+    std::cout << "Aggregation (UC): Phase 1, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << std::endl;
+    std::cout << "Aggregation (UC): Phase 1, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << std::endl;
   }
 #endif
 
@@ -424,7 +424,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
   if(graph_ordering_inodes.size() > 0)
   {
 #ifdef DEBUG
-    cout << "graph_ordering_nodes still contains elements" << endl;
+    std::cout << "graph_ordering_nodes still contains elements" << std::endl;
 #endif
     for(unsigned int k=0; k<graph_ordering_inodes.size(); k++)
       graph_ordering_inodes.pop();
@@ -451,7 +451,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
   }
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "Aggregation (UC): Phase 1, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
+    std::cout << "Aggregation (UC): Phase 1, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << std::endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -528,7 +528,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGrap
   }
   amalA->Comm().SumAll(&m,&mg,1);
   if(mg > 0)
-    cout << "Aggregation (UC): Phase 2 (WARNING) " << mg << " unaggregated nodes left (status READY)" << endl;
+    std::cout << "Aggregation (UC): Phase 2 (WARNING) " << mg << " unaggregated nodes left (status READY)" << std::endl;
 
   if(nVerbose_>5)
   {
@@ -542,8 +542,8 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGrap
     amalA->Comm().SumAll(&m,&mg,1);
     int gk = 0; // number of global aggs
     amalA->Comm().SumAll(&aggr_count,&gk,1);
-    cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
-    cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
+    std::cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << std::endl;
+    std::cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << std::endl;
   }
 #endif
 
@@ -566,7 +566,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGrap
   }
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
+    std::cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << std::endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -652,7 +652,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGrap
   }
   amalA->Comm().SumAll(&m,&mg,1);
   if(mg > 0)
-    cout << "Aggregation (UC): Phase 2 (WARNING) " << mg << " unaggregated nodes left (status READY)" << endl;
+    std::cout << "Aggregation (UC): Phase 2 (WARNING) " << mg << " unaggregated nodes left (status READY)" << std::endl;
 
   if(nVerbose_>5)
   {
@@ -666,8 +666,8 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGrap
     amalA->Comm().SumAll(&m,&mg,1);
     int gk = 0; // number of global aggs
     amalA->Comm().SumAll(&aggr_count,&gk,1);
-    cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << endl;
-    cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << endl;
+    std::cout << "Aggregation (UC): Phase 2, " << mg << " nodes out of " << aggr_stat->GlobalLength() << " nodes aggregated" << std::endl;
+    std::cout << "Aggregation (UC): Phase 2, PROC " << amalA->Comm().MyPID() << " " << aggr_count << " out of " << gk << " aggregates found" << std::endl;
   }
 #endif
 
@@ -690,7 +690,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGrap
   }
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << endl;
+    std::cout << "Aggregation (UC): Phase 2, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << aggr_count << std::endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -756,7 +756,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase3(const RCP<Epetra_CrsGraph>& amal
   }
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "Aggregation (UC): Phase 3, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << endl;
+    std::cout << "Aggregation (UC): Phase 3, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << std::endl;
 #endif
 
   /////////// return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
@@ -820,7 +820,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase4(const RCP<Epetra_CrsGraph>& amal
       else if((*aggr_stat)[inode] == AGGR_READY)
         cntready++;
     }
-    cout << "Aggregation (UC): Phase 4, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << endl;
+    std::cout << "Aggregation (UC): Phase 4, ~~~~> PROC " << amalA->Comm().MyPID() << " AGGR_READY: " << cntready << " AGGR_SELECTED: " << cntselected << " AGGR_NOTSEL: " << cntnotselected << " AGGR_BDRY: " << cntbdry << " #AGGR: " << nLocalAggregates << std::endl;
   }
 #endif
 
@@ -842,7 +842,7 @@ RCP<Epetra_IntVector> LINALG::AggregationMethod_Uncoupled::UnamalgamateVector(co
     int globalblockid = *iter;  // current block GID on this proc
 
     // what aggregate belongs to global block id?
-    if(!amal_Aggregates->Map().MyGID(globalblockid)) cout << "WARNING: block GID not owned by this proc??" << endl;
+    if(!amal_Aggregates->Map().MyGID(globalblockid)) std::cout << "WARNING: block GID not owned by this proc??" << std::endl;
     int aggid = (*amal_Aggregates)[amal_Aggregates->Map().LID(globalblockid)];  // determine corresponding aggregate id
 
     std::vector<int> rowids = globalamalblockid2myrowid_.find(globalblockid)->second; // contains all local rowids (living on map_)
@@ -872,7 +872,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 
 #ifdef DEBUG
   if(nVerbose_ > 5)
-    cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << std::endl;
 #endif
 
   int maxEntriesPerRow = 0;
@@ -901,7 +901,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
     if(ret !=0 )
     {
-      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+      std::cout << "ExtractGlobalRowCopy returned " << ret << std::endl;
 
       if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
     }
@@ -962,7 +962,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
    int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
    if(ret !=0 )
    {
-     cout << "ExtractGlobalRowCopy returned " << ret << endl;
+     std::cout << "ExtractGlobalRowCopy returned " << ret << std::endl;
 
      if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
    }
@@ -1026,7 +1026,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
     if(ret !=0 )
     {
 #ifdef DEBUG
-      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+      std::cout << "ExtractGlobalRowCopy returned " << ret << std::endl;
 #endif
       if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
     }
@@ -1073,7 +1073,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
     for(unsigned int j=0; j<tmpvals.size();j++)
     {
       if(tmpvals[j] == 0.0)
-        cout << "ERROR  " << endl;
+        std::cout << "ERROR  " << std::endl;
     }
 #endif
 
@@ -1091,14 +1091,14 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
     int grid = A->GRID(i);    // global row id
 
     int ret = prunedA->InsertGlobalValues(grid,globalcolids[grid].size(),&(vals[grid])[0],&(globalcolids[grid])[0]);
-    if(ret != 0) cout << "ret != 0" << endl;
+    if(ret != 0) std::cout << "ret != 0" << std::endl;
   }
 
   prunedA->FillComplete(true);
 
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << std::endl;
 #endif
   return 0;
 }
@@ -1118,7 +1118,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
 
 #ifdef DEBUG
   if(nVerbose_ > 5)
-    cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << std::endl;
 #endif
 
   int maxEntriesPerRow = 0;
@@ -1163,7 +1163,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
     if(ret !=0 )
     {
 #ifdef DEBUG
-      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+      std::cout << "ExtractGlobalRowCopy returned " << ret << std::endl;
 #endif
       if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
     }
@@ -1213,7 +1213,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
     for(unsigned int j=0; j<tmpvals.size();j++)
     {
       if(tmpvals[j] == 0.0)
-        cout << "ERROR  " << endl;
+        std::cout << "ERROR  " << std::endl;
     }
 #endif
 
@@ -1231,14 +1231,14 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
     int grid = A->GRID(i);    // global row id
 
     int ret = prunedA->InsertGlobalValues(grid,globalcolids[grid].size(),&(vals[grid])[0],&(globalcolids[grid])[0]);
-    if(ret != 0) cout << "ret != 0" << endl;
+    if(ret != 0) std::cout << "ret != 0" << std::endl;
   }
 
   prunedA->FillComplete(true);
 
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << std::endl;
 #endif
   return 0;
 }
@@ -1247,7 +1247,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 {
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " nnz of A before pruning " << A->NumMyNonzeros() << std::endl;
 #endif
 
   int maxEntriesPerRow = 0;
@@ -1278,7 +1278,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
     if(ret !=0 )
     {
 #ifdef DEBUG
-      cout << "ExtractGlobalRowCopy returned " << ret << endl;
+      std::cout << "ExtractGlobalRowCopy returned " << ret << std::endl;
 #endif
       if(ret < 0) dserror("Error in PruneMatrix: ExtractGlobalRowCopy < 0");
     }
@@ -1302,7 +1302,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
     for(unsigned int j=0; j<tmpvals.size();j++)
     {
       if(tmpvals[j] == 0.0)
-        cout << "ERROR  " << endl;
+        std::cout << "ERROR  " << std::endl;
     }
 #endif
 
@@ -1320,19 +1320,19 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
     int grid = A->GRID(i);    // global row id
 
     int ret = prunedA->InsertGlobalValues(grid,globalcolids[grid].size(),&(vals[grid])[0],&(globalcolids[grid])[0]);
-    if(ret != 0) cout << "ret != 0" << endl;
+    if(ret != 0) std::cout << "ret != 0" << std::endl;
   }
 
   prunedA->FillComplete(true);
 
 #ifdef DEBUG
   if(nVerbose_>5)
-    cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << endl;
+    std::cout << "PROC " << A->Comm().MyPID() << " nnz of A after pruning " << prunedA->NumMyNonzeros() << std::endl;
 #endif
 
 #if 0
   if(A->Filled()==false) dserror("A is not filled!!");
-  cout << *A << endl;
+  std::cout << *A << std::endl;
   if(prunedA!=Teuchos::null) prunedA = Teuchos::null;
 
   prunedA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A->RangeMap(),20,false));
@@ -1357,7 +1357,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 
         //if(A->MyLCID(colindices[lj]) && vals[lj]!=0.0)
         {
-          //cout << "colindices " << colindices[lj] << endl;
+          //std::cout << "colindices " << colindices[lj] << std::endl;
           prunedcolids.push_back(colindices[lj]);
           prunedvals.push_back(vals[lj]);
         }
@@ -1368,15 +1368,15 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 
     ret = prunedA->InsertGlobalValues(grid,prunedcolids.size(),&prunedvals[0],&prunedcolids[0]);
     if(ret != 0)
-      cout << "WARNING: InsertGlobalValues != 0 = " << ret << endl;
+      std::cout << "WARNING: InsertGlobalValues != 0 = " << ret << std::endl;
   }
 
-  cout << A->DomainMap() << endl;
+  std::cout << A->DomainMap() << std::endl;
   if(prunedA->Filled()==true) dserror("prunedA already filled");
   prunedA->FillComplete(A->DomainMap(),A->RangeMap(),false);
   if(prunedA->Filled()==false) dserror("prunedA not filled");
 
-  cout << *prunedA << endl;
+  std::cout << *prunedA << std::endl;
 #endif
 
   return 0;

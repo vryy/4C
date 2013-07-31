@@ -157,7 +157,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
   //                     - F_{ext;n+1}
   fres_->Update(-1.0, *fextn_, 0.0);
   fres_->Update(1.0, *fintn_, 1.0);
-//  cout << *fintn_ << endl;
+//  std::cout << *fintn_ << std::endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = K_{T}

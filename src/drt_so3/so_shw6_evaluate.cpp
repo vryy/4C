@@ -366,7 +366,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     */
     soshw6_eassetup(&M_GP,detJ0,T0invT,xrefe);
   } else if (eastype_ == soshw6_easnone){
-  //cout << "Warning: Solid-Shell Wegde6 without EAS" << endl;
+  //std::cout << "Warning: Solid-Shell Wegde6 without EAS" << std::endl;
   } else dserror("Unknown EAS-type for solid wedge6");// ------------------- EAS
 
   /*

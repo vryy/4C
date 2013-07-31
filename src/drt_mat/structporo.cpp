@@ -491,7 +491,7 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoro::VisNames(std::map<string,int>& names)
+void MAT::StructPoro::VisNames(std::map<std::string,int>& names)
 {
   mat_->VisNames(names);
   std::string porosity = "porosity";
@@ -500,7 +500,7 @@ void MAT::StructPoro::VisNames(std::map<string,int>& names)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MAT::StructPoro::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::StructPoro::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (mat_->VisData(name,data,numgp))
     return true;

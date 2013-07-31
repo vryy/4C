@@ -525,9 +525,9 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::VisNames(std::map<string,int>& names)
+void MAT::PlasticNlnLogNeoHooke::VisNames(std::map<std::string,int>& names)
 {
-  string accumulatedstrain = "accumulatedstrain";
+  std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
 
 }  // VisNames()
@@ -537,7 +537,7 @@ void MAT::PlasticNlnLogNeoHooke::VisNames(std::map<string,int>& names)
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
 bool MAT::PlasticNlnLogNeoHooke::VisData(
-  const string& name,
+  const std::string& name,
   std::vector<double>& data,
   int numgp
   )

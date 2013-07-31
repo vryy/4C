@@ -129,7 +129,7 @@ void PrintHelpMessage()
             << "\t100% bug free since 1964." << std::endl
             << std::endl
             << "TIPS" << std::endl
-            << "\tCan be obtain from a friendly colleague." << std::endl
+            << "\tCan be obtain from a fristd::endly colleague." << std::endl
             << std::endl
             << "\tAlso, espresso may be donated to room MW1236." << std::endl;
 
@@ -353,10 +353,10 @@ void DRT::INPUT::StringParameter(std::string const &paramName,
 {
 
   // The method Teuchos::setNumericStringParameter() cannot be used for arbitrary
-  // string parameters, since the validate() method of the underlying
+  // std::string parameters, since the validate() method of the underlying
   // AnyNumberParameterEntryValidator always tries to convert a given std::string to DOUBLE(s)!
   // This may cause error messages in valgrind.
-  // Thus, for arbitrary strings, such as needed for specifying a file or solver name, for instance,
+  // Thus, for arbitrary std::strings, such as needed for specifying a file or solver name, for instance,
   // this method which uses a StringValidator has to be used!
 
   Teuchos::RCP<Teuchos::StringValidator> validator
@@ -1791,18 +1791,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   //Reading kind of background fluid stream in the thermal bath
   setStringToIntegralParameter<int>("THERMALBATH","None","Type of thermal bath applied to elements",
-                               //listing possible strings in input file in category THERMALBATH
+                               //listing possible std::strings in input file in category THERMALBATH
                                tuple<std::string>("None","none",
                                                   "Uniform","uniform",
                                                   "ShearFlow","shearflow","Shearflow"),
-                               //translating input strings into BACI input parameters
+                               //translating input std::strings into BACI input parameters
                                tuple<int>(INPAR::STATMECH::thermalbath_none,INPAR::STATMECH::thermalbath_none,
                                           INPAR::STATMECH::thermalbath_uniform,INPAR::STATMECH::thermalbath_uniform,
                                           INPAR::STATMECH::thermalbath_shearflow,INPAR::STATMECH::thermalbath_shearflow,INPAR::STATMECH::thermalbath_shearflow),
                                &statmech);
   //Reading which kind of special output should be written to files
   setStringToIntegralParameter<int>("SPECIAL_OUTPUT","None","kind of special statistical output data written into files",
-                                 //listing possible strings in input file in category SPECIAL_OUTPUT
+                                 //listing possible std::strings in input file in category SPECIAL_OUTPUT
                                  tuple<std::string>("None","none",
                                                     "endtoend_log",
                                                     "anisotropic",
@@ -1814,7 +1814,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "octree",
                                                     "loom",
                                                     "loomelnrg"),
-                                 //translating input strings into BACI input parameters
+                                 //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,
                                             INPAR::STATMECH::statout_anisotropic,
@@ -1829,12 +1829,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<int>("FRICTION_MODEL","none","friction model for polymer dynamics",
-                                 //listing possible strings in input file in category FRICTION_MODEL
+                                 //listing possible std::strings in input file in category FRICTION_MODEL
                                  tuple<std::string>("none",
                                                     "isotropiclumped",
                                                     "isotropicconsistent",
                                                     "anisotropicconsistent"),
-                                 //translating input strings into BACI input parameters
+                                 //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::frictionmodel_none,
                                             INPAR::STATMECH::frictionmodel_isotropiclumped,
                                             INPAR::STATMECH::frictionmodel_isotropicconsistent,
@@ -1842,7 +1842,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<int>("DBCTYPE","std","Dirichlet BC type applied",
-                                 //listing possible strings in input file in category FRICTION_MODEL
+                                 //listing possible std::strings in input file in category FRICTION_MODEL
                                  tuple<std::string>("none",
                                                     "std",
                                                     "shearfixed",
@@ -1851,7 +1851,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "pinnodes" ,
                                                     "affineshear",
                                                     "affinesheardel"),
-                                 //translating input strings into BACI input parameters
+                                 //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::dbctype_none,
                                             INPAR::STATMECH::dbctype_std,
                                             INPAR::STATMECH::dbctype_shearfixed,
@@ -2486,7 +2486,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
   setStringToIntegralParameter<int>("PHYSICAL_TYPE","Incompressible",
                                "Physical Type",
-                               tuple<string>(
+                               tuple<std::string>(
                                  "Incompressible",
                                  "Varying_density",
                                  "Loma",

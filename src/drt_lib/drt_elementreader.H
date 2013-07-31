@@ -79,7 +79,7 @@ public:
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
    */
-  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, string sectionname);
+  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
 
   /// construct element reader for a given field that reads a given section
   /*!
@@ -90,7 +90,7 @@ public:
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
    */
-  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, string sectionname, string elementtype);
+  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname, std::string elementtype);
 
   /// construct element reader for a given field that reads a given section
   /*!
@@ -101,7 +101,7 @@ public:
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
    */
-  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, string sectionname, const std::set<std::string> & elementtypes);
+  ElementReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname, const std::set<std::string> & elementtypes);
 
   //! Destructor
   virtual ~ElementReader(){ ; }
@@ -126,7 +126,7 @@ protected:
   void Complete();
 
   /// discretization name
-  string name_;
+  std::string name_;
 
   /// the main dat file reader
   const DatFileReader& reader_;
@@ -135,7 +135,7 @@ protected:
   Teuchos::RCP<Epetra_Comm> comm_;
 
   /// my section to read
-  string sectionname_;
+  std::string sectionname_;
 
   /// all global node ids of a discretization on processor 0
   /*!

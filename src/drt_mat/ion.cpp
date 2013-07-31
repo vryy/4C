@@ -85,7 +85,7 @@ void MAT::Ion::Pack(DRT::PackBuffer& data) const
 
   /*
   for (unsigned i=0;i<data().size();i++)
-  cout<<"Pack ION: pb["<<i<<"] = "<<(data())[i]<<endl;
+  std::cout<<"Pack ION: pb["<<i<<"] = "<<(data())[i]<<std::endl;
 */
   /*
   // extract type
@@ -93,9 +93,9 @@ void MAT::Ion::Pack(DRT::PackBuffer& data) const
   std::vector<char> pbtest;
   int typio = 0;
   ExtractfromPack(posit,data(),typio);
-  cout<<"ION Pack: Type will be "<<typio<<endl;
+  std::cout<<"ION Pack: Type will be "<<typio<<std::endl;
 */
- // cout<<"Ion Pack: "<<data().size()<<endl;
+ // std::cout<<"Ion Pack: "<<data().size()<<std::endl;
 }
 
 

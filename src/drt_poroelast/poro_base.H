@@ -113,7 +113,7 @@ namespace POROELAST
       bool HasSubmeshes(){return submeshes_;};
 
       //! Evaluate porosity at surface
-      void CalculateSurfPoro(const string& condstring);
+      void CalculateSurfPoro(const std::string& condstring);
 
     protected:
 

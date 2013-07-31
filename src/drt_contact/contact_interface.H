@@ -91,7 +91,7 @@ public:
   \brief Print this Interface
 
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   //! @name Access methods
 
@@ -671,7 +671,7 @@ protected:
 
 
 // << operator
-ostream& operator << (ostream& os, const CONTACT::CoInterface& interface);
+std::ostream& operator << (std::ostream& os, const CONTACT::CoInterface& interface);
 
 
 #endif  // #ifndef CONTACT_INTERFACE_H

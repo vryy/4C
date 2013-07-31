@@ -300,12 +300,12 @@ DRT::ELEMENTS::So_weg6::~So_weg6()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::Print(ostream& os) const
+void DRT::ELEMENTS::So_weg6::Print(std::ostream& os) const
 {
   os << "So_weg6 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 
@@ -409,7 +409,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 07/08|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_weg6::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So_weg6::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))

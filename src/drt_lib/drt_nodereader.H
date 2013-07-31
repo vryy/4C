@@ -25,7 +25,7 @@ class NodeReader
 public:
 
   /// construct a reader that reads a given section
-  NodeReader(const DatFileReader& reader, string sectionname);
+  NodeReader(const DatFileReader& reader, std::string sectionname);
 
   /// add an element reader for each discretization
   /*!
@@ -69,7 +69,7 @@ private:
   Teuchos::RCP<Epetra_Comm> comm_;
 
   /// my section to read
-  string sectionname_;
+  std::string sectionname_;
 
   /// my element readers
   std::vector<Teuchos::RCP<ElementReader> > ereader_;

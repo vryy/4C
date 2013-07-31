@@ -186,7 +186,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
       // any XFEM problem with scatra will crash here, it could probably be removed     henke 12/11
       const Epetra_Comm& comm = (discret_ != Teuchos::null)?(discret_->Comm()):(standarddofset_->DofRowMap()->Comm());
       if (comm.MyPID() == 0)
-        cout << "curr_avg_sca_ or scavec is Teuchos::null" << endl;
+        std::cout << "curr_avg_sca_ or scavec is Teuchos::null" << std::endl;
     }
 
     if ((curr_avg_scatra_ != Teuchos::null) and (scatravec != Teuchos::null))
@@ -308,9 +308,9 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           DRT::Condition* pbc=mypbcs[numcond];
 
           // see whether pbc is active in plane orthogonal to sampling plane
-          const string* dofsforpbcplanename
+          const std::string* dofsforpbcplanename
             =
-            pbc->Get<string>("degrees of freedom for the pbc plane");
+            pbc->Get<std::string>("degrees of freedom for the pbc plane");
 
           bool active=false;
 
@@ -343,8 +343,8 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           if(active)
           {
             // see whether we have a slave node
-            const string* mymasterslavetoggle
-              = pbc->Get<string>("Is slave periodic boundary condition");
+            const std::string* mymasterslavetoggle
+              = pbc->Get<std::string>("Is slave periodic boundary condition");
 
             if(*mymasterslavetoggle=="Slave")
             {
@@ -570,9 +570,9 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
             DRT::Condition* pbc=mypbcs[numcond];
 
             // see whether pbc is active in plane orthogonal to sampling plane
-            const string* dofsforpbcplanename
+            const std::string* dofsforpbcplanename
               =
-              pbc->Get<string>("degrees of freedom for the pbc plane");
+              pbc->Get<std::string>("degrees of freedom for the pbc plane");
 
             bool active=false;
 
@@ -605,8 +605,8 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
             if(active)
             {
               // see whether we have a slave node
-              const string* mymasterslavetoggle
-                = pbc->Get<string>("Is slave periodic boundary condition");
+              const std::string* mymasterslavetoggle
+                = pbc->Get<std::string>("Is slave periodic boundary condition");
 
               if(*mymasterslavetoggle=="Slave")
               {
@@ -880,9 +880,9 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           DRT::Condition* pbc=mypbcs[numcond];
 
           // see whether pbc is active in plane orthogonal to sampling plane
-          const string* dofsforpbcplanename
+          const std::string* dofsforpbcplanename
             =
-            pbc->Get<string>("degrees of freedom for the pbc plane");
+            pbc->Get<std::string>("degrees of freedom for the pbc plane");
 
           bool active=false;
 
@@ -915,8 +915,8 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
           if(active)
           {
             // see whether we have a slave node
-            const string* mymasterslavetoggle
-              = pbc->Get<string>("Is slave periodic boundary condition");
+            const std::string* mymasterslavetoggle
+              = pbc->Get<std::string>("Is slave periodic boundary condition");
 
             if(*mymasterslavetoggle=="Slave")
             {
@@ -1157,10 +1157,10 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 
   if(discret_->Comm().MyPID()==0)
   {
-    cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-    cout << " Wrote averaged vector             ";
-    cout << "XXXXXXXXXXXXXXXXXXXXX";
-    cout << "\n\n";
+    std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+    std::cout << " Wrote averaged vector             ";
+    std::cout << "XXXXXXXXXXXXXXXXXXXXX";
+    std::cout << "\n\n";
   }
 
   output.WriteInt   ("num_steps_in_sample", prev_n_       );
@@ -1407,10 +1407,10 @@ void  FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
 
     if(scatradis_->Comm().MyPID()==0)
     {
-      cout << "XXXXXXXXXXXXXXXXXXXXX           ";
-      cout << " Wrote averaged scatra vector         ";
-      cout << "XXXXXXXXXXXXXXXXXXXXX";
-      cout << "\n\n";
+      std::cout << "XXXXXXXXXXXXXXXXXXXXX           ";
+      std::cout << " Wrote averaged scatra vector         ";
+      std::cout << "XXXXXXXXXXXXXXXXXXXXX";
+      std::cout << "\n\n";
     }
   }
 

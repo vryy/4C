@@ -351,7 +351,7 @@ int GEO::CUT::Node::DofSetNumber( VolumeCell * cell )
   }
   if ( dofset==-1 )
   {
-    cout << "dofset not found for node " << this->Id() << endl;
+    std::cout << "dofset not found for node " << this->Id() << std::endl;
     throw std::runtime_error( "volume dofset not found" );
   }
   return dofset;
@@ -388,10 +388,10 @@ int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
           }
           else
           {
-            cout << "node: " << Id() << endl;
-            cout << "first dofset id: " << dofset << endl;
-            cout << "new dofset id: " << i << endl;
-            cell->Print(cout);
+            std::cout << "node: " << Id() << std::endl;
+            std::cout << "first dofset id: " << dofset << std::endl;
+            std::cout << "new dofset id: " << i << std::endl;
+            cell->Print(std::cout);
             throw std::runtime_error( "volume dofset not unique" );
           }
         }
@@ -399,7 +399,7 @@ int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
   }
   if ( dofset==-1 )
   {
-    cout << "dofset not found for node " << this->Id() << endl;
+    std::cout << "dofset not found for node " << this->Id() << std::endl;
 //    throw std::runtime_error( "volume dofset not found" );
   }
   return dofset;
@@ -600,7 +600,7 @@ void GEO::CUT::Node::SelfCutPosition( Point::PointPosition pos )
         (selfcutposition_ == Point::outside and pos == Point::inside) )
     {
 
-      cout << "selfcutnode with changing position inside->outside or vice versa " << nid_ << endl;
+      std::cout << "selfcutnode with changing position inside->outside or vice versa " << nid_ << std::endl;
       throw std::runtime_error("Are you sure that you want to change the selfcut-node-position from inside to outside or vice versa?");
     }
 //#endif

@@ -289,7 +289,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   for (int i=0; i<(int)ortho.size(); ++i)
   {
     if (ortho[i]->GType() != DRT::Condition::Surface) continue;
-    const string* type = ortho[i]->Get<string>("type");
+    const std::string* type = ortho[i]->Get<std::string>("type");
     if (*type == "neum_orthopressure" || *type == "neum_pseudo_orthopressure")
       conds.push_back(ortho[i]);
   }
@@ -516,7 +516,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
 /*----------------------------------------------------------------------*
  |                                                           maier 06/11|
  *----------------------------------------------------------------------*/
-std::vector<double> PATSPEC::GetCenterline(string filename)
+std::vector<double> PATSPEC::GetCenterline(std::string filename)
 {
 
   std::ifstream file (filename.c_str());
@@ -686,7 +686,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
   {
     const std::vector<int>* nodes = embedcond[i]->Nodes();
     double springstiff = embedcond[i]->GetDouble("stiff");
-    //const string* model = embedcond[i]->Get<string>("model");
+    //const std::string* model = embedcond[i]->Get<std::string>("model");
     //double offset = embedcond[i]->GetDouble("offset");
     const std::vector<double>* areapernode = embedcond[i]->Get< std::vector<double> >("areapernode");
 

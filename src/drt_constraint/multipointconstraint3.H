@@ -39,7 +39,7 @@ namespace UTILS
     MPConstraint3
     (
       RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-      const string& CondName, ///< Name of condition to create constraint from
+      const std::string& CondName, ///< Name of condition to create constraint from
       int& minID,  ///< minimum constraint or monitor ID so far
       int& maxID  ///< maximum constraint or monitor ID so far
     );
@@ -75,7 +75,7 @@ namespace UTILS
     MPConstraint3(const MPConstraint3& old);
 
     //! Return the ConstrType based on the condition name
-    ConstrType GetConstrType(const string& Name);///<condition name
+    ConstrType GetConstrType(const std::string& Name);///<condition name
 
     //! Evaluate constraint discretization and assemble the results
     void EvaluateConstraint(

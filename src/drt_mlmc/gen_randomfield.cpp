@@ -23,7 +23,7 @@ Maintainer: Jonas Biehler
 #include <iostream>
 #include <complex>
 #include <cmath>
-// For colored couts
+// For colored std::couts
 #include "../drt_lib/drt_colors.H"
 #include <boost/random.hpp>
 
@@ -288,7 +288,7 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
     int size = int (Phi_0_.size());
      for(int i=0;i<size;i++)
      {
-       File << std::setprecision(15) << Phi_0_[i]<< endl;
+       File << std::setprecision(15) << Phi_0_[i]<< std::endl;
      }
      File.close();
    }*/
@@ -324,7 +324,7 @@ void GenRandomField::CalcDiscretePSD()
       int size = int (pow(N_,2.0));
       for(int i=0;i<size;i++)
       {
-        File << discrete_PSD_[i]<< endl;
+        File << discrete_PSD_[i]<< std::endl;
       }
       File.close();
     }*/
@@ -378,7 +378,7 @@ void GenRandomField::CalcDiscretePSD3D()
 //    int size = int (pow(N_,3.0));
 //    for(int i=0;i<size;i++)
 //    {
-//      File << discrete_PSD_[i]<< endl;
+//      File << discrete_PSD_[i]<< std::endl;
 //    }
 //    File.close();
 //  }
@@ -802,7 +802,7 @@ double GenRandomField::EvalFieldAtLocation(std::vector<double> location, bool wr
       std::ofstream File;
       File.open("RFatPoint.txt",std::ios::app);
       // use at() to get an error massage just in case
-      File << std::setprecision (9) << values_[index_x+M_*index_y]<< endl;
+      File << std::setprecision (9) << values_[index_x+M_*index_y]<< std::endl;
       File.close();
     }
     if (dim_==2)
@@ -823,7 +823,7 @@ double GenRandomField::EvalFieldAtLocation(std::vector<double> location, bool wr
          {
            std::ofstream File;
            File.open("RFatPoint.txt",std::ios::app);
-           File << std::setprecision (9) << value<< endl;
+           File << std::setprecision (9) << value<< std::endl;
            File.close();
          }
      return value;
@@ -851,7 +851,7 @@ void GenRandomField::TranslateToNonGaussian()
   switch(marginal_pdf_)
   {
     case normal:
-      //IO::cout<< RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << endl;
+      //IO::cout<< RED_LIGHT << "WARNING: Target marginal PDF is gaussian so nothing to do here"<< END_COLOR << std::endl;
     break;
 
     case beta:
@@ -1160,14 +1160,14 @@ void GenRandomField::SpectralMatching()
        int size = int (pow(N_,2.0));
        for(int i=0;i<size;i++)
        {
-         File << discrete_PSD_[i]<< endl;
+         File << discrete_PSD_[i]<< std::endl;
        }
        File.close();
        std::ofstream File2;
        File2.open("PSD_ng.txt",std::ios::out);
          for(int i=0;i<size;i++)
          {
-           File2 << PSD_ng[i]<< endl;
+           File2 << PSD_ng[i]<< std::endl;
          }
          File2.close();
      }*/
@@ -1704,7 +1704,7 @@ void GenRandomField::WriteRandomFieldToFile()
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)
     {
-      File << std::setprecision(10) << values_[i]<< endl;
+      File << std::setprecision(10) << values_[i]<< std::endl;
     }
     File.close();
   }
@@ -1819,7 +1819,7 @@ void GenRandomField::WriteSamplePSDToFile(Teuchos::RCP<Teuchos::Array <double> >
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)
     {
-      File << (*sample_psd)[i]<< endl;
+      File << (*sample_psd)[i]<< std::endl;
     }
     File.close();
   }

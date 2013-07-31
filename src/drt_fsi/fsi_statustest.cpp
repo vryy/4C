@@ -501,7 +501,7 @@ NOX::FSI::MinIters::MinIters(int minIterations, const NOX::Utils* u)
 
   if (miniters < 1)
   {
-    utils.err() << "NOX::StatusTest::MinIters - must choose a number greater than zero" << endl;
+    utils.err() << "NOX::StatusTest::MinIters - must choose a number greater than zero" << std::endl;
     throw "NOX Error";
   }
 }
@@ -549,7 +549,7 @@ NOX::StatusTest::StatusType NOX::FSI::MinIters::getStatus() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ostream& NOX::FSI::MinIters::print(ostream& stream, int indent) const
+std::ostream& NOX::FSI::MinIters::print(std::ostream& stream, int indent) const
 {
  return stream;
 }

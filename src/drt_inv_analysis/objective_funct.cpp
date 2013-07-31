@@ -46,7 +46,7 @@ msteps_(steps)
 
 /*----------------------------------------------------------------------*/
 /* read monitor file */
-void STR::INVANA::ObjectiveFunct::ReadMonitor(string filename)
+void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string filename)
 {
   int myrank = discret_->Comm().MyPID();
 
@@ -176,19 +176,19 @@ double STR::INVANA::ObjectiveFunct::Evaluate(Teuchos::RCP<Epetra_MultiVector> di
   // sum every entry
   val = 0.5*normvec.Norm1();
 
-  //cout << "mdisp: " << *mdisp_ << endl;
-  //cout << "disp: " << *disp << endl;
-  //cout << "mask: " << *mask_ << endl;
+  //std::cout << "mdisp: " << *mdisp_ << std::endl;
+  //std::cout << "disp: " << *disp << std::endl;
+  //std::cout << "mask: " << *mask_ << std::endl;
 
   //add Thikonov regularization on the parameter vector:
   normvec.Scale(0.0);
   Epetra_MultiVector tmpvec2 = Epetra_MultiVector(*matman->GetInitialGuess());
-  cout << *matman->GetParams() << endl;
-  cout << tmpvec2 << endl;
+  std::cout << *matman->GetParams() << std::endl;
+  std::cout << tmpvec2 << std::endl;
   tmpvec2.Update(1.0,*(matman->GetParams()),-1.0);
-  cout << tmpvec2 << endl;
+  std::cout << tmpvec2 << std::endl;
   tmpvec2.Multiply(1.0,tmpvec2,tmpvec2,0.0);
-  cout << tmpvec2 << endl;
+  std::cout << tmpvec2 << std::endl;
   tmpvec2.Norm1(normvec.Values());
   val += 0.5*(matman->GetRegWeight())*normvec.Norm1();
 
@@ -206,6 +206,6 @@ void STR::INVANA::ObjectiveFunct::EvaluateGradient(Teuchos::RCP<Epetra_MultiVect
   tmpvec.Multiply(1.0,*mask_,*disp,-1.0);
   gradient->Update(1.0,tmpvec,0.0);
 
-  //cout << "adjoint rhs " << *gradient << endl;
+  //std::cout << "adjoint rhs " << *gradient << std::endl;
   return;
 }

@@ -221,8 +221,8 @@ public:
   FluidVolumetricSurfaceFlowBc( RCP<DRT::Discretization>  actdis,
                                 IO::DiscretizationWriter& output,
                                 double                    dta,
-                                string                    ds_condname,
-                                string                    dl_condname,
+                                std::string                    ds_condname,
+                                std::string                    dl_condname,
                                 int                       condid,
                                 int                       surf_numcond,
                                 int                       line_numcond);
@@ -243,20 +243,20 @@ public:
   */
   void CenterOfMassCalculation(RCP<std::vector<double> > coords,
                                RCP<std::vector<double> > normal,
-                               string                    ds_condname);
+                               std::string                    ds_condname);
 
 
   /*!
   \brief calculates the local radii of all nodes
   */
-  void EvalLocalNormalizedRadii(string ds_condname,
-                                string dl_condname);
+  void EvalLocalNormalizedRadii(std::string ds_condname,
+                                std::string dl_condname);
 
   /*!
   \brief get the node row map of the womersley condition
   */
   void BuildConditionNodeRowMap(RCP<DRT::Discretization>  dis,
-                                string                    condname,
+                                std::string                    condname,
                                 int                       condid,
                                 int                       condnum,
                                 RCP<Epetra_Map> &         cond_noderowmap);
@@ -265,7 +265,7 @@ public:
   \brief get the dof row map of the womersley condition
   */
   void BuildConditionDofRowMap(RCP<DRT::Discretization>      dis,
-                               const string                  condname,
+                               const std::string                  condname,
                                int                           condid,
                                int                           condnum  ,
                                RCP<Epetra_Map> &             cond_dofrowmap);
@@ -275,7 +275,7 @@ public:
   \brief Broadcast node information over all processors
   */
   void BroadcastNodeInformation(RCP<DRT::Discretization>  dis,
-                                string                    noderowmap,
+                                std::string                    noderowmap,
                                 int                       condid,
                                 int                       condnum,
                                 RCP<Epetra_Map>           cond_noderowmap);
@@ -285,7 +285,7 @@ public:
   \brief Evaluate velocities
   */
   void EvaluateVelocities(double             flowrate,
-                          string             ds_condname,
+                          std::string             ds_condname,
                           double             time);
 
 
@@ -293,7 +293,7 @@ public:
   \brief Evaluate flowrate
   */
   double EvaluateFlowrate(//RCP<Epetra_Vector> bcdof,
-                          string             ds_condname,
+                          std::string             ds_condname,
                           double             time);
 
 
@@ -332,7 +332,7 @@ public:
   /*!
   \brief Corrects the flow rate
   */
-  void CorrectFlowRate(string             ds_condname,
+  void CorrectFlowRate(std::string             ds_condname,
                        FLD::BoundaryAction action,
                        double             time,
                        bool               force_correction=false);
@@ -340,9 +340,9 @@ public:
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  double FlowRateCalculation(double time, string ds_condname, FLD::BoundaryAction action, int condid);
+  double FlowRateCalculation(double time, std::string ds_condname, FLD::BoundaryAction action, int condid);
 
-  double PressureCalculation(double time, string ds_condname, string action, int condid);
+  double PressureCalculation(double time, std::string ds_condname, std::string action, int condid);
   /*!
   \brief Calculate the Flowrate on a boundary
   */
@@ -356,7 +356,7 @@ public:
   /*!
   \brief evaluate the traction velocity component
   */
-  void EvaluateTractionVelocityComp(string             ds_condname,
+  void EvaluateTractionVelocityComp(std::string             ds_condname,
                                     double             flowrate,
                                     int                condid,
                                     double             time,
@@ -381,17 +381,17 @@ private:
   /*!
   \brief calculate area at outflow boundary
   */
-  double Area( double& density, double& viscosity, string ds_condname, int condid);
+  double Area( double& density, double& viscosity, std::string ds_condname, int condid);
 
   /*!
   \brief output
   */
-  void Output(IO::DiscretizationWriter&  output, string ds_condname, int condnum );
+  void Output(IO::DiscretizationWriter&  output, std::string ds_condname, int condnum );
 
   /*!
   \brief Read restart
   */
-  void ReadRestart(IO::DiscretizationReader& reader, string ds_condname, int condnum);
+  void ReadRestart(IO::DiscretizationReader& reader, std::string ds_condname, int condnum);
 
   /*!
   \brief Bessel function of orders 0 and 1
@@ -502,10 +502,10 @@ private:
   int order_;
 
   //! Type of the flow profile
-  string flowprofile_type_;
+  std::string flowprofile_type_;
 
   //! Prebiasing flag
-  string prebiasing_flag_;
+  std::string prebiasing_flag_;
 
   //! is +1 if inflow, else -1
   double flow_dir_;

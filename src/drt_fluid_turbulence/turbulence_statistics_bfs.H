@@ -76,7 +76,7 @@ public:
   */
   TurbulenceStatisticsBfs(RCP<DRT::Discretization> actdis,
                           Teuchos::ParameterList&           params,
-                          const string&            geotype);
+                          const std::string&            geotype);
 
   /*!
   \brief Destructor
@@ -266,7 +266,7 @@ private:
   RCP<Epetra_SerialDenseMatrix>     x2sumrhov_;
   RCP<Epetra_SerialDenseMatrix>     x2sumvT_;
 
-  void convertStringToGeoType(const string& geotype);
+  void convertStringToGeoType(const std::string& geotype);
 };
 
 }

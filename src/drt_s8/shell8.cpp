@@ -319,12 +319,12 @@ DRT::ELEMENTS::Shell8::~Shell8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8::Print(ostream& os) const
+void DRT::ELEMENTS::Shell8::Print(std::ostream& os) const
 {
   os << "Shell8 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 

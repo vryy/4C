@@ -719,7 +719,7 @@ protected:
   INPAR::FLUID::LinearisationAction newton_;
 
   //! kind of predictor used in nonlinear iteration
-  string  predictor_;
+  std::string  predictor_;
 
   //! @name restart variables
   int writestresses_;
@@ -757,7 +757,7 @@ protected:
   bool inconsistent_;
 
   /// flag for special turbulent flow
-  string special_flow_;
+  std::string special_flow_;
 
   /// flag for potential nonlinear boundary conditions
   bool nonlinearbc_;
@@ -766,10 +766,10 @@ protected:
   bool strong_redD_3d_coupling_;
 
   /// form of convective term
-  string convform_;
+  std::string convform_;
 
   /// fine-scale subgrid-viscosity flag
-  string fssgv_;
+  std::string fssgv_;
 
   /// cpu-time measures
   double  dtele_;

@@ -413,7 +413,7 @@ public:
   \param stuff (in)    : string that get's added to stuff
 
   */
-  static void AddtoPack(PackBuffer& data, const string& stuff);
+  static void AddtoPack(PackBuffer& data, const std::string& stuff);
 
   /*!
   \brief Add stuff to a char vector data
@@ -678,7 +678,7 @@ public:
   \param stuff (out)       : string to extract from data
 
   */
-  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, string& stuff);
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::string& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position

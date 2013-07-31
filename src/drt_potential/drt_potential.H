@@ -468,7 +468,7 @@ protected:
   //! get atomic density
   double GetAtomicDensity(
       const int                       elementId,
-      const string&                   conditionName,
+      const std::string&                   conditionName,
       const std::map<int,int >&       labelByElements
       );
   

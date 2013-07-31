@@ -981,14 +981,14 @@ void MAT::ElastHyper::ResponseStretches(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::VisNames(std::map<string,int>& names)
+void MAT::ElastHyper::VisNames(std::map<std::string,int>& names)
 {
   if (AnisotropicPrincipal() or AnisotropicModified())
   {
     std::vector<LINALG::Matrix<3,1> > fibervecs;
     GetFiberVecs(fibervecs);
     int vissize = fibervecs.size();
-    string fiber;
+    std::string fiber;
     for (int i = 0; i < vissize; i++)
     {
       std::ostringstream s;
@@ -1001,7 +1001,7 @@ void MAT::ElastHyper::VisNames(std::map<string,int>& names)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ElastHyper::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::ElastHyper::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (AnisotropicPrincipal() or AnisotropicModified())
   {
@@ -1012,7 +1012,7 @@ bool MAT::ElastHyper::VisData(const string& name, std::vector<double>& data, int
     {
       std::ostringstream s;
       s << "Fiber" << i+1;
-      string fiber;
+      std::string fiber;
       fiber = s.str();
       if (name == fiber)
       {

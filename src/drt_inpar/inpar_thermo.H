@@ -46,7 +46,7 @@ namespace THR
     dyna_expleuler  //!< forward Euler (explicit)
   };  // DynamicType()
 
-  //! Map time integrator to string
+  //! Map time integrator to std::string
   static inline const std::string DynamicTypeString(
     const enum DynamicType name  //!< enum to convert
     )
@@ -69,7 +69,7 @@ namespace THR
       return "ExplEuler";
       break;
     default :
-      dserror("Cannot make string for time integrator %d", name);
+      dserror("Cannot make std::string for time integrator %d", name);
       return "";
     }
   }  // DynamicTypeString()
@@ -102,7 +102,7 @@ namespace THR
                    //!<  (TR means trapezoidal rule.)
   };  // MidAverageEnum()
 
-  /// Map mid-averaging to string
+  /// Map mid-averaging to std::string
   static inline const std::string MidAverageString(
     const enum MidAverageEnum name  ///< enum to convert
     )
@@ -118,7 +118,7 @@ namespace THR
       return "TR-like";
       break;
     default :
-      dserror("Cannot make string for time integrator %d", name);
+      dserror("Cannot make std::string for time integrator %d", name);
       return "";
     }  // end switch (name)
   }  // MidAverageString
@@ -135,7 +135,7 @@ namespace THR
     soltech_newtonfull  //!< full Newton-Raphson iteration
   };
 
-  //! Map solution technique enum to string
+  //! Map solution technique enum to std::string
   static inline const std::string NonlinSolTechString(
     const enum NonlinSolTech name  //!< enum to convert
     )
@@ -149,7 +149,7 @@ namespace THR
       return "fullnewton";
       break;
      default :
-      dserror("Cannot make string for solution technique %d", name);
+      dserror("Cannot make std::string for solution technique %d", name);
       return "";
     }
   }
@@ -205,7 +205,7 @@ namespace THR
                    //!< Dirichlet BCs (i.e. the reduction to the test space).
   };
 
-  //! Map predictor enum term to string
+  //! Map predictor enum term to std::string
   static inline const std::string PredEnumString(
     const PredEnum name  //!< identifier
     )
@@ -225,7 +225,7 @@ namespace THR
       return "TangTemp";
       break;
     default :
-      dserror("Cannot make string for predictor %d", name);
+      dserror("Cannot make std::string for predictor %d", name);
       return "";
     }
   }
@@ -259,7 +259,7 @@ namespace THR
     heatflux_initial  //!< output of heat flux in initial configuration
   };
 
-  //! Map predictor enum term to string
+  //! Map predictor enum term to std::string
   static inline const std::string HeatFluxString(
     const HeatFluxType& name  //!< identifier
     )
@@ -276,7 +276,7 @@ namespace THR
       return "heatflux_initial";
       break;
     default :
-      dserror("Cannot make string for predictor %d", name);
+      dserror("Cannot make std::string for predictor %d", name);
       return "";
     }
   }
@@ -290,7 +290,7 @@ namespace THR
     tempgrad_initial  //!< output of thermal gradient in initial configuration
   };
 
-  //! Map predictor enum term to string
+  //! Map predictor enum term to std::string
   static inline const std::string TempGradString(
     const TempGradType& name  //!< identifier
     )
@@ -307,7 +307,7 @@ namespace THR
      return "tempgrad_initial";
      break;
    default :
-     dserror("Cannot make string for predictor %d", name);
+     dserror("Cannot make std::string for predictor %d", name);
      return "";
    }
   }
@@ -327,7 +327,7 @@ namespace THR
     norm_inf  //!< Maximum/infinity norm
   };
 
-  //! map enum term to string
+  //! map enum term to std::string
   static inline const std::string VectorNormString(
     const enum VectorNorm norm  //!< input enum term
     )
@@ -350,7 +350,7 @@ namespace THR
       return "Inf";
       break;
     default:
-      dserror("Cannot make string to vector norm %d", norm);
+      dserror("Cannot make std::string to vector norm %d", norm);
       return "";
     }
   }

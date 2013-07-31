@@ -91,7 +91,7 @@ public:
    *\brief Print this Manager
    *
    */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
    * \brief Get Epetra communicator
@@ -281,7 +281,7 @@ protected:
 } // namespace DRT
 
 // << operator
-ostream& operator << (ostream& os, const DRT::UTILS::LocsysManager& manager);
+std::ostream& operator << (std::ostream& os, const DRT::UTILS::LocsysManager& manager);
 
 
 #endif  // #ifndef DRT_LOCSYS_H

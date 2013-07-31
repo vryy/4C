@@ -1849,7 +1849,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //    entry was filled)
       for (int k = 0;k<numscal_;++k)
       {
-        //cout <<"ephinp_ "<< k<< ":  " <<ephinp_[k] << endl;
+        //std::cout <<"ephinp_ "<< k<< ":  " <<ephinp_[k] << std::endl;
         conint_[k] = funct_.Dot(ephinp_[k]);
       }
 
@@ -2193,14 +2193,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // there is at least one Dirichlet condition on this node
         if (dirichcond0.size() > 0)
         {
-          //cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
+          //std::cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<std::endl;
           const std::vector<int>*    onoff = dirichcond0[0]->Get<std::vector<int> >   ("onoff");
           for (int k=0; k<numscal_; ++k)
           {
             if ((*onoff)[k])
             {
-              //cout<<"Dirichlet is on for k="<<k<<endl;
-              //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
+              //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
+              //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<std::endl;
               const int fvi = vi*numdofpernode_+k;
               // We use the fact, that the rhs vector value for boundary nodes
               // is equivalent to the integrated negative normal flux
@@ -2229,7 +2229,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //const double faraday = INPAR::SCATRA::faraday_const;
       double val(0.0);
       const DRT::Node* const* nodes = ele->Nodes();
-      string condname = "Dirichlet";
+      std::string condname = "Dirichlet";
 
       for (int vi=0; vi<nen_; ++vi)
       {
@@ -2239,14 +2239,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // there is at least one Dirichlet condition on this node
         if (dirichcond0.size() > 0)
         {
-          //cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
+          //std::cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<std::endl;
           const std::vector<int>*    onoff = dirichcond0[0]->Get<std::vector<int> >   ("onoff");
           for (int k=0; k<numscal_; ++k)
           {
             if ((*onoff)[k])
             {
-              //cout<<"Dirichlet is on for k="<<k<<endl;
-              //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
+              //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
+              //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<std::endl;
               const int fvi = vi*numdofpernode_+k;
               // We use the fact, that the rhs vector value for boundary nodes
               // is equivalent to the integrated negative normal flux
@@ -2271,8 +2271,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
             //reacting species 0
             int k =0;
 
-            //cout<<"Dirichlet is on for k="<<k<<endl;
-            //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
+            //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
+            //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<std::endl;
             const int fvi = vi*numdofpernode_+numscal_;
             // We use the fact, that the rhs vector value for boundary nodes
             // is equivalent to the integrated negative normal flux
@@ -2432,7 +2432,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
           {
             // For storing additional data, we increase the vector for
             // diffusivity and valences by one!
-            cout<<"k = "<<k<<"   Did push back for diffus_ and valence_!"<<endl;
+            std::cout<<"k = "<<k<<"   Did push back for diffus_ and valence_!"<<std::endl;
             diffus_.push_back(actsinglemat->ElimDiffusivity());
             valence_.push_back(actsinglemat->ElimValence());
             diffusvalence_.push_back(valence_[numscal_]*diffus_[numscal_]);
@@ -2450,7 +2450,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
           else
             dserror("Something is wrong with eliminated ion species data");
           //if (ele->Id()==0)
-          //  cout<<"data: "<<diffus_[numscal_]<<"   "<<valence_[numscal_]<<endl;
+          //  std::cout<<"data: "<<diffus_[numscal_]<<"   "<<valence_[numscal_]<<std::endl;
           // data check:
           if (abs(diffus_[numscal_])< EPS13) dserror("No diffusivity for eliminated species read!");
           if (abs(valence_[numscal_])< EPS13) dserror("No valence for eliminated species read!");
@@ -4064,7 +4064,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
     timefac = params.get<double>("time factor");
     if (is_genalpha_)
     {
-      cout<<"changed timefac with alphaF"<<endl;
+      std::cout<<"changed timefac with alphaF"<<std::endl;
       alphaF = params.get<double>("alpha_F");
       timefac *= alphaF;
     }
@@ -4928,7 +4928,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         if(norm<1e-12)
         {
           norm=1e-12;
-          cout<<"warning norm of lin is set to 10e-12"<<endl;
+          std::cout<<"warning norm of lin is set to 10e-12"<<std::endl;
         }
 
         // output to screen
@@ -5690,10 +5690,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       tau_[k] = 0.5*h*xi/vel_norm;
 
 #if 0
-      cout<<"epe = "<<epe<<endl;
-      cout<<"xi_opt  = "<<xi<<endl;
-      cout<<"vel_norm  = "<<vel_norm<<endl;
-      cout<<"tau_opt = "<<tau_[k]<<endl<<endl;
+      std::cout<<"epe = "<<epe<<std::endl;
+      std::cout<<"xi_opt  = "<<xi<<std::endl;
+      std::cout<<"vel_norm  = "<<vel_norm<<std::endl;
+      std::cout<<"tau_opt = "<<tau_[k]<<std::endl<<std::endl;
 #endif
     }
     else tau_[k] = 0.0;
@@ -5709,7 +5709,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   } //switch (whichtau_)
 
 #if 0
-  cout<<"diffus  for k "<<k <<" is = "<<diffus<<endl;
+  std::cout<<"diffus  for k "<<k <<" is = "<<diffus<<std::endl;
 #endif
 #ifdef VISUALIZE_ELEMENT_DATA
   // visualize stabilization parameter
@@ -5849,7 +5849,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
 
   if (myfluidneumcond.size()==1)
   {
-    const string* condtype = myfluidneumcond[0]->Get<string>("type");
+    const std::string* condtype = myfluidneumcond[0]->Get<std::string>("type");
 
     // find out whether we will use a time curve
     const std::vector<int>* curve  = myfluidneumcond[0]->Get<std::vector<int> >("curve");
@@ -6063,12 +6063,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
 #if 0
   // DEBUG output
-  cout<<endl<<"values at GP:"<<endl;
-  cout<<"factor F/RT = "<<frt<<endl;
+  std::cout<<std::endl<<"values at GP:"<<std::endl;
+  std::cout<<"factor F/RT = "<<frt<<std::endl;
   for (int k=0;k<numscal_;++k)
-  {cout<<"conint_["<<k<<"] = "<<conint_[k]<<endl;}
+  {std::cout<<"conint_["<<k<<"] = "<<conint_[k]<<std::endl;}
   for (int k=0;k<nsd_;++k)
-  {cout<<"gradpot_["<<k<<"] = "<<gradpot_(k)<<endl;}
+  {std::cout<<"gradpot_["<<k<<"] = "<<gradpot_(k)<<std::endl;}
 #endif
 
 
@@ -6240,16 +6240,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     } // if (is_stationary_)
 
 #ifdef PRINT_ELCH_DEBUG
-    cout<<"tau["<<k<<"]    = "<<tau_[k]<<endl;
-    cout<<"taufac["<<k<<"] = "<<taufac<<endl;
+    std::cout<<"tau["<<k<<"]    = "<<tau_[k]<<std::endl;
+    std::cout<<"taufac["<<k<<"] = "<<taufac<<std::endl;
     if (tau_[k] != 0.0)
-      cout<<"residual["<<k<<"] = "<< residual<<endl;
-    cout<<"conv_eff_k    = "<<conv_eff_k<<endl;
-    cout<<"conv_ephinp_k  = "<<conv_ephinp_k<<endl;
-    cout<<"Dkzk_mig_ephinp_k = "<<Dkzk_mig_ephinp_k<<endl;
-    cout<<"diff_ephinp_k = "<<diff_ephinp_k<<endl;
-    cout<<"migrea_k      = "<<migrea_k <<endl;
-    cout<<endl;
+      std::cout<<"residual["<<k<<"] = "<< residual<<std::endl;
+    std::cout<<"conv_eff_k    = "<<conv_eff_k<<std::endl;
+    std::cout<<"conv_ephinp_k  = "<<conv_ephinp_k<<std::endl;
+    std::cout<<"Dkzk_mig_ephinp_k = "<<Dkzk_mig_ephinp_k<<std::endl;
+    std::cout<<"diff_ephinp_k = "<<diff_ephinp_k<<std::endl;
+    std::cout<<"migrea_k      = "<<migrea_k <<std::endl;
+    std::cout<<std::endl;
 #endif
 
     // experimental code part

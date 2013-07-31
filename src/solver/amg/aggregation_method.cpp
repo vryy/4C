@@ -61,7 +61,7 @@ void LINALG::AggregationMethod::PrintIntVectorInMatlabFormat(std::string fname, 
           os <<  "     GID/Point";
         os.width(20);
         os <<  "Value  ";
-        os << endl;
+        os << std::endl;
       }
       for (int i=0; i < NumMyElements1; i++)
       {
@@ -83,10 +83,10 @@ void LINALG::AggregationMethod::PrintIntVectorInMatlabFormat(std::string fname, 
           }
           os.width(20);
           os <<  (V.Values())[iii];
-          os << endl;
+          os << std::endl;
         }
       }
-      os << flush;
+      os << std::flush;
     }
 
     // Do a few global ops to give I/O a chance to complete
@@ -115,7 +115,7 @@ RCP<LINALG::AggregationMethod> LINALG::AggregationMethodFactory::Create(const st
   }
   catch(string str)
   {
-    cout << "Error: AggregationMethodFactory::Create: " << str << endl;
+    std::cout << "Error: AggregationMethodFactory::Create: " << str << std::endl;
     dserror("upps");
   }
   return null;

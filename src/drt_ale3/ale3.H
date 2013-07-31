@@ -230,7 +230,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return Ale3Type::Instance(); }
@@ -643,7 +643,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return Ale3SurfaceType::Instance(); }

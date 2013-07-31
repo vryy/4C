@@ -81,7 +81,7 @@ DRT::ELEMENTS::Ale3Surface::~Ale3Surface()
 }
 
 
-void DRT::ELEMENTS::Ale3Surface::Print(ostream& os) const
+void DRT::ELEMENTS::Ale3Surface::Print(std::ostream& os) const
 {
   os << "Ale3Surface ";
   Element::Print(os);

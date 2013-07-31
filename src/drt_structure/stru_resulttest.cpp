@@ -166,7 +166,7 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         }
       }
 
-      // catch position strings, which are not handled by structure result test
+      // catch position std::strings, which are not handled by structure result test
       if (unknownpos)
         dserror("Quantity '%s' not supported in structure testing", position.c_str());
 

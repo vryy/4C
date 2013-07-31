@@ -31,7 +31,7 @@ MAT::PAR::AAAgasser::AAAgasser(
 : Parameter(matdata),
 
   density_(matdata->GetDouble("DENS")),
-  vol_(matdata->Get<string>("VOL")),
+  vol_(matdata->Get<std::string>("VOL")),
   nue_(matdata->GetDouble("NUE")),
   beta_(matdata->GetDouble("BETA")),
   Clum_(matdata->GetDouble("CLUM")),

@@ -126,10 +126,10 @@ void ADAPTER::StructureRedAirway::InitVol()
 
   if (Discretization()->Comm().MyPID() == 0)
   {
-    cout << "------------------------ Initial tissue volumes ----------------------" << endl;
+    std::cout << "------------------------ Initial tissue volumes ----------------------" << std::endl;
     for (unsigned int i=0; i<Vn_.size(); ++i)
-      cout << "ID:  " << coupmap_->GID(i) << "     V:  " <<  Vn_[coupmap_->GID(i)] << endl;
-    cout << "----------------------------------------------------------------------" << endl;
+      std::cout << "ID:  " << coupmap_->GID(i) << "     V:  " <<  Vn_[coupmap_->GID(i)] << std::endl;
+    std::cout << "----------------------------------------------------------------------" << std::endl;
   }
 }
 

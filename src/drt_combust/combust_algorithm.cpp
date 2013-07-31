@@ -310,9 +310,9 @@ void COMBUST::Algorithm::TimeLoop()
       PrepareFGIteration();
 
       // solve linear G-function equation
-      //cout << "---------------------" << IO::endl;
-      //cout << "Level set deactivated!" << IO::endl;
-      //cout << "---------------------" << IO::endl;
+      //std::cout << "---------------------" << IO::endl;
+      //std::cout << "Level set deactivated!" << IO::endl;
+      //std::cout << "---------------------" << IO::endl;
       DoGfuncField();
 
       //(after Scatra transport but before reinitialization)
@@ -674,7 +674,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
       double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(icomp,lnode->X(),FluidField().Time(),NULL);
 
       // scaling for stretching fluid example // schott
-      //cout <<"Scaling with time-curve!!!!" << IO::endl;
+      //std::cout <<"Scaling with time-curve!!!!" << IO::endl;
       //value *= cos(PI*FluidField().Time()/500.0);
       //value = 0.0;
 

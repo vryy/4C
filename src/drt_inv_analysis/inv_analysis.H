@@ -99,7 +99,7 @@ private:
   double error_o_;
   double tol_;
 
-  string filename_;
+  std::string filename_;
 
   double kappa_multi_;
 

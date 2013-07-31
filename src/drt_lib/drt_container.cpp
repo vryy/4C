@@ -113,7 +113,7 @@ DRT::Container::~Container()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::Container& cont)
+std::ostream& operator << (std::ostream& os, const DRT::Container& cont)
 {
   cont.Print(os);
   return os;
@@ -257,7 +257,7 @@ void DRT::Container::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Container::Print(ostream& os) const
+void DRT::Container::Print(std::ostream& os) const
 {
   std::map<std::string,Teuchos::RCP<std::vector<int> > >::const_iterator curr;
   for (curr = intdata_.begin(); curr != intdata_.end(); ++curr)
@@ -283,11 +283,11 @@ void DRT::Container::Print(ostream& os) const
 
   std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
   for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
-    os << endl << matcurr->first << " :\n" << *(matcurr->second);
+    os << std::endl << matcurr->first << " :\n" << *(matcurr->second);
 
   std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator eveccurr;
   for (eveccurr=evecdata_.begin(); eveccurr!=evecdata_.end(); ++eveccurr)
-    os << endl << eveccurr->first << " (type Epetra_Vector or Epetra_MultiVector) \n";
+    os << std::endl << eveccurr->first << " (type Epetra_Vector or Epetra_MultiVector) \n";
 
   return;
 }
@@ -296,7 +296,7 @@ void DRT::Container::Print(ostream& os) const
  |  Add stuff to the container                                 (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, const int* data, const int num)
+void DRT::Container::Add(const std::string& name, const int* data, const int num)
 {
   // get data in a vector
   Teuchos::RCP<std::vector<int> > storage = Teuchos::rcp(new std::vector<int>(num));
@@ -312,7 +312,7 @@ void DRT::Container::Add(const string& name, const int* data, const int num)
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, Teuchos::RCP<std::vector<int> > data)
+void DRT::Container::Add(const std::string& name, Teuchos::RCP<std::vector<int> > data)
 {
   intdata_[name] = data;
   return;
@@ -322,7 +322,7 @@ void DRT::Container::Add(const string& name, Teuchos::RCP<std::vector<int> > dat
  |  Add stuff to the container                                 (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, const double* data, const int num)
+void DRT::Container::Add(const std::string& name, const double* data, const int num)
 {
   // get data in a vector
   Teuchos::RCP<std::vector<double> > storage = Teuchos::rcp(new std::vector<double>(num));
@@ -338,7 +338,7 @@ void DRT::Container::Add(const string& name, const double* data, const int num)
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, Teuchos::RCP<std::vector<double> > data)
+void DRT::Container::Add(const std::string& name, Teuchos::RCP<std::vector<double> > data)
 {
   doubledata_[name] = data;
   return;
@@ -348,7 +348,7 @@ void DRT::Container::Add(const string& name, Teuchos::RCP<std::vector<double> > 
  |  Add stuff to the container                                 (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, const string& data)
+void DRT::Container::Add(const std::string& name, const std::string& data)
 {
   // store the data
   stringdata_[name] = data;
@@ -359,7 +359,7 @@ void DRT::Container::Add(const string& name, const string& data)
  |  Add stuff to the container                                 (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& matrix)
+void DRT::Container::Add(const std::string& name, const Epetra_SerialDenseMatrix& matrix)
 {
   matdata_[name] = Teuchos::rcp(new Epetra_SerialDenseMatrix(matrix));
   return;
@@ -369,7 +369,7 @@ void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& mat
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, Teuchos::RCP<Epetra_SerialDenseMatrix> matrix)
+void DRT::Container::Add(const std::string& name, Teuchos::RCP<Epetra_SerialDenseMatrix> matrix)
 {
   matdata_[name] = matrix;
   return;
@@ -379,7 +379,7 @@ void DRT::Container::Add(const string& name, Teuchos::RCP<Epetra_SerialDenseMatr
  |  Add stuff to the container                                 (public) |
  |                                                            gee 03/10 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, Epetra_MultiVector& data)
+void DRT::Container::Add(const std::string& name, Epetra_MultiVector& data)
 {
   evecdata_[name] = Teuchos::rcp(new Epetra_MultiVector(data));
   return;
@@ -389,7 +389,7 @@ void DRT::Container::Add(const string& name, Epetra_MultiVector& data)
  |  Add stuff to the container                                 (public) |
  |                                                            gee 03/10 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const string& name, Epetra_Vector& data)
+void DRT::Container::Add(const std::string& name, Epetra_Vector& data)
 {
   evecdata_[name] = Teuchos::rcp(new Epetra_Vector(data));
   return;
@@ -399,7 +399,7 @@ void DRT::Container::Add(const string& name, Epetra_Vector& data)
  |  Delete stuff from the container                            (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Delete(const string& name)
+void DRT::Container::Delete(const std::string& name)
 {
   std::map<std::string,Teuchos::RCP<std::vector<int> > >::iterator icurr = intdata_.find(name);
   if (icurr != intdata_.end())
@@ -451,7 +451,7 @@ namespace DRT
  |  Get a std::vector<int> specialization                           (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> const std::vector<int>* Container::Get(const string& name) const
+  template<> const std::vector<int>* Container::Get(const std::string& name) const
   {
     std::map<std::string,Teuchos::RCP<std::vector<int> > >::const_iterator icurr = intdata_.find(name);
     if (icurr != intdata_.end())
@@ -462,7 +462,7 @@ namespace DRT
  |  Get a std::vector<double> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> const std::vector<double>* Container::Get(const string& name) const
+  template<> const std::vector<double>* Container::Get(const std::string& name) const
   {
     std::map<std::string,Teuchos::RCP<std::vector<double> > >::const_iterator dcurr = doubledata_.find(name);
     if (dcurr != doubledata_.end())
@@ -473,7 +473,7 @@ namespace DRT
  |  Get a string specialization                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> const string* Container::Get(const string& name) const
+  template<> const std::string* Container::Get(const std::string& name) const
   {
     std::map<std::string,std::string>::const_iterator scurr = stringdata_.find(name);
     if (scurr != stringdata_.end())
@@ -484,7 +484,7 @@ namespace DRT
  |  Get a Epetra_SerialDensMatrix specialization               (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> const Epetra_SerialDenseMatrix* Container::Get(const string& name) const
+  template<> const Epetra_SerialDenseMatrix* Container::Get(const std::string& name) const
   {
     std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator mcurr = matdata_.find(name);
     if (mcurr != matdata_.end())
@@ -495,7 +495,7 @@ namespace DRT
  |  Get a Epetra_MultiVector specialization                    (public) |
  |                                                            gee 03/10 |
  *----------------------------------------------------------------------*/
-  template<> const Epetra_MultiVector* Container::Get(const string& name) const
+  template<> const Epetra_MultiVector* Container::Get(const std::string& name) const
   {
     std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
@@ -506,7 +506,7 @@ namespace DRT
  |  Get a Epetra_MultiVector specialization                    (public) |
  |                                                            gee 03/10 |
  *----------------------------------------------------------------------*/
-  template<> const Epetra_Vector* Container::Get(const string& name) const
+  template<> const Epetra_Vector* Container::Get(const std::string& name) const
   {
     std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
@@ -525,7 +525,7 @@ namespace DRT
  |  Get a std::vector<int> specialization                           (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> std::vector<int>* Container::GetMutable(const string& name)
+  template<> std::vector<int>* Container::GetMutable(const std::string& name)
   {
     std::map<std::string,Teuchos::RCP<std::vector<int> > >::iterator icurr = intdata_.find(name);
     if (icurr != intdata_.end())
@@ -536,7 +536,7 @@ namespace DRT
  |  Get a std::vector<double> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> std::vector<double>* Container::GetMutable(const string& name)
+  template<> std::vector<double>* Container::GetMutable(const std::string& name)
   {
     std::map<std::string,Teuchos::RCP<std::vector<double> > >::iterator dcurr = doubledata_.find(name);
     if (dcurr != doubledata_.end())
@@ -547,7 +547,7 @@ namespace DRT
  |  Get a string specialization                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> string* Container::GetMutable(const string& name)
+  template<> std::string* Container::GetMutable(const std::string& name)
   {
     std::map<std::string,std::string>::iterator scurr = stringdata_.find(name);
     if (scurr != stringdata_.end())
@@ -558,7 +558,7 @@ namespace DRT
  |  Get a Epetra_SerialDensMatrix specialization               (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> Epetra_SerialDenseMatrix* Container::GetMutable(const string& name)
+  template<> Epetra_SerialDenseMatrix* Container::GetMutable(const std::string& name)
   {
     std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator mcurr = matdata_.find(name);
     if (mcurr != matdata_.end())
@@ -569,7 +569,7 @@ namespace DRT
  |  Get a Epetra_MultiVector specialization                    (public) |
  |                                                            gee 03/10 |
  *----------------------------------------------------------------------*/
-  template<> Epetra_MultiVector* Container::GetMutable(const string& name)
+  template<> Epetra_MultiVector* Container::GetMutable(const std::string& name)
   {
     std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
@@ -580,7 +580,7 @@ namespace DRT
  |  Get a Epetra_MultiVector specialization                    (public) |
  |                                                            gee 03/10 |
  *----------------------------------------------------------------------*/
-  template<> Epetra_Vector* Container::GetMutable(const string& name)
+  template<> Epetra_Vector* Container::GetMutable(const std::string& name)
   {
     std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::const_iterator curr = evecdata_.find(name);
     if (curr != evecdata_.end())
@@ -598,7 +598,7 @@ namespace DRT
  |  just get an int back                                       (public) |
  |                                                          chfoe 11/07 |
  *----------------------------------------------------------------------*/
-int DRT::Container::GetInt(const string& name) const
+int DRT::Container::GetInt(const std::string& name) const
 {
   const std::vector<int>* vecptr = Get<std::vector<int> >(name);
   if(vecptr==NULL) dserror("Integer %s cannot be read from the container.",name.c_str());
@@ -610,7 +610,7 @@ int DRT::Container::GetInt(const string& name) const
  |  just get a double back                                     (public) |
  |                                                             lw 12/07 |
  *----------------------------------------------------------------------*/
-double DRT::Container::GetDouble(const string& name) const
+double DRT::Container::GetDouble(const std::string& name) const
 {
   const std::vector<double>* vecptr = Get<std::vector<double> >(name);
   if(vecptr==NULL) dserror("Double %s cannot be read from the container.",name.c_str());

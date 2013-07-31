@@ -63,7 +63,7 @@ namespace XFEM
       //! destructor
       ~DofManager();
 
-      //! return string representation of the dofmanager
+      //! return std::string representation of the dofmanager
       std::string toString() const;
 
 

@@ -88,7 +88,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  DiscretizationXFEM(const string name, RCP<Epetra_Comm> comm)
+  DiscretizationXFEM(const std::string name, RCP<Epetra_Comm> comm)
   :DiscretizationFaces(name, comm) { extension_filled_ = false; }; // use base class constructor
 
   /*!
@@ -149,6 +149,7 @@ public:
        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
        Teuchos::RCP<Epetra_Vector>          systemvector1
   );
+
   void EvaluateEdgeBasedCombust(
        DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
        std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
@@ -161,6 +162,5 @@ public:
 
 }; // class DiscretizationXFEM
 } // namespace DRT
-
 
 #endif  // #ifndef DISCRET_XFEM_H

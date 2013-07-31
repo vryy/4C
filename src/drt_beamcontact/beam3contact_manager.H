@@ -82,7 +82,7 @@ public:
   \brief Print this beam3 contact manager
 
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Get problem discretization

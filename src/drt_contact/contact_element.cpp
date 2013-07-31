@@ -112,7 +112,7 @@ CONTACT::CoElement* CONTACT::CoElement::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::CoElement& element)
+std::ostream& operator << (std::ostream& os, const CONTACT::CoElement& element)
 {
   element.Print(os);
   return os;
@@ -122,7 +122,7 @@ ostream& operator << (ostream& os, const CONTACT::CoElement& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoElement::Print(ostream& os) const
+void CONTACT::CoElement::Print(std::ostream& os) const
 {
   os << "Contact ";
   MORTAR::MortarElement::Print(os);

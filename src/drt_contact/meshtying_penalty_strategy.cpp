@@ -123,7 +123,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
   if (Comm().MyPID()==0) std::cout << "in...." << t_end << " secs........";
 
   // print message
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
 
   return;
 }
@@ -166,7 +166,7 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
   MtAbstractStrategy::MeshInitialization(Xslavemod);
   
   // print message
-  if(Comm().MyPID()==0) std::cout << "done!\n" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!\n" << std::endl;
       
   return;
 }

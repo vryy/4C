@@ -89,7 +89,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   // copy conditions to a condition multimap
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( std::pair<std::string,DRT::Condition* >(string("PointNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(std::string("PointNeumann"),condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -97,7 +97,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("LineNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( std::pair<std::string,DRT::Condition* >(string("LineNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(std::string("LineNeumann"),condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -105,7 +105,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("SurfaceNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( std::pair<std::string,DRT::Condition* >(string("SurfaceNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(std::string("SurfaceNeumann"),condition_vec[i]));
   }
 
   // get XFEM Point Neumann conditions
@@ -113,7 +113,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("PointXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( std::pair<std::string,DRT::Condition* >(string("PointXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(std::string("PointXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Line Neumann conditions
@@ -121,7 +121,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("LineXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( std::pair<std::string,DRT::Condition* >(string("LineXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(std::string("LineXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Surface Neumann conditions
@@ -129,7 +129,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("SurfaceXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( std::pair<std::string,DRT::Condition* >(string("SurfaceXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(std::string("SurfaceXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Surface Neumann conditions
@@ -137,7 +137,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("VolXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( std::pair<std::string,DRT::Condition* >(string("VolXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(std::string("VolXFEMNeumann"),condition_vec[i]));
   }
 
   // evaluate standard Neumann conditions
@@ -190,9 +190,9 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
   //--------------------------------------------------------
   for (fool=condition.begin(); fool!=condition.end(); ++fool)
   {
-    if (fool->first != (string)"PointNeumann") continue;
+    if (fool->first != (std::string)"PointNeumann") continue;
     if (assemblemat && !systemvector.Comm().MyPID())
-      cout << "WARNING: No linearization of PointNeumann conditions" << endl;
+      std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
     DRT::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
@@ -233,8 +233,8 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
   // ATTENTION: VolumeNeumann conditions (bodyforces) are evaluated in Evaluate
   //--------------------------------------------------------
   for (fool=condition.begin(); fool!=condition.end(); ++fool)
-    if (fool->first == (string)"LineNeumann" ||
-        fool->first == (string)"SurfaceNeumann"
+    if (fool->first == (std::string)"LineNeumann" ||
+        fool->first == (std::string)"SurfaceNeumann"
     )
     {
       DRT::Condition& cond = *(fool->second);
@@ -295,11 +295,11 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
   //--------------------------------------------------------
   for (fool=condition.begin(); fool!=condition.end(); ++fool)
   {
-    if (fool->first == (string)"PointXFEMNeumann" ||
-        fool->first == (string)"LineXFEMNeumann" ||
-        fool->first == (string)"VolXFEMNeumann") dserror(" XFEM Point/Line/Vol Neumann conditions are not implemented yet!");
+    if (fool->first == (std::string)"PointXFEMNeumann" ||
+        fool->first == (std::string)"LineXFEMNeumann" ||
+        fool->first == (std::string)"VolXFEMNeumann") dserror(" XFEM Point/Line/Vol Neumann conditions are not implemented yet!");
 
-    if (fool->first == (string)"SurfaceXFEMNeumann")
+    if (fool->first == (std::string)"SurfaceXFEMNeumann")
     {
       DRT::Condition& cond = *(fool->second);
       std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
@@ -417,11 +417,11 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
           // xfem Neumann assembly
           if(eval_Neumann && xfem_eval_Neumann)
           {
-        	  cout << "/!\\ WARNING: XFEM_evaluate not implemented yet-> integrate integration cells" << endl;
+        	  std::cout << "/!\\ WARNING: XFEM_evaluate not implemented yet-> integrate integration cells" << std::endl;
           }
 
           // Print overview
-          cout << "Neumann-surface at element : " << ele_id << "\tevalNeumann: " << eval_Neumann << "\txfem_eval: " << xfem_eval_Neumann << endl;
+          std::cout << "Neumann-surface at element : " << ele_id << "\tevalNeumann: " << eval_Neumann << "\txfem_eval: " << xfem_eval_Neumann << std::endl;
 
 
       } // end loop condition surfaces
@@ -654,9 +654,9 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
   //							{
   //								GEO::CUT::IntegrationCell* intcell = *j;
   //
-  //								if(intcell->Shape() == DRT::Element::tet4) cout << "tet4 integration cell" << endl;
+  //								if(intcell->Shape() == DRT::Element::tet4) std::cout << "tet4 integration cell" << std::endl;
   //
-  //								if(intcell->Shape() == DRT::Element::hex8) cout << "hex8 integration cell" << endl;
+  //								if(intcell->Shape() == DRT::Element::hex8) std::cout << "hex8 integration cell" << std::endl;
   //
   //								std::vector<GEO::CUT::Point*> points = intcell->Points();
   ////								for(int i=0; i<points.size(); i++)
@@ -679,14 +679,14 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
   //								{
   ////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tri3, facet, points );
   ////												vc->NewTri3Cell(wizard_.CutWizard().Mesh().NormalMesh(), facet, points );
-  //									cout << "new tri3 cell created" << endl;
+  //									std::cout << "new tri3 cell created" << std::endl;
   //									vc->NewIntegrationCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::tet4, points );
   //
   //								}
   //								if(intcell->Shape() == DRT::Element::hex8)
   //								{
   ////												vc->NewBoundaryCell(wizard_.CutWizard().Mesh().NormalMesh(), DRT::Element::quad4, facet, points);
-  //									cout << "new quad4 cell created" << endl;
+  //									std::cout << "new quad4 cell created" << std::endl;
   //								}
   //							}
   //

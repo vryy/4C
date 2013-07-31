@@ -44,13 +44,13 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
     dserror("Error while opening EXODUS II file %s",exofilenamechar);
 
   // print version
-  cout<<"File "<<exofilename<<" was created with EXODUS II library version "<<exoversion<<endl;
+  std::cout<<"File "<<exofilename<<" was created with EXODUS II library version "<<exoversion<<std::endl;
 
   // read database parameters
   int num_elem_blk,num_node_sets,num_side_sets,num_nodes;
   char title[MAX_LINE_LENGTH+1];
   error = ex_get_init (exoid_, title, &baci_dim_, &num_nodes,&num_elem_, &num_elem_blk, &num_node_sets, &num_side_sets);
-  title_ = string(title);
+  title_ = std::string(title);
 
   num_dim_ = 3;
 
@@ -89,13 +89,13 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       //error = ex_get_elem_block (exoid_, epropID[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
       error = ex_get_elem_block (exoid_, ebids[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
       if (error != 0) dserror("exo error returned");
-      // prefer string to store element type
+      // prefer std::string to store element type
       std::string ele_type(mychar);
 
       // get ElementBlock name
       error = ex_get_name (exoid_, EX_ELEM_BLOCK, ebids[i], mychar);
       if (error != 0) dserror("exo error returned");
-      // prefer string to store name
+      // prefer std::string to store name
       std::string blockname(mychar);
 
       // get element connectivity
@@ -132,14 +132,14 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       // get NodeSet name
       char mychar[MAX_STR_LENGTH+1];
       error = ex_get_name (exoid_, EX_NODE_SET, npropID[i], mychar);
-      // prefer string to store name
+      // prefer std::string to store name
       std::string nodesetname(mychar);
 
       // get nodes in node set
       std::vector<int> node_set_node_list(num_nodes_in_set);
       error = ex_get_node_set (exoid_, npropID[i], &(node_set_node_list[0]));
       if (error > 0) 
-        cout<<"'ex_get_node_set' returned warning while reading node set "<<npropID[i]<<endl;
+        std::cout<<"'ex_get_node_set' returned warning while reading node set "<<npropID[i]<<std::endl;
       else if (error < 0) 
         dserror("error reading node set");
       std::set<int> nodes_in_set;
@@ -201,7 +201,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       // get SideSet name
       char mychar[MAX_STR_LENGTH+1];
       error = ex_get_name (exoid_, EX_SIDE_SET, spropID[i], mychar);
-      // prefer string to store name
+      // prefer std::string to store name
       std::string sidesetname(mychar);
 
       // Read SideSet params
@@ -349,7 +349,7 @@ void EXODUS::Mesh::CloseExo() const
 /*----------------------------------------------------------------------*
  |  Print method (public)                                      maf 12/07|
  *----------------------------------------------------------------------*/
-void EXODUS::Mesh::Print(ostream & os, bool verbose) const
+void EXODUS::Mesh::Print(std::ostream & os, bool verbose) const
 {
   os << "Mesh consists of ";
   os << GetNumNodes() << " Nodes, ";
@@ -428,7 +428,7 @@ EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
+void EXODUS::Mesh::PrintNodes(std::ostream& os, bool storeid) const
 {
   std::map<int,std::vector<double> >::const_iterator it;
   for (it=nodes_->begin(); it != nodes_->end(); it++){
@@ -439,7 +439,7 @@ void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
     for (int i=0; i < signed(mycoords.size()); i++ ){
       os << mycoords[i] << ",";
     }
-    os << endl;
+    os << std::endl;
   }
 }
 
@@ -484,7 +484,7 @@ void EXODUS::Mesh::SetNsd (const int nsd)
 /*----------------------------------------------------------------------*/
 std::map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
-  cout << "Creating SideSet Connectivity... " << endl;
+  std::cout << "Creating SideSet Connectivity... " << std::endl;
   fflush(stdout);
 
   Epetra_SerialComm Comm;
@@ -556,11 +556,11 @@ std::map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sides
     case ElementBlock::hex8: {actface = HexSideNumberExoToBaci(actface); hexc++; break;}
     case ElementBlock::pyramid5: {
 //      vector<std::vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
-//      for(unsigned int j=0; j<test.size(); ++j) PrintVec(cout,test[j]);
+//      for(unsigned int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
       actface = PyrSideNumberExoToBaci(actface); pyrc++; break;}
     case ElementBlock::wedge6: {
 //      vector<std::vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
-//      for(unsigned int j=0; j<test.size(); ++j) PrintVec(cout,test[j]);
+//      for(unsigned int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
       actface = actface; wedgc++; break;
       }
     default: {std::cout << ShapeToString(actshape) << ":" << std::endl; dserror("Parent Element Type not supported");}
@@ -570,14 +570,14 @@ std::map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sides
     std::vector<int> child;
     for(unsigned int j=0; j<childmap.size(); ++j)
       child.push_back(parent_ele[childmap[j]]);
-//    PrintVec(cout,childmap);
-//    PrintVec(cout,child);
+//    PrintVec(std::cout,childmap);
+//    PrintVec(std::cout,child);
     // some checking
     if ((child.size() != 3) && (child.size() != 4)){
-      PrintVec(cout,child);
-      PrintVec(cout,childmap);
-      PrintVec(cout,parent_ele);
-      cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size() << endl;
+      PrintVec(std::cout,child);
+      PrintVec(std::cout,childmap);
+      PrintVec(std::cout,parent_ele);
+      std::cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size() << std::endl;
       dserror("Child Ele error");
     }
     // insert child into SideSet Connectivity
@@ -588,14 +588,14 @@ std::map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sides
 //    tm1 = Teuchos::null;
 //    if (signed(i_side->first) == perc * signed(mysides.size())/100){
 //      Teuchos::TimeMonitor::summarize();
-//      cout << perc << " % of " << mysides.size() << " Sides done" << endl;
+//      std::cout << perc << " % of " << mysides.size() << " Sides done" << std::endl;
 //      perc ++;
 //      fflush(stdout);
 //    }
   }
   tm_total = Teuchos::null;
 //  Teuchos::TimeMonitor::summarize();
-  cout << "...done" << endl;
+  std::cout << "...done" << std::endl;
   fflush(stdout);
 
   return conn;
@@ -605,7 +605,7 @@ std::map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sides
 /*----------------------------------------------------------------------*/
 std::map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool checkoutside) const
 {
-  cout << "Creating SideSet Connectivity with outside-check... " << endl;
+  std::cout << "Creating SideSet Connectivity with outside-check... " << std::endl;
   fflush(stdout);
 
   Epetra_SerialComm Comm;
@@ -840,8 +840,8 @@ std::set<int> EXODUS::Mesh::GetSideSetNodes(const EXODUS::SideSet& sideset, cons
  *----------------------------------------------------------------------*/
 void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
 {
-  cout << "Writing Mesh into: " << newexofilename << endl;
-  //string newexofile(newexofilename);
+  std::cout << "Writing Mesh into: " << newexofilename << std::endl;
+  //std::string newexofile(newexofilename);
   //newexofile += ".exo";
   const char *newexofilechar = newexofilename.c_str();
 
@@ -996,7 +996,7 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
   // close file
   error = ex_close (exoid);
   if (error!=0) dserror("error closing exodus file");
-  cout << ".. finished" << endl;
+  std::cout << ".. finished" << std::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -1098,7 +1098,7 @@ std::map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(std::map<int,std
 			conn_mpID_elID.insert(std::pair<int,std::pair<int,int> >(counter_elements,eb_e));
 		}
 	}
-	//EXODUS::PrintMap(cout,conn_mpID_elID);
+	//EXODUS::PrintMap(std::cout,conn_mpID_elID);
 	return conn_mpID_elID;
 }
 
@@ -1146,7 +1146,7 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const std::string fname,const EXODUS::M
   Teuchos::RCP<std::map<int,std::vector<double> > > nodes= mymesh.GetNodes();
   std::ofstream f_system(fname.c_str());
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Mesh \" {" << endl;
+  gmshfilecontent << "View \" Mesh \" {" << std::endl;
 
   std::map<int,Teuchos::RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
   std::map<int,Teuchos::RCP<EXODUS::ElementBlock> >::const_iterator eb_it;
@@ -1171,10 +1171,10 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const std::string fname,const EXODUS::M
       }
       gmshfilecontent << "{";
       for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
-      gmshfilecontent << eleid << "};" << endl;
+      gmshfilecontent << eleid << "};" << std::endl;
     }
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
   return;
@@ -1188,7 +1188,7 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const std::string fname,const EXODUS::M
   Teuchos::RCP<std::map<int,std::vector<double> > > nodes= mymesh.GetNodes();
   std::ofstream f_system(fname.c_str());
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Mesh \" {" << endl;
+  gmshfilecontent << "View \" Mesh \" {" << std::endl;
 
   std::vector<int>::const_iterator id;
   std::map<int,Teuchos::RCP<EXODUS::ElementBlock> > ebs;
@@ -1219,10 +1219,10 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const std::string fname,const EXODUS::M
       }
       gmshfilecontent << "{";
       for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
-      gmshfilecontent << eleid << "};" << endl;
+      gmshfilecontent << eleid << "};" << std::endl;
     }
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
   return;
@@ -1235,7 +1235,7 @@ void EXODUS::Mesh::PlotNodesGmsh() const
 {
   std::ofstream f_system("mesh_all_nodes.gmsh");
   std::stringstream gmshfilecontent;
-	gmshfilecontent << "View \" Nodes \" {" << endl;
+	gmshfilecontent << "View \" Nodes \" {" << std::endl;
 
 	std::map<int,std::vector<double> >::const_iterator it;
 	//loop over all nodes
@@ -1252,9 +1252,9 @@ void EXODUS::Mesh::PlotNodesGmsh() const
 
     //writing of node-ID
     gmshfilecontent << "{";
-    gmshfilecontent << it->first << "," << it->first << "," << it->first << "};" << endl;
+    gmshfilecontent << it->first << "," << it->first << "," << it->first << "};" << std::endl;
   }
-	gmshfilecontent << "};" << endl;
+	gmshfilecontent << "};" << std::endl;
 	f_system << gmshfilecontent.str();
 	f_system.close();
 }
@@ -1267,7 +1267,7 @@ void EXODUS::Mesh::PlotConnGmsh(const std::string fname,const EXODUS::Mesh& myme
   Teuchos::RCP<std::map<int,std::vector<double> > > nodes= mymesh.GetNodes();
   std::ofstream f_system(fname.c_str());
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Connectivity \" {" << endl;
+  gmshfilecontent << "View \" Connectivity \" {" << std::endl;
 
   std::map<int,std::vector<int> > ::const_iterator it;
 
@@ -1289,9 +1289,9 @@ void EXODUS::Mesh::PlotConnGmsh(const std::string fname,const EXODUS::Mesh& myme
     }
     gmshfilecontent << "{";
     for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
-    gmshfilecontent << eleid << "};" << endl;
+    gmshfilecontent << eleid << "};" << std::endl;
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
   return;
@@ -1357,11 +1357,11 @@ void EXODUS::ElementBlock::FillEconnArray(int *connarray) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ElementBlock::Print(ostream& os, bool verbose) const
+void EXODUS::ElementBlock::Print(std::ostream& os, bool verbose) const
 {
-  os << "Element Block, named: " << name_ << endl
-  << "of Shape: " << ShapeToString(distype_) << endl
-  << "has " << GetNumEle() << " Elements" << endl;
+  os << "Element Block, named: " << name_ << std::endl
+  << "of Shape: " << ShapeToString(distype_) << std::endl
+  << "has " << GetNumEle() << " Elements" << std::endl;
   if (verbose){
     std::map<int,std::vector<int> >::const_iterator it;
     for (it=eleconn_->begin(); it != eleconn_->end(); it++){
@@ -1370,7 +1370,7 @@ void EXODUS::ElementBlock::Print(ostream& os, bool verbose) const
       for (int i=0; i < signed(myconn.size()); i++ ){
         os << myconn[i] << ",";
       }
-      os << endl;
+      os << std::endl;
     }
   }
 }
@@ -1394,16 +1394,16 @@ EXODUS::NodeSet::~NodeSet()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::NodeSet::Print(ostream& os, bool verbose) const
+void EXODUS::NodeSet::Print(std::ostream& os, bool verbose) const
 {
-  os << "Node Set, named: " << name_ << endl
-  << "Property Name: " << propname_ << endl
-  << "has " << GetNumNodes() << " Nodes" << endl;
+  os << "Node Set, named: " << name_ << std::endl
+  << "Property Name: " << propname_ << std::endl
+  << "has " << GetNumNodes() << " Nodes" << std::endl;
   if (verbose){
-    os << "Contains Nodes:" << endl;
+    os << "Contains Nodes:" << std::endl;
     std::set<int>::iterator it;
     for (it=nodeids_.begin(); it != nodeids_.end(); it++) os << *it << ",";
-    os << endl;
+    os << std::endl;
   }
 }
 
@@ -1490,7 +1490,7 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
     EXODUS::ElementBlock::Shape quadshape = quadblock->GetShape();
     if ((quadshape != EXODUS::ElementBlock::quad4) && (quadshape != EXODUS::ElementBlock::shell4)){
       //dserror("Only quad4 or shell4 in quad->tri conversion");
-      cout << "Warning! Only quad4 or shell4 in quad->tri conversion. Skipping EBlock" << endl;
+      std::cout << "Warning! Only quad4 or shell4 in quad->tri conversion. Skipping EBlock" << std::endl;
     } else {
 
       Teuchos::RCP<std::map<int,std::vector<int> > > quad_conn = quadblock->GetEleConn();
@@ -1518,7 +1518,7 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
   std::string newtitle = "trimesh";
   std::map<int,EXODUS::NodeSet> emptynodeset;
   std::map<int,EXODUS::SideSet> emptysideset;
-  if (basemesh.GetNumSideSets()>0) cout << "Warning! SideSets will not be transfered by quad->tri!" << endl;
+  if (basemesh.GetNumSideSets()>0) std::cout << "Warning! SideSets will not be transfered by quad->tri!" << std::endl;
   Teuchos::RCP<std::map<int,std::vector<double> > > emptynodes = Teuchos::rcp(new std::map<int,std::vector<double> >);
   EXODUS::Mesh trimesh(basemesh,emptynodes,neweblocks,emptynodeset,emptysideset,newtitle);
   return trimesh;
@@ -1560,7 +1560,7 @@ void EXODUS::PrintMap(std::ostream& os,const std::map<int,std::set<int> > mymap)
       for (i=actset.begin(); i != actset.end(); ++i) {
         os << *i << ",";
       }
-      os << endl;
+      os << std::endl;
   }
 }
 

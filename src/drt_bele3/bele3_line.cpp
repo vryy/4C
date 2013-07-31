@@ -108,7 +108,7 @@ DRT::ELEMENTS::Bele3Line::~Bele3Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Line::Print(ostream& os) const
+void DRT::ELEMENTS::Bele3Line::Print(std::ostream& os) const
 {
   os << "Bele3Line ";
   Element::Print(os);

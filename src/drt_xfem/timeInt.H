@@ -347,7 +347,7 @@ protected:
 
       // check convergence
       conv = sqrt(f(0)*f(0)+f(1)*f(1)+f(2)*f(2));
-      //cout << "iteration " << iter << ": -> |f|=" << conv << endl;
+      //std::cout << "iteration " << iter << ": -> |f|=" << conv << std::endl;
       if (conv <= 1.0E-12) break;
 
       //----------------------------------------------------
@@ -369,7 +369,7 @@ protected:
       eta(0) += incr(0);
       eta(1) += incr(1);
       alpha  += incr(2);
-      //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
+      //std::cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << std::endl;
     } // end iteration loop
     // change sign to preserve sign of G-function
     alpha = -alpha;
@@ -378,14 +378,14 @@ protected:
     if (conv > 1.0E-12)
     {
       alpha = 7777.7;
-      //        cout << "projection did not converge" << endl;
+      //        std::cout << "projection did not converge" << std::endl;
       //dserror("projection did not converge!");
     }
     else
     {
       converged = true;
-      //cout << "convergence criterion " << conv << endl;
-      //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
+      //std::cout << "convergence criterion " << conv << std::endl;
+      //std::cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << std::endl;
     }
 
     return converged;
@@ -545,7 +545,7 @@ protected:
     ~TimeIntData()
     {return;}
 
-    //! string representation of the data's state
+    //! std::string representation of the data's state
     std::string stateToString()
     {
       std::string output;
@@ -564,7 +564,7 @@ protected:
       return output;
     };
 
-    //! string representation of the data's type
+    //! std::string representation of the data's type
     std::string typeToString()
     {
       std::string output;
@@ -728,7 +728,7 @@ protected:
 
     LINALG::Matrix<nsd,numnode> shapeXYDeriv1(true); // first derivation of global shape functions
     shapeXYDeriv1.Multiply(xji,shapeXiDeriv1); // (dN/dx)^T = (dN/dxi)^T * J^(-T)
-    //  cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
+    //  std::cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << std::endl;
 
     // second  derivative of (enriched) shape function in local and global coordinates
     LINALG::Matrix<2*nsd,numnode> dummy1(true); // just needed for function call
@@ -856,7 +856,7 @@ protected:
 
     LINALG::Matrix<nsd,numnode> derxy(true); // first derivation of global shape functions
     derxy.Multiply(xji,shapeXiDeriv1); // (dN/dx)^T = (dN/dxi)^T * J^(-T)
-    //  cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << endl;
+    //  std::cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << std::endl;
 
     // second  derivative of (enriched) shape function in local and global coordinates
     LINALG::Matrix<2*nsd,numnode> dummy1(true); // just needed for function call
@@ -1227,7 +1227,7 @@ public:
           }
           else
           {
-            cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << endl;
+            std::cout << XFEM::PHYSICS::physVarToString(fieldenr->getField()) << std::endl;
             dserror("not implemented physical field!");
           }
           break;
@@ -1235,7 +1235,7 @@ public:
         case XFEM::Enrichment::typeUndefined :
         default :
         {
-          cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+          std::cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << std::endl;
           dserror("unknown enrichment type");
           break;
         }
@@ -1415,7 +1415,7 @@ protected:
         } // end loop over fieldenr
       } // end if fieldenrset is empty
     } // end loop over nodes
-    //  cout << "for element " << *element << " enrvalues are " << enrValues[0] << endl;
+    //  std::cout << "for element " << *element << " enrvalues are " << enrValues[0] << std::endl;
   }; // end template getDataOfIntersectedEle
 
   //! determine if new enrichment value shall be computed

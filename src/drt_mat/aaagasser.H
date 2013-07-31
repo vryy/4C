@@ -48,7 +48,7 @@ namespace MAT
       /// mass density
       const double density_;
       /// Type of volumetric Strain Energy Density ('OgSiMi' for Ogden-Simo-Miehe, 'SuBa' for Sussman-Bathe, 'SiTa' for Simo-Taylor)
-	    const string* vol_;
+	    const std::string* vol_;
       /// poisson's ratio
       const double nue_;
       /// parameter from Holzapfel

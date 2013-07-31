@@ -221,7 +221,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return So_tet10Type::Instance(); }
@@ -245,9 +245,9 @@ public:
   Example:
   \code
     // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<string,int>("Owner",1));
+    names.insert(std::pair<std::string,int>("Owner",1));
     // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<string,int>("StressesXYZ",6));
+    names.insert(std::pair<std::string,int>("StressesXYZ",6));
   \endcode*/
 
   virtual void VisNames(std::map<std::string,int>& names); ///< to be filled with key names of data to visualize and with int dimensions

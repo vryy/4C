@@ -109,7 +109,7 @@ DRT::ELEMENTS::Shell8Line::~Shell8Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8Line::Print(ostream& os) const
+void DRT::ELEMENTS::Shell8Line::Print(std::ostream& os) const
 {
   os << "Shell8Line ";
   Element::Print(os);

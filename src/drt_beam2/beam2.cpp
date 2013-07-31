@@ -152,7 +152,7 @@ DRT::ELEMENTS::Beam2::~Beam2()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam2::Print(ostream& os) const
+void DRT::ELEMENTS::Beam2::Print(std::ostream& os) const
 {
   os << "Beam2 ";
   Element::Print(os);

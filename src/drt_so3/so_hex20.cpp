@@ -263,12 +263,12 @@ DRT::ELEMENTS::So_hex20::~So_hex20()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex20::Print(ostream& os) const
+void DRT::ELEMENTS::So_hex20::Print(std::ostream& os) const
 {
   os << "So_hex20 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 
@@ -399,7 +399,7 @@ void DRT::ELEMENTS::So_hex20::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_hex20::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So_hex20::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (DRT::Element::VisData(name,data))

@@ -156,7 +156,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, DRT::Node*>& nodes,
                                       std::map<int, RCP<DRT::Element> >& elements,
-                                      const string& condname)
+                                      const std::string& condname)
 {
   int myrank = dis.Comm().MyPID();
   std::vector<DRT::Condition*> conds;
@@ -222,7 +222,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, DRT::Node*>& nodes,
                                       std::map<int, DRT::Node*>& gnodes,
                                       std::map<int, RCP<DRT::Element> >& elements,
-                                      const string& condname)
+                                      const std::string& condname)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -260,7 +260,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, std::map<int, DRT::Node*> >& nodes,
                                       std::map<int, std::map<int, DRT::Node*> >& gnodes,
                                       std::map<int, std::map<int, RCP<DRT::Element> > >& elements,
-                                      const string& condname)
+                                      const std::string& condname)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -297,7 +297,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, RCP<DRT::Element> >& elements,
-                                      const string& condname)
+                                      const std::string& condname)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
@@ -494,10 +494,10 @@ Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionedElementMap(const DRT::Discre
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     Teuchos::RCP<DRT::Discretization>  sourcedis,
-        const string&                  condname,
-        const string&                  discret_name,
-        const string&                  element_name,
-        const std::vector<string>&          conditions_to_copy
+        const std::string&                  condname,
+        const std::string&                  discret_name,
+        const std::string&                  element_name,
+        const std::vector<std::string>&          conditions_to_copy
         )
 {
   RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis->Comm().Clone());
@@ -598,7 +598,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   condnodecolvec.clear();
 
   // copy selected conditions to the new discretization
-  for (std::vector<string>::const_iterator conditername = conditions_to_copy.begin();
+  for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
        conditername != conditions_to_copy.end();
        ++conditername)
   {
@@ -626,7 +626,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 void DRT::UTILS::CollectElementsByConditionLabel(
     const DRT::Discretization&           discret,
     std::map<int,std::set<int> >&        elementsByLabel,
-    const string&                        name)
+    const std::string&                        name)
 {
   // Reset
   elementsByLabel.clear();

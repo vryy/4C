@@ -39,7 +39,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
 {
 
   if (myrank_==0)
-    cout<<"Performing scaling of linear system"<<endl;
+    std::cout<<"Performing scaling of linear system"<<std::endl;
 
   // The matrices are modified here. Do we have to revert the change later on?
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> matrcp = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(matrix);
@@ -57,7 +57,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
     {
       A00->InvRowSums(*srowsum_);
       if (myrank_==0)
-        cout<<"do left scaling momentum"<<endl;
+        std::cout<<"do left scaling momentum"<<std::endl;
 
       // we want to have the infnorm of the whole(!) row including
       // the off-diagonal block matrix M_(0,1)
@@ -77,7 +77,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
 #if 0
     A00->InvColSums(*scolsum_);
     if (myrank_==0)
-      cout<<"do right scaling velocity blocks"<<endl;
+      std::cout<<"do right scaling velocity blocks"<<std::endl;
 #else
     scolsum_->PutScalar(1.0);
 #endif
@@ -105,7 +105,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
     {
       A11->InvRowSums(*prowsum_);
       if (myrank_==0)
-        cout<<"do left scaling continuity"<<endl;
+        std::cout<<"do left scaling continuity"<<std::endl;
 
       // we want to have the infnorm of the whole(!) row including
       // the off-diagonal block matrix M_(1,0)
@@ -124,7 +124,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
 #if 0
     A->InvColSums(*pcolsum_);
     if (myrank_==0)
-      cout<<"do right scaling of pressure blocks"<<endl;
+      std::cout<<"do right scaling of pressure blocks"<<std::endl;
 #else
     pcolsum_->PutScalar(1.0);
 #endif
@@ -158,7 +158,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
 #if 1
     smat->EpetraMatrix()->InvRowSums(*srowsum_);
     if (myrank_==0)
-      cout<<"do left scaling of SparseMatrix"<<endl;
+      std::cout<<"do left scaling of SparseMatrix"<<std::endl;
 
     // leave continuity equation unscaled! -> scaling factors are one
     Teuchos::RCP<Epetra_Vector> px = velpressplitter_.ExtractVector(*srowsum_,1);
@@ -178,7 +178,7 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
 #if 1
     smat->EpetraMatrix()->InvColSums(*scolsum_);
     if (myrank_==0)
-      cout<<"do right scaling pressure"<<endl;
+      std::cout<<"do right scaling pressure"<<std::endl;
 
     // leave velocity columns equation unscaled!
     Teuchos::RCP<Epetra_Vector> ux = velpressplitter_.ExtractVector(*scolsum_,0);
@@ -201,19 +201,19 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(Teuchos::RCP<LINALG::SparseOpe
   prowsum_->MeanValue(&prownorm);
 
   if (myrank_==0)
-    cout<<"MEAN: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<endl;
+    std::cout<<"MEAN: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<std::endl;
 
   srowsum_->MinValue(&srownorm);
   scolsum_->MinValue(&scolnorm);
   prowsum_->MinValue(&prownorm);
   if (myrank_==0)
-    cout<<"MIN: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<endl;
+    std::cout<<"MIN: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<std::endl;
 
   srowsum_->MaxValue(&srownorm);
   scolsum_->MaxValue(&scolnorm);
   prowsum_->MaxValue(&prownorm);
   if (myrank_==0)
-    cout<<"MAX: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<endl;
+    std::cout<<"MAX: leftscalemom: "<<srownorm<<"  rightscale: "<<scolnorm<<"  leftscaleconti: "<<prownorm<<std::endl;
 
   return;
 }
@@ -272,7 +272,7 @@ void FLD::UTILS::FluidInfNormScaling::UnscaleSolution(Teuchos::RCP<LINALG::Spars
 
     // revert matrix and rhs here
     if (myrank_==0)
-      cout<<"Only unscaling for solution vector!!! Matrix untouched. "<<endl;
+      std::cout<<"Only unscaling for solution vector!!! Matrix untouched. "<<std::endl;
   }
 
   return;

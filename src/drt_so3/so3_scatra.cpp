@@ -136,7 +136,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Unpack(const std::vector<char>&
  |  print this element (public)                              vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Print(ostream& os) const
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Print(std::ostream& os) const
 {
   os << "So3_scatra ";
   return;

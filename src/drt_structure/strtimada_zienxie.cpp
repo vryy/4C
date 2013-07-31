@@ -77,7 +77,7 @@ void STR::TimAdaZienXie::IntegrateStepAuxiliar()
 
   // provide local discretisation error vector
   // l_{n+1}^{A2} = D_{n+1}^{ZX} - D_{n+1}^{A2}
-  //locerrdisn_->Update(-1.0, *disn, 1.0);
+  //lostd::cerrdisn_->Update(-1.0, *disn, 1.0);
 
   // see you
   return;

@@ -118,7 +118,7 @@ wear_(false)
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::CoAbstractStrategy& strategy)
+std::ostream& operator << (std::ostream& os, const CONTACT::CoAbstractStrategy& strategy)
 {
   strategy.Print(os);
   return os;
@@ -212,7 +212,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector
   // print balance information to screen
   if (Comm().MyPID()==0)
   {
-    std::cout << "**********************************************************" << endl;
+    std::cout << "**********************************************************" << std::endl;
     if (taverage>0)
     {
       printf("Parallel balance (time): %e (limit %e) \n",taverage,max_balance);
@@ -220,7 +220,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector
     }
     else
       printf("Parallel balance: t=0/restart \n");
-    std::cout << "**********************************************************" << endl;
+    std::cout << "**********************************************************" << std::endl;
   }
 
   // get out of here if simulation is still in balance
@@ -271,7 +271,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector
   Comm().Barrier();
   double t_end = Teuchos::Time::wallTime()-t_start;
   if (Comm().MyPID()==0)
-    std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << endl;
+    std::cout << "\nTime for parallel redistribution.........." << t_end << " secs\n" << std::endl;
 
   return;
 }
@@ -787,7 +787,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     //     << "\t MIN: " << minall << "\t MAX: " << maxall
     //     << "\t tmin: " << t_end_for_minall << "\t tmax: " << t_end_for_maxall
     //     << "\t TUNBALANCE: " << tunbalance_[(int)tunbalance_.size()-1]
-    //     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << endl;
+    //     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << std::endl;
   }
   //**********************************************************************
   
@@ -822,15 +822,15 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
   // output to screen
   if (Comm().MyPID()==0)
   {
-    std::cout << "--------------------------------------------------------------------------------" << endl;
+    std::cout << "--------------------------------------------------------------------------------" << std::endl;
     std::cout << std::setw(10) << "proc ID" << std::setw(16) << "# s/m pairs"
-         << std::setw(16) << "# s/m intpairs" << std::setw(16) << "# intcells" << endl;
+         << std::setw(16) << "# s/m intpairs" << std::setw(16) << "# intcells" << std::endl;
     for (int i=0; i<numproc; ++i)
     {
       std::cout << std::setw(10) << i << std::setw(16) << gsmpairs[i] << std::setw(16)
-           << gsmintpairs[i] << std::setw(16) << gintcells[i] << endl;
+           << gsmintpairs[i] << std::setw(16) << gintcells[i] << std::endl;
     }
-    std::cout << "--------------------------------------------------------------------------------" << endl;
+    std::cout << "--------------------------------------------------------------------------------" << std::endl;
   }
 #endif // #ifdef CONTACTSTATUS
   //**********************************************************************
@@ -913,29 +913,29 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
-    std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << endl;
+    std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
     interface_[i]->FDCheckNormalDeriv();
-    std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << endl;
+    std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
 #endif // #ifdef CONTACTFDNORMAL
   
 #ifdef CONTACTFDMORTARD
     // FD check of Mortar matrix D derivatives
-    std::cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
+    std::cout << " -- CONTACTFDMORTARD -----------------------------------" << std::endl;
     dmatrix_->Complete();
     if( dmatrix_->NormOne() )
       interface_[i]->FDCheckMortarDDeriv();
     dmatrix_->UnComplete();
-    std::cout << " -- CONTACTFDMORTARD -----------------------------------" << endl;
+    std::cout << " -- CONTACTFDMORTARD -----------------------------------" << std::endl;
 #endif // #ifdef CONTACTFDMORTARD
   
 #ifdef CONTACTFDMORTARM
     // FD check of Mortar matrix M derivatives
-    std::cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
+    std::cout << " -- CONTACTFDMORTARM -----------------------------------" << std::endl;
     mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
     if( mmatrix_->NormOne() )
         interface_[i]->FDCheckMortarMDeriv();
     mmatrix_->UnComplete();
-    std::cout << " -- CONTACTFDMORTARM -----------------------------------" << endl;
+    std::cout << " -- CONTACTFDMORTARM -----------------------------------" << std::endl;
 #endif // #ifdef CONTACTFDMORTARM
   }
 
@@ -2299,7 +2299,7 @@ void CONTACT::CoAbstractStrategy::ForceRefConfig()
   
   // print message
   if (Comm().MyPID()==0)
-    std::cout << "\n**** First output is w.r.t. the reference configuration! ****" << endl;
+    std::cout << "\n**** First output is w.r.t. the reference configuration! ****" << std::endl;
 
   // print active set
   PrintActiveSet();
@@ -2314,12 +2314,12 @@ void CONTACT::CoAbstractStrategy::ForceRefConfig()
 /*----------------------------------------------------------------------*
  |  print interfaces (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::Print(ostream& os) const
+void CONTACT::CoAbstractStrategy::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
   {
     os << "--------------------------------- CONTACT::CoAbstractStrategy\n"
-       << "Contact interfaces: " << (int)interface_.size() << endl
+       << "Contact interfaces: " << (int)interface_.size() << std::endl
        << "-------------------------------------------------------------\n";
   }
   Comm().Barrier();
@@ -2685,14 +2685,14 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   {
     if (friction_)
     {
-      std::cout << BLUE2_LIGHT  << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << endl;
-      std::cout << BLUE2_LIGHT  << "Total    STICK nodes:\t" << gactivenodes-gslipnodes << END_COLOR << endl;
-      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+      std::cout << BLUE2_LIGHT  << "Total     SLIP nodes:\t" << gslipnodes << END_COLOR << std::endl;
+      std::cout << BLUE2_LIGHT  << "Total    STICK nodes:\t" << gactivenodes-gslipnodes << END_COLOR << std::endl;
+      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << std::endl;
     }
     else
     {
-      std::cout << BLUE2_LIGHT <<  "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR << endl;
-      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << endl;
+      std::cout << BLUE2_LIGHT <<  "Total   ACTIVE nodes:\t" << gactivenodes << END_COLOR << std::endl;
+      std::cout << RED_LIGHT << "Total INACTIVE nodes:\t" << ginactivenodes << END_COLOR << std::endl;
     }
   }
 #endif // #ifdef CONTACTASOUTPUT

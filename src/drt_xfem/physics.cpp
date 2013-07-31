@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "physics.H"
 #include "../drt_lib/drt_dserror.H"
 
-// return a string representation for each enum value in XFEM::PHYSICS::Field
+// return a std::string representation for each enum value in XFEM::PHYSICS::Field
 std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
 {
   std::string text;

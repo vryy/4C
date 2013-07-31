@@ -727,7 +727,7 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
 
   if (myrank_ == 0)
   {
-    cout << "Impedance condition Id: " << condid << " area = " << pararea << endl;
+    std::cout << "Impedance condition Id: " << condid << " area = " << pararea << std::endl;
   }
   return pararea;
 }//FluidImplicitTimeInt::Area
@@ -842,7 +842,7 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, doub
   {
     impvalues_[i]=real(timedomain[i]);
     if (abs(imag(timedomain[i])) > 1E-4 )
-      cout << "error in imaginary part is = " << timedomain[i] << endl;
+      std::cout << "error in imaginary part is = " << timedomain[i] << std::endl;
   }
 
   return;
@@ -1048,10 +1048,10 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
   impedancetbc_->Norm2(&norm);
   if (!myrank_)
   {
-    cout<<"time: "<<time<<endl;
-    cout<<"dta: "<<dta<<endl;
-    cout<<"theta*dta: "<<theta*dta<<endl;
-    cout<<"pressure: "<<pressure<<endl;
+    std::cout<<"time: "<<time<<std::endl;
+    std::cout<<"dta: "<<dta<<std::endl;
+    std::cout<<"theta*dta: "<<theta*dta<<std::endl;
+    std::cout<<"pressure: "<<pressure<<std::endl;
     printf("IMPEDANCE_NORM: %10.5e\n",norm);
     printf("PRESSURE:  %10.5e\n",pressure);
     //    exit(0);
@@ -1383,7 +1383,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
   // calculate dc impedance of this, the present, vessel
   std::complex<double> zparentdc = 8.0 * mu * lscale / ( M_PI*radius*radius*radius ) + zdown;
   // DEBUG output
-  //cout << "generation: " << generation << endl;
+  //std::cout << "generation: " << generation << std::endl;
   return zparentdc;
 }
 
@@ -1444,7 +1444,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   // get impedances of downward vessels ...
   //*****************************************
   generation++;  // this is the next generation
-  //cout<<"generation "<<generation<<endl;
+  //std::cout<<"generation "<<generation<<std::endl;
   // left hand side:
     double leftradius  = alpha*radius;
     double rightradius = beta*radius;

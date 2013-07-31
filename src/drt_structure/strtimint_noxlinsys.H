@@ -187,8 +187,8 @@ namespace STR {
 
     /// throw an error
     virtual void throwError(
-      const string& functionName,
-      const string& errorMsg
+      const std::string& functionName,
+      const std::string& errorMsg
       ) const;
 
   protected:

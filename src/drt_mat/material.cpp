@@ -91,7 +91,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(matnum);
 
   // check what was read
-  //cout << *curmat << endl;
+  //std::cout << *curmat << std::endl;
 
   switch (curmat->Type())
   {

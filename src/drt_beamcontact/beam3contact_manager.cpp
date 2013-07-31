@@ -45,7 +45,7 @@ constrnorm_(0.0)
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
   RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
-  cdiscret_ = Teuchos::rcp(new DRT::Discretization((string)"beam contact",comm));
+  cdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"beam contact",comm));
 
   // loop over all column nodes of underlying problem discret and add
   for (int i=0;i<(ProblemDiscret().NodeColMap())->NumMyElements();++i)
@@ -172,15 +172,15 @@ constrnorm_(0.0)
 
   if(!pdiscret_.Comm().MyPID())
   {
-    cout << "========================= Beam Contact =========================" << endl;
-    cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<endl;
+    std::cout << "========================= Beam Contact =========================" << std::endl;
+    std::cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<std::endl;
   }
 
   // initialize octtree for contact search
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(scontact_,"BEAMS_OCTREE") != INPAR::CONTACT::boct_none)
   {
     if (!pdiscret_.Comm().MyPID())
-      cout << "Penalty parameter      = " << currentpp_ << endl;
+      std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
     tree_ = Teuchos::rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
   }
   else
@@ -189,7 +189,7 @@ constrnorm_(0.0)
     ComputeSearchRadius();
     tree_ = Teuchos::null;
     if(!pdiscret_.Comm().MyPID())
-      cout<<"\nBrute Force Search"<<endl;
+      std::cout<<"\nBrute Force Search"<<std::endl;
   }
 
 
@@ -197,10 +197,10 @@ constrnorm_(0.0)
   if(!pdiscret_.Comm().MyPID())
   {
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_penalty )
-      cout << "Strategy               = Penalty" << endl;
+      std::cout << "Strategy               = Penalty" << std::endl;
     else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_auglag)
-      cout << "Strategy               = Augmented Lagrange" << endl;
-    cout <<"================================================================\n" << endl;
+      std::cout << "Strategy               = Augmented Lagrange" << std::endl;
+    std::cout <<"================================================================\n" << std::endl;
   }
 
   return;
@@ -212,7 +212,7 @@ constrnorm_(0.0)
 void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
-    os << "Beam3 Contact Discretization:" << endl;
+    os << "Beam3 Contact Discretization:" << std::endl;
   
   ProblemDiscret().Print(os);
   return;
@@ -267,7 +267,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     double t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
     if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-      cout << "           Octree Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs" << endl;;
+      std::cout << "           Octree Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs" << std::endl;;
   }
   else
   {
@@ -285,7 +285,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     SearchPossibleContactPairs(currentpositions);
     double t_end = Teuchos::Time::wallTime() - t_start;
     if(!pdiscret_.Comm().MyPID())
-      cout << "\nBrute Force Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs at the moment" << endl;
+      std::cout << "\nBrute Force Search: " << t_end << " seconds, "<<(int)(pairs_.size()) << " pairs at the moment" << std::endl;
   }
   
   //**********************************************************************
@@ -313,14 +313,14 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
   //for (int i=0;i<(int)pairs_.size();++i)
   //{
-    //cout << pairs_[i]->Element1().Id() << "/" << pairs_[i]->Element2().Id() << endl;
+    //std::cout << pairs_[i]->Element1().Id() << "/" << pairs_[i]->Element2().Id() << std::endl;
   //}
 
   // decide wether the tangent field should be smoothed or not
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
   {
-    //cout << "Test BEAMS_SMOOTHING 2" << INPAR::CONTACT::bsm_none << endl;
+    //std::cout << "Test BEAMS_SMOOTHING 2" << INPAR::CONTACT::bsm_none << std::endl;
   }
   int beams_smoothing = DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING");
 
@@ -377,9 +377,9 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   stiffmatrix.Complete();
     
   // debug output
-  //cout << "fc:    " << endl << *fc_ << endl;
-  //cout << "fcold: " << endl << *fcold_ << endl;
-  //cout << "fres:  " << endl << fres << endl;
+  //std::cout << "fc:    " << std::endl << *fc_ << std::endl;
+  //std::cout << "fcold: " << std::endl << *fcold_ << std::endl;
+  //std::cout << "fres:  " << std::endl << fres << std::endl;
   
   return;
 }
@@ -742,10 +742,10 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
   // some information for the user
   if (Comm().MyPID()==0)
   {
-    cout << "Penalty parameter      = " << currentpp_ << endl;
-    cout << "Maximum element radius = " << maxeleradius << endl;
-    cout << "Maximum element length = " << maxelelength << endl;
-    cout << "Search radius          = " << searchradius_  << endl << endl;
+    std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
+    std::cout << "Maximum element radius = " << maxeleradius << std::endl;
+    std::cout << "Maximum element length = " << maxelelength << std::endl;
+    std::cout << "Search radius          = " << searchradius_  << std::endl << std::endl;
   }
   
   return;
@@ -941,7 +941,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     fp = fopen(filename.str().c_str(), "w");
   
     std::stringstream gmshfileheader;
-    // write output to temporary stringstream; 
+    // write output to temporary std::stringstream; 
     gmshfileheader <<"General.BackgroundGradient = 0;\n";
     gmshfileheader <<"View.LineType = 1;\n";
     gmshfileheader <<"View.LineWidth = 1.4;\n";
@@ -983,7 +983,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       gmshfilecontent << " U" << uzawastep << " N" << newtonstep;
 
     // finish step information
-    gmshfilecontent << " \" {" << endl;
+    gmshfilecontent << " \" {" << std::endl;
     
     // loop over all column elements on this processor
     for (int i=0;i<ColElements()->NumMyElements();++i)
@@ -1032,8 +1032,8 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     }
     
     // finish data section of this view by closing curley brackets (somehow needed to get color)
-    gmshfilecontent <<"SP(0.0,0.0,0.0){0.0,0.0};"<<endl;
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent <<"SP(0.0,0.0,0.0){0.0,0.0};"<<std::endl;
+    gmshfilecontent << "};" << std::endl;
     
     // write content into file and close
     fprintf(fp,gmshfilecontent.str().c_str());
@@ -1180,7 +1180,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
       if (pairs_[i]->GetNewGapStatus() == true)
       {
         pairs_[i]->InvertNormal();
-        cout << "Penetration to large, choose higher penalty parameter!" << endl;
+        std::cout << "Penetration to large, choose higher penalty parameter!" << std::endl;
       }
 #ifdef RELCONSTRTOL
       // Retrieve beam radii
@@ -1228,10 +1228,10 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
   if (Comm().MyPID()==0 && cnorm==NULL && ioparams.get<int>("STDOUTEVRY",0))
   {
-    cout << endl << "*********************************************"<<endl;
-    cout << "Global Constraint Norm = " << globnorm << endl;
-    if (updatepp) cout << "Updated penalty parameter = " << currentpp_ << endl;
-    cout<<"*********************************************"<<endl;
+    std::cout << std::endl << "*********************************************"<<std::endl;
+    std::cout << "Global Constraint Norm = " << globnorm << std::endl;
+    if (updatepp) std::cout << "Updated penalty parameter = " << currentpp_ << std::endl;
+    std::cout<<"*********************************************"<<std::endl;
   }
     
   // update class variable
@@ -1337,7 +1337,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
   {
     // begin output
     if (Comm().MyPID()==0)
-      cout << "\nActive contact set--------------------------------------------------------------\n";
+      std::cout << "\nActive contact set--------------------------------------------------------------\n";
     Comm().Barrier();
       
     // loop over all pairs
@@ -1373,7 +1373,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
 
     // end output
     Comm().Barrier();
-    if (Comm().MyPID()==0) cout << endl;
+    if (Comm().MyPID()==0) std::cout << std::endl;
   }
   return;
 }
@@ -1397,7 +1397,7 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
   Epetra_Vector fbearing(*ContactDiscret().DofRowMap());
   fbearing.Multiply(1.0,dirichtogglebc,fintbc,0.0);
   
-  // stringstream for filename
+  // std::stringstream for filename
   std::ostringstream filename;
   filename << "o/gmsh_output/reaction_forces_moments.csv";
   
@@ -1408,9 +1408,9 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
   if (timestep==1) fp = fopen(filename.str().c_str(), "w");
   else             fp = fopen(filename.str().c_str(), "a");
   
-  // stringstream for file content
+  // std::stringstream for file content
   std::ostringstream CSVcontent;
-  CSVcontent << endl << timestep <<",";
+  CSVcontent << std::endl << timestep <<",";
   
   // only implemented for one single node
   int i=0;  // CHOOSE YOUR NODE ID HERE!!!
@@ -1539,7 +1539,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
   gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
   gmshfilecontent << "){" << std::scientific;
-  gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+  gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
         
   // now the other prisms will be computed
   for (int sector=0;sector<n-1;++sector)
@@ -1583,7 +1583,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
     gmshfilecontent << "){" << std::scientific;
-    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
   }
 
    // BEISPIEL: output nodal normals
@@ -1593,7 +1593,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
    DRT::Node* currnode = thisele->Nodes()[k];
    double* coord = currnode->X();
    gmshfilecontent << "VP(" << std::scientific << coord[0] << "," << coord[1] << "," << coord[2] << ")";
-   gmshfilecontent << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+   gmshfilecontent << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << std::endl;
   }*/
 
    return;
@@ -1735,7 +1735,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
     gmshfilecontent << "){" << std::scientific;
-    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
           
     // now the other prisms will be computed
     for (int sector=0;sector<n-1;++sector)
@@ -1779,7 +1779,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
       gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
       gmshfilecontent << "){" << std::scientific;
-      gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << endl << endl;
+      gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
     }
   }   
   

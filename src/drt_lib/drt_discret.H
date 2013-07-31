@@ -157,7 +157,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  Discretization(const string name, RCP<Epetra_Comm> comm);
+  Discretization(const std::string name, RCP<Epetra_Comm> comm);
 
   /*!
   \brief Destructor
@@ -180,7 +180,7 @@ public:
   /*!
   \brief Get name of this discretization
   */
-  virtual inline const string& Name() const {return name_;}
+  virtual inline const std::string& Name() const {return name_;}
 
   /*!
   \brief Get flag indicating whether degrees of freedom where assigned
@@ -525,7 +525,7 @@ public:
 
   \note This is a collective call
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
 
   /*!
@@ -919,7 +919,7 @@ public:
            NOT be overwritten but stored twice in the discretization
 
   */
-  virtual void SetCondition(const string& name,Teuchos::RCP<Condition> cond);
+  virtual void SetCondition(const std::string& name,Teuchos::RCP<Condition> cond);
 
   /*!
   \brief Get all conditions with a certain name
@@ -938,9 +938,9 @@ public:
 
   \return Returns out.size()=0 if condition with that name does not exist
   */
-  virtual void GetCondition(const string& name, std::vector<DRT::Condition*>& out) const;
+  virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
-  virtual void GetCondition(const string& name, std::vector<Teuchos::RCP<Condition> >& out) const;
+  virtual void GetCondition(const std::string& name, std::vector<Teuchos::RCP<Condition> >& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -959,7 +959,7 @@ public:
 
   \return Returns NULL if condition with that name does not exist
   */
-  virtual DRT::Condition* GetCondition(const string& name) const;
+  virtual DRT::Condition* GetCondition(const std::string& name) const;
 
   /// return all condition names defined in this discretization
   virtual void GetConditionNames( std::vector<std::string> & names ) const;
@@ -1234,7 +1234,7 @@ public:
 
   \note This class will not take ownership or in any way modify the solution vector.
   */
-  virtual void SetState(unsigned nds,const string& name,RCP<const Epetra_Vector> state);
+  virtual void SetState(unsigned nds,const std::string& name,RCP<const Epetra_Vector> state);
 
   /*!
   \brief Get a reference to a data vector
@@ -1248,12 +1248,12 @@ public:
 
   \return Reference to solution state
   */
-  virtual RCP<const Epetra_Vector> GetState(unsigned nds,const string& name) const
+  virtual RCP<const Epetra_Vector> GetState(unsigned nds,const std::string& name) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     if (state_.size()<=nds)
       return Teuchos::null;
-    std::map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    std::map<std::string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     if (fool==state_[nds].end()) dserror("Cannot find state %s",&name[0]);
     else return fool->second;
     return Teuchos::null;
@@ -1264,12 +1264,12 @@ public:
     \param nds (in): number of dofset
     \param name (in): Name of solution state
    */
-  virtual bool HasState(unsigned nds,const string& name) const
+  virtual bool HasState(unsigned nds,const std::string& name) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     if (state_.size()<=nds)
       return false;
-    std::map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    std::map<std::string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     return fool!=state_[nds].end();
   }
 
@@ -1299,7 +1299,7 @@ public:
 
   \note This class will not take ownership or in any way modify the solution vector.
   */
-  virtual void SetState(const string& name,RCP<const Epetra_Vector> state) { SetState(0,name,state); }
+  virtual void SetState(const std::string& name,RCP<const Epetra_Vector> state) { SetState(0,name,state); }
 
   /*!
   \brief Get a reference to a data vector
@@ -1312,13 +1312,13 @@ public:
 
   \return Reference to solution state
   */
-  virtual RCP<const Epetra_Vector> GetState(const string& name) const { return GetState(0,name); }
+  virtual RCP<const Epetra_Vector> GetState(const std::string& name) const { return GetState(0,name); }
 
   /*!
     \brief Tell whether a state vector has been set
     \param name (in): Name of solution state
    */
-  virtual bool HasState(const string& name) const { return HasState(0,name); }
+  virtual bool HasState(const std::string& name) const { return HasState(0,name); }
 
   /*!
   \brief Call elements to evaluate
@@ -1529,7 +1529,7 @@ public:
   (
     Teuchos::ParameterList& params,  ///< List of parameters for use at element level
     RCP<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
-    const string& condstring, ///< Name of condition to be evaluated
+    const std::string& condstring, ///< Name of condition to be evaluated
     const int condid=-1  ///< condition ID
   );
 
@@ -1545,7 +1545,7 @@ public:
   virtual void EvaluateCondition
   (
     Teuchos::ParameterList& params, ///< List of parameters for use at element level
-    const string& condstring,  ///< Name of condition to be evaluated
+    const std::string& condstring,  ///< Name of condition to be evaluated
     const int condid=-1  ///< condidition ID
   );
 
@@ -1554,7 +1554,7 @@ public:
    (
      Teuchos::ParameterList& params,
      DRT::AssembleStrategy & strategy,
-     const string& condstring,
+     const std::string& condstring,
      const int condid=-1
    );
 
@@ -1595,7 +1595,7 @@ public:
     RCP<Epetra_Vector> systemvector1,
     RCP<Epetra_Vector>    systemvector2,
     RCP<Epetra_Vector>    systemvector3,
-    const string& condstring,
+    const std::string& condstring,
     const int condid=-1
   );
 
@@ -1678,7 +1678,7 @@ public:
   the local pressure DOF id, namely {3}.
 
   */
-  void EvaluateInitialField(const string& fieldstring,
+  void EvaluateInitialField(const std::string& fieldstring,
                             RCP<Epetra_Vector> fieldvector,
                             const std::vector<int> locids
   );
@@ -1727,7 +1727,7 @@ public:
     \note Filled()=true is a prerequisite
    */
   RCP<std::vector<char> > PackCondition(
-          const string condname     ///< name of condition as it is used in GetCondition() or SetCondition()
+          const std::string condname     ///< name of condition as it is used in GetCondition() or SetCondition()
           ) const;
 
   /*!
@@ -1765,7 +1765,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackCondition(const RCP<std::vector<char> > e, const string condname);
+  void UnPackCondition(const RCP<std::vector<char> > e, const std::string condname);
 
   //@}
 
@@ -1847,26 +1847,26 @@ private:
   \brief Build the geometry of lines for a certain line condition
 
   */
-  virtual void BuildLinesinCondition(const string name,RCP<DRT::Condition> cond);
+  virtual void BuildLinesinCondition(const std::string name,RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of surfaces for a certain surface condition
 
   */
-  virtual void BuildSurfacesinCondition(const string name,RCP<DRT::Condition> cond);
+  virtual void BuildSurfacesinCondition(const std::string name,RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of volumes for a certain volume condition
 
   */
-  virtual void BuildVolumesinCondition(const string name,RCP<DRT::Condition> cond);
+  virtual void BuildVolumesinCondition(const std::string name,RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of surfaces belonging to the structure-fluid
   volume coupling condition -> this is special since an associated volume
   conditions also needs to be considered
   */
-  void FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name);
+  void FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
 
 
 protected:
@@ -1915,7 +1915,7 @@ protected:
   virtual void Reset(bool killdofs = true);
 
   // internal data
-  string                                name_;              // name of this discretization
+  std::string                                name_;              // name of this discretization
   Teuchos::RCP<Epetra_Comm>             comm_;              // an Epetra_comm
   bool                                  filled_;            // flag indicating whether getOrganized has been called
   bool                                  havedof_;           // flag indicating whether degrees of freedom where assigned
@@ -1932,9 +1932,9 @@ protected:
   std::vector<DRT::Node*>                nodecolptr_;        // vector of pointers to column nodes for faster access
   std::map<int,Teuchos::RCP<DRT::Node> > node_;              // map from nodal Gid to node pointers
 
-  std::vector<std::map<string,Teuchos::RCP<const Epetra_Vector> > > state_; // map of references to solution states
+  std::vector<std::map<std::string,Teuchos::RCP<const Epetra_Vector> > > state_; // map of references to solution states
 
-  std::multimap<string,Teuchos::RCP<Condition> > condition_; // some conditions e.g. BCs
+  std::multimap<std::string,Teuchos::RCP<Condition> > condition_; // some conditions e.g. BCs
 
   std::vector<Teuchos::RCP<DofSet> >             dofsets_;   // set of DofSets
 }; // class Discretization

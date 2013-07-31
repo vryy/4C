@@ -61,8 +61,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -284,7 +284,7 @@ private:
 
         Teuchos::RCP<XFEM::ElementDofManager> GetEleDofManager() const { return eleDofManager_; }
 
-        void Print(ostream& os) const;
+        void Print(std::ostream& os) const;
 
         virtual DRT::ElementType & ElementType() const
         { return Combust3Type::Instance(); }
@@ -385,8 +385,8 @@ private:
           dynamic_smagorinsky
         };
 
-        //! map that converts strings to actions (stabilization)
-        static std::map<string,StabilisationAction>          stabstrtoact_;
+        //! map that converts std::strings to actions (stabilization)
+        static std::map<std::string,StabilisationAction>          stabstrtoact_;
 
         //! store information about the unknowns of this element
         //!
@@ -507,10 +507,10 @@ private:
             const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
         );
 
-        ActionType convertStringToActionType(const string& action) const;
+        ActionType convertStringToActionType(const std::string& action) const;
 
-        //! convert string to stabilization action
-        StabilisationAction ConvertStringToStabAction (const string& action) const;
+        //! convert std::string to stabilization action
+        StabilisationAction ConvertStringToStabAction (const std::string& action) const;
 
     }; // class Combust3
 
@@ -599,7 +599,7 @@ private:
 
         virtual int NumDofPerElement() const { return 0; }
 
-        void Print(ostream& os) const;
+        void Print(std::ostream& os) const;
 
         virtual DRT::ElementType & ElementType() const
         { return Combust3SurfaceType::Instance(); }
@@ -791,7 +791,7 @@ private:
 
         virtual int NumDofPerElement() const { return 0; }
 
-        void Print(ostream& os) const;
+        void Print(std::ostream& os) const;
 
         virtual DRT::ElementType & ElementType() const
         { return Combust3LineType::Instance(); }

@@ -138,7 +138,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
                       << "  res=" << res
                       << "  eps*r(0,0)=" << eps_*r(0,0)
                       << "  r(k,k)=" << r(k,k)
-                      << endl;
+                      << std::endl;
       }
     }
     else
@@ -178,7 +178,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
                       << "  eps*r(0,0)=" << std::scientific << eps_*r(0,0)
                       << "  r(k,k)=" << std::scientific << r(k,k)
                       << "  time=" << std::scientific << t.ElapsedTime()
-                      << endl;
+                      << std::endl;
       }
     }
 
@@ -235,7 +235,7 @@ void NOX::FSI::MinimalPolynomial::throwError(const std::string& functionName,
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "MinimalPolynomial::" << functionName
-                    << " - " << errorMsg << endl;
+                    << " - " << errorMsg << std::endl;
     throw "NOX Error";
 }
 

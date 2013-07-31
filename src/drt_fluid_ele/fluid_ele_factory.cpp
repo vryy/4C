@@ -103,7 +103,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(DRT::
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(string problem)
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(std::string problem)
 {
   if (problem == "std")
     return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance();
@@ -153,7 +153,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(string problem)
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(std::string problem)
 {
   if (problem == "xfem")
     return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
@@ -199,7 +199,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplMeshfr
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeMeshfree(string problem)
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeMeshfree(std::string problem)
 {
   if (problem == "std_meshfree")
     return NULL;//DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();

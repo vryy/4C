@@ -398,7 +398,7 @@ std::ostream& operator << (std::ostream& os, const DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  Print discretization (public)                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Print(ostream& os) const
+void DRT::Discretization::Print(std::ostream& os) const
 {
   int numglobalelements = 0;
   int numglobalnodes    = 0;
@@ -427,7 +427,7 @@ void DRT::Discretization::Print(ostream& os) const
   if (Comm().MyPID()==0)
   {
     os << "--------------------------------------------------\n";
-    os << "Discretization: " << Name() << endl;
+    os << "Discretization: " << Name() << std::endl;
     os << "--------------------------------------------------\n";
     os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";
     os << "--------------------------------------------------\n";
@@ -456,9 +456,9 @@ void DRT::Discretization::Print(ostream& os) const
             for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
-        os << endl;
+        os << std::endl;
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }
@@ -481,9 +481,9 @@ void DRT::Discretization::Print(ostream& os) const
             for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
           }
         }
-        os << endl;
+        os << std::endl;
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }
@@ -502,10 +502,10 @@ void DRT::Discretization::Print(ostream& os) const
         for (curr=condition_.begin(); curr != condition_.end(); ++curr)
         {
           os << curr->first << " ";
-          os << *(curr->second) << endl;
+          os << *(curr->second) << std::endl;
         }
       }
-      os << endl;
+      os << std::endl;
     }
     Comm().Barrier();
   }
@@ -598,7 +598,7 @@ void DRT::Discretization::ReplaceDofSet(RCP<DofSet> newdofset, bool replaceinsta
 /*----------------------------------------------------------------------*
  |  set a reference to a data vector (public)                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetState(unsigned nds,const string& name,RCP<const Epetra_Vector> state)
+void DRT::Discretization::SetState(unsigned nds,const std::string& name,RCP<const Epetra_Vector> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::SetState");
 
@@ -636,7 +636,7 @@ void DRT::Discretization::SetState(unsigned nds,const string& name,RCP<const Epe
  |  Set a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetCondition(const string& name,RCP<Condition> cond)
+void DRT::Discretization::SetCondition(const std::string& name,RCP<Condition> cond)
 {
   condition_.insert(std::pair<std::string,RCP<Condition> >(name,cond));
   filled_ = false;
@@ -647,7 +647,7 @@ void DRT::Discretization::SetCondition(const string& name,RCP<Condition> cond)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::GetCondition(const string& name,std::vector<DRT::Condition*>& out) const
+void DRT::Discretization::GetCondition(const std::string& name,std::vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
@@ -666,7 +666,7 @@ void DRT::Discretization::GetCondition(const string& name,std::vector<DRT::Condi
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::GetCondition(const string& name,std::vector<Teuchos::RCP<Condition> >& out) const
+void DRT::Discretization::GetCondition(const std::string& name,std::vector<Teuchos::RCP<Condition> >& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
@@ -686,7 +686,7 @@ void DRT::Discretization::GetCondition(const string& name,std::vector<Teuchos::R
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Discretization::GetCondition(const string& name) const
+DRT::Condition* DRT::Discretization::GetCondition(const std::string& name) const
 {
   std::multimap<std::string,RCP<Condition> >::const_iterator curr =
                                          condition_.find(name);

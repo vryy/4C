@@ -204,11 +204,11 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   }
 
 #if 0
-  cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
-  cout<<"sysmat: "<<elemat1_epetra<<endl;
-  cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
-  cout<<"rhs: "<<elevec1_epetra<<endl;
-  cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
+  std::cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
+  std::cout<<"sysmat: "<<elemat1_epetra<<std::endl;
+  std::cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
+  std::cout<<"rhs: "<<elevec1_epetra<<std::endl;
+  std::cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
 #endif
 
   return 0;
@@ -291,9 +291,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   }
 
 #if 0
-  cout<<"!!!!!!!!!!!!-----------------------!!!!!!!!!!!!"<<endl;
-  cout<<"!!!!!!!!!!!!------ BRILLIANT ------!!!!!!!!!!!!"<<endl;
-  cout<<"!!!!!!!!!!!!-----------------------!!!!!!!!!!!!"<<endl;
+  std::cout<<"!!!!!!!!!!!!-----------------------!!!!!!!!!!!!"<<std::endl;
+  std::cout<<"!!!!!!!!!!!!------ BRILLIANT ------!!!!!!!!!!!!"<<std::endl;
+  std::cout<<"!!!!!!!!!!!!-----------------------!!!!!!!!!!!!"<<std::endl;
 #endif
 
 }//AcinusImpl::Initial
@@ -329,10 +329,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     Rt = actmat->Viscosity1();
     Ra = actmat->Viscosity2();
 #if 0
-    cout<<"E1: "<<E1<<endl;
-    cout<<"E2: "<<E2<<endl;
-    cout<<"Rt: "<<Rt<<endl;
-    cout<<"Ra: "<<Ra<<endl;
+    std::cout<<"E1: "<<E1<<std::endl;
+    std::cout<<"E2: "<<E2<<std::endl;
+    std::cout<<"Rt: "<<Rt<<std::endl;
+    std::cout<<"Ra: "<<Ra<<std::endl;
 #endif
   }
   else
@@ -413,8 +413,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
   ele->getParams("AcinusVolume",VolAcinus);
   double volAlvDuct;
   ele->getParams("AlveolarDuctVolume",volAlvDuct);
-  //  cout<<"Acinus Vol: "<<VolAcinus<<endl;
-  //  cout<<"AlvDuc Vol: "<<volAlvDuct<<endl;
+  //  std::cout<<"Acinus Vol: "<<VolAcinus<<std::endl;
+  //  std::cout<<"AlvDuc Vol: "<<volAlvDuct<<std::endl;
   const double NumOfAcini = double(floor(VolAcinus/volAlvDuct));
   
   if (NumOfAcini < 1.0)
@@ -535,16 +535,16 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     dpnpi2_dt = (2*b+d*c*exp(d*dvnp)*(1+d*dvnp) + c*d*exp(d*dvnp))*(dvnp-dvn)/dt + (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))/dt;
     
 #if 0
-    cout<<"+------+++++++ DEBUG +++++++------+"<<endl;
-    cout<<"pnpi: "<<pnpi<<endl;
-    cout<<"dvnp: "<<dvnp<<endl;
-    cout<<"pnpi2: "<<pnpi2<<endl;
-    cout<<"dpnpi_dt: "<<dpnpi_dt<<endl;
-    cout<<"dvn: "<<dvn<<endl;
-    cout<<"dt: "<<dt<<endl;
-    cout<<"dpnpi2_dt: "<<dpnpi2_dt<<endl;
-    cout<<"qn: "<<qn<<endl;
-    cout<<"+------+++++++ DEBUG +++++++------+"<<endl;
+    std::cout<<"+------+++++++ DEBUG +++++++------+"<<std::endl;
+    std::cout<<"pnpi: "<<pnpi<<std::endl;
+    std::cout<<"dvnp: "<<dvnp<<std::endl;
+    std::cout<<"pnpi2: "<<pnpi2<<std::endl;
+    std::cout<<"dpnpi_dt: "<<dpnpi_dt<<std::endl;
+    std::cout<<"dvn: "<<dvn<<std::endl;
+    std::cout<<"dt: "<<dt<<std::endl;
+    std::cout<<"dpnpi2_dt: "<<dpnpi2_dt<<std::endl;
+    std::cout<<"qn: "<<qn<<std::endl;
+    std::cout<<"+------+++++++ DEBUG +++++++------+"<<std::endl;
 #endif
     
     term_nonlin = pnpi + pnpi2*(-(dvnp) +(qn/NumOfAcini)*dt/2 + dvn);
@@ -553,11 +553,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     kq_np = kq_np + dpnpi2_dt*Rt/E2/2*dt;
     
 #if 0
-    cout<<"+------------- DEBUG -------------+"<<endl;
-    cout<<"NumOfAcini: "<<NumOfAcini<<endl;
-    cout<<"kp_np: "<< kp_np<<"\t"<<"kp_n: "<<kp_n<<endl;
-    cout<<"kq_np: "<< kq_np<<"\t"<<"kq_n: "<<kq_n<<"\t"<<"term_nonlin: "<<term_nonlin<<endl;
-    cout<<"+------------- DEBUG -------------+"<<endl;
+    std::cout<<"+------------- DEBUG -------------+"<<std::endl;
+    std::cout<<"NumOfAcini: "<<NumOfAcini<<std::endl;
+    std::cout<<"kp_np: "<< kp_np<<"\t"<<"kp_n: "<<kp_n<<std::endl;
+    std::cout<<"kq_np: "<< kq_np<<"\t"<<"kq_n: "<<kq_n<<"\t"<<"term_nonlin: "<<term_nonlin<<std::endl;
+    std::cout<<"+------------- DEBUG -------------+"<<std::endl;
 #endif
 
 
@@ -718,7 +718,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         {
           DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
-          Bc = *(condition->Get<string>("boundarycond"));
+          Bc = *(condition->Get<std::string>("boundarycond"));
           
         
           const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
@@ -779,7 +779,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           // -----------------------------------------------------------------
           // Read in Condition type
           // -----------------------------------------------------------------
-          //        Type = *(condition->Get<string>("CouplingType"));
+          //        Type = *(condition->Get<std::string>("CouplingType"));
           // -----------------------------------------------------------------
           // Read in coupling variable rescribed by the 3D simulation
           //
@@ -812,9 +812,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             std::string VariableWithId = itr->first;
             size_t found;
             found= VariableWithId.rfind(stringID.str());
-            if (found!=string::npos)
+            if (found!=std::string::npos)
             {
-              Bc   = string(VariableWithId,0,found);
+              Bc   = std::string(VariableWithId,0,found);
               BCin = itr->second;
               break;
             }
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         {
           DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
           // Get the type of prescribed bc
-          Bc  = *(condition->Get<string>("phase1"));
+          Bc  = *(condition->Get<std::string>("phase1"));
         
           double period  = condition->GetDouble("period");
           double period1 = condition->GetDouble("phase1_period");
@@ -835,7 +835,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           if (fmod(time,period) > period1)
           {
             phase_number = 1;
-            Bc = *(condition->Get<string>("phase2"));
+            Bc = *(condition->Get<std::string>("phase2"));
           }
 
           const  std::vector<int>*    curve  = condition->Get<std::vector<int> >("curve");
@@ -938,7 +938,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           //          double val; 
           
           //          gid =  lm[i];
-          //          cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<endl;
+          //          std::cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<std::endl;
           rhs(i) += -BCin + rhs(i);
 
           //          rhs->ReplaceGlobalValues(1,&val,&gid);
@@ -1177,15 +1177,15 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   double qn = (*qin_n  )[ele->LID()];
   double qnp= -1.0*(sysmat(0,0)*epnp(0) + sysmat(0,1)*epnp(1) - rhs(0));
 #if 0
-  cout<<"Calculating FLOWRATE (Q): "<<qnp<<endl;
-  cout<<"["<<ele->LID()<<"] Q calc: -("<<sysmat(0,0)<<"*"<<epnp(0)<<"+"<<sysmat(0,1)<<"*"<<epnp(1)<<"-"<<rhs(0)<<")"<<endl;
-  cout<<"p1: "<<epnp(0)<<" \tp2: "<<epnp(1)<<endl;
-  cout<<"rhs=("<<rhs(0)<<","<<rhs(1)<<")"<<endl;
-  cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
-  cout<<"Q sysmat: "<<sysmat<<endl;
-  cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
-  cout<<"Q rhs: "<<rhs<<endl;
-  cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<endl;
+  std::cout<<"Calculating FLOWRATE (Q): "<<qnp<<std::endl;
+  std::cout<<"["<<ele->LID()<<"] Q calc: -("<<sysmat(0,0)<<"*"<<epnp(0)<<"+"<<sysmat(0,1)<<"*"<<epnp(1)<<"-"<<rhs(0)<<")"<<std::endl;
+  std::cout<<"p1: "<<epnp(0)<<" \tp2: "<<epnp(1)<<std::endl;
+  std::cout<<"rhs=("<<rhs(0)<<","<<rhs(1)<<")"<<std::endl;
+  std::cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
+  std::cout<<"Q sysmat: "<<sysmat<<std::endl;
+  std::cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
+  std::cout<<"Q rhs: "<<rhs<<std::endl;
+  std::cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
 #endif
 
 
@@ -1609,7 +1609,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
         RCP<std::map<std::string,double> >  map1D;
         map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
 
-        std::string returnedBC = *(condition->Get<string>("ReturnedVariable"));
+        std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
 
         double BC3d = 0.0;
         if (returnedBC  == "flow")
@@ -1622,14 +1622,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
         }
         else
         {
-          std::string str = (*condition->Get<string>("ReturnedVariable"));
+          std::string str = (*condition->Get<std::string>("ReturnedVariable"));
           dserror("%s, is an unimplimented type of coupling",str.c_str());
           exit(1);
         }
         std::stringstream returnedBCwithId;
         returnedBCwithId << returnedBC <<"_" << ID;
         
-        //        cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<endl;
+        //        std::cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<std::endl;
 
         // -----------------------------------------------------------------
         // Check whether the coupling wrapper has already initialized this

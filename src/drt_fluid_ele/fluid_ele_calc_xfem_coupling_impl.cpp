@@ -330,28 +330,28 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
 
   if(!converged)
   {
-    cout.precision(15);
+    std::cout.precision(15);
 
-    cout << "increment criterion loc coord "
+    std::cout << "increment criterion loc coord "
         //<< sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1))
         << sqrt(incr(0)*incr(0)+incr(1)*incr(1))
         << " \tabsTOL: " << absTolIncr
-        << endl;
-    cout << "absolute criterion for distance "
+        << std::endl;
+    std::cout << "absolute criterion for distance "
         << incr(2)
         << " \tabsTOL: " << absTOLdist
-        << endl;
-    cout << "relative criterion whole residuum "
+        << std::endl;
+    std::cout << "relative criterion whole residuum "
         << residuum.Norm2()
         << " \tabsTOL: " << absTolRes
-        << endl;
+        << std::endl;
 
 
-    cout << "sysmat.Invert" << sysmat << endl;
-    cout << "sol-norm " << sol.Norm2() << endl;
-    cout << "sol " << sol << endl;
-    cout << "x_gp_lin" << x_gp_lin << endl;
-    cout << "side " << xyze_ << endl;
+    std::cout << "sysmat.Invert" << sysmat << std::endl;
+    std::cout << "sol-norm " << sol.Norm2() << std::endl;
+    std::cout << "sol " << sol << std::endl;
+    std::cout << "x_gp_lin" << x_gp_lin << std::endl;
+    std::cout << "side " << xyze_ << std::endl;
 
     dserror( "newton scheme in ProjectOnSide not converged! " );
   }

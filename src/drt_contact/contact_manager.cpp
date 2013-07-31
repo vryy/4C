@@ -80,7 +80,7 @@ discret_(discret)
     fflush(stdout);
   }
   ReadAndCheckInput(cparams);
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
 
   // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
@@ -406,7 +406,7 @@ discret_(discret)
     interface->FillComplete(maxdof);
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
   // create the solver strategy object
@@ -426,7 +426,7 @@ discret_(discret)
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
   //**********************************************************************
 
   // print friction information of interfaces
@@ -439,14 +439,14 @@ discret_(discret)
       if (fric == INPAR::CONTACT::friction_tresca)
       {
         checkfrcoeff = interfaces[i]->IParams().get<double>("FRBOUND");
-        cout << endl << "Interface         " << i+1 << endl;
-        cout <<         "FrBound (Tresca)  " << checkfrcoeff << endl;
+        std::cout << std::endl << "Interface         " << i+1 << std::endl;
+        std::cout <<         "FrBound (Tresca)  " << checkfrcoeff << std::endl;
       }
       else if (fric == INPAR::CONTACT::friction_coulomb)
       {
         checkfrcoeff = interfaces[i]->IParams().get<double>("FRCOEFF");
-        cout << endl << "Interface         " << i+1 << endl;
-        cout <<         "FrCoeff (Coulomb) " << checkfrcoeff << endl;
+        std::cout << std::endl << "Interface         " << i+1 << std::endl;
+        std::cout <<         "FrCoeff (Coulomb) " << checkfrcoeff << std::endl;
       }
     }
   }
@@ -462,7 +462,7 @@ discret_(discret)
   // show default parameters
   if (Comm().MyPID()==0)
   {
-    cout << endl;
+    std::cout << std::endl;
     DRT::INPUT::PrintDefaultParameters(IO::cout,GetStrategy().Params());
   }
 
@@ -653,10 +653,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // warnings
   // *********************************************************************
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
-    std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
+    std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << std::endl;
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(contact,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave)
-    std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !") << endl;
+    std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !") << std::endl;
 
   // *********************************************************************
   // warnings concerning integration method
@@ -668,12 +668,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 2D segment-based mortar integration provided.\n"
-                  << "         Using default value of 5 Gauss points per integration segment.\n" << endl;
+                  << "         Using default value of 5 Gauss points per integration segment.\n" << std::endl;
       }
       else
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 2D fast mortar integration provided.\n"
-                  << "         Using default value of 5 Gauss points per slave element.\n" << endl;
+                  << "         Using default value of 5 Gauss points per slave element.\n" << std::endl;
       }
     }
   }
@@ -684,12 +684,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 3D segment-based mortar integration provided.\n"
-                  << "         Using default value of 7 Gauss points per triangular integration cell.\n" << endl;
+                  << "         Using default value of 7 Gauss points per triangular integration cell.\n" << std::endl;
       }
       else
       {
         std::cout << "\n Warning: No or no valid Gauss point number for 3D fast mortar integration provided.\n"
-                  << "         Using default value of 7/9 Gauss points per triangular/quadrilateral slave element.\n" << endl;
+                  << "         Using default value of 7/9 Gauss points per triangular/quadrilateral slave element.\n" << std::endl;
       }
     }
   }
@@ -859,7 +859,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 
   std::vector<int>  lnid, gnid;
 
-  //std::cout << "MasterNor" << fcmasternor->MyLength() << endl;
+  //std::cout << "MasterNor" << fcmasternor->MyLength() << std::endl;
 
   for (int i=0; i<fcmasternor->MyLength(); i=i+3)
   {
@@ -878,7 +878,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   // communicate all data to proc 0
   LINALG::Gather<int>(lnid,gnid,(int)allproc.size(),&allproc[0],Comm());
   
-  //std::cout << " size of gnid:" << gnid.size() << endl;
+  //std::cout << " size of gnid:" << gnid.size() << std::endl;
   
   ////////////////
   ///// attempt at obtaining the nid and relative displacement u of master nodes in contact - devaal
@@ -893,12 +893,12 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   if (myInterface.size() != 1)
     dserror("Interface size should be 1");
   
-  std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << endl;
-  //std::cout << "Master_node_in_contact x_dis y_dis z_dis" << endl;
+  std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << std::endl;
+  //std::cout << "Master_node_in_contact x_dis y_dis z_dis" << std::endl;
   for (int i=0; i<(int)gnid.size(); ++i)
   {
       int myGid = gnid[i];
-      std::cout << gnid[i] << endl; // << " " << myUx << " " << myUy << " " << myUz << endl;
+      std::cout << gnid[i] << std::endl; // << " " << myUx << " " << myUy << " " << myUz << std::endl;
   }
   
 #endif  //MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact 
@@ -924,8 +924,8 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 
   if(Comm().MyPID()==0)
   {
-    cout << "resultnor= " << resultnor[0] << endl;
-    cout << "resulttan= " << resulttan[0] << endl;
+    std::cout << "resultnor= " << resultnor[0] << std::endl;
+    std::cout << "resulttan= " << resulttan[0] << std::endl;
 
     FILE* MyFile = NULL;
     std::ostringstream filename;

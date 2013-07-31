@@ -436,16 +436,16 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Sysmat(
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
 
     // DEBUG
-//    cout << "funct_ = ";
+//    std::cout << "funct_ = ";
 //    for (int i=0; i<nen_; i++)
-//      cout << funct_(i) << " ";
-//    cout << endl;
+//      std::cout << funct_(i) << " ";
+//    std::cout << std::endl;
 //
-//    cout << "deriv_ = ";
+//    std::cout << "deriv_ = ";
 //    for (int i=0; i<nsd_; i++){
 //      for (int j=0; j<nen_; j++)
-//        cout << deriv_(i,j) << " ";
-//      cout << endl;
+//        std::cout << deriv_(i,j) << " ";
+//      std::cout << std::endl;
 //    }
     // END DEBUG
 
@@ -635,7 +635,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalMatAndRHS(
   const double timefacfac = timefac*fac;
   const double fac_diffus = timefacfac*diffus_[dofindex];
 
-//  cout << "fac = " << fac << "; timefac = " << timefac << "; timefacfac = " << timefacfac << "; fac_diffus = " << fac_diffus << endl;
+//  std::cout << "fac = " << fac << "; timefac = " << timefac << "; timefacfac = " << timefacfac << "; fac_diffus = " << fac_diffus << std::endl;
 
   //----------------------------------------------------------------
   // standard Galerkin terms
@@ -1756,7 +1756,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::FDcheck(
         if(norm<1e-12)
         {
           norm=1e-12;
-          cout<<"warning norm of lin is set to 10e-12"<<endl;
+          std::cout<<"warning norm of lin is set to 10e-12"<<std::endl;
         }
 
         // output to screen

@@ -243,7 +243,7 @@ DRT::ELEMENTS::BeamCL::~BeamCL()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::BeamCL::Print(ostream& os) const
+void DRT::ELEMENTS::BeamCL::Print(std::ostream& os) const
 {
   return;
 }

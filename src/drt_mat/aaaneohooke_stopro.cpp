@@ -247,7 +247,7 @@ void MAT::AAAneohooke_stopro::Evaluate(
   std::string deriv = params.get<std::string>("matparderiv","none");
   if (deriv == "YOUNG")
   {
-    //cout << "DERIV YOUNGS" << endl;
+    //std::cout << "DERIV YOUNGS" << std::endl;
     //deriv. w.r.t YOUNG!! -> factor 0.1666666666666666667 in here
     isochor1 = 2.0*pow(iiinv,third)*pow(iiinv,-twthi)*0.1666666666666666667;
     isochor2 = -twthi*inv*pow(iiinv,third)*pow(iiinv,-twthi)*0.1666666666666666667;
@@ -257,7 +257,7 @@ void MAT::AAAneohooke_stopro::Evaluate(
   }
   else if(deriv == "BETA")
   {
-    //cout << "DERIV BETA" << endl;
+    //std::cout << "DERIV BETA" << std::endl;
     //deriv. w.r.t beta
     isochor1 = 2.0*(2.0*inv - 6.0*pow(iiinv,third))*pow(iiinv,-twthi);
     isochor2 = -twthi*inv*(2.0*inv - 6.0*pow(iiinv,third))*pow(iiinv,-twthi);
@@ -355,16 +355,16 @@ void MAT::AAAneohooke_stopro::Evaluate(
 }
 
 
-void MAT::AAAneohooke_stopro::VisNames(std::map<string,int>& names)
+void MAT::AAAneohooke_stopro::VisNames(std::map<std::string,int>& names)
 {
-  string fiber = "beta";
+  std::string fiber = "beta";
   names[fiber] = 1; // scalar
   fiber = "youngs";
   names[fiber] = 1; // scalar
 }
 
 
-bool MAT::AAAneohooke_stopro::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::AAAneohooke_stopro::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (name=="beta")
   {

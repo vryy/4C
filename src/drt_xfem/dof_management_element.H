@@ -52,7 +52,7 @@ namespace XFEM
           const XFEM::DofManager& dofman
           );
 
-      //! return a string representation of this class
+      //! return a std::string representation of this class
       std::string toString() const;
 
       /*!

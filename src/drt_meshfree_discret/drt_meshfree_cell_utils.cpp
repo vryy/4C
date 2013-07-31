@@ -124,13 +124,13 @@ int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(MeshfreeNode 
   }; // end switch ((int)dN_.size())
 
   // DEBUG
-//  cout << "Xa = ";
+//  std::cout << "Xa = ";
 //  for (int i=0; i<nsd_; i++){
 //    for (int j=0; j<nek_; j++)
-//      cout << Xa(i,j) << " ";
-//    cout << endl;
+//      std::cout << Xa(i,j) << " ";
+//    std::cout << std::endl;
 //  }
-//  cout << endl;
+//  std::cout << std::endl;
   // END DEBUG
 
   return ngp_;

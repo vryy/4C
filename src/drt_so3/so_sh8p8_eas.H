@@ -196,8 +196,8 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
   // temporary integration factor
   const double fac = effpressure*detdefgrad*detJ_w;
 #if 0
-  cout << "effpressure=" << effpressure << endl;
-  cout << "detJ_w=" << detJ_w << endl;
+  std::cout << "effpressure=" << effpressure << std::endl;
+  std::cout << "detJ_w=" << detJ_w << std::endl;
 #endif
 
 
@@ -205,15 +205,15 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
   {
   LINALG::Matrix<NUMEAS_T,NUMEAS_T> Kaa1(true);
   LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,MAT::NUM_STRESS_3D,NUMEAS_T>(1.0,Kaa1.A(), detJ_w,M->A(),cM.A());
-  cout << "Kaa1=" << Kaa1 << endl;
+  std::cout << "Kaa1=" << Kaa1 << std::endl;
   LINALG::Matrix<NUMEAS_T,NUMEAS_T> Kaa2(true);
   LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,NUMDFGR_,NUMEAS_T>(1.0,Kaa2.A(), -fac,defgradbyalpha.A(),ffwmf.A());
-  cout << "Kaa2=" << Kaa2 << endl;
+  std::cout << "Kaa2=" << Kaa2 << std::endl;
   LINALG::Matrix<NUMEAS_T,NUMDISP_> Kad1(true);
   LINALG::DENSEFUNCTIONS::multiplyTN<NUMEAS_T,MAT::NUM_STRESS_3D,NUMDISP_>(1.0,Kad1.A(), detJ_w,M->A(),cb.A());
-  cout << "Kad1=" << Kad1 << endl;
-  cout << "M=" << *M << endl;
-  cout << "C.B=" << cb << endl;
+  std::cout << "Kad1=" << Kad1 << std::endl;
+  std::cout << "M=" << *M << std::endl;
+  std::cout << "C.B=" << cb << std::endl;
   }
 #endif
 
@@ -257,8 +257,8 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
   )
 {
 #if 0
-  cout << " -  - - - - -  " << endl;
-  cout << "Kaa=" << *Kaa << endl;
+  std::cout << " -  - - - - -  " << std::endl;
+  std::cout << "Kaa=" << *Kaa << std::endl;
 #endif
 
   // we need the inverse of Kaa
@@ -267,9 +267,9 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
   solve_for_inverseKaa.Invert();
 
 #if 0
-  cout << "Kaa=" << *Kaa << endl;
-  cout << "Kap=" << *Kap << endl;
-  cout << "Kad=" << std::scientific << *Kad << endl;
+  std::cout << "Kaa=" << *Kaa << std::endl;
+  std::cout << "Kap=" << *Kap << std::endl;
+  std::cout << "Kad=" << std::scientific << *Kad << std::endl;
 #endif
 
   // temporary Kda.Kaa^{-1}
@@ -282,19 +282,19 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
 #if 0
   LINALG::Matrix<NUMDISP_,NUMDISP_> KdaKaaKad(true);
   LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMDISP_,NUMEAS_T,NUMDISP_>(1.0,KdaKaaKad.A(), -1.0,KdaKaa.A(),Kad->A());
-  cout << "KdaKaaKad=" << KdaKaaKad << endl;
+  std::cout << "KdaKaaKad=" << KdaKaaKad << std::endl;
   LINALG::Matrix<NUMDISP_,NUMPRES_> KdaKaaKap(true);
   LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMDISP_,NUMEAS_T,NUMPRES_>(1.0,KdaKaaKap.A(), -1.0,KdaKaa.A(),Kap->A());
-  cout << "KdaKaaKap=" << KdaKaaKap << endl;
+  std::cout << "KdaKaaKap=" << KdaKaaKap << std::endl;
   LINALG::Matrix<NUMPRES_,NUMDISP_> KpaKaaKad(true);
   LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMPRES_,NUMEAS_T,NUMDISP_>(1.0,KpaKaaKad.A(), -1.0,KpaKaa.A(),Kad->A());
-  cout << "KpaKaaKad=" << KpaKaaKad << endl;
+  std::cout << "KpaKaaKad=" << KpaKaaKad << std::endl;
   LINALG::Matrix<NUMPRES_,NUMPRES_> KpaKaaKap(true);
   LINALG::DENSEFUNCTIONS::multiplyNN<double,NUMPRES_,NUMEAS_T,NUMPRES_>(1.0,KpaKaaKap.A(), -1.0,KpaKaa.A(),Kap->A());
-  cout << "KpaKaaKap=" << KpaKaaKap << endl;
-  cout << "stiffmatrix=" << *stiffmatrix << endl;
-  cout << "gradmatrix=" << *gradmatrix << endl;
-  cout << "stabmatrix=" << *stabmatrix << endl;
+  std::cout << "KpaKaaKap=" << KpaKaaKap << std::endl;
+  std::cout << "stiffmatrix=" << *stiffmatrix << std::endl;
+  std::cout << "gradmatrix=" << *gradmatrix << std::endl;
+  std::cout << "stabmatrix=" << *stabmatrix << std::endl;
 #endif
 
   // EAS stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad

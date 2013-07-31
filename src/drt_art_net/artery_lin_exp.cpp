@@ -232,8 +232,8 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::ScatraEvaluate(
     //    escatran(i)     = (*scatran)[local_id];
     ewfnp(i)     = (*wfnp)[local_id] - (*wfo)[local_id];
     ewbnp(i)     = (*wbnp)[local_id] - (*wbo)[local_id];
-    cout<<"ewfnp("<<i<<") : "<<ewfnp(i)<<endl;
-    cout<<"ewbnp("<<i<<") : "<<ewbnp(i)<<endl;
+    std::cout<<"ewfnp("<<i<<") : "<<ewfnp(i)<<std::endl;
+    std::cout<<"ewbnp("<<i<<") : "<<ewbnp(i)<<std::endl;
   }
 
   // ---------------------------------------------------------------------
@@ -616,17 +616,17 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
     dAdxi      = tderiv_.Dot(an_);
     dpext_dxi  = tderiv_.Dot(pext_);
 #if 0
-    cout<<"th: "<<th<<endl;
-    cout<<"E : "<<Young<<endl;
-    cout<<"A : "<<A<<endl;
-    cout<<"Ao: "<<Ao<<endl;
-    cout<<"Q : "<<Q<<endl;
-    cout<<"beta : "<<beta<<endl;
-    cout<<"dbeta_dxi: "<<dbeta_dxi<<endl;
-    cout<<"dpext_dxi: "<<dpext_dxi<<endl;
-    cout<<"dAodx: "<<dAodxi<<endl;
-    cout<<"dAdx: "<<dAdxi<<endl;
-    cout<<"dQdxi: "<<dQdxi<<endl;
+    std::cout<<"th: "<<th<<std::endl;
+    std::cout<<"E : "<<Young<<std::endl;
+    std::cout<<"A : "<<A<<std::endl;
+    std::cout<<"Ao: "<<Ao<<std::endl;
+    std::cout<<"Q : "<<Q<<std::endl;
+    std::cout<<"beta : "<<beta<<std::endl;
+    std::cout<<"dbeta_dxi: "<<dbeta_dxi<<std::endl;
+    std::cout<<"dpext_dxi: "<<dpext_dxi<<std::endl;
+    std::cout<<"dAodx: "<<dAodxi<<std::endl;
+    std::cout<<"dAdx: "<<dAdxi<<std::endl;
+    std::cout<<"dQdxi: "<<dQdxi<<std::endl;
 #endif
     //--------------------------------------------------------------
     //                   compute the rhs vector
@@ -849,14 +849,14 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
   rhs += temp1;
 
 #if 0
-  cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<endl;
-  cout<<"+------------------------ THE FINAL R-LHS------------------------+"<<endl;
-  cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<endl;
-  cout<<"rhs is: "<<rhs<<endl;
-  cout<<"lhs is: "<<sysmat<<endl;
-  cout<<"With L= "<<L<<endl;
-  cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<endl;
-  cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<endl;
+  std::cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<std::endl;
+  std::cout<<"+------------------------ THE FINAL R-LHS------------------------+"<<std::endl;
+  std::cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<std::endl;
+  std::cout<<"rhs is: "<<rhs<<std::endl;
+  std::cout<<"lhs is: "<<sysmat<<std::endl;
+  std::cout<<"With L= "<<L<<std::endl;
+  std::cout<<"|+++++++++++++++++++++++++!!!!      !!!!-------------------------|"<<std::endl;
+  std::cout<<"+-------------------------!!!!!!!!!!!!!!-------------------------+"<<std::endl;
 #endif
 
 }
@@ -1120,8 +1120,8 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   {
     const DRT::Condition *cond1 = ele->Nodes()[0]->GetCondition("ArtInOutCond");
     const DRT::Condition *cond2 = ele->Nodes()[1]->GetCondition("ArtInOutCond");
-    if (*(cond1->Get<string>("terminaltype")) == *(cond2->Get<string>("terminaltype")))
-      dserror ("Element has two nodes described with a similar Terminal type: %s",cond1->Get<string>("terminaltype"));
+    if (*(cond1->Get<std::string>("terminaltype")) == *(cond2->Get<std::string>("terminaltype")))
+      dserror ("Element has two nodes described with a similar Terminal type: %s",cond1->Get<std::string>("terminaltype"));
   }
   else
   {
@@ -1137,7 +1137,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     {
       double TermIO  = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
       if(TerminalType=="inlet")
         TermIO = -1.0;
       else if (TerminalType=="outlet")
@@ -1334,7 +1334,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
     {
       double TermIO  = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
       if(TerminalType=="inlet")
         TermIO = -1.0;
       else if (TerminalType=="outlet")
@@ -1388,7 +1388,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       if(ele->Nodes()[i]->GetCondition("ArtPrescribedCond"))
       {
         const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtPrescribedCond");
-        Cparams.set<string>("Condition Name","ArtPrescribedCond");
+        Cparams.set<std::string>("Condition Name","ArtPrescribedCond");
         ART::UTILS::SolvePrescribedTerminalBC(Teuchos::rcp(&discretization,false), condition, Cparams);
       }
 
@@ -1400,7 +1400,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         RCP<Teuchos::ParameterList> CoupledTo3DParams = params.get<RCP<Teuchos::ParameterList> >("coupling with 3D fluid params");
         const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
         Cparams.set<RCP<ParameterList > >("coupling with 3D fluid params",CoupledTo3DParams);
-        Cparams.set<string>("Condition Name","Art_redD_3D_CouplingCond");
+        Cparams.set<std::string>("Condition Name","Art_redD_3D_CouplingCond");
 
         ART::UTILS::SolvePrescribedTerminalBC(Teuchos::rcp(&discretization,false), condition, Cparams);
       }
@@ -1562,7 +1562,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateScatraBC(
       }
 
 
-      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
       int dof = 0;
       if(TerminalType=="inlet")
       {
@@ -2041,7 +2041,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
     double Wf = eqn(i)/earean(i) +4.0*c;
     double Wb = eqn(i)/earean(i) -4.0*c;
 
-//    cout<<"Wb:  "<<Wb<<endl;
+//    std::cout<<"Wb:  "<<Wb<<std::endl;
     int    gid = ele->Nodes()[i]->Id();
     Wbnp->ReplaceGlobalValues(1,&Wb,&gid);
     Wfnp->ReplaceGlobalValues(1,&Wf,&gid);

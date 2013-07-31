@@ -539,13 +539,13 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > LIN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ostream& LINALG::operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat)
+std::ostream& LINALG::operator << (std::ostream& os, const LINALG::BlockSparseMatrixBase& mat)
 {
   for (int i=0; i<mat.Rows(); ++i)
     for (int j=0; j<mat.Cols(); ++j)
     {
       if (mat.Comm().MyPID()==0)
-        os << "====================================Matrix block (" << i << "," << j << "):" << endl;
+        os << "====================================Matrix block (" << i << "," << j << "):" << std::endl;
       fflush(stdout);
       os << mat(i,j);
     }

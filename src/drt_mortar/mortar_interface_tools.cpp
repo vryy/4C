@@ -131,15 +131,15 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         fpm = fopen(filenamemaster.str().c_str(), "a");
       }
 
-      // write output to temporary stringstream
+      // write output to temporary std::stringstream
       std::stringstream gmshfilecontent;
       std::stringstream gmshfilecontentslave;
       std::stringstream gmshfilecontentmaster;
       if (proc==0)
       {
-        gmshfilecontent << "View \" Step " << step << " Iter " << iter << " Iface\" {" << endl;
-        gmshfilecontentslave << "View \" Step " << step << " Iter " << iter << " Slave\" {" << endl;
-        gmshfilecontentmaster << "View \" Step " << step << " Iter " << iter << " Master\" {" << endl;
+        gmshfilecontent << "View \" Step " << step << " Iter " << iter << " Iface\" {" << std::endl;
+        gmshfilecontentslave << "View \" Step " << step << " Iter " << iter << " Slave\" {" << std::endl;
+        gmshfilecontentmaster << "View \" Step " << step << " Iter " << iter << " Master\" {" << std::endl;
       }
 
       //******************************************************************
@@ -164,22 +164,22 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
             gmshfilecontent << "SL(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "SL(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "};" << std::endl;
           }
           else
           {
             gmshfilecontent << "SL(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "SL(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "};" << std::endl;
           }
           
         }
@@ -193,12 +193,12 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "SL2(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
           }
           else
           {
@@ -206,12 +206,12 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "SL2(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
           }
         }
 
@@ -224,12 +224,12 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "ST(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
           }
           else
           {
@@ -237,12 +237,12 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "ST(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
           }
           xi[0] = 1.0/3; xi[1] = 1.0/3;
         }
@@ -257,13 +257,13 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "SQ(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
           }
           else
           {
@@ -272,13 +272,13 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "SQ(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
           }
         }
 
@@ -295,7 +295,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
             gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color <<"};" << endl;
+                            << color << "," << color << "," << color <<"};" << std::endl;
             gmshfilecontentslave << "ST2(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
@@ -304,7 +304,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
             gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color <<"};" << endl;
+                            << color << "," << color << "," << color <<"};" << std::endl;
           }
           else
           {
@@ -316,7 +316,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
             gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color <<"};" << endl;
+                            << color << "," << color << "," << color <<"};" << std::endl;
             gmshfilecontentmaster << "ST2(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
@@ -325,7 +325,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
             gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color <<"};" << endl;
+                            << color << "," << color << "," << color <<"};" << std::endl;
           }
           xi[0] = 1.0/3; xi[1] = 1.0/3;
         }
@@ -339,54 +339,54 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "ST(" << std::scientific << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "ST(" << std::scientific << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "ST(" << std::scientific << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "SQ(" << std::scientific << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "ST(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "ST(" << std::scientific << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "ST(" << std::scientific << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "ST(" << std::scientific << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "SQ(" << std::scientific << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
           }
           else
           {
@@ -394,54 +394,54 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "ST(" << std::scientific << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "ST(" << std::scientific << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "ST(" << std::scientific << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontent << "SQ(" << std::scientific << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "ST(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "ST(" << std::scientific << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "ST(" << std::scientific << coord(0,2) << "," << coord(1,2) << ","
                                 << coord(2,2) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "ST(" << std::scientific << coord(0,3) << "," << coord(1,3) << ","
                                 << coord(2,3) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "SQ(" << std::scientific << coord(0,4) << "," << coord(1,4) << ","
                                 << coord(2,4) << "," << coord(0,5) << "," << coord(1,5) << ","
                                 << coord(2,5) << "," << coord(0,6) << "," << coord(1,6) << ","
                                 << coord(2,6) << "," << coord(0,7) << "," << coord(1,7) << ","
                                 << coord(2,7) << ")";
-            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << endl;
+            gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "," << color << "};" << std::endl;
           }
         }
 
@@ -461,7 +461,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
                                 << coord(2,8) << ")";
             gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentslave << "SQ2(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
@@ -473,7 +473,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
                                 << coord(2,8) << ")";
             gmshfilecontentslave << "{" << std::scientific << color << "," << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl;
           }
           else
           {
@@ -488,7 +488,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
                                 << coord(2,8) << ")";
             gmshfilecontent << "{" << std::scientific << color << "," << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl;
             gmshfilecontentmaster << "SQ2(" << std::scientific << coord(0,0) << "," << coord(1,0) << ","
                                 << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
                                 << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
@@ -500,7 +500,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,7) << "," << coord(0,8) << "," << coord(1,8) << ","
                                 << coord(2,8) << ")";
             gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "," << color << ","
-                            << color << "," << color << "," << color << "," << color << "," << color << "};" << endl;
+                            << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl;
           }
         }
 
@@ -511,16 +511,16 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         if (element->IsSlave())
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "S" << element->Id() << "};" << endl;
+          gmshfilecontent << "{" << "S" << element->Id() << "};" << std::endl;
           gmshfilecontentslave << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontentslave << "{" << "S" << element->Id() << "};" << endl;
+          gmshfilecontentslave << "{" << "S" << element->Id() << "};" << std::endl;
         }
         else
         {
           gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "M" << element->Id() << "};" << endl;
+          gmshfilecontent << "{" << "M" << element->Id() << "};" << std::endl;
           gmshfilecontentmaster << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontentmaster << "{" << "M" << element->Id() << "};" << endl;
+          gmshfilecontentmaster << "{" << "M" << element->Id() << "};" << std::endl;
         }
 
         // plot node numbers at the nodes
@@ -529,16 +529,16 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
           if (element->IsSlave())
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontent << "{" << "SN" << element->NodeIds()[j] << "};" << endl;
+            gmshfilecontent << "{" << "SN" << element->NodeIds()[j] << "};" << std::endl;
             gmshfilecontentslave << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontentslave << "{" << "SN" << element->NodeIds()[j] << "};" << endl;
+            gmshfilecontentslave << "{" << "SN" << element->NodeIds()[j] << "};" << std::endl;
           }
           else
           {
             gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontent << "{" << "MN" << element->NodeIds()[j] << "};" << endl;
+            gmshfilecontent << "{" << "MN" << element->NodeIds()[j] << "};" << std::endl;
             gmshfilecontentmaster << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontentmaster << "{" << "MN" << element->NodeIds()[j] << "};" << endl;
+            gmshfilecontentmaster << "{" << "MN" << element->NodeIds()[j] << "};" << std::endl;
           }
         }
       }
@@ -564,15 +564,15 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         }
 
         gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-        gmshfilecontentslave << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
+        gmshfilecontentslave << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << std::endl;
       }
 
       // end GMSH output section in all files
       if (proc==lComm()->NumProc()-1)
       {
-        gmshfilecontent << "};" << endl;
-        gmshfilecontentslave << "};" << endl;
-        gmshfilecontentmaster << "};" << endl;
+        gmshfilecontent << "};" << std::endl;
+        gmshfilecontentslave << "};" << std::endl;
+        gmshfilecontentmaster << "};" << std::endl;
       }
 
       // move everything to gmsh post-processing files and close them
@@ -641,10 +641,10 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  i << ".pos";
-      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
-      gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {" << endl;
+      gmshfile << "View \" Step " << step << " Iter " << iter << " stl " << i << " \" {" << std::endl;
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
     }
@@ -670,11 +670,11 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
             currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
             fp = fopen(currentfilename.str().c_str(), "a");
             std::stringstream gmshfile;
-            gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
+            gmshfile << "};" << std::endl << "View \" Treenode \" { " << std::endl;
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);
           }
-          //std::cout << endl << "plot streenode level: " << j << "treenode: " << k;
+          //std::cout << std::endl << "plot streenode level: " << j << "treenode: " << k;
           std::ostringstream currentfilename;
           currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
           binarytree_->Streenodesmap()[j][k]->PrintDopsForGmsh(currentfilename.str().c_str());
@@ -687,7 +687,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
             currentfilename << filenametn.str().c_str() << "_s_tnlayer_" <<  j << ".pos";
             fp = fopen(currentfilename.str().c_str(), "a");
             std::stringstream gmshfile;
-            gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
+            gmshfile << "};" << std::endl << "View \" Treenode \" { " << std::endl;
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);
           }
@@ -706,7 +706,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_s_tnlayer_" << i << ".pos";
-      //std::cout << endl << lComm()->MyPID()<< "current filename: " << currentfilename.str().c_str();
+      //std::cout << std::endl << lComm()->MyPID()<< "current filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::stringstream gmshfilecontent;
       gmshfilecontent  << "};" ;
@@ -723,10 +723,10 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  i << ".pos";
-      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
-      gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {" << endl;
+      gmshfile << "View \" Step " << step << " Iter " << iter << " mtl " << i << " \" {" << std::endl;
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
     }
@@ -748,7 +748,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
           currentfilename << filenametn.str().c_str() << "_m_tnlayer_" <<  j << ".pos";
           fp = fopen(currentfilename.str().c_str(), "a");
           std::stringstream gmshfile;
-          gmshfile << "};" << endl << "View \" Treenode \" { " << endl;
+          gmshfile << "};" << std::endl << "View \" Treenode \" { " << std::endl;
           fprintf(fp,gmshfile.str().c_str());
           fclose(fp);
         }
@@ -762,7 +762,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
       currentfilename << filenametn.str().c_str() << "_m_tnlayer_" << i << ".pos";
       fp = fopen(currentfilename.str().c_str(), "a");
       std::stringstream gmshfilecontent;
-      gmshfilecontent << endl << "};";
+      gmshfilecontent << std::endl << "};";
       fprintf(fp,gmshfilecontent.str().c_str());
       fclose(fp);
     }
@@ -812,10 +812,10 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "w");
       std::stringstream gmshfile;
-      gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << endl;
+      gmshfile << "View \" Step " << step << " Iter " << iter << " contacttn  \" {" << std::endl;
       fprintf(fp,gmshfile.str().c_str());
       fclose(fp);
     }
@@ -839,7 +839,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
           {
             currentfilename << filenamectn.str().c_str() << "_ct.pos";
             fp = fopen(currentfilename.str().c_str(), "w");
-            gmshfile << "View \" Step " << step << " Iter " << iter << " CS  \" {" << endl;
+            gmshfile << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);     
             (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
@@ -848,7 +848,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
           {
             currentfilename << filenamectn.str().c_str() << "_ct.pos";
             fp = fopen(currentfilename.str().c_str(), "a");
-            gmshfile << "};" << endl << "View \" Step " << step << " Iter " << iter << " CS  \" {" << endl;
+            gmshfile << "};" << std::endl << "View \" Step " << step << " Iter " << iter << " CS  \" {" << std::endl;
             fprintf(fp,gmshfile.str().c_str());
             fclose(fp);     
             (binarytree_->CouplingMap()[0][j])->PrintDopsForGmsh(currentfilename.str().c_str());
@@ -856,7 +856,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
           
           // create new sheet for master
           fp = fopen(currentfilename.str().c_str(), "a");
-          newgmshfile << "};" << endl << "View \" Step " << step << " Iter " << iter << " CM  \" {" << endl;
+          newgmshfile << "};" << std::endl << "View \" Step " << step << " Iter " << iter << " CM  \" {" << std::endl;
           fprintf(fp,newgmshfile.str().c_str());
           fclose(fp);
           (binarytree_->CouplingMap()[1][j])->PrintDopsForGmsh(currentfilename.str().c_str());
@@ -870,7 +870,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
     {
       std::ostringstream currentfilename;
       currentfilename << filenamectn.str().c_str() << "_ct.pos";
-      //std::cout << endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
+      //std::cout << std::endl << lComm()->MyPID()<< "filename: " << currentfilename.str().c_str();
       fp = fopen(currentfilename.str().c_str(), "a");
       std::stringstream gmshfile;
       gmshfile  << "};" ;

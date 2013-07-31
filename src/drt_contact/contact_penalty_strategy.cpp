@@ -116,7 +116,7 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(const Teuchos::RCP<Epetra_Ve
       // (this removes the scaling introduced by weighting the gap!!!)
       cnode->CoData().Kappa() = 1.0/gap;
 
-      //std::cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << endl;
+      //std::cout << "S-NODE #" << gid << " kappa=" << cnode->CoData().Kappa() << std::endl;
     }
   }
 }
@@ -204,7 +204,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
     isincontact_=false;
 
   if( (Comm().MyPID()==0) && (globalchange>=1) )
-    std::cout << "ACTIVE SET HAS CHANGED..." << endl;
+    std::cout << "ACTIVE SET HAS CHANGED..." << std::endl;
 
   // (re)setup active global Epetra_Maps
   // the map of global active nodes is needed for the penalty case, too.
@@ -273,14 +273,14 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
     {
       if(ftype==INPAR::CONTACT::friction_coulomb )
       {
-        std::cout << "LINZMATRIX" << *linzmatrix_ << endl;
+        std::cout << "LINZMATRIX" << *linzmatrix_ << std::endl;
         interface_[i]->FDCheckPenaltyTracFric();
       }
       else if (ftype==INPAR::CONTACT::friction_none)
       {
-        std::cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+        std::cout << "-- CONTACTFDDERIVZ --------------------" << std::endl;
         interface_[i]->FDCheckPenaltyTracNor();
-        std::cout << "-- CONTACTFDDERIVZ --------------------" << endl;
+        std::cout << "-- CONTACTFDDERIVZ --------------------" << std::endl;
       }
       else
         dserror("Error: FD Check for this friction type not implemented!");
@@ -372,9 +372,9 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
 #ifdef CONTACTFDGAP
    // FD check of weighted gap g derivatives (non-penetr. condition)
 
-  std::cout << "-- CONTACTFDGAP -----------------------------" << endl;
+  std::cout << "-- CONTACTFDGAP -----------------------------" << std::endl;
   interface_[0]->FDCheckGapDeriv();
-  std::cout << "-- CONTACTFDGAP -----------------------------" << endl;
+  std::cout << "-- CONTACTFDGAP -----------------------------" << std::endl;
 
 #endif // #ifdef CONTACTFDGAP
 

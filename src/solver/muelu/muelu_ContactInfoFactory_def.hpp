@@ -175,7 +175,7 @@ namespace MueLu {
 	std::cout << ("2d problems not supported yet.") << std::endl;
     }
 
-    os << flush;
+    os << std::flush;
     os.close();
 
   }

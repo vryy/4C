@@ -366,10 +366,10 @@ private:
     //@}
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<string,int>& names);
+    virtual void VisNames(std::map<std::string,int>& names);
 
     /// Return visualization data
-    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp);
 
 
   private:

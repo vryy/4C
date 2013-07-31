@@ -349,11 +349,11 @@ void STRUMULTI::MicroStatic::PrintPredictor()
   if (normtypefres_ == INPAR::STR::convnorm_rel)
   {
     normfres_ /= normcharforce_;
-    cout << "      MICROSCALE Predictor scaled res-norm " << normfres_ << endl;
+    std::cout << "      MICROSCALE Predictor scaled res-norm " << normfres_ << std::endl;
   }
   else
   {
-    cout << "      MICROSCALE Predictor absolute res-norm " << normfres_ << endl;
+    std::cout << "      MICROSCALE Predictor absolute res-norm " << normfres_ << std::endl;
   }
   fflush(stdout);
 

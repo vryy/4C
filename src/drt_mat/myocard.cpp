@@ -33,8 +33,8 @@ MAT::PAR::Myocard::Myocard( Teuchos::RCP<MAT::PAR::Material> matdata )
   maindirdiffusivity(matdata->GetDouble("MAIN_DIFFUSIVITY")),
   offdirdiffusivity(matdata->GetDouble("OFF_DIFFUSIVITY")),
   dt_deriv(matdata->GetDouble("PERTUBATION_DERIV")),
-  model(matdata->Get<string>("MODEL")),
-  tissue(matdata->Get<string>("TISSUE"))
+  model(matdata->Get<std::string>("MODEL")),
+  tissue(matdata->Get<std::string>("TISSUE"))
   {
   }
 
@@ -462,7 +462,7 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
 
     // Compute reaction coefficient as the sum of all ion currents
     reacoeff = (I_Na + I_K1 + I_to + I_Kr + I_Ks + I_CaL + I_NaCa + I_NaK + I_pCa + I_pK + I_bCa + I_bNa);// /C_m;
-   // cout << reacoeff << " " << I_Na << "  " << I_K1 << "  " << I_to << "  " <<  I_Kr << "  " <<  I_Ks << "  " <<  I_CaL << "  " <<  I_NaCa << "  " <<  I_NaK << "  " <<  I_pCa << "  " <<  I_pK << "  " << I_bCa << "  " << I_bNa << endl;
+   // std::cout << reacoeff << " " << I_Na << "  " << I_K1 << "  " << I_to << "  " <<  I_Kr << "  " <<  I_Ks << "  " <<  I_CaL << "  " <<  I_NaCa << "  " <<  I_NaK << "  " <<  I_pCa << "  " <<  I_pK << "  " << I_bCa << "  " << I_bNa << std::endl;
    // dserror("SONO QUI");
   }
   else dserror("Myocard cell model type not found!");
@@ -715,7 +715,7 @@ void MAT::Myocard::Update(const double phi, const double dt)
     //------------- for plotting ion concentrations
     std::fstream f;
     f.open("/home/jagschies/workspace/o/VPHbenchmark/TNNPtest/Ca2+_data.txt", std::ios::out | std::ios::app);
-    f << phi << "\t" << Ca_i_ << "\t" << Ca_sr_ << "\t" << Na_i_ << "\t" << K_i_ << "\t" << m_ << "\t" << h_ << "\t" << j_ << "\t" << x_r1_ << "\t" << x_r2_ << "\t" << x_s_ << "\t" << s_ << "\t" << r_ << "\t" << d_ << "\t" << f_ << "\t" << f_Ca_ << "\t" << g_ <<  endl;
+    f << phi << "\t" << Ca_i_ << "\t" << Ca_sr_ << "\t" << Na_i_ << "\t" << K_i_ << "\t" << m_ << "\t" << h_ << "\t" << j_ << "\t" << x_r1_ << "\t" << x_r2_ << "\t" << x_s_ << "\t" << s_ << "\t" << r_ << "\t" << d_ << "\t" << f_ << "\t" << f_Ca_ << "\t" << g_ <<  std::endl;
     f.close();
     //------------/
 
@@ -802,7 +802,7 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
    evmatinv.Scale(1/evmatdet);
    //const LINALG::Matrix<3,3> ematinv;
    //evmat.Invert(ematinv);
-   //cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
+   //std::cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << std::endl;
    // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
    for (int i = 0; i<3; i++)
      {
@@ -812,8 +812,8 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
      }
 
    difftensor_.Multiply(evmat, evmatinv);
-  // cout << "Diffusion tensor" << endl;
-   // cout << difftensor_ << endl;
+  // std::cout << "Diffusion tensor" << std::endl;
+   // std::cout << difftensor_ << std::endl;
 
 
    // done

@@ -200,7 +200,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(RCP<Epetr
 void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateCondMap(RCP<Epetra_Map> &  bcmap )
 {
 
-  //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
+  //std::cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<std::endl;
   bcmap =   Teuchos::rcp(new Epetra_Map(*(womersley_mp_extractor_->VolumetricSurfaceFlowCondMap())));
 }
 
@@ -217,7 +217,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateCondMap(RCP<Epetra_M
 void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateMapExtractor(RCP<FLD::UTILS::MapExtractor>&  mapextractor )
 {
 
-  //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
+  //std::cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<std::endl;
   mapextractor =   Teuchos::rcp(new FLD::UTILS::MapExtractor(*(womersley_mp_extractor_)));
 }
 
@@ -293,10 +293,10 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   n_harmonics_ =   (conditions[surf_numcond])->GetInt("Harmonics");
 
   // get the profile type
-  flowprofile_type_  = (*(conditions[surf_numcond])->Get<string>("ConditionType"));
+  flowprofile_type_  = (*(conditions[surf_numcond])->Get<std::string>("ConditionType"));
 
   // get the prebiasing flag
-  prebiasing_flag_   = (*(conditions[surf_numcond])->Get<string>("prebiased"));
+  prebiasing_flag_   = (*(conditions[surf_numcond])->Get<std::string>("prebiased"));
 
   // -------------------------------------------------------------------
   // calculate the center of mass and varage normal of the surface
@@ -308,12 +308,12 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
 
   // get the normal
   normal_ =  Teuchos::rcp(new std::vector<double>(*normal));
-  std::string normal_info = *(conditions[surf_numcond])->Get<string>("NORMAL");
+  std::string normal_info = *(conditions[surf_numcond])->Get<std::string>("NORMAL");
   if(normal_info == "self_evaluate_normal")
   {
     if(!myrank_)
     {
-      cout<<"Normal is automatically evaluated"<<endl;
+      std::cout<<"Normal is automatically evaluated"<<std::endl;
     }
     vnormal_ =  Teuchos::rcp(new std::vector<double>(*normal));
   }
@@ -321,7 +321,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   {
     if(!myrank_)
     {
-      cout<<"Normal is manually setup"<<endl;
+      std::cout<<"Normal is manually setup"<<std::endl;
     }
     vnormal_ =  Teuchos::rcp(new std::vector<double>);
     (*vnormal_)[0] = (conditions[surf_numcond])->GetDouble("n1");
@@ -335,12 +335,12 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   }
 
   // get the center of mass
-  std::string c_mass_info = *(conditions[surf_numcond])->Get<string>("CenterOfMass");
+  std::string c_mass_info = *(conditions[surf_numcond])->Get<std::string>("CenterOfMass");
   if(c_mass_info == "self_evaluate_center_of_mass")
   {
     if(!myrank_)
     {
-      cout<<"Center of mass is automatically evaluated"<<endl;
+      std::cout<<"Center of mass is automatically evaluated"<<std::endl;
     }
     cmass_ =  Teuchos::rcp(new std::vector<double>(*cmass));
   }
@@ -348,7 +348,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   {
     if(!myrank_)
     {
-      cout<<"Center of mass is manually setup"<<endl;
+      std::cout<<"Center of mass is manually setup"<<std::endl;
     }
     normal_ =  Teuchos::rcp(new std::vector<double>);
     (*cmass_)[0] = (conditions[surf_numcond])->GetDouble("c1");
@@ -363,7 +363,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
 
 
   // check if the condition surface is a inlet or outlet
-  std::string flow_dir = *(conditions[surf_numcond])->Get<string>("FlowType");
+  std::string flow_dir = *(conditions[surf_numcond])->Get<std::string>("FlowType");
   if (flow_dir == "InFlow")
   {
     flow_dir_ = -1.0;
@@ -379,7 +379,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   }
 
   // check if the flow is with correction
-  std::string corr_flag = *(conditions[surf_numcond])->Get<string>("CorrectionFlag");
+  std::string corr_flag = *(conditions[surf_numcond])->Get<std::string>("CorrectionFlag");
   correct_flow_ = (corr_flag == "WithCorrection");
 
   // -------------------------------------------------------------------
@@ -1036,7 +1036,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
   {
     for(int i=0;i<flowrates_->size();i++)
     {
-      cout<<"Flowrate"<<condnum<<": "<<(*flowrates_)[i]<<" time:"<<double(i)*odta<<endl;
+      std::cout<<"Flowrate"<<condnum<<": "<<(*flowrates_)[i]<<" time:"<<double(i)*odta<<std::endl;
     }
   }
 #endif
@@ -1076,13 +1076,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   }
 
 #if 0
-  cout<<"condition("<<condid_<<"): has position: "<<position<<endl;
-  cout<<"condition("<<condid_<<"): has area: "<<area_<<endl;
+  std::cout<<"condition("<<condid_<<"): has position: "<<position<<std::endl;
+  std::cout<<"condition("<<condid_<<"): has area: "<<area_<<std::endl;
   if (!myrank)
   {
     for(int i=0;i<flowrates_->size();i++)
     {
-      cout<<"Flowrate"<<condid_<<": "<<(*flowrates_)[i]<<" time: "<<double(i)*dta_<<endl;
+      std::cout<<"Flowrate"<<condid_<<": "<<(*flowrates_)[i]<<" time: "<<double(i)*dta_<<std::endl;
     }
   }
 #endif
@@ -1097,7 +1097,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   // the velocity position
   params->set<int>("Velocity Position",position);
   // the flow type
-  params->set<string>("flowrate type",flowprofile_type_);
+  params->set<std::string>("flowrate type",flowprofile_type_);
   // time
   params->set<double>("time",time_in_a_period);
   // period of a cycle
@@ -1404,7 +1404,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
           // Apply the velocity in the normal direction
           //------------------------------------------------------------
           double Vdof =  velocity * (*normal)[ldof];
-          //          cout<<"Velocity["<<gdof<<"]: "<<Vdof<<endl;
+          //          std::cout<<"Velocity["<<gdof<<"]: "<<Vdof<<std::endl;
           bcdof->ReplaceGlobalValues(1,&Vdof,&gdof);
         }
       }
@@ -1425,7 +1425,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
-(string             ds_condname,
+(std::string             ds_condname,
  FLD::BoundaryAction action,
  double             time,
  bool               force_correction)
@@ -1451,7 +1451,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
 
   double actflowrate = this->FlowRateCalculation(time,ds_condname,action,condid_);
 
-  //  cout<<*cond_velocities_<<endl;
+  //  std::cout<<*cond_velocities_<<std::endl;
 
   // -------------------------------------------------------------------
   // evaluate the wanted flow rate
@@ -1489,7 +1489,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
   // the velocity position
   params->set<int>("Velocity Position",0);
   // the flow type
-  params->set<string>("flowrate type","POLYNOMIAL");
+  params->set<std::string>("flowrate type","POLYNOMIAL");
   // time
   params->set<double>("time",time_in_a_period);
   // period of a cycle
@@ -1652,7 +1652,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PressureCalculation(
   discret_->EvaluateCondition(eleparams,flowrates,condstring,condid);
 
   pressure = eleparams.get<double>("Inlet integrated pressure");
-  cout<<"avg pressure: "<<pressure/area_<<endl;
+  std::cout<<"avg pressure: "<<pressure/area_<<std::endl;
 
   return pressure/area_;
 
@@ -1890,7 +1890,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
 
   if (myrank_ == 0)
   {
-    cout << "Volumetric surface flow rate condition Id: " << condid << " area = " << pararea << endl;
+    std::cout << "Volumetric surface flow rate condition Id: " << condid << " area = " << pararea << std::endl;
   }
   return pararea;
 }//FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area
@@ -2063,7 +2063,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::UpdateResidual(RCP<Epetra_Vector>
 {
   //  double norm2;
   //  cond_traction_vel_->Norm2(&norm2);
-  //  cout<<"DIR("<<flow_dir_<<"): Residual Norm: "<<norm2<<endl;
+  //  std::cout<<"DIR("<<flow_dir_<<"): Residual Norm: "<<norm2<<std::endl;
   //  residual->Update(1.0,*cond_traction_vel_,1.0);
   residual->Update(1.0,*cond_traction_vel_,1.0);
   
@@ -2220,7 +2220,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(RCP<Epetra_Vector> v
 void FLD::UTILS::TotalTractionCorrector::EvaluateCondMap(RCP<Epetra_Map> &  bcmap )
 {
 
-  //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
+  //std::cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<std::endl;
   bcmap =   Teuchos::rcp(new Epetra_Map(*(traction_mp_extractor_->TotalTractionCorrectionCondMap())));
 }
 
@@ -2237,7 +2237,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateCondMap(RCP<Epetra_Map> &  bcma
 void FLD::UTILS::TotalTractionCorrector::EvaluateMapExtractor(RCP<FLD::UTILS::MapExtractor>&  mapextractor )
 {
 
-  //cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<endl;
+  //std::cout<<*(womersley_mp_extractor_->WomersleyCondMap())<<std::endl;
   mapextractor =   Teuchos::rcp(new FLD::UTILS::MapExtractor(*(traction_mp_extractor_)));
 }
 

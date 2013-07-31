@@ -183,7 +183,7 @@ public:
   /*!
   \brief Print this element
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
 
   //@}

@@ -138,7 +138,7 @@ DRT::Element::~Element()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::Element& element)
+std::ostream& operator << (std::ostream& os, const DRT::Element& element)
 {
   element.Print(os);
   return os;
@@ -148,7 +148,7 @@ ostream& operator << (ostream& os, const DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Element::Print(ostream& os) const
+void DRT::Element::Print(std::ostream& os) const
 {
   os << std::setw(12) << Id() << " Owner " << std::setw(5) << Owner() << " ";
   const int nnode = NumNode();
@@ -164,12 +164,12 @@ void DRT::Element::Print(ostream& os) const
   int numcond = condition_.size();
   if (numcond)
   {
-    os << endl << numcond << " Conditions:\n";
+    os << std::endl << numcond << " Conditions:\n";
     std::map<std::string,RCP<Condition> >::const_iterator curr;
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {
       os << curr->first << " ";
-      os << *(curr->second) << endl;
+      os << *(curr->second) << std::endl;
     }
   }
 #endif
@@ -331,7 +331,7 @@ bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::GetCondition(const string& name,std::vector<DRT::Condition*>& out) const
+void DRT::Element::GetCondition(const std::string& name,std::vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
@@ -351,7 +351,7 @@ void DRT::Element::GetCondition(const string& name,std::vector<DRT::Condition*>&
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-DRT::Condition* DRT::Element::GetCondition(const string& name) const
+DRT::Condition* DRT::Element::GetCondition(const std::string& name) const
 {
   std::multimap<std::string,Teuchos::RCP<Condition> >::const_iterator curr =
                                          condition_.find(name);
@@ -734,9 +734,9 @@ int DRT::Element::Evaluate(Teuchos::ParameterList& params,
                            Epetra_SerialDenseVector& elevec2,
                            Epetra_SerialDenseVector& elevec3)
 {
-  cout << "DRT::Element::Evaluate:\n"
+  std::cout << "DRT::Element::Evaluate:\n"
        << "Base class dummy routine DRT::Element::Evaluate(...) called\n"
-       << __FILE__ << ":" << __LINE__ << endl;
+       << __FILE__ << ":" << __LINE__ << std::endl;
   return -1;
 }
 
@@ -752,9 +752,9 @@ int DRT::Element::EvaluateNeumann(Teuchos::ParameterList& params,
                                   std::vector<int>&         lm,
                                   Epetra_SerialDenseVector& elevec1)
 {
-  cout << "DRT::Element::EvaluateNeumann:\n"
+  std::cout << "DRT::Element::EvaluateNeumann:\n"
        << "Base class dummy routine DRT::Element::EvaluateNeumann(...) called\n"
-       << __FILE__ << ":" << __LINE__ << endl;
+       << __FILE__ << ":" << __LINE__ << std::endl;
   return -1;
 }
 #endif

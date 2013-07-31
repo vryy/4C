@@ -118,7 +118,7 @@ DRT::ELEMENTS::Torsion3::~Torsion3()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::Print(ostream& os) const
+void DRT::ELEMENTS::Torsion3::Print(std::ostream& os) const
 {
   return;
 }

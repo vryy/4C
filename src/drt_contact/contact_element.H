@@ -167,7 +167,7 @@ public:
   \brief Print this element
 
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   //! @name Evaluation methods
 
@@ -265,6 +265,6 @@ private:
 
 
 // << operator
-ostream& operator << (ostream& os, const CONTACT::CoElement& ele);
+std::ostream& operator << (std::ostream& os, const CONTACT::CoElement& ele);
 
 #endif  // #ifndef CONTACT_ELEMENT_H

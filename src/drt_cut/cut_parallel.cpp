@@ -109,8 +109,8 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
 #ifdef DEBUG
   if(myrank_== 0)
   {
-    std::cout << "number of round Robin loops to check finished procs:\t"    << counter   << endl;
-    std::cout << "number of round Robin loops to exchange node positions:\t" << counter-1 << endl;
+    std::cout << "number of round Robin loops to check finished procs:\t"    << counter   << std::endl;
+    std::cout << "number of round Robin loops to exchange node positions:\t" << counter-1 << std::endl;
   }
 #endif
 
@@ -160,7 +160,7 @@ void GEO::CUT::Parallel::exportCommunicationFinished(bool & procDone)
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     size_t posinData = 0;
     int allProcsDone = 0;
 
@@ -218,7 +218,7 @@ void GEO::CUT::Parallel::exportNodePositionData()
       std::vector<char> dataRecv;
       sendData(dataSend,dest,source,dataRecv);
 
-      // pointer to current position of group of cells in global string (counts bytes)
+      // pointer to current position of group of cells in global std::string (counts bytes)
       std::vector<char>::size_type posinData = 0;
 
       // clear vector that should be filled
@@ -304,7 +304,7 @@ void GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
       // set the new position for this point and distribute the information via facets and volumecells
       if(received_pos!=Point::undecided)
       {
-        //cout << "reset the position for node " << nid << endl;
+        //std::cout << "reset the position for node " << nid << std::endl;
         p->Position(received_pos);
       }
 
@@ -429,7 +429,7 @@ void GEO::CUT::Parallel::exportDofSetData()
       std::vector<char> dataRecv;
       sendData(dataSend,dest,source,dataRecv);
 
-      // pointer to current position of group of cells in global string (counts bytes)
+      // pointer to current position of group of cells in global std::string (counts bytes)
       std::vector<char>::size_type posinData = 0;
 
       // clear vector that should be filled
@@ -499,7 +499,7 @@ void GEO::CUT::Parallel::exportDofSetData()
           if(node->Owner() == myrank_)
           {
             find_volumecell = true;
-            //cout << "find the vc!!!" << endl;
+            //std::cout << "find the vc!!!" << std::endl;
             break; // at least one node found as row node, we have to identify the received volumecell on myrank
           }
         }
@@ -523,7 +523,7 @@ void GEO::CUT::Parallel::exportDofSetData()
           node_dofsetnumber_it != node_dofsetnumber_map.end();
           node_dofsetnumber_it++)
       {
-        //cout << "loop the node_dofsetnumber_map" << endl;
+        //std::cout << "loop the node_dofsetnumber_map" << std::endl;
         int nid = node_dofsetnumber_it->first;
         int curr_dofset_number = node_dofsetnumber_it->second;
 
@@ -532,7 +532,7 @@ void GEO::CUT::Parallel::exportDofSetData()
         // decide if the current proc carries the required information
         if(haveGlobalNode) // node on this proc available as row or col node
         {
-          //cout << "in haveGlobalNode for node " << nid << endl;
+          //std::cout << "in haveGlobalNode for node " << nid << std::endl;
           DRT::Node* node = discret_.gNode(nid);
           if(node->Owner() == myrank_)
           {
@@ -544,17 +544,17 @@ void GEO::CUT::Parallel::exportDofSetData()
 
             index = getDofSetVecIndex(nid, peid);
 
-            //cout << "index for node " << nid << " is: " << index << endl;
+            //std::cout << "index for node " << nid << " is: " << index << std::endl;
 
             // get the right dofsetnumber for the node
             if(my_vc != NULL)
             {
-              //cout << "in my_vc != NULL" << endl;
+              //std::cout << "in my_vc != NULL" << std::endl;
               const std::vector<int> nds = my_vc->NodalDofSet();
 
               if( (int)(nds.size())== 0 )
               {
-                cout << "position of found vc is " << my_vc->Position() << endl;
+                std::cout << "position of found vc is " << my_vc->Position() << std::endl;
                 dserror("the nds-vector of volume cell in element %d on proc %d has size %d", my_vc->ParentElement()->Id(), myrank_, (int)(nds.size()) );
               }
               if(index >= (int)(nds.size()))
@@ -584,7 +584,7 @@ void GEO::CUT::Parallel::exportDofSetData()
     }// end loop dofSetData_ (data for volumecells)
 
 
-//    cout << "replaced data: " << endl;
+//    std::cout << "replaced data: " << std::endl;
 //    printDofSetData();
 
 
@@ -712,14 +712,14 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
     if(my_cut_points.size() != (vc_data.cut_points_coords_).size())
     {
 
-      //cout << "my_cut_points.size() != (vc_data->cut_points_coords_).size()" << endl;
+      //std::cout << "my_cut_points.size() != (vc_data->cut_points_coords_).size()" << std::endl;
       // no identical number of points found!
       // this volumecell is not a candidate
       vc_found = false;
     }
     else
     {
-      //cout << "my_cut_points.size() == (vc_data->cut_points_coords_).size()" << endl;
+      //std::cout << "my_cut_points.size() == (vc_data->cut_points_coords_).size()" << std::endl;
       // identical number of points found! this vc is a candidate: check the points"
 
       // brute force search for identical point coords
@@ -760,13 +760,13 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
     if(vc_found == true)
     {
       my_vc = cell;
-      //cout << "volumecell has been found!!! Happy :-)" << endl;
+      //std::cout << "volumecell has been found!!! Happy :-)" << std::endl;
       break; // stop the loop over volumecells
     }
     else
     {
       //my_vc = NULL;
-      //cout << "volumecell has not been found!!! :-(" << endl;
+      //std::cout << "volumecell has not been found!!! :-(" << std::endl;
     }
 
 
@@ -904,7 +904,7 @@ void GEO::CUT::Parallel::sendData(
   int size_one = 1;
 
 #ifdef DEBUG
-  cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
+  std::cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << std::endl;
 #endif
 
   // exporter for sending
@@ -930,7 +930,7 @@ void GEO::CUT::Parallel::sendData(
   exporter.Wait(req_data);
 
 #ifdef DEBUG
-  cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
+  std::cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << std::endl;
 #endif
 } // end sendData
 

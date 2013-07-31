@@ -408,11 +408,11 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     if (utils_->isPrintType(NOX::Utils::Parameters))
       if (Step()==1 and Comm().MyPID()==0)
       {
-        utils_->out() << endl
-                      << "Final Parameters" << endl
-                      << "****************" << endl;
+        utils_->out() << std::endl
+                      << "Final Parameters" << std::endl
+                      << "****************" << std::endl;
         solver->getList().print(utils_->out());
-        utils_->out() << endl;
+        utils_->out() << std::endl;
       }
 
     // ==================================================================
@@ -764,7 +764,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidOp(Teuchos::RCP<Epetra_Vector
                                                       const FillType fillFlag)
 {
   if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
-    utils_->out() << endl << "Fluid operator" << endl;
+    utils_->out() << std::endl << "Fluid operator" << std::endl;
   return Teuchos::null;
 }
 
@@ -775,7 +775,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(Teuchos::RCP<Epetra_Vecto
                                                        const FillType fillFlag)
 {
   if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
-    utils_->out() << endl << "Structural operator" << endl;
+    utils_->out() << std::endl << "Structural operator" << std::endl;
   return Teuchos::null;
 }
 

@@ -102,9 +102,9 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
       {
         if (actele->Owner()!=myrank)
         {
-          cout<<"+-------------- WOOOOOOW --------------+"<<endl;
+          std::cout<<"+-------------- WOOOOOOW --------------+"<<std::endl;
         }
-        cout<<"Element ("<<actele->Id()<<") rank("<<myrank<<") and HasGlobalElement("<<discretization.HaveGlobalElement(actele->Id())<<")"<<endl;
+        std::cout<<"Element ("<<actele->Id()<<") rank("<<myrank<<") and HasGlobalElement("<<discretization.HaveGlobalElement(actele->Id())<<")"<<std::endl;
 
         std::vector<int> la;
         // get element location vector, dirichlet flags and ownerships
@@ -136,7 +136,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   }
 
 
-  cout<<"sysmat: "<<elemat1_epetra<<endl;
+  std::cout<<"sysmat: "<<elemat1_epetra<<std::endl;
   fflush(stdout);
 #else
   RCP<const Epetra_Vector> sysmat_iad  = discretization.GetState("sysmat_iad");

@@ -53,7 +53,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_struct_energy") act = Truss3::calc_struct_energy;
   else
     {
-      cout<<action<<endl;
+      std::cout<<action<<std::endl;
       dserror("Unknown type of action for Truss3");
     }
 

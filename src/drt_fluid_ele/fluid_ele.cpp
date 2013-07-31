@@ -464,7 +464,7 @@ DRT::ELEMENTS::Fluid::~Fluid()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::Print(ostream& os) const
+void DRT::ELEMENTS::Fluid::Print(std::ostream& os) const
 {
   os << "Fluid ";
   Element::Print(os);

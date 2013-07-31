@@ -114,7 +114,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 
 
   // loop all existing extrude connectivities
-  cout << "Extruding surfaces..." << endl;
+  std::cout << "Extruding surfaces..." << std::endl;
   for (i_extr = extrusion_conns.begin(); i_extr != extrusion_conns.end(); ++i_extr){
     // get connectivity
     const std::map<int,std::vector<int> > ele_conn = i_extr->second;
@@ -222,7 +222,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       for (int i_layer = 1; i_layer <= layers; ++i_layer) {
         if (nd_ts.size()!=0){
           thickness = nd_ts.find(*i_node)->second; // get current node thickness
-          if (thickness<1E-12) cout << "Node: " << (*i_node) << " has zero thickness!" << endl;
+          if (thickness<1E-12) std::cout << "Node: " << (*i_node) << " has zero thickness!" << std::endl;
         }
         const std::vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
         // numbering of new ids nodewise not layerwise as may be expected
@@ -326,9 +326,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             if (node_pair.find(secedgenode)==node_pair.end()){
               std::map<int,std::vector<int> > leftovers = EXODUS::ExtrusionErrorOutput(secedgenode,todo_counter,doneles,ele_conn,todo_eleset);
               //EXODUS::PlotEleConnGmsh(leftovers,*basemesh.GetNodes());
-              cout << "Check the gmsh-file 'extrusionproblems.gmsh' " << endl;
+              std::cout << "Check the gmsh-file 'extrusionproblems.gmsh' " << std::endl;
               EXODUS::PlotEleConnGmsh(ele_conn,*basemesh.GetNodes(),leftovers);
-              cout << "Check the gmsh-file 'neighbors.gmsh' " << endl;
+              std::cout << "Check the gmsh-file 'neighbors.gmsh' " << std::endl;
               std::vector<double> normal(3,1.0); // = node_normals.find(firstedgenode)->second; // alternatively use normal at firstedgenode
               EXODUS::PlotEleNbrs(actelenodes,actneighbors,ele_conn,basemesh,secedgenode,normal,node_conn,node_normals);
               dserror("Mesh problem!");
@@ -395,7 +395,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             for (int i_layer = 1; i_layer <= layers; ++i_layer) {
               if (nd_ts.size()!=0){
                 thickness = nd_ts.find(thirdnode)->second; // get current node thickness
-                if (thickness<1E-12) cout << "Node: " << (thirdnode) << " has zero thickness!" << endl;
+                if (thickness<1E-12) std::cout << "Node: " << (thirdnode) << " has zero thickness!" << std::endl;
               }
               const std::vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
               newid = highestnid+1; ++ highestnid;
@@ -464,7 +464,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               for (int i_layer = 1; i_layer <= layers; ++i_layer) {
                 if (nd_ts.size()!=0){
                   thickness = nd_ts.find(fourthnode)->second; // get current node thickness
-                  if (thickness<1E-12) cout << "Node: " << (fourthnode) << " has zero thickness!" << endl;
+                  if (thickness<1E-12) std::cout << "Node: " << (fourthnode) << " has zero thickness!" << std::endl;
                 }
                 const std::vector<double> newcoords = ExtrudeNodeCoords(actcoords, thickness, i_layer, layers, normal);
                 newid = highestnid+1; ++ highestnid;
@@ -549,7 +549,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     // create new Element Blocks
     std::ostringstream blockname;
     blockname << "ext";
-    //string blockname = "extr";
+    //std::string blockname = "extr";
     switch(extrusion_types.find(i_extr->first)->second){
     case eblock:{ // Eblocks have only one type of eles
 //      const int numnodes = newconn->find(0)->second.size();
@@ -766,7 +766,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
     bool FlatEx = CheckFlatEx(i_nss->second);
     if (FlatEx){
-      cout << "Flattening Nodeset " <<  (i_nss->second).GetName() << " to its Normal: "; //"..." <<endl;
+      std::cout << "Flattening Nodeset " <<  (i_nss->second).GetName() << " to its Normal: "; //"..." <<std::endl;
       std::set<int> nodes_from_nodeset = (i_nss->second).GetNodeSet();
       std::set<int>::iterator it;
 
@@ -788,11 +788,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         if (facenormal.size() != 1) break;
       }
 
-      PrintVec(cout,facenormal);
+      PrintVec(std::cout,facenormal);
 
       // could a normal direction be computed?
       if (facenormal.size()==1){
-        cout << "  Warning! No normal defined within flat nodeset '"<< (i_nss->second).GetName() << "', stop flattening" << endl;
+        std::cout << "  Warning! No normal defined within flat nodeset '"<< (i_nss->second).GetName() << "', stop flattening" << std::endl;
       }
       else {
         for(it=nodes_from_nodeset.begin(); it!=nodes_from_nodeset.end(); ++it){
@@ -838,7 +838,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   std::string newtitle = "extrusion";
   //map<int,EXODUS::SideSet> emptysideset;
 
-  cout << "...done" << endl;
+  std::cout << "...done" << std::endl;
 
   EXODUS::Mesh extruded_mesh(basemesh,newnodes,neweblocks,newnodesets,newsidesets,newtitle);
 
@@ -920,7 +920,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
     if(actelesign != initelesign){ // thus we have a twisted element
       ++ twistcounter;
       //PlotEleGmsh(actele, newnodes);
-      //cout << "twisted: ";PrintVec(cout,i_encl->second);
+      //std::cout << "twisted: ";PrintVec(std::cout,i_encl->second);
 
       // get extrusion base which is always the first half of actele
       std::vector<int> baseface;
@@ -952,10 +952,10 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
         std::vector<double> repairnormal = node_normals.find(repairbasenode)->second;
         CheckNormDir(repairnormal,avgnode_normals.find(repairbasenode)->second);
         if (nd_ts.size()!=0){
-          if (nd_ts.size() != avgnode_normals.size()) cout << "Size mismatch!" << endl;
-          if (nd_ts.find(inv_node_pair.find(repairbasenode)->second) == nd_ts.end()) cout << "Node thickness not found!" << endl;
+          if (nd_ts.size() != avgnode_normals.size()) std::cout << "Size mismatch!" << std::endl;
+          if (nd_ts.find(inv_node_pair.find(repairbasenode)->second) == nd_ts.end()) std::cout << "Node thickness not found!" << std::endl;
           actthickness = nd_ts.find(inv_node_pair.find(repairbasenode)->second)->second; // get current node thickness
-          if (actthickness<1E-12) cout << "Node: " << (inv_node_pair.find(repairbasenode)->second) << " has zero thickness: " << actthickness << endl;
+          if (actthickness<1E-12) std::cout << "Node: " << (inv_node_pair.find(repairbasenode)->second) << " has zero thickness: " << actthickness << std::endl;
         }
         std::vector<double> newcoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,actthickness,1,1,repairnormal);
 
@@ -975,9 +975,9 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
             int i_layer = 1;
             for(i_layerele=layereles.begin();i_layerele!=(layereles.end()-1);++i_layerele){
               if (nd_ts.size()!=0){
-                if (nd_ts.size() != avgnode_normals.size()) cout << "Size mismatch!" << endl;
+                if (nd_ts.size() != avgnode_normals.size()) std::cout << "Size mismatch!" << std::endl;
                 actthickness = nd_ts.find(inv_node_pair.find(repairbasenode)->second)->second; // get current node thickness
-                if (actthickness<1E-12) cout << "Node: " << (inv_node_pair.find(repairbasenode)->second) << " has zero thickness: " << actthickness << endl;
+                if (actthickness<1E-12) std::cout << "Node: " << (inv_node_pair.find(repairbasenode)->second) << " has zero thickness: " << actthickness << std::endl;
               }
               std::vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,actthickness,i_layer,numlayers,repairnormal);
               ++i_layer;
@@ -996,7 +996,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
           for(i_layerele=layereles.begin();i_layerele!=layereles.end();++i_layerele){
             if (nd_ts.size()!=0){
               actthickness = nd_ts.find(inv_node_pair.find(repairbasenode)->second)->second; // get current node thickness
-              if (actthickness<1E-12) cout << "Node: " << (inv_node_pair.find(repairbasenode)->second) << " has zero thickness!" << endl;
+              if (actthickness<1E-12) std::cout << "Node: " << (inv_node_pair.find(repairbasenode)->second) << " has zero thickness!" << std::endl;
             }
             std::vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(repairbasenode)->second,actthickness,i_layer,numlayers,repairnormal);
 
@@ -1051,7 +1051,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
           //CheckNormDir(repairnormal,refnormal);
           if (nd_ts.size()!=0){
             actthickness = nd_ts.find(inv_node_pair.find(*it)->second)->second; // get current node thickness
-            if (actthickness<1E-12) cout << "Node: " << (inv_node_pair.find(*it)->second) << " has zero thickness!" << endl;
+            if (actthickness<1E-12) std::cout << "Node: " << (inv_node_pair.find(*it)->second) << " has zero thickness!" << std::endl;
           }
           std::vector<double> newcoords = ExtrudeNodeCoords(coords.find(*it)->second,actthickness,1,1,repairnormal);
 
@@ -1069,7 +1069,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
             for(i_layerele=layereles.begin();i_layerele!=(layereles.end()-1);++i_layerele){
               if (nd_ts.size()!=0){
                 actthickness = nd_ts.find(inv_node_pair.find(*it)->second)->second; // get current node thickness
-                if (actthickness<1E-12) cout << "Node: " << (inv_node_pair.find(*it)->second) << " has zero thickness!" << endl;
+                if (actthickness<1E-12) std::cout << "Node: " << (inv_node_pair.find(*it)->second) << " has zero thickness!" << std::endl;
               }
               std::vector<double> newlayercoords = ExtrudeNodeCoords(coords.find(*it)->second,actthickness,i_layer,numlayers,repairnormal);
               ++i_layer;
@@ -1082,7 +1082,7 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
 
         int doublerepairedelesign = EleSaneSign(actele,coords);
         if (doublerepairedelesign != initelesign)
-          cout << "What?! Element still twisted, I give up! elesign=" << doublerepairedelesign << ", reference elesign=" << initelesign << endl;
+          std::cout << "What?! Element still twisted, I give up! elesign=" << doublerepairedelesign << ", reference elesign=" << initelesign << std::endl;
 
         //PlotEleConnGmsh(obstinates,newnodes);
       }
@@ -1091,8 +1091,8 @@ int EXODUS::RepairTwistedExtrusion(const double thickness, // extrusion thicknes
     }
   }
 
-  cout << "firstcheck: " << firstcheck << ", secondcheck: " << secondcheck << endl;
-  cout << "During repair " << newnodesbyrepair << " new nodes have been created."<<endl;
+  std::cout << "firstcheck: " << firstcheck << ", secondcheck: " << secondcheck << std::endl;
+  std::cout << "During repair " << newnodesbyrepair << " new nodes have been created."<<std::endl;
   if (repaired_conn.size() !=0) PlotEleConnGmsh(repaired_conn,newnodes,repaired_conn);
 
   return twistcounter;
@@ -1493,11 +1493,11 @@ std::map<int,std::vector<int> > EXODUS::ExtrusionErrorOutput(const int secedgeno
     const std::set<int>& doneles, const std::map<int,std::vector<int> >& ele_conn, const std::set<int>& todo_eleset)
 {
   std::map<int,std::vector<int> >leftovers;
-  cout << "There is a problem with neighbor nodes at node: "<<secedgenode<<endl;
-  cout << "Current element to extrude is: " << todo_counter << endl;
-  cout << "doneles.size: " << doneles.size() <<", ele_conn.size: " << ele_conn.size();
-  cout << ", this means that " << ele_conn.size()-doneles.size() << " left to extrude." << endl;
-  cout << "todo-eleset: "; PrintSet(cout,todo_eleset);
+  std::cout << "There is a problem with neighbor nodes at node: "<<secedgenode<<std::endl;
+  std::cout << "Current element to extrude is: " << todo_counter << std::endl;
+  std::cout << "doneles.size: " << doneles.size() <<", ele_conn.size: " << ele_conn.size();
+  std::cout << ", this means that " << ele_conn.size()-doneles.size() << " left to extrude." << std::endl;
+  std::cout << "todo-eleset: "; PrintSet(std::cout,todo_eleset);
 
   std::set<int>::const_iterator it;
   for(it=todo_eleset.begin(); it!= todo_eleset.end(); ++it){
@@ -1514,7 +1514,7 @@ void EXODUS::PlotEleGmsh(const std::vector<int> elenodes, const std::map<int,std
   std::ofstream f_system(filename.str().c_str());
   //ofstream f_system("ele.gmsh");
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Element \" {" << endl;
+  gmshfilecontent << "View \" Element \" {" << std::endl;
   int numnodes = elenodes.size();
   if (numnodes==6) gmshfilecontent << "SI(";
   else if (numnodes==8) gmshfilecontent << "SH(";
@@ -1529,8 +1529,8 @@ void EXODUS::PlotEleGmsh(const std::vector<int> elenodes, const std::map<int,std
   }
   gmshfilecontent << "{";
   for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << elenodes[i] << ",";
-  gmshfilecontent << elenodes.back() << "};" << endl;
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << elenodes.back() << "};" << std::endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
 
@@ -1541,7 +1541,7 @@ void EXODUS::PlotStartEleGmsh(const int eleid, const std::vector<int> elenodes,
 {
   std::ofstream f_system("startele.gmsh");
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Start Element \" {" << endl;
+  gmshfilecontent << "View \" Start Element \" {" << std::endl;
   int numnodes = elenodes.size();
   if (numnodes==3){
     gmshfilecontent << "ST(" <<
@@ -1554,7 +1554,7 @@ void EXODUS::PlotStartEleGmsh(const int eleid, const std::vector<int> elenodes,
     basemesh.GetNode(elenodes.at(2))[0] << "," <<
     basemesh.GetNode(elenodes.at(2))[1] << "," <<
     basemesh.GetNode(elenodes.at(2))[2] << ")" <<
-    "{" << eleid << "," << eleid << "," << eleid << "};" << endl;
+    "{" << eleid << "," << eleid << "," << eleid << "};" << std::endl;
   } else if (numnodes==4){
     gmshfilecontent << "SQ(" <<
     basemesh.GetNode(elenodes.at(0))[0] << "," <<
@@ -1569,16 +1569,16 @@ void EXODUS::PlotStartEleGmsh(const int eleid, const std::vector<int> elenodes,
     basemesh.GetNode(elenodes.at(3))[0] << "," <<
     basemesh.GetNode(elenodes.at(3))[1] << "," <<
     basemesh.GetNode(elenodes.at(3))[2] << ")" <<
-    "{" << eleid << "," << eleid << "," << eleid << "," << eleid << "};" << endl;
+    "{" << eleid << "," << eleid << "," << eleid << "," << eleid << "};" << std::endl;
   } else dserror("numnodes not supported");
-  gmshfilecontent << "};" << endl;
-  gmshfilecontent <<"View \" Normal \" {" << endl;
+  gmshfilecontent << "};" << std::endl;
+  gmshfilecontent <<"View \" Normal \" {" << std::endl;
   gmshfilecontent << "VP(" <<
   basemesh.GetNode(nodeid)[0] << "," <<
   basemesh.GetNode(nodeid)[1] << "," <<
   basemesh.GetNode(nodeid)[2] << ")" <<
-  "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << endl;
-  gmshfilecontent << "};" << endl;
+  "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << std::endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
 
@@ -1588,12 +1588,12 @@ void EXODUS::PlotEleNbrs(const std::vector<int> centerele,const std::vector<int>
     const EXODUS::Mesh& basemesh,const int nodeid, const std::vector<double> normal, const std::map<int,std::set<int> >& node_conn,
     const std::map<int,std::vector<double> >avg_nn)
 {
-  cout << "centerele: "; PrintVec(cout,centerele);
-  cout << "neighboreles: "; PrintVec(cout,nbrs);
+  std::cout << "centerele: "; PrintVec(std::cout,centerele);
+  std::cout << "neighboreles: "; PrintVec(std::cout,nbrs);
   std::set<int> patchnodes;
   std::ofstream f_system("neighbors.gmsh");
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Neighbors \" {" << endl;
+  gmshfilecontent << "View \" Neighbors \" {" << std::endl;
   int numnodes = centerele.size();
   if (numnodes==3) gmshfilecontent << "ST(";
   else if (numnodes==4) gmshfilecontent << "SQ(";
@@ -1606,12 +1606,12 @@ void EXODUS::PlotEleNbrs(const std::vector<int> centerele,const std::vector<int>
   }
   gmshfilecontent << "{";
   for(unsigned int i=0; i<(centerele.size()-1); ++i) gmshfilecontent << 100 << ",";
-  gmshfilecontent << 100 << "};" << endl;
+  gmshfilecontent << 100 << "};" << std::endl;
   std::vector<int>::const_iterator i_nbr;
   for(unsigned int i_nbr = 0; i_nbr < nbrs.size(); ++i_nbr){
     int eleid = nbrs.at(i_nbr);
     const std::vector<int> elenodes = baseconn.find(eleid)->second;
-    cout << i_nbr << "th neighbor elenodes: "; PrintVec(cout,elenodes);
+    std::cout << i_nbr << "th neighbor elenodes: "; PrintVec(std::cout,elenodes);
     int numnodes = elenodes.size();
     if (numnodes==3) gmshfilecontent << "ST(";
     else if (numnodes==4) gmshfilecontent << "SQ(";
@@ -1625,7 +1625,7 @@ void EXODUS::PlotEleNbrs(const std::vector<int> centerele,const std::vector<int>
     }
     gmshfilecontent << "{";
     for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << i_nbr << ",";
-    gmshfilecontent << i_nbr << "};" << endl;
+    gmshfilecontent << i_nbr << "};" << std::endl;
   }
   std::set<int>::iterator it;
   std::set<int>::iterator it2;
@@ -1648,12 +1648,12 @@ void EXODUS::PlotEleNbrs(const std::vector<int> centerele,const std::vector<int>
     }
     gmshfilecontent << "{";
     for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << -5 << ",";
-    gmshfilecontent << -5 << "};" << endl;
+    gmshfilecontent << -5 << "};" << std::endl;
   }
 
 
-  gmshfilecontent << "};" << endl;
-  gmshfilecontent <<"View \" Avg Normals \" {" << endl;
+  gmshfilecontent << "};" << std::endl;
+  gmshfilecontent <<"View \" Avg Normals \" {" << std::endl;
   // plot avg node normals
   for (it = patchnodes.begin(); it != patchnodes.end(); ++it){
     if (avg_nn.find(*it) != avg_nn.end()){
@@ -1662,18 +1662,18 @@ void EXODUS::PlotEleNbrs(const std::vector<int> centerele,const std::vector<int>
       basemesh.GetNode(*it)[1] << "," <<
       basemesh.GetNode(*it)[2] << ")";
       std::vector<double> actn = avg_nn.find(*it)->second;
-      gmshfilecontent << "{" << actn[0] << "," << actn[1] << "," << actn[2] << "};" << endl;
+      gmshfilecontent << "{" << actn[0] << "," << actn[1] << "," << actn[2] << "};" << std::endl;
     }
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
 
-  gmshfilecontent <<"View \" Normal \" {" << endl;
+  gmshfilecontent <<"View \" Normal \" {" << std::endl;
   gmshfilecontent << "VP(" <<
   basemesh.GetNode(nodeid)[0] << "," <<
   basemesh.GetNode(nodeid)[1] << "," <<
   basemesh.GetNode(nodeid)[2] << ")" <<
-  "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << endl;
-  gmshfilecontent << "};" << endl;
+  "{" << normal.at(0) << "," << normal.at(1) << "," << normal.at(2) << "};" << std::endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
 
@@ -1684,7 +1684,7 @@ void EXODUS::PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const 
 {
   std::ofstream f_system("extrusionmesh.gmsh");
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" Extrusion \" {" << endl;
+  gmshfilecontent << "View \" Extrusion \" {" << std::endl;
   std::map<int,std::vector<int> >::const_iterator it;
   for(it = conn.begin(); it != conn.end(); ++it){
     int eleid = it->first;
@@ -1706,9 +1706,9 @@ void EXODUS::PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const 
     }
     gmshfilecontent << "{";
     for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
-    gmshfilecontent << eleid << "};" << endl;
+    gmshfilecontent << eleid << "};" << std::endl;
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
 }
@@ -1717,7 +1717,7 @@ void EXODUS::PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const 
 {
   std::ofstream f_system("extrusionproblems.gmsh");
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" base connectivity \" {" << endl;
+  gmshfilecontent << "View \" base connectivity \" {" << std::endl;
   std::map<int,std::vector<int> >::const_iterator it;
   for(it = conn.begin(); it != conn.end(); ++it){
     const std::vector<int> elenodes = it->second;
@@ -1735,11 +1735,11 @@ void EXODUS::PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const 
     }
     gmshfilecontent << "{";
     for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << 0 << ",";
-    gmshfilecontent << 0 << "};" << endl;
+    gmshfilecontent << 0 << "};" << std::endl;
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
 
-  gmshfilecontent << "View \" leftovers \" {" << endl;
+  gmshfilecontent << "View \" leftovers \" {" << std::endl;
   for(it=leftovers.begin();it!=leftovers.end();++it){
     const std::vector<int> elenodes = it->second;
     int eleid = it->first;
@@ -1758,10 +1758,10 @@ void EXODUS::PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const 
     }
     gmshfilecontent << "{";
     for(unsigned int i=0; i<(elenodes.size()-1); ++i) gmshfilecontent << eleid << ",";
-    gmshfilecontent << eleid << "};" << endl;
+    gmshfilecontent << eleid << "};" << std::endl;
 
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
 
   f_system << gmshfilecontent.str();
   f_system.close();

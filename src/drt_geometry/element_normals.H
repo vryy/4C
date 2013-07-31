@@ -211,7 +211,7 @@ inline void computeNormalToSurfaceElement(
     computeNormalToSurfaceElementT<DRT::Element::tri6>(xyze_surfaceElement, eleCoord, unitnormalvec);
     break;
   default:
-    cout << DRT::DistypeToString(distype) << " not found!" << endl;
+    std::cout << DRT::DistypeToString(distype) << " not found!" << std::endl;
     dserror("please add your distype!");
   }
   return;
@@ -245,7 +245,7 @@ inline void computeNormalAndTangentToSurfaceElement(
     computeNormalAndTangentToSurfaceElementT<DRT::Element::tri3>(xyze_surfaceElement, eleCoord, unitnormalvec,unittang1vec,unittang2vec);
     break;
   default:
-    cout << DRT::DistypeToString(distype) << " not found!" << endl;
+    std::cout << DRT::DistypeToString(distype) << " not found!" << std::endl;
     dserror("please add your distype!");
   }
   return;

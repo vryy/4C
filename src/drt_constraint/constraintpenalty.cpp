@@ -21,7 +21,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 UTILS::ConstraintPenalty::ConstraintPenalty(RCP<DRT::Discretization> discr,
-        const string& conditionname):
+        const std::string& conditionname):
 Constraint(discr,conditionname)
 {
   if (constrcond_.size())
@@ -118,7 +118,7 @@ void UTILS::ConstraintPenalty::Initialize
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+        std::cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << std::endl;
       }
     }
   }
@@ -360,7 +360,7 @@ void UTILS::ConstraintPenalty::EvaluateError(
 
       if (actdisc_->Comm().MyPID()==0 && (!(activecons_.find(condID)->second)))
       {
-        cout << "Encountered a new active penalty condition (Id = " << condID << ")  at time t = "<< time << endl;
+        std::cout << "Encountered a new active penalty condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       }
       
       // remember next time, that this condition is already initialized, i.e. active

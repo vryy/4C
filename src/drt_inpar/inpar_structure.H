@@ -48,7 +48,7 @@ namespace INPAR
       dyna_statmech                    ///< Statistical Mechanics Time Integration
     };
 
-    /// Map time integrator to string
+    /// Map time integrator to std::string
     static inline const std::string DynamicTypeString
     (
       const enum DynamicType name  ///< enum to convert
@@ -84,7 +84,7 @@ namespace INPAR
         return "StatMech" ;
         break;
       default :
-        dserror("Cannot make string for time integrator %d", name);
+        dserror("Cannot make std::string for time integrator %d", name);
         return "";
       }
     }
@@ -119,7 +119,7 @@ namespace INPAR
                        ///<  (TR means trapezoidal rule.)
     };
     
-    /// Map mid-averaging to string 
+    /// Map mid-averaging to std::string 
     static inline const std::string MidAverageString
     (
       const enum MidAverageEnum name  ///< enum to convert
@@ -136,7 +136,7 @@ namespace INPAR
         return "TR-like";
         break;
       default :
-        dserror("Cannot make string for time integrator %d", name);
+        dserror("Cannot make std::string for time integrator %d", name);
         return "";
       }
     }
@@ -174,7 +174,7 @@ namespace INPAR
       soltech_noxgeneral  ///< non-linear solution with NOX
     };
 
-    /// Map solution technique enum to string
+    /// Map solution technique enum to std::string
     static inline const std::string NonlinSolTechString
     (
       const enum NonlinSolTech name  ///< enum to convert
@@ -213,7 +213,7 @@ namespace INPAR
         return "ptc";
         break;
       default :
-        dserror("Cannot make string for solution technique %d", name);
+        dserror("Cannot make std::string for solution technique %d", name);
         return "";
       }
     }
@@ -278,7 +278,7 @@ namespace INPAR
                            ///< and pressures
     };
 
-    /// Map predictor enum term to string
+    /// Map predictor enum term to std::string
     static inline const std::string PredEnumString
     (
       const PredEnum name  ///< identifier
@@ -311,7 +311,7 @@ namespace INPAR
         return "ConstDisVelAccPres";
         break;
       default :
-        dserror("Cannot make string for predictor %d", name);
+        dserror("Cannot make std::string for predictor %d", name);
         return "";
       }
     }
@@ -365,7 +365,7 @@ namespace INPAR
         return "stc_currsym";
         break;
       default :
-        dserror("Cannot make string for stc method %d", name);
+        dserror("Cannot make std::string for stc method %d", name);
         return "";
       }
     }
@@ -436,7 +436,7 @@ namespace INPAR
       norm_inf         ///< Maximum/infinity norm
     };
 
-    /// map enum term to string
+    /// map enum term to std::string
     static inline const std::string VectorNormString
     (
       const enum VectorNorm norm  ///< input enum term
@@ -460,7 +460,7 @@ namespace INPAR
         return "Inf";
         break;
       default:
-        dserror("Cannot make string to vector norm %d", norm);
+        dserror("Cannot make std::string to vector norm %d", norm);
         return "";
       }
     }

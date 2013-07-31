@@ -40,11 +40,11 @@ POTENTIAL::SurfacePotential::SurfacePotential(
     Potential (discretRCP, discret)
 
 {
-  //cout << "pot man"  << endl;
+  //std::cout << "pot man"  << std::endl;
 
   // create discretization from potential boundary elements and distribute them
   // on every processor
-  std::vector<string> conditions_to_copy;
+  std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("Potential");
 
   if(prob_dim_ == 2)
@@ -119,7 +119,7 @@ POTENTIAL::SurfacePotential::SurfacePotential(
 
 
 
-  // std::cout << "Potential manager constructor done" << endl;
+  // std::cout << "Potential manager constructor done" << std::endl;
 }
 
 
@@ -161,7 +161,7 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
     RCP<Epetra_Vector>              systemvector1,
     Teuchos::RCP<Epetra_Vector>             systemvector2,
     Teuchos::RCP<Epetra_Vector>             systemvector3,
-    const string&                           condstring)
+    const std::string&                           condstring)
 {
   if (!discret_.Filled()) dserror("FillComplete() was not called");
   if (!discret_.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -172,7 +172,7 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
   if (time < 0.0) usetime = false;
 
   if(time < 0.0)
-    cout <<  "no time curve set " << endl;
+    std::cout <<  "no time curve set " << std::endl;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
@@ -313,7 +313,7 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotential(
   // compute internal force and stiffness matrix
   // TODO if poteles empty don t do assembly
   computeFandK(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
-  // cout << "stiffness stop" << endl;
+  // std::cout << "stiffness stop" << std::endl;
   return;
 }
 
@@ -363,8 +363,8 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox1(
   // compute internal force and stiffness matrix
   computeFandK_Approx1_new(element, gaussrule, potentialElementIds, lm, K_surf, F_int, cond, label, curvefac);
 
-  //K_surf.Print(cout);
-  //F_int.Print(cout);
+  //K_surf.Print(std::cout);
+  //F_int.Print(std::cout);
 
 
   return;
@@ -622,8 +622,8 @@ void POTENTIAL::SurfacePotential::computeFandK(
           // if valid contribution
           if(validContribution)
           {
-             //cout << "potderiv1 = " << potderiv1 << endl;
-             //cout << "potderiv2 = " << potderiv2 << endl;
+             //std::cout << "potderiv1 = " << potderiv1 << std::endl;
+             //std::cout << "potderiv2 = " << potderiv2 << std::endl;
              const int numdof = 3;
              // computation of internal forces (possibly with non-local values)
              for (int inode = 0; inode < numnode; inode++)
@@ -797,8 +797,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
           // if valid contribution
           //if(validContribution)
           //{
-             //cout << "potderiv1 = " << potderiv1 << endl;
-             //cout << "potderiv2 = " << potderiv2 << endl;
+             //std::cout << "potderiv1 = " << potderiv1 << std::endl;
+             //std::cout << "potderiv2 = " << potderiv2 << std::endl;
              const int numdof = 3;
              //Zwischen speichert F_Invers*N
              Epetra_SerialDenseVector 	Zwischen (3);
@@ -848,12 +848,12 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
                         funct(inode)*beta*fac*Teta*(beta_pot*(-1)*potderiv2(dim,dim_pot)*funct_pot(jnode)*fac_pot*Teta_pot);}
 
                 }
-             //K_surf.Print(cout);
+             //K_surf.Print(std::cout);
              //}// valid contribution
          } // loop over all gauss points of the potential element
       } // loop over all potential elements
   } // loop over all gauss points of the actual element
-  //F_int.Print(cout);
+  //F_int.Print(std::cout);
 
   return;
 }
@@ -902,11 +902,11 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
     LINALG::Matrix<3,1>         x_gp(true);
     LINALG::Matrix<3,1>         n_xsi(true);
 
-    //cout << " act element" << endl;
-    //actEle->Print(cout);
+    //std::cout << " act element" << std::endl;
+    //actEle->Print(std::cout);
     const double fac = ComputeFactorApprox_new(actEle, funct, deriv, intpoints, gp, x_gp, n_xsi, curvefac);
 
-    //cout << "act fac = "<< fac << endl;
+    //std::cout << "act fac = "<< fac << std::endl;
     // compute normal n_gp to act ele in x_gp
     LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
 
@@ -919,8 +919,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
          const DRT::Element* element_pot = potentialdis_->gElement(*eleIter);
          const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
-         //cout << " influencing element" << endl;
-         //element_pot->Print(cout);
+         //std::cout << " influencing element" << std::endl;
+         //element_pot->Print(std::cout);
          // obtain current potential dofs
          std::vector<int> lmpot;
          std::vector<int> lmowner;
@@ -943,7 +943,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
            LINALG::Matrix<3,1>       x_pot_gp(true);
            LINALG::Matrix<3,1>       n_xsi_pot(true);
 
-           //cout << "fac_pot = "<< fac << endl;
+           //std::cout << "fac_pot = "<< fac << std::endl;
            const double fac_pot = ComputeFactorApprox_new(element_pot,funct_pot, deriv_pot,
                                                       intpoints_pot, gp_pot, x_pot_gp,
                                                       n_xsi_pot, curvefac);
@@ -951,7 +951,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
            // compute normal of surface element in x_pot_gp
            LINALG::Matrix<3,1> n_pot_gp = ComputeNormalInGP(element_pot, x_pot_gp);
 
-           //n_pot_gp.Print(cout);
+           //n_pot_gp.Print(std::cout);
            // evaluate Lennard Jones potential and its derivatives
            LINALG::Matrix<3,1>  potderiv1;
            LINALG::Matrix<3,3>  potderiv2;
@@ -1003,12 +1003,12 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
              theta = 1.0;
              theta_pot = 1.0;
 
-             //cout << "theta  = "<< theta  <<  endl;
-             //cout << "theta_pot  = "<< theta_pot  <<  endl;
-             //cout << "beta = "<<  beta << endl;
-             //cout << "beta_pot = "<<  beta_pot << endl;
-             //cout << "fac = "<<  beta << endl;
-             //cout << "fac_pot = "<<  beta_pot << endl;
+             //std::cout << "theta  = "<< theta  <<  std::endl;
+             //std::cout << "theta_pot  = "<< theta_pot  <<  std::endl;
+             //std::cout << "beta = "<<  beta << std::endl;
+             //std::cout << "beta_pot = "<<  beta_pot << std::endl;
+             //std::cout << "fac = "<<  beta << std::endl;
+             //std::cout << "fac_pot = "<<  beta_pot << std::endl;
 
              // computation of internal forces
              for (int inode = 0; inode < numnode; inode++)
@@ -1148,8 +1148,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
         // if valid contribution
         if(validContribution)
         {
-          //cout << "potderiv1 = " << potderiv1 << endl;
-          //cout << "potderiv2 = " << potderiv2 << endl;
+          //std::cout << "potderiv1 = " << potderiv1 << std::endl;
+          //std::cout << "potderiv2 = " << potderiv2 << std::endl;
           const int numdof = 3;
           //Zwischen speichert F_Invers(T)*N
           Epetra_SerialDenseVector  Zwischen(3);
@@ -1206,11 +1206,11 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
                       funct(inode)*beta*fac*Teta*(beta_pot*(1.0/detF)*(-1)*Fsderiv(dim,dim_pot)*funct_pot(jnode));
               }
           }
-          //K_surf.Print(cout);
+          //K_surf.Print(std::cout);
         }// valid contribution
       }//einzelne Körper
     } // loop over all gauss points of the actual element
-  //F_int.Print(cout);
+  //F_int.Print(std::cout);
   return;
 }
 
@@ -1254,7 +1254,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
   const double beta = cond->GetDouble("beta");
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
-  //cout << "ELEMENT = "<< actEle->Id()<<  endl;
+  //std::cout << "ELEMENT = "<< actEle->Id()<<  std::endl;
 
   //----------------------------------------------------------------------
   // loop over all gauss points of the actual element
@@ -1271,7 +1271,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
 
     LINALG::Matrix<3,1>         n_xsi(true);
     const double fac = ComputeFactorApprox_new(actEle, funct, deriv, intpoints, gp, x_gp, n_xsi, curvefac);
-    //cout << "fac = "  << fac << endl;
+    //std::cout << "fac = "  << fac << std::endl;
     // compute normal n_gp to act ele in x_gp
     //LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
     //Normale auf das aktive Element in gp_X berechnen
@@ -1299,8 +1299,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
         LINALG::Matrix<3,1> np;
         ComputeNormalOnPotentialElement(element_pot,xp,np);
 
-        //cout << "Normal on potential element" << endl;
-        //np.Print(cout);
+        //std::cout << "Normal on potential element" << std::endl;
+        //np.Print(std::cout);
 
         LINALG::Matrix<3,1>   Fs;
         LINALG::Matrix<3,3>   Fsderiv;
@@ -1312,8 +1312,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
         //fabs(cond->GetDouble("exvollength")) > 1e-7
         const LINALG::Matrix<3,1> n_gp = ComputeNormalInGP(actEle, x_gp);
 
-        //cout << "Normal in Gauss Point" << endl;
-        //n_gp.Print(cout);
+        //std::cout << "Normal in Gauss Point" << std::endl;
+        //n_gp.Print(std::cout);
 
         if(fabs(cond->GetDouble("exvollength")) > 1e-7)
         {
@@ -1338,8 +1338,8 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
         // if valid contribution
         if(validContribution)
         {
-          //cout << "potderiv1 = " << potderiv1 << endl;
-          //cout << "potderiv2 = " << potderiv2 << endl;
+          //std::cout << "potderiv1 = " << potderiv1 << std::endl;
+          //std::cout << "potderiv2 = " << potderiv2 << std::endl;
           const int numdof = 3;
 
           // computation of theta
@@ -1347,7 +1347,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
           for(int i=0;i<3;i++)
             theta += np(i)*n_xsi(i);
 
-          //cout << "theta = " << theta << endl;
+          //std::cout << "theta = " << theta << std::endl;
           // computation of internal forces (possibly with non-local values)
           for (int inode = 0; inode < numnode; inode++)
             for(int dim = 0; dim < 3; dim++)
@@ -1386,12 +1386,12 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
                       funct(inode)*beta*fac*theta*(beta_pot*(-1)*Fsderiv(dim,dim_pot)*funct_pot(jnode));
               }
           }
-          //K_surf.Print(cout);
+          //K_surf.Print(std::cout);
         }// valid contribution
       }//einzelne Körper
     } // loop over all gauss points of the actual element
 
-  //F_int.Print(cout);
+  //F_int.Print(std::cout);
   return;
 }
 
@@ -1491,8 +1491,8 @@ void POTENTIAL::SurfacePotential::computeFandK(
            LINALG::Matrix<3,1>  potderiv1;
            LINALG::Matrix<3,3>  potderiv2;
            EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
-            //cout << "potderiv1 = " << potderiv1 << endl;
-            //cout << "potderiv2 = " << potderiv2 << endl;
+            //std::cout << "potderiv1 = " << potderiv1 << std::endl;
+            //std::cout << "potderiv2 = " << potderiv2 << std::endl;
 
            const int numdof = 3;
 
@@ -1693,8 +1693,8 @@ double POTENTIAL::SurfacePotential::ComputeFactorApprox(
     		  Zwischenergebnis(i,j)=VSD(j,i)*WSD(i,1);
       }
       Test.Multiply('N','N',1.0,dxyzdrs,Zwischenergebnis,0.0);
-      cout<<"Test"<<endl;
-      Test.Print(cout);
+      std::cout<<"Test"<<std::endl;
+      Test.Print(std::cout);
    */
 
   //V*WInvers ausrechnen und in V Speichern
@@ -2023,7 +2023,7 @@ double POTENTIAL::SurfacePotential::ComputeNormalAndDetFinXp(
    for(int i=0;i<3;i++)
        F(i,i)+=1.0;
 
-   //F.Print(cout);
+   //F.Print(std::cout);
 
    const double detF =
      F(0,0)*(F(1,1)*F(2,2)-F(1,2)*F(2,1))
@@ -2107,9 +2107,9 @@ bool POTENTIAL::SurfacePotential::DetermineValidContribution(
   if(scalarproduct > (-1)*GEO::TOL7 && scalarproduct_pot > (-1)*GEO::TOL7 )
     return true;
 
-  //cout << "scalarproduct =" <<  scalarproduct <<  endl;
-  //cout << "scalarproduct_pot =" <<  scalarproduct_pot <<  endl;
-  //cout << "radius.Norm2() ="<< radius.Norm2() << endl;
+  //std::cout << "scalarproduct =" <<  scalarproduct <<  std::endl;
+  //std::cout << "scalarproduct_pot =" <<  scalarproduct_pot <<  std::endl;
+  //std::cout << "radius.Norm2() ="<< radius.Norm2() << std::endl;
 
   return false;
 }
@@ -2259,12 +2259,12 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
   double dDistance = DistanceVector.Norm2();
   double dForce1 = fint_sum_Body1.Norm2();
   double dForce2 = fint_sum_Body2.Norm2();
-  cout<<endl<<endl<<"Abstand:"<<dDistance<<endl;
+  std::cout<<std::endl<<std::endl<<"Abstand:"<<dDistance<<std::endl;
 
 
-  fint_sum_Body1.Print(cout);
-  cout<<"Kraft1:"<<dForce1<<endl;
-  cout<<"Kraft2:"<<dForce2<<endl;
+  fint_sum_Body1.Print(std::cout);
+  std::cout<<"Kraft1:"<<dForce1<<std::endl;
+  std::cout<<"Kraft2:"<<dForce2<<std::endl;
   AusgabedateiSchreiben(dDistance, dForce1, dForce2, time);
 
   return;
@@ -2313,7 +2313,7 @@ void POTENTIAL::SurfacePotential::FintSumAndCenterOfGravityVector(  LINALG::Matr
       Schwerpunkt_Body += x;
     }
 
-  cout<<"Volumen:"<<Volumen_Body<<endl;
+  std::cout<<"Volumen:"<<Volumen_Body<<std::endl;
 
   Schwerpunkt_Body.Scale(1/Volumen_Body);
 
@@ -2374,7 +2374,7 @@ void POTENTIAL::SurfacePotential::AusgabedateiSchreiben(double dDistance,
 
   if(AusgabeDatei.good())
   {
-    AusgabeDatei<<time<<"\t\t\t"<<dForce1<<"\t\t\t"<<dDistance<<endl;
+    AusgabeDatei<<time<<"\t\t\t"<<dForce1<<"\t\t\t"<<dDistance<<std::endl;
   }
 
   return;

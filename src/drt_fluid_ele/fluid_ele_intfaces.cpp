@@ -330,7 +330,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidIntFace::Print(ostream& os) const
+void DRT::ELEMENTS::FluidIntFace::Print(std::ostream& os) const
 {
   os << "FluidIntFace ";
   Element::Print(os);

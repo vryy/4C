@@ -362,7 +362,7 @@ public:
   /*!
   \brief Print this cnode
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   /*!
   \brief Return mechanical dissipation per node  (length 1)
@@ -522,6 +522,6 @@ protected:
 } // namespace CONTACT
 
 //// << operator
-//ostream& operator << (ostream& os, const CONTACT::FriNode& cnode);
+//std::ostream& operator << (std::ostream& os, const CONTACT::FriNode& cnode);
 
 #endif  // #ifndef FRICTION_NODE_H

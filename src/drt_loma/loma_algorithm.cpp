@@ -303,7 +303,7 @@ void LOMA::Algorithm::OuterLoop()
 
   if (Comm().MyPID()==0)
   {
-    cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
            Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),Step(),stepmax_);
@@ -346,7 +346,7 @@ void LOMA::Algorithm::OuterLoop()
 
   // initially solve scalar transport equation
   // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
-  if (Comm().MyPID()==0) cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+  if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
   ScaTraField().Solve();
 
   while (stopnonliniter==false)
@@ -364,14 +364,14 @@ void LOMA::Algorithm::OuterLoop()
     SetScaTraValuesInFluid();
 
     // solve low-Mach-number flow equations
-    if (Comm().MyPID()==0) cout<<"\n****************************************\n              FLUID SOLVER\n****************************************\n";
+    if (Comm().MyPID()==0) std::cout<<"\n****************************************\n              FLUID SOLVER\n****************************************\n";
     FluidField().Solve();
 
     // set fluid values required in scatra
     SetFluidValuesInScaTra();
 
     // solve scalar transport equation
-    if (Comm().MyPID()==0) cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+    if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
     ScaTraField().Solve();
 
     // check convergence and stop iteration loop if convergence is achieved
@@ -391,7 +391,7 @@ void LOMA::Algorithm::MonoLoop()
 
   if (Comm().MyPID()==0)
   {
-    cout<<"\n****************************************\n       MONOLITHIC ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n****************************************\n       MONOLITHIC ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
            Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),Step(),stepmax_);
@@ -721,13 +721,13 @@ bool LOMA::Algorithm::ConvergenceCheck(int itnum)
   // fluid convergence check
   if (Comm().MyPID()==0)
   {
-    cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
-    cout<<"\n****************************************\n              FLUID CHECK\n****************************************\n";
+    std::cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
+    std::cout<<"\n****************************************\n              FLUID CHECK\n****************************************\n";
   }
   fluidstopnonliniter  = FluidField().ConvergenceCheck(itnum,itmax_,ittol_);
 
   // scatra convergence check
-  if (Comm().MyPID()==0) cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
+  if (Comm().MyPID()==0) std::cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
   scatrastopnonliniter = ScaTraField().ConvergenceCheck(itnum,itmax_,ittol_);
 
   if (fluidstopnonliniter == true and scatrastopnonliniter == true) return true;

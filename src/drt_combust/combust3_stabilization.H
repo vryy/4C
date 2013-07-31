@@ -115,7 +115,7 @@ namespace UTILS
     }
     else
     {
-      //cout << "/!\\ set x-velocity for streamlength computation" << endl;
+      //std::cout << "/!\\ set x-velocity for streamlength computation" << std::endl;
       velino.Clear();
       velino(0) = 1.0;
     }
@@ -161,7 +161,7 @@ namespace UTILS
     }
     else
     {
-      //cout << "/!\\ set x-velocity for streamlength computation" << endl;
+      //std::cout << "/!\\ set x-velocity for streamlength computation" << std::endl;
       velino.Clear();
       velino(0) = 1.0;
     }

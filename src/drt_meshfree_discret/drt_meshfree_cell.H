@@ -356,11 +356,11 @@ public:
   /*!
    * \brief Print this cell
    *
-   * Prints basic information about this cell to ostream. This method would
+   * Prints basic information about this cell to std::ostream. This method would
    * usually be called by the print method of a derived class.
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -428,11 +428,11 @@ private:
 }; // class Cell
 
 //  /*
-//   * \brief translate distype to string for screen output
+//   * \brief translate distype to std::string for screen output
 //   */
 //  inline std::string DistypeToString(const DRT::MESHFREE::Cell::MeshfreeDiscretizationType distype)
 //  {
-//      string s = "";
+//      std::string s = "";
 //      switch (distype)
 //      {
 //      case DRT::MESHFREE::Cell::dis_none:   s = "DIS_NONE";  break;
@@ -443,14 +443,14 @@ private:
 //      case DRT::MESHFREE::Cell::point1:     s = "POINT1";  break;
 //      case DRT::MESHFREE::Cell::max_distype:s = "MAX_DISTYPE";  break;
 //      default:
-//          cout << distype << endl;
-//          dserror("no string for this distype defined!");
+//          std::cout << distype << std::endl;
+//          dserror("no std::string for this distype defined!");
 //      };
 //      return s;
 //  }
 //
 //  /*
-//   * \brief translate distype string to enum
+//   * \brief translate distype std::string to enum
 //   */
 //  DRT::MESHFREE::Cell::MeshfreeDiscretizationType StringToDistype(std::string name);
 
@@ -458,6 +458,6 @@ private:
 } // namespace DRT
 
 //! << operator
-ostream& operator << (ostream& os, const DRT::MESHFREE::Cell& ele);
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell& ele);
 
 #endif  // #ifndef DRT_MESHFREE_CELL_H

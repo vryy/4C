@@ -35,8 +35,8 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebanisotropType::Create( const std::vector<c
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebanisotropType::Create(const string eletype,
-															     const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebanisotropType::Create(const std::string eletype,
+															     const std::string eledistype,
 																 const int id,
 																 const int owner )
 {
@@ -205,7 +205,7 @@ DRT::ELEMENTS::Beam3ebanisotrop::~Beam3ebanisotrop()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebanisotrop::Print(ostream& os) const
+void DRT::ELEMENTS::Beam3ebanisotrop::Print(std::ostream& os) const
 {
   return;
 }
@@ -367,7 +367,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
   if(!isinit_ || secondinit)
   {
 
-	  cout << "SetUpReferenceGeometry!!!" << endl;
+	  std::cout << "SetUpReferenceGeometry!!!" << std::endl;
 
 
 

@@ -32,7 +32,7 @@ Maintainer: Ulrich Kuettler
 ///
 /// This namespace should one day contain all the enums now still
 /// defined in the various old C-headers (enums.h, dynamic.h,...)
-/// The enums are used to represent the different values of string
+/// The enums are used to represent the different values of std::string
 /// input variables within Baci. The idea behind this new namespace
 /// is twofold: first, of course, the old C-headers should go away
 /// one day and we have to establish an alternative for them.
@@ -68,7 +68,7 @@ namespace INPUT {
                        std::string const& docString,
                        Teuchos::ParameterList* paramList);
 
-  /// special implementation for a parameter being an arbitrary string
+  /// special implementation for a parameter being an arbitrary std::string
   void StringParameter(std::string const &paramName,
                        std::string const &value,
                        std::string const &docString,
@@ -96,7 +96,7 @@ namespace INPUT {
                       bool color=false,
                       bool comment=true);
 
-  /// provide string to keep flag for printing equal signs
+  /// provide std::string to keep flag for printing equal signs
   ///
   /// This is needed for the NOX parameters whose key words
   /// and value have white spaces and thus '=' are inserted

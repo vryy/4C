@@ -174,7 +174,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
       int    id       = (couplingcond[i])->GetInt("ConditionID");
 
       // Get returned coupling variable
-      std::string variable = *((couplingcond[i])->Get<string>("ReturnedVariable"));
+      std::string variable = *((couplingcond[i])->Get<std::string>("ReturnedVariable"));
 
       // Build a new std::string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
@@ -197,7 +197,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
       int    id       = (couplingcond2[i])->GetInt("ConditionID");
 
       // Get returned coupling variable
-      std::string variable = *((couplingcond2[i])->Get<string>("ReturnedVariable"));
+      std::string variable = *((couplingcond2[i])->Get<std::string>("ReturnedVariable"));
 
       // Build a new std::string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
@@ -318,7 +318,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
       if (conds3D[i]->GetInt("ConditionID") == condID)
       {
         // get returned value name from 3D boundary
-        std::string variable_str = *(conds3D[i]->Get<string>("ReturnedVariable"));
+        std::string variable_str = *(conds3D[i]->Get<std::string>("ReturnedVariable"));
 
         // concatenate the variable name with the variable id
         std::stringstream CouplingVariable;
@@ -353,7 +353,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
         }
         if(discret3D_->Comm().MyPID() == 0)
         {
-          cout<<"3D condition "<<" ["<<condID<<"] returns "<<variable_str<<" "<<(*map3_Dnp_)[CouplingVariable.str()]<<" at time "<<time<<endl;
+          std::cout<<"3D condition "<<" ["<<condID<<"] returns "<<variable_str<<" "<<(*map3_Dnp_)[CouplingVariable.str()]<<" at time "<<time<<std::endl;
         }
         break;
       }
@@ -381,7 +381,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
         if (conds_redD[i]->GetInt("ConditionID") == condID)
         {
           // get returned value name from 3D boundary
-          std::string variable_str = *(conds_redD[i]->Get<string>("ReturnedVariable"));
+          std::string variable_str = *(conds_redD[i]->Get<std::string>("ReturnedVariable"));
 
           // concatenate the variable name with the variable id
           std::stringstream CouplingVariable;
@@ -493,7 +493,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     int ID   = conds_redD[i]->GetInt("ConditionID");
 
     // Concatenate the returned value with the condition ID
-    std::string ReturnedVariable = *(conds_redD[i]->Get<string>("ReturnedVariable"));
+    std::string ReturnedVariable = *(conds_redD[i]->Get<std::string>("ReturnedVariable"));
 
     std::stringstream VariableWithId;
     VariableWithId << ReturnedVariable<<"_"<<ID;
@@ -761,7 +761,7 @@ FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RCP<DRT::Discretization> dis_3D,
   //               |applied
   // ---------------------------------------------------------------------
 
-  if(*(couplingcond[numcond2]->Get<string>("ReturnedVariable")) == "flow")
+  if(*(couplingcond[numcond2]->Get<std::string>("ReturnedVariable")) == "flow")
   {
     double density   = 0.0;
     double viscosity = 0.0;
@@ -778,7 +778,7 @@ FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RCP<DRT::Discretization> dis_3D,
     }
     if (myrank_ == 0)
     {
-      cout<<"Velocity correction factor cond("<<condid<<") is: "<<alfa_<<endl;
+      std::cout<<"Velocity correction factor cond("<<condid<<") is: "<<alfa_<<std::endl;
     }
 
   }
@@ -923,7 +923,7 @@ double FLD::UTILS::Fluid_couplingBc::Area( double& density, double& viscosity, i
 
   if (myrank_ == 0)
   {
-    cout << "3D/Reduced-D coupling condition Id: " << condid << " area = " << pararea << endl;
+    std::cout << "3D/Reduced-D coupling condition Id: " << condid << " area = " << pararea << std::endl;
   }
   return pararea;
 }//FluidImplicitTimeInt::Area
@@ -1167,9 +1167,9 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
                                                      double                time)
 {
   return;
-  cout<<"Evaluating Dirich!"<<endl;
+  std::cout<<"Evaluating Dirich!"<<std::endl;
   //dserror("Dirichlet coupling is not fixed yet, if you see the message then something is wrong!");
-  //  cout<<"3D discretization:"<<endl<<*discret_3D_<<endl;
+  //  std::cout<<"3D discretization:"<<std::endl<<*discret_3D_<<std::endl;
   std::vector<DRT::Condition*> conds_red;
   discret_redD_->GetCondition("Art_redD_3D_CouplingCond",conds_red);
 
@@ -1183,7 +1183,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
     }
   }
 
-  if (*(cond_red->Get<string>("ReturnedVariable")) != "flow")
+  if (*(cond_red->Get<std::string>("ReturnedVariable")) != "flow")
   {
     return;
   }
@@ -1214,43 +1214,43 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
   alfa_  = 1.0;
   velocity_ *=alfa_;
 
-  cout<<"velocity: "<<endl;
-  cout<<"Dflowrate: "<<Dflowrate<<endl;
-  cout<<"area: "<<area<<endl;
+  std::cout<<"velocity: "<<std::endl;
+  std::cout<<"Dflowrate: "<<Dflowrate<<std::endl;
+  std::cout<<"area: "<<area<<std::endl;
   const std::vector<int>* nodes = cond->Nodes();
 
   for(unsigned int i = 0; i< nodes->size(); i++)
   {
     int gid = (*nodes)[i];
-    cout<<"Node("<<gid<<"): ";
+    std::cout<<"Node("<<gid<<"): ";
 
     if (discret_3D_ -> HaveGlobalNode(gid))
     {
       DRT::Node* node = discret_3D_ -> gNode(gid);
       unsigned int numDof = discret_3D_ -> NumDof(node);
-      cout<<"("<<numDof<<") dof --> ";
+      std::cout<<"("<<numDof<<") dof --> ";
       for (unsigned int dof = 0; dof < numDof -1 ; dof++)
       {
         int dof_gid = discret_3D_ -> Dof( node, dof);
-        //        cout<<"("<<dof<<")+>["<<dof_gid<<"]\t";
+        //        std::cout<<"("<<dof<<")+>["<<dof_gid<<"]\t";
         if (condmap.MyGID(dof_gid))
         {
           int lid = discret_3D_->DofRowMap()->LID(dof_gid);
 
           double val = (*velnp) [lid] * velocity_;
-          //        cout<<"Vel["<<gid<<"]: "<<(*velnp) [lid]<<endl;
+          //        std::cout<<"Vel["<<gid<<"]: "<<(*velnp) [lid]<<std::endl;
           if((*velnp) [lid]>1.0)
           {
             dserror("coupled 3D/Reduced-D must have Dirichlet BC = 1");
             exit(1);
           }
-          cout<<"["<<dof_gid<<"]\t|"<<val<<"\t<-<"<<(*velnp) [lid]<<"|\t";
+          std::cout<<"["<<dof_gid<<"]\t|"<<val<<"\t<-<"<<(*velnp) [lid]<<"|\t";
           velnp -> ReplaceGlobalValues(1,&val,&dof_gid);
         }
       }
 
     }
-    cout<<endl;
+    std::cout<<std::endl;
   }
   //  exit(1);
 }

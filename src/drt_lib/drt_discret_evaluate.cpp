@@ -235,9 +235,9 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   //--------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
-    if (fool->first != (string)"PointNeumann") continue;
+    if (fool->first != (std::string)"PointNeumann") continue;
     if (assemblemat && !systemvector.Comm().MyPID())
-      cout << "WARNING: No linearization of PointNeumann conditions" << endl;
+      std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
     DRT::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
@@ -277,9 +277,9 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   // loop through line/surface/volume Neumann BCs and evaluate them
   //--------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-    if (fool->first == (string)"LineNeumann" ||
-        fool->first == (string)"SurfaceNeumann" ||
-        fool->first == (string)"VolumeNeumann"
+    if (fool->first == (std::string)"LineNeumann" ||
+        fool->first == (std::string)"SurfaceNeumann" ||
+        fool->first == (std::string)"VolumeNeumann"
        )
     {
       DRT::Condition& cond = *(fool->second);
@@ -317,7 +317,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   //--------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
    {
-     if (fool->first != (string)"PointNeumannEB") continue;
+     if (fool->first != (std::string)"PointNeumannEB") continue;
      DRT::Condition& cond = *(fool->second);
      const std::vector<int>* nodeids = cond.Nodes();
      if (!nodeids) dserror("Point Moment condition does not have nodal cloud");
@@ -559,15 +559,15 @@ void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params
   }
   // Do LineDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {  cout<<"Inside EvaluateGrowthDirichlet begin"<< endl;
+  {  std::cout<<"Inside EvaluateGrowthDirichlet begin"<< std::endl;
     if (fool->first != "BioDirichlet") continue;
-    cout<<"after if fool first"<< endl;
+    std::cout<<"after if fool first"<< std::endl;
     if (fool->second->Type() != DRT::Condition::BioLineDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
 
-    cout<<"Inside LineDirichlet end"<< endl;
+    std::cout<<"Inside LineDirichlet end"<< std::endl;
   }
   // Do PointDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
@@ -746,7 +746,7 @@ void DRT::Discretization::EvaluateCondition
 (
   Teuchos::ParameterList& params,
   RCP<Epetra_Vector> systemvector,
-  const string& condstring,
+  const std::string& condstring,
   const int condid
 )
 {
@@ -761,7 +761,7 @@ void DRT::Discretization::EvaluateCondition
 void DRT::Discretization::EvaluateCondition
 (
   Teuchos::ParameterList& params,
-  const string& condstring,
+  const std::string& condstring,
   const int condid
 )
 {
@@ -781,7 +781,7 @@ void DRT::Discretization::EvaluateCondition
   RCP<Epetra_Vector> systemvector1,
   RCP<Epetra_Vector> systemvector2,
   RCP<Epetra_Vector> systemvector3,
-  const string& condstring,
+  const std::string& condstring,
   const int condid
 )
 {
@@ -797,7 +797,7 @@ void DRT::Discretization::EvaluateCondition
 (
   Teuchos::ParameterList& params,
   DRT::AssembleStrategy & strategy,
-  const string& condstring,
+  const std::string& condstring,
   const int condid
 )
 {
@@ -1015,7 +1015,7 @@ void DRT::Discretization::EvaluateScalars(
  |  evaluate an initial scalar or vector field (public)       popp 06/11|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateInitialField(
-    const string& fieldstring,
+    const std::string& fieldstring,
     RCP<Epetra_Vector> fieldvector,
     const std::vector<int> locids
 )
@@ -1051,7 +1051,7 @@ void DRT::Discretization::EvaluateInitialField(
   {
 
     if (initfieldconditions[i]->Type() != DRT::Condition::VolumeInitfield) continue;
-    const string* condstring = initfieldconditions[i]->Get<string>("Field");
+    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
     if (*condstring != fieldstring) continue;
     DoInitialField(*initfieldconditions[i],fieldvector,locids);
   }
@@ -1061,7 +1061,7 @@ void DRT::Discretization::EvaluateInitialField(
   {
 
     if (initfieldconditions[i]->Type() != DRT::Condition::SurfaceInitfield) continue;
-    const string* condstring = initfieldconditions[i]->Get<string>("Field");
+    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
     if (*condstring != fieldstring) continue;
     DoInitialField(*initfieldconditions[i],fieldvector,locids);
   }
@@ -1071,7 +1071,7 @@ void DRT::Discretization::EvaluateInitialField(
   {
 
     if (initfieldconditions[i]->Type() != DRT::Condition::LineInitfield) continue;
-    const string* condstring = initfieldconditions[i]->Get<string>("Field");
+    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
     if (*condstring != fieldstring) continue;
     DoInitialField(*initfieldconditions[i],fieldvector,locids);
   }
@@ -1081,7 +1081,7 @@ void DRT::Discretization::EvaluateInitialField(
   {
 
     if (initfieldconditions[i]->Type() != DRT::Condition::PointInitfield) continue;
-    const string* condstring = initfieldconditions[i]->Get<string>("Field");
+    const std::string* condstring = initfieldconditions[i]->Get<std::string>("Field");
     if (*condstring != fieldstring) continue;
     DoInitialField(*initfieldconditions[i],fieldvector,locids);
   }

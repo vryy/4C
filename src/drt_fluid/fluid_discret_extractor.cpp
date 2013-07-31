@@ -18,7 +18,7 @@ FLD::FluidDiscretExtractor::~FluidDiscretExtractor()
  *----------------------------------------------------------------------*/
 FLD::FluidDiscretExtractor::FluidDiscretExtractor(
   RCP<DRT::Discretization>    actdis,
-  const string& condition,
+  const std::string& condition,
   bool yescondition
   ):
   parentdiscret_(actdis)
@@ -46,9 +46,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // in the separate section of the problem
     // add your discretization name here!
     if (condition == "TurbulentInflowSection")
-      childdiscret_ = Teuchos::rcp(new DRT::Discretization((string)"inflow",Teuchos::rcp(parentdiscret_->Comm().Clone())));
+      childdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"inflow",Teuchos::rcp(parentdiscret_->Comm().Clone())));
     else //dummy discretization
-      childdiscret_ = Teuchos::rcp(new DRT::Discretization((string)"none",Teuchos::rcp(parentdiscret_->Comm().Clone())));
+      childdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"none",Teuchos::rcp(parentdiscret_->Comm().Clone())));
 
     // get set of ids of all child nodes
     std::set<int> sepcondnodeset;
@@ -251,7 +251,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << " ... done.\n";
+      std::cout << " ... done.\n";
     }
 
     // make all conditions known to the child discretization
@@ -263,7 +263,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       // get all conditions types prescribed in the input file
-      std::vector<string> allcond;
+      std::vector<std::string> allcond;
       parentdiscret_->GetConditionNames(allcond);
       //loop all conditions types
       for (unsigned numcond=0;numcond<allcond.size();++numcond)
@@ -327,15 +327,15 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
       if(childdiscret_->Comm().MyPID()==0)
       {
-        cout << " ... done.\n";
+        std::cout << " ... done.\n";
       }
     }
 
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << "| Replace dofset by a transparent dofset that copies ";
-      cout << "the dofs of the original";
-      cout << " (parent) discretisation";
+      std::cout << "| Replace dofset by a transparent dofset that copies ";
+      std::cout << "the dofs of the original";
+      std::cout << " (parent) discretisation";
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
@@ -347,14 +347,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << " ... done.\n";
+      std::cout << " ... done.\n";
     }
 
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << "| Call PARMETIS on the child discretization and ";
-      cout << "redistribute according to";
-      cout << " the new maps\n";
+      std::cout << "| Call PARMETIS on the child discretization and ";
+      std::cout << "redistribute according to";
+      std::cout << " the new maps\n";
     }
 
     // this is the actual redistribution
@@ -387,14 +387,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 #endif
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << "| Redistributing .";
+      std::cout << "| Redistributing .";
     }
     // redistribute accordingly to the adapted rowmap
     childdiscret_->Redistribute(*sepcondrownodes,*sepcondcolnodes,false,false);
 
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << ".. done.\n";
+      std::cout << ".. done.\n";
     }
 
     // redistribute master and slave nodes
@@ -402,8 +402,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     {
       if(childdiscret_->Comm().MyPID()==0)
       {
-        cout << "| Apply periodic boundary conditions to the redistributed";
-        cout << " discretization and fetch slave nodes to the master's proc\n";
+        std::cout << "| Apply periodic boundary conditions to the redistributed";
+        std::cout << " discretization and fetch slave nodes to the master's proc\n";
       }
 
       PeriodicBoundaryConditions pbc(childdiscret_,false);
@@ -418,9 +418,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << "| Assign the dofs for the redistributed layout, again using ";
-      cout << "a parallel version";
-      cout << " of the transparent dofset";
+      std::cout << "| Assign the dofs for the redistributed layout, again using ";
+      std::cout << "a parallel version";
+      std::cout << " of the transparent dofset";
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
@@ -433,7 +433,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     if(childdiscret_->Comm().MyPID()==0)
     {
-      cout << " ... done.\n";
+      std::cout << " ... done.\n";
       printf("|\n");
       printf("+----------------\n\n");
     }
@@ -475,7 +475,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
           printf("   | %3d | %13d | %15d | %14d | %15d |\n",npid,n_nodes[npid],n_elements[npid],n_ghostele[npid],n_dof[npid]);
           printf("   +-----+---------------+-----------------+----------------+-----------------+\n");
         }
-        cout << endl <<endl;
+        std::cout << std::endl <<std::endl;
       }
     }
 
@@ -528,7 +528,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
         if (!childdiscret_->DofRowMap()->UniqueGIDs())
         {
-          cout  << *childdiscret_->DofRowMap();
+          std::cout  << *childdiscret_->DofRowMap();
 
           dserror("DofRowMap  of child dis is not unique (global)");
         }

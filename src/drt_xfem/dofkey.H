@@ -89,7 +89,7 @@ private:
           const DofKey& other           ///< source
       );
 
-      //! return string representation of this class
+      //! return std::string representation of this class
       std::string toString() const;
 
       virtual int UniqueParObjectId() const;

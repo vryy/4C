@@ -223,7 +223,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   /*!
   \brief Return ElementType
@@ -335,9 +335,9 @@ private:
   TopOpt& operator = (const TopOpt& old);
 
   /*!
-   * \brief convert string to action type
+   * \brief convert std::string to action type
    */
-  ActionType convertStringToActionType(const string& action) const;
+  ActionType convertStringToActionType(const std::string& action) const;
 
 }; // class TopOpt
 
@@ -520,7 +520,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   /*!
   \brief Return ElementType
@@ -615,9 +615,9 @@ private:
   int                       lbeleid_;
 
   /*!
-   * \brief convert string to action type
+   * \brief convert std::string to action type
    */
-  ActionType convertStringToActionType(const string& action) const;
+  ActionType convertStringToActionType(const std::string& action) const;
 
 }; // class TopOptBoundary
 

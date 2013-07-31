@@ -388,7 +388,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   }  // end point locsys
 
   if (time < 0.0)
-    Print(cout);
+    Print(std::cout);
 
   // When building the transformation matrix we apply a node-by-node
   // strategy. The global matrix trafo_ will consist of nodal blocks
@@ -600,7 +600,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 /*----------------------------------------------------------------------*
  |  << operator                                               popp 09/08|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::UTILS::LocsysManager& manager)
+std::ostream& operator << (std::ostream& os, const DRT::UTILS::LocsysManager& manager)
 {
   manager.Print(os);
   return os;
@@ -610,7 +610,7 @@ ostream& operator << (ostream& os, const DRT::UTILS::LocsysManager& manager)
 /*----------------------------------------------------------------------*
  |  print manager (public)                                   meier 06/13|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::Print(ostream& os) const
+void DRT::UTILS::LocsysManager::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
   {

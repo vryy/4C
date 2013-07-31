@@ -600,7 +600,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
 
 
 
-//    ostringstream filename;
+//    ostd::stringstream filename;
 //    filename << "tests/adjointsysmat_step_" << itnum << ".mtl";
 //    Teuchos::RCP<LINALG::SparseMatrix> A = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
 //    LINALG::PrintMatrixInMatlabFormat(filename.str(),*A->EpetraMatrix());
@@ -756,15 +756,15 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::OutputToGmsh(
   std::ofstream gmshfilecontent(filename.str().c_str());
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "velocity solution \" {" << endl;
+    gmshfilecontent << "View \" " << "velocity solution \" {" << std::endl;
     IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_ , "velocity", gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "pressure solution\" {" << endl;
+    gmshfilecontent << "View \" " << "pressure solution\" {" << std::endl;
     IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_, "pressure",gmshfilecontent);
-    gmshfilecontent << "};" << endl;
+    gmshfilecontent << "};" << std::endl;
   }
 
   gmshfilecontent.close();

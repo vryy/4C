@@ -177,7 +177,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const MORTAR::MortarNode& mrtrnode)
+std::ostream& operator << (std::ostream& os, const MORTAR::MortarNode& mrtrnode)
 {
   mrtrnode.Print(os);
   return os;
@@ -186,7 +186,7 @@ ostream& operator << (ostream& os, const MORTAR::MortarNode& mrtrnode)
 /*----------------------------------------------------------------------*
  |  print this MortarNode (public)                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::Print(ostream& os) const
+void MORTAR::MortarNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Mortar ";
@@ -507,11 +507,11 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
     if (relocation > limit * minedgesize)
     {
       // print information to screen
-      std::cout << "\n*****************WARNING***********************" << endl;
-      std::cout << "Checking distortion for CNode:     " << Id() << endl;
-      std::cout << "Relocation distance:               " << relocation << endl;
-      std::cout << "AdjEle: " << mrtrele->Id() << "\tLimit*MinEdgeSize: " << limit*minedgesize << endl;
-      std::cout << "*****************WARNING***********************" << endl;
+      std::cout << "\n*****************WARNING***********************" << std::endl;
+      std::cout << "Checking distortion for CNode:     " << Id() << std::endl;
+      std::cout << "Relocation distance:               " << relocation << std::endl;
+      std::cout << "AdjEle: " << mrtrele->Id() << "\tLimit*MinEdgeSize: " << limit*minedgesize << std::endl;
+      std::cout << "*****************WARNING***********************" << std::endl;
 
       // set return parameter and stop
       ok = false;

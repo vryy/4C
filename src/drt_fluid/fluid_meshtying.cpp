@@ -91,14 +91,14 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     int numdofmaster = (adaptermeshtying_->MasterDofRowMap())->NumGlobalElements();
     int numdofslave = (adaptermeshtying_->SlaveDofRowMap())->NumGlobalElements();
 
-    cout << endl << "number of master dof's:   " << numdofmaster << endl;
-    cout << "number of slave dof's:   " << numdofslave << endl << endl;
+    std::cout << std::endl << "number of master dof's:   " << numdofmaster << std::endl;
+    std::cout << "number of slave dof's:   " << numdofslave << std::endl << std::endl;
 
     if(numdofmaster > numdofslave)
       // dserror("The master side is discretized by more elements than the slave side!! Do you really want to do it?");
-      cout << "The master side is discretized by more elements than the slave side" << endl;
+      std::cout << "The master side is discretized by more elements than the slave side" << std::endl;
     else
-      cout << "The slave side is discretized by more elements than the master side" << endl;
+      std::cout << "The slave side is discretized by more elements than the master side" << std::endl;
   }
 
   switch (msht_)
@@ -126,9 +126,9 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     // map for 2x2 (uncoupled dof's & master dof's)
     mergedmap_ = LINALG::MergeMap(*gndofrowmap_,*gmdofrowmap_,false);
 
-    //cout << "number of n dof   " << gndofrowmap_->NumGlobalElements() << endl;
-    //cout << "number of m dof   " << gmdofrowmap_->NumGlobalElements() << endl;
-    //cout << "number of s dof   " << gsdofrowmap_->NumGlobalElements() << endl;
+    //std::cout << "number of n dof   " << gndofrowmap_->NumGlobalElements() << std::endl;
+    //std::cout << "number of m dof   " << gmdofrowmap_->NumGlobalElements() << std::endl;
+    //std::cout << "number of s dof   " << gsdofrowmap_->NumGlobalElements() << std::endl;
 
     // generate map for blockmatrix
     std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
@@ -185,12 +185,12 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
 #endif
 
     //Teuchos::RCP<std::vector<double> > test1 = solver.Params().sublist("Inverse1").sublist("ML Parameters").get<Teuchos::RCP<std::vector<double> > >("nullspace");
-    //cout << "Length of null space before  " << test1->size() << endl;
-    //cout << "address  " << test1 << endl;
+    //std::cout << "Length of null space before  " << test1->size() << std::endl;
+    //std::cout << "address  " << test1 << std::endl;
 
     //Teuchos::RCP<std::vector<double> > test2 = solver.Params().sublist("Inverse2").sublist("ML Parameters").get<Teuchos::RCP<std::vector<double> > >("nullspace");
-    //cout << "Length of null space before  " << test2->size() << endl;
-    //cout << "address  " << test2 << endl;
+    //std::cout << "Length of null space before  " << test2->size() << std::endl;
+    //std::cout << "address  " << test2 << std::endl;
 
     // fixing length of Inverse1 nullspace
     if (msht_ ==INPAR::FLUID::condensed_bmat)
@@ -239,11 +239,11 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     if(myrank_==0)
     {
 #ifdef DIRECTMANIPULATION
-      cout << "Condensation operation takes place in the original sysmat -> graph is saved" << endl;
-      cout << "Warning: Dirichlet on the interface does not work in combination with smat" << endl << endl;
+      std::cout << "Condensation operation takes place in the original sysmat -> graph is saved" << std::endl;
+      std::cout << "Warning: Dirichlet on the interface does not work in combination with smat" << std::endl << std::endl;
 #else
-      cout << "Condensation operation is carried out in a new allocated sparse matrix -> graph is not saved" << endl;
-      cout << "Warning: Dirichlet on the interface does not work in combination with smat" << endl << endl;
+      std::cout << "Condensation operation is carried out in a new allocated sparse matrix -> graph is not saved" << std::endl;
+      std::cout << "Warning: Dirichlet on the interface does not work in combination with smat" << std::endl << std::endl;
 #endif
     }
 
@@ -1009,16 +1009,16 @@ void FLD::Meshtying::OutputSetUp()
   if(myrank_==0)
   {
     // Output:
-    cout << endl << "DofRowMap:" << endl;
-    cout << *(discret_->DofRowMap())<< endl << endl;
-    cout << endl << "masterDofRowMap:" << endl;
-    cout << *(adaptermeshtying_->MasterDofRowMap())<< endl << endl;
-    cout << "slaveDofRowMap:" << endl;
-    cout << *(adaptermeshtying_->SlaveDofRowMap())<< endl << endl;
-    cout << "lmDofRowMap:" << endl;
-    cout << *(adaptermeshtying_->LmDofRowMap())<< endl << endl;
-    cout << "Projection matrix:" << endl;
-    cout << *(adaptermeshtying_->GetMortarTrafo())<< endl << endl;
+    std::cout << std::endl << "DofRowMap:" << std::endl;
+    std::cout << *(discret_->DofRowMap())<< std::endl << std::endl;
+    std::cout << std::endl << "masterDofRowMap:" << std::endl;
+    std::cout << *(adaptermeshtying_->MasterDofRowMap())<< std::endl << std::endl;
+    std::cout << "slaveDofRowMap:" << std::endl;
+    std::cout << *(adaptermeshtying_->SlaveDofRowMap())<< std::endl << std::endl;
+    std::cout << "lmDofRowMap:" << std::endl;
+    std::cout << *(adaptermeshtying_->LmDofRowMap())<< std::endl << std::endl;
+    std::cout << "Projection matrix:" << std::endl;
+    std::cout << *(adaptermeshtying_->GetMortarTrafo())<< std::endl << std::endl;
   }
 
   /* {
@@ -1043,17 +1043,17 @@ void FLD::Meshtying::OutputSparseMatrixSplit(
 
   SplitMatrix(conmat,matrixsplit);
 
-  cout << "Teil nn " << endl << *(matrixsplit[0]) << endl;
-  cout << "Teil nm: " << endl << *(matrixsplit[1]) << endl;
-  cout << "Teil ns: " << endl << *(matrixsplit[2]) << endl;
+  std::cout << "Teil nn " << std::endl << *(matrixsplit[0]) << std::endl;
+  std::cout << "Teil nm: " << std::endl << *(matrixsplit[1]) << std::endl;
+  std::cout << "Teil ns: " << std::endl << *(matrixsplit[2]) << std::endl;
 
-  cout << "Teil mn: " << endl << *(matrixsplit[3]) << endl;
-  cout << "Teil mm: " << endl << *(matrixsplit[4]) << endl;
-  cout << "Teil ms: " << endl << *(matrixsplit[5]) << endl;
+  std::cout << "Teil mn: " << std::endl << *(matrixsplit[3]) << std::endl;
+  std::cout << "Teil mm: " << std::endl << *(matrixsplit[4]) << std::endl;
+  std::cout << "Teil ms: " << std::endl << *(matrixsplit[5]) << std::endl;
 
-  cout << "Teil sn: " << endl << *(matrixsplit[6]) << endl;
-  cout << "Teil sm: " << endl << *(matrixsplit[7]) << endl;
-  cout << "Teil ss: " << endl << *(matrixsplit[8]) << endl;
+  std::cout << "Teil sn: " << std::endl << *(matrixsplit[6]) << std::endl;
+  std::cout << "Teil sm: " << std::endl << *(matrixsplit[7]) << std::endl;
+  std::cout << "Teil ss: " << std::endl << *(matrixsplit[8]) << std::endl;
 
   dserror("Matrix output finished");
 
@@ -1081,24 +1081,24 @@ void FLD::Meshtying::OutputBlockMatrix(
   LINALG::SparseMatrix sysmat7 = blockmatrixnew->Matrix(2,1);
   LINALG::SparseMatrix sysmat8 = blockmatrixnew->Matrix(2,2);*/
 
-  cout << "Block nn" << *(sysmat0.EpetraMatrix()) << endl;
-  cout << "Block nm" << *(sysmat1.EpetraMatrix()) << endl;
-  //cout << "Block ns" << *(sysmat2.EpetraMatrix()) << endl;
+  std::cout << "Block nn" << *(sysmat0.EpetraMatrix()) << std::endl;
+  std::cout << "Block nm" << *(sysmat1.EpetraMatrix()) << std::endl;
+  //std::cout << "Block ns" << *(sysmat2.EpetraMatrix()) << std::endl;
 
-  cout << "Block mn" << *(sysmat3.EpetraMatrix()) << endl;
-  cout << "Block mm" << *(sysmat4.EpetraMatrix()) << endl;
-  /*cout << "Block ms" << *(sysmat5.EpetraMatrix()) << endl;
+  std::cout << "Block mn" << *(sysmat3.EpetraMatrix()) << std::endl;
+  std::cout << "Block mm" << *(sysmat4.EpetraMatrix()) << std::endl;
+  /*std::cout << "Block ms" << *(sysmat5.EpetraMatrix()) << std::endl;
 
-  cout << "Block sn" << *(sysmat6.EpetraMatrix()) << endl;
-  cout << "Block sm" << *(sysmat7.EpetraMatrix()) << endl;
-  cout << "Block ss" << *(sysmat8.EpetraMatrix()) << endl;*/
+  std::cout << "Block sn" << *(sysmat6.EpetraMatrix()) << std::endl;
+  std::cout << "Block sm" << *(sysmat7.EpetraMatrix()) << std::endl;
+  std::cout << "Block ss" << *(sysmat8.EpetraMatrix()) << std::endl;*/
 
   //LINALG::PrintMatrixInMatlabFormat("sysmat_BlockMatrix",*sysmat->EpetraMatrix(),true);
 
   /*    if (sysmat->RowMap().SameAs(residual_->Map()))
-          cout << "juhu" << endl;
+          std::cout << "juhu" << std::endl;
         else
-          cout << "nein" << endl;  */
+          std::cout << "nein" << std::endl;  */
 
   return;
 }
@@ -1112,11 +1112,11 @@ void FLD::Meshtying::OutputVectorSplit(
   std::vector<Teuchos::RCP<Epetra_Vector> > splitvector(3);
   SplitVector(vector, splitvector);
 
-  cout << "vector " << endl << *vector << endl << endl;
+  std::cout << "vector " << std::endl << *vector << std::endl << std::endl;
 
-  cout << "Teil fn " << endl << *(splitvector[0]) << endl << endl;
-  cout << "Teil fm: " << endl << *(splitvector[1]) << endl << endl;
-  cout << "Teil fs: " << endl << *(splitvector[2]) << endl;
+  std::cout << "Teil fn " << std::endl << *(splitvector[0]) << std::endl << std::endl;
+  std::cout << "Teil fm: " << std::endl << *(splitvector[1]) << std::endl << std::endl;
+  std::cout << "Teil fs: " << std::endl << *(splitvector[2]) << std::endl;
   return;
 }
 
@@ -1161,16 +1161,16 @@ void FLD::Meshtying::AnalyzeMatrix(
   if (myrank_ == 0)
   {
     {
-      cout.precision(20);
-      cout << endl;
-      cout << "-------------- Analyze Matrix ----------------------" << endl;
-      cout << "| global matrix size:          " << matrixsize << endl;
-      cout << "| number of global non-zeros:  " << nonzero << endl;
-      cout << "| Matrix norm (Frobenius):     " << normfrob << endl;
-      cout << "| Matrix norm (Inf):           " << norminf << endl;
-      cout << "| Matrix norm (One):           " << normone << endl;
-      cout << "| sum of all matrix entries:   " << parmatrixentries << endl;
-      cout << "----------------------------------------------------" << endl;
+      std::cout.precision(20);
+      std::cout << std::endl;
+      std::cout << "-------------- Analyze Matrix ----------------------" << std::endl;
+      std::cout << "| global matrix size:          " << matrixsize << std::endl;
+      std::cout << "| number of global non-zeros:  " << nonzero << std::endl;
+      std::cout << "| Matrix norm (Frobenius):     " << normfrob << std::endl;
+      std::cout << "| Matrix norm (Inf):           " << norminf << std::endl;
+      std::cout << "| Matrix norm (One):           " << normone << std::endl;
+      std::cout << "| sum of all matrix entries:   " << parmatrixentries << std::endl;
+      std::cout << "----------------------------------------------------" << std::endl;
     }
   }
 }  // end AnalyzeMatrix()
@@ -1212,13 +1212,13 @@ void FLD::Meshtying::ReplaceMatrixEntries(
   if (myrank_ == 0)
   {
     {
-      cout.precision(16);
-      cout << "------------------------------------------------------" << endl;
-      cout << "| projection matrix is replaced by a identity matrix:" << endl;
-      cout << "| Matrix norm (Frobenius):  " << normfrob << endl;
-      cout << "| Matrix norm (Inf):  " << norminf << endl;
-      cout << "| Matrix norm (One):  " << normone << endl;
-      cout << "------------------------------------------------------" << endl;
+      std::cout.precision(16);
+      std::cout << "------------------------------------------------------" << std::endl;
+      std::cout << "| projection matrix is replaced by a identity matrix:" << std::endl;
+      std::cout << "| Matrix norm (Frobenius):  " << normfrob << std::endl;
+      std::cout << "| Matrix norm (Inf):  " << norminf << std::endl;
+      std::cout << "| Matrix norm (One):  " << normone << std::endl;
+      std::cout << "------------------------------------------------------" << std::endl;
     }
   }
   //dserror("Remove dserror from OutputSetup()!!");

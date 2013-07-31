@@ -295,7 +295,7 @@ private:
   double termradius_;
   //! condition type ( lung / artery / kidney / ... )
   //! implemented so far: lung, artery, windkessel
-  string treetype_;
+  std::string treetype_;
 
   //! 'material' parameters required for artery tree
   double k1_, k2_, k3_, E_, h1_, h2_, h3_;

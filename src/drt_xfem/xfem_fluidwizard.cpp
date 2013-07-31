@@ -100,8 +100,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
         dserror("we need 3 displacements here");
 
 
-      LINALG::Matrix<3, 1> disp( &mydisp[0], true ); //cout << "disp " << disp << endl;
-      LINALG::Matrix<3, 1> x( node.X() ); //cout << "x " << x << endl;
+      LINALG::Matrix<3, 1> disp( &mydisp[0], true ); //std::cout << "disp " << disp << std::endl;
+      LINALG::Matrix<3, 1> x( node.X() ); //std::cout << "x " << x << std::endl;
 
       // update x-position of cutter node for current time step (update with displacement)
       x.Update( 1, disp, 1 );

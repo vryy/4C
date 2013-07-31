@@ -331,7 +331,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
-  //cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << endl;
+  //std::cout << STR::AUX::CalculateVectorNorm(vectornorm_l2, fextn_) << std::endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M

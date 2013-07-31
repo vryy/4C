@@ -195,7 +195,7 @@ DRT::ELEMENTS::Artery::~Artery()
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Artery::Print(ostream& os) const
+void DRT::ELEMENTS::Artery::Print(std::ostream& os) const
 {
   os << "Artery ";
   Element::Print(os);

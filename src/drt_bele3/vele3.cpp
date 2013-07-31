@@ -167,7 +167,7 @@ DRT::ELEMENTS::Vele3::~Vele3()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3::Print(ostream& os) const
+void DRT::ELEMENTS::Vele3::Print(std::ostream& os) const
 {
   os << "Vele3 " << DRT::DistypeToString(Shape());
   Element::Print(os);

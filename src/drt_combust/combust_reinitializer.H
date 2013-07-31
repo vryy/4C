@@ -206,7 +206,7 @@ namespace COMBUST
 
         // check convergence
         conv = sqrt(f(0)*f(0)+f(1)*f(1)+f(2)*f(2));
-        //cout << "iteration " << iter << ": -> |f|=" << conv << endl;
+        //std::cout << "iteration " << iter << ": -> |f|=" << conv << std::endl;
         if (conv <= 1.0E-12) break;
 
         //----------------------------------------------------
@@ -228,7 +228,7 @@ namespace COMBUST
         eta(0) += incr(0);
         eta(1) += incr(1);
         alpha  += incr(2);
-        //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
+        //std::cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << std::endl;
       }
       // change sign to preserve sign of G-function
       alpha = -alpha;
@@ -237,14 +237,14 @@ namespace COMBUST
       if (conv > 1.0E-12)
       {
         alpha = 7777.7;
-//        cout << "projection did not converge" << endl;
+//        std::cout << "projection did not converge" << std::endl;
         //dserror("projection did not converge!");
       }
       else
       {
         converged = true;
-        //cout << "convergence criterion " << conv << endl;
-        //cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << endl;
+        //std::cout << "convergence criterion " << conv << std::endl;
+        //std::cout << "solution vector: component 1: " << eta(0) << " component 2: " << eta(1) << " alpha: " << alpha << std::endl;
       }
 
       return converged;

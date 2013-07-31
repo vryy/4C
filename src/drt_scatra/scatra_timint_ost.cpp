@@ -336,13 +336,13 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
   // print out thermodynamic pressure
   if (myrank_ == 0)
   {
-    cout << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
-    cout << "Data output for instationary thermodynamic pressure:" << endl;
-    cout << "Velocity in-/outflow at indicated boundary: " << parnormvelint << endl;
-    cout << "Diffusive flux at indicated boundary: "       << parnormdifffluxint << endl;
-    cout << "Thermodynamic pressure: "                     << thermpressnp_ << endl;
-    cout << "+--------------------------------------------------------------------------------------------+" << endl;
+    std::cout << std::endl;
+    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
+    std::cout << "Data output for instationary thermodynamic pressure:" << std::endl;
+    std::cout << "Velocity in-/outflow at indicated boundary: " << parnormvelint << std::endl;
+    std::cout << "Diffusive flux at indicated boundary: "       << parnormdifffluxint << std::endl;
+    std::cout << "Thermodynamic pressure: "                     << thermpressnp_ << std::endl;
+    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
   }
 
   return;
@@ -559,7 +559,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   if (myrank_==0)
-    cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<endl;
+    std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
 
   // read state vectors that are needed for One-Step-Theta restart
   reader.ReadVector(phinp_, "phinp");
@@ -607,7 +607,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
           mycond->Add("potdtn",potdtn);
           read_pot=true;
           if (myrank_==0)
-            cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<endl;
+            std::cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<std::endl;
         }
       }
       if (!read_pot)

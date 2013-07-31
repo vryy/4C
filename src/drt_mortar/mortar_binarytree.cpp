@@ -544,19 +544,19 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 void MORTAR::BinaryTreeNode::PrintType()
 {
   if (type_==0)
-    std::cout << endl << "SLAVE_INNER ";
+    std::cout << std::endl << "SLAVE_INNER ";
   else if (type_==1)
-    std::cout << endl << "SLAVE_LEAF ";
+    std::cout << std::endl << "SLAVE_LEAF ";
   else if (type_==2)
-    std::cout << endl << "MASTER_INNER ";
+    std::cout << std::endl << "MASTER_INNER ";
   else if (type_==3)
-    std::cout << endl << "MASTER_LEAF ";
+    std::cout << std::endl << "MASTER_LEAF ";
   else if (type_==4)
-    std::cout << endl << "TreeNode contains no Slave-Elements=NO_SLAVEELEMENTS ";
+    std::cout << std::endl << "TreeNode contains no Slave-Elements=NO_SLAVEELEMENTS ";
   else if (type_==5)
-    std::cout << endl << "TreeNode contains no Master-Elements=NO_MASTERELEMENTS ";
+    std::cout << std::endl << "TreeNode contains no Master-Elements=NO_MASTERELEMENTS ";
   else
-    std::cout << endl << "UNDEFINED ";
+    std::cout << std::endl << "UNDEFINED ";
 }
 
 /*----------------------------------------------------------------------*
@@ -564,7 +564,7 @@ void MORTAR::BinaryTreeNode::PrintType()
  *----------------------------------------------------------------------*/
 void MORTAR::BinaryTreeNode::PrintSlabs()
 {
-   std::cout << endl << Comm().MyPID() << "************************************************************";
+   std::cout << std::endl << Comm().MyPID() << "************************************************************";
    PrintType();
    std::cout << "slabs:";
    for (int i=0;i<slabs_.M();i++)
@@ -622,12 +622,12 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
       gmshfilecontent <<"SL(" << std::scientific << position(i,0) << "," << position(i,1) << ","
                               << position(i,2) << "," << position(i+1,0) << "," << position(i+1,1) << ","
                               << position(i+1,2) << ")";
-      gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+      gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
     }
     gmshfilecontent << "SL(" << std::scientific << position(7,0) << "," << position(7,1) << ","
                   << position(7,2) << "," << position(0,0) << "," << position(0,1) << ","
                   << position(0,2) << ")";
-    gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << endl;
+    gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "};" << std::endl;
     fprintf(fp,gmshfilecontent.str().c_str());
     fclose(fp);
   }
@@ -668,7 +668,7 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
                     (dopnormals_(j,1)*dopnormals_(j,1))+(dopnormals_(j,2)*dopnormals_(j,2)));
                 double norm2=sqrt((dopnormals_(k,0)*dopnormals_(k,0))+
                     (dopnormals_(k,1)*dopnormals_(k,1))+(dopnormals_(k,2)*dopnormals_(k,2)));
-                // std::cout << endl << "norm0: " << norm0 << " 1: " << norm1 << " 2: " << norm2;
+                // std::cout << std::endl << "norm0: " << norm0 << " 1: " << norm1 << " 2: " << norm2;
                 A(0,0)=(dopnormals_(i,0))/norm0;
                 A(0,1)=(dopnormals_(i,1))/norm0;
                 A(0,2)=(dopnormals_(i,2))/norm0;
@@ -797,7 +797,7 @@ void MORTAR::BinaryTreeNode::PrintDopsForGmsh(std::string filename)
         }
      }
     }
-    //std::cout << endl << "Number needed triangles to plot current treenode: " << count;
+    //std::cout << std::endl << "Number needed triangles to plot current treenode: " << count;
 
     //delete vector coords
     for (int i=0;i<(int)(coords.size())-1;i++)
@@ -825,12 +825,12 @@ void MORTAR::BinaryTreeNode::PlotGmshPoint(  std::string filename, double* posit
   // plot quadrangle 0,1,2,3
   gmshfilecontent << "SP(" << std::scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] <<  ")";
-  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << std::endl;
 
   //plots nr of point
   gmshfilecontent << "T3(" << std::scientific << position0[0] << "," << position0[1] << ","
                   << position0[2] << "," << 17 << ")";
-  gmshfilecontent << "{" << "SK" << nr << "};" << endl;
+  gmshfilecontent << "{" << "SK" << nr << "};" << std::endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
 
@@ -854,7 +854,7 @@ void MORTAR::BinaryTreeNode::PlotGmshQuadrangle( std::string filename, double* p
                   << position1[2] << "," << position2[0] << "," << position2[1] << ","
                   << position2[2] << "," << position3[0] << "," << position3[1] << ","
                   << position3[2] << ")";
-  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "," << 0.0 << "};" << std::endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
 
@@ -876,7 +876,7 @@ void MORTAR::BinaryTreeNode::PlotGmshTriangle( std::string filename, double* pos
                   << position0[2] << "," << position1[0] << "," << position1[1] << ","
                   << position1[2] << "," << position2[0] << "," << position2[1] << ","
                   << position2[2] << ")";
-  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << endl;
+  gmshfilecontent << "{" << std::scientific << 0.0 << "," << 0.0 << "," << 0.0 << "};" << std::endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
 
@@ -1052,7 +1052,7 @@ eps_(eps)
     Comm().Barrier();
     if (Comm().MyPID()==k)
     {
-      std::cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << endl;
+      std::cout << "\n" << Comm().MyPID() << " Print tree with direct print function" << std::endl;
       std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
       PrintTree(sroot_);
       std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";
@@ -1066,7 +1066,7 @@ eps_(eps)
     Comm().Barrier();
     if (Comm().MyPID()==k)
     {
-      std::cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master treemap" << endl;
+      std::cout << "\n" << Comm().MyPID() << " Print tree with print function of slave and master treemap" << std::endl;
       std::cout <<"\n" <<Comm().MyPID()<< " Slave Tree:";
       PrintTreeOfMap(streenodesmap_);
       std::cout <<"\n" <<Comm().MyPID()<< " Master Tree:";

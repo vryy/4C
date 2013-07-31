@@ -134,7 +134,7 @@ DRT::ELEMENTS::Truss2::~Truss2()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss2::Print(ostream& os) const
+void DRT::ELEMENTS::Truss2::Print(std::ostream& os) const
 {
   os << "Truss2 ";
   Element::Print(os);

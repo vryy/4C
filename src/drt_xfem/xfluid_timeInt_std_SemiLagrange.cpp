@@ -259,11 +259,11 @@ void XFEM::XFLUID_SemiLagrange::compute(
 
             if(data->changedside_ == false and nds_curr.size() == 0)
             {
-              //cout << "node" << data->node_.Id() << endl;
-              //cout << "initial point " << data->initialpoint_ << endl;
-              //cout << "current startpoint " << data->startpoint_ << endl;
-              //cout << "initial element Id " << data->initial_eid_ << endl;
-              //cout << "initial element owner " << data->initial_ele_owner_ << endl;
+              //std::cout << "node" << data->node_.Id() << std::endl;
+              //std::cout << "initial point " << data->initialpoint_ << std::endl;
+              //std::cout << "current startpoint " << data->startpoint_ << std::endl;
+              //std::cout << "initial element Id " << data->initial_eid_ << std::endl;
+              //std::cout << "initial element owner " << data->initial_ele_owner_ << std::endl;
 
               dserror("point did not change the side, but nds = empty?!.");
             }
@@ -450,7 +450,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
 
 #ifdef DEBUG
   if (counter > 8*numproc_) // too much loops shouldnt be if all this works
-    cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
+    std::cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << std::endl;
 #endif
 } // end semiLagrangeExtrapolation
 
@@ -808,7 +808,7 @@ bool XFEM::XFLUID_SemiLagrange::continueForChangingSide(
   //--------------------------------------------------------------------------------------
   //ALTERNATIVE: STOP NEWTON-ALGO when startvalue changed side during newton
 #ifdef DEBUG_SEMILAGRANGE
-  cout << "!!! CHANGED SIDE within Newton loop !!!! -> leave newton loop" << endl;
+  std::cout << "!!! CHANGED SIDE within Newton loop !!!! -> leave newton loop" << std::endl;
 #endif
   data->state_ = TimeIntData::failedSL_;
   return false; // leave newton loop if point is on wrong domain side
@@ -1045,7 +1045,7 @@ void XFEM::XFLUID_SemiLagrange::reinitializeData()
 
 //  int nds_np = -1;
 //
-//  cout << "in SemiLagrange::reinitializeData" << endl;
+//  std::cout << "in SemiLagrange::reinitializeData" << std::endl;
 //  const int nsd = 3; // dimension
 //  LINALG::Matrix<nsd,1> dummyStartpoint; // dummy startpoint for comparison
 //  for (int i=0;i<nsd;i++) dummyStartpoint(i) = 777.777;
@@ -1108,7 +1108,7 @@ void XFEM::XFLUID_SemiLagrange::reinitializeData()
 //            case XFEM::Enrichment::typeUndefined : break;
 //            default :
 //            {
-//              cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+//              std::cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << std::endl;
 //              dserror("unknown enrichment type");
 //              break;
 //            }
@@ -1190,23 +1190,23 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
 #ifdef DEBUG_SEMILAGRANGE
   if (strcmp(backTrackingType,static_cast<const char*>("standard"))==0)
   {
-        cout << "\n--------------------------------------------------\n"
+        std::cout << "\n--------------------------------------------------\n"
              << "\nnode: " << data->node_
              << "\ncomputed LAGRANGEAN ORIGIN  (startpoint) "
              << data->startpoint_
              << "with xi-coord. " << xi
              << "in element " << *fittingele
-             << "\n--------------------------------------------------"<< endl;
+             << "\n--------------------------------------------------"<< std::endl;
   }
   if(strcmp(backTrackingType,static_cast<const char*>("failing"))==0)
   {
-        cout << "\n--------------------------------------------------\n"
+        std::cout << "\n--------------------------------------------------\n"
              << "\nnode: " << data->node_
              << "\nused <<<PSEUDO>>> LAGRANGEAN ORIGIN (initialpoint) "
              << data->initialpoint_
              << "with xi-coord. " << xi
              << "in element " << *fittingele
-             << "\n--------------------------------------------------"<< endl;
+             << "\n--------------------------------------------------"<< std::endl;
   }
 #endif
 
@@ -1821,7 +1821,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
 
     // unpack received data
@@ -1907,7 +1907,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     size_t posinData = 0;
     int allProcsDone;
 
@@ -1977,7 +1977,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
 
     // unpack received data

@@ -358,7 +358,7 @@ void DatFileReader::ReadKnots(
   {
     if (!MyOutputFlag())
     {
-      cout << "Reading knot vectors for " << name << " discretization :\n";
+      std::cout << "Reading knot vectors for " << name << " discretization :\n";
       fflush(stdout);
     }
   }
@@ -717,7 +717,7 @@ void DatFileReader::ReadKnots(
   {
     if (!MyOutputFlag())
     {
-      cout << " in...." << time.ElapsedTime() << " secs\n";
+      std::cout << " in...." << time.ElapsedTime() << " secs\n";
 
       time.ResetStartTime();
       fflush(stdout);
@@ -1103,17 +1103,17 @@ bool DatFileReader::PrintUnknownSections()
     // now it's time to create noise on the screen
     if ((printout == true) and (Comm()->MyPID()==0))
     {
-      cout<<"\nERROR!"<<"\n--------"<<
+      std::cout<<"\nERROR!"<<"\n--------"<<
           "\nThe following input file sections remained unused (obsolete or typo?):"
-          <<endl;
+          <<std::endl;
       for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
       {
         if (iter->second == false)
-          cout<<iter->first<<endl;
+          std::cout<<iter->first<<std::endl;
       }
-      cout<<endl;
+      std::cout<<std::endl;
       // empty stream buffer: print everything to cout NOW!
-      cout.flush();
+      std::cout.flush();
     }
 
   // we wait till all procs are here. Otherwise a hang up might occur where

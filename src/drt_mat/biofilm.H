@@ -43,7 +43,7 @@ namespace MAT
       /// kinematic diffusivity
       const double diffusivity_;
       /// Substrate consumption kinetics (SimpleMonod)
-      const string* kinetics_;
+      const std::string* kinetics_;
       /// substrate uptake rate coefficient
       const double rearate_;
       /// substrate saturation coefficient
@@ -138,7 +138,7 @@ private:
     /// diffusivity
     double Diffusivity() const { return params_->diffusivity_; }
     /// Substrate consumption kinetics (SimpleMonod)
-    const string* Kinetics() const { return params_->kinetics_; }
+    const std::string* Kinetics() const { return params_->kinetics_; }
   	/// substrate uptake rate coefficient
     double ReaRate() const { return params_->rearate_; }
     /// substrate saturation coefficient

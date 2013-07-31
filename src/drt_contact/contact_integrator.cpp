@@ -453,9 +453,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
     {
-      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-      std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
-      std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+      std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << std::endl;
+      std::cout << "Projection: " << mxi[0] << " " << mxi[1] << std::endl;
       dserror("ERROR: IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",mxi[0]);
     }
 
@@ -2387,8 +2387,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
           jacnp1 = sele.Jacobian(sxi);
           fdres[1] = (jacnp1-jacslave)/inc;
           sxi[1] -= inc;
-          std::cout << "DJacDXi: " << scientific << djacdxi[0] << " " << djacdxi[1] << endl;
-          std::cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << endl << endl;*/
+          std::cout << "DJacDXi: " << scientific << djacdxi[0] << " " << djacdxi[1] << std::endl;
+          std::cout << "FD-DJacDXi: " << scientific << fdres[0] << " " << fdres[1] << std::endl << std::endl;*/
 
           // evaluate the slave Jacobian derivative
           std::map<int,double> jacslavemap;
@@ -2862,10 +2862,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
-        std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << std::endl;
+        std::cout << "Projection: " << mxi[0] << " " << mxi[1] << std::endl;
       }
     }
     else
@@ -2873,10 +2873,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
-        std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << std::endl;
+        std::cout << "Projection: " << mxi[0] << " " << mxi[1] << std::endl;
       }
     }
 
@@ -3025,8 +3025,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
     jacnp1 = sele.Jacobian(sxi);
     fdres[1] = (jacnp1-jacslave)/inc;
     sxi[1] -= inc;
-    std::cout << "DJacDXi: " << std::scientific << djacdxi[0] << " " << djacdxi[1] << endl;
-    std::cout << "FD-DJacDXi: " << std::scientific << fdres[0] << " " << fdres[1] << endl << endl;*/
+    std::cout << "DJacDXi: " << std::scientific << djacdxi[0] << " " << djacdxi[1] << std::endl;
+    std::cout << "FD-DJacDXi: " << std::scientific << fdres[0] << " " << fdres[1] << std::endl << std::endl;*/
 
     // evaluate the slave Jacobian derivative
     std::map<int,double> jacslavemap;
@@ -3734,9 +3734,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       }
     }
     else
@@ -3744,9 +3744,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       }
     }
 
@@ -3756,9 +3756,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
       }
     }
     else
@@ -3766,9 +3766,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
       }
     }
 
@@ -4897,18 +4897,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("ERROR: Petrov-Galerkin approach not yet implemented for quadratic FE interpolation");
 
-  /*std::cout << endl;
-  std::cout << "Slave type: " << sele.Shape() << endl;
+  /*std::cout << std::endl;
+  std::cout << "Slave type: " << sele.Shape() << std::endl;
   std::cout << "SlaveElement Nodes:";
   for (int k=0;k<sele.NumNode();++k) std::cout << " " << sele.NodeIds()[k];
-  std::cout << "\nMaster type: " << mele.Shape() << endl;
+  std::cout << "\nMaster type: " << mele.Shape() << std::endl;
   std::cout << "MasterElement Nodes:";
   for (int k=0;k<mele.NumNode();++k) std::cout << " " << mele.NodeIds()[k];
-  std::cout << endl;
-  std::cout << "SlaveSub type: " << sintele.Shape() << endl;
+  std::cout << std::endl;
+  std::cout << "SlaveSub type: " << sintele.Shape() << std::endl;
   std::cout << "SlaveSubElement Nodes:";
   for (int k=0;k<sintele.NumNode();++k) std::cout << " " << sintele.NodeIds()[k];
-  std::cout << "\nMasterSub type: " << mintele.Shape() << endl;
+  std::cout << "\nMasterSub type: " << mintele.Shape() << std::endl;
   std::cout << "MasterSubElement Nodes:";
   for (int k=0;k<mintele.NumNode();++k) std::cout << " " << mintele.NodeIds()[k];  */
 
@@ -5023,9 +5023,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       }
     }
     else
@@ -5033,9 +5033,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       }
     }
 
@@ -5045,9 +5045,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
       }
     }
     else
@@ -5055,9 +5055,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << endl;
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
       }
     }
 
@@ -5068,10 +5068,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     sintele.MapToParent(sxi,psxi);
     mintele.MapToParent(mxi,pmxi);
 
-    //std::cout << "SInt-GP:    " << sxi[0] << " " << sxi[1] << endl;
-    //std::cout << "MInt-GP:    " << mxi[0] << " " << mxi[1] << endl;
-    //std::cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << endl;
-    //std::cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << endl;
+    //std::cout << "SInt-GP:    " << sxi[0] << " " << sxi[1] << std::endl;
+    //std::cout << "MInt-GP:    " << mxi[0] << " " << mxi[1] << std::endl;
+    //std::cout << "SParent-GP: " << psxi[0] << " " << psxi[1] << std::endl;
+    //std::cout << "MParent-GP: " << pmxi[0] << " " << pmxi[1] << std::endl;
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (bound)
@@ -6926,7 +6926,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     }
 
     cmxib = -1/(fac_dxm_b*(smrtrnodes[0]->MoData().n()[1])-fac_dym_b*(smrtrnodes[0]->MoData().n()[0]));
-    //std::cout << "cmxib: " << cmxib << endl;
+    //std::cout << "cmxib: " << cmxib << std::endl;
 
     fac_xmsl_b -= smrtrnodes[0]->xspatial()[0];
     fac_ymsl_b -= smrtrnodes[0]->xspatial()[1];
@@ -6944,7 +6944,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     }
 
     cmxia = -1/(fac_dxm_a*(smrtrnodes[1]->MoData().n()[1])-fac_dym_a*(smrtrnodes[1]->MoData().n()[0]));
-    //std::cout << "cmxia: " << cmxia << endl;
+    //std::cout << "cmxia: " << cmxia << std::endl;
 
     fac_xmsl_a -= smrtrnodes[1]->xspatial()[0];
     fac_ymsl_a -= smrtrnodes[1]->xspatial()[1];
@@ -6989,7 +6989,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     fac_yslm_a -= mmrtrnodes[1]->xspatial()[1];
 
     csxia = -1/(fac_dxsl_a*fac_ny_a - fac_dysl_a*fac_nx_a + fac_xslm_a*fac_dny_a - fac_yslm_a*fac_dnx_a);
-    //std::cout << "csxia: " << csxia << endl;
+    //std::cout << "csxia: " << csxia << std::endl;
   }
 
   // compute leading constant for DerivXiBSlave if end node = master node
@@ -7011,7 +7011,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     fac_yslm_b -= mmrtrnodes[0]->xspatial()[1];
 
     csxib = -1/(fac_dxsl_b*fac_ny_b - fac_dysl_b*fac_nx_b + fac_xslm_b*fac_dny_b - fac_yslm_b*fac_dnx_b);
-    //std::cout << "csxib: " << csxib << endl;
+    //std::cout << "csxib: " << csxib << std::endl;
   }
 
   // prepare linearizations
@@ -7249,7 +7249,7 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
   }
 
   cmxigp = -1/(fac_dxm_gp*sgpn[1]-fac_dym_gp*sgpn[0]);
-  //std::cout << "cmxigp: " << cmxigp << endl;
+  //std::cout << "cmxigp: " << cmxigp << std::endl;
 
   fac_xmsl_gp -= sgpx[0];
   fac_ymsl_gp -= sgpx[1];
@@ -7513,13 +7513,13 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
   /*
   // check linearization
   typedef std::map<int,double>::const_iterator CI;
-  std::cout << "\nLinearization of current master GP:" << endl;
-  std::cout << "-> Coordinate 1:" << endl;
+  std::cout << "\nLinearization of current master GP:" << std::endl;
+  std::cout << "-> Coordinate 1:" << std::endl;
   for (CI p=derivmxi[0].begin();p!=derivmxi[0].end();++p)
-    std::cout << p->first << " " << p->second << endl;
-  std::cout << "-> Coordinate 2:" << endl;
+    std::cout << p->first << " " << p->second << std::endl;
+  std::cout << "-> Coordinate 2:" << std::endl;
   for (CI p=derivmxi[1].begin();p!=derivmxi[1].end();++p)
-      std::cout << p->first << " " << p->second << endl;
+      std::cout << p->first << " " << p->second << std::endl;
   */
   
   return;
@@ -7616,16 +7616,16 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   /*
   // check linearization
   typedef std::map<int,double>::const_iterator CI;
-  std::cout << "\nLinearization of current slave / master GP:" << endl;
-  std::cout << "-> Coordinate 1:" << endl;
+  std::cout << "\nLinearization of current slave / master GP:" << std::endl;
+  std::cout << "-> Coordinate 1:" << std::endl;
   for (CI p=derivxi[0].begin();p!=derivxi[0].end();++p)
-    std::cout << p->first << " " << p->second << endl;
-  std::cout << "-> Coordinate 2:" << endl;
+    std::cout << p->first << " " << p->second << std::endl;
+  std::cout << "-> Coordinate 2:" << std::endl;
   for (CI p=derivxi[1].begin();p!=derivxi[1].end();++p)
-    std::cout << p->first << " " << p->second << endl;
-  std::cout << "-> Coordinate 3:" << endl;
+    std::cout << p->first << " " << p->second << std::endl;
+  std::cout << "-> Coordinate 3:" << std::endl;
   for (CI p=derivxi[2].begin();p!=derivxi[2].end();++p)
-    std::cout << p->first << " " << p->second << endl;
+    std::cout << p->first << " " << p->second << std::endl;
   */
 
   return;
@@ -7653,7 +7653,7 @@ bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
     CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
 
     // only process slave node rows that belong to this proc
-    //cout << "owner= " << mnode->Owner() << "  current proc= " << comm.MyPID()<< endl;
+    //std::cout << "owner= " << mnode->Owner() << "  current proc= " << comm.MyPID()<< std::endl;
 //    if (mnode->Owner() != comm.MyPID())
 //      continue;
 
@@ -7680,8 +7680,8 @@ bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
             mnode->AddD2Value(mdof,col,val);
             //set this master node as "involved" for both sided wear
             mnode->InvolvedM()=true;
-            //cout << "node= " << mnode->Id()<< endl;
-            //cout << "DOF FROM NODE " << *mnode->Dofs() << endl;
+            //std::cout << "node= " << mnode->Id()<< std::endl;
+            //std::cout << "DOF FROM NODE " << *mnode->Dofs() << std::endl;
           }
         }
       }
@@ -7762,18 +7762,18 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
     }
     /*
 #ifdef DEBUG
-    std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << std::endl;
     std::map<int, double> nodemap0 = (snode->GetD())[0];
     std::map<int, double> nodemap1 = (snode->GetD())[1];
     typedef std::map<int,double>::const_iterator CI;
 
-    std::cout << "Row dof id: " << sdofs[0] << endl;;
+    std::cout << "Row dof id: " << sdofs[0] << std::endl;;
     for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      std::cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << std::endl;
 
-    std::cout << "Row dof id: " << sdofs[1] << endl;
+    std::cout << "Row dof id: " << sdofs[1] << std::endl;
     for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      std::cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << std::endl;
 #endif // #ifdef DEBUG
     */
   }
@@ -7887,18 +7887,18 @@ bool CONTACT::CoIntegrator::AssembleM(const Epetra_Comm& comm,
     }
     /*
 #ifdef DEBUG
-    std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
+    std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << std::endl;
     std::map<int, double> nodemap0 = (snode->GetM())[0];
     std::map<int, double> nodemap1 = (snode->GetM())[1];
     typedef std::map<int,double>::const_iterator CI;
 
-    std::cout << "Row dof id: " << sdofs[0] << endl;;
+    std::cout << "Row dof id: " << sdofs[0] << std::endl;;
     for (CI p=nodemap0.begin();p!=nodemap0.end();++p)
-      std::cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << std::endl;
 
-    std::cout << "Row dof id: " << sdofs[1] << endl;
+    std::cout << "Row dof id: " << sdofs[1] << std::endl;
     for (CI p=nodemap1.begin();p!=nodemap1.end();++p)
-      std::cout << p->first << '\t' << p->second << endl;
+      std::cout << p->first << '\t' << p->second << std::endl;
 #endif // #ifdef DEBUG
      */
   }
@@ -8071,8 +8071,8 @@ bool CONTACT::CoIntegrator::AssembleG(const Epetra_Comm& comm,
     
     /*
 #ifdef DEBUG
-    std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << endl;
-    std::cout << "Weighted gap: " << snode->Getg() << endl;
+    std::cout << "Node: " << snode->Id() << "  Owner: " << snode->Owner() << std::endl;
+    std::cout << "Weighted gap: " << snode->Getg() << std::endl;
 #endif // #ifdef DEBUG
     */
   }

@@ -149,8 +149,8 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   meshfilename_helper1 << filename_ << "_prolongated_run_" << start_run_ ;
   meshfilename_helper2 = meshfilename_helper1.str();
   // strip path from name
-  string::size_type pos = meshfilename_helper2.find_last_of('/');
-  if (pos==string::npos)
+  std::string::size_type pos = meshfilename_helper2.find_last_of('/');
+  if (pos==std::string::npos)
 	  meshfilename_ = meshfilename_helper2;
   else
 	  meshfilename_ = meshfilename_helper2.substr(pos+1);
@@ -1668,12 +1668,12 @@ void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra
   if (numb_run_ == 0 || numb_run_ == start_run_)
   {
     File.open(name.c_str(),std::ios::out);
-    File << "run id   "<< "xdisp node 24 " << "S_xx node 436 "<< endl;
+    File << "run id   "<< "xdisp node 24 " << "S_xx node 436 "<< std::endl;
     File.close();
   }
   // reopen in append mode
   File.open(name.c_str(),std::ios::app);
-  File << numb_run_ << "    "<< (*disp)[0][72]<< "    " << (*stress)[0][435] << endl;
+  File << numb_run_ << "    "<< (*disp)[0][72]<< "    " << (*stress)[0][435] << std::endl;
   File.close();
 }
 void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp)
@@ -1699,7 +1699,7 @@ void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Ep
       //dserror("Unable to open Statistics output Filename");
       File << "run id   "<< "disp mag node   " << node[0] << "S_mag node   " << node[0] << "disp mag node   " << node[1] << "S_mag node   " << node[1]
        << "disp mag node   " << node[2] << "S_mag node   " << node[2] << "disp mag node   " << node[3] << "S_mag node   "
-       << node[3] << "disp mag node   " << node[4] << "S_mag node   " << node[4]<< endl;
+       << node[3] << "disp mag node   " << node[4] << "S_mag node   " << node[4]<< std::endl;
       File.close();
     }
     //
@@ -1719,7 +1719,7 @@ void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Ep
   // reopen in append mode
   File.open(name.c_str(),std::ios::app);
   File << numb_run_ << "    "<< disp_mag[0]<< "    " << stress_mag[0] << "    "<< disp_mag[1]<< "    " << stress_mag[1] << "    "<< disp_mag[2]<< "    " << stress_mag[2]
-    << "    "<< disp_mag[3]<< "    " << stress_mag[3] << "    "<< disp_mag[4]<< "    " << stress_mag[4] <<  endl;
+    << "    "<< disp_mag[3]<< "    " << stress_mag[3] << "    "<< disp_mag[4]<< "    " << stress_mag[4] <<  std::endl;
   File.close();
 }
 
@@ -1884,7 +1884,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
                << "strain xx  strain yy strain zz strain xy strain yz strain xz node   " << node[3] << " "
                << "strain xx  strain yy strain zz strain xy strain yz strain xz node   " << node[4] << " "
               // << "strain xx  strain yy strain zz strain xy strain yz strain xz node   " << node[5] << " "
-               << endl;
+               << std::endl;
         File.close();
       }
       //
@@ -1914,7 +1914,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
         File << " " << (*output_strain)[j][i];
       }
     }
-    File << endl;
+    File << std::endl;
     File.close();
   }
   actdis_coarse_->Comm().Barrier();
@@ -2269,7 +2269,7 @@ void STR::MLMC::ExportPeakStressDataAndWriteToFile(
       if (File.is_open())
       {
         File << "runid "<< "vMstress EID vMstrain EID Phi EID disp EID beta EID vMstress99 EID vMstrain99 EID Phi99 EID disp99 EID beta99 EID "
-            << endl;
+            << std::endl;
         File.close();
       }
       else
@@ -2289,7 +2289,7 @@ void STR::MLMC::ExportPeakStressDataAndWriteToFile(
     {
       File << " " << it->second << " "<< it->first;
     }
-    File << endl;
+    File << std::endl;
     File.close();
     }
 
@@ -2363,7 +2363,7 @@ void STR::MLMC::ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> Outpu
       if (File.is_open())
       {
         File << "runid "<< "dispx dispy dispz stressxx stressyy stresszz stressxy stressyz stressxz strainxx  strainyy strainzz strainxy strainyz strainxz mat_param1 mat_param2"
-            << endl;
+            << std::endl;
         File.close();
       }
       else
@@ -2390,7 +2390,7 @@ void STR::MLMC::ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> Outpu
     {
        File << " " << (*mat_params)[i];
     }
-    File << endl;
+    File << std::endl;
     File.close();
     }
   }

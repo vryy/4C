@@ -372,7 +372,7 @@ public:
   /*!
   \brief Print this Condition (ostream << is also implemented for DRT::Condition)
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   /*!
   \brief Return type of condition
@@ -498,7 +498,7 @@ public:
 
 
 //! << operator
-ostream& operator << (ostream& os, const DRT::Condition& node);
+std::ostream& operator << (std::ostream& os, const DRT::Condition& node);
 
 
 #endif  // #ifndef CONDITION_H

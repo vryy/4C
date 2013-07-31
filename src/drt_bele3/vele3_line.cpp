@@ -115,7 +115,7 @@ DRT::ELEMENTS::Vele3Line::~Vele3Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Line::Print(ostream& os) const
+void DRT::ELEMENTS::Vele3Line::Print(std::ostream& os) const
 {
   os << "Vele3Line ";
   Element::Print(os);

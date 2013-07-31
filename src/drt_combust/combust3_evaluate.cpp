@@ -32,9 +32,9 @@ Maintainer: Ursula Rasthofer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
-// converts a string into an Action for this element
+// converts a std::string into an Action for this element
 DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActionType(
-              const string& action) const
+              const std::string& action) const
 {
   DRT::ELEMENTS::Combust3::ActionType act = Combust3::none;
   if (action == "calc_fluid_systemmat_and_residual")
@@ -67,11 +67,11 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
 }
 
 /*----------------------------------------------------------------------*
- // converts a string into an stabilisation action for this element
+ // converts a std::string into an stabilisation action for this element
  //                                                          gammi 08/07
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::StabilisationAction DRT::ELEMENTS::Combust3::ConvertStringToStabAction(
-  const string& action) const
+  const std::string& action) const
 {
   DRT::ELEMENTS::Combust3::StabilisationAction act = stabaction_unspecified;
 
@@ -389,7 +389,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           not params.get<bool>("DLM_condensation"))
       {
         if (ih_->NumBoundaryIntCells(this->Id()) > 0)
-          cout << "/!\\ warning === element " << this->Id() << " is not intersected, but has boundary integration cells!" << endl;
+          std::cout << "/!\\ warning === element " << this->Id() << " is not intersected, but has boundary integration cells!" << std::endl;
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager_, NumNode(), NodeIds());
@@ -411,30 +411,30 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
 
         // create uncondensed element matrix and vector
         const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-        //cout << "element " <<  this->Id() << "number of node dofs " << eleDofManager_uncondensed_->NumNodeDof() << endl;
-        //cout << "element " <<  this->Id() << "number of element dofs " << eleDofManager_uncondensed_->NumElemDof() << endl;
-        //cout << "element " <<  this->Id() << "total number of dofs " << numdof_uncond << endl;
+        //std::cout << "element " <<  this->Id() << "number of node dofs " << eleDofManager_uncondensed_->NumNodeDof() << std::endl;
+        //std::cout << "element " <<  this->Id() << "number of element dofs " << eleDofManager_uncondensed_->NumElemDof() << std::endl;
+        //std::cout << "element " <<  this->Id() << "total number of dofs " << numdof_uncond << std::endl;
         Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
         Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager_uncondensed_, NumNode(), NodeIds());
 
-//        if (assembly_type == XFEM::standard_assembly) cout << "element " << this->Id() << " standard assembly " << endl;
-//        if (assembly_type == XFEM::xfem_assembly) cout << "element " << this->Id() << " xfem assembly " << endl;
+//        if (assembly_type == XFEM::standard_assembly) std::cout << "element " << this->Id() << " standard assembly " << std::endl;
+//        if (assembly_type == XFEM::xfem_assembly) std::cout << "element " << this->Id() << " xfem assembly " << std::endl;
 
 //        const int numnodes = this->NumNode();
 //        const int* nodeidptrs = this->NodeIds();
 //        for (int inode = 0; inode<numnodes; ++inode)
 //        {
 //          const int nodeid = nodeidptrs[inode];
-//          cout << "num dof per node " << eleDofManager_->NumDofPerNode(nodeid) << endl;
+//          std::cout << "num dof per node " << eleDofManager_->NumDofPerNode(nodeid) << std::endl;
 //        }
-//        cout << "num dof per field velx " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velx)->second << endl;
-//        cout << "num dof per field vely " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Vely)->second << endl;
-//        cout << "num dof per field velz " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velz)->second << endl;
-//        cout << "num dof per field veln " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Veln)->second << endl;
-//        cout << "num dof per field pres " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Pres)->second << endl;
+//        std::cout << "num dof per field velx " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velx)->second << std::endl;
+//        std::cout << "num dof per field vely " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Vely)->second << std::endl;
+//        std::cout << "num dof per field velz " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velz)->second << std::endl;
+//        std::cout << "num dof per field veln " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Veln)->second << std::endl;
+//        std::cout << "num dof per field pres " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Pres)->second << std::endl;
 
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
@@ -1045,7 +1045,7 @@ void DRT::ELEMENTS::Combust3::CondenseElementStressAndStoreOldIterationStep(
     LINALG::SerialDenseMatrix KGsu  (numeledof,numnodedof);
     LINALG::SerialDenseVector fs    (numeledof);
 
-//    cout << elemat1_uncond << endl;
+//    std::cout << elemat1_uncond << std::endl;
 
     // copy data of uncondensed matrix into submatrices
     for (size_t i=0;i<numnodedof;i++)

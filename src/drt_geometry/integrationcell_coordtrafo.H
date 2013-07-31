@@ -97,7 +97,7 @@ namespace GEO
       case DRT::Element::wedge15: return detEtaToXi3DT<DRT::Element::wedge15>(xyze_cell,pos_eta_domain);
       case DRT::Element::pyramid5:return detEtaToXi3DT<DRT::Element::pyramid5>(xyze_cell,pos_eta_domain);
       default:
-        std::cout << DistypeToString(cell.Shape()) << endl;
+        std::cout << DistypeToString(cell.Shape()) << std::endl;
         dserror("add your 3D distype to this switch!");
     }
     return -1.0;
@@ -166,7 +166,7 @@ namespace GEO
     case DRT::Element::quad8:   mapEtaBToXiBT<DRT::Element::quad8>(xyze_cell,pos_eta_boundary, pos_xsi_boundary); break;
     case DRT::Element::quad9:   mapEtaBToXiBT<DRT::Element::quad9>(xyze_cell,pos_eta_boundary, pos_xsi_boundary); break;
     default:
-      std::cout << DistypeToString(cell.Shape()) << endl;
+      std::cout << DistypeToString(cell.Shape()) << std::endl;
       dserror("add your 2D distype to this switch!");
     }
     return;
@@ -227,7 +227,7 @@ namespace GEO
       case DRT::Element::quad8:   return detEtaBToXiBT<DRT::Element::quad8>(xyze_cell,pos_eta_boundary);
       case DRT::Element::quad9:   return detEtaBToXiBT<DRT::Element::quad9>(xyze_cell,pos_eta_boundary);
       default:
-        std::cout << DistypeToString(cell.Shape()) << endl;
+        std::cout << DistypeToString(cell.Shape()) << std::endl;
         dserror("add your 2D distype to this switch!");
     }
     return -1.0;

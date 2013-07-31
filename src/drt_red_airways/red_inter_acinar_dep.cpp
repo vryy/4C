@@ -195,7 +195,7 @@ DRT::ELEMENTS::RedInterAcinarDep::~RedInterAcinarDep()
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::Print(ostream& os) const
+void DRT::ELEMENTS::RedInterAcinarDep::Print(std::ostream& os) const
 {
   os << "RedInterAcinarDep ";
   Element::Print(os);
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<std::string,int>& names
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedInterAcinarDep::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::RedInterAcinarDep::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))

@@ -147,7 +147,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
     checkg->Update(-1.0,*master,1.0);
     double infnorm = 0.0;
     checkg->NormInf(&infnorm);
-    if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << endl;
+    if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << std::endl;
     */
 #else
     // modify dmatrix_, invd_ and mhatmatrix_
@@ -178,7 +178,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
     checkg->Update(-1.0,*master,1.0);
     double infnorm = 0.0;
     checkg->NormInf(&infnorm);
-    if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << endl;
+    if (Comm().MyPID()==0) std::cout << "\nINFNORM OF G: " << infnorm << std::endl;
     */
   }
 
@@ -237,7 +237,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
   if (Comm().MyPID()==0) std::cout << "in...." << t_end << " secs........";
 
   // print message
-  if(Comm().MyPID()==0) std::cout << "done!" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
 
   return;
 }
@@ -348,7 +348,7 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   if (Comm().MyPID()==0) std::cout << "in...." << t_end << " secs........";
 
   // print message
-  if(Comm().MyPID()==0) std::cout << "done!\n" << endl;
+  if(Comm().MyPID()==0) std::cout << "done!\n" << std::endl;
       
   return;  
 }

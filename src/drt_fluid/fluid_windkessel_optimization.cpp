@@ -172,10 +172,10 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
 int FLD::UTILS::FluidWkOptimizationWrapper::GetObjectiveFunctionSize(RCP<DRT::Condition> cond, int condid)
 {
   // Get name of objective function
-  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<std::string>("ObjectiveFunction"));
 
   // Get type of design variables
-  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<std::string>("DesignVariables"));
 
   int ObjDim = 0;
   int VarDim = 0;
@@ -309,7 +309,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
     flow_T = (*flowrates)[0];
     pressures->push_back(pres_T);
     flowrates->push_back(flow_T);
-    cout<<"AP: Number of opt conditions: "<<optwkmap_.size()<<endl;
+    std::cout<<"AP: Number of opt conditions: "<<optwkmap_.size()<<std::endl;
 
     // -----------------------------------------------------------------
     // do some tests unless someone messed up the code some where
@@ -326,18 +326,18 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
     }
 
 #if 0
-    cout<<"COND("<<itr->first<<"): pushing pressure [0]: "<<(*pressures)[0]<<endl;
-    cout<<"COND("<<itr->first<<"): pushing flowrate [0]: "<<(*flowrates)[0]<<endl;
+    std::cout<<"COND("<<itr->first<<"): pushing pressure [0]: "<<(*pressures)[0]<<std::endl;
+    std::cout<<"COND("<<itr->first<<"): pushing flowrate [0]: "<<(*flowrates)[0]<<std::endl;
     // -----------------------------------------------------------------
     // print pressure for debugging reasons
     // -----------------------------------------------------------------
     if(discret_->Comm().MyPID() == 0)
     {
-      cout<<"Printing Pressures and flowrates"<<endl;
+      std::cout<<"Printing Pressures and flowrates"<<std::endl;
       for (unsigned int i = 0; i<pressures->size();i++)
       {
-        cout<<"Cond("<<itr->first<<")\t"<<double(i)*dt<<"\t["<<i<<"]\t"<<(*pressures)[i];
-        cout<<"\t"<<(*flowrates)[i]<<endl;
+        std::cout<<"Cond("<<itr->first<<")\t"<<double(i)*dt<<"\t["<<i<<"]\t"<<(*pressures)[i];
+        std::cout<<"\t"<<(*flowrates)[i]<<std::endl;
       }
     }
 #endif
@@ -359,8 +359,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
 #if 1
     if(discret_->Comm().MyPID() == 0)
     {
-      cout<<"fn is:"<<endl;
-      cout<<(*fn_)<<endl;
+      std::cout<<"fn is:"<<std::endl;
+      std::cout<<(*fn_)<<std::endl;
     }
 #endif
 
@@ -378,8 +378,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
 #if 0
     if(discret_->Comm().MyPID() == 0)
     {
-      cout<<"dLdu is:"<<endl;
-      cout<<(*dL_du_)<<endl;
+      std::cout<<"dLdu is:"<<std::endl;
+      std::cout<<(*dL_du_)<<std::endl;
     }
 #endif
 
@@ -397,8 +397,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
 #if 0
     if(discret_->Comm().MyPID() == 0)
     {
-      cout<<"dNdu is:"<<endl;
-      cout<<(*dN_du_)<<endl;
+      std::cout<<"dNdu is:"<<std::endl;
+      std::cout<<(*dN_du_)<<std::endl;
     }
 #endif
 
@@ -416,8 +416,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
 #if 0
     if(discret_->Comm().MyPID() == 0)
     {
-      cout<<"dNdphi is:"<<endl;
-      cout<<(*dN_dphi_)<<endl;
+      std::cout<<"dNdphi is:"<<std::endl;
+      std::cout<<(*dN_dphi_)<<std::endl;
     }
 #endif
 
@@ -435,8 +435,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
 #if 0
     if(discret_->Comm().MyPID() == 0)
     {
-      cout<<"dJdphi is:"<<endl;
-      cout<<(*dJ_dphi_)<<endl;
+      std::cout<<"dJdphi is:"<<std::endl;
+      std::cout<<(*dJ_dphi_)<<std::endl;
     }
 #endif
 
@@ -505,7 +505,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcObjFunction(
 {
 
   // Get name of objective function
-  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<std::string>("ObjectiveFunction"));
 
   // Get condition Id
   const int condid = cond->GetInt("ConditionID");
@@ -576,7 +576,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
 {
   //  int    VarDim = 0;
   // Get type of design variables
-  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<std::string>("DesignVariables"));
 
 
   // -------------------------------------------------------------------
@@ -670,7 +670,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
 {
   //  int    VarDim = 0;
   // Get type of design variables
-  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<std::string>("DesignVariables"));
 
 
   // -------------------------------------------------------------------
@@ -786,7 +786,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
 
   //  int    ObjDim = 0;
   // Get name of objective function
-  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<std::string>("ObjectiveFunction"));
 
   // -------------------------------------------------------------------
   // Get the dimension of the objective functions
@@ -904,10 +904,10 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
   double                dt)
 {
   // Get name of objective function
-  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<std::string>("ObjectiveFunction"));
 
   // Get type of design variables
-  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<std::string>("DesignVariables"));
 
   //  int ObjDim = 0;
   //  int VarDim = 0;
@@ -1019,10 +1019,10 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
     // -----------------------------------------------------------------
     if(discret_->Comm().MyPID() == 0)
     {
-      cout<<"Printing Pressures"<<endl;
+      std::cout<<"Printing Pressures"<<std::endl;
       for (unsigned int i = 0; i<pressures->size();i++)
       {
-        cout<<"PressureCond("<<itr->first<<")\t"<<double(i)*dt<<"\t"<<(*pressures)[i]<<endl;
+        std::cout<<"PressureCond("<<itr->first<<")\t"<<double(i)*dt<<"\t"<<(*pressures)[i]<<std::endl;
       }
     }
 #endif
@@ -1125,11 +1125,11 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcAdjointJacobian()
 #if 0
   if (discret_->Comm().MyPID() == 0)
   {
-    cout<<"du_dphi is:"<<endl;
-    cout<<(*du_dphi_)<<endl;
+    std::cout<<"du_dphi is:"<<std::endl;
+    std::cout<<(*du_dphi_)<<std::endl;
 
-    cout<<"Jacobian is:"<<endl;
-    cout<<(*Jacobian_)<<endl;
+    std::cout<<"Jacobian is:"<<std::endl;
+    std::cout<<(*Jacobian_)<<std::endl;
   }
 #endif
 
@@ -1167,7 +1167,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
     // -----------------------------------------------------------------
     // Get the dimension of the design variables
     // -----------------------------------------------------------------
-    std::string DesignVars = *(itr->second->Get<string>("DesignVariables"));
+    std::string DesignVars = *(itr->second->Get<std::string>("DesignVariables"));
 
     if (DesignVars == "R_C")
     {
@@ -1199,9 +1199,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
 
       if (myrank == 0)
       {
-        cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R1: " << R1 <<endl;
-        cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R2: " << R2 <<endl;
-        cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "):  C: " << C  <<endl;
+        std::cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R1: " << R1 <<std::endl;
+        std::cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R2: " << R2 <<std::endl;
+        std::cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "):  C: " << C  <<std::endl;
       }
     }
     else if (DesignVars == "R1_R2_C")
@@ -1226,9 +1226,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
 
       if (myrank == 0)
       {
-        cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R1: " << R1 <<endl;
-        cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R2: " << R2 <<endl;
-        cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "):  C: " << C  <<endl;
+        std::cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R1: " << R1 <<std::endl;
+        std::cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "): R2: " << R2 <<std::endl;
+        std::cout<<"Cond(" << itr->first << ") Adjoint Step(" << step_ << "):  C: " << C  <<std::endl;
       }
     }
     else
@@ -1278,7 +1278,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::GetDesignVariables(
   // -----------------------------------------------------------------
   // Get the dimension of the design variables
   // -----------------------------------------------------------------
-  std::string DesignVars = *(optwkmap_[condid]->Get<string>("DesignVariables"));
+  std::string DesignVars = *(optwkmap_[condid]->Get<std::string>("DesignVariables"));
 
   if (DesignVars == "R_C")
   {
@@ -1330,8 +1330,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::GetDesignVariables(
 #if 0
   if(discret_->Comm().MyPID() == 0)
   {
-    cout<<"xnm is:"<<endl;
-    cout<<(*xnm_);
+    std::cout<<"xnm is:"<<std::endl;
+    std::cout<<(*xnm_);
   }
 #endif
 

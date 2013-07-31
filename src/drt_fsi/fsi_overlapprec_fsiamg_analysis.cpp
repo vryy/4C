@@ -133,8 +133,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
     Teuchos::ParameterList pushlist(params.sublist("smoother: ifpack list"));
     char levelstr[11];
     sprintf(levelstr,"(level %d)",level);
-    Teuchos::ParameterList subp =  params.sublist("smoother: list "+(string)levelstr);
-    //cout << "pushlist\n" << pushlist << "subp\n" << subp << endl;
+    Teuchos::ParameterList subp =  params.sublist("smoother: list "+(std::string)levelstr);
+    //std::cout << "pushlist\n" << pushlist << "subp\n" << subp << std::endl;
         
     MLAPI::Space rspace(A[level].GetOperatorRangeSpace());
     MLAPI::Space dspace(A[level].GetOperatorDomainSpace());

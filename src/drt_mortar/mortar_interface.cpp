@@ -80,7 +80,7 @@ maxdofglobal_(-1)
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Mortar problem must be 2D or 3D");
   procmap_.clear();
-  idiscret_ = Teuchos::rcp(new DRT::Discretization((string)"mortar interface",com));
+  idiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"mortar interface",com));
 
   // overwrite shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
@@ -99,7 +99,7 @@ maxdofglobal_(-1)
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const MORTAR::MortarInterface& interface)
+std::ostream& operator << (std::ostream& os, const MORTAR::MortarInterface& interface)
 {
   interface.Print(os);
   return os;
@@ -109,12 +109,12 @@ ostream& operator << (ostream& os, const MORTAR::MortarInterface& interface)
 /*----------------------------------------------------------------------*
  |  print interface (public)                                 mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::Print(ostream& os) const
+void MORTAR::MortarInterface::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
   {
-    os << "\nMortar Interface Id " << id_ << endl;
-    os << "Mortar Interface Discretization:" << endl;
+    os << "\nMortar Interface Id " << id_ << std::endl;
+    os << "Mortar Interface Discretization:" << std::endl;
   }
   os << Discret();
   return;
@@ -205,8 +205,8 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index)
 
     if (myrank==0)
     {
-      std::cout << endl;
-      std::cout <<"   Discretization: " << Discret().Name() << " #" << index << endl;
+      std::cout << std::endl;
+      std::cout <<"   Discretization: " << Discret().Name() << " #" << index << std::endl;
       printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
       printf("   | PID |   n_rownodes    | n_ghostnodes |  n_rowelements  |  n_ghostele  |\n");
       printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
@@ -755,7 +755,7 @@ void MORTAR::MortarInterface::Redistribute()
   Discret().ExportColumnElements(*coleles);
 
   // print message
-  if (!myrank) std::cout << "done!" << endl;
+  if (!myrank) std::cout << "done!" << std::endl;
 
   return;
 }
@@ -782,7 +782,7 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****REDUNDANT SLAVE AND MASTER STORAGE*****
   if (Redundant()==INPAR::MORTAR::redundant_all)
   {
-    //std::cout << "REDUNDANT SLAVE AND MASTER InterfaceGhosting" << endl;
+    //std::cout << "REDUNDANT SLAVE AND MASTER InterfaceGhosting" << std::endl;
 
     // to ease our search algorithms we'll afford the luxury to ghost all nodes
     // on all processors. To do so, we'll take the node row map and export it to
@@ -852,7 +852,7 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****ONLY REDUNDANT MASTER STORAGE*****
   else if (Redundant()==INPAR::MORTAR::redundant_master)
   {
-    //std::cout << "ONLY REDUNDANT MASTER InterfaceGhosting" << endl;
+    //std::cout << "ONLY REDUNDANT MASTER InterfaceGhosting" << std::endl;
 
     // to ease our search algorithms we'll afford the luxury to ghost all master
     // nodes on all processors. To do so, we'll take the master node row map and
@@ -1362,7 +1362,7 @@ void MORTAR::MortarInterface::Initialize()
 /*----------------------------------------------------------------------*
  |  set current and old deformation state                      popp 12/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::SetState(const string& statename,
+void MORTAR::MortarInterface::SetState(const std::string& statename,
                                        const Teuchos::RCP<Epetra_Vector> vec)
 {
   // ***WARNING:*** This is commented out here, as idiscret_->SetState()
@@ -1495,7 +1495,7 @@ void MORTAR::MortarInterface::Evaluate()
   filename << "o/gmsh_output/" << filebase << "_cells_" << proc << ".pos";
   FILE* fp = fopen(filename.str().c_str(), "w");
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << endl;
+  gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << std::endl;
   fprintf(fp,gmshfilecontent.str().c_str());
   fclose(fp);
 #endif // #ifdef MORTARGMSHCELLS
@@ -1550,7 +1550,7 @@ void MORTAR::MortarInterface::Evaluate()
   // finish integration cell GMSH files
   fp = fopen(filename.str().c_str(), "a");
   std::stringstream gmshfilecontent2;
-  gmshfilecontent2 << "};" << endl;
+  gmshfilecontent2 << "};" << std::endl;
   fprintf(fp,gmshfilecontent2.str().c_str());
   fclose(fp);
 #endif // #ifdef MORTARGMSHCELLS
@@ -1636,7 +1636,7 @@ void MORTAR::MortarInterface::ExportNodalNormals()
     // one proc after the other
     if (p==Comm().MyPID())
     {
-      std::cout << "\n*****\nPROC " << p << "\n*****" << endl;
+      std::cout << "\n*****\nPROC " << p << "\n*****" << std::endl;
       for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
       {
         int gid = snodecolmapbound_->GID(i);
@@ -1647,9 +1647,9 @@ void MORTAR::MortarInterface::ExportNodalNormals()
         // print averaged normal at each slave node
         std::cout << "Proc: " << p << " Node: " << gid << " Owner: " << mrtrnode->Owner()
              << " Normal: " << mrtrnode->MoData().n()[0]
-             << " " << mrtrnode->MoData().n()[1] << " " << mrtrnode->MoData().n()[2] << endl;
+             << " " << mrtrnode->MoData().n()[1] << " " << mrtrnode->MoData().n()[2] << std::endl;
       }
-      std::cout << endl << endl;
+      std::cout << std::endl << std::endl;
     }
 
     // barrier
@@ -2724,7 +2724,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
         // find adjacent corner nodes globally
         int gindex1 = mrtrele->NodeIds()[index1];
         int gindex2 = mrtrele->NodeIds()[index2];
-        //std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << endl;
+        //std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
         DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
         if (!adjnode1) dserror("ERROR: Cannot find node with gid %",gindex1);
         MortarNode* adjmrtrnode1 = static_cast<MortarNode*>(adjnode1);
@@ -2904,7 +2904,7 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
         // find adjacent corner nodes globally
         int gindex1 = mrtrele->NodeIds()[index1];
         int gindex2 = mrtrele->NodeIds()[index2];
-        //std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << endl;
+        //std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
         DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
         if (!adjnode1) dserror("ERROR: Cannot find node with gid %",gindex1);
         MortarNode* adjmrtrnode1 = static_cast<MortarNode*>(adjnode1);
@@ -2949,8 +2949,8 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
         int gindex2 = mrtrele->NodeIds()[1];
         int gindex3 = mrtrele->NodeIds()[2];
         int gindex4 = mrtrele->NodeIds()[3];
-        //std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << endl;
-        //std::cout << "-> adjacent corner nodes: " << gindex3 << " " << gindex4 << endl;
+        //std::cout << "-> adjacent corner nodes: " << gindex1 << " " << gindex2 << std::endl;
+        //std::cout << "-> adjacent corner nodes: " << gindex3 << " " << gindex4 << std::endl;
         DRT::Node* adjnode1 = idiscret_->gNode(gindex1);
         if (!adjnode1) dserror("ERROR: Cannot find node with gid %",gindex1);
         MortarNode* adjmrtrnode1 = static_cast<MortarNode*>(adjnode1);

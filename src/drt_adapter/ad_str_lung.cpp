@@ -25,7 +25,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
   for (unsigned i=0; i<temp.size(); ++i)
   {
     DRT::Condition& cond = *(temp[i]);
-    if (*(cond.Get<string>("field")) == "structure")
+    if (*(cond.Get<std::string>("field")) == "structure")
     {
       constrcond_.push_back(temp[i]);
     }
@@ -36,7 +36,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
   for (unsigned i=0; i<temp.size(); ++i)
   {
     DRT::Condition& cond = *(temp[i]);
-    if (*(cond.Get<string>("field")) == "structure")
+    if (*(cond.Get<std::string>("field")) == "structure")
       asicond_.push_back(temp[i]);
   }
   if (asicond_.size() == 0) dserror("No structure-ale coupling constraints found for lung fsi");

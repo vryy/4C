@@ -41,7 +41,7 @@ void loma_dyn(int restart)
 
   // print warning to screen
   if (comm.MyPID()==0)
-    cout << "You are now about to enter the module for low-Mach-number flow!" <<endl;
+    std::cout << "You are now about to enter the module for low-Mach-number flow!" <<std::endl;
 
   // define abbreviation
   DRT::Problem* problem = DRT::Problem::Instance();

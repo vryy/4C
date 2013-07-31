@@ -369,7 +369,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \brief Print interfaces
 
     */
-    void Print(ostream& os) const;
+    void Print(std::ostream& os) const;
     
     /*!
     \brief Print current active set to screen for debugging purposes
@@ -489,6 +489,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 } // namespace CONTACT
 
 // << operator
-ostream& operator << (ostream& os, const CONTACT::MtAbstractStrategy& strategy);
+std::ostream& operator << (std::ostream& os, const CONTACT::MtAbstractStrategy& strategy);
 
 #endif  // #ifndef MESHTYING_ABSTRACT_STRATEGY_H

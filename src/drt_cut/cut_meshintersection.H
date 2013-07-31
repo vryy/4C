@@ -75,16 +75,16 @@ public:
       void print()
       {
         // print volumecell information
-        std::cout << "Volumecell-DofSetData: " << endl;
+        std::cout << "Volumecell-DofSetData: " << std::endl;
 
         // print parent element Id
-        std::cout << "\tparent element id: " << peid_ << endl;
+        std::cout << "\tparent element id: " << peid_ << std::endl;
 
         // print node_dofsetnumber_map
-        std::cout << "\tnode_dofsetnumber_map" << endl;
+        std::cout << "\tnode_dofsetnumber_map" << std::endl;
         for(std::map<int,int>::iterator i=node_dofsetnumber_map_.begin(); i!= node_dofsetnumber_map_.end(); ++i)
         {
-          std::cout << "\t\tnodeId \t" << i->first << "\t dofsetnumber \t" << i->second << endl;
+          std::cout << "\t\tnodeId \t" << i->first << "\t dofsetnumber \t" << i->second << std::endl;
         }
       }
 
@@ -238,7 +238,7 @@ public:
   void DumpGmshCellSets( std::vector<plain_volumecell_set> & cell_sets,  DRT::Discretization & dis );
 
   /// write gmsh cut output for number of dofsets and the connected vc sets
-  void DumpGmshNumDOFSets( string filename, bool include_inner, DRT::Discretization & dis );
+  void DumpGmshNumDOFSets( std::string filename, bool include_inner, DRT::Discretization & dis );
 
   /// write gmsh output for volumecells
   void DumpGmshVolumeCells( std::string name, bool include_inner );

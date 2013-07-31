@@ -575,35 +575,35 @@ namespace FLD
           dserror("need two homogeneous directions to do averaging in plane channel flows\n");
         }
 
-        cout << "Additional output          : " ;
-        cout << "Turbulence statistics are evaluated ";
-        cout << "for a turbulent channel flow.\n";
-        cout << "                             " ;
-        cout << "The solution is averaged over the homogeneous ";
-        cout << homdir;
-        cout << " plane and over time.\n";
-        cout << "\n";
-        cout << "                             " ;
-        cout << "Sampling period: steps " << samstart_ << " to ";
-        cout << modelparams->get<int>("SAMPLING_STOP",1000000000) << ".\n";
+        std::cout << "Additional output          : " ;
+        std::cout << "Turbulence statistics are evaluated ";
+        std::cout << "for a turbulent channel flow.\n";
+        std::cout << "                             " ;
+        std::cout << "The solution is averaged over the homogeneous ";
+        std::cout << homdir;
+        std::cout << " plane and over time.\n";
+        std::cout << "\n";
+        std::cout << "                             " ;
+        std::cout << "Sampling period: steps " << samstart_ << " to ";
+        std::cout << modelparams->get<int>("SAMPLING_STOP",1000000000) << ".\n";
 
         int dumperiod = modelparams->get<int>("DUMPING_PERIOD",1);
 
 
         if(dumperiod == 0)
         {
-          cout << "                             " ;
-          cout << "Using standalone records (i.e. start from 0 for a new record)\n";
+          std::cout << "                             " ;
+          std::cout << "Using standalone records (i.e. start from 0 for a new record)\n";
         }
         else
         {
-          cout << "                             " ;
-          cout << "Volker-style incremental dumping is used (";
-          cout << dumperiod << ")" << endl;
+          std::cout << "                             " ;
+          std::cout << "Volker-style incremental dumping is used (";
+          std::cout << dumperiod << ")" << std::endl;
         }
 
-        cout << endl;
-        cout << endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
       }
     }
 
@@ -651,8 +651,8 @@ namespace FLD
         {
           if(discret_->Comm().MyPID()==0)
           {
-            cout << "\nSmagorinsky constant, effective viscosity, ... etc, ";
-            cout << "all element-quantities \n";
+            std::cout << "\nSmagorinsky constant, effective viscosity, ... etc, ";
+            std::cout << "all element-quantities \n";
             }
           statistics_channel_->AddDynamicSmagorinskyQuantities();
         }
@@ -925,9 +925,9 @@ namespace FLD
 
       if(discret_->Comm().MyPID()==0)
       {
-        cout << "Computed statistics: mean values, fluctuations, boundary forces etc.             (";
+        std::cout << "Computed statistics: mean values, fluctuations, boundary forces etc.             (";
         printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
-        cout << ")";
+        std::cout << ")";
       }
 
       //--------------------------------------------------
@@ -1038,15 +1038,15 @@ namespace FLD
 
         if(discret_->Comm().MyPID()==0)
         {
-          cout << "\nresiduals, dissipation rates etc, ";
-          cout << "all gausspoint-quantities (";
+          std::cout << "\nresiduals, dissipation rates etc, ";
+          std::cout << "all gausspoint-quantities (";
           printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
-          cout << ")";
+          std::cout << ")";
         }
       }
       if(discret_->Comm().MyPID()==0)
       {
-        cout << "\n";
+        std::cout << "\n";
       }
 
       if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and inflow_==false)
@@ -1094,10 +1094,10 @@ namespace FLD
     {
       if (discret_->Comm().MyPID() == 0)
       {
-        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-        cout << "calculate initial energy spectrum  ";
-        cout << "XXXXXXXXXXXXXXXXXXXXX";
-        cout << "\n\n";
+        std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+        std::cout << "calculate initial energy spectrum  ";
+        std::cout << "XXXXXXXXXXXXXXXXXXXXX";
+        std::cout << "\n\n";
       }
 
       statistics_hit_->DoTimeSample(myvelnp_);
@@ -1106,10 +1106,10 @@ namespace FLD
 
       if (discret_->Comm().MyPID() == 0)
       {
-        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-        cout << "wrote statistics record            ";
-        cout << "XXXXXXXXXXXXXXXXXXXXX";
-        cout << "\n\n";
+        std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+        std::cout << "wrote statistics record            ";
+        std::cout << "XXXXXXXXXXXXXXXXXXXXX";
+        std::cout << "\n\n";
       }
     }
 
@@ -1186,9 +1186,9 @@ namespace FLD
 
       if(discret_->Comm().MyPID()==0)
       {
-        cout << "                      taking time sample (";
+        std::cout << "                      taking time sample (";
         printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
-        cout << ")\n";
+        std::cout << ")\n";
       }
 
     } // end step in sampling period
@@ -1500,10 +1500,10 @@ namespace FLD
 
       if(discret_->Comm().MyPID()==0 && outputformat != do_not_write)
       {
-        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-        cout << "wrote statistics record            ";
-        cout << "XXXXXXXXXXXXXXXXXXXXX";
-        cout << "\n\n";
+        std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+        std::cout << "wrote statistics record            ";
+        std::cout << "XXXXXXXXXXXXXXXXXXXXX";
+        std::cout << "\n\n";
       }
 
 
@@ -1639,10 +1639,10 @@ namespace FLD
       {
         if(discret_->Comm().MyPID()==0)
         {
-          cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-          cout << "Read general mean values           ";
-          cout << "XXXXXXXXXXXXXXXXXXXXX";
-          cout << "\n\n";
+          std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+          std::cout << "Read general mean values           ";
+          std::cout << "XXXXXXXXXXXXXXXXXXXXX";
+          std::cout << "\n\n";
         }
 
         statistics_general_mean_->ReadOldStatistics(reader);
@@ -1671,10 +1671,10 @@ namespace FLD
       {
         if(discret_->Comm().MyPID()==0)
         {
-          cout << "XXXXXXXXXXXXXXXXXXXXX        ";
-          cout << "Read general mean values for ScaTra      ";
-          cout << "XXXXXXXXXXXXXXXXXXXXX";
-          cout << "\n\n";
+          std::cout << "XXXXXXXXXXXXXXXXXXXXX        ";
+          std::cout << "Read general mean values for ScaTra      ";
+          std::cout << "XXXXXXXXXXXXXXXXXXXXX";
+          std::cout << "\n\n";
         }
 
         statistics_general_mean_->ReadOldStatisticsScaTra(scatrareader);

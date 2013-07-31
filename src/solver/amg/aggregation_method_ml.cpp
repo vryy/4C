@@ -51,7 +51,7 @@ int LINALG::AggregationMethod_ML::GetAggregates(const RCP<Epetra_CrsMatrix>& A, 
   double Threshold    = List.get("aggregation: threshold", 0.0);
   int NumPDEEquations   = List.get("PDE equations",1);
   int nsdim         = List.get("null space: dimension", -1);
-  if (nsdim==-1)  cout << "dimension of null space not set" << endl;
+  if (nsdim==-1)  std::cout << "dimension of null space not set" << std::endl;
   int size = A->RowMap().NumMyElements();
 
   // create ML objects

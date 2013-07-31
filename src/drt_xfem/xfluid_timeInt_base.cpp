@@ -725,7 +725,7 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
   int size_one = 1;
 
 #ifdef DEBUG
-  cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
+  std::cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << std::endl;
 #endif
 
   // exporter for sending
@@ -751,7 +751,7 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
   exporter.Wait(req_data);
 
 #ifdef DEBUG
-  cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
+  std::cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << std::endl;
 #endif
 } // end sendData
 
@@ -1456,11 +1456,11 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
         if(sid_2 == -1)
         {
 #ifdef DEBUG_TIMINT_STD
-          cout << "\t\t\t\tneighbor side not found, current line seems to be a line at the boundary" << endl;
-          cout << "\t\t\t\t -> the same distance should have been found for a side ? " << endl;
-          cout << "line nodeids: " << endl;
+          std::cout << "\t\t\t\tneighbor side not found, current line seems to be a line at the boundary" << std::endl;
+          std::cout << "\t\t\t\t -> the same distance should have been found for a side ? " << std::endl;
+          std::cout << "line nodeids: " << std::endl;
           for(int i=0; i< (int)(line->first).size(); i++)
-            cout << "\t nid: " << (line->first)[i] << endl;
+            std::cout << "\t nid: " << (line->first)[i] << std::endl;
 #endif
         }
       }
@@ -1642,7 +1642,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
    std::ostringstream filename_base_startvalues;
    filename_base_startvalues << "TIMINT"<< "_startvalues_" <<  n_new->Id()<< "_";
    const std::string filename_startvalues = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_startvalues.str(), step, step_diff, screen_out,myrank);
-   if (true) cout << endl;
+   if (true) std::cout << std::endl;
    std::ofstream gmshfilecontent_startvalues(filename_startvalues.c_str());
    gmshfilecontent_startvalues.setf(std::ios::scientific,std::ios::floatfield);
    gmshfilecontent_startvalues.precision(16);
@@ -2375,14 +2375,14 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   if(on_side)
   {
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\tprojection of current node lies on side " << side->Id() << " with distance " << curr_dist << endl;
+    std::cout << "\t\tprojection of current node lies on side " << side->Id() << " with distance " << curr_dist << std::endl;
 #endif
 
     if(curr_dist < min_dist-TOL_dist_ && curr_dist >= 0)
     {
 
 #ifdef DEBUG_TIMINT_STD
-      cout << "\t\t\t>>> updated smallest distance! " << curr_dist << endl;
+      std::cout << "\t\t\t>>> updated smallest distance! " << curr_dist << std::endl;
 #endif
 
 
@@ -2403,7 +2403,7 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
     else if(curr_dist < 0)
     {
 #ifdef DEBUG_TIMINT_STD
-      cout << "\t\t\tnegative distance -> do not update" << endl;
+      std::cout << "\t\t\tnegative distance -> do not update" << std::endl;
 #endif
     }
   }
@@ -2492,15 +2492,15 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   if(on_line)
   {
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\tline-proj: projection lies on line " << line_count << " of side "<< side->Id() << endl;
+    std::cout << "\t\tline-proj: projection lies on line " << line_count << " of side "<< side->Id() << std::endl;
 #endif
 
     // distance has to be smaller than the last one
     if(curr_dist < (min_dist-TOL_dist_) && curr_dist >= 0)
     {
 #ifdef DEBUG_TIMINT_STD
-      cout.precision(15);
-      cout << "\t\t\t>>> updated smallest distance!" << curr_dist << endl;
+      std::cout.precision(15);
+      std::cout << "\t\t\t>>> updated smallest distance!" << curr_dist << std::endl;
 #endif
 
       if(curr_dist < (min_dist-TOL_dist_)) // smaller distance found
@@ -2618,7 +2618,7 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(
   if(curr_dist < min_dist-TOL_dist_ and curr_dist >= 0)
   {
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\t\t>>> updated smallest distance w.r.t point-proj!" << curr_dist << endl;
+    std::cout << "\t\t\t>>> updated smallest distance w.r.t point-proj!" << curr_dist << std::endl;
 #endif
     //--------------------
     // set current minimal distance w.r.t point
@@ -2827,28 +2827,28 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
   {
 
 #ifdef DEBUG_TIMINT_STD
-    cout.precision(15);
+    std::cout.precision(15);
 
-    cout << "increment criterion loc coord "
+    std::cout << "increment criterion loc coord "
         //<< sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1))
         << sqrt(incr(0)*incr(0)+incr(1)*incr(1))
         << " \tabsTOL: " << absTolIncr
-        << endl;
-    cout << "absolute criterion for distance "
+        << std::endl;
+    std::cout << "absolute criterion for distance "
         << incr(2)
         << " \tabsTOL: " << absTOLdist
-        << endl;
-    cout << "absolute criterion whole residuum "
+        << std::endl;
+    std::cout << "absolute criterion whole residuum "
         << residuum.Norm2()
         << " \tabsTOL: " << absTolRes
-        << endl;
+        << std::endl;
 
 
-    cout << "sysmat.Invert" << sysmat << endl;
-    cout << "sol-norm " << sol.Norm2() << endl;
-    cout << "sol " << sol << endl;
-    cout << "x_gp_lin" << x_gp_lin << endl;
-    cout << "side " << xyze_ << endl;
+    std::cout << "sysmat.Invert" << sysmat << std::endl;
+    std::cout << "sol-norm " << sol.Norm2() << std::endl;
+    std::cout << "sol " << sol << std::endl;
+    std::cout << "x_gp_lin" << x_gp_lin << std::endl;
+    std::cout << "side " << xyze_ << std::endl;
 #endif
 
     //dserror( "newton scheme in ProjectOnSide not converged! " );
@@ -2893,7 +2893,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
       xi_side(1) = sol(1);
 
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\tside-proj: converged with local coordinates " << sol(0) << " " << sol(1) << " " << " dist: " << sol(2)*normal_length << endl;
+    std::cout << "\t\tside-proj: converged with local coordinates " << sol(0) << " " << sol(1) << " " << " dist: " << sol(2)*normal_length << std::endl;
 #endif
 
     }
@@ -2911,7 +2911,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
       x_side(2) = INFINITY;
 
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\tside-proj: converged with local coordinates " << sol(0) << " " << sol(1) << ". Check if is on side: false" << endl;
+    std::cout << "\t\tside-proj: converged with local coordinates " << sol(0) << " " << sol(1) << ". Check if is on side: false" << std::endl;
 #endif
 
     }
@@ -3211,7 +3211,7 @@ void XFEM::XFLUID_STD::exportStartData()
   std::vector<char> dataRecv;
   sendData(dataSend,dest,source,dataRecv);
 
-  // pointer to current position of group of cells in global string (counts bytes)
+  // pointer to current position of group of cells in global std::string (counts bytes)
   std::vector<char>::size_type posinData = 0;
 
   // clear vector that should be filled
@@ -3334,7 +3334,7 @@ void XFEM::XFLUID_STD::exportFinalData()
     std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
-    // pointer to current position of group of cells in global string (counts bytes)
+    // pointer to current position of group of cells in global std::string (counts bytes)
     std::vector<char>::size_type posinData = 0;
 
     // unpack received data

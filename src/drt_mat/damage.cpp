@@ -513,7 +513,7 @@ void MAT::Damage::Evaluate(
     if (plastic_step == false)
     {
       if (gp == 0)
-        cout << "first plastic step: plastic strains unequal zero!" << endl;
+        std::cout << "first plastic step: plastic strains unequal zero!" << std::endl;
       plastic_step = true;
     }
 
@@ -584,11 +584,11 @@ void MAT::Damage::Evaluate(
 #ifdef DEBUGMATERIAL
       if (gp == 0)
       {
-        cout << "am 1.GP: local Newton: Res " << Res << endl;
-        cout << "local Newton: ResTan " << ResTan << endl;
-        cout << "local Newton: Dgamma " << Dgamma << endl;
-        cout << "local Newton: betabarold " << betabarold << endl;
-        cout << "local Newton: betabar " << betabar << "\n"<< endl;
+        std::cout << "am 1.GP: local Newton: Res " << Res << std::endl;
+        std::cout << "local Newton: ResTan " << ResTan << std::endl;
+        std::cout << "local Newton: Dgamma " << Dgamma << std::endl;
+        std::cout << "local Newton: betabarold " << betabarold << std::endl;
+        std::cout << "local Newton: betabar " << betabar << "\n"<< std::endl;
       }
 #endif  // #ifdef DEBUGMATERIAL
 
@@ -642,8 +642,8 @@ void MAT::Damage::Evaluate(
     backstresscurr_->at(gp) = beta;
 
 #ifdef DEBUGMATERIAL
-    cout << "end strain_p\n " << strain_p << endl;
-    cout << "end strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << endl;
+    std::cout << "end strain_p\n " << strain_p << std::endl;
+    std::cout << "end strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << std::endl;
 #endif //ifdef DEBUGMATERIAL
 
   }  // plastic corrector
@@ -672,14 +672,14 @@ void MAT::Damage::Evaluate(
     );
 
 #ifdef DEBUGMATERIAL
-  cout << "Nach Setup Cep\n" << endl;
-  cout << " Dgamma " << Dgamma << endl;
-  cout << " G " << G << endl;
-  cout << " qbar " << qbar << endl;
-  cout << " flow vector " << flovec << endl;
-  cout << " heaviside " << heaviside << endl;
+  std::cout << "Nach Setup Cep\n" << std::endl;
+  std::cout << " Dgamma " << Dgamma << std::endl;
+  std::cout << " G " << G << std::endl;
+  std::cout << " qbar " << qbar << std::endl;
+  std::cout << " flow vector " << flovec << std::endl;
+  std::cout << " heaviside " << heaviside << std::endl;
 
-  cout << "cmat " << cmat << endl;
+  std::cout << "cmat " << cmat << std::endl;
 #endif // #ifdef DEBUGMATERIAL
 
   params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain",plstrain);
@@ -862,28 +862,28 @@ void MAT::Damage::SetupCmatElastoPlastic(
   }
 
 #ifdef DEBUGMATERIAL
-//  cout << "Ende SetupCmatElastPlast" << endl;
-//  cout << "Cep\n" << " Dgamma " << Dgamma << endl;
-//  cout << " G " << G << endl;
-//  cout << " q " << q << endl;
-//  cout << " flowvector " << flowvector << endl;
-//  cout << " heaviside " << heaviside << endl;
-//  cout << " epfac " << epfac << endl;
-//  cout << " epfac1 " << epfac1 << endl;
-//  cout << " cmat " << cmat << endl;
+//  std::cout << "Ende SetupCmatElastPlast" << std::endl;
+//  std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
+//  std::cout << " G " << G << std::endl;
+//  std::cout << " q " << q << std::endl;
+//  std::cout << " flowvector " << flowvector << std::endl;
+//  std::cout << " heaviside " << heaviside << std::endl;
+//  std::cout << " epfac " << epfac << std::endl;
+//  std::cout << " epfac1 " << epfac1 << std::endl;
+//  std::cout << " cmat " << cmat << std::endl;
 #endif // #ifdef DEBUGMATERIAL
 
 }  // SetupCmatElastoPlastic()
 
 
-void MAT::Damage::VisNames(std::map<string,int>& names)
+void MAT::Damage::VisNames(std::map<std::string,int>& names)
 {
-  string accumulatedstrain = "accumulatedstrain";
+  std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
 }
 
 
-bool MAT::Damage::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::Damage::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (name == "accumulatedstrain")
   {

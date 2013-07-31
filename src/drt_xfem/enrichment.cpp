@@ -29,7 +29,7 @@ XFEM::Enrichment& XFEM::Enrichment::operator = (const XFEM::Enrichment& old)
 
 
 /*----------------------------------------------------------------------*
- |  create string                                                       |
+ |  create std::string                                                       |
  *----------------------------------------------------------------------*/
 std::string XFEM::Enrichment::toString() const
 {

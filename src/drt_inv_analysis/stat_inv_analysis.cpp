@@ -194,7 +194,7 @@ void STR::INVANA::StatInvAnalysis::SolveAdjointProblem()
 //    output_->WriteVector("displacement", Teuchos::rcp((*disdual_)(i),false));
 //  }
 //
-//  cout << "done" << endl;
+//  std::cout << "done" << std::endl;
 
 }
 

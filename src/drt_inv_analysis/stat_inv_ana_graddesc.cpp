@@ -83,15 +83,15 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
     // summary
     objgrad_->NormInf(vnorm.Values());
 
-    cout << "this steps optimality evaluation: ERROR: " << objval_ << "   GRADNORM: " << vnorm.Norm1() << " -> next stepsize: " << stepsize_ << endl;
+    std::cout << "this steps optimality evaluation: ERROR: " << objval_ << "   GRADNORM: " << vnorm.Norm1() << " -> next stepsize: " << stepsize_ << std::endl;
 
-    cout << "************************** END OF STEP " << i << " *******************************" << endl;
+    std::cout << "************************** END OF STEP " << i << " *******************************" << std::endl;
 
     i=i+1;
   }
 
-  //cout << "************************** FINAL SET OF MATERIAL PARAMETERS **************************" << endl;
-  //cout << *(matman_->GetParams()) << endl;
+  //std::cout << "************************** FINAL SET OF MATERIAL PARAMETERS **************************" << std::endl;
+  //std::cout << *(matman_->GetParams()) << std::endl;
   return;
 
 }

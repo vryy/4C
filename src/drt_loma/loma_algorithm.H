@@ -143,10 +143,10 @@ namespace LOMA
     double  ittol_;
 
     /// flag for constant thermodynamic pressure
-    string consthermpress_;
+    std::string consthermpress_;
 
     /// flag for special flow
-    string special_flow_;
+    std::string special_flow_;
 
     /// start of sampling period
     int samstart_;

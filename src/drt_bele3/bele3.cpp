@@ -152,7 +152,7 @@ DRT::ELEMENTS::Bele3::~Bele3()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3::Print(ostream& os) const
+void DRT::ELEMENTS::Bele3::Print(std::ostream& os) const
 {
   os << "Bele3 " << DRT::DistypeToString(Shape());
   Element::Print(os);

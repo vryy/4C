@@ -74,8 +74,8 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   if (r_stretch>=s_stretch and r_stretch>=t_stretch) {
     max_stretch = r_stretch;
     if ((max_stretch / s_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
-      //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
-      //cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
+      //std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      //std::cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << std::endl;
       //dserror("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
@@ -85,8 +85,8 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   else if (s_stretch>r_stretch and s_stretch>=t_stretch) {
     max_stretch = s_stretch;
     if ((max_stretch / r_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
-      //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
-      //cout << max_stretch / r_stretch << " , " << max_stretch / t_stretch << endl;
+      //std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      //std::cout << max_stretch / r_stretch << " , " << max_stretch / t_stretch << std::endl;
       //dserror("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
@@ -96,8 +96,8 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   else if (t_stretch>r_stretch and t_stretch>s_stretch) {
     max_stretch = t_stretch;
     if ((max_stretch / r_stretch <= 1.5) || (max_stretch / s_stretch <=1.5)) {
-      //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
-      //cout << max_stretch / r_stretch << " , " << max_stretch / s_stretch << endl;
+      //std::cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      //std::cout << max_stretch / r_stretch << " , " << max_stretch / s_stretch << std::endl;
       //dserror("Solid-Shell element geometry has not a shell aspect ratio");
       return undefined;
     }
@@ -302,8 +302,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
   filename << "solidelement" << this->Id() << ".gmsh";
   std::ofstream f_system("solidelement.gmsh");
   std::stringstream gmshfilecontent;
-  gmshfilecontent << "View \" One Solid Element \" {" << endl;
-  gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(this->thickdir_, this) << endl;
+  gmshfilecontent << "View \" One Solid Element \" {" << std::endl;
+  gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(this->thickdir_, this) << std::endl;
   // plot vector from 1st node to 5th node which is parametric t-dir
   std::vector<double> X15(3);
   X15[0] = this->Nodes()[4]->X()[0] - this->Nodes()[0]->X()[0];
@@ -312,24 +312,24 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
   gmshfilecontent << "VP(" << std::scientific << this->Nodes()[0]->X()[0] << ",";
   gmshfilecontent << std::scientific << this->Nodes()[0]->X()[1] << ",";
   gmshfilecontent << std::scientific << this->Nodes()[0]->X()[2] << ")";
-  gmshfilecontent << "{" << std::scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << endl;
-  gmshfilecontent << "};" << endl;
-  gmshfilecontent << "View \" LabelIds \" {" << endl;
+  gmshfilecontent << "{" << std::scientific << X15[0] << "," << X15[1] << "," << X15[2] << "};" << std::endl;
+  gmshfilecontent << "};" << std::endl;
+  gmshfilecontent << "View \" LabelIds \" {" << std::endl;
   for (int i=0; i<NUMNOD_SOH8; ++i) {
     gmshfilecontent << "SP(" << std::scientific << this->Nodes()[i]->X()[0] << ",";
     gmshfilecontent << std::scientific << this->Nodes()[i]->X()[1] << ",";
     gmshfilecontent << std::scientific << this->Nodes()[i]->X()[2] << ")";
-    gmshfilecontent << "{" << LabelIds[i] << "};" << endl;
+    gmshfilecontent << "{" << LabelIds[i] << "};" << std::endl;
   }
-  gmshfilecontent << "};" << endl;
-  gmshfilecontent << "View \" I order \" {" << endl;
+  gmshfilecontent << "};" << std::endl;
+  gmshfilecontent << "View \" I order \" {" << std::endl;
   for (int i=0; i<NUMNOD_SOH8; ++i) {
     gmshfilecontent << "SP(" << std::scientific << this->Nodes()[i]->X()[0] << ",";
     gmshfilecontent << std::scientific << this->Nodes()[i]->X()[1] << ",";
     gmshfilecontent << std::scientific << this->Nodes()[i]->X()[2] << ")";
-    gmshfilecontent << "{" << i << "};" << endl;
+    gmshfilecontent << "{" << i << "};" << std::endl;
   }
-  gmshfilecontent << "};" << endl;
+  gmshfilecontent << "};" << std::endl;
   f_system << gmshfilecontent.str();
   f_system.close();
   return;

@@ -106,7 +106,7 @@ DRT::ELEMENTS::Ale2Line::~Ale2Line()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Line::Print(ostream& os) const
+void DRT::ELEMENTS::Ale2Line::Print(std::ostream& os) const
 {
   os << "Ale2Line ";
   Element::Print(os);

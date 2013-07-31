@@ -42,7 +42,7 @@ public:
 
 protected:
 
-  /// determine element type string and whether element is copied or not
+  /// determine element type std::string and whether element is copied or not
   virtual bool DetermineEleType(DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
   /// set element-specific data (material etc.)

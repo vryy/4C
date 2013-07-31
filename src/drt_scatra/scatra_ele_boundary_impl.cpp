@@ -1023,7 +1023,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // for the moment we ignore the return values of this method
     CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
     //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
-    //cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<endl;
+    //std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
 
     // NOTE: add value only for boundary elements which are NOT ghosted!
 
@@ -1814,36 +1814,36 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
 # if 0
         // print all parameters read from the current condition
-        cout<<"kinetic model  = "<<*kinetics<<endl;
-        cout<<"react. species = "<<speciesid<<endl;
-        cout<<"pot0(mod.)     = "<<pot0<<endl;
-        cout<<"curvenum       = "<<curvenum<<endl;
-        cout<<"alpha_a        = "<<alphaa<<endl;
-        cout<<"alpha_c        = "<<alphac<<endl;
-        cout<<"i0(mod.)       = "<<i0<<endl;
-        cout<<"gamma          = "<<gamma<<endl;
-        cout<<"refcon         = "<<refcon<<endl;
-        cout<<"F/RT           = "<<frt<<endl<<endl;
-        cout<<"time factor    = "<<timefac<<endl;
-        cout<<"alpha_F        = "<<alphaF<<endl;
+        std::cout<<"kinetic model  = "<<*kinetics<<std::endl;
+        std::cout<<"react. species = "<<speciesid<<std::endl;
+        std::cout<<"pot0(mod.)     = "<<pot0<<std::endl;
+        std::cout<<"curvenum       = "<<curvenum<<std::endl;
+        std::cout<<"alpha_a        = "<<alphaa<<std::endl;
+        std::cout<<"alpha_c        = "<<alphac<<std::endl;
+        std::cout<<"i0(mod.)       = "<<i0<<std::endl;
+        std::cout<<"gamma          = "<<gamma<<std::endl;
+        std::cout<<"refcon         = "<<refcon<<std::endl;
+        std::cout<<"F/RT           = "<<frt<<std::endl<<std::endl;
+        std::cout<<"time factor    = "<<timefac<<std::endl;
+        std::cout<<"alpha_F        = "<<alphaF<<std::endl;
 #endif
 
 #ifdef DEBUG
         // some safety checks/ user warnings
         if ((alphaa*frt*eta) > 100.0)
-          cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
-          <<exp(alphaa*frt*eta)<<endl;
+          std::cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
+          <<exp(alphaa*frt*eta)<<std::endl;
         if (((-alphac)*frt*eta) > 100.0)
-          cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
-          <<exp((-alphac)*frt*eta)<<endl;
+          std::cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+          <<exp((-alphac)*frt*eta)<<std::endl;
 #endif
         double pow_conint_gamma_k = 0.0;
         if ((conint[k]/refcon) < EPS13)
         {
           pow_conint_gamma_k = std::pow(EPS13,gamma);
 #ifdef DEBUG
-          cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint[k]/refcon)<<endl;
-          cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+          std::cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
+          std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
 #endif
         }
         else
@@ -1937,15 +1937,15 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 #ifdef DEBUG
         // some safety checks/ user warnings
         if (((-alpha)*frt*eta) > 100.0)
-            cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
-            <<exp((-alpha)*frt*eta)<<endl;
+          std::cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+            <<exp((-alpha)*frt*eta)<<std::endl;
 #endif
         if ((conint[k]/refcon) < EPS13)
         {
           pow_conint_gamma_k = std::pow(EPS13,gamma);
 #ifdef DEBUG
-            cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<endl;
-            cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+          std::cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
+          std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
 #endif
         }
         else
@@ -1999,8 +1999,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         {
           pow_conint_gamma_k = std::pow(EPS13,gamma);
 #ifdef DEBUG
-          cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<endl;
-          cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+          std::cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
+          std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
 #endif
         }
         else
@@ -2065,11 +2065,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 #ifdef DEBUG
         // some safety checks/ user warnings
         if (((1-beta)*frt*epd) > 100.0)
-          cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
-          <<exp((1-beta)*frt*epd)<<endl;
+          std::cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
+          <<exp((1-beta)*frt*epd)<<std::endl;
         if (((-beta)*frt*epd) > 100.0)
-          cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
-          <<exp((-beta)*frt*epd)<<endl;
+          std::cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
+          <<exp((-beta)*frt*epd)<<std::endl;
 #endif
 
         double pow_conint_p(1.0);      //product over i (c_i)^(p_i)
@@ -2085,8 +2085,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
             pow_conint_p *= std::pow(EPS13,p[kk]);
             pow_conint_q *= std::pow(EPS13,q[kk]);
 #ifdef DEBUG
-            cout<<"WARNING: Rel. Conc. of species" <<k<<" in Butler-Volmer formula is zero/negative: "<<(conint[k])<<endl;
-            cout<<"-> Replacement value: pow(1.0E-16,p[ispec]) = "<< pow(EPS13,p[k]) << " pow(1.0E-13,q[k]) = "<< pow(EPS13,q[k]) <<endl;
+            std::cout<<"WARNING: Rel. Conc. of species" <<k<<" in Butler-Volmer formula is zero/negative: "<<(conint[k])<<std::endl;
+            std::cout<<"-> Replacement value: pow(1.0E-16,p[ispec]) = "<< pow(EPS13,p[k]) << " pow(1.0E-13,q[k]) = "<< pow(EPS13,q[k]) <<std::endl;
 #endif
           }
           else
@@ -2209,11 +2209,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 #ifdef DEBUG
         // some safety checks/ user warnings
         if (((1-beta)*(frt*nume)*eta_equpot) > 100.0)
-          cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
-          <<exp((1-beta)*(frt*nume)*eta_equpot)<<endl;
+          std::cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
+          <<exp((1-beta)*(frt*nume)*eta_equpot)<<std::endl;
         if (((-beta)*(frt*nume)*eta_equpot) > 100.0)
-          cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
-          <<exp((-beta)*(frt*nume)*eta_equpot)<<endl;
+          std::cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
+          <<exp((-beta)*(frt*nume)*eta_equpot)<<std::endl;
 #endif
 
         const double expterma = exp((1-beta) * (frt*nume) * eta_equpot);
@@ -2283,11 +2283,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 #ifdef DEBUG
         // some safety checks/ user warnings
         if ((alphaa*eta) > 100.0)
-          cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
-          <<exp(alphaa*eta)<<endl;
+          std::cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
+          <<exp(alphaa*eta)<<std::endl;
         if (((-alphac)*eta) > 100.0)
-          cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
-          <<exp((-alphac)*eta)<<endl;
+          std::cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+          <<exp((-alphac)*eta)<<std::endl;
 #endif
         // Butler-Volmer kinetics
         const double expterm = exp(alphaa*eta)-exp((-alphac)*eta);
@@ -2324,8 +2324,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 #ifdef DEBUG
         // some safety checks/ user warnings
         if ((-alpha)*eta > 100.0)
-          cout<<"WARNING: Exp(alpha_c...) in Tafel law is near overflow!"
-          <<exp((-alpha)*eta)<<endl;
+          std::cout<<"WARNING: Exp(alpha_c...) in Tafel law is near overflow!"
+          <<exp((-alpha)*eta)<<std::endl;
 #endif
         const double expterm = -exp((-alpha)*eta);
         const double exptermderiv = alpha*expterm; // do not forget the (-1) from differentiation of eta!
@@ -2604,8 +2604,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
           currderiv += fac*dlcapacitance;
           currentresidual += fac*dlcapacitance*(pot0-pot0hist-(timefac*potdtnpint));
 #if 0
-          cout<<"pot0-pot0hist = "<<pot0 << " - "<<pot0hist<<endl;
-          cout<<"- timefac*potdtnpint = -"<<timefac<<" * "<<potdtnpint<<endl;
+          std::cout<<"pot0-pot0hist = "<<pot0 << " - "<<pot0hist<<std::endl;
+          std::cout<<"- timefac*potdtnpint = -"<<timefac<<" * "<<potdtnpint<<std::endl;
 #endif
         }
         break;
@@ -2751,8 +2751,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
               pow_conint_p *= std::pow(EPS13,p[kk]);
               pow_conint_q *= std::pow(EPS13,q[kk]);
 #ifdef DEBUG
-              cout<<"WARNING: Rel. Conc. of species"<<kk<<" in Butler-Volmer formula is zero/negative: "<<(conint[kk])<<endl;
-              cout<<"-> Replacement value: pow(EPS,p[ispec]) = "<< pow(EPS13,p[kk]) << " pow(1.0E-16,q[i]) = "<< pow(EPS13,q[kk]) <<endl;
+              std::cout<<"WARNING: Rel. Conc. of species"<<kk<<" in Butler-Volmer formula is zero/negative: "<<(conint[kk])<<std::endl;
+              std::cout<<"-> Replacement value: pow(EPS,p[ispec]) = "<< pow(EPS13,p[kk]) << " pow(1.0E-16,q[i]) = "<< pow(EPS13,q[kk]) <<std::endl;
 #endif
             }
             else
@@ -2805,8 +2805,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
           currderiv += fac*dlcapacitance;
           currentresidual += fac*dlcapacitance*(pot0-pot0hist-(timefac*potdtnpint));
 #if 0
-          cout<<"pot0-pot0hist = "<<pot0 << " - "<<pot0hist<<endl;
-          cout<<"- timefac*potdtnpint = -"<<timefac<<" * "<<potdtnpint<<endl;
+          std::cout<<"pot0-pot0hist = "<<pot0 << " - "<<pot0hist<<std::endl;
+          std::cout<<"- timefac*potdtnpint = -"<<timefac<<" * "<<potdtnpint<<std::endl;
 #endif
         }
         break;
@@ -2912,8 +2912,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
           currderiv += fac*dlcapacitance;
           currentresidual += fac*dlcapacitance*(pot0-pot0hist-(timefac*potdtnpint));
 #if 0
-          cout<<"pot0-pot0hist = "<<pot0 << " - "<<pot0hist<<endl;
-          cout<<"- timefac*potdtnpint = -"<<timefac<<" * "<<potdtnpint<<endl;
+          std::cout<<"pot0-pot0hist = "<<pot0 << " - "<<pot0hist<<std::endl;
+          std::cout<<"- timefac*potdtnpint = -"<<timefac<<" * "<<potdtnpint<<std::endl;
 #endif
         }
         break;
@@ -3406,7 +3406,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // pre-factor for adjoint-consistency term:
   // either 1.0 (adjoint-consistent, default) or -1.0 (adjoint-inconsistent)
   double gamma = 1.0;
-  const string* consistency = (*dbc).Get<string>("Choice of gamma parameter");
+  const std::string* consistency = (*dbc).Get<std::string>("Choice of gamma parameter");
   if      (*consistency=="adjoint-consistent") gamma = 1.0;
   else if (*consistency=="diffusive-optimal")  gamma = -1.0;
   else dserror("unknown definition for gamma parameter: %s",(*consistency).c_str());

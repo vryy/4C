@@ -111,7 +111,7 @@ public:
   \brief Print this Interface
 
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Check whether interface was called FillComplete
@@ -545,7 +545,7 @@ public:
   \brief Set current deformation state
 
   */
-  virtual void SetState(const string& statename,
+  virtual void SetState(const std::string& statename,
                         const Teuchos::RCP<Epetra_Vector> vec);
 
   /*!
@@ -684,7 +684,7 @@ public:
   \brief Print shape function type (enum)
 
   */
-  void PrintShapeFcn() { std::cout << shapefcn_ << endl; };
+  void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
   
   //@}
 
@@ -741,7 +741,7 @@ protected:
 
 
 // << operator
-ostream& operator << (ostream& os, const MORTAR::MortarInterface& interface);
+std::ostream& operator << (std::ostream& os, const MORTAR::MortarInterface& interface);
 
 
 #endif  // #ifndef MORTAR_INTERFACE_H

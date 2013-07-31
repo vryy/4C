@@ -64,7 +64,7 @@ public:
   */
   TurbulenceStatisticsGeneralMean(
     Teuchos::RCP<DRT::Discretization> discret        ,
-    string                   homdir         ,
+    std::string                   homdir         ,
     LINALG::MapExtractor&    velpressplitter,
     const bool               withscatra
     );
@@ -72,7 +72,7 @@ public:
   TurbulenceStatisticsGeneralMean(
     Teuchos::RCP<DRT::Discretization> discret,
     Teuchos::RCP<const DRT::DofSet>   standarddofset ,
-    string                            homdir,
+    std::string                            homdir,
     LINALG::MapExtractor&             velpressplitter,
     const bool                        withscatra
     );

@@ -114,8 +114,8 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
   // loop the periodic boundary conditions
   for (unsigned numcond=0;numcond<mypbccond.size();++numcond)
   {
-    const string* mymasterslavetoggle
-    = mypbccond[numcond]->Get<string>("Is slave periodic boundary condition");
+    const std::string* mymasterslavetoggle
+    = mypbccond[numcond]->Get<std::string>("Is slave periodic boundary condition");
     const double rotangle = FLD::GetRotAngleFromCondition(mypbccond[numcond]);
 
     // only slave nodes with non-zero angle of rotation require rotation

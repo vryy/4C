@@ -353,8 +353,8 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
 //  if(!discret_->Comm().MyPID())
 //  {
 //    for(int i=0; i<(int)periodlength_->size(); i++)
-//      cout<<periodlength_->at(i)<<" ";
-//    cout<<endl;
+//      std::cout<<periodlength_->at(i)<<" ";
+//    std::cout<<std::endl;
 //  }
 
   // set spatial resolution for search algorithm binding spots x crosslinkers
@@ -440,16 +440,16 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
 
   if(!discret_->Comm().MyPID())
   {
-    cout<<"=======StatMech action times======="<<endl;
-    cout<<"t_equilib  = t(0) = "<<std::setprecision(10)<<actiontime_->at(0)<<" @ dt = "<<timestepsizes_->at(0)<<endl;
-    cout<<"t_ktswitch = t(1) = "<<std::setprecision(10)<<actiontime_->at(1)<<" @ dt = "<<timestepsizes_->at(1)<<endl;
+    std::cout<<"=======StatMech action times======="<<std::endl;
+    std::cout<<"t_equilib  = t(0) = "<<std::setprecision(10)<<actiontime_->at(0)<<" @ dt = "<<timestepsizes_->at(0)<<std::endl;
+    std::cout<<"t_ktswitch = t(1) = "<<std::setprecision(10)<<actiontime_->at(1)<<" @ dt = "<<timestepsizes_->at(1)<<std::endl;
     if(dbctimeindex_>-1)
-      cout<<"t_dbc    = t("<<dbctimeindex_<<") ="<<std::setprecision(10)<<actiontime_->at(dbctimeindex_)<<" @ dt = "<<timestepsizes_->at(dbctimeindex_)<<endl;
-    cout<<"other action times..."<<endl;
+      std::cout<<"t_dbc    = t("<<dbctimeindex_<<") ="<<std::setprecision(10)<<actiontime_->at(dbctimeindex_)<<" @ dt = "<<timestepsizes_->at(dbctimeindex_)<<std::endl;
+    std::cout<<"other action times..."<<std::endl;
     for(int i=0; i<(int)actiontime_->size(); i++)
       if(i>1 && i!=dbctimeindex_)
-        cout<<"t("<<i<<")        = "<<std::setprecision(10)<<actiontime_->at(i)<<" @ dt = "<<timestepsizes_->at(i)<<endl;
-    cout<<"==================================="<<endl;
+        std::cout<<"t("<<i<<")        = "<<std::setprecision(10)<<actiontime_->at(i)<<" @ dt = "<<timestepsizes_->at(i)<<std::endl;
+    std::cout<<"==================================="<<std::endl;
   }
   return;
 }
@@ -520,19 +520,19 @@ void STATMECH::StatMechManager::Update(const int&                               
       {
         if(proc==discret_->Comm().MyPID())
         {
-          cout<<"\n====Proc "<<proc<<" ===="<<endl;
-          cout<<"numbond: "<<endl;
+          std::cout<<"\n====Proc "<<proc<<" ===="<<std::endl;
+          std::cout<<"numbond: "<<std::endl;
           for(int i=0; i<numbond_->MyLength(); i++)
             if((*numbond_)[i]>0.1)
-              cout<<"i="<<i<<": "<<(*numbond_)[i]<<endl;
-          cout<<"crosslinkerbond:"<<endl;
+              std::cout<<"i="<<i<<": "<<(*numbond_)[i]<<std::endl;
+          std::cout<<"crosslinkerbond:"<<std::endl;
           for(int i=0; i<crosslinkerbond_->MyLength(); i++)
             if((*numbond_)[i]>0.1)
-              cout<<"i="<<i<<": "<<(*crosslinkerbond_)[0][i]<<", "<<(*crosslinkerbond_)[1][i]<<endl;
-          cout<<"crosslinkerpositions:"<<endl;
+              std::cout<<"i="<<i<<": "<<(*crosslinkerbond_)[0][i]<<", "<<(*crosslinkerbond_)[1][i]<<std::endl;
+          std::cout<<"crosslinkerpositions:"<<std::endl;
           for(int i=0; i<crosslinkerpositions_->MyLength(); i++)
             if((*numbond_)[i]>0.1)
-              cout<<"i="<<i<<": "<<(*crosslinkerpositions_)[0][i]<<", "<<(*crosslinkerpositions_)[1][i]<<", "<<(*crosslinkerpositions_)[2][i]<<endl;
+              std::cout<<"i="<<i<<": "<<(*crosslinkerpositions_)[0][i]<<", "<<(*crosslinkerpositions_)[1][i]<<", "<<(*crosslinkerpositions_)[2][i]<<std::endl;
         }
         discret_->Comm().Barrier();
       }
@@ -571,14 +571,14 @@ void STATMECH::StatMechManager::Update(const int&                               
 #ifdef MEASURETIME
     if(!discret_->Comm().MyPID())
     {
-      cout<<"\n=================Time  Measurement================"<<endl;
-      cout<<"StatMechManager::Update"<<endl;
-      cout<<"Binding Spot Positions :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<endl;
-      cout<<"Crosslinker Diffusion  :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<endl;
-      cout<<"Set Crosslinkers       :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<endl;
-      cout<<"Delete Crosslinkers    :\t"<<std::setprecision(4)<<t5-t4<<"\ts"<<endl;
-      cout<<"=================================================="<<endl;
-      cout<<"Update total time      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<endl;
+      std::cout<<"\n=================Time  Measurement================"<<std::endl;
+      std::cout<<"StatMechManager::Update"<<std::endl;
+      std::cout<<"Binding Spot Positions :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<std::endl;
+      std::cout<<"Crosslinker Diffusion  :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<std::endl;
+      std::cout<<"Set Crosslinkers       :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<std::endl;
+      std::cout<<"Delete Crosslinkers    :\t"<<std::setprecision(4)<<t5-t4<<"\ts"<<std::endl;
+      std::cout<<"=================================================="<<std::endl;
+      std::cout<<"Update total time      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<std::endl;
     }
 #endif // #ifdef MEASURETIME
   }//if(DRT::INPUT::IntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
@@ -905,19 +905,19 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
 /*
   if(discret_->Comm().MyPID()==0)
   {
-  cout<< " **************** CHECK WETHER BSPOTPOSITIONS MAKE SENSE DISTANCES  ****************** " << endl;
+  std::cout<< " **************** CHECK WETHER BSPOTPOSITIONS MAKE SENSE DISTANCES  ****************** " << std::endl;
   double ll;
-  cout << " Anzahl BSPOTS : " << bspotpositions.MyLength() << endl;
+  std::cout << " Anzahl BSPOTS : " << bspotpositions.MyLength() << std::endl;
   for(int ii=1;ii<bspotpositions.MyLength();ii++)
   {
       ll= sqrt(pow(bspotpositions[2][ii]-bspotpositions[2][ii-1],2)+pow(bspotpositions[1][ii]-bspotpositions[1][ii-1],2)+pow(bspotpositions[0][ii]-bspotpositions[0][ii-1],2));
-      cout<< " BSPOTDISTANCE "<< ll<< endl;
+      std::cout<< " BSPOTDISTANCE "<< ll<< std::endl;
   }
   for(int ii=0;ii<bspotpositions.MyLength();ii++)
-    cout<< "BSPOTXI " << (*bspotxi_)[ii] << " BSPOT2NODES " << (*bspot2nodes_)[0][ii] << " "<<(*bspot2nodes_)[1][ii] <<   endl;
+    std::cout<< "BSPOTXI " << (*bspotxi_)[ii] << " BSPOT2NODES " << (*bspot2nodes_)[0][ii] << " "<<(*bspot2nodes_)[1][ii] <<   std::endl;
 
-  cout<< " **************** CHECK WETHER BSPOTPOSITIONS MAKE SENSE POSITIONS  ****************** " << endl;
-  cout<< bspotpositions << endl;
+  std::cout<< " **************** CHECK WETHER BSPOTPOSITIONS MAKE SENSE POSITIONS  ****************** " << std::endl;
+  std::cout<< bspotpositions << std::endl;
   }
   */
 }
@@ -2045,7 +2045,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
     t2 = Teuchos::Time::wallTime();
 #else
     if(printscreen)
-      cout << "\nsearch + linker admin time: " << Teuchos::Time::wallTime() - t0<< " seconds";
+      std::cout << "\nsearch + linker admin time: " << Teuchos::Time::wallTime() - t0<< " seconds";
 #endif
   }// if(discret_->Comm().MypPID==0)
 
@@ -2235,20 +2235,20 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 #ifdef MEASURETIME
   if(!discret_->Comm().MyPID())
   {
-    cout<<"\n=================Time  Measurement================"<<endl;
-    cout<<"StatMechManager::SearchAndSetCrosslinkers"<<endl;
-    cout<<"Partitioning + Search  :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<endl;
-    cout<<"Linker administration  :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<endl;
-    cout<<"Vector communication   :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<endl;
-    cout<<"Addition of elements   :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t3<<"\ts"<<endl;
-    cout<<"=================================================="<<endl;
-    cout<<"total time             :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<endl;
+    std::cout<<"\n=================Time  Measurement================"<<std::endl;
+    std::cout<<"StatMechManager::SearchAndSetCrosslinkers"<<std::endl;
+    std::cout<<"Partitioning + Search  :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<std::endl;
+    std::cout<<"Linker administration  :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<std::endl;
+    std::cout<<"Vector communication   :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<std::endl;
+    std::cout<<"Addition of elements   :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t3<<"\ts"<<std::endl;
+    std::cout<<"=================================================="<<std::endl;
+    std::cout<<"total time             :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<std::endl;
   }
 #endif
 
-  //couts
+  //std::couts
   if(!discret_->Comm().MyPID() && printscreen)
-    cout<<"\n\n"<<numsetelements<<" crosslinker element(s) added!"<<endl;
+    std::cout<<"\n\n"<<numsetelements<<" crosslinker element(s) added!"<<std::endl;
 }//void StatMechManager::SearchAndSetCrosslinkers
 
 /*----------------------------------------------------------------------*
@@ -2627,7 +2627,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
     RemoveCrosslinkerElements(beamcmanager->ContactDiscret(),*delcrosselement,&deletedcelements_);
 
   if(!discret_->Comm().MyPID() && printscreen)
-    cout<<numdelelements<<" crosslinker element(s) deleted!"<<endl;
+    std::cout<<numdelelements<<" crosslinker element(s) deleted!"<<std::endl;
   return;
 } //StatMechManager::SearchAndDeleteCrosslinkers()
 
@@ -2804,12 +2804,12 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
 //      filename << outputrootpath_<<"/StatMechOutput/LinkerInternalForces.dat";
 //      fp = fopen(filename.str().c_str(), "a");
 //      std::stringstream internalforces;
-//      internalforces << sgn <<" " << Fnode0 << " " << Fnode1 <<endl;
+//      internalforces << sgn <<" " << Fnode0 << " " << Fnode1 <<std::endl;
 //      fprintf(fp, internalforces.str().c_str());
 //      fclose(fp);
-//      cout<<"\n\nelement "<<crosslinker->Id()<<":"<<endl;
-//      cout<<" bspot "<<bspotgid0<<std::setprecision(8)<<": F = "<<Fbspot0<<", eps = "<<eps<<", k_off = "<<koffbspot0<<", p = "<<(*punlink)[0][crosslid]<<endl;
-//      cout<<" bspot "<<bspotgid1<<std::setprecision(8)<<": F = "<<Fbspot1<<", eps = "<<eps<<", k_off = "<<koffbspot1<<", p = "<<(*punlink)[1][crosslid]<<endl;
+//      std::cout<<"\n\nelement "<<crosslinker->Id()<<":"<<std::endl;
+//      std::cout<<" bspot "<<bspotgid0<<std::setprecision(8)<<": F = "<<Fbspot0<<", eps = "<<eps<<", k_off = "<<koffbspot0<<", p = "<<(*punlink)[0][crosslid]<<std::endl;
+//      std::cout<<" bspot "<<bspotgid1<<std::setprecision(8)<<": F = "<<Fbspot1<<", eps = "<<eps<<", k_off = "<<koffbspot1<<", p = "<<(*punlink)[1][crosslid]<<std::endl;
     }
   }
 
@@ -2834,9 +2834,9 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
 {
   if(!discret_->Comm().MyPID())
   {
-    cout<<"\n\n==========================================================="<<endl;
-    cout<<"-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules in volume"<<endl;
-    cout<<"-- removing "<<statmechparams_.get<int>("REDUCECROSSLINKSBY",0)<<" crosslinkers...\n"<<endl;
+    std::cout<<"\n\n==========================================================="<<std::endl;
+    std::cout<<"-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules in volume"<<std::endl;
+    std::cout<<"-- removing "<<statmechparams_.get<int>("REDUCECROSSLINKSBY",0)<<" crosslinkers...\n"<<std::endl;
   }
 
   int ncrosslink = statmechparams_.get<int>("N_crosslink", 0);
@@ -2987,8 +2987,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
     if (discret_->HaveGlobalElement((int)(*delcrosselement)[i]))
     {
       //save the element by packing before elimination to make it restorable in case that needed
-      //cout<<"Proc "<<discret_->Comm().MyPID()<<": deleting element
-      //"<<(int)deletecrosslinkerelements[i]<<endl;
+      //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": deleting element
+      //"<<(int)deletecrosslinkerelements[i]<<std::endl;
       vdata.push_back( DRT::PackBuffer() );
       discret_->gElement((int)(*delcrosselement)[i])->Pack( vdata.back() );
     }
@@ -2998,7 +2998,7 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
     if (discret_->HaveGlobalElement((int)(*delcrosselement)[i]))
     {
       //save the element by packing before elimination to make it restorable in case that needed
-      //cout<<"Proc "<<discret_->Comm().MyPID()<<": deleting element "<<(int)deletecrosslinkerelements[i]<<endl;
+      //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": deleting element "<<(int)deletecrosslinkerelements[i]<<std::endl;
       deletedelements_.push_back( std::vector<char>() );
       discret_->gElement((int)(*delcrosselement)[i])->Pack( vdata[deletedelements_.size()-1] );
       discret_->DeleteElement( (int)(*delcrosselement)[i]);
@@ -3052,12 +3052,12 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
   }
   if(!discret_->Comm().MyPID())
   {
-    cout<<"-- "<<numdelelements<<" crosslinker elements removed"<<endl;
-    cout<<"-- "<<numdelmolecules<<" free/one-bonded crosslinker molecules removed"<<endl;
-    cout<<"------------------------------------------------------"<<endl;
-    cout<<"-- "<<numdelelements+numdelmolecules<<" crosslinkers removed"<<endl;
-    cout<<"\n-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules left in volume"<<endl;
-    cout<<"===========================================================\n"<<endl;
+    std::cout<<"-- "<<numdelelements<<" crosslinker elements removed"<<std::endl;
+    std::cout<<"-- "<<numdelmolecules<<" free/one-bonded crosslinker molecules removed"<<std::endl;
+    std::cout<<"------------------------------------------------------"<<std::endl;
+    std::cout<<"-- "<<numdelelements+numdelmolecules<<" crosslinkers removed"<<std::endl;
+    std::cout<<"\n-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules left in volume"<<std::endl;
+    std::cout<<"===========================================================\n"<<std::endl;
   }
   // ReduceNumberOfCrosslinkersBy() is called at the beginning of the time step. Hence, we can just call WriteConv() again to update the converged state
   WriteConv(beamcmanager);
@@ -3088,7 +3088,7 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
   for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
   {
     if(pid==discret_->Comm().MyPID())
-      cout<<"\n\nProc "<<pid<<": Row\n\n"<<*randomnumbersrow<<endl;
+      std::cout<<"\n\nProc "<<pid<<": Row\n\n"<<*randomnumbersrow<<std::endl;
     discret_->Comm().Barrier();
   }
 
@@ -3097,7 +3097,7 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
   for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
   {
     if(pid==discret_->Comm().MyPID())
-      cout<<"\n\nProc "<<pid<<": Column\n\n"<<*randomnumbers<<endl;
+      std::cout<<"\n\nProc "<<pid<<": Column\n\n"<<*randomnumbers<<std::endl;
     discret_->Comm().Barrier();
   }
 #endif
@@ -3527,7 +3527,7 @@ void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& para
   params.set("DELTA_T_NEW",timestepsizes_->at(dbctimeindex_));
   params.set("PERIODLENGTH",GetPeriodLength());
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FORCEDEPUNLINKING") || DRT::INPUT::IntegralValue<int>(statmechparams_,"LOOMSETUP"))
-    params.set<string>("internalforces","yes");
+    params.set<std::string>("internalforces","yes");
   return;
 }
 
@@ -3611,7 +3611,7 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
     if(fillzeros)
       for(int i=0; i<17-(int)energy.size(); i++)
         writetofile<<"    "<<0;
-    writetofile<<endl;
+    writetofile<<std::endl;
     fprintf(fp, writetofile.str().c_str());
     fclose(fp);
   }
@@ -3767,8 +3767,8 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
     std::stringstream crosspos;
     for(int i=0; i<crosslinkerdelta->NumVectors(); i++)
       for(int j=0; j<crosslinkerdelta->MyLength(); j++)
-        crosspos<<(*crosslinkerdelta)[i][j]<<" "<<(*crosslinkerdelta)[i][j]<<" "<<(*crosslinkerdelta)[i][j]<<endl;
-    // move temporary stringstream to file and close it
+        crosspos<<(*crosslinkerdelta)[i][j]<<" "<<(*crosslinkerdelta)[i][j]<<" "<<(*crosslinkerdelta)[i][j]<<std::endl;
+    // move temporary std::stringstream to file and close it
     fprintf(fpcross, crosspos.str().c_str());
     fclose(fpcross);
 
@@ -3780,7 +3780,7 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
     FILE *fp = fopen(filename.str().c_str(), "a");
 
     std::stringstream linkerposition;
-    linkerposition<<(*crosslinkerpositions_)[0][0]<<" "<<(*crosslinkerpositions_)[1][0]<<" "<<(*crosslinkerpositions_)[2][0]<<endl;
+    linkerposition<<(*crosslinkerpositions_)[0][0]<<" "<<(*crosslinkerpositions_)[1][0]<<" "<<(*crosslinkerpositions_)[2][0]<<std::endl;
     fprintf(fp, linkerposition.str().c_str());
     fclose(fp);
   }
@@ -3933,7 +3933,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
         {
           // put binding spot id into the vector in order to create a fully overlapping binding spot map afterwards
           bspotgids.push_back((int)bspotgids.size());
-          //cout<< " BSPOTGIDS "<< (int)bspotgids << endl;
+          //std::cout<< " BSPOTGIDS "<< (int)bspotgids << std::endl;
 
 
           // calculate the orientation of the binding spot as well as the respective curve parameter
@@ -4407,7 +4407,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     dserror("Check your input file parameter BSPOTINTERVAL! It's <=0 !");
 
 #ifdef DEBUGCOUT
-  cout<<"Proc "<<discret_->Comm().MyPID()<<": total number of binding spots = "<<numbspots_<<endl;
+  std::cout<<"Proc "<<discret_->Comm().MyPID()<<": total number of binding spots = "<<numbspots_<<std::endl;
 #endif
 
   return;
@@ -4802,13 +4802,13 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       beamcmanager->OcTree()->OctTreeSearch(currentpositions,-2);
       beamcmanager->ResetPairs();
     }
-    //couts
+    //std::couts
     if(!discret_->Comm().MyPID())
     {
-      cout<<"====setting initial crosslinkers===="<<endl;
-      cout<<"singly bound: "<<numsinglybound-numsetelements<<endl;
-      cout<<"doubly bound: "<<numsetelements<<endl;
-      cout<<"===================================="<<endl;
+      std::cout<<"====setting initial crosslinkers===="<<std::endl;
+      std::cout<<"singly bound: "<<numsinglybound-numsetelements<<std::endl;
+      std::cout<<"doubly bound: "<<numsetelements<<std::endl;
+      std::cout<<"===================================="<<std::endl;
     }
   }
   return;
@@ -4953,7 +4953,7 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();
   if(!discret_->Comm().MyPID())
-    cout<<"DBC Evaluation time: "<<t_end-t_start<<endl;
+    std::cout<<"DBC Evaluation time: "<<t_end-t_start<<std::endl;
 #endif // #ifdef MEASURETIME
 
   return;
@@ -5078,7 +5078,7 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
             {
               if(cut(2,n)>0.0)
               {
-                //cout<<"Element "<<element->Id()<<" now has a reduced cross section"<<endl;
+                //std::cout<<"Element "<<element->Id()<<" now has a reduced cross section"<<std::endl;
                 dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-9);
                 dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-9);
                 break;
@@ -5307,10 +5307,10 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
           for(int n=0; n<cut.N(); n++)
           {
             int nodelidn = discret_->NodeRowMap()->LID(element->Nodes()[n]->Id());
-            //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidn = "<<nodelidn<<"/"<<discret_->NodeRowMap()->GID(nodelidn)<<endl;
+            //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidn = "<<nodelidn<<"/"<<discret_->NodeRowMap()->GID(nodelidn)<<std::endl;
             if(nodelidn>-1)
             {
-              //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidn cut = "<<(int)cut(2,n)<<endl;
+              //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidn cut = "<<(int)cut(2,n)<<std::endl;
               if(nodedbcstatus.at(nodelidn)==false)
               {
                 switch((int)(round(cut(2,n))))
@@ -5318,7 +5318,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
                   // case 1: broken element (in z-dir); node_n+1 displaced, node_n is fixed in dir. of displacement
                   case 1:
                   {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 n"<<endl;
+                    //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 n"<<std::endl;
                     nodedbcstatus.at(nodelidn) = true;
                     fixednodes.push_back(element->Nodes()[n]->Id());
                   }
@@ -5326,7 +5326,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
                   // case 2: broken element (in z-dir); node_n displaced, node_n+1 is fixed in dir. of displacement
                   case 2:
                   {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 n"<<endl;
+                    //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 n"<<std::endl;
                     nodedbcstatus.at(nodelidn) = true;
                     sensornodes.push_back(element->Nodes()[n]->Id());
                     (*deltadbc)[doflids.at(numdof*n+displacementdir)] =  (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
@@ -5336,10 +5336,10 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
               }
             }
             int nodelidnp = discret_->NodeRowMap()->LID(element->Nodes()[n+1]->Id());
-            //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp = "<<nodelidnp<<"/"<<discret_->NodeRowMap()->GID(nodelidnp)<<endl;
+            //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp = "<<nodelidnp<<"/"<<discret_->NodeRowMap()->GID(nodelidnp)<<std::endl;
             if(nodelidnp>-1)
             {
-              //cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp cut = "<<(int)cut(2,n)<<endl;
+              //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": nodelidnp cut = "<<(int)cut(2,n)<<std::endl;
               if(nodedbcstatus.at(nodelidnp)==false)
               {
                 switch((int)(round(cut(2,n))))
@@ -5347,7 +5347,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
                   // case 1: broken element (in z-dir); node_n+1 displaced, node_n is fixed in dir. of displacement
                   case 1:
                   {
-                    //cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 np"<<endl;
+                    //std::cout<<"Proc "<<discret_->Comm().MyPID()<<": case 1 np"<<std::endl;
                     nodedbcstatus.at(nodelidnp) = true;
                     sensornodes.push_back(element->Nodes()[n+1]->Id());
                     (*deltadbc)[doflids.at(numdof*(n+1)+displacementdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*tcincrement;
@@ -5356,7 +5356,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
                   // case 2: broken element (in z-dir); node_n displaced, node_n+1 is fixed in dir. of displacement
                   case 2:
                   {
-                   // cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 np"<<endl;
+                   // std::cout<<"Proc "<<discret_->Comm().MyPID()<<": case 2 np"<<std::endl;
                     nodedbcstatus.at(nodelidnp) = true;
                     fixednodes.push_back(element->Nodes()[n+1]->Id());
                   }
@@ -5402,7 +5402,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
     // without if-statement, this node set might added again after restart beyond actiontime_->at(2)
     if(time<=actiontime_->at(2))
       dbcnodesets_.push_back(affineshearnodes);
-    //cout<<"A Proc "<<discret_->Comm().MyPID()<<": sizeosc = "<<dbcnodesets_[0].size()<<endl;
+    //std::cout<<"A Proc "<<discret_->Comm().MyPID()<<": sizeosc = "<<dbcnodesets_[0].size()<<std::endl;
 
     UpdateForceSensors(dbcnodesets_[0], displacementdir);
   }
@@ -5592,13 +5592,13 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*  
  */
 {
   /*/ "condition output"
-  cout<<"Node Ids: ";
+  std::cout<<"Node Ids: ";
   for(int i=0; i<(int)nodeids->size(); i++)
-    cout<<nodeids->at(i)<<" ";
-  cout<<"onoff: ";
+    std::cout<<nodeids->at(i)<<" ";
+  std::cout<<"onoff: ";
   for(int i=0; i<(int)discret_->Dof(0,discret_->gNode(nodeids->at(0))).size(); i++)
-    cout<<onoff->at(i)<<" ";
-  cout<<endl;*/
+    std::cout<<onoff->at(i)<<" ";
+  std::cout<<std::endl;*/
 
   // some checks for errors
   if (!nodeids) dserror("No Node IDs were handed over!");

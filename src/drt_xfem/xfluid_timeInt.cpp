@@ -1634,7 +1634,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
 
 #ifdef DEBUG_TIMINT
   const double wquad = intpoints_stab.IP().qwgt[0];
-  cout << "\t\t\t space-time side element volume " << wquad*det << endl;
+  std::cout << "\t\t\t space-time side element volume " << wquad*det << std::endl;
 #endif
 
   if (det < 1E-14 and det > -1E-14)
@@ -1703,7 +1703,7 @@ void XFEM::XFluidTimeInt::ExportMethods(
       std::vector<char> dataRecv;
       sendData(dataSend,dest,source,dataRecv);
 
-      // pointer to current position of group of cells in global string (counts bytes)
+      // pointer to current position of group of cells in global std::string (counts bytes)
       std::vector<char>::size_type posinData = 0;
 
       // unpack received data
@@ -1761,7 +1761,7 @@ void XFEM::XFluidTimeInt::sendData(
   int size_one = 1;
 
 #ifdef DEBUG
-  cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << endl;
+  std::cout << "--- sending "<< lengthSend[0] << " bytes: from proc " << myrank_ << " to proc " << dest << std::endl;
 #endif
 
   // exporter for sending
@@ -1787,7 +1787,7 @@ void XFEM::XFluidTimeInt::sendData(
   exporter.Wait(req_data);
 
 #ifdef DEBUG
-  cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << endl;
+  std::cout << "--- receiving "<< lengthRecv[0] << " bytes: to proc " << myrank_ << " from proc " << source << std::endl;
 #endif
 } // end sendData
 

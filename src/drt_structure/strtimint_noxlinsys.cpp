@@ -60,7 +60,7 @@ NOX::STR::LinearSystem::LinearSystem(
 {
   tmpVectorPtr_ = Teuchos::rcp(new NOX::Epetra::Vector(cloneVector));
 
-  //cout << "STRUCTURE SOLVER: " << *structureSolver_ << " " << structureSolver_ << endl;
+  //std::cout << "STRUCTURE SOLVER: " << *structureSolver_ << " " << structureSolver_ << std::endl;
 
   // Jacobian operator is supplied.
   // get type of it
@@ -339,14 +339,14 @@ void NOX::STR::LinearSystem::setPrecOperatorForSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::STR::LinearSystem::throwError(const string& functionName,
-                                        const string& errorMsg) const
+void NOX::STR::LinearSystem::throwError(const std::string& functionName,
+                                        const std::string& errorMsg) const
 {
   if (utils_.isPrintType(NOX::Utils::Error))
 
   {
     utils_.out() << "NOX::STR::LinearSystem::" << functionName << " - "
-                 << errorMsg << endl;
+                 << errorMsg << std::endl;
   }
   throw "NOX Error";
 }

@@ -51,7 +51,7 @@ namespace COMBUST
   void BodyForce(
       const DRT::Element* ele,
       const double time,
-      const string neumtype,
+      const std::string neumtype,
       M& edead)
   {
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -64,7 +64,7 @@ namespace COMBUST
 
     for (size_t i = 0; i < myneumcond.size(); ++i)
     {
-      const string* condtype = myneumcond[i]->Get<string>("type");
+      const std::string* condtype = myneumcond[i]->Get<std::string>("type");
       if (*condtype == neumtype or (neumtype == "DeadOrLive" and (*condtype == "neum_dead" or *condtype == "neum_live")))
       {
         myindex = (int)i;
@@ -275,7 +275,7 @@ namespace COMBUST
     // check norm of normal gradient
     if (fabs(grad_phi_norm) < 1.0E-5)// 'ngradnorm' == 0.0
     {
-      //cout << "grad phi is small -> set to 1.0E12" << grad_phi_norm << endl;
+      //std::cout << "grad phi is small -> set to 1.0E12" << grad_phi_norm << std::endl;
       // phi gradient too small -> there must be a local max or min in the level-set field
       // set curvature to a large value (it will be cut off based on the element size)
       curvature = 1.0E12;

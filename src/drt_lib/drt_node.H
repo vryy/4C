@@ -199,7 +199,7 @@ public:
   /*!
   \brief Print this node
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   //@}
 
@@ -239,8 +239,8 @@ public:
            NOT be overwritten but stored twice in the element
 
   */
-  virtual void SetCondition(const string& name,Teuchos::RCP<Condition> cond)
-  { condition_.insert(std::pair<string,Teuchos::RCP<Condition> >(name,cond)); return; }
+  virtual void SetCondition(const std::string& name,Teuchos::RCP<Condition> cond)
+  { condition_.insert(std::pair<std::string,Teuchos::RCP<Condition> >(name,cond)); return; }
 
   /*!
   \brief Get all conditions with a certain name
@@ -253,7 +253,7 @@ public:
   \param out  (out): vector of pointers to all conditions with that name
 
   */
-  virtual void GetCondition(const string& name, std::vector<DRT::Condition*>& out) const;
+  virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -267,7 +267,7 @@ public:
 
   \return Returns NULL if condition with that name does not exist
   */
-  virtual DRT::Condition* GetCondition(const string& name) const;
+  virtual DRT::Condition* GetCondition(const std::string& name) const;
 
   /*!
   \brief Delete all conditions set to this node
@@ -312,14 +312,14 @@ protected:
   //! pointers to adjacent elements
   std::vector<Element*>                    element_;
   //! some conditions e.g. BCs
-  std::multimap<string,Teuchos::RCP<Condition> > condition_;
+  std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
 
 }; // class Node
 } // namespace DRT
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Node& node);
+std::ostream& operator << (std::ostream& os, const DRT::Node& node);
 
 
 

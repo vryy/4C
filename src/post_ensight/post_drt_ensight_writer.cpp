@@ -816,7 +816,7 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string EnsightWriter::GetEnsightString(
+std::string EnsightWriter::GetEnsightString(
   const DRT::Element::DiscretizationType distype) const
 {
   std::map<DRT::Element::DiscretizationType, std::string>::const_iterator entry;

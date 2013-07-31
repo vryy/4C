@@ -105,7 +105,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     utils_->out() << std::setw(3) << "1" << ":";
     utils_->out() << " step = " << utils_->sciformat(step);
     utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
-    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;
+    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << std::endl;
   }
 
   // write omega

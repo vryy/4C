@@ -2,7 +2,7 @@
 \file scatra_ele_action.H
 
 \brief provides enum of actions. Motivation was to have a quick enum
-comparison instead of a cumbersome string compare.
+comparison instead of a cumbersome std::string compare.
 
 <pre>
 Maintainer: Andreas Ehrl

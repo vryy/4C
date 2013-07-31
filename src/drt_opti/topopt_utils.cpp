@@ -94,7 +94,7 @@ void TOPOPT::TopoptFluidCloneStrategy::SetElementData(
 bool TOPOPT::TopoptFluidCloneStrategy::DetermineEleType(
     DRT::Element* actele,
     const bool ismyele,
-    std::vector<string>& eletype)
+    std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 
@@ -143,7 +143,7 @@ std::string TOPOPT::expandFilename(
   {
     int number = 0;
     pos = filenameout.rfind('-');
-    if (pos!=string::npos)
+    if (pos!=std::string::npos)
     {
       number = atoi(filenameout.substr(pos+1).c_str())-1; // at restart: start with one number smaller
       filenameout = filenameout.substr(0,pos);

@@ -576,7 +576,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
     so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
-    //cout << "unperm cstress\n" << cstress;
+    //std::cout << "unperm cstress\n" << cstress;
   }
 
   const double eps = 1.0e-8;
@@ -633,7 +633,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
       Epetra_SerialDenseVector cstressperm(MAT::NUM_STRESS_3D);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
-      //cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
+      //std::cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
 
 
       // do the finite differencing
@@ -800,7 +800,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
     so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
-    //cout << "unperm cstress\n" << cstress;
+    //std::cout << "unperm cstress\n" << cstress;
   }
 
   const double eps = 1.0e-8;
@@ -839,7 +839,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
       Epetra_SerialDenseVector cstressperm(MAT::NUM_STRESS_3D);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
-      //cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
+      //std::cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
 
 
       // do the finite differencing

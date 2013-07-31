@@ -2361,7 +2361,7 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
         y = xp[1]+0.0354;
       else
       {
-        cout << xp[1] << endl;
+        std::cout << xp[1] << std::endl;
         //dserror("coordinates do not match to ORACLES problem");
       }
       // compute y+
@@ -2603,11 +2603,11 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
         tangent2_[i] /= sqrt(tangent2_[0]*tangent2_[0] + tangent2_[1]*tangent2_[1] + tangent2_[2]*tangent2_[2]);
       }
       // some output
-      cout<<"\n"<<"== Womersley Function on surface "<<locsysid_+1;
+      std::cout<<"\n"<<"== Womersley Function on surface "<<locsysid_+1;
       if(fsi_)
-      	cout<<" with FSI-part activated! =="<<endl;
+      	std::cout<<" with FSI-part activated! =="<<std::endl;
       else
-      	cout<<" with FSI-part disabled! =="<<endl;
+      	std::cout<<" with FSI-part disabled! =="<<std::endl;
 
       //**************************************************************
       // get inflow surface edge nodes
@@ -2707,8 +2707,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
         origin_.at(0) = (centerx /= (double)xnode.size());
         origin_.at(1) = (centery /= (double)ynode.size());
         origin_.at(2) = (centerz /= (double)znode.size());
-        cout.precision(15);
-        cout<<"=== newly calculated inflow surface origin: "<<origin_.at(0)<<"   "<<origin_.at(1)<<"   "<<origin_.at(2)<<" ==="<<endl;
+        std::cout.precision(15);
+        std::cout<<"=== newly calculated inflow surface origin: "<<origin_.at(0)<<"   "<<origin_.at(1)<<"   "<<origin_.at(2)<<" ==="<<std::endl;
       }
 
       //nodal polar coordinates
@@ -2953,8 +2953,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   // calculate phase and radius of current node
   for(int i=0;i<(int)xptemp.size();i++)
   xptemp.at(i) = xp[i] - origin_.at(i);
-  cout.setf(std::ios::scientific);
-  cout.precision(8);
+  std::cout.setf(std::ios::scientific);
+  std::cout.precision(8);
   //cout<<"xpTemp: "<<xptemp.at(0)<<","<<xptemp.at(1)<<","<<xptemp.at(2)<<endl;
   //(n,t1,t2), signed
   xplocal.assign(3,0.0);

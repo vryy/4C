@@ -106,7 +106,7 @@ void DRT::MESHFREE::MeshfreeNode::DeleteNodePtr(int gid)
 /*----------------------------------------------------------------------*
  |  print this meshfree node                          (public) nis Mar12|
  *----------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeNode::Print(ostream& os) const
+void DRT::MESHFREE::MeshfreeNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Meshfree";
@@ -116,7 +116,7 @@ void DRT::MESHFREE::MeshfreeNode::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  << operator for meshfree node                     (public) nis Mar12|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::MESHFREE::MeshfreeNode& meshfreenode)
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeNode& meshfreenode)
 {
   meshfreenode.Print(os);
   return os;

@@ -175,7 +175,7 @@ namespace ELEMENTS
     /*!
     \brief Print this element
     */
-    void Print(ostream& os) const  ;
+    void Print(std::ostream& os) const  ;
 
     virtual DRT::ElementType & ElementType() const
     {
@@ -299,7 +299,7 @@ namespace ELEMENTS
                         key names of data it wants to visualize and with int dimensions
                         of that data.
     */
-    virtual void VisNames(std::map<string,int>& names);
+    virtual void VisNames(std::map<std::string,int>& names);
 
     /*!
     \brief Query data to be visualized using BINIO of a given name
@@ -315,7 +315,7 @@ namespace ELEMENTS
     \param name (in):   Name of data that is currently processed for visualization
     \param data (out):  data to be filled by element if element recognizes the name
     */
-    virtual bool VisData(const string& name, std::vector<double>& data);
+    virtual bool VisData(const std::string& name, std::vector<double>& data);
 
   protected:
 

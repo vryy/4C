@@ -155,7 +155,7 @@ CONTACT::CoNode* CONTACT::CoNode::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CONTACT::CoNode& cnode)
+std::ostream& operator << (std::ostream& os, const CONTACT::CoNode& cnode)
 {
   cnode.Print(os);
   return os;
@@ -164,7 +164,7 @@ ostream& operator << (ostream& os, const CONTACT::CoNode& cnode)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::Print(ostream& os) const
+void CONTACT::CoNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";
@@ -277,9 +277,9 @@ void CONTACT::CoNode::AddD2Value(int& row, int& col, double& val)
   if (IsSlave()==true)
     dserror("ERROR: AddD2Value: function called for slave node %i", Id());
 
-  //cout << "in addd2value" << endl;
+  //std::cout << "in addd2value" << std::endl;
 
-  //cout << "MODATA= " << (int)MoData().GetD2().size() << endl;
+  //std::cout << "MODATA= " << (int)MoData().GetD2().size() << std::endl;
 
   // check if this has been called before
   if ((int)CoData().GetD2().size()==0)
@@ -289,7 +289,7 @@ void CONTACT::CoNode::AddD2Value(int& row, int& col, double& val)
   if ((int)CoData().GetD2().size()<=row)
     dserror("ERROR: AddD2Value: tried to access invalid row index!");
 
-  //cout << "in addd2value 2" << endl;
+  //std::cout << "in addd2value 2" << std::endl;
 
   // add the pair (col,val) to the given row
   std::map<int,double>& d2map = CoData().GetD2()[row];

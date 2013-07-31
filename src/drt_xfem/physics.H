@@ -90,7 +90,7 @@ enum Field
     Dispziface          ///< z displacement interface
 };
 
-//! return a string representation for each enum value in XFEM::PHYSICS::Field
+//! return a std::string representation for each enum value in XFEM::PHYSICS::Field
 std::string physVarToString(const Field var);
 
 }

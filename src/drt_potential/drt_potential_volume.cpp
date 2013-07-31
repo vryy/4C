@@ -51,7 +51,7 @@ POTENTIAL::VolumePotential::VolumePotential(
   const Epetra_Map* dofcolmap = discretRCP_->DofColMap();
   disp_col_ = LINALG::CreateVector(*dofcolmap, true);
 
-  std::cout << "Volume potential constructor done" << endl;
+  std::cout << "Volume potential constructor done" << std::endl;
 }
 
 
@@ -95,7 +95,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
     RCP<Epetra_Vector>              systemvector1,
     Teuchos::RCP<Epetra_Vector>             systemvector2,
     Teuchos::RCP<Epetra_Vector>             systemvector3,
-    const string&                           condstring)
+    const std::string&                           condstring)
 {
   if (!discret_.Filled()) dserror("FillComplete() was not called");
   if (!discret_.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -106,7 +106,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   if (time < 0.0) usetime = false;
 
   if(time < 0.0)
-    cout <<  "no time curve set " << endl;
+    std::cout <<  "no time curve set " << std::endl;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
@@ -722,8 +722,8 @@ void POTENTIAL::VolumePotential::ComputeFandK(
           LINALG::Matrix<3,3>  potderiv2;
 
           EvaluatePotentialfromCondition(cond, x_gp, x_pot_gp, potderiv1, potderiv2);
-          //potderiv1.Print(cout);
-          //potderiv2.Print(cout);
+          //potderiv1.Print(std::cout);
+          //potderiv2.Print(std::cout);
 
           const int numdof = 3;
           // computation of internal forces (possibly with non-local values)
@@ -731,7 +731,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
             for(int dim = 0; dim < 3; dim++)
               F_int[inode*numdof+dim] += funct(inode)*beta*fac*(beta_pot*potderiv1(dim)*fac_pot);
 
-          //F_int.Print(cout);
+          //F_int.Print(std::cout);
           // computation of stiffness matrix (possibly with non-local values)
           for (int inode = 0;inode < numnode; ++inode)
             for(int dim = 0; dim < 3; dim++)

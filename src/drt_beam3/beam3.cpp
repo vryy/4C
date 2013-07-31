@@ -264,7 +264,7 @@ DRT::ELEMENTS::Beam3::~Beam3()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::Print(ostream& os) const
+void DRT::ELEMENTS::Beam3::Print(std::ostream& os) const
 {
   return;
 }
@@ -622,11 +622,11 @@ void DRT::ELEMENTS::Beam3::SetReferenceLength(const bool changetoshort)
 		// new linker length = initial linker length * (1/scale)
 		// first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
 		sca = 1/sca;
-		cout<<"xinit vorher k-l: "<<xactrefe_<<endl;
+		std::cout<<"xinit vorher k-l: "<<xactrefe_<<std::endl;
 		xactrefe_(3,0) = xactrefe_(0,0) + (sca * (xactrefe_(3,0)-xactrefe_(0,0)));
 		xactrefe_(4,0) = xactrefe_(1,0) + (sca * (xactrefe_(4,0)-xactrefe_(1,0)));
 		xactrefe_(5,0) = xactrefe_(2,0) + (sca * (xactrefe_(5,0)-xactrefe_(2,0)));
-		cout<<"xinit nachher k-l: "<<xactrefe_<<endl;
+		std::cout<<"xinit nachher k-l: "<<xactrefe_<<std::endl;
 	}
 
 	// store linker coordinates

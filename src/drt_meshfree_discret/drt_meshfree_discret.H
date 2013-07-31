@@ -71,7 +71,7 @@ public:
   /*------------------------------------------------------------------------*/
 
   MeshfreeDiscretization(
-    const string name,
+    const std::string name,
     Teuchos::RCP<Epetra_Comm> comm,
     const Teuchos::ParameterList & params
     );
@@ -411,12 +411,12 @@ public:
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Print this discretization to os (Filled()==true NOT prerequisite)
-   *       (ostream << also supported)
+   *       (std::ostream << also supported)
    *
    * \note This is a collective call
   *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
 /*--------------------------------------------------------------------------*/
 
@@ -425,7 +425,7 @@ private:
   /*------------------------------------------------------------------------*/
   //! Empty! No ctor(name,comm) wanted                    (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  MeshfreeDiscretization(const string name, Teuchos::RCP<Epetra_Comm> comm);
+  MeshfreeDiscretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*------------------------------------------------------------------------*/
   //! Empty! No = operator wanted.                        (public) nis Jan12
@@ -568,6 +568,6 @@ public: // hack ?
 } // namespace DRT
 
 /// << operator
-ostream& operator << (ostream& os, const DRT::Discretization& dis);
+std::ostream& operator << (std::ostream& os, const DRT::Discretization& dis);
 
 #endif  // #ifndef MESHFREE_DISCRET_H

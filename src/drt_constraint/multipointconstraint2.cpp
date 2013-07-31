@@ -31,7 +31,7 @@ Maintainer: Thomas Kloeppel
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
-        const string& conditionname,
+        const std::string& conditionname,
         int& minID,
         int& maxID)
 : MPConstraint(discr,
@@ -77,7 +77,7 @@ void UTILS::MPConstraint2::Initialize
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << endl;
+        std::cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << std::endl;
       }
     }
   }
@@ -114,7 +114,7 @@ void UTILS::MPConstraint2::Initialize(
       activecons_.find(condID)->second=true;
       if (actdisc_->Comm().MyPID()==0)
       {
-        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+        std::cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << std::endl;
       }
     }
   }
@@ -164,8 +164,8 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
 (
   RCP<DRT::Discretization> actdisc,
   std::vector< DRT::Condition* >      constrcondvec,
-  const string&             discret_name,
-  const string&             element_name,
+  const std::string&             discret_name,
+  const std::string&             element_name,
   int& startID
 )
 {

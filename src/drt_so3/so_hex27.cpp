@@ -262,12 +262,12 @@ DRT::ELEMENTS::So_hex27::~So_hex27()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::Print(ostream& os) const
+void DRT::ELEMENTS::So_hex27::Print(std::ostream& os) const
 {
   os << "So_hex27 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 
@@ -401,7 +401,7 @@ void DRT::ELEMENTS::So_hex27::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_hex27::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So_hex27::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))

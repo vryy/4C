@@ -77,7 +77,7 @@ DRT::MESHFREE::Cell::~Cell()
 /*--------------------------------------------------------------------------*
  |  << operator                                                   nis Jan12 |
  *--------------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::MESHFREE::Cell& cell)
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell& cell)
 {
   cell.Print(os);
   return os;
@@ -86,7 +86,7 @@ ostream& operator << (ostream& os, const DRT::MESHFREE::Cell& cell)
 /*--------------------------------------------------------------------------*
  |  print element                                        (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::Print(ostream& os) const
+void DRT::MESHFREE::Cell::Print(std::ostream& os) const
 {
   DRT::Element::Print(os);
   const int nknot = NumKnot();

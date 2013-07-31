@@ -239,7 +239,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   }
 
   if (abs(XiContact[0])< (1.0 + XIETATOL) && abs(XiContact[1]) < (1.0 + XIETATOL) && elementscolinear == false)
-    { //cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << endl;
+    { //std::cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << std::endl;
 
     }
   else
@@ -372,21 +372,21 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                              secondderiv1,secondderiv2,numnode1,numnode2);
 
       // some trial output
-      //cout << "Paar: " << Element1()->Id() << " / " << Element2()->Id() << endl;
-      //cout << "Xi/Eta: " << eta[0] << " / " << eta[1] << endl;
+      //std::cout << "Paar: " << Element1()->Id() << " / " << Element2()->Id() << std::endl;
+      //std::cout << "Xi/Eta: " << eta[0] << " / " << eta[1] << std::endl;
       // update contact point tangents and their derivatives
 
       if (beams_smoothing != INPAR::CONTACT::bsm_none)
       {ComputeTangentsAndDerivs(t1,t2,dt1,dt2,funct1,funct2,deriv1,deriv2,numnode1, numnode2);
 
       // some trial output
-      //cout << "Kontakttangente1: " << t1 << " Kontakttangente2: " << t2 << endl;
-      //cout << "Kontakttangente1 / Kontakttangente2: " << endl;
+      //std::cout << "Kontakttangente1: " << t1 << " Kontakttangente2: " << t2 << std::endl;
+      //std::cout << "Kontakttangente1 / Kontakttangente2: " << std::endl;
         //    for (int i=0;i<3;i++)
-          //    cout << t1[i] << " / " << t2[i] << endl;
-     // cout << "Ableitung Kontakttangente1 / Ableitung Kontakttangente2: " << endl;
+          //    std::cout << t1[i] << " / " << t2[i] << std::endl;
+     // std::cout << "Ableitung Kontakttangente1 / Ableitung Kontakttangente2: " << std::endl;
       //for (int i=0;i<3;i++)
-        //cout << dt1[i] << " / " << dt2[i] << endl;
+        //std::cout << dt1[i] << " / " << dt2[i] << std::endl;
       }
 
 
@@ -431,7 +431,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
       //*******************Uncomment the following to lines for FD-Check of the local Newton iteration*************************
 
-//      cout << "Lokale Jakobimatrix für CCP: " << df << endl;
+//      std::cout << "Lokale Jakobimatrix für CCP: " << df << std::endl;
 //
 //      FDCheckNewtonCPP( numnode1, numnode2, eta, beams_smoothing);
 
@@ -499,7 +499,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
 
     //show the closest point parameter coordinates of the contact pairs
-    //cout << "Paar: " << Element1()->Id() << "/" << Element2()->Id() << ": " << eta[0] << "/"<< eta[1] << endl;
+    //std::cout << "Paar: " << Element1()->Id() << "/" << Element2()->Id() << ": " << eta[0] << "/"<< eta[1] << std::endl;
 
     return;
   }
@@ -538,7 +538,7 @@ void CONTACT::Beam3contact::EvaluateNewtonF(std::vector<double>& f, const std::v
         f[0] += (x1[i]-x2[i])*t1[i] / norm;
         f[1] += (x2[i]-x1[i])*t2[i] / norm;
       }
-      //cout << "smoothed tangent field" << endl;
+      //std::cout << "smoothed tangent field" << std::endl;
   }
 
 
@@ -729,15 +729,15 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     LINALG::Assemble(fint,fc1,lm1,lmowner1);
     LINALG::Assemble(fint,fc2,lm2,lmowner2);
     // debug output
-    //cout << "********************  FC *********************"<<endl;
-    //for (int i=0;i<NDIM*numnode1;++i) cout << "Fc_1_" << i << ": " << fc1[i] << endl;
-    //for (int i=0;i<NDIM*numnode2;++i) cout << "Fc_2_" << i << ": " << fc2[i] << endl;
+    //std::cout << "********************  FC *********************"<<std::endl;
+    //for (int i=0;i<NDIM*numnode1;++i) std::cout << "Fc_1_" << i << ": " << fc1[i] << std::endl;
+    //for (int i=0;i<NDIM*numnode2;++i) std::cout << "Fc_2_" << i << ": " << fc2[i] << std::endl;
 
     //int istart = (cdiscret_.NodeRowMap()->LID(element1_->Id()) * 6);
     //int iend = (cdiscret_.NodeRowMap()->LID(element2_->Id()) * 6 + 5);
-    //cout << "******************* FINT ********************"<<endl;
-    //for (int i=istart;i<iend;++i) cout << "fint_" << i << ": " << fint[i] << endl;
-    //cout<<"fint size = "<<fint.MyLength()<<endl;
+    //std::cout << "******************* FINT ********************"<<std::endl;
+    //for (int i=istart;i<iend;++i) std::cout << "fint_" << i << ": " << fint[i] << std::endl;
+    //std::cout<<"fint size = "<<fint.MyLength()<<std::endl;
   }
 
   return;
@@ -1105,7 +1105,7 @@ void CONTACT::Beam3contact::ComputeNormal(std::vector<double>& normal, double& g
     double& norm, const std::vector<double>& x1, const std::vector<double>& x2)
 {
 
-    //cout << "Compute Normal" << endl;
+    //std::cout << "Compute Normal" << std::endl;
 
   // compute non-unit normal
   for (int i=0;i<NDIM;i++) normal[i] = x1[i]-x2[i];    
@@ -1179,14 +1179,14 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
   
   // comute gap to be returned
   gap = norm - radius_ele1 - radius_ele2;
-  //cout << "\n***\nPaar: " << element1_->Id() << "/" << element2_->Id() << "\n***" << endl;
-  //cout << "effektiver Radius: " << radius_ele1 + radius_ele2 << "\n";
+  //std::cout << "\n***\nPaar: " << element1_->Id() << "/" << element2_->Id() << "\n***" << std::endl;
+  //std::cout << "effektiver Radius: " << radius_ele1 + radius_ele2 << "\n";
 
-  //cout << "old gap:" << gap << "\n";
+  //std::cout << "old gap:" << gap << "\n";
 
-  //cout << "normalvector_old:" << normal_old_[0] << ", " << normal_old_[1] << ", " << normal_old_[2] << "\n";
-  //cout << "normalvector_new:" << normal_[0] << ", " << normal_[1] << ", " << normal_[2] << "\n";
-  //cout << "Xi/Eta:" << xicontact_[0] << " / " << xicontact_[1] << "\n";
+  //std::cout << "normalvector_old:" << normal_old_[0] << ", " << normal_old_[1] << ", " << normal_old_[2] << "\n";
+  //std::cout << "normalvector_new:" << normal_[0] << ", " << normal_[1] << ", " << normal_[2] << "\n";
+  //std::cout << "Xi/Eta:" << xicontact_[0] << " / " << xicontact_[1] << "\n";
 
   double gapnew = 0;
 
@@ -1200,7 +1200,7 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
   oldgap_ = gap;
 
   if (ngf_) gap = gapnew;
-  //cout << "new gap:" << gap << "\n";
+  //std::cout << "new gap:" << gap << "\n";
 
   // also set class variable
   gap_ = gap;
@@ -1333,21 +1333,21 @@ void CONTACT::Beam3contact::ComputeTangentsAndDerivs
   Epetra_SerialDenseMatrix nodetangent1(NDIM,numnode1);
   Epetra_SerialDenseMatrix nodetangent2(NDIM,numnode2);
 
-//  cout << "nodetangent";
+//  std::cout << "nodetangent";
 //  for (int i=0;i<NDIM;i++)
 //    for (int j=0;j<numnode1;j++)
-//      cout << nodetangent1(i,j) << endl;
+//      std::cout << nodetangent1(i,j) << std::endl;
 //  for (int i=0;i<NDIM;i++)
 //    for (int j=0;j<numnode2;j++)
-//      cout << nodetangent1(i,j) << endl;
+//      std::cout << nodetangent1(i,j) << std::endl;
 //
-//  cout << "eletangent";
+//  std::cout << "eletangent";
 //    for (int i=0;i<NDIM;i++)
 //      for (int j=0;j<numnode1;j++)
-//        cout << ele1tangent_(i,j) << endl;
+//        std::cout << ele1tangent_(i,j) << std::endl;
 //    for (int i=0;i<NDIM;i++)
 //      for (int j=0;j<numnode2;j++)
-//        cout << ele2tangent_(i,j) << endl;
+//        std::cout << ele2tangent_(i,j) << std::endl;
 
 
   // full coord1 and coord2
@@ -1975,30 +1975,30 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
   //****************Uncomment the following to check if neighbor detection works properly*************************
 
 
-//  cout << "Nachbarn Element 1:" << endl;
+//  std::cout << "Nachbarn Element 1:" << std::endl;
 //
 //  if (neighbor1_->left_neighbor_ != NULL)
-//  cout  << "E1-ID: " << Element1()->Id() << ", linker Nachbar, Nachbar-ID: " <<  neighbor1_->left_neighbor_->Id() << "lokaler Knoten des linken Nachbarn: " << neighbor1_->connecting_node_left_ << endl;
+//  std::cout  << "E1-ID: " << Element1()->Id() << ", linker Nachbar, Nachbar-ID: " <<  neighbor1_->left_neighbor_->Id() << "lokaler Knoten des linken Nachbarn: " << neighbor1_->connecting_node_left_ << std::endl;
 //  else
-//  cout  << "E1-ID: " << Element1()->Id() << ", linker Nachbar, Nachbar-ID: " <<  " kein linker Nachbar!!! " << "lokaler Knoten des linken Nachbarn: " << neighbor1_->connecting_node_left_ << endl;
+//  std::cout  << "E1-ID: " << Element1()->Id() << ", linker Nachbar, Nachbar-ID: " <<  " kein linker Nachbar!!! " << "lokaler Knoten des linken Nachbarn: " << neighbor1_->connecting_node_left_ << std::endl;
 //
 //  if (neighbor1_->right_neighbor_ != NULL)
-//  cout  << "E1-ID: " << Element1()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  neighbor1_->right_neighbor_->Id() << "lokaler Knoten des rechten Nachbarn: " << neighbor1_->connecting_node_right_ << endl;
+//  std::cout  << "E1-ID: " << Element1()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  neighbor1_->right_neighbor_->Id() << "lokaler Knoten des rechten Nachbarn: " << neighbor1_->connecting_node_right_ << std::endl;
 //  else
-//    cout  << "E1-ID: " << Element1()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  " kein rechter Nachbar!!! " << "lokaler Knoten des rechten Nachbarn: " << neighbor1_->connecting_node_right_ << endl;
+//    std::cout  << "E1-ID: " << Element1()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  " kein rechter Nachbar!!! " << "lokaler Knoten des rechten Nachbarn: " << neighbor1_->connecting_node_right_ << std::endl;
 //
 //
 //
-//  cout << "Nachbarn Element 2:" << endl;
+//  std::cout << "Nachbarn Element 2:" << std::endl;
 //  if (neighbor2_->left_neighbor_ != NULL)
-//  cout  << "E2-ID: " << Element2()->Id() << ", linker Nachbar, Nachbar-ID: " <<  neighbor2_->left_neighbor_->Id() << "lokaler Knoten des linken Nachbarn: " << neighbor2_->connecting_node_left_ << endl;
+//  std::cout  << "E2-ID: " << Element2()->Id() << ", linker Nachbar, Nachbar-ID: " <<  neighbor2_->left_neighbor_->Id() << "lokaler Knoten des linken Nachbarn: " << neighbor2_->connecting_node_left_ << std::endl;
 //  else
-//  cout  << "E2-ID: " << Element2()->Id() << ", linker Nachbar, Nachbar-ID: " <<  " kein linker Nachbar!!! " << "lokaler Knoten des linken Nachbarn: " << neighbor2_->connecting_node_left_ << endl;
+//  std::cout  << "E2-ID: " << Element2()->Id() << ", linker Nachbar, Nachbar-ID: " <<  " kein linker Nachbar!!! " << "lokaler Knoten des linken Nachbarn: " << neighbor2_->connecting_node_left_ << std::endl;
 //
 //  if (neighbor2_->right_neighbor_ != NULL)
-//  cout  << "E2-ID: " << Element2()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  neighbor2_->right_neighbor_->Id() << "lokaler Knoten des rechten Nachbarn: " << neighbor2_->connecting_node_right_ << endl;
+//  std::cout  << "E2-ID: " << Element2()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  neighbor2_->right_neighbor_->Id() << "lokaler Knoten des rechten Nachbarn: " << neighbor2_->connecting_node_right_ << std::endl;
 //  else
-//  cout  << "E2-ID: " << Element2()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  " kein rechter Nachbar!!! " << "lokaler Knoten des rechten Nachbarn: " << neighbor2_->connecting_node_right_ << endl;
+//  std::cout  << "E2-ID: " << Element2()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  " kein rechter Nachbar!!! " << "lokaler Knoten des rechten Nachbarn: " << neighbor2_->connecting_node_right_ << std::endl;
   //****************end: Uncomment the following to check if neighbor detection works properly*************************
 
  return;
@@ -2249,8 +2249,8 @@ void CONTACT::Beam3contact::CalculateNodalTangents(std::map<int,LINALG::Matrix<3
   ele2tangent_ = node_tangent2;
 
 //***************** Uncomment this output to check the tangent calculation*************************
-//             cout << "nodal tangents Element " << element1_->Id() << " : " << ele1tangent_ << endl;
-//             cout << "nodal tangents Element " << element2_->Id() << " : " << ele2tangent_ << endl;
+//             std::cout << "nodal tangents Element " << element1_->Id() << " : " << ele1tangent_ << std::endl;
+//             std::cout << "nodal tangents Element " << element2_->Id() << " : " << ele2tangent_ << std::endl;
 
 }
 
@@ -2375,11 +2375,11 @@ void CONTACT::Beam3contact::FDCheckNewtonCPP(const int& numnode1, const int& num
 
 
 
-                    //cout << "f: " << f[0] << "," << f[1] << endl;
+                    //std::cout << "f: " << f[0] << "," << f[1] << std::endl;
 
-                    //cout << "f1: " << f1[0] << "," << f1[1] << endl;
+                    //std::cout << "f1: " << f1[0] << "," << f1[1] << std::endl;
 
-                    //cout << "f2: " << f2[0] << "," << f2[1] << endl;
+                    //std::cout << "f2: " << f2[0] << "," << f2[1] << std::endl;
 
                     dfFD(0,0) = (f1[0]-f[0])/delta;
                     dfFD(1,0) = (f1[1]-f[1])/delta;
@@ -2387,7 +2387,7 @@ void CONTACT::Beam3contact::FDCheckNewtonCPP(const int& numnode1, const int& num
                     dfFD(1,1) = (f2[1]-f[1])/delta;
 
 
-   // cout << "FD-Check der lokalen Jakobimatrix für CCP: " << dfFD << endl;
+   // std::cout << "FD-Check der lokalen Jakobimatrix für CCP: " << dfFD << std::endl;
 
   return;
 }
@@ -2474,10 +2474,10 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
   }
   
 //  // Print the FD-Approximations to compare with analytical values
-//  cout<<endl<<"Finite-Differences-Approximation of delta_xi and delta_eta:"<<endl<<endl;
+//  std::cout<<std::endl<<"Finite-Differences-Approximation of delta_xi and delta_eta:"<<std::endl<<std::endl;
 //  for(int i=0;i<NDIM*(numnode1+numnode2);i++)
 //  {          
-//    cout << "FD_delta_xi_"<<i<<" = "<<FD_delta_xi[i]<<"  FD_delta_eta_"<<i<<" = "<<FD_delta_eta[i]<<endl;
+//    std::cout << "FD_delta_xi_"<<i<<" = "<<FD_delta_xi[i]<<"  FD_delta_eta_"<<i<<" = "<<FD_delta_eta[i]<<std::endl;
 //  }
   
   // Compare FD-Approximations and analytical values and give a warning, if deviation is to large
@@ -2487,34 +2487,34 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
     {
       if(fabs((FD_delta_xi[i]-delta_xi[i])/delta_xi[i]) > rtol)    // compare delta_xi elementwise
       {
-        cout<<"FD_delta_xi_"<<i<<" = "<<FD_delta_xi[i]<<"  delta_xi_"<<i<<" = "<<delta_xi[i];
-        cout<<"  ********* WARNING from FD-Check: relative error > relative tolerance "<<rtol<<" *********"<<endl;
+        std::cout<<"FD_delta_xi_"<<i<<" = "<<FD_delta_xi[i]<<"  delta_xi_"<<i<<" = "<<delta_xi[i];
+        std::cout<<"  ********* WARNING from FD-Check: relative error > relative tolerance "<<rtol<<" *********"<<std::endl;
       }
     }
     else                    // check absolute error
     {
       if(fabs(FD_delta_xi[i]-delta_xi[i]) > atol)    // compare delta_xi elementwise
       {
-        cout<<"FD_delta_xi_"<<i<<" = "<<FD_delta_xi[i]<<"  delta_xi_"<<i<<" = "<<delta_xi[i];
-        cout<<"  ********* WARNING from FD-Check: absolute error "<<delta_xi[i]-FD_delta_xi[i];
-        cout<<" > absolute tolerance "<<atol<<" *********"<<endl;
+        std::cout<<"FD_delta_xi_"<<i<<" = "<<FD_delta_xi[i]<<"  delta_xi_"<<i<<" = "<<delta_xi[i];
+        std::cout<<"  ********* WARNING from FD-Check: absolute error "<<delta_xi[i]-FD_delta_xi[i];
+        std::cout<<" > absolute tolerance "<<atol<<" *********"<<std::endl;
       }
     }
     if(delta_eta[i] > toltreshold)  // then check relative error
     {
       if(fabs((FD_delta_eta[i]-delta_eta[i])/delta_eta[i]) > rtol)    // compare delta_eta elementwise
       {
-        cout<<"FD_delta_eta_"<<i<<" = "<<FD_delta_eta[i]<<"  delta_eta_"<<i<<" = "<<delta_eta[i];
-        cout<<"  ********* WARNING from FD-Check: relative error > relative tolerance "<<rtol<<" *********"<<endl;
+        std::cout<<"FD_delta_eta_"<<i<<" = "<<FD_delta_eta[i]<<"  delta_eta_"<<i<<" = "<<delta_eta[i];
+        std::cout<<"  ********* WARNING from FD-Check: relative error > relative tolerance "<<rtol<<" *********"<<std::endl;
       }
     }
     else                    // check absolute error
     {
       if(fabs(FD_delta_eta[i]-delta_eta[i]) > atol)    // compare delta_eta elementwise
       {
-        cout<<"FD_delta_eta_"<<i<<" = "<<FD_delta_eta[i]<<"  delta_eta_"<<i<<" = "<<delta_eta[i];
-        cout<<"  ********* WARNING from FD-Check: absolute error "<<delta_eta[i]-FD_delta_eta[i];
-        cout<<" > absolute tolerance "<<atol<<" *********"<<endl;
+        std::cout<<"FD_delta_eta_"<<i<<" = "<<FD_delta_eta[i]<<"  delta_eta_"<<i<<" = "<<delta_eta[i];
+        std::cout<<"  ********* WARNING from FD-Check: absolute error "<<delta_eta[i]-FD_delta_eta[i];
+        std::cout<<" > absolute tolerance "<<atol<<" *********"<<std::endl;
       }
     }
   }
@@ -2586,11 +2586,11 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       // Call function to compute scaled normal and gap in possible contact point
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
   
-//      cout<<"FD_gap_"<<NDIM*i+j<<" = "<<FD_gap<<endl;
+//      std::cout<<"FD_gap_"<<NDIM*i+j<<" = "<<FD_gap<<std::endl;
   
       // FD-approximation
       FD_delta_gap[NDIM*i+j] = (FD_gap - gap)/eps;
-//      cout<<"FD_delta_gap_"<<NDIM*i+j<<" = "<<FD_delta_gap[NDIM*i+j]<<endl;
+//      std::cout<<"FD_delta_gap_"<<NDIM*i+j<<" = "<<FD_delta_gap[NDIM*i+j]<<std::endl;
       
       // Undo step forward
       ele1pos_(j,i) -= eps;
@@ -2619,11 +2619,11 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       // Call function to compute scaled normal and gap in possible contact point
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
       
-//      cout<<"FD_gap_"<<NDIM*numnode1+NDIM*i+j<<" = "<<FD_gap<<endl;
+//      std::cout<<"FD_gap_"<<NDIM*numnode1+NDIM*i+j<<" = "<<FD_gap<<std::endl;
       
       // FD-approximation
       FD_delta_gap[NDIM*numnode1+NDIM*i+j] = (FD_gap - gap)/eps;
-//      cout<<"FD_delta_gap_"<<NDIM*numnode1+NDIM*i+j<<" = "<<FD_delta_gap[NDIM*numnode1+NDIM*i+j]<<endl;              
+//      std::cout<<"FD_delta_gap_"<<NDIM*numnode1+NDIM*i+j<<" = "<<FD_delta_gap[NDIM*numnode1+NDIM*i+j]<<std::endl;              
       
       // Undo step forward
       ele2pos_(j,i) -= eps;
@@ -2631,31 +2631,31 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
   }
   
 //  // Print the FD-Approximations to compare with analytical values
-//  cout<<endl<<"Finite-Differences-Approximation of delta_gap:"<<endl<<endl;
+//  std::cout<<std::endl<<"Finite-Differences-Approximation of delta_gap:"<<std::endl<<std::endl;
 //  for(int i=0;i<NDIM*(numnode1+numnode2);i++)
 //  {          
-//    cout << "FD_delta_gap_"<<i<<" = "<<FD_delta_gap[i]<<endl;
+//    std::cout << "FD_delta_gap_"<<i<<" = "<<FD_delta_gap[i]<<std::endl;
 //  }
     
   // Compare FD-Approximations and analytical values and give a warning, if deviation is to large
-  cout<<endl;
+  std::cout<<std::endl;
   for(unsigned int i=0;i<FD_delta_gap.size();i++)
   {
     if(delta_gap[i] > toltreshold)  // then check relative error
     {
       if(fabs((FD_delta_gap[i]-delta_gap[i])/delta_gap[i]) > rtol)    // compare delta_gap elementwise
       {
-        cout<<"FD_delta_gap_"<<i<<" = "<<FD_delta_gap[i]<<"  delta_gap_"<<i<<" = "<<delta_gap[i];
-        cout<<"  ********* WARNING from FD-Check: relative error > relative tolerance "<<rtol<<" *********"<<endl;
+        std::cout<<"FD_delta_gap_"<<i<<" = "<<FD_delta_gap[i]<<"  delta_gap_"<<i<<" = "<<delta_gap[i];
+        std::cout<<"  ********* WARNING from FD-Check: relative error > relative tolerance "<<rtol<<" *********"<<std::endl;
       }
     }  
     else                            // check absolute error  
     {
       if(fabs(FD_delta_gap[i]-delta_gap[i]) > atol)
       {
-        cout<<"FD_delta_gap_"<<i<<" = "<<FD_delta_gap[i]<<"  delta_gap_"<<i<<" = "<<delta_gap[i];
-        cout<<"  ********* WARNING from FD-Check: absolute error "<<FD_delta_gap[i]-delta_gap[i];
-        cout<<" > absolute tolerance "<<atol<<" *********"<<endl;
+        std::cout<<"FD_delta_gap_"<<i<<" = "<<FD_delta_gap[i]<<"  delta_gap_"<<i<<" = "<<delta_gap[i];
+        std::cout<<"  ********* WARNING from FD-Check: absolute error "<<FD_delta_gap[i]-delta_gap[i];
+        std::cout<<" > absolute tolerance "<<atol<<" *********"<<std::endl;
       }
     }
   }
@@ -2698,7 +2698,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
   std::vector<double> FD_ddx1(NDIM);  // = x1,xixi
   std::vector<double> FD_ddx2(NDIM);  // = x2,etaeta
   
-//  cout<<endl<<"loop over ele1pos_"<<endl<<endl;
+//  std::cout<<std::endl<<"loop over ele1pos_"<<std::endl<<std::endl;
   
   // loop over ele1pos_
   for(int j=0;j<numnode1;j++)
@@ -2713,14 +2713,14 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       
       // step forward
       ele1pos_(i,j) += eps;
-//      cout<<"ele1pos_"<<ele1pos_<<endl;
+//      std::cout<<"ele1pos_"<<ele1pos_<<std::endl;
   
       // Get CPP-Solution for new set
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       //FD_elementscolinear=elementscolinear_;
-//      cout<<"FD_XiContact:  "<<FD_XiContact[0]<<"  "<<FD_XiContact[1]<<endl;
+//      std::cout<<"FD_XiContact:  "<<FD_XiContact[0]<<"  "<<FD_XiContact[1]<<std::endl;
       
       // Call function to fill variables for shape functions and their derivatives
       GetShapeFunctions(FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,FD_XiContact);
@@ -2729,14 +2729,14 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       ComputeCoordsAndDerivs(FD_x1,FD_x2,FD_dx1,FD_dx2,FD_ddx1,FD_ddx2,FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,numnode1,numnode2);
       
       // Test Print of FD_x1 and FD_x2
-//      cout<<"FD_x1:  "<<FD_x1[0]<<"  "<<FD_x1[1]<<"  "<<FD_x1[2]<<endl;
-//      cout<<"FD_x2:  "<<FD_x2[0]<<"  "<<FD_x2[1]<<"  "<<FD_x2[2]<<endl;
+//      std::cout<<"FD_x1:  "<<FD_x1[0]<<"  "<<FD_x1[1]<<"  "<<FD_x1[2]<<std::endl;
+//      std::cout<<"FD_x2:  "<<FD_x2[0]<<"  "<<FD_x2[1]<<"  "<<FD_x2[2]<<std::endl;
   
       // Call function to compute scaled normal and gap in possible contact point
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
             
 //      // Test print of FD_normal
-//      cout<<"FD_normal    "<<FD_normal[0]<<"  "<<FD_normal[1]<<"  "<<FD_normal[2]<<endl<<endl;
+//      std::cout<<"FD_normal    "<<FD_normal[0]<<"  "<<FD_normal[1]<<"  "<<FD_normal[2]<<std::endl<<std::endl;
       
       for(int k=0;k<NDIM;k++)
       {
@@ -2744,14 +2744,14 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
         FD_delta_n(k,NDIM*j+i) += (FD_normal[k] - normal[k])/eps;
       }
       
-//      cout<<"FD_delta_n_row"<<NDIM*j+i<<":  "<<FD_delta_n(0,NDIM*j+i)<<"  "<<FD_delta_n(1,NDIM*j+i)<<"  "<<FD_delta_n(2,NDIM*j+i)<<endl;
+//      std::cout<<"FD_delta_n_row"<<NDIM*j+i<<":  "<<FD_delta_n(0,NDIM*j+i)<<"  "<<FD_delta_n(1,NDIM*j+i)<<"  "<<FD_delta_n(2,NDIM*j+i)<<std::endl;
       
       // Undo step forward
       ele1pos_(i,j) -= eps;
     }
   }
   
-//  cout<<endl<<"loop over ele2pos_"<<endl<<endl;
+//  std::cout<<std::endl<<"loop over ele2pos_"<<std::endl<<std::endl;
   
   // loop over ele2pos_
   for(int j=0;j<numnode2;j++)
@@ -2766,14 +2766,14 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
     
       // step forward
       ele2pos_(i,j) += eps; 
-//      cout<<"ele2pos_"<<ele2pos_<<endl;
+//      std::cout<<"ele2pos_"<<ele2pos_<<std::endl;
       
       // Get CPP-Solution for new set
       ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       //FD_elementscolinear=elementscolinear_;
-//      cout<<"FD_XiContact:  "<<FD_XiContact[0]<<"  "<<FD_XiContact[1]<<endl;
+//      std::cout<<"FD_XiContact:  "<<FD_XiContact[0]<<"  "<<FD_XiContact[1]<<std::endl;
       
       // Call function to fill variables for shape functions and their derivatives
       GetShapeFunctions(FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,FD_XiContact);
@@ -2795,14 +2795,14 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
 //      }
       
       // Test Print of FD_x1 and FD_x2
-//      cout<<"FD_x1:  "<<FD_x1[0]<<"  "<<FD_x1[1]<<"  "<<FD_x1[2]<<endl;
-//      cout<<"FD_x2:  "<<FD_x2[0]<<"  "<<FD_x2[1]<<"  "<<FD_x2[2]<<endl;
+//      std::cout<<"FD_x1:  "<<FD_x1[0]<<"  "<<FD_x1[1]<<"  "<<FD_x1[2]<<std::endl;
+//      std::cout<<"FD_x2:  "<<FD_x2[0]<<"  "<<FD_x2[1]<<"  "<<FD_x2[2]<<std::endl;
       
       // Call function to compute scaled normal and gap in possible contact point
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
       
 //      // Test print of FD_normal
-//      cout<<"FD_normal    "<<FD_normal[0]<<"  "<<FD_normal[1]<<"  "<<FD_normal[2]<<endl<<endl;
+//      std::cout<<"FD_normal    "<<FD_normal[0]<<"  "<<FD_normal[1]<<"  "<<FD_normal[2]<<std::endl<<std::endl;
       
       for(int k=0;k<NDIM;k++)
       {
@@ -2810,21 +2810,21 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
         FD_delta_n(k,NDIM*numnode1+NDIM*j+i) += (FD_normal[k] - normal[k])/eps;
       }
       
-//      cout<<"FD_delta_n_row"<<NDIM*numnode1+NDIM*j+i<<":  "<<FD_delta_n(0,NDIM*numnode1+NDIM*j+i)<<"  "<<FD_delta_n(1,NDIM*numnode1+NDIM*j+i)<<"  "<<FD_delta_n(2,NDIM*numnode1+NDIM*j+i)<<endl;
+//      std::cout<<"FD_delta_n_row"<<NDIM*numnode1+NDIM*j+i<<":  "<<FD_delta_n(0,NDIM*numnode1+NDIM*j+i)<<"  "<<FD_delta_n(1,NDIM*numnode1+NDIM*j+i)<<"  "<<FD_delta_n(2,NDIM*numnode1+NDIM*j+i)<<std::endl;
       
       // Undo step forward
       ele2pos_(i,j) -= eps;
     }
   }
   
-//  cout<<"After FD-Approximation"<<endl;
+//  std::cout<<"After FD-Approximation"<<std::endl;
   
 //  // Print the FD-Approximations to compare with analytical values
-//  cout<<endl<<"Finite-Differences-Approximation of delta_n:"<<endl<<endl;
-//  cout<<"FD_delta_n:"<<endl<<FD_delta_n<<endl;
+//  std::cout<<std::endl<<"Finite-Differences-Approximation of delta_n:"<<std::endl<<std::endl;
+//  std::cout<<"FD_delta_n:"<<std::endl<<FD_delta_n<<std::endl;
     
   // Compare FD-Approximations and analytical values and give a warning, if deviation is to large
-  cout<<endl;
+  std::cout<<std::endl;
   for(int i=0;i<NDIM;i++)
   {
     for(int j=0;j<NDIM*(numnode1+numnode2);j++)
@@ -2833,20 +2833,20 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       {
         if(fabs((FD_delta_n(i,j)-delta_n(i,j))/delta_n(i,j)) > rtol)    // compare delta_n elementwise
         {
-          cout<<"FD_delta_n_"<<i<<"_"<<j<<" = "<<FD_delta_n(i,j)<<"  delta_n_"<<i<<"_"<<j<<" = ";
-          cout<<delta_n(i,j)<<"  ********* WARNING from FD-Check: relative error = ";
-          cout<<fabs((FD_delta_n(i,j)-delta_n(i,j))/delta_n(i,j))<<" > relative tolerance "<<rtol;
-          cout<<" *********"<<endl;
+          std::cout<<"FD_delta_n_"<<i<<"_"<<j<<" = "<<FD_delta_n(i,j)<<"  delta_n_"<<i<<"_"<<j<<" = ";
+          std::cout<<delta_n(i,j)<<"  ********* WARNING from FD-Check: relative error = ";
+          std::cout<<fabs((FD_delta_n(i,j)-delta_n(i,j))/delta_n(i,j))<<" > relative tolerance "<<rtol;
+          std::cout<<" *********"<<std::endl;
         }
       }
       else                                // check absolute error
       {
         if(fabs(FD_delta_n(i,j)-delta_n(i,j)) > atol)    // compare delta_n elementwise
         {
-          cout<<"FD_delta_n_"<<i<<"_"<<j<<" = "<<FD_delta_n(i,j)<<"  delta_n_"<<i<<"_"<<j<<" = ";
-          cout<<delta_n(i,j)<<"  ********* WARNING from FD-Check: absolute error = ";
-          cout<<fabs(FD_delta_n(i,j)-delta_n(i,j))<<" > absolute tolerance "<<atol;
-          cout<<" *********"<<endl;
+          std::cout<<"FD_delta_n_"<<i<<"_"<<j<<" = "<<FD_delta_n(i,j)<<"  delta_n_"<<i<<"_"<<j<<" = ";
+          std::cout<<delta_n(i,j)<<"  ********* WARNING from FD-Check: absolute error = ";
+          std::cout<<fabs(FD_delta_n(i,j)-delta_n(i,j))<<" > absolute tolerance "<<atol;
+          std::cout<<" *********"<<std::endl;
         }
       }
     }
@@ -2943,14 +2943,14 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   }
   
 //  // Test print of Fc
-//  cout<<"************  FD_stiffc ****************"<<endl;
+//  std::cout<<"************  FD_stiffc ****************"<<std::endl;
 //  for(int i=0;i<NDIM*numnode1;i++)
 //  {
-//    cout<<"Fc_1_"<<i<<": "<<fc1[i]<<endl;
+//    std::cout<<"Fc_1_"<<i<<": "<<fc1[i]<<std::endl;
 //  }  
 //  for(int i=0;i<NDIM*numnode2;i++)
 //  {
-//    cout<<"Fc_2_"<<i<<": "<<fc2[i]<<endl;
+//    std::cout<<"Fc_2_"<<i<<": "<<fc2[i]<<std::endl;
 //  }
   
   // FD-Checks are beginning here
@@ -2961,7 +2961,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
     {
       // step forward
       ele1pos_(i,j) += eps; 
-//      cout<<"ele1pos_:"<<endl<<ele1pos_<<endl;
+//      std::cout<<"ele1pos_:"<<std::endl<<ele1pos_<<std::endl;
             
       // do the closest point projection for the new set
       ClosestPointProjection(beams_smoothing);
@@ -2995,13 +2995,13 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
 //      // Test print of FD_fc1 and FD_fc2
 //      for(int k=0;k<NDIM*numnode1;k++)
 //      {
-//        cout<<"FD_fc_1_"<<k<<": "<<FD_fc1[k]<<endl;
+//        std::cout<<"FD_fc_1_"<<k<<": "<<FD_fc1[k]<<std::endl;
 //      }  
 //      for(int k=0;k<NDIM*numnode2;k++)
 //      {
-//        cout<<"FD_fc_2_"<<k<<": "<<FD_fc2[k]<<endl;
+//        std::cout<<"FD_fc_2_"<<k<<": "<<FD_fc2[k]<<std::endl;
 //      }
-//      cout<<endl;
+//      std::cout<<std::endl;
       
       // FD-approximation
       for(int k=0;k<NDIM*numnode1;k++)    
@@ -3021,7 +3021,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
     {
       // step forward
       ele2pos_(i,j) += eps; 
-//      cout<<"ele2pos_:"<<endl<<ele2pos_<<endl;
+//      std::cout<<"ele2pos_:"<<std::endl<<ele2pos_<<std::endl;
       
       // do the closest point projection for the new set
       ClosestPointProjection(beams_smoothing);
@@ -3047,7 +3047,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       {
         for(int m=0;m<NDIM;m++)
         {
-//          cout<<"Index Fc_2: "<<NDIM*k+m<<endl;
+//          std::cout<<"Index Fc_2: "<<NDIM*k+m<<std::endl;
           FD_fc1[NDIM*k+m]= pp*(-FD_gap)*FD_normal[m]*FD_funct1[k];
           FD_fc2[NDIM*k+m]= -pp*(-FD_gap)*FD_normal[m]*FD_funct2[k];
         }
@@ -3056,13 +3056,13 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
 //      // Test print of FD_fc1 and FD_fc2
 //      for(int k=0;k<NDIM*numnode1;k++)
 //      {
-//        cout<<"FD_fc_1_"<<k<<": "<<FD_fc1[k]<<endl;
+//        std::cout<<"FD_fc_1_"<<k<<": "<<FD_fc1[k]<<std::endl;
 //      }  
 //      for(int k=0;k<NDIM*numnode2;k++)
 //      {
-//        cout<<"FD_fc_2_"<<k<<": "<<FD_fc2[k]<<endl;
+//        std::cout<<"FD_fc_2_"<<k<<": "<<FD_fc2[k]<<std::endl;
 //      }
-//      cout<<endl;
+//      std::cout<<std::endl;
       
       // FD-approximation
       for(int k=0;k<NDIM*numnode2;k++)    
@@ -3077,8 +3077,8 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   }
   
   // Print the FD-Approximations to compare with analytical values
-//  cout<<endl<<"Finite-Differences-Approximation of stiffc1 and stiffc2:"<<endl<<endl;
-//  cout<<"FD_stiffc1:"<<endl<<FD_stiffc1<<endl<<endl<<"FD_stiffc2:"<<endl<<FD_stiffc2<<endl;
+//  std::cout<<std::endl<<"Finite-Differences-Approximation of stiffc1 and stiffc2:"<<std::endl<<std::endl;
+//  std::cout<<"FD_stiffc1:"<<std::endl<<FD_stiffc1<<std::endl<<std::endl<<"FD_stiffc2:"<<std::endl<<FD_stiffc2<<std::endl;
   
   // Compare FD-Approximations and analytical values and give a warning, if deviation is to large
   for(int i=0;i<NDIM*numnode1;i++)
@@ -3089,19 +3089,19 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       {
         if(fabs((FD_stiffc1(i,j)-stiffc1(i,j))/stiffc1(i,j)) > rtol)    // compare stiffc1 and FD_stiffc1 elementwise
         {
-          cout<<"FD_stiffc1_"<<i<<"_"<<j<<" = "<<FD_stiffc1(i,j)<<"  stiffc1_"<<i<<"_"<<j<<" = ";
-          cout<<stiffc1(i,j)<<"  ********* WARNING from FD-Check: relative error ";
-          cout<<(FD_stiffc1(i,j)-stiffc1(i,j))/stiffc1(i,j)<<" > relative tolerance "<<rtol;
-          cout<<" *********"<<endl;
+          std::cout<<"FD_stiffc1_"<<i<<"_"<<j<<" = "<<FD_stiffc1(i,j)<<"  stiffc1_"<<i<<"_"<<j<<" = ";
+          std::cout<<stiffc1(i,j)<<"  ********* WARNING from FD-Check: relative error ";
+          std::cout<<(FD_stiffc1(i,j)-stiffc1(i,j))/stiffc1(i,j)<<" > relative tolerance "<<rtol;
+          std::cout<<" *********"<<std::endl;
         }
       }
       else                                        // check absolute error
       {
         if(fabs(FD_stiffc1(i,j)-stiffc1(i,j)) > atol)    // compare stiffc1 and FD_stiffc1 elementwise
         {
-          cout<<"FD_stiffc1_"<<i<<"_"<<j<<" = "<<FD_stiffc1(i,j)<<"  stiffc1_"<<i<<"_"<<j<<" = ";
-          cout<<stiffc1(i,j)<<"  ********* WARNING from FD-Check: absolute error ";
-          cout<<FD_stiffc1(i,j)-stiffc1(i,j)<<" > absolute tolerance "<<atol<<" *********"<<endl;
+          std::cout<<"FD_stiffc1_"<<i<<"_"<<j<<" = "<<FD_stiffc1(i,j)<<"  stiffc1_"<<i<<"_"<<j<<" = ";
+          std::cout<<stiffc1(i,j)<<"  ********* WARNING from FD-Check: absolute error ";
+          std::cout<<FD_stiffc1(i,j)-stiffc1(i,j)<<" > absolute tolerance "<<atol<<" *********"<<std::endl;
         }
       }
     }
@@ -3114,19 +3114,19 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       {
         if(fabs((FD_stiffc2(i,j)-stiffc2(i,j))/stiffc2(i,j)) > rtol)    // compare stiffc2 and FD_stiffc2 elementwise
         {
-          cout<<"FD_stiffc2_"<<i<<"_"<<j<<" = "<<FD_stiffc2(i,j)<<"  stiffc2_"<<i<<"_"<<j<<" = ";
-          cout<<stiffc2(i,j)<<"  ********* WARNING from FD-Check: relative error ";
-          cout<<(FD_stiffc2(i,j)-stiffc2(i,j))/stiffc2(i,j)<<" > relative tolerance "<<rtol;
-          cout<<" *********"<<endl;
+          std::cout<<"FD_stiffc2_"<<i<<"_"<<j<<" = "<<FD_stiffc2(i,j)<<"  stiffc2_"<<i<<"_"<<j<<" = ";
+          std::cout<<stiffc2(i,j)<<"  ********* WARNING from FD-Check: relative error ";
+          std::cout<<(FD_stiffc2(i,j)-stiffc2(i,j))/stiffc2(i,j)<<" > relative tolerance "<<rtol;
+          std::cout<<" *********"<<std::endl;
         }
       }
       else                                        // check absolute error
       {
         if(fabs(FD_stiffc2(i,j)-stiffc2(i,j)) > atol)    // compare stiffc2 and FD_stiffc2 elementwise
         {
-          cout<<"FD_stiffc2_"<<i<<"_"<<j<<" = "<<FD_stiffc2(i,j)<<"  stiffc2_"<<i<<"_"<<j<<" = ";
-          cout<<stiffc2(i,j)<<"  ********* WARNING from FD-Check: absolute error ";
-          cout<<FD_stiffc2(i,j)-stiffc2(i,j)<<" > absolute tolerance "<<atol<<" *********"<<endl;
+          std::cout<<"FD_stiffc2_"<<i<<"_"<<j<<" = "<<FD_stiffc2(i,j)<<"  stiffc2_"<<i<<"_"<<j<<" = ";
+          std::cout<<stiffc2(i,j)<<"  ********* WARNING from FD-Check: absolute error ";
+          std::cout<<FD_stiffc2(i,j)-stiffc2(i,j)<<" > absolute tolerance "<<atol<<" *********"<<std::endl;
         }
       }
     }

@@ -494,7 +494,7 @@ void MAT::PlasticLinElast::Evaluate(
     if (plastic_step_ == false)
     {
       if (gp == 0)
-        cout << "first plastic step: plastic strains unequal zero!" << endl;
+        std::cout << "first plastic step: plastic strains unequal zero!" << std::endl;
       plastic_step_ = true;
     }
 
@@ -586,11 +586,11 @@ void MAT::PlasticLinElast::Evaluate(
 #ifdef DEBUGMATERIAL
       if (gp == 0)
       {
-        cout << "am 1.GP: local Newton: Res " << Res << endl;
-        cout << "local Newton: ResTan " << ResTan << endl;
-        cout << "local Newton: Dgamma " << Dgamma << endl;
-        cout << "local Newton: betabarold " << betabarold << endl;
-        cout << "local Newton: betabar " << betabar << "\n"<< endl;
+        std::cout << "am 1.GP: local Newton: Res " << Res << std::endl;
+        std::cout << "local Newton: ResTan " << ResTan << std::endl;
+        std::cout << "local Newton: Dgamma " << Dgamma << std::endl;
+        std::cout << "local Newton: betabarold " << betabarold << std::endl;
+        std::cout << "local Newton: betabar " << betabar << "\n"<< std::endl;
       }
 #endif  // #ifdef DEBUGMATERIAL
 
@@ -660,8 +660,8 @@ void MAT::PlasticLinElast::Evaluate(
     backstresscurr_->at(gp) = beta;
 
 #ifdef DEBUGMATERIAL
-    cout << "end strain_p\n " << strain_p << endl;
-    cout << "end strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << endl;
+    std::cout << "end strain_p\n " << strain_p << std::endl;
+    std::cout << "end strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << std::endl;
 #endif //ifdef DEBUGMATERIAL
 
   }  // plastic corrector
@@ -730,13 +730,13 @@ void MAT::PlasticLinElast::Evaluate(
     );
 
 #ifdef DEBUGMATERIAL
-  cout << "Nach Setup Cep\n" << endl;
-  cout << " Dgamma " << Dgamma << endl;
-  cout << " G " << G << endl;
-  cout << " qbar " << qbar << endl;
-  cout << " unit flow vector" << Nbar << endl;
-  cout << " heaviside " << heaviside << endl;
-  cout << " Kinematic hardening modul " << Hkin << endl;
+  std::cout << "Nach Setup Cep\n" << std::endl;
+  std::cout << " Dgamma " << Dgamma << std::endl;
+  std::cout << " G " << G << std::endl;
+  std::cout << " qbar " << qbar << std::endl;
+  std::cout << " unit flow vector" << Nbar << std::endl;
+  std::cout << " heaviside " << heaviside << std::endl;
+  std::cout << " Kinematic hardening modul " << Hkin << std::endl;
 
   // build the elasto-plastic tangent modulus
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatFD(true);
@@ -756,13 +756,13 @@ void MAT::PlasticLinElast::Evaluate(
     heaviside  // Heaviside function
     );
 
-  cout << "cmat " << *cmat << endl;
-  cout << "cmatFD " << cmatFD << endl;
+  std::cout << "cmat " << *cmat << std::endl;
+  std::cout << "cmatFD " << cmatFD << std::endl;
 //  // error: cmat - cmatFD
 //  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatdiff;
 //  cmatdiff.Update(1.0, cmat, 0.0);
 //  cmatdiff.Update(-1.0, cmatFD, 1.0);
-//  cout << "error between two material tangents" << cmatdiff << endl;
+//  std::cout << "error between two material tangents" << cmatdiff << std::endl;
 //  printf("c_11 %+12.5e   ",cmat(0,0)-cmatFD(0,0));
 //  printf("c_12 %+12.5e   ",cmat(0,1)-cmatFD(0,1));
 //  printf("cmat_11 %12.8f\n   ",cmat(0,0));
@@ -957,15 +957,15 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   // complete material tangent C_ep available
 
 #ifdef DEBUGMATERIAL
-//  cout << "Ende SetupCmatElastPlast" << endl;
-//  cout << "Cep\n" << " Dgamma " << Dgamma << endl;
-//  cout << " G " << G << endl;
-//  cout << " q " << q << endl;
-//  cout << " flowvector " << flowvector << endl;
-//  cout << " heaviside " << heaviside << endl;
-//  cout << " epfac " << epfac << endl;
-//  cout << " epfac1 " << epfac1 << endl;
-//  cout << " cmat " << cmat << endl;
+//  std::cout << "Ende SetupCmatElastPlast" << std::endl;
+//  std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
+//  std::cout << " G " << G << std::endl;
+//  std::cout << " q " << q << std::endl;
+//  std::cout << " flowvector " << flowvector << std::endl;
+//  std::cout << " heaviside " << heaviside << std::endl;
+//  std::cout << " epfac " << epfac << std::endl;
+//  std::cout << " epfac1 " << epfac1 << std::endl;
+//  std::cout << " cmat " << cmat << std::endl;
 #endif // #ifdef DEBUGMATERIAL
 
 }  // SetupCmatElastoPlastic()
@@ -1099,17 +1099,17 @@ void MAT::PlasticLinElast::FDCheck(
   } // loop stresses
 
 #ifdef DEBUGMATERIAL
-  cout << "devdisturbstress\n " << devdisturbstress << endl;
-  cout << "disturbstress\n " << disturbstress << endl;
-  cout << "stress\n " << stress << endl;
-  cout << "  strain\n " << strain << endl;
-  cout << "  disturbstrain\n " << disturbstrain << endl;
+  std::cout << "devdisturbstress\n " << devdisturbstress << std::endl;
+  std::cout << "disturbstress\n " << disturbstress << std::endl;
+  std::cout << "stress\n " << stress << std::endl;
+  std::cout << "  strain\n " << strain << std::endl;
+  std::cout << "  disturbstrain\n " << disturbstrain << std::endl;
   for (int i=0; i<NUM_STRESS_3D; ++i)
   {
-    cout << "  Difference between strains at position " << i << " "<<  strain(i)-disturbstrain(i) << endl;
-    cout << "  Difference between stresses at position " << i << " "<< stress(i)-disturbstress(i) << endl;
+    std::cout << "  Difference between strains at position " << i << " "<<  strain(i)-disturbstrain(i) << std::endl;
+    std::cout << "  Difference between stresses at position " << i << " "<< stress(i)-disturbstress(i) << std::endl;
   }
-  cout << "end of FDCheck!!\n\n\n" << endl;
+  std::cout << "end of FDCheck!!\n\n\n" << std::endl;
 #endif
 
   return;
@@ -1120,9 +1120,9 @@ void MAT::PlasticLinElast::FDCheck(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)              dano 03/13 |
  *---------------------------------------------------------------------*/
-void MAT::PlasticLinElast::VisNames(std::map<string,int>& names)
+void MAT::PlasticLinElast::VisNames(std::map<std::string,int>& names)
 {
-  string accumulatedstrain = "accumulatedstrain";
+  std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
 }
 
@@ -1130,7 +1130,7 @@ void MAT::PlasticLinElast::VisNames(std::map<string,int>& names)
 /*---------------------------------------------------------------------*
  | return visualization data (public)                       dano 03/13 |
  *---------------------------------------------------------------------*/
-bool MAT::PlasticLinElast::VisData(const string& name, std::vector<double>& data, int numgp)
+bool MAT::PlasticLinElast::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (name == "accumulatedstrain")
   {

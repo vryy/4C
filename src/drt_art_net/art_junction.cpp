@@ -122,7 +122,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         DRT::Node * nd = discret_->lColNode(local_id);        
 
         // find whether the nodes is at the inlet or at the outlet of the element
-        std::string terminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+        std::string terminalType = *(nd->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
         if(terminalType == "inlet")
           IOart[i] = -1;
         else if (terminalType == "outlet")
@@ -473,14 +473,14 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
 
 #if 0
     // for debuging reasons
-    cout<<"A   ["<<i<<"] is: "<<A[i]<<endl;
-    cout<<"Q   ["<<i<<"] is: "<<Q[i]<<endl;
-    cout<<"W   ["<<i<<"] is: "<<W[i]<<endl;
-    cout<<"Ao  ["<<i<<"] is: "<<Ao[i]<<endl;
-    cout<<"rho ["<<i<<"] is: "<<rho[i]<<endl;
-    cout<<"beta["<<i<<"] is: "<<beta[i]<<endl;
-    cout<<"Pext["<<i<<"] is: "<<Pext[i]<<endl;
-    cout<<endl;
+    std::cout<<"A   ["<<i<<"] is: "<<A[i]<<std::endl;
+    std::cout<<"Q   ["<<i<<"] is: "<<Q[i]<<std::endl;
+    std::cout<<"W   ["<<i<<"] is: "<<W[i]<<std::endl;
+    std::cout<<"Ao  ["<<i<<"] is: "<<Ao[i]<<std::endl;
+    std::cout<<"rho ["<<i<<"] is: "<<rho[i]<<std::endl;
+    std::cout<<"beta["<<i<<"] is: "<<beta[i]<<std::endl;
+    std::cout<<"Pext["<<i<<"] is: "<<Pext[i]<<std::endl;
+    std::cout<<std::endl;
 #endif
   }
 
@@ -551,11 +551,11 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
 
   }
   delete [] pivot;
-  cout<<"Junction "<<condid_<<" is solved in "<<itr;
+  std::cout<<"Junction "<<condid_<<" is solved in "<<itr;
   if(itr == 1)
-    cout<<" iteration"<<endl;
+    std::cout<<" iteration"<<std::endl;
   else
-    cout<<" iterations"<<endl;
+    std::cout<<" iterations"<<std::endl;
 
   //----------------------------------------------------------------------
   // Update the final results
@@ -599,11 +599,11 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobi
     Jacobian(i,i              ) = 1.0;
     Jacobian(i,i+nodes_.size()) = double(IOart_flag_[i])*sqrt(beta[i]/(2.0*Ao[i]*rho[i]))/pow(A[i],0.75);
 #if 0
-    cout<<"beta["<<i<<"] : "<<beta[i]<<endl;
-    cout<<"A   ["<<i<<"] : "<<A[i]<<endl;
-    cout<<"Ao  ["<<i<<"] : "<<Ao[i]<<endl;
-    cout<<"rho ["<<i<<"] : "<<rho[i]<<endl;
-    cout<<endl;
+    std::cout<<"beta["<<i<<"] : "<<beta[i]<<std::endl;
+    std::cout<<"A   ["<<i<<"] : "<<A[i]<<std::endl;
+    std::cout<<"Ao  ["<<i<<"] : "<<Ao[i]<<std::endl;
+    std::cout<<"rho ["<<i<<"] : "<<rho[i]<<std::endl;
+    std::cout<<std::endl;
 #endif
   }
 

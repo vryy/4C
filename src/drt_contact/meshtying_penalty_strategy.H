@@ -180,7 +180,7 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   // thus they are defined empty here in the case of Penalty meshtying.
   
   void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
-  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) { std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << endl;};
+  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) { std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;};
   
   //@}
   

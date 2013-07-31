@@ -123,7 +123,7 @@ void ElementReader::Partition()
   {
     if (!reader_.MyOutputFlag())
     {
-      cout << "Entering jumbo reading mode for " << name_ << " discretization ...\n"
+      std::cout << "Entering jumbo reading mode for " << name_ << " discretization ...\n"
            << "Read, create and partition elements      in....\n";
       fflush(stdout);
     }
@@ -182,7 +182,7 @@ void ElementReader::Partition()
     coleles_ = roweles_ = colnodes_ = rownodes_ = Teuchos::rcp(new Epetra_Map(-1,0,NULL,0,*comm_));
     if (comm_->MyPID()==0 && reader_.MyOutputFlag() == 0)
     {
-      cout << time.ElapsedTime() << " secs\n";
+      std::cout << time.ElapsedTime() << " secs\n";
       fflush(stdout);
     }
     return;
@@ -446,9 +446,9 @@ void ElementReader::Complete()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Complete discretization ";
+    std::cout << "Complete discretization ";
     printf("%-16s",name_.c_str());
-    cout << " in...." << flush;
+    std::cout << " in...." << std::flush;
   }
 
   int err = dis_->FillComplete(false,false,false);
@@ -457,7 +457,7 @@ void ElementReader::Complete()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << time.ElapsedTime() << " secs" << endl;
+    std::cout << time.ElapsedTime() << " secs" << std::endl;
   }
 
   DRT::UTILS::PrintParallelDistribution(*dis_);
@@ -492,7 +492,7 @@ void ParticleReader::Partition()
   {
     if (!reader_.MyOutputFlag())
     {
-      cout << "Preliminary node maps are created for " << name_ << " discretization ...\n";
+      std::cout << "Preliminary node maps are created for " << name_ << " discretization ...\n";
       fflush(stdout);
     }
 

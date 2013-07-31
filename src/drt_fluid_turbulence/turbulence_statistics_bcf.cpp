@@ -38,17 +38,17 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   // get the plane normal direction from the parameterlist
   {
-    std::string planestring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
+    std::string plainstring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
 
-    if(planestring == "xz")
+    if(plainstring == "xz")
     {
       dim_ = 1;
     }
-    else if(planestring == "yz")
+    else if(plainstring == "yz")
     {
       dim_ = 0;
     }
-    else if(planestring == "xy")
+    else if(plainstring == "xy")
     {
       dim_ = 2;
     }
@@ -748,8 +748,8 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
            size_t ntimesmaster = 0;
            for (size_t numcond=0;numcond<mypbc.size();++numcond)
            {
-             const string* mymasterslavetoggle
-               = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
+             const std::string* mymasterslavetoggle
+               = mypbc[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
              if(*mymasterslavetoggle=="Master")
              {
@@ -1027,13 +1027,13 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
 
       (*log) << "# Material ID  	 : ";
       (*log) << "   " << std::setw(11) << std::setprecision(1) << matid;
-      (*log) << &endl;
+      (*log) << &std::endl;
 
       (*log) << "# (u_tau)^2 = tau_W/rho : ";
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/area;
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/area;
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/area;
-      (*log) << &endl;
+      (*log) << &std::endl;
 
 
       (*log) << "#|-------------------------------------|";
@@ -1163,13 +1163,13 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
 
       (*log) << "# Material ID  	 : ";
       (*log) << "   " << std::setw(11) << std::setprecision(1) << matid;
-      (*log) << &endl;
+      (*log) << &std::endl;
 
       (*log) << "# (u_tau)^2 = tau_W/rho : ";
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_);
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_);
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_);
-      (*log) << &endl;
+      (*log) << &std::endl;
 
       (*log) << "#     y	    y+   volfraction";
       (*log) << "	    umean	  vmean 	wmean	      pmean";
