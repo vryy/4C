@@ -14,6 +14,13 @@ Maintainer: Tobias Wiesner
 #include <EpetraExt_OperatorOut.h>
 #include <Ifpack.h>
 #include <ml_MultiLevelPreconditioner.h>
+#ifdef HAVE_MueLu
+#include <MueLu.hpp>
+#include <MueLu_MLParameterListInterpreter_decl.hpp>
+#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseShortNames.hpp>
+#include <MueLu_EpetraOperator.hpp> // Aztec interface
+#endif
 
 // BACI headers
 #include "../linalg/linalg_ana.H"
@@ -78,11 +85,13 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   Epetra_Time totaltime(A->Comm());
   const bool visml = predictSolver_list_.isSublist("ML Parameters");
   const bool pisml = schurSolver_list_.isSublist("ML Parameters");
+  const bool vismuelu = predictSolver_list_.isSublist("MueLu Parameters");
+  const bool pismuelu = schurSolver_list_.isSublist("MueLu Parameters");
   const bool visifpack = predictSolver_list_.isSublist("IFPACK Parameters");
   const bool pisifpack = schurSolver_list_.isSublist("IFPACK Parameters");
 
-  if (!visml && !visifpack) dserror("Have to use either ML or Ifpack for velocities");
-  if (!pisml && !pisifpack) dserror("Have to use either ML or Ifpack for pressure");
+  if (!visml && !visifpack && !vismuelu) dserror("Have to use either ML or Ifpack for velocities");
+  if (!pisml && !pisifpack && !pismuelu) dserror("Have to use either ML or Ifpack for pressure");
 
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
@@ -178,6 +187,27 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
       predictSolver_list_.sublist("ML Parameters").remove("init smoother",false);
       Ppredict_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*A00,predictSolver_list_.sublist("ML Parameters"),true));
     }
+    else if(vismuelu) {
+#ifdef HAVE_MueLu
+      // create a copy of the scaled matrix
+      // so we can reuse the preconditioner
+      Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A00));
+
+      // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
+      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
+      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+
+      MLParameterListInterpreter mueLuFactory(predictSolver_list_.sublist("MueLu Parameters"));
+      Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+      H->GetLevel(0)->Set("A", mueluOp);
+      mueLuFactory.SetupHierarchy(*H);
+
+      // set preconditioner
+      Ppredict_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+#else
+      dserror("BACI has been compiled without MueLu support.")
+#endif
+    }
     else
     {
       std::string type = predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
@@ -195,6 +225,27 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     {
       schurSolver_list_.sublist("ML Parameters").remove("init smoother",false);
       Pschur_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*A11,schurSolver_list_.sublist("ML Parameters"),true));
+    }
+    else if(pismuelu) {
+#ifdef HAVE_MueLu
+      // create a copy of the scaled matrix
+      // so we can reuse the preconditioner
+      Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A11));
+
+      // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
+      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
+      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+
+      MLParameterListInterpreter mueLuFactory(predictSolver_list_.sublist("MueLu Parameters"));
+      Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+      H->GetLevel(0)->Set("A", mueluOp);
+      mueLuFactory.SetupHierarchy(*H);
+
+      // set preconditioner
+      Pschur_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+#else
+      dserror("BACI has been compiled without MueLu support.")
+#endif
     }
     else
     {
