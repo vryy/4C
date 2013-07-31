@@ -104,7 +104,20 @@ namespace MueLu {
     RCP<Matrix> Aout = MatrixFactory::Build(Ain->getRowMap(), Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile);
 
     // loop over local rows
-    for(size_t row=0; row<Ain->getNodeNumRows(); row++) {
+    Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMapData->getData(0);
+    size_t numLocalRows = Ain->getNodeNumRows();
+    bool ba = false;
+    bool bb = false;
+    bool bc = false;
+    bool bd = false;
+    bool be = false;
+    bool bf = false;
+    bool bg = false;
+    bool bh = false;
+    bool bi = false;
+    bool bj = false;
+    GetOStream(Statistics0, 0) << "Filtering: ";
+    for(size_t row=0; row<numLocalRows; row++) {
         // get global row id
         GlobalOrdinal grid = Ain->getRowMap()->getGlobalElement(row); // global row id
 
@@ -128,10 +141,11 @@ namespace MueLu {
         Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
         size_t nNonzeros = 0;
 
+        LocalOrdinal colBlockId = -1;
         for(size_t i=0; i<(size_t)indices.size(); i++) {
-            Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMapData->getData(0);
+            //Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMapData->getData(0);
 
-            LocalOrdinal colBlockId = Teuchos::as<LocalOrdinal>(colBlockData[indices[i]]); // LID -> colBlockID
+            colBlockId = Teuchos::as<LocalOrdinal>(colBlockData[indices[i]]); // LID -> colBlockID
 
             // colBlockId can be
             //  -1: indices[i] is neither in DofMap1 nor in DofMap2
@@ -157,8 +171,24 @@ namespace MueLu {
 
         Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,indout.size()), valout.view(0,valout.size()));
 
+        // this is somewhat expensive, but do communication for debug output
+        double pPerCent = Teuchos::as<Scalar>(row) / Teuchos::as<Scalar>(numLocalRows);
+
+        if(pPerCent > 0.9 && ba==false) { GetOStream(Statistics0, 0) << "+"; ba = true; }
+        if(pPerCent > 0.8 && bb==false) { GetOStream(Statistics0, 0) << "+";  bb = true; }
+        if(pPerCent > 0.7 && bc==false) { GetOStream(Statistics0, 0) << "+";  bc = true; }
+        if(pPerCent > 0.6 && bd==false) { GetOStream(Statistics0, 0) << "+";  bd = true; }
+        if(pPerCent > 0.5 && be==false) { GetOStream(Statistics0, 0) << "+";  be = true; }
+        if(pPerCent > 0.4 && bf==false) { GetOStream(Statistics0, 0) << "+";  bf = true; }
+        if(pPerCent > 0.3 && bg==false) { GetOStream(Statistics0, 0) << "+";  bg = true; }
+        if(pPerCent > 0.2 && bh==false) { GetOStream(Statistics0, 0) << "+";  bh = true; }
+        if(pPerCent > 0.1 && bi==false) { GetOStream(Statistics0, 0) << "+";  bi = true; }
+        if(pPerCent > 0.0 && bj==false) { GetOStream(Statistics0, 0) << "+";  bj = true; }
+
+        GetOStream(Statistics0, 0).getOStream()->flush();
     }
 
+    GetOStream(Statistics0, 0) << " complete ..." << std::endl;
     Aout->fillComplete(Ain->getDomainMap(), Ain->getRangeMap());
 
     // copy block size information
