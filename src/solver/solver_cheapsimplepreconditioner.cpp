@@ -205,7 +205,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
       // set preconditioner
       Ppredict_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 #else
-      dserror("BACI has been compiled without MueLu support.")
+      dserror("BACI has been compiled without MueLu support.");
 #endif
     }
     else
@@ -244,7 +244,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
       // set preconditioner
       Pschur_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 #else
-      dserror("BACI has been compiled without MueLu support.")
+      dserror("BACI has been compiled without MueLu support.");
 #endif
     }
     else
