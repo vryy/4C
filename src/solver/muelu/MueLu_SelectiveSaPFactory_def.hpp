@@ -156,7 +156,12 @@ namespace MueLu {
         // sum up all entries in multipleColRequests over all processors
         sumAll(A->getRowMap()->getComm(), (LocalOrdinal)bSkipDamping, globalbSkipDamping);
 #endif
+
+#ifdef HAVE_Trilinos_Q3_2013
         Utils::MyOldScaleMatrix(*AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
+#else
+        Utils::MyOldScaleMatrix(AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
+#endif
         //Utils::Write("DinvAP.mat", *AP);
       }
 
@@ -198,7 +203,11 @@ namespace MueLu {
 
           bool doTranspose=false;
           bool PtentHasFixedNnzPerRow=true;
+#ifdef HAVE_Trilinos_Q3_2013
           Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
+#else
+          Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
+#endif
 
         }
 
@@ -227,7 +236,11 @@ namespace MueLu {
     else
       {
         // prolongation factory is in restriction mode
+#ifdef HAVE_Trilinos_Q3_2013
         RCP<Matrix> R = Utils2::Transpose(*finalP, true); // use Utils2 -> specialization for double
+#else
+        RCP<Matrix> R = Utils2::Transpose(finalP, true); // use Utils2 -> specialization for double
+#endif
         //RCP<Matrix> R = MyTranspose(finalP, true);
         Set(coarseLevel, "R", R);
 
