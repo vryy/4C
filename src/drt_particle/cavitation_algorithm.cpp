@@ -610,8 +610,14 @@ void CAVITATION::Algorithm::ParticleInflow()
     {
       std::vector<double> inflow_position = (*particleiter)->inflow_position_;
       std::vector<double> inflow_vel = (*particleiter)->inflow_vel_;
+      int inflow_vel_curve = (*particleiter)->inflow_vel_curve_;
       double inflow_radius = (*particleiter)->inflow_radius_;
       int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
+
+      double curvefac = 1.0;
+      // curves are numbered starting with 1 in the input file
+      if(inflow_vel_curve > 0)
+        curvefac = DRT::Problem::Instance()->Curve(inflow_vel_curve-1).f(Time());
 
       DRT::Node* currparticle = particledis_->gNode(newbubbleid);
       // get the first gid of a particle and convert it into a LID
@@ -619,7 +625,7 @@ void CAVITATION::Algorithm::ParticleInflow()
       for(int dim=0; dim<3; dim++)
       {
         (*disn)[lid+dim] = inflow_position[dim];
-        (*veln)[lid+dim] = inflow_vel[dim];
+        (*veln)[lid+dim] = inflow_vel[dim] * curvefac;
       }
       lid = noderowmap->LID(newbubbleid);
       (*radiusn)[lid] = inflow_radius;
@@ -1058,19 +1064,19 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     /*
      * inflow condition --> bubble sources
      *
-     *  example: bin_per_dir = {3, 3, 1}
+     *  example: num_per_dir = {4, 5, 1}
      *
-     *       <-> (dist_x = (vertex2_x-vertex1_x)/(num_per_dir_x+1))
+     *       <-> (dist_x = (vertex2_x-vertex1_x)/(num_per_dir_x-1))
      *
-     *   |-----------|<-------- vertex2
-     *   |           |
-     *   |  x  x  x  |
-     *   |           |
-     *   |  x  x  x  |   ^
-     *   |           |   | (dist_y = (vertex2_y-vertex1_y)/(num_per_dir_y+1) )
-     *   |  x  x  x  |   ^
-     *   |           |
-     *   |-----------|
+     *   x  x  x  x<-------- vertex2
+     *
+     *   x  x  x  x
+     *
+     *   x  x  x  x   ^
+     *                | (dist_y = (vertex2_y-vertex1_y)/(num_per_dir_y-1) )
+     *   x  x  x  x   ^
+     *
+     *   x  x  x  x
      *   ^
      *   |
      * vertex1
@@ -1082,6 +1088,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     const std::vector<double>* vertex2 = conds[i]->Get<std::vector<double> >("vertex2");
     const std::vector<int>* num_per_dir = conds[i]->Get<std::vector<int> >("num_per_dir");
     const std::vector<double>* inflow_vel = conds[i]->Get<std::vector<double> >("inflow_vel");
+    int inflow_vel_curve = conds[i]->GetInt("inflow_vel_curve");
     double inflow_freq = conds[i]->GetDouble("inflow_freq");
 
     // make sure that a particle material is defined in the dat-file
@@ -1104,24 +1111,30 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     // loop over all bubble inflow positions and fill them into bin when they are on this proc;
     // up to here, only row bins are available
     std::vector<double> source_pos(3);
-    for(int z=1; z<=(*num_per_dir)[2]; z++)
+    for(int z=0; z<(*num_per_dir)[2]; ++z)
     {
-      double dist_z = ((*vertex2)[2] - (*vertex1)[2]) / ((*num_per_dir)[2]+1);
+      double dist_z = ((*vertex2)[2] - (*vertex1)[2]) / ((((*num_per_dir)[2]-1)!=0) ? ((*num_per_dir)[2]-1) : 1);
       source_pos[2] = (*vertex1)[2] + z * dist_z;
-      for(int y=1; y<=(*num_per_dir)[1]; y++)
+      for(int y=0; y<(*num_per_dir)[1]; ++y)
       {
-        double dist_y = ((*vertex2)[1] - (*vertex1)[1]) / ((*num_per_dir)[1]+1);
+        double dist_y = ((*vertex2)[1] - (*vertex1)[1]) / ((((*num_per_dir)[1]-1)!=0) ? ((*num_per_dir)[1]-1) : 1);
         source_pos[1] = (*vertex1)[1] + y * dist_y;
-        for(int x=1; x<=(*num_per_dir)[0]; x++)
+        for(int x=0; x<(*num_per_dir)[0]; ++x)
         {
-          double dist_x = ((*vertex2)[0] - (*vertex1)[0]) / ((*num_per_dir)[0]+1);
+          double dist_x = ((*vertex2)[0] - (*vertex1)[0]) / ((((*num_per_dir)[0]-1)!=0) ? ((*num_per_dir)[0]-1) : 1);
           source_pos[0] = (*vertex1)[0] + x * dist_x;
           // check whether this source position is on this proc
           int binId = ConvertPosToGid(source_pos);
           bool found = particledis_->HaveGlobalElement(binId);
           if(found == true)
           {
-            Teuchos::RCP<BubbleSource> bubbleinflow = Teuchos::rcp(new BubbleSource(bubbleinflowid, source_pos, *inflow_vel, initial_radius, inflow_freq));
+            Teuchos::RCP<BubbleSource> bubbleinflow = Teuchos::rcp(new BubbleSource(
+                                                                          bubbleinflowid,
+                                                                          source_pos,
+                                                                          *inflow_vel,
+                                                                          inflow_vel_curve,
+                                                                          initial_radius,
+                                                                          inflow_freq));
             bubble_source_[binId].push_back(bubbleinflow);
 #ifdef DEBUG
             if(particledis_->gElement(binId)->Owner() != myrank_)
@@ -1145,12 +1158,14 @@ CAVITATION::BubbleSource::BubbleSource(
   int bubbleinflowid,
   std::vector<double> inflow_position,
   std::vector<double> inflow_vel,
+  int inflow_vel_curve,
   double inflow_radius,
   double inflow_freq
   ) :
   inflowid_(bubbleinflowid),
   inflow_position_(inflow_position),
   inflow_vel_(inflow_vel),
+  inflow_vel_curve_(inflow_vel_curve),
   inflow_radius_(inflow_radius),
   inflow_freq_(inflow_freq)
 {

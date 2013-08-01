@@ -3489,6 +3489,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // particle inflow velocity
   particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_vel")));
   particleinflowcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("inflow_vel",3)));
+  // particle inflow velocity can be superposed with a time curve
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_vel_curve")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new IntConditionComponent("inflow_vel_curve")));
   // inflow frequency of particles
   particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_freq")));
   particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("inflow_freq")));
