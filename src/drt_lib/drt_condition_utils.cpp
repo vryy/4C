@@ -190,7 +190,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 {
   FindConditionedNodes(dis, conds, nodes);
 
-  for (unsigned i = 0; i < conds.size(); ++i)
+  for (size_t i = 0; i < conds.size(); ++i)
   {
     // get this condition's elements
     std::map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
