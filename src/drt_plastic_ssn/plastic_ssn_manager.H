@@ -49,6 +49,7 @@ public:
 private:
 
   Teuchos::RCP<DRT::Discretization> discret_; // current discretization
+  int numactive_local_; // number of active plastic Gauss points on this proc
   int numactive_global_;// number of active plastic Gauss points on all procs
   bool unconvergedactiveset_; // true, if the active set has not changed in the last step
 };// class SsnPlastManager

@@ -19,6 +19,7 @@ Maintainer: Alexander Seitz
  *-------------------------------------------------------------------*/
 UTILS::PlastSsnManager::PlastSsnManager(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
+numactive_local_(0),
 numactive_global_(0),
 unconvergedactiveset_(false){}
 
@@ -37,9 +38,9 @@ void UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& params)
 void UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
 {
   unconvergedactiveset_=params.get<bool>("unconverged_active_set");
-  int numactive_local=params.get<int>("number_active_plastic_gp");
+  numactive_local_=params.get<int>("number_active_plastic_gp");
 
-  discret_->Comm().SumAll(&numactive_local,&numactive_global_,1);
+  discret_->Comm().SumAll(&numactive_local_,&numactive_global_,1);
 }
 
 /*-------------------------------------------------------------------*

@@ -1478,6 +1478,9 @@ void STR::TimInt::DetermineStressStrain()
     p.set("plstrain", plstraindata_);
     p.set<int>("ioplstrain", writeplstrain_);
 
+    // set plasticity data
+    if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+
     // set vector values needed by elements
     discret_->ClearState();
     // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -1493,6 +1496,9 @@ void STR::TimInt::DetermineStressStrain()
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
     discret_->ClearState();
+
+    // set plasticity data
+    if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
   }
 }
 

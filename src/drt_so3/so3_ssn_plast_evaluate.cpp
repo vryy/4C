@@ -874,10 +874,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
         if (activity_state_->at(gp)==true) // gp switches state
           converged_active_set = false;
         activity_state_->at(gp) = false;
-
-        // communicate number of active plastic gauss points back to time integration
-        // don't sum up for ghost elements
-        if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
       }
 
       // integrate usual internal force and stiffness matrix
@@ -1062,6 +1058,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 
           if (activity_state_->at(gp)==true)
           {
+            // communicate number of active plastic gauss points back to time integration
+            // don't sum up for ghost elements
+            if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
             // **************************************************************
             // stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
             // linearization of the complementarity function
@@ -1728,10 +1727,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
         if (activity_state_->at(gp)==true) // gp switches state
           converged_active_set = false;
         activity_state_->at(gp) = false;
-
-        // communicate number of active plastic gauss points back to time integration
-        // don't sum up for ghost elements
-        if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
       }
 
       // integrate usual internal force and stiffness matrix
@@ -1935,6 +1930,10 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
 
           if (activity_state_->at(gp)==true)
           {
+            // communicate number of active plastic gauss points back to time integration
+            // don't sum up for ghost elements
+            if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
+
             // **************************************************************
             // stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
             // linearization of the complementarity function
