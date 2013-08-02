@@ -95,7 +95,7 @@ namespace ELASTIC
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = C(I_{\boldsymbol{C}}-3)+\frac c {\beta} (J^{-2\beta}-1)
+  ///   \Psi = c(I_{\boldsymbol{C}}-3)+\frac c {\beta} (J^{-2\beta}-1)
   ///\f]
   ///
   /// with
