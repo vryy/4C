@@ -3129,6 +3129,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Franca_Barrenechea_Valentin_Wall",
                                     "Burman_Fernandez",
                                     "Burman",
+                                    "Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling",
                                     "tau_not_defined"
                                     ),
                                     tuple<std::string>(
@@ -3138,6 +3139,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "definition of tau_franca_barrenechea_valentin_wall",
                                       "definition of EOS_tau_burman_fernandez",
                                       "definition of EOS_tau_burman",
+                                      "definition of EOS_tau related to residual-based stabilization",
                                       "no chosen definition"
                                       ),
                                     tuple<int>(
@@ -3147,6 +3149,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall,
                                       INPAR::FLUID::EOS_tau_burman_fernandez,
                                       INPAR::FLUID::EOS_tau_burman,
+                                      INPAR::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling,
                                       INPAR::FLUID::EOS_tau_not_defined) ,
                                     &fdyn_edge_based_stab);
 

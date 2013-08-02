@@ -170,6 +170,7 @@ namespace INPAR
       EOS_tau_braack_burman_john_lube_wo_divjump,
       EOS_tau_franca_barrenechea_valentin_wall,
       EOS_tau_burman_fernandez,
+      EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling,
       EOS_tau_not_defined
     };
 

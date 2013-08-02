@@ -641,6 +641,7 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
     }
     break;
     case INPAR::FLUID::EOS_tau_braack_burman_john_lube:
+    case INPAR::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling:
     {
       dserror("Braack_Burman_2007 tau-def not implemented yet");
     }

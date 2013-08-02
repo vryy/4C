@@ -1020,6 +1020,7 @@ namespace DRT
           double&       tau_p,
           double&       kinvisc,
           double&       density,
+          double&       normal_vel_lin_space,
           double&       max_pevelnp,
           const double&       timefac,
           const double&       gamma_ghost_penalty);

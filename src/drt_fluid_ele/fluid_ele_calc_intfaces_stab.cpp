@@ -905,7 +905,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     double timefacfac_pre = fac*timefacpre;
     double timefacfac_rhs = fac*timefacrhs;
 
-    EdgeBasedStabilization.ComputeStabilizationParams(fldpara.EOS_WhichTau(), tau_grad, tau_u, tau_div, tau_p, kinvisc, dens, max_vel_L2_norm, timefac, GP_visc_fac);
+    // get normal velocity
+    double normal_vel_lin_space = fabs(velintaf_.Dot(n_));
+
+    EdgeBasedStabilization.ComputeStabilizationParams(fldpara.EOS_WhichTau(),
+                                                      tau_grad, tau_u, tau_div, tau_p,
+                                                      kinvisc, dens,
+                                                      normal_vel_lin_space, max_vel_L2_norm,
+                                                      timefac, GP_visc_fac);
 
     // EOS stabilization term for pressure
     if(EOS_pres)
@@ -933,8 +940,6 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     if(EOS_vel)
     {
       // assemble combined divergence and streamline(EOS) stabilization terms for fluid
-      double normal_vel_lin_space = fabs(velintaf_.Dot(n_));
-
       double tau_vel = 0.0;
 
       if( ghost_penalty_reconstruct )
@@ -943,7 +948,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       }
       else
       {
-        if(EOS_conv_stream) tau_vel += tau_u*normal_vel_lin_space;
+        if(EOS_conv_stream) tau_vel += tau_u;
         if(EOS_conv_cross)  tau_vel += tau_u * 1.0; // that's still wrong
         if(EOS_div_vel_jump)
         {
@@ -952,6 +957,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         }
         if(GP_visc)         tau_vel += tau_grad;
 
+        // just to be sure
         if (fldpara.EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
          tau_vel = tau_u;
       }
@@ -2639,6 +2645,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   double&       tau_p,
   double&       kinvisc, // kinematic viscosity (nu = mu/rho ~ m^2/2)
   double&       density,
+  double&       normal_vel_lin_space,
   double&       max_vel_L2_norm,
   const double&       timefac,
   const double&       gamma_ghost_penalty)
@@ -2664,7 +2671,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //
     // velocity:
     //
-    //             gamma_u * xi * h_K^2
+    //             gamma_u * xi * h_K^2 * || u * n ||_0,inf_,K
     //
     //
     // divergence:
@@ -2685,24 +2692,29 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 //    gamma_u = 2.0 / 100.0;
 //    gamma_div = 0.05 * gamma_u;
 
-    gamma_p = 1.0 / 8.0;
-    gamma_u = 1.0 / 8.0;
-    gamma_div = 1.0 / 8.0;
+    gamma_p = 2.0 / 8.0;
+    gamma_u = 2.0 / 8.0;
+    gamma_div = 2.0 / 8.0;
 
     // element Reynold's number Re_K
     double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
     double xi = std::min(1.0,Re_K);
+    double xip = std::max(1.0,Re_K);
 
     //-----------------------------------------------
     // streamline
-    tau_u = density * gamma_u * xi * p_hk_*p_hk_;
+    tau_u = density * gamma_u * xi * p_hk_*p_hk_ * normal_vel_lin_space;
 
     //-----------------------------------------------
     // pressure
-    if (max_vel_L2_norm > 1.0e-9)
-      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
-    else
-      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    //    if (max_vel_L2_norm > 1.0e-9)
+    //      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    //    else
+    //      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    // this does the same, but avoids division by velocity
+    // note: this expression is closely related to the definition of
+    //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
+    tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ (kinvisc * density * xip);
 
     //-----------------------------------------------
     // divergence
@@ -2769,9 +2781,9 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     // "Finite element methods with symmetric stabilization for the transient convection-diffusion-reaction equation"
     //
     // velocity:
-    //                      1                                         1.0
-    //             gamma_u --- *  h_E^2 * rho        with gamma_u = -------
-    //                      2                                        100.0
+    //                      1                                                               1.0
+    //             gamma_u --- *  h_E^2 * rho * || u * n ||_0,inf_,K        with gamma_u = -------
+    //                      2                                                              100.0
     //
     //--------------------------------------------------------------------------------------------------------------------------
     //
@@ -2779,9 +2791,9 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     // "Interior penalty variational multiscale method for the incompressible Navier-Stokes equation: Monitoring artificial dissipation"
     //
     // velocity:
-    //                                                                  1.0
-    //             gamma_u *  h_E^2 * rho            with gamma_u   = -------
-    //                                                                 100.0
+    //                                                                                         1.0
+    //             gamma_u *  h_E^2 * rho * || u * n ||_0,inf_,K            with gamma_u   = -------
+    //                                                                                        100.0
     // divergence:
     //
     //           gamma_div *  h_E^2 * rho            with gamma_div = 0.05*gamma_u
@@ -2832,11 +2844,11 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
     //-----------------------------------------------
     // streamline
-    tau_u = density * gamma_u * p_hk_*p_hk_;
+    tau_u = density * gamma_u * p_hk_*p_hk_ * normal_vel_lin_space;
 
     //-----------------------------------------------
     // divergence
-    tau_div= 0.05*tau_u;
+    tau_div= 0.05*density * gamma_u * p_hk_*p_hk_;
 
     // nu-weighting
     if(nu_weighting) // viscous -> non-viscous case
@@ -2863,9 +2875,9 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     // "Interior penalty variational multiscale method for the incompressible Navier-Stokes equation: Monitoring artificial dissipation"
     //
     // velocity:
-    //                                                                  1.0
-    //             gamma_u *  h_E^2 * rho            with gamma_u   = -------
-    //                                                                 100.0
+    //                                                                                         1.0
+    //             gamma_u *  h_E^2 * rho * || u * n ||_0,inf_,K            with gamma_u   = -------
+    //                                                                                        100.0
     // divergence:
     //
     //           gamma_div *  h_E^2 * rho            with gamma_div = 0.05*gamma_u
@@ -2883,7 +2895,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
     //-----------------------------------------------
     // streamline
-    tau_u = density * gamma_u * p_hk_*p_hk_;
+    tau_u = density * gamma_u * p_hk_*p_hk_ * normal_vel_lin_space;
 
     //-----------------------------------------------
     // pressure
@@ -2902,7 +2914,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //
     // velocity:
     //
-    //             gamma_u * h_K^2
+    //             gamma_u * h_K^2 * || u * n ||_0,inf_,K
     //
     //
     // divergence:
@@ -2929,18 +2941,23 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
     // element Reynold's number Re_K
     double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
-    double xi = std::min(1.0,Re_K);
+    // double xi = std::min(1.0,Re_K);
+    double xip = std::max(1.0,Re_K);
 
     //-----------------------------------------------
     // streamline
-    tau_u = density * gamma_u * p_hk_*p_hk_;
+    tau_u = density * gamma_u * p_hk_*p_hk_ * normal_vel_lin_space;
 
     //-----------------------------------------------
     // pressure
-    if (max_vel_L2_norm > 1.0e-9)
-      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
-    else
-      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    // if (max_vel_L2_norm > 1.0e-9)
+    //   tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    // else
+    //   tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    // this does the same, but avoids division by velocity
+    // note: this expression is closely related to the definition of
+    //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
+    tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ (kinvisc * density * xip);
 
     //-----------------------------------------------
     // divergence
@@ -2957,21 +2974,56 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
     // element Reynold's number Re_K
     double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
-    double xi = std::min(1.0,Re_K);
+    // double xi = std::min(1.0,Re_K);
+    double xip = std::max(1.0,Re_K);
 
     //-----------------------------------------------
     // streamline and divergence
-    tau_u = density * Re_K * p_hk_ * kinvisc;
+    tau_u = gamma_u * density * Re_K * p_hk_ * kinvisc;
     //-----------------------------------------------
     // divergence
     tau_div = 0.0;
 
     //-----------------------------------------------
     // pressure
-    if (max_vel_L2_norm > 1.0e-9)
-      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
-    else
-      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    // if (max_vel_L2_norm > 1.0e-9)
+    //   tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    // else
+    //   tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    // this does the same, but avoids division by velocity
+    // note: this expression is closely related to the definition of
+    //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
+    tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ (kinvisc * density * xip);
+  }
+  break;
+  case INPAR::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling:
+  {
+    gamma_p = 2.0 / 100.0;
+    gamma_u = 2.0 / 100.0;
+    gamma_div = 0.05 * gamma_u;
+
+    //-----------------------------------------------
+    // pressure
+    // Taylor_Hughes_Zarins style
+    tau_p = gamma_p * p_hk_ / sqrt(max_vel_L2_norm*max_vel_L2_norm/(p_hk_*p_hk_) + kinvisc*kinvisc/(p_hk_*p_hk_*p_hk_*p_hk_)) / density;
+    // Codina style
+    //tau_p = gamma_p * p_hk_ / (max_vel_L2_norm/p_hk_ + kinvisc/(p_hk_*p_hk_)) / density;
+
+    //-----------------------------------------------
+    // divergence
+    // Taylor_Hughes_Zarins style
+    //tau_div= density * gamma_div * max_vel_L2_norm * p_hk_*p_hk_;
+    // Taylor_Hughes_Zarins_Whiting_Jansen
+    tau_div= density * gamma_div * p_hk_*p_hk_*p_hk_ * sqrt(max_vel_L2_norm*max_vel_L2_norm/(p_hk_*p_hk_) + kinvisc*kinvisc/(p_hk_*p_hk_*p_hk_*p_hk_));
+    // Codina style
+    //tau_div= density * gamma_div * p_hk_*p_hk_*p_hk_ * (max_vel_L2_norm/p_hk_ + kinvisc/(p_hk_*p_hk_));
+
+    //-----------------------------------------------
+    // streamline
+    // face-oriented style
+    //tau_u = density * gamma_u * p_hk_*p_hk_ * normal_vel_lin_space;
+    // residual-based style
+    tau_u = tau_div;
   }
   break;
   case INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall:
@@ -3001,7 +3053,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
     gamma_u = 1.0/40.0; //gamma_p;
   //  tau_u   = gamma_u * p_hk_*p_hk_*p_hk_*mk/(4.0*density*kinvisc*xi);
-    tau_u   = gamma_u * p_hk_*p_hk_/(2.0*density);
+    tau_u   = gamma_u * p_hk_*p_hk_/(2.0*density) * normal_vel_lin_space;
 
 
     gamma_div = gamma_p*1.0/10.0;//1.0/10.0;
