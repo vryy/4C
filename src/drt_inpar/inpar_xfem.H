@@ -63,12 +63,13 @@ namespace INPAR
       interface_disp_by_implementation
     };
 
-    /// which sided-mortaring is used to enforce the boundary condition
+    /// enforce weak DBC or coupling conditions with average w.r.t which side?
     enum CouplingStrategy
     {
-      Xfluid_Sided_Mortaring,
-      Embedded_Sided_Mortaring,
-      Two_Sided_Mortaring
+      Xfluid_Sided_weak_DBC,     /// weak Dirichlet boundary conditions w.r.t fixed background mesh using XFEM
+      Xfluid_Sided_Coupling,     /// monolithic coupling between fluid and (fluid/structure), average w.r.t xfluid side
+      Embedded_Sided_Coupling,   /// monolithic coupling between fluid and (fluid/structure), average w.r.t embedded fluid/structure side
+      Two_Sided_Coupling         /// monolithic coupling between fluid and (fluid/structure), mean average between fluid and fluid/structure
     };
 
     /// L2 stress projection on whole fluid element or on partial fluid element

@@ -2894,8 +2894,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               conv_stab_scaling
           );
 
-
-
         }
         if(!fluidfluidcoupling)
         {
@@ -2995,7 +2993,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   bool compute_meas_vol  = false;
 
   INPAR::XFEM::CouplingStrategy coupling_strategy = params.get<INPAR::XFEM::CouplingStrategy>("coupling_strategy");
-  if(coupling_strategy == INPAR::XFEM::Two_Sided_Mortaring) compute_meas_surf = true;
+  if(coupling_strategy == INPAR::XFEM::Two_Sided_Coupling) compute_meas_surf = true;
 
   double nitsche_stab      = params.get<double>("visc_stab_fac");
   double nitsche_stab_conv = params.get<double>("conv_stab_fac");
@@ -3022,7 +3020,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   double meas_surf = 0.0;
 
   // for two-sided mortaring the stabilization parameter depends on interface/volume fraction
-  if(coupling_strategy == INPAR::XFEM::Two_Sided_Mortaring)
+  if(coupling_strategy == INPAR::XFEM::Two_Sided_Coupling)
   {
     if(compute_meas_vol)
     {
@@ -3104,7 +3102,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   // scaling factors for stabilization terms
   double visceff_max = my::visceff_;
 
-  if(coupling_strategy != INPAR::XFEM::Embedded_Sided_Mortaring)
+  if(coupling_strategy != INPAR::XFEM::Embedded_Sided_Coupling)
   {
     if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
     {
@@ -3126,11 +3124,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
   double kappa1;
 
-  if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Mortaring)
+  if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
   {
     kappa1 = 0.0;
   }
-  else if(coupling_strategy == INPAR::XFEM::Two_Sided_Mortaring)
+  else if(coupling_strategy == INPAR::XFEM::Two_Sided_Coupling)
   {
     //if(meas_partial_volume < 1e-008) dserror(" measure of cut partial volume is smaller than 1d-008: %d Attention with increasing Nitsche-Parameter!!!", meas_partial_volume);
 
@@ -3238,8 +3236,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     si->addeidisp(cutdis,"idispnp",cutla[0].lm_);
 
 
-    // set the embedded element length dependent on side in case of Emb Embedded_Sided_Mortaring
-    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Mortaring)
+    // set the embedded element length dependent on side in case of Emb Embedded_Sided_Coupling
+    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
     {
       emb->element_length(h_k);
 
@@ -3402,7 +3400,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
         {
           bool bg_mortaring = false; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
 
-          if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Mortaring) bg_mortaring = true;
+          if(coupling_strategy == INPAR::XFEM::Xfluid_Sided_Coupling) bg_mortaring = true;
 
           //zero velocity jump for fluidfluidcoupling
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);

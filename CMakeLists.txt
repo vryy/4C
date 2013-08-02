@@ -820,7 +820,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
   src/drt_fsi/fsi_dyn.cpp
   src/drt_fsi/fsi_fluid_ale.cpp
-  src/drt_fsi/fsi_fluid_xfem.cpp
   src/drt_fsi/fsi_lagrangeprec.cpp
   src/drt_fsi/fsi_lungmonolithic.cpp
   src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
@@ -856,6 +855,11 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_statustest.cpp
   src/drt_fsi/fsi_structureale.cpp
   src/drt_fsi/fsi_utils.cpp
+)
+set(OBJS_DRT_FSI_XFEM
+  src/drt_fsi_xfem/fsi_xfem_fluid.cpp
+  src/drt_fsi_xfem/fsi_xfem_monolithic.cpp
+  src/drt_fsi_xfem/fsi_xfem_algorithm.cpp
 )
 set(OBJS_DRT_FS3I
   src/drt_fs3i/fs3i_dyn.cpp
@@ -1619,6 +1623,7 @@ set(ELEMENT_LIBRARIES
 # algorithm libraries that depend on adapters
 add_library(alg_elch ${OBJS_DRT_ELCH})
 add_library(alg_fsi ${OBJS_DRT_FSI})
+add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
@@ -1631,6 +1636,7 @@ add_library(alg_particle ${OBJS_DRT_PARTICLE})
 set(MULTIFIELD_LIBRARIES
   alg_elch
   alg_fsi
+  alg_fsi_xfem
   alg_loma
   alg_tsi
   alg_stru_ale

@@ -37,7 +37,8 @@ Maintainer: Matthias Mayr
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
-#include "fsi_fluid_xfem.H"
+#include "../drt_fsi_xfem/fsi_xfem_fluid.H"
+#include "../drt_fsi_xfem/fsi_xfem_monolithic.H"
 #include "fsi_utils.H"
 #include "fsi_resulttest.H"
 
@@ -1002,49 +1003,58 @@ void xfsi_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> actdis = problem->GetDis("fluid");
-  actdis->FillComplete();
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  fluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
   // now we can reserve dofs for background fluid
-  int numglobalnodes = actdis->NumGlobalNodes();
+  int numglobalnodes = fluiddis->NumGlobalNodes();
   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  actdis->ReplaceDofSet(maxdofset,true);
-  actdis->FillComplete();
+  fluiddis->ReplaceDofSet(maxdofset,true);
+  fluiddis->FillComplete();
 
-  actdis->GetDofSetProxy()->PrintAllDofsets(actdis->Comm());
+  // print all dofsets
+  fluiddis->GetDofSetProxy()->PrintAllDofsets(fluiddis->Comm());
 
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
-  case fsi_iter_monolithicxfem:
+  case fsi_iter_xfem_monolithic:
   {
-//    dserror("fsi_iter_monolithicxfem not implemented yet");
-//
-//    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
-//
-//    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
-//      dserror("Only Newton-Krylov scheme with XFEM fluid");
-//
-//    Teuchos::RCP<FSI::MonolithicXFEM> fsi;
-//    fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm));
-//
-//    // read the restart information, set vectors and variables ---
-//    // be careful, dofmaps might be changed here in a Redistribute call
-//    const int restart = DRT::Problem::Instance()->Restart();
-//    if (restart)
-//    {
-//      fsi->ReadRestart(restart);
-//    }
-//
-//    // here we go...
-//    fsi->Timeloop();
-//
-//    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-//    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-//    DRT::Problem::Instance()->TestAll(comm);
+
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+
+    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
+      dserror("Only Newton-Krylov scheme with XFEM fluid");
+
+    // create the MonolithicXFEM object that does the whole work
+    Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
+
+    // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
+    fsi->SetupSystem();
+
+    // read the restart information, set vectors and variables ---
+    // be careful, dofmaps might be changed here in a Redistribute call
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      fsi->ReadRestart(restart);
+    }
+
+    // here we go...
+    fsi->Timeloop();
+
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+//    // create FSI specific result test
+//    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+//    DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+    // do the actual testing
+    DRT::Problem::Instance()->TestAll(comm);
 
     break;
   }

@@ -653,14 +653,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           // new Benedikt's transformation
           e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
-          // set of all side Ids of involved sides
-          std::set<int> begids;
-          for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-               bc!=bcells.end(); ++bc )
-          {
-            int sid = bc->first;
-            begids.insert(sid);
-          }
+
 
           std::vector<int> patchelementslm;
           std::vector<int> patchelementslmowner;
@@ -696,7 +689,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             const size_t ndof_i = patchlm.size();     // sum over number of dofs of all sides
             const size_t ndof   = la[0].lm_.size();   // number of dofs for background element
 
-            std::vector<Epetra_SerialDenseMatrix> & couplingmatrices = side_coupling[sid];
+            std::vector<Epetra_SerialDenseMatrix> & couplingmatrices = side_coupling[sid]; // the function inserts a new element with that key and returns a reference to its mapped value
             if ( couplingmatrices.size()!=0 )
               dserror("zero sized vector expected");
 
@@ -2059,31 +2052,35 @@ FLD::XFluidFluid::XFluidFluid(
 
   // check input parameters set for boundary/interface coupling and
   // set the action
+
+  if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_weak_DBC)
+    dserror("do not choose Xfluid_Sided_weak_DBC for fluid-fluid-couplings!");
+
   switch (boundIntType_)
   {
   case INPAR::XFEM::BoundaryTypeSigma:
     element_name = "BELE3"; // use 3 dofs, (REMARK: also BELE3_4 with Xfluid-Mortaring possible, but more expensive!)
     IO::cout << "XFEM interface method: BoundaryTypeSigma" << IO::endl;
-    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
-      dserror("choose Xfluid_Sided_Mortaring for BoundaryTypeSigma");
+    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
+      dserror("choose Xfluid_Sided_Coupling for BoundaryTypeSigma");
     action_ = "coupling stress based";
     break;
   case INPAR::XFEM::BoundaryTypeNitsche:
     element_name = "BELE3_4"; // use 4 dofs
     IO::cout << "XFEM interface method: BoundaryTypeNitsche, ";
-    if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Mortaring)
+    if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Coupling)
       IO::cout << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << IO::endl;
-    if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Mortaring)
+    if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Coupling)
     {
       action_ = "coupling nitsche two sided";
       IO::cout << "Coupling Nitsche Two-Sided" << IO::endl;
     }
-    if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Mortaring)
+    if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
     {
       action_ = "coupling nitsche xfluid sided";
       IO::cout << "Coupling Nitsche Xfluid-Sided" << IO::endl;
     }
-    if(coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Mortaring)
+    if(coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Coupling)
     {
       action_ = "coupling nitsche embedded sided";
       IO::cout << "Coupling Nitsche Embedded-Sided" << IO::endl;
@@ -2196,7 +2193,7 @@ FLD::XFluidFluid::XFluidFluid(
   // prepare embedded dis for Nitsche-Coupling-Type Ale-Sided
   // this also needed for error calculation method
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
-  if ((coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring) or (calcerr != INPAR::FLUID::no_error_calculation))
+  if ((coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling) or (calcerr != INPAR::FLUID::no_error_calculation))
   {
     PrepareEmbeddedDistribution();
     CreateBoundaryEmbeddedMap();

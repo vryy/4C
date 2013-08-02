@@ -199,6 +199,8 @@ public:
   int Itemax()  const { return itemax_; }
   virtual void SetItemax(int itemax){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
+  virtual void CutAndSetStateVectors(bool isnewNewtonIncrement){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+
   /*!
   \brief return type of time integration scheme
 

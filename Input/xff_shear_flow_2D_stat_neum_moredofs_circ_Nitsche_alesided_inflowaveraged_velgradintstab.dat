@@ -99,7 +99,7 @@ ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing s
 GMSH_DEBUG_OUT                  No
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche           // BoundaryTypeNitsche // BoundaryTypeNeumann
-COUPLING_STRATEGY               embedded_sided_mortaring      // xfluid_sided_mortaring // two_sided_mortaring
+COUPLING_STRATEGY               embedded_sided_coupling
 VISC_STAB_FAC                   1.0
 CONV_STAB_FAC                   1.0//1.0
 CONV_STAB_SCALING averaged //inflow

@@ -438,7 +438,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       probtype == prb_gas_fsi or
       probtype == prb_biofilm_fsi or
       probtype == prb_thermo_fsi or
-      probtype == prb_fluid_fluid_fsi)
+      probtype == prb_fluid_fluid_fsi or
+      probtype == prb_fsi_xfem)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
@@ -457,7 +458,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_constr_monolithicstructuresplit or
         coupling == fsi_iter_constr_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
-        coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
+        coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
+        coupling == fsi_iter_xfem_monolithic)
     {
       // No explicit predictor for these monolithic FSI schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
@@ -489,20 +491,36 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         dserror("No fluid predictor allowed for current monolithic free surface scheme, yet. Use 'steady_state', instead!");
     }
   }
+
   // sanity checks and default flags
-  if (probtype == prb_fsi_xfem or
-      probtype == prb_fluid_xfem)
+  if ( probtype == prb_fluid_xfem )
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
+  }
+
+
+  // sanity checks and default flags
+  if ( probtype == prb_fsi_xfem )
+  {
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic FSI
-      dserror("XFEM and monolithic FSI not tested!");
+      dserror("for XFSI there is no monolithicfluidsplit or monolithicstructuresplit, use monolithicxfem or any partitioned algorithm instead");
     }
+  }
+
+  // sanity checks and default flags
+  if ( probtype == prb_fluid_xfem or probtype == prb_fsi_xfem)
+  {
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+    fluidtimeparams->set<int>("COUPALGO", coupling);
   }
 
   if (probtype == prb_elch)

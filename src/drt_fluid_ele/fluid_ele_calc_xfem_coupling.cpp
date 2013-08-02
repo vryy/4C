@@ -82,7 +82,7 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
     //              break;
     //            }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
   else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
@@ -122,7 +122,7 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //      break;
 //    }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
 
@@ -182,7 +182,7 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //      break;
 //    }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
   else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for coupling
@@ -222,7 +222,7 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //      break;
 //    }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
 
@@ -278,7 +278,7 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //      break;
 //    }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
   else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // three dofs per node, for standard Dirichlet coupling
@@ -318,7 +318,7 @@ Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(
 //      break;
 //    }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
 
@@ -375,7 +375,7 @@ Teuchos::RCP<EmbCoupling<distype> > EmbCoupling<distype>::TwoSidedImpl(
 //    break;
 //  }
   default:
-    dserror( "unsupported side shape %d", emb_ele->Shape() );
+    dserror( "unsupported side shape %d", emb_ele->Shape() ); break;
   }
   return Teuchos::rcp(emb);
 

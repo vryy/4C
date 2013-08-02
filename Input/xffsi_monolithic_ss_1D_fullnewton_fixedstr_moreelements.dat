@@ -152,7 +152,7 @@ XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton //xffsi_fixedALE_interpolation xffsi_fixedALE_partitioned 
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY BoundaryTypeSigma //BoundaryTypeNitsche
-COUPLING_STRATEGY xfluid_sided_mortaring //embedded_sided_mortaring
+COUPLING_STRATEGY               xfluid_sided_coupling
 //VISC_STAB_FAC                 1.0
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none

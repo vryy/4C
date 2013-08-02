@@ -64,11 +64,14 @@ namespace ADAPTER {
         Teuchos::RCP<DRT::Discretization>      xfluiddis,
         Teuchos::RCP<DRT::Discretization>      soliddis,
         Teuchos::RCP<LINALG::Solver>           solver,
-        Teuchos::RCP<Teuchos::ParameterList>            params,
+        Teuchos::RCP<Teuchos::ParameterList>   params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
+
+    /// Velocity-displacement conversion at the fsi interface
+    virtual double TimeScaling() const;
 
     /// Return interface forces
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
@@ -85,6 +88,19 @@ namespace ADAPTER {
 
     /// apply the interface displacements to the fluid
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
+
+    /// convert increment of displacement to increment in velocity
+    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+
+
+
+    /// return coupling matrix between fluid and structure as sparse matrices
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix();
+    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix();
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix();
+
+    Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec();
+
 
 
 

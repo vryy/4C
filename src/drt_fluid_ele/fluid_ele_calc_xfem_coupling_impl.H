@@ -52,8 +52,11 @@ namespace DRT
 
       //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
       static const int side_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
+      static const int side_numdof_ = numdof;
+
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+      static const int bg_numdof_ = nsd_ + 1;
 
       //! Mixed/Stress/Hybrid (MSH) coupling
       SideImpl(
@@ -325,18 +328,18 @@ namespace DRT
       LINALG::BlockMatrix<LINALG::Matrix<nen_,   1>,6,1>      rhsi_;    ///< block rhs ui matrix
       LINALG::BlockMatrix<LINALG::Matrix<side_nen_,nen_>,3,6> BK_uis_;  ///< block K_sui_ matrix
 
-      LINALG::Matrix<numdof*side_nen_,4*nen_>            C_uiu_;       ///< coupling matrix row: sidenode1:u1,u2,u3(,p), sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
-      LINALG::Matrix<4*nen_,numdof*side_nen_>            C_uui_;       ///< coupling matrix includes ui(,pi)
-      LINALG::Matrix<numdof*side_nen_,1>                 rhC_ui_;      ///< coupling matrix includes (ui,pi)
-      LINALG::Matrix<numdof*side_nen_,numdof*side_nen_>  C_uiui_;      ///< includes (ui,pi) just for Nitsche coupling
-      LINALG::Matrix<side_nen_,1>                        side_funct_;  ///< side's shape functions
-      LINALG::Matrix<nsd_-1,side_nen_>                   side_deriv_;  ///< side's shape derivatives
-      LINALG::Matrix<6*nen_,numdof*side_nen_>            K_sui_;       ///< G_sui coupling matrix
-      LINALG::Matrix<numdof*side_nen_,6*nen_>            K_uis_;       ///< G_uis coupling matrix
-      LINALG::Matrix<3,side_nen_>                        eivel_;       ///< side interface velocity
-      LINALG::Matrix<side_nen_,1>                        eipres_;      ///< side interface pressure
-      LINALG::Matrix<3,side_nen_>                        eidisp_;      ///< side interface displacements
-      LINALG::Matrix<3,side_nen_>                        xyze_;        ///< side's node coordinates
+      LINALG::Matrix<side_numdof_*side_nen_,4*nen_>                  C_uiu_;       ///< coupling matrix row: sidenode1:u1,u2,u3(,p), sidenode2:u1,u2,u3,p ... | col: elenode1:u1,u2,u3,p, elenode2:u1,u2,u3,p, ...
+      LINALG::Matrix<4*nen_,side_numdof_*side_nen_>                  C_uui_;       ///< coupling matrix includes ui(,pi)
+      LINALG::Matrix<side_numdof_*side_nen_,1>                       rhC_ui_;      ///< coupling matrix includes (ui,pi)
+      LINALG::Matrix<side_numdof_*side_nen_,side_numdof_*side_nen_>  C_uiui_;      ///< includes (ui,pi) just for Nitsche coupling
+      LINALG::Matrix<side_nen_,1>                                    side_funct_;  ///< side's shape functions
+      LINALG::Matrix<nsd_-1,side_nen_>                               side_deriv_;  ///< side's shape derivatives
+      LINALG::Matrix<6*nen_,side_numdof_*side_nen_>                  K_sui_;       ///< G_sui coupling matrix
+      LINALG::Matrix<side_numdof_*side_nen_,6*nen_>                  K_uis_;       ///< G_uis coupling matrix
+      LINALG::Matrix<3,side_nen_>                                    eivel_;       ///< side interface velocity
+      LINALG::Matrix<side_nen_,1>                                    eipres_;      ///< side interface pressure
+      LINALG::Matrix<3,side_nen_>                                    eidisp_;      ///< side interface displacements
+      LINALG::Matrix<3,side_nen_>                                    xyze_;        ///< side's node coordinates
     };
 
 

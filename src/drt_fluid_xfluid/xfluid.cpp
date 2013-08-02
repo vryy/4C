@@ -67,6 +67,8 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_fsi.H"
+
 
 #include "../drt_fluid/fluid_utils_time_integration.H"
 
@@ -132,7 +134,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
 
   FLD::UTILS::SetupFluidSplit(*xfluid.discret_, xfluid.numdim_, 1, *velpressplitter_);
 
-  const Epetra_Map* dofrowmap = xfluid.discret_->DofRowMap();
+  fluiddofrowmap_ = Teuchos::rcp(new Epetra_Map(*xfluid.discret_->DofRowMap()));
 
   // create an EpetraFECrs matrix that does communication for non-local rows and columns
   // * this enables to do the evaluate loop over just row elements instead of col elements
@@ -142,7 +144,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   //                                * savegraph = false ( the matrix graph (pattern for non-zero entries) can change ) do not store this graph
   //                                * with FE_MATRIX flag
   //TODO: for edgebased approaches the number of connections between rows and cols should be increased
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,300,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,81+54,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
 
 
@@ -194,49 +196,49 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   // Vectors passed to the element
   // -----------------------------
   // velocity/pressure at time n+1, n and n-1
-  velnp_ = LINALG::CreateVector(*dofrowmap,true);
-  veln_  = LINALG::CreateVector(*dofrowmap,true);
-  velnm_ = LINALG::CreateVector(*dofrowmap,true);
+  velnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
+  veln_  = LINALG::CreateVector(*fluiddofrowmap_,true);
+  velnm_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // acceleration/(scalar time derivative) at time n+1 and n
-  accnp_ = LINALG::CreateVector(*dofrowmap,true);
-  accn_  = LINALG::CreateVector(*dofrowmap,true);
+  accnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
+  accn_  = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // velocity/pressure at time n+alpha_F
-  velaf_ = LINALG::CreateVector(*dofrowmap,true);
+  velaf_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
-  accam_ = LINALG::CreateVector(*dofrowmap,true);
+  accam_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // scalar at time n+alpha_F/n+1 and n+alpha_M/n
   // (only required for low-Mach-number case)
-  scaaf_ = LINALG::CreateVector(*dofrowmap,true);
-  scaam_ = LINALG::CreateVector(*dofrowmap,true);
+  scaaf_ = LINALG::CreateVector(*fluiddofrowmap_,true);
+  scaam_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // history vector
-  hist_ = LINALG::CreateVector(*dofrowmap,true);
+  hist_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
 
   // the vector containing body and surface forces
-  neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
+  neumann_loads_= LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  residual_     = LINALG::CreateVector(*dofrowmap,true);
-  trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
+  residual_     = LINALG::CreateVector(*fluiddofrowmap_,true);
+  trueresidual_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // right hand side vector for linearised solution;
-  rhs_ = LINALG::CreateVector(*dofrowmap,true);
+  rhs_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // Nonlinear iteration increment vector
-  incvel_ = LINALG::CreateVector(*dofrowmap,true);
+  incvel_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_   = LINALG::CreateVector(*dofrowmap,true);
+  zeros_   = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // Vectors passed to the element
   // -----------------------------
   // velocity/pressure at time n+1, n and n-1
-  velnp_ = LINALG::CreateVector(*dofrowmap,true);
+  velnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
@@ -266,6 +268,12 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   }
 
 
+  C_fs_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  rhC_s_ = LINALG::CreateVector(*xfluid.boundarydofrowmap_,true);
+  rhC_s_col_= LINALG::CreateVector(*(xfluid.boundarydis_->DofColMap()),true);
+
 }
 
 /*----------------------------------------------------------------------*
@@ -290,6 +298,15 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
   // create an column iforce vector for assembly over row elements that has to be communicated at the end
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutdiscret.DofColMap(),true);
+
+  //----------------------------------------------------------------------
+  // clear the coupling matrices and rhs vectors
+
+  C_fs_->Zero();
+  C_sf_->Zero();
+  C_ss_->Zero();
+  rhC_s_->Scale(0.0);
+  rhC_s_col_->Scale(0.0);
 
 
   //----------------------------------------------------------------------
@@ -387,134 +404,237 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                s!=cell_sets.end();
                s++)
           {
-              GEO::CUT::plain_volumecell_set & cells = *s;
-              const std::vector<int> & nds = nds_sets[set_counter];
+            // for each side that is involved in the cut for this element,
+            // the coupling matrices C_fs_, C_sf_ and the rhs_s has to be built
+            std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
 
-              // we have to assemble all volume cells of this set
-              // for linear elements, there should be only one volumecell for each set
-              // for quadratic elements, there are some volumecells with respect to subelements, that have to be assembled at once
+            GEO::CUT::plain_volumecell_set & cells = *s;
+            const std::vector<int> & nds = nds_sets[set_counter];
+
+            // we have to assemble all volume cells of this set
+            // for linear elements, there should be only one volume-cell for each set
+            // for quadratic elements, there are some volume-cells with respect to subelements, that have to be assembled at once
 
 
-              // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
-              actele->LocationVector(discret,nds,la,false);
+            // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+            actele->LocationVector(discret,nds,la,false);
 
-              // get dimension of element matrices and vectors
-              // Reshape element matrices and vectors and init to zero (rdim, cdim)
-              strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+            // get dimension of element matrices and vectors
+            // Reshape element matrices and vectors and init to zero (rdim, cdim)
+            strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
-              {
-                //------------------------------------------------------------
-                // Evaluate domain integrals
-                TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 1) cut domain" );
-
-                // call the element evaluate method
-                int err = impl->EvaluateXFEM( ele, discret, la[0].lm_, eleparams, mat,
-                                              strategy.Elematrix1(),
-                                              strategy.Elematrix2(),
-                                              strategy.Elevector1(),
-                                              strategy.Elevector2(),
-                                              strategy.Elevector3(),
-                                              intpoints_sets[set_counter],
-                                              xfluid_.VolumeCellGaussPointBy_,
-                                              cells);
-
-                if (err)
-                  dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
-              }
-
+            {
               //------------------------------------------------------------
-              // Evaluate interface integrals
-              // do cut interface condition
+              // Evaluate domain integrals
+              TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 1) cut domain" );
 
-              // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
-              std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
-              std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+              // call the element evaluate method
+              int err = impl->EvaluateXFEM( ele, discret, la[0].lm_, eleparams, mat,
+                                            strategy.Elematrix1(),
+                                            strategy.Elematrix2(),
+                                            strategy.Elevector1(),
+                                            strategy.Elevector2(),
+                                            strategy.Elevector3(),
+                                            intpoints_sets[set_counter],
+                                            xfluid_.VolumeCellGaussPointBy_,
+                                            cells);
 
-              for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+              if (err)
+                dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+            }
+
+            //------------------------------------------------------------
+            // Evaluate interface integrals
+            // do cut interface condition
+
+            // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
+            std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
+            std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+
+            for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+            {
+              GEO::CUT::VolumeCell * vc = *i;
+              if ( vc->Position()==GEO::CUT::Point::outside )
               {
-                GEO::CUT::VolumeCell * vc = *i;
-                if ( vc->Position()==GEO::CUT::Point::outside )
+                vc->GetBoundaryCells( bcells );
+              }
+            }
+
+            if ( bcells.size() > 0 )
+            {
+              TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
+
+              // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+              // original Axel's transformation
+              e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#else
+              // new Benedikt's transformation
+              e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#endif
+
+
+
+              //-----------------------------------------------------------
+              // fluid-structure coupling part
+
+              bool coupling = (xfluid_.coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling);
+
+              std::vector<int> patchelementslm;
+              std::vector<int> patchelementslmowner;
+
+              if(coupling)
+              {
+                // initialize the coupling matrices for each side and the current element
+                for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+                    bc!=bcells.end(); ++bc )
                 {
-                    vc->GetBoundaryCells( bcells );
+                  int sid = bc->first; // all boundary cells within the current iterator belong to the same side
+                  DRT::Element * side = cutdiscret.gElement( sid );
+
+                  std::vector<int> patchlm;
+                  std::vector<int> patchlmowner;
+                  std::vector<int> patchlmstride;
+
+                  // coupling just between background element and sides of the structure (side-coupling)
+                  side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
+
+                  patchelementslm.reserve( patchelementslm.size() + patchlm.size());
+                  patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
+
+                  patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+                  patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+
+                  const size_t ndof_i = patchlm.size();     // sum over number of dofs of all sides
+                  const size_t ndof   = la[0].lm_.size();   // number of dofs for background element
+
+                  std::vector<Epetra_SerialDenseMatrix> & couplingmatrices = side_coupling[sid]; // the function inserts a new element with that key and returns a reference to its mapped value
+                  if ( couplingmatrices.size()!=0 )
+                    dserror("zero sized vector expected");
+
+                  couplingmatrices.resize(3);
+
+                  // no coupling for pressure in stress based method, but the coupling matrices include entries for pressure coupling
+                  couplingmatrices[0].Reshape(ndof_i,ndof);  //C_sf = C_uiu
+                  couplingmatrices[1].Reshape(ndof,ndof_i);  //C_fs = C_uui
+                  couplingmatrices[2].Reshape(ndof_i,1);     //rhC_s = rhs_ui
+
                 }
               }
 
-              if ( bcells.size() > 0 )
+
+              const size_t nui = patchelementslm.size();
+              Epetra_SerialDenseMatrix C_ss(nui,nui); // coupling matrix for monolithic fluid-structure interaction
+
+              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeSigma)
+                impl->ElementXfemInterfaceMSH(   ele,
+                                                 discret,
+                                                 la[0].lm_,
+                                                 intpoints_sets[set_counter],
+                                                 cutdiscret,
+                                                 bcells,
+                                                 bintpoints,
+                                                 side_coupling,
+                                                 eleparams,
+                                                 strategy.Elematrix1(),
+                                                 strategy.Elevector1(),
+                                                 C_ss,
+                                                 xfluid_.VolumeCellGaussPointBy_,
+                                                 cells,
+                                                 coupling);
+
+              if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
+                impl->ElementXfemInterfaceNIT(   ele,
+                                                 discret,
+                                                 la[0].lm_,
+                                                 cutdiscret,
+                                                 bcells,
+                                                 bintpoints,
+                                                 side_coupling,
+                                                 eleparams,
+                                                 strategy.Elematrix1(),
+                                                 strategy.Elevector1(),
+                                                 C_ss,
+                                                 cells,
+                                                 coupling);
+
+              //------------------------------------------------------------------------------------------
+              // Assemble bgele-side coupling matrices for monolithic fluid-structure interaction
+              //------------------------------------------------------------------------------------------
+              if(coupling)
               {
-                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
 
-                  // Attention: switch also the flag in fluid_ele_calc_xfem.cpp
-#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
-                  // original Axel's transformation
-                  e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#else
-                  // new Benedikt's transformation
-                  e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
-#endif
+                for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
+                    sc!=side_coupling.end(); ++sc )
+                {
+                  std::vector<Epetra_SerialDenseMatrix>  couplingmatrices = sc->second;
 
-                  // needed for fluid-fluid Coupling
-                  std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
-                  Epetra_SerialDenseMatrix  Cuiui(1,1);
+                  int sid = sc->first;
 
-                  if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeSigma)
-                      impl->ElementXfemInterfaceMSH(   ele,
-                                                       discret,
-                                                       la[0].lm_,
-                                                       intpoints_sets[set_counter],
-                                                       cutdiscret,
-                                                       bcells,
-                                                       bintpoints,
-                                                       side_coupling,
-                                                       eleparams,
-                                                       strategy.Elematrix1(),
-                                                       strategy.Elevector1(),
-                                                       Cuiui,
-                                                       xfluid_.VolumeCellGaussPointBy_,
-                                                       cells,
-                                                       false);
+                  if ( cutdiscret.HaveGlobalElement(sid) )
+                  {
+                    std::vector<int> patchlm;
+                    std::vector<int> patchlmowner;
+                    std::vector<int> patchlmstride;
 
-                  if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
-                      impl->ElementXfemInterfaceNIT(   ele,
-                                                       discret,
-                                                       la[0].lm_,
-                                                       cutdiscret,
-                                                       bcells,
-                                                       bintpoints,
-                                                       side_coupling,
-                                                       eleparams,
-                                                       strategy.Elematrix1(),
-                                                       strategy.Elevector1(),
-                                                       Cuiui,
-                                                       cells,
-                                                       false);
+                    DRT::Element * side = cutdiscret.gElement( sid );
+                    side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
+
+                    // assemble C_sf_ = Cuiu
+                    // create a dummy mypatchlmowner that assembles also non-local rows and communicates the required data
+                    std::vector<int> mypatchlmowner;
+                    for(size_t index=0; index<patchlmowner.size(); index++) mypatchlmowner.push_back(xfluid_.myrank_);
+
+                    C_sf_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+
+                    // assemble C_fs_ = Cuui
+                    std::vector<int> mylmowner;
+                    for(size_t index=0; index<la[0].lmowner_.size(); index++) mylmowner.push_back(xfluid_.myrank_);
+
+                    C_fs_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
+
+
+                    // assemble rhC_s_col = rhC_ui_col
+                    Epetra_SerialDenseVector rhC_s_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
+                    LINALG::Assemble(*rhC_s_col_, rhC_s_eptvec, patchlm, mypatchlmowner);
+                  }
+                }
+
+                // assemble C_ss_ = Cuiui
+                std::vector<int> mypatchelementslmowner;
+                for(size_t index=0; index<patchelementslm.size(); index++) mypatchelementslmowner.push_back(xfluid_.myrank_);
+
+                C_ss_->FEAssemble(-1,C_ss, patchelementslm, mypatchelementslmowner, patchelementslm );
 
               }
 
-              //------------------------------------------------------------
-              // Assemble matrix and vectors
+            }
 
-              int eid = actele->Id();
+            //------------------------------------------------------------
+            // Assemble matrix and vectors
 
-              // introduce an vector containing the rows for that values have to be communicated
-              // REMARK: when assembling row elements also non-row rows have to be communicated
-              std::vector<int> myowner;
-              for(size_t index=0; index<la[0].lmowner_.size(); index++)
-              {
-                myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
-              }
+            int eid = actele->Id();
 
-              {
-                TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
-                // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
-                sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
-              }
+            // introduce an vector containing the rows for that values have to be communicated
+            // REMARK: when assembling row elements also non-row rows have to be communicated
+            std::vector<int> myowner;
+            for(size_t index=0; index<la[0].lmowner_.size(); index++)
+            {
+              myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+            }
 
-              // REMARK:: call Assemble without lmowner
-              // to assemble the residual_col vector on only row elements also column nodes have to be assembled
-              // do not exclude non-row nodes (modify the real owner to myowner)
-              // after assembly the col vector it has to be exported to the row residual_ vector
-              // using the 'Add' flag to get the right value for shared nodes
-              LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+            {
+              TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
+              // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+              sysmat_->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+            }
+
+            // REMARK:: call Assemble without lmowner
+            // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+            // do not exclude non-row nodes (modify the real owner to myowner)
+            // after assembly the col vector it has to be exported to the row residual_ vector
+            // using the 'Add' flag to get the right value for shared nodes
+            LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
 
             set_counter += 1;
 
@@ -735,6 +855,22 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
 
     discret.ClearState();
+
+    // finalize the complete matrices
+
+
+    // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
+    C_fs_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.discret_->DofRowMap());
+    C_sf_->Complete(*xfluid_.discret_->DofRowMap(),*xfluid_.boundarydofrowmap_);
+    C_ss_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.boundarydofrowmap_);
+
+    //-------------------------------------------------------------------------------
+    // export the rhs coupling vector to a row vector
+    Epetra_Vector rhC_s_tmp(rhC_s_->Map(),true);
+    Epetra_Export exporter_rhC_s_col(rhC_s_col_->Map(),rhC_s_tmp.Map());
+    int err4 = rhC_s_tmp.Export(*rhC_s_col_,exporter_rhC_s_col,Add);
+    if (err4) dserror("Export using exporter returned err=%d",err4);
+    rhC_s_->Update(1.0,rhC_s_tmp,0.0);
 
 
     //-------------------------------------------------------------------------------
@@ -2044,7 +2180,8 @@ FLD::XFluid::XFluid(
   // create boundary dis
   // -------------------------------------------------------------------
 
-  string element_name = "BELE3"; // use always 3 dofs (if you change this take care for numdof in boundary output!)
+  // use always 3 dofs on the structural surface, in partitioned and monolithic algorithms as well (if you change this take care for numdof in boundary output!)
+  string element_name = "BELE3";
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not discret_->Filled() or not discret_->HaveDofs() )
@@ -2653,6 +2790,22 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
         dserror("INPUT CHECK: do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
     }
 
+    // just xfluid-sided coulings or weak DBCs possible
+    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC and coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
+      dserror("no non-xfluid sided COUPLING_STRATEGY possible");
+
+    if( probtype == prb_fsi_xfem and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
+    {
+      if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
+        dserror("INPUT CHECK: please choose XFLUID_SIDED_COUPLING for monolithic XFSI problems!");
+    }
+    else
+    {
+      if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC)
+        dserror("INPUT CHECK: please choose XFLUID_SIDED_weak_DBC as COUPLING_STRATEGY for any pure XFLUID or partitioned XFSI problem!");
+    }
+
+
     // ----------------------------------------------------------------------
     // check XFLUID DYNAMIC/STABILIZATION parameter list
     // ----------------------------------------------------------------------
@@ -2661,9 +2814,6 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
     bool msh_dlm_condensation = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"DLM_CONDENSATION");
     if(msh_dlm_condensation == false) dserror("INPUT CHECK: 'DLM_CONDENSATION', switch always to 'yes', just condensation implemented");
 
-    // choice of xfluid or structure side mortaring
-    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
-      dserror("INPUT CHECK: 'COUPLING_STRATEGY', just xfluid sided mortaring reasonable for XFluid");
 
     // convective stabilization parameter (scaling factor and stabilization factor)
     if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
@@ -3097,8 +3247,6 @@ void FLD::XFluid::PrepareSolve()
 void FLD::XFluid::PrepareNonlinearSolve()
 {
 
-  //IO::cout << "FLD::XFLUID::PrepareNonlinearSolve()" << IO::endl;
-
   // print the gmsh discretization output before the cut is performed
   OutputDiscret();
 
@@ -3212,7 +3360,7 @@ void FLD::XFluid::Solve()
       state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
     }
 
-
+    // apply Dirichlet conditions to the residual vector by setting zeros into the residual
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
 
     if(gmsh_debug_out_)
@@ -3739,7 +3887,7 @@ void FLD::XFluid::UpdateInterfaceFields()
 
 void FLD::XFluid::Predictor()
 {
- cout << "IMPLEMENT explicit predictor!!!" << endl;
+ std::cout << "IMPLEMENT explicit predictor!!!" << std::endl;
 }
 
 
@@ -3747,6 +3895,73 @@ void FLD::XFluid::Evaluate(
   Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
   )
 {
+
+  //TODO: update the itnum!
+  int itnum = 0;
+
+  // set the new solution we just got. Note: the solution we got here
+  // is the time step increment which means the sum of all iteration
+  // increments of the time step.
+  if (stepinc!=Teuchos::null)
+  {
+    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+    // values.
+    Teuchos::RCP<Epetra_Vector> velnp_tmp = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
+
+    velnp_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc, 0.0);
+
+    state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->velnp_), velnp_tmp );
+
+    state_->velnp_->Update(1.0, *velnp_tmp, 0.0);
+  }
+  else
+  {
+    // reference of current Newton iteration is the veln_ state resulting from the fluid time integration w.r.t the current dofsets
+    state_->velnp_->Update(1.0, *state_->veln_, 0.0);
+  }
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix and RHS
+  // -------------------------------------------------------------------
+  {
+    // get cpu time
+    const double tcpu=Teuchos::Time::wallTime();
+
+    // create the parameters for the discretization
+    Teuchos::ParameterList eleparams;
+
+    // Set action type
+    eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
+    eleparams.set<int>("physical type",physicaltype_);
+
+    // parameters for turbulent approach
+    eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
+
+    // set thermodynamic pressures
+    eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
+    eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+    eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
+    eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
+
+    state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );
+
+    // end time measurement for element
+    dtele_=Teuchos::Time::wallTime()-tcpu;
+  }
+
+  // blank residual DOFs which are on Dirichlet BC
+  // We can do this because the values at the dirichlet positions
+  // are not used anyway.
+  // We could avoid this though, if velrowmap_ and prerowmap_ would
+  // not include the dirichlet values as well. But it is expensive
+  // to avoid that.
+  if(gmsh_debug_out_)
+  {
+    const Epetra_Map* colmap = discret_->DofColMap();
+    Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
+
+    LINALG::Export(*state_->residual_,*output_col_residual);
+    state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+  }
 
 }
 
@@ -3848,7 +4063,7 @@ void FLD::XFluid::TimeUpdate()
 /*----------------------------------------------------------------------*
  |  cut at interface positions and set new state vectors   schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::CutAndSetStateVectors()
+void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
 {
   if(myrank_==0)
   {
@@ -3874,8 +4089,10 @@ void FLD::XFluid::CutAndSetStateVectors()
     if(state_it_ == -1)
     {
       // before the first iteration in a new timestep store the solution of the old timestep w.r.t the old interface position
-      veln_Intn_  = state_->veln_;
-      accn_Intn_  = state_->accn_;
+      veln_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+      *veln_Intn_  = *(state_->veln_);
+      accn_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+      *accn_Intn_  = *(state_->accn_);
 
       // safe the old wizard w.r.t the old interface position
       wizard_Intn_ = state_->Wizard();
@@ -3888,7 +4105,8 @@ void FLD::XFluid::CutAndSetStateVectors()
 
     // get the velnp vector w.r.t the last interface position (last XFSI iteration)
     // to get mapped as fluid predictor for next XFSI iteration
-    Teuchos::RCP<Epetra_Vector> velnp_Intnpi  = state_->velnp_;
+    Teuchos::RCP<Epetra_Vector> velnp_Intnpi = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    *velnp_Intnpi = *state_->velnp_;
 
     // get the wizard w.r.t the last interface position (last XFSI iteration)
     Teuchos::RCP<XFEM::FluidWizard> wizard_Intnpi = state_->Wizard();
@@ -3897,6 +4115,17 @@ void FLD::XFluid::CutAndSetStateVectors()
     // get the dofmaps w.r.t the last interface position (last XFSI iteration)
 //    const Epetra_Map* dofrowmap_Intnpi = discret_->DofRowMap();
 //    const Epetra_Map* dofcolmap_Intnpi = discret_->DofColMap();
+
+    // copy the information from the last newton increment that is not set or computed newly for the current Newton increment
+
+    Teuchos::RCP<Epetra_Vector> hist_tmp;
+    Teuchos::RCP<Epetra_Vector> neumann_loads_tmp;
+
+    if(isnewNewtonIncrement)
+    {
+      hist_tmp          = state_->hist_;
+      neumann_loads_tmp = state_->neumann_loads_;
+    }
 
 
     //------------  NEW STATE CLASS including CUT  ------------------
@@ -3908,6 +4137,20 @@ void FLD::XFluid::CutAndSetStateVectors()
     LINALG::Export(*idispnp_,idispcol);
 
     state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+
+    //---------------------------------------------------------------
+
+    // TODO: check if the dofmaps changed?! else STOP
+
+    //
+
+    // copy vector data from the old state-class
+    // update some vectors if CutAndSetStateVectors has been called within a Newton scheme and not only for a new timestep
+    if(isnewNewtonIncrement)
+    {
+      *state_->hist_          = *hist_tmp;
+      *state_->neumann_loads_ = *neumann_loads_tmp;
+    }
 
     //---------------------------------------------------------------
 
@@ -4162,8 +4405,11 @@ void FLD::XFluid::CutAndSetStateVectors()
     } // GHOST PENALTY
 
     //------------------------------------------------------------------------------------
-    //                      set initial start vectors for new timestep
+    //                      set initial start vectors for new timestep (predictor)
     //------------------------------------------------------------------------------------
+    // REMARK: in case of monolithic fluid-structure interaction here we ensure that velnp obtains always
+    // the same initial state as long as the dofsets do not change
+    // therefore within the NewtonFull() this predictor + stepinc leads to the current Newton iteration
     {
 
       //velocity as start value for first Newton step

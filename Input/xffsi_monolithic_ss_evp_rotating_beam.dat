@@ -110,7 +110,7 @@ GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
-COUPLING_STRATEGY embedded_sided_mortaring //xfluid_sided_mortaring
+COUPLING_STRATEGY               embedded_sided_coupling
 VISC_STAB_FAC                   35// in [10;100]             
 CONV_STAB_FAC                   0.0
 CONV_STAB_SCALING               none

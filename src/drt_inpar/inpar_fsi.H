@@ -42,7 +42,7 @@ typedef enum _FSI_COUPLING
   fsi_iter_mortar_monolithicfluidsplit,
   fsi_iter_constr_monolithicstructuresplit,
   fsi_iter_constr_monolithicfluidsplit,
-  fsi_iter_monolithicxfem,
+  fsi_iter_xfem_monolithic,
   fsi_iter_stagg_NLCG,
   fsi_iter_stagg_MFNK_FD,
   fsi_iter_stagg_MFNK_FSI,

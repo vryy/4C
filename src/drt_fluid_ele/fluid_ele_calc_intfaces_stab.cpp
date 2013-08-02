@@ -264,9 +264,6 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   //---------------------------------------------------
 
 
-  if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_bdf2)
-      dserror("BDF2 time-integration scheme currently not supported for edge-based stabilization!");
-
   // time factors
   double timefac    = 0.0;
   double timefacpre = 0.0;
@@ -294,6 +291,12 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     timefac      = fldpara.TimeFac();     // timefac_ = theta_*dt_;
     timefacpre   = fldpara.TimeFacPre();  // special factor for pressure terms in genalpha time integration
     timefacrhs   = fldpara.TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
+  }
+  else if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_bdf2)
+  {
+    timefac    = fldpara.Dt(); // set theta = 1.0
+    timefacpre = fldpara.Dt(); // set theta = 1.0
+    timefacrhs = fldpara.Dt(); // set theta = 1.0
   }
   else if (fldpara.IsStationary())
   {

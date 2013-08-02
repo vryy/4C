@@ -1961,9 +1961,6 @@ void FLD::FluidImplicitTimeInt::AssembleEdgeBasedMatandRHS()
   // add edged-based stabilization, if selected
   if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
   {
-    if (timealgo_==INPAR::FLUID::timeint_bdf2)
-      dserror("BDF2 time-integration scheme currently not supported for edge-based stabilization!");
-
     // set the only required state vectors
     if (is_genalpha_)
     {

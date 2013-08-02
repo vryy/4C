@@ -4833,7 +4833,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[10] = "iter_monolithicstructuresplit";             label[10] = fsi_iter_monolithicstructuresplit;
   name[11] = "iter_lung_monolithicstructuresplit";        label[11] = fsi_iter_lung_monolithicstructuresplit;
   name[12] = "iter_lung_monolithicfluidsplit";            label[12] = fsi_iter_lung_monolithicfluidsplit;
-  name[13] = "iter_monolithicxfem";                       label[13] = fsi_iter_monolithicxfem;
+  name[13] = "iter_xfem_monolithic";                      label[13] = fsi_iter_xfem_monolithic;
   name[14] = "pseudo_structure";                          label[14] = fsi_pseudo_structureale;
   name[15] = "iter_constr_monolithicfluidsplit";          label[15] = fsi_iter_constr_monolithicfluidsplit;
   name[16] = "iter_constr_monolithicstructuresplit";      label[16] = fsi_iter_constr_monolithicstructuresplit;
@@ -5264,12 +5264,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &xfluid_stab);
 
 
-  setStringToIntegralParameter<int>("COUPLING_STRATEGY","xfluid_sided_mortaring","on which side is the main part of enforcing",
-                               tuple<std::string>("xfluid_sided_mortaring", "embedded_sided_mortaring", "two_sided_mortaring"),
+  setStringToIntegralParameter<int>("COUPLING_STRATEGY","xfluid_sided_weak_DBC","enforce weak DBC or coupling conditions with average w.r.t which side?",
+                               tuple<std::string>("xfluid_sided_weak_DBC", "xfluid_sided_coupling", "embedded_sided_coupling", "two_sided_coupling"),
                                tuple<int>(
-                                   INPAR::XFEM::Xfluid_Sided_Mortaring,    // coupling on cut mesh at interface
-                                   INPAR::XFEM::Embedded_Sided_Mortaring,  // coupling on embedded mesh at interface
-                                   INPAR::XFEM::Two_Sided_Mortaring        // coupling on cut mesh and embedded mesh at interface
+                                   INPAR::XFEM::Xfluid_Sided_weak_DBC,     // one sided weak DBC at the interface w.r.t background mesh
+                                   INPAR::XFEM::Xfluid_Sided_Coupling,     // coupling with average w.r.t background mesh
+                                   INPAR::XFEM::Embedded_Sided_Coupling,   // coupling with average w.r.t embedded mesh
+                                   INPAR::XFEM::Two_Sided_Coupling         // coupling with mean average between background and embedded mesh
                                    ),
                                &xfluid_stab);
 

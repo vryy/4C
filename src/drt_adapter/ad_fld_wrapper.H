@@ -255,6 +255,8 @@ namespace ADAPTER
     { return fluid_->Reset(completeReset, newFiles, iter); };
     virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
     { return fluid_->SetFldGrDisp(fluid_growth_disp); }
+    virtual void CutAndSetStateVectors( bool isnewNewtonIncrement )
+    { return fluid_->CutAndSetStateVectors(isnewNewtonIncrement); }
 
     /// calculate error in comparison to analytical solution
     virtual void CalculateError()

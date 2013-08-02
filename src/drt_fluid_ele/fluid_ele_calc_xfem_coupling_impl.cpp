@@ -1038,14 +1038,14 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_Consistency(
 
   for(int ir = 0; ir<nen_; ir++)
   {
-    int idVelx = ir*(nsd_+1) + 0;
-    int idVely = ir*(nsd_+1) + 1;
-    int idVelz = ir*(nsd_+1) + 2;
+    int idVelx = ir*bg_numdof_ + 0;
+    int idVely = ir*bg_numdof_ + 1;
+    int idVelz = ir*bg_numdof_ + 2;
 
     // (v,Dp*n)
     for(int ic =0; ic<nen_; ic++)
     {
-      int iPres = ic*(nsd_+1)+3;
+      int iPres = ic*bg_numdof_ + 3;
 
       C_uu_(idVelx, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
       C_uu_(idVely, iPres) += funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
@@ -1070,14 +1070,14 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_Consistency(
     for(int ir = 0; ir<side_nen_; ir++)
     {
 
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*side_numdof_ + 0;
+      int idVely = ir*side_numdof_ + 1;
+      int idVelz = ir*side_numdof_ + 2;
 
       // (v,Dp*n)
       for(int ic =0; ic<nen_; ic++)
       {
-        int iPres = ic*(nsd_+1)+3;
+        int iPres = ic*bg_numdof_ + 3;
 
         C_uiu_(idVelx, iPres) -= side_funct_dyad_k1_timefacfac(ir,ic)*normal(Velx);
         C_uiu_(idVely, iPres) -= side_funct_dyad_k1_timefacfac(ir,ic)*normal(Vely);
@@ -1136,14 +1136,14 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_AdjointConsistency(
   //-----------------------------------------------
   for(int ir = 0; ir<nen_; ir++)
   {
-    int idPres = ir*(nsd_+1) + 3;
+    int idPres = ir*bg_numdof_ + 3;
 
     // -(q*n,Du)
     for(int ic =0; ic<nen_; ic++)
     {
-      int iVelx = ic*(nsd_+1)+0;
-      int iVely = ic*(nsd_+1)+1;
-      int iVelz = ic*(nsd_+1)+2;
+      int iVelx = ic*bg_numdof_ + 0;
+      int iVely = ic*bg_numdof_ + 1;
+      int iVelz = ic*bg_numdof_ + 2;
 
       double tmp = alpha_p*funct_dyad_k1_timefacfac(ir,ic);
 
@@ -1170,14 +1170,14 @@ void SideImpl<distype, side_distype, numdof>::NIT_p_AdjointConsistency(
     //-----------------------------------------------
     for(int ir = 0; ir<nen_; ir++)
     {
-      int idPres = ir*(nsd_+1) + 3;
+      int idPres = ir*bg_numdof_ + 3;
 
       // -(q*n,Du)
       for(int ic =0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*side_numdof_+0;
+        int iVely = ic*side_numdof_+1;
+        int iVelz = ic*side_numdof_+2;
 
         double tmp = alpha_p*side_funct_dyad_k1_timefacfac(ic,ir);
 
@@ -1225,26 +1225,17 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_Consistency(
   //    - (v1, (2*k1*mu1) *eps(Du1)*n)
   //-----------------------------------------------
 
-//
-//  LINALG::Matrix<nen_,1> e_funct_visc1_timefacfac(true);
-//  e_funct_visc1_timefacfac.Update(k1mu1_fac, funct, 0.0);
-
-
   for(int ir = 0; ir<nen_; ir++)
   {
-    int idVelx = ir*(nsd_+1) + 0;
-    int idVely = ir*(nsd_+1) + 1;
-    int idVelz = ir*(nsd_+1) + 2;
-//            int idPres = ir*(nsd_+1) + 3;
-
+    int idVelx = ir*bg_numdof_ + 0;
+    int idVely = ir*bg_numdof_ + 1;
+    int idVelz = ir*bg_numdof_ + 2;
 
     for(int ic =0; ic<nen_; ic++)
     {
-      int iVelx = ic*(nsd_+1)+0;
-      int iVely = ic*(nsd_+1)+1;
-      int iVelz = ic*(nsd_+1)+2;
-//              int iPres = ic*(nsd_+1)+3;
-
+      int iVelx = ic*bg_numdof_ + 0;
+      int iVely = ic*bg_numdof_ + 1;
+      int iVelz = ic*bg_numdof_ + 2;
 
       // - (v1, (2*k1*mu1) *eps(Du1)*n)
 
@@ -1297,19 +1288,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_Consistency(
   //-----------------------------------------------
   for(int ir = 0; ir<side_nen_; ir++)
   {
-    int idVelx = ir*(nsd_+1) + 0;
-    int idVely = ir*(nsd_+1) + 1;
-    int idVelz = ir*(nsd_+1) + 2;
-    //int idPres = ir*(nsd_+1) + 3;
-
+    int idVelx = ir*side_numdof_ + 0;
+    int idVely = ir*side_numdof_ + 1;
+    int idVelz = ir*side_numdof_ + 2;
 
     for(int ic =0; ic<nen_; ic++)
     {
-      int iVelx = ic*(nsd_+1)+0;
-      int iVely = ic*(nsd_+1)+1;
-      int iVelz = ic*(nsd_+1)+2;
-      //int iPres = ic*(nsd_+1)+3;
-
+      int iVelx = ic*bg_numdof_ + 0;
+      int iVely = ic*bg_numdof_ + 1;
+      int iVelz = ic*bg_numdof_ + 2;
 
       // + (v2, (2*k1*mu1) *eps(Du1)*n)
 
@@ -1400,16 +1387,16 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_AdjointConsistency(
   //-----------------------------------------------
   for(int ir = 0; ir<nen_; ir++)
   {
-    int idVelx = ir*(nsd_+1) + 0;
-    int idVely = ir*(nsd_+1) + 1;
-    int idVelz = ir*(nsd_+1) + 2;
+    int idVelx = ir*bg_numdof_ + 0;
+    int idVely = ir*bg_numdof_ + 1;
+    int idVelz = ir*bg_numdof_ + 2;
 
     // -(2mu*eps(v)*n, Du)
     for(int ic =0; ic<nen_; ic++)
     {
-      int iVelx = ic*(nsd_+1)+0;
-      int iVely = ic*(nsd_+1)+1;
-      int iVelz = ic*(nsd_+1)+2;
+      int iVelx = ic*bg_numdof_ + 0;
+      int iVely = ic*bg_numdof_ + 1;
+      int iVelz = ic*bg_numdof_ + 2;
 
       //(x,x)
       C_uu_(idVelx, iVelx) -= alpha*e_funct_visc1_timefacfac(ic)*(         normal(Velx)*derxy(Velx,ir)
@@ -1477,16 +1464,16 @@ void SideImpl<distype, side_distype, numdof>::NIT_visc_AdjointConsistency(
     //-----------------------------------------------
     for(int ir = 0; ir<nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*bg_numdof_ + 0;
+      int idVely = ir*bg_numdof_ + 1;
+      int idVelz = ir*bg_numdof_ + 2;
 
       // -(2mu*eps(v1)*n, Du2)
       for(int ic =0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*side_numdof_ + 0;
+        int iVely = ic*side_numdof_ + 1;
+        int iVelz = ic*side_numdof_ + 2;
 
         //(x,x)
         C_uui_(idVelx, iVelx) += alpha*s_funct_visc1_timefacfac(ic)*(         normal(Velx)*derxy(Velx,ir)
@@ -1579,15 +1566,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
   // + gamma*mu/h_K (v1, u1))
   for(int ir=0; ir<nen_; ir++)
   {
-    int idVelx = ir*(nsd_+1) + 0;
-    int idVely = ir*(nsd_+1) + 1;
-    int idVelz = ir*(nsd_+1) + 2;
+    int idVelx = ir*bg_numdof_ + 0;
+    int idVely = ir*bg_numdof_ + 1;
+    int idVelz = ir*bg_numdof_ + 2;
 
     for(int ic=0; ic<nen_; ic++)
     {
-      int iVelx = ic*(nsd_+1)+0;
-      int iVely = ic*(nsd_+1)+1;
-      int iVelz = ic*(nsd_+1)+2;
+      int iVelx = ic*bg_numdof_ + 0;
+      int iVely = ic*bg_numdof_ + 1;
+      int iVelz = ic*bg_numdof_ + 2;
 
       double tmp = funct_dyad_timefacfac(ir,ic)*stabfac;
 
@@ -1619,15 +1606,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
     // - gamma*mu/h_K (v1, u2))
     for(int ir=0; ir<nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*bg_numdof_ + 0;
+      int idVely = ir*bg_numdof_ + 1;
+      int idVelz = ir*bg_numdof_ + 2;
 
       for(int ic=0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*side_numdof_+0;
+        int iVely = ic*side_numdof_+1;
+        int iVelz = ic*side_numdof_+2;
 
         double tmp = side_funct_dyad_timefacfac(ic,ir)*stabfac;
 
@@ -1650,15 +1637,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
     // - gamma*mu/h_K (v2, u1))
     for(int ir=0; ir<side_nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*side_numdof_ + 0;
+      int idVely = ir*side_numdof_ + 1;
+      int idVelz = ir*side_numdof_ + 2;
 
       for(int ic=0; ic<nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*bg_numdof_ + 0;
+        int iVely = ic*bg_numdof_ + 1;
+        int iVelz = ic*bg_numdof_ + 2;
 
         double tmp = side_funct_dyad_timefacfac(ir,ic)*stabfac;
 
@@ -1682,15 +1669,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_ViscCoercivity(
     // + gamma*mu/h_K (v2, u2))
     for(int ir=0; ir<side_nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*side_numdof_ + 0;
+      int idVely = ir*side_numdof_ + 1;
+      int idVelz = ir*side_numdof_ + 2;
 
       for(int ic=0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*side_numdof_+0;
+        int iVely = ic*side_numdof_+1;
+        int iVelz = ic*side_numdof_+2;
 
         double tmp = side_side_dyad_timefacfac(ir,ic)*stabfac;
 
@@ -1757,15 +1744,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
 
     for(int ir=0; ir<nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*bg_numdof_ + 0;
+      int idVely = ir*bg_numdof_ + 1;
+      int idVelz = ir*bg_numdof_ + 2;
 
       for(int ic=0; ic<nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*bg_numdof_ + 0;
+        int iVely = ic*bg_numdof_ + 1;
+        int iVelz = ic*bg_numdof_ + 2;
 
         double tmp = funct_dyad_timefacfac(ir,ic)*stabfac_conv;
 
@@ -1783,15 +1770,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
     }
     for(int ir=0; ir<nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*bg_numdof_ + 0;
+      int idVely = ir*bg_numdof_ + 1;
+      int idVelz = ir*bg_numdof_ + 2;
 
       for(int ic=0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*side_numdof_+0;
+        int iVely = ic*side_numdof_+1;
+        int iVelz = ic*side_numdof_+2;
 
         double tmp = side_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
 
@@ -1819,15 +1806,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
 
     for(int ir=0; ir<side_nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*side_numdof_ + 0;
+      int idVely = ir*side_numdof_ + 1;
+      int idVelz = ir*side_numdof_ + 2;
 
       for(int ic=0; ic<side_nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*side_numdof_+0;
+        int iVely = ic*side_numdof_+1;
+        int iVelz = ic*side_numdof_+2;
 
         double tmp = side_side_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
 
@@ -1845,15 +1832,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
 
     for(int ir=0; ir<side_nen_; ir++)
     {
-      int idVelx = ir*(nsd_+1) + 0;
-      int idVely = ir*(nsd_+1) + 1;
-      int idVelz = ir*(nsd_+1) + 2;
+      int idVelx = ir*side_numdof_ + 0;
+      int idVely = ir*side_numdof_ + 1;
+      int idVelz = ir*side_numdof_ + 2;
 
       for(int ic=0; ic<nen_; ic++)
       {
-        int iVelx = ic*(nsd_+1)+0;
-        int iVely = ic*(nsd_+1)+1;
-        int iVelz = ic*(nsd_+1)+2;
+        int iVelx = ic*bg_numdof_ + 0;
+        int iVely = ic*bg_numdof_ + 1;
+        int iVelz = ic*bg_numdof_ + 2;
 
         double tmp = side_funct_dyad_timefacfac(ir,ic)*(-1*stabfac_conv);
 
@@ -1886,15 +1873,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
    // - beta *n_b (k1*vb,ub)
    for(int ir=0; ir<nen_; ir++)
    {
-     int idVelx = ir*(nsd_+1) + 0;
-     int idVely = ir*(nsd_+1) + 1;
-     int idVelz = ir*(nsd_+1) + 2;
+     int idVelx = ir*bg_numdof_ + 0;
+     int idVely = ir*bg_numdof_ + 1;
+     int idVelz = ir*bg_numdof_ + 2;
 
      for(int ic=0; ic<nen_; ic++)
      {
-       int iVelx = ic*(nsd_+1)+0;
-       int iVely = ic*(nsd_+1)+1;
-       int iVelz = ic*(nsd_+1)+2;
+       int iVelx = ic*bg_numdof_ + 0;
+       int iVely = ic*bg_numdof_ + 1;
+       int iVelz = ic*bg_numdof_ + 2;
 
        double tmp = -kappa1*funct_dyad_timefacfac(ir,ic)*stabfac_conv;
 
@@ -1916,15 +1903,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
    // + beta *n_b (k1*vb,ue)
    for(int ir=0; ir<nen_; ir++)
    {
-     int idVelx = ir*(nsd_+1) + 0;
-     int idVely = ir*(nsd_+1) + 1;
-     int idVelz = ir*(nsd_+1) + 2;
+     int idVelx = ir*bg_numdof_ + 0;
+     int idVely = ir*bg_numdof_ + 1;
+     int idVelz = ir*bg_numdof_ + 2;
 
      for(int ic=0; ic<side_nen_; ic++)
      {
-       int iVelx = ic*(nsd_+1)+0;
-       int iVely = ic*(nsd_+1)+1;
-       int iVelz = ic*(nsd_+1)+2;
+       int iVelx = ic*side_numdof_+0;
+       int iVely = ic*side_numdof_+1;
+       int iVelz = ic*side_numdof_+2;
 
        double tmp = kappa1*side_funct_dyad_timefacfac(ic,ir)*stabfac_conv;
 
@@ -1945,15 +1932,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
    // - beta *n_b (k2*ve,ub)
    for(int ir=0; ir<side_nen_; ir++)
    {
-     int idVelx = ir*(nsd_+1) + 0;
-     int idVely = ir*(nsd_+1) + 1;
-     int idVelz = ir*(nsd_+1) + 2;
+     int idVelx = ir*side_numdof_ + 0;
+     int idVely = ir*side_numdof_ + 1;
+     int idVelz = ir*side_numdof_ + 2;
 
      for(int ic=0; ic<nen_; ic++)
      {
-       int iVelx = ic*(nsd_+1)+0;
-       int iVely = ic*(nsd_+1)+1;
-       int iVelz = ic*(nsd_+1)+2;
+       int iVelx = ic*bg_numdof_ + 0;
+       int iVely = ic*bg_numdof_ + 1;
+       int iVelz = ic*bg_numdof_ + 2;
 
        double tmp = -kappa2*side_funct_dyad_timefacfac(ir,ic)*stabfac_conv;
 
@@ -1975,15 +1962,15 @@ void SideImpl<distype, side_distype, numdof>::NIT_Stab_InflowCoercivity(
    // beta *n_b (k2*ve, ue)
    for(int ir=0; ir<side_nen_; ir++)
    {
-     int idVelx = ir*(nsd_+1) + 0;
-     int idVely = ir*(nsd_+1) + 1;
-     int idVelz = ir*(nsd_+1) + 2;
+     int idVelx = ir*side_numdof_ + 0;
+     int idVely = ir*side_numdof_ + 1;
+     int idVelz = ir*side_numdof_ + 2;
 
      for(int ic=0; ic<side_nen_; ic++)
      {
-       int iVelx = ic*(nsd_+1)+0;
-       int iVely = ic*(nsd_+1)+1;
-       int iVelz = ic*(nsd_+1)+2;
+       int iVelx = ic*side_numdof_+0;
+       int iVely = ic*side_numdof_+1;
+       int iVelz = ic*side_numdof_+2;
 
        double tmp = kappa2*side_side_dyad_timefacfac(ir,ic)*stabfac_conv;
 
@@ -2021,8 +2008,8 @@ void EmbImpl<distype, emb_distype>::NIT2_Stab_InflowCoercivity(
     const LINALG::Matrix<nsd_,1>&            ivelint_WDBC_JUMP,                ///< prescribed interface velocity or jump vector
     const LINALG::Matrix<nen_,1>&            funct_timefacfac,                 ///< funct * timefacfac
     const LINALG::Matrix<nen_,nen_>&         funct_dyad_timefacfac,            ///< (funct^T * funct) * timefacfac
-    const LINALG::Matrix<emb_nen_,1>&        emb_funct_timefacfac,            ///< sidefunct^T * timefacfac
-    const LINALG::Matrix<emb_nen_,nen_>&     emb_funct_dyad_timefacfac,       ///< (sidefunct^T * funct) * timefacfac
+    const LINALG::Matrix<emb_nen_,1>&        emb_funct_timefacfac,             ///< sidefunct^T * timefacfac
+    const LINALG::Matrix<emb_nen_,nen_>&     emb_funct_dyad_timefacfac,        ///< (sidefunct^T * funct) * timefacfac
     const LINALG::Matrix<emb_nen_,emb_nen_>& emb_emb_dyad_timefacfac,
     const double &                           kappa1,                           ///< mortaring weighting
     const double &                           kappa2,                           ///< mortaring weighting

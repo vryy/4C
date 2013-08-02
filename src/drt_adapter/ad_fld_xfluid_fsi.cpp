@@ -30,13 +30,13 @@ Maintainer:  Benedikt Schott
 #include <set>
 /*======================================================================*/
 /* constructor */
-ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,
+ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,   // the XFluid object
     Teuchos::RCP<DRT::Discretization> xfluiddis,
     Teuchos::RCP<DRT::Discretization> soliddis,
     Teuchos::RCP<LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output )
-: FluidWrapper(fluid),
+: FluidWrapper(fluid),                                      // the XFluid object is set as fluid_ in the FluidWrapper
   xfluiddis_(xfluiddis),
   soliddis_(soliddis),
   solver_(solver),
@@ -66,6 +66,17 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+double ADAPTER::XFluidFSI::TimeScaling() const
+{
+  if (params_->get<bool>("interface second order"))
+    return 2./xfluid_->Dt();
+  else
+    return 1./xfluid_->Dt();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
 {
   //cout << "ExtractInterfaceForces (itrueresnp)" << endl;
@@ -87,7 +98,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceVeln()
   // meaning that it gets the velocity from the new time step
   // not clear? exactly! thats why the FSI time update should be more clear about it
   // needs discussion with the FSI people
-  return interface_->ExtractFSICondVector(xfluid_->IVelnp());
+  return interface_->ExtractFSICondVector(xfluid_->IVeln());
 }
 
 
@@ -110,3 +121,54 @@ void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector>
   interface_->InsertFSICondVector(idisp,xfluid_->IDispnp());
 
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+{
+
+  // get interface velocity at t(n)
+  const Teuchos::RCP<const Epetra_Vector> veln = interface_->ExtractFSICondVector(xfluid_->IVeln());
+
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().PointSameAs(veln->Map()))  { dserror("Maps do not match, but they have to."); }
+#endif
+
+  /*
+   * Delta u(n+1,i+1) = fac * Delta d(n+1,i+1) - dt * u(n)
+   *
+   *             / = 2 / dt   if interface time integration is second order
+   * with fac = |
+   *             \ = 1 / dt   if interface time integration is first order
+   */
+  const double timescale = TimeScaling();
+  fcx->Update(-timescale*xfluid_->Dt(),*veln,timescale);
+}
+
+
+/// return xfluid coupling matrix between structure and fluid as sparse matrices
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Fluid_Matrix()
+{
+  return xfluid_->C_Struct_Fluid_Matrix();
+}
+
+/// return xfluid coupling matrix between fluid and structure as sparse matrices
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Fluid_Struct_Matrix()
+{
+  return xfluid_->C_Fluid_Struct_Matrix();
+}
+
+/// return xfluid coupling matrix between structure and structure as sparse matrices
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Struct_Matrix()
+{
+  return xfluid_->C_Struct_Struct_Matrix();
+}
+
+/// return xfluid coupling matrix between structure and structure as sparse matrices
+Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
+{
+  return xfluid_->RHS_Struct_Vec();
+}
+

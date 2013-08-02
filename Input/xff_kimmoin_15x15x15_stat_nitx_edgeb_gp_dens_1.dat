@@ -86,7 +86,7 @@ BOUNDARY_GAUSS_POINTS_BY Tessellation //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // BoundaryTypeSigma // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-COUPLING_STRATEGY               xfluid_sided_mortaring          // embedded_sided_mortaring //
+COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_STAB_FAC                   35                              // in [10;100]
 VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length

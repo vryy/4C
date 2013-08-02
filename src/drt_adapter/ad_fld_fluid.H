@@ -511,6 +511,13 @@ namespace ADAPTER {
 
     //@}
 
+    //! @ XFluid specific routines
+
+    /// performs the cut and creates a new state class
+    virtual void CutAndSetStateVectors( bool isnewNewtonIncrement ) = 0;
+
+    //@}
+
     /// integrate FSI interface shape functions
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() = 0;
 

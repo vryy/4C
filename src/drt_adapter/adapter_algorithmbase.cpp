@@ -43,13 +43,15 @@ void ADAPTER::AlgorithmBase::SetTimeStep(double time, int step)
 void ADAPTER::AlgorithmBase::PrintHeader()
 {
   if (Comm().MyPID()==0 and printscreen_ and (step_%printscreen_==0))
-	  IO::cout << "\n"
-	  	  	   << method_ << "\n"
-               << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
-               << "     DT = " << std::scientific << dt_
-               << "     STEP = " YELLOW_LIGHT << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_
-//               << "\n"
-//               << NOX::Utils::fill(82)
-               << "\n\n";
+  {
+    IO::cout << "\n"
+             << method_ << "\n"
+             << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
+             << "     DT = " << std::scientific << dt_
+             << "     STEP = " YELLOW_LIGHT << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_
+    //               << "\n"
+    //               << NOX::Utils::fill(82)
+             << "\n\n";
+  }
 }
 

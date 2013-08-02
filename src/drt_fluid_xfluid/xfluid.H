@@ -153,6 +153,16 @@ namespace FLD
       /// system matrix filled with EpetraFECrs matrix
       Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
 
+      /// fluid-structure coupling matrices filled with EpetraFECrs matrix
+      Teuchos::RCP<LINALG::SparseMatrix> C_sf_;             /// structure_interface - fluid coupling block
+      Teuchos::RCP<LINALG::SparseMatrix> C_fs_;             /// fluid - structure_interface coupling block
+      Teuchos::RCP<LINALG::SparseMatrix> C_ss_;             /// structure_interface - structure_interface coupling block
+
+      // fluid-structure coupling rhs vector
+      Teuchos::RCP<Epetra_Vector>        rhC_s_;            /// structure_interface rhs block
+      Teuchos::RCP<Epetra_Vector>        rhC_s_col_;            /// structure_interface rhs block in col map
+
+
       /// maps for extracting Dirichlet and free DOF sets
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
@@ -213,6 +223,9 @@ namespace FLD
 
       /// Krylov space projection map extractor
       Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
+
+      // dof-row maps
+      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
 
       //! @name dof-row maps for output
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
@@ -377,7 +390,7 @@ namespace FLD
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
-    void CutAndSetStateVectors();
+    void CutAndSetStateVectors( bool isnewNewtonIncrement=false ); /// standard is timeintegration for new timestep, otherwise for new newton increment
 
     void TransferDofsBetweenSteps(
         const Teuchos::RCP<DRT::Discretization>          dis,                      /// discretization
@@ -429,7 +442,7 @@ namespace FLD
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
     Teuchos::RCP<const Epetra_Vector> InitialGuess() { std::cout << "InitialGuess" <<std::endl;  return state_->incvel_; }
-    Teuchos::RCP<Epetra_Vector> Residual()     { std::cout << "Residual" << std::endl;     return state_->residual_; }
+    Teuchos::RCP<Epetra_Vector> Residual()     { return state_->residual_; }
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { std::cout << "Xfluid_TrueResidual" << std::endl; return state_->trueresidual_; }
@@ -453,13 +466,22 @@ namespace FLD
     // @}
 
 
+    Teuchos::RCP<const Epetra_Map>     DofRowMap() { return state_->fluiddofrowmap_; }
+
     Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
-    Teuchos::RCP<const Epetra_Map> VelocityRowMap() const { return state_->velpressplitter_->OtherMap(); }
-    Teuchos::RCP<const Epetra_Map> PressureRowMap() const { return state_->velpressplitter_->CondMap(); }
+    Teuchos::RCP<const Epetra_Map>     VelocityRowMap() { return state_->velpressplitter_->OtherMap(); }
+    Teuchos::RCP<const Epetra_Map>     PressureRowMap() { return state_->velpressplitter_->CondMap(); }
 
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_); }
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
+
+    /// return coupling matrix between fluid and structure as sparse matrices
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->C_sf_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->C_fs_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix(){ return state_->C_ss_;}
+
+    Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec(){ return state_->rhC_s_; }
 
 //    Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f){ return state_->fluidfluidsplitter_.ExtractFluidVector(f); }
 
@@ -467,7 +489,10 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
 
     /// provide access to the Dirichlet maps
-    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->dbcmaps_;}
+    //const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->dbcmaps_;}
+
+    /// Return MapExtractor for Dirichlet boundary conditions
+    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(){ return state_->dbcmaps_; }
 
     /// Expand the Dirichlet DOF set
     ///
@@ -484,7 +509,7 @@ namespace FLD
     /// set the maximal number of nonlinear steps
     void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
-    /// scale the residual
+    /// scale the residual (inverse of the weighting of the quantities w.r.t the new timestep)
     double ResidualScaling() const
     {
       if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
@@ -605,6 +630,9 @@ namespace FLD
 
     /// coupling strategy (xfluid-sided, embedded-sided)
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;
+
+//    /// monolithic fsi coupling or standard fluid routine with weak Dirichlet boundary conditions?
+//    bool monolithic_fsi_coupling_;
 
     //! @name setting an (initial) interface velocity
     enum INPAR::XFEM::InterfaceInitVel interface_vel_init_;
