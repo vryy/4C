@@ -1,0 +1,143 @@
+/*!----------------------------------------------------------------------
+\file so3_ssn_plast_eletypes.H
+
+<pre>
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef SO3_SSN_PLAST_ELETYPES_H_
+#define SO3_SSN_PLAST_ELETYPES_H_
+
+#include "so_hex8.H"
+#include "so_hex8fbar.H"
+#include "so_tet4.H"
+
+namespace DRT
+{
+// forward declarations
+class Discretization;
+
+namespace ELEMENTS
+{
+/*----------------------------------------------------------------------*
+ * HEX8 element
+ *----------------------------------------------------------------------*/
+  class So_hex8PlastType : public So_hex8Type
+  {
+  public:
+
+    std::string Name() const { return "So_hex8PlastType"; }
+
+    static So_hex8PlastType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create(
+      const string eletype,
+      const string eledistype,
+      const int id,
+      const int owner
+      );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition(
+      std::map<std::string,
+      std::map<std::string,
+      DRT::INPUT::LineDefinition> > & definitions
+      );
+
+  private:
+
+    static So_hex8PlastType instance_;
+
+  };  // class So_hex8ThermoType
+
+
+/*----------------------------------------------------------------------*
+ * HEX8FBAR element
+ *----------------------------------------------------------------------*/
+  class So_hex8fbarPlastType : public So_hex8fbarType
+  {
+  public:
+
+    std::string Name() const { return "So_hex8fbarPlastType"; }
+
+    static So_hex8fbarPlastType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create(
+      const string eletype,
+      const string eledistype,
+      const int id,
+      const int owner
+      );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition(
+      std::map<std::string,
+      std::map<std::string,
+      DRT::INPUT::LineDefinition> > & definitions
+      );
+
+  private:
+
+    static So_hex8fbarPlastType instance_;
+
+  };  // class So_hex8fbarPlastType
+
+
+/*----------------------------------------------------------------------------*
+ * TET4 Element
+ *----------------------------------------------------------------------------*/
+  class So_tet4PlastType : public So_tet4Type
+  {
+  public:
+
+    std::string Name() const { return "So_tet4PlastType"; }
+
+    static So_tet4PlastType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create(
+      const string eletype,
+      const string eledistype,
+      const int id,
+      const int owner
+      );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition(
+      std::map<std::string,
+      std::map<std::string,
+      DRT::INPUT::LineDefinition> > & definitions
+      );
+
+  private:
+
+    static So_tet4PlastType instance_;
+
+  };  // class So_tet4PlastType
+
+
+}  // namespace ELEMENTS
+
+}  // namespace DRT
+
+
+/*----------------------------------------------------------------------*/
+#endif  // SO3_SSN_PLAST_ELETYPES_H_

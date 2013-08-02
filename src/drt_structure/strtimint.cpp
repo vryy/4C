@@ -53,6 +53,7 @@ Maintainer: Alexander Popp
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_statmech/statmech_manager.H"
+#include "../drt_plastic_ssn/plastic_ssn_manager.H"
 #include "../drt_stru_multi/microstatic.H"
 
 #include "../linalg/linalg_sparsematrix.H"
@@ -60,6 +61,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_solver.H"
 
 #include "../drt_so3/so_sh8p8.H"
+#include "../drt_so3/so3_ssn_plast_eletypes.H"
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_io/io_pstream.H"
@@ -287,6 +289,14 @@ STR::TimInt::TimInt
     // corresponding manager object stored via #cmtman_ is created and all relevant
     // stuff is initialized. Else, #cmtman_ remains a Teuchos::null pointer.
     PrepareContactMeshtying(sdynparams);
+  }
+
+  // check for elements using a semi-smooth Newton method for plasticity
+  {
+    // If at least one such element exists, then a
+    // corresponding manager object stored via #ssnplastman_ is created and all relevant
+    // stuff is initialized. Else, #ssnplastman_ remains a Teuchos::null pointer.
+    PrepareSemiSmoothPlasticity();
   }
 
   // check for statistical mechanics
@@ -633,6 +643,24 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     }
   }
 
+  return;
+}
+/*----------------------------------------------------------------------*/
+/* calculate stresses and strains on micro-scale */
+void STR::TimInt::PrepareSemiSmoothPlasticity()
+{
+  for (int i=0; i<discret_->NumMyColElements(); i++)
+  {
+    DRT::Element* actele = discret_->lColElement(i);
+    if (   actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_tet4PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_hex8fbarPlastType::Instance()
+       )
+    {
+      plastman_=Teuchos::rcp(new UTILS::PlastSsnManager(discret_));
+      return;
+    }
+  }
   return;
 }
 
@@ -2042,6 +2070,10 @@ void STR::TimInt::ApplyForceStiffInternal
   p.set("damping", damping_);
   p.set<int>("young_temp", young_temp_);
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+
+  // set plasticity data
+  if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState(0,"residual displacement", disi);
@@ -2059,6 +2091,9 @@ void STR::TimInt::ApplyForceStiffInternal
 
   discret_->Evaluate(p, stiff, damp, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
+
+  // get plasticity data
+  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
 
 #if 0
   if (pressure_ != Teuchos::null)
@@ -2105,6 +2140,9 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
     p.set("timintfac_dis", timintfac_dis);
     p.set("timintfac_vel", timintfac_vel);
 
+    // set plasticity data
+    if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+
     discret_->ClearState();
     discret_->SetState(0,"residual displacement", disi);
     discret_->SetState(0,"displacement", dis);
@@ -2113,6 +2151,9 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
 
     discret_->Evaluate(p, stiff, mass, fint, finert, Teuchos::null);
     discret_->ClearState();
+
+    // get plasticity data
+    if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
 
     mass->Complete();
 
@@ -2179,6 +2220,10 @@ void STR::TimInt::ApplyForceInternal
   p.set("total time", time);
   p.set("delta time", dt);
   p.set<int>("young_temp", young_temp_);
+
+  // set plasticity data
+  if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
@@ -2192,6 +2237,10 @@ void STR::TimInt::ApplyForceInternal
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
+
+  // get plasticity data
+  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
+
   discret_->ClearState();
 
   // where the fun starts

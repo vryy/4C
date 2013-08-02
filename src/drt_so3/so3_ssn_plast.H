@@ -1,0 +1,432 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file so3_ssn_plast.H
+
+<pre>
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
+</pre>
+*/
+
+
+/*----------------------------------------------------------------------*
+ | definitions                                              seitz 07/13 |
+ *----------------------------------------------------------------------*/
+#ifndef SO3_SSN_PLAST_H
+#define SO3_SSN_PLAST_H
+
+/*----------------------------------------------------------------------*
+ | headers                                                  seitz 07/13 |
+ *----------------------------------------------------------------------*/
+#include "so3_ssn_plast_eletypes.H"
+
+#include "../drt_tsi/kinematictype.H"
+#include "../drt_thermo/thermo_ele_impl_utils.H"
+
+// include header because number of Gauss points are determined
+// dependent on distype
+#include "../drt_fem_general/drt_utils_gausspoints.H"
+
+/*----------------------------------------------------------------------*
+ |                                                          seitz 07/13 |
+ *----------------------------------------------------------------------*/
+namespace DRT
+{
+class Discretization;
+
+namespace ELEMENTS
+{
+  //! A wrapper for 3-dimensional structural elements
+  class So3_Base
+  {
+
+  public:
+
+    //! @name Constructors and destructors and related methods
+
+    //! Destructor
+    virtual ~So3_Base(){};
+
+    //@}
+
+
+
+    //! kinematic type
+    GenKinematicType kintype_;
+
+    // get the kinematic type from the corresponding cloned element
+    // function is called in clone strategy in tsi_utils.cpp
+    GenKinematicType GetKinematicType()
+    {
+      return kintype_;
+    }
+  };  // class So3_Base
+
+
+  //! A C++ version of a 3 dimensional solid element with modifications von Mises
+  //! plasticity using a semi-smooth Newton method
+  //!
+  //! A structural 3 dimensional solid displacement element for large deformations
+  //! and with small and large strains
+  template<class so3_ele, DRT::Element::DiscretizationType distype>
+  class So3_Plast : public so3_ele,
+                     public So3_Base
+  {
+    //! @name Friends
+    friend class So_hex8PlastType;
+    friend class So_hex8fbarPlastType;
+    friend class So_tet4PlastType;
+
+  public:
+
+    //@}
+    //! @name Constructors and destructors and related methods
+
+
+    //! Standard Constructor
+    So3_Plast(
+      int id,  //!< (i) this element's global id
+      int owner  //!< elements owner
+      );
+
+    //! Copy Constructor
+    //! Makes a deep copy of a Element
+    So3_Plast(const So3_Plast& old);
+
+    //! Destructor
+    virtual ~So3_Plast(){};
+
+    //@}
+
+    //! number of element nodes
+    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    //! number of space dimensions
+    static const int nsd_ = 3;
+    //! number of dofs per node
+    static const int numdofpernode_ = 3;
+    //! total dofs per element
+    static const int numdofperelement_ = numdofpernode_ * nen_;
+    //! number of strains/stresses
+    static const int numstr_ = 6;
+    //! number of Gauss points per element (value is added in so3_thermo.cpp)
+    int numgpt_;
+    //! static const is required for fixedsizematrices
+    //! TODO maybe more beauty is possible
+    static const int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
+
+
+    //! @name Acess methods
+
+    //! Deep copy this instance of Solid3 and return pointer to the copy
+    //!
+    //! The Clone() method is used from the virtual base class Element in cases
+    //! where the type of the derived class is unknown and a copy-ctor is needed
+    DRT::Element* Clone() const;
+
+    //! Return unique ParObject id
+    //!
+    //! every class implementing ParObject needs a unique id defined at the top of
+    //! this file.
+    virtual int UniqueParObjectId() const;
+
+
+    //! Pack this class so it can be communicated
+    //! Pack and \ref Unpack are used to communicate this element
+    virtual void Pack(DRT::PackBuffer& data) const;
+
+    //! Unpack data from a char vector into this class
+    //! Pack and \ref Unpack are used to communicate this element
+    virtual void Unpack(const std::vector<char>& data);
+
+    //! Get number of degrees of freedom of a certain node in case of multiple
+    //! dofsets (implements pure virtual DRT::Element)
+    //!
+    //! The element decides how many degrees of freedom its nodes must have.
+    virtual int NumDofPerNode() const
+    {
+        return nsd_;
+    };
+
+    //@}
+
+    //! @name Access methods
+
+    //! Print this element
+    void Print(ostream& os) const  ;
+
+    //! return elementtype
+    virtual DRT::ElementType& ElementType() const;
+
+    //@}
+
+    //! @name Input and Creation
+
+    //! Query names of element data to be visualized using BINIO
+    //!
+    //! The element fills the provided map with key names of
+    //! visualization data the element wants to visualize AT THE CENTER
+    //! of the element geometry. The values is supposed to be dimension of the
+    //! data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+    //! or 9 (nonsym. tensor)
+    //!
+    //! Example:
+    //! \code
+    //!   // Name of data is 'Owner', dimension is 1 (scalar value)
+    //!   names.insert(std::pair<string,int>("Owner",1));
+    //!   // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+    //!   names.insert(std::pair<string,int>("StressesXYZ",6));
+    //! \endcode
+    //!
+    //!  names (out): On return, the derived class has filled names with key
+    //!               names of data it wants to visualize and with int dimensions
+    //!               of that data.
+    virtual void VisNames(std::map<string,int>& names);
+
+    //!  Query data to be visualized using BINIO of a given name
+    //!
+    //! The method is supposed to call this base method to visualize the owner of
+    //! the element.
+    //! If the derived method recognizes a supported data name, it shall fill it
+    //! with corresponding data.
+    //! If it does NOT recognizes the name, it shall do nothing.
+    //!
+    //! warning: the method must not change size of data
+    //!
+    //!  name (in):   Name of data that is currently processed for visualization
+    //! \param data (out):  data to be filled by element if element recognizes the name
+    virtual bool VisData(const string& name, std::vector<double>& data);
+
+    //! read input for this element
+    bool ReadElement(
+      const std::string& eletype,  //!< so3plast(fbar)
+      const std::string& eledistype,  //!< hex8,tet4,...
+      DRT::INPUT::LineDefinition* linedef  //!< what parameters have to be read
+      );
+
+    //@}
+
+    //! @name Evaluation
+
+    //! evaluate an element
+    //! evaluate element stiffness, mass, internal forces, etc.
+    //!
+    //! if NULL on input, the controlling method does not expect the element
+    //!  to fill these matrices or vectors.
+    //!
+    //!  \return 0 if successful, negative otherwise
+    int Evaluate(
+        Teuchos::ParameterList& params,//!< ParameterList for communication between control routine and elements
+        DRT::Discretization& discretization, //!< pointer to discretization for de-assembly
+        DRT::Element::LocationArray& la,  //!< location array for de-assembly
+        Epetra_SerialDenseMatrix& elemat1_epetra, //!< (stiffness-)matrix to be filled by element.
+        Epetra_SerialDenseMatrix& elemat2_epetra,//!< (mass-)matrix to be filled by element.
+        Epetra_SerialDenseVector& elevec1_epetra,//!< (internal force-)vector to be filled by element
+        Epetra_SerialDenseVector& elevec2_epetra, //!< vector to be filled by element
+        Epetra_SerialDenseVector& elevec3_epetra//!< vector to be filled by element
+      );
+
+    //@}
+
+    //! init the inverse of the jacobian and its determinant in the material
+    //! configuration
+    virtual void InitJacobianMapping();
+
+    //@}
+
+  protected:
+
+    //! don't want = operator
+    So3_Plast& operator = (const So3_Plast& old);
+
+    //! action parameters recognized by so_hex8
+    enum ActionType
+    {
+      none,
+      calc_struct_linstiff,  //!< geometrical linear analysis: stiffness matrix
+      calc_struct_nlnstiff,  //!< stiffness matrix
+      calc_struct_internalforce,  //!< internal force
+      calc_struct_linstiffmass,  //!< geometrical linear analysis: internal force,
+                                 //!< its stiffness and mass matrix
+      calc_struct_nlnstiffmass,  //!< internal force, its stiffness and mass matrix
+      calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
+      calc_struct_stress,  //!< calculate stresses
+      calc_struct_update_istep,  //!< update all at element level
+      calc_struct_reset_istep,  //!< reset elementwise internal variables
+                                //!< during iteration to last converged state
+                                //!< needed for predictor TangDis
+      postprocess_stress  //!< postprocess stresses
+    };
+
+    //! vector of inverses of the jacobian in material frame
+    std::vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
+    //! determinant of Jacobian in material frame
+    std::vector<double> detJ_;
+    //! container containing all kind of solid3 thisandthat
+    DRT::Container data_;
+    //! vector of coordinates of current integration point in reference coordinates
+    std::vector<LINALG::Matrix<nsd_,1> > xsi_;
+
+    DRT::UTILS::GaussIntegration intpoints_;
+
+    //! @name plasticity related stuff
+
+
+    //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
+    virtual void nln_stiffmass(
+        std::vector<int>&              lm,             // location matrix
+        std::vector<double>&           disp,           // current displacements
+        std::vector<double>&           residual,       // current residual displ
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+        const INPAR::STR::StressType   iostress,  // stress output option
+        const INPAR::STR::StrainType   iostrain,  // strain output option
+        const int MyPID  // processor id
+        );
+
+    //! Calculate nonlinear stiffness and mass matrix
+    //! implementation for hex8fbar elements differs from standard implementation
+    virtual void nln_stiffmass_fbar(
+        std::vector<int>&              lm,             // location matrix
+        std::vector<double>&           disp,           // current displacements
+        std::vector<double>&           residual,       // current residual displ
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+        const INPAR::STR::StressType   iostress,  // stress output option
+        const INPAR::STR::StrainType   iostrain,  // strain output option
+        const int MyPID  // processor id
+        );
+
+    //! Calculate linear stiffness and mass matrix
+    virtual void lin_stiffmass(
+        std::vector<int>&              lm,             // location matrix
+        std::vector<double>&           disp,           // current displacements
+        std::vector<double>&           residual,       // current residual displ
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+        const INPAR::STR::StressType   iostress,  // stress output option
+        const INPAR::STR::StrainType   iostrain,  // strain output option
+        const int MyPID  // processor id
+        );
+
+    //! Evaluate (hyper)elastic material law
+    virtual void EvaluateELasticMaterial(const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<6,1>* glstrain,
+        Teuchos::ParameterList& params,
+        LINALG::Matrix<6,1>* stress,
+        LINALG::Matrix<6,6>* cmat);
+
+    //! calculate the exponential of a symmetric 3x3 matrix
+    void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
+    //! calculate the derivative of the exponential of a symmetric 3x3 matrix
+    void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
+
+    // convert indices
+    int TensorToVoigt(int i, int j)
+    {
+      if      (i==0 && j==0)                     return 0;
+      else if (i==1 && j==1)                     return 1;
+      else if (i==2 && j==2)                     return 2;
+      else if ((i==0 && j==1) || (i==1 && j==0)) return 3;
+      else if ((i==2 && j==1) || (i==1 && j==2)) return 4;
+      else if ((i==0 && j==2) || (i==2 && j==0)) return 5;
+      else dserror("you should not be here");
+      return -1;
+    }
+
+    // pull the b-operator to intermediate configuration
+    // bopOut_abi = bopIn_ABi * F^-1_Aa * F^-1_Bb
+    void PullBop(const LINALG::Matrix<numstr_,numdofperelement_> bopIn,
+                LINALG::Matrix<numstr_,numdofperelement_>& bopOut,
+                LINALG::Matrix<3,3> Invdefgrd, double scalefac=1.);
+
+    // Add plastic increment of converged state to plastic history for nonlinear kinematics
+    void UpdatePlasticDeformation_nln();
+
+    // Add plastic increment of converged state to plastic history for nonlinear kinematics
+    void UpdatePlasticDeformation_lin();
+
+    //@}
+
+    //! calculate nonlinear B-operator
+    void CalculateBop(
+      LINALG::Matrix<numstr_,numdofperelement_>* bop,
+      LINALG::Matrix<nsd_,nsd_>* defgrd,
+      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      );
+
+    //! calculate linear B-operator
+    void CalculateBoplin(
+      LINALG::Matrix<numstr_,numdofperelement_>* boplin,
+      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      );
+
+    // return the accumulated plastic strain at given gp
+    double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_->at(gp)(0);}
+
+    //! @name plasticity related stuff
+
+    //@}
+
+  private:
+    DRT::Node** Nodes();
+
+    Teuchos::RCP<MAT::Material> Material() const;
+
+    int Id() const;
+
+
+    // additional plasticity stuff
+    Teuchos::RCP<MAT::Material> plasticmat_;   // plastic material containing yield strength, hardening, etc.
+    /// complementarity parameter
+    double cpl_;
+    /// stabilization parameter "s"
+    double stab_s_;
+
+    // plastic history variables ******************************************
+    // inverse plastic deformation gradient for each Gauss point at last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_plastic_defgrd_inverse_;
+
+    // plastic increment at each Gauss point at last Newton iteration
+    // for a slightly simpler implementation, we use Delta alpha^k=-Delta L^p instead of Delta L^p
+    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_iter_;
+
+    // accumulated plastic strain for each Gauss point at last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > last_alpha_isotropic_;
+
+    // accumulated plastic strain for each Gauss point at last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_alpha_kinematic_;
+
+    // classification, if the Gauss point is currently in the active (true) or inactive (false) set
+    Teuchos::RCP<std::vector<bool> > activity_state_;
+
+    // Kbb^-1 at each Gauss point for recovery of inner variables
+    Teuchos::RCP<std::vector<LINALG::Matrix<5,5> > > KbbInv_;
+
+    // Kbd at each Gauss point for recovery of inner variables
+    Teuchos::RCP<std::vector<LINALG::Matrix<5,numdofperelement_> > > Kbd_;
+
+    // f_b at each Gauss point for recovery of inner variables
+    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > fbeta_;
+
+  };  // class So3_Plast
+
+}  // namespace ELEMENTS
+}  // namespace DRT
+
+
+/*----------------------------------------------------------------------*/
+#endif  // SO3_SSN_PLAST_H

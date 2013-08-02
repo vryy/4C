@@ -545,6 +545,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // Plastic semi-smooth / von Mises
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticSemiSmooth",
+                                            "some other hyperleastic / plastic von Mises material",
+                                            INPAR::MAT::m_plsemismooth));
+
+    AddNamedReal(m,"YIELD","initial yield strength");
+    AddNamedReal(m,"ISOHARD","linear isotropic hardening");
+    AddNamedReal(m,"EXPISOHARD","exponent for nonlinear isotropic hardening");
+    AddNamedReal(m,"INFYIELD","inf yield stress for nonlinear isotropic hardening");
+    AddNamedReal(m,"KINHARD","linear kinematic hardening");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Hyperelasticity / finite strain von-Mises plasticity
   {
     Teuchos::RCP<MaterialDefinition> m

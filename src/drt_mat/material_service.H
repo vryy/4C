@@ -317,6 +317,70 @@ namespace MAT
                                      ///< \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31} ]\f$
     const LINALG::Matrix<6,6>& cmat  ///< constitutive tensor
     );
+
+  /*! \brief pull-back of the second pair of indices of C
+     * using the inverse deformation gradient Finv
+     *
+     * In tensor index notation this method does
+     * \f[
+     * Cout_{ijKL} := C_{ijkl} \cdot F^{inv}_{Kk} \cdot F^{inv}_{Ll}
+     * \f]
+     *
+   * \param Cin (in)      : Material tangent matrix to be pulled back
+   * \param Cout (out)    : Material tangent matrix that is pulled back
+   * \param Finv (in)     : Dense matrix (3 by 3) as inverse deformation gradient for the pull-back
+   */
+  void CmatPullbackSecondPair(LINALG::Matrix<6,6>& Cin,LINALG::Matrix<6,6>& Cout, LINALG::Matrix<3,3>& Finv);
+
+  /*! \brief pull-back of the first pair of indices of C
+     * using the inverse deformation gradient Finv
+     *
+     * In tensor index notation this method does
+     * \f[
+     * Cout_{ijKL} := C_{ijkl} \cdot F^{inv}_{Ii} \cdot F^{inv}_{Jj}
+     * \f]
+     *
+   * \param Cin (in)      : Material tangent matrix to be pulled back
+   * \param Cout (out)    : Material tangent matrix that is pulled back
+   * \param Finv (in)     : Dense matrix (3 by 3) as inverse deformation gradient for the pull-back
+   */
+  void CmatPullbackFirstPair(LINALG::Matrix<6,6>& Cin,LINALG::Matrix<6,6>& Cout, LINALG::Matrix<3,3>& Finv);
+
+  /*! \brief pull-back of all indices of C
+     * using the inverse deformation gradient Finv
+     *
+     * In tensor index notation this method does
+     * \f[
+     * Cout_{ijKL} := C_{ijkl} \cdot F^{inv}_{Ii} \cdot F^{inv}_{Jj} \cdot F^{inv}_{Kk} \cdot F^{inv}_{Ll}
+     * \f]
+     *
+   * \param Cin (in)      : Material tangent matrix to be pulled back
+   * \param Cout (out)    : Material tangent matrix that is pulled back
+   * \param Finv (in)     : Dense matrix (3 by 3) as inverse deformation gradient for the pull-back
+   */
+  void CmatPullbackAll(LINALG::Matrix<6,6>& Cin,LINALG::Matrix<6,6>& Cout, LINALG::Matrix<3,3>& Finv);
+
+  /*! \brief Add the derivative of the square of a tensor to a
+   *         4th order symmetric material tensor in matrix notation
+   *
+   * In tensor index notation this method does
+   * \f[
+   * C_{IJKL} := ScalarThis \cdot C_{IJKL}
+   *          + ScalarDX2 \cdot \frac{d (X^2)_{IJ}}{d X_{KL}}
+   * \f]
+   *
+   * compute the derivative of the square of a symmetric 2nd order
+   * tensor w.r.t. to the tensor add the result to
+   * a 4th order tensor (in Voigt matrix notation!) using the
+   * symmetry-conditions inherent to elasticity tensors.
+   * 
+   * \param C (in/out)    : Material tangent matrix to be modified
+   * \param ScalarDX2 (in): Scalar to multiply with dX^2/dX
+   * \param X (in)        : Dense matrix (3 by 3)
+   * \param ScalarThis (in): Scalar to multiply with C before adding dX^2/dX
+   */
+  void AddToCmatDerivTensorSquare(LINALG::Matrix<6,6>& C, double ScalarDX2, LINALG::Matrix<3,3> X, double ScalarThis);
+
 }
 
 #endif

@@ -76,6 +76,11 @@ namespace STATMECH
   class StatMechManager;
 }
 
+namespace UTILS
+{
+  class PlastSsnManager;
+}
+
 namespace POTENTIAL
 {
   class PotentialManager;
@@ -872,12 +877,19 @@ namespace STR
     //! return bool indicating if contact or meshtying are defined
     bool HaveContactMeshtying() { return (cmtman_ != Teuchos::null); }
 
+    //! return bool indicating if contact or meshtying are defined
+    bool HaveSemiSmoothPlasticity() { return (plastman_ != Teuchos::null); }
+
     //! return contact/meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
 
     //! Check if contact / meshtying is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
     void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
+
+    //! Check if plasticity elements are involved and
+    //! create manager object + initialize all relevant stuff if so
+    void  PrepareSemiSmoothPlasticity();
 
     //! Prepare contact at the beginning of each new time step
     //! (call dynamic redistribution of contact interface(s) AND
@@ -1023,6 +1035,9 @@ namespace STR
 
     //! beam contact
     Teuchos::RCP<CONTACT::Beam3cmanager>   beamcman_;
+
+    //! semi-smooth plasticity
+    Teuchos::RCP<UTILS::PlastSsnManager>   plastman_;
 
     //! statistical mechanics
     Teuchos::RCP<STATMECH::StatMechManager>   statmechman_;

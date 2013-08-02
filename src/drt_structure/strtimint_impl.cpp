@@ -44,6 +44,8 @@ Maintainer: Alexander Popp
 #include "../drt_patspec/patspec.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
+#include "../drt_plastic_ssn/plastic_ssn_manager.H"
+
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntImpl::TimIntImpl
@@ -982,6 +984,17 @@ bool STR::TimIntImpl::Converged()
 
   }  // end HaveMeshtyingContact()
 
+  // check convergence of plastic active set
+  bool cplast=true;
+  if (HaveSemiSmoothPlasticity())
+  {
+    cplast=plastman_->Converged();
+    if (!cplast)
+      if (discret_->Comm().MyPID()==0)
+        std::cout << "Active plastic set has changed"<< std::endl;
+  }
+
+
   //pressure related stuff
   if (pressure_ != Teuchos::null)
   {
@@ -1039,7 +1052,7 @@ bool STR::TimIntImpl::Converged()
 
 
   // return things
-  return (conv and cc and ccontact);
+  return (conv and cc and ccontact and cplast);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2448,6 +2461,12 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     }
   }
 
+  // add plasticity information
+  if (HaveSemiSmoothPlasticity())
+  {
+    oss << std::setw(10) << "#plastic";
+  }
+
   // finish oss
   oss << std::ends;
 
@@ -2581,6 +2600,13 @@ void STR::TimIntImpl::PrintNewtonIterText
         oss << std::setw(10) << cmtman_->GetStrategy().NumberOfSlipNodes();
     }
   }
+
+  // add plasticity information
+  if (HaveSemiSmoothPlasticity())
+  {
+    oss << std::setw(10) << plastman_->NumActivePlasticGP();
+  }
+
 
   // finish oss
   oss << std::ends;

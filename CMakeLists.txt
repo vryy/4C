@@ -442,6 +442,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/structporo.cpp
   src/drt_mat/structporo_reaction.cpp
   src/drt_mat/stvenantkirchhoff.cpp
+  src/drt_mat/plasticsemismooth.cpp
   src/drt_mat/sutherland.cpp
   src/drt_mat/thermostvenantkirchhoff.cpp
   src/drt_mat/thermoplasticlinelast.cpp
@@ -486,6 +487,9 @@ set(OBJS_DRT_MAT_LIB
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp
   src/drt_statmech/statmech_output.cpp
+)
+set(OBJS_DRT_PLASTIC_SSN
+  src/drt_plastic_ssn/plastic_ssn_manager.cpp
 )
 set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
@@ -689,6 +693,9 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_thermo.cpp
   src/drt_so3/so3_thermo_evaluate.cpp
   src/drt_so3/so3_thermo_eletypes.cpp
+  src/drt_so3/so3_ssn_plast.cpp
+  src/drt_so3/so3_ssn_plast_evaluate.cpp
+  src/drt_so3/so3_ssn_plast_eletypes.cpp
 )
 set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight.cpp
@@ -1652,6 +1659,7 @@ add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
+add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
@@ -1669,6 +1677,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_scatra
   alg_structure
   alg_statmech
+  alg_plastic_ssn
   alg_invanalysis
   alg_statinvanalysis
   alg_mlmc

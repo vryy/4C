@@ -1,0 +1,3099 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file so3_ssn_plast_evaluate.cpp
+\brief
+
+<pre>
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15271
+</pre>
+*/
+
+
+/*----------------------------------------------------------------------*
+ | headers                                                  seitz 07/13 |
+ *----------------------------------------------------------------------*/
+#include "so3_ssn_plast.H"
+#include "so3_ssn_plast_fwd.hpp"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/elasthyper.H"
+#include "../drt_mat/plasticsemismooth.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_mat/material_service.H"
+#include "Epetra_SerialDenseSolver.h"
+
+// headers of supported hyperelastic-materials
+
+/*----------------------------------------------------------------------*
+ | evaluate the element (public)                            seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
+  Teuchos::ParameterList& params,
+  DRT::Discretization& discretization,
+  DRT::Element::LocationArray& la,
+  Epetra_SerialDenseMatrix& elemat1_epetra,
+  Epetra_SerialDenseMatrix& elemat2_epetra,
+  Epetra_SerialDenseVector& elevec1_epetra,
+  Epetra_SerialDenseVector& elevec2_epetra,
+  Epetra_SerialDenseVector& elevec3_epetra
+  )
+{
+  // start with "none"
+  ActionType act = none;
+
+  // get the required action
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_linstiff")                        act =  calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")                        act =  calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce")                   act =  calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")                    act =  calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")                    act =  calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass")                   act =  calc_struct_nlnstifflmass;
+  else if (action=="calc_struct_stress")                          act =  calc_struct_stress;
+  else if (action=="calc_struct_update_istep")                    act =  calc_struct_update_istep;
+  else if (action=="calc_struct_reset_istep")                     act =  calc_struct_reset_istep;
+  else if (action=="postprocess_stress")                          act =  postprocess_stress;
+  else dserror("Unknown type of action for So3_Plast: %s",action.c_str());
+
+  // what should the element do
+  switch(act)
+  {
+  //============================================================================
+  // linear stiffness
+  case calc_struct_linstiff:
+  case calc_struct_linstiffmass:
+  {
+    dserror("only linear kinematics implemented yet");
+    break;
+  }
+
+  //============================================================================
+  // nonlinear stiffness
+  case calc_struct_internalforce:
+  {
+    // internal force vector
+    LINALG::Matrix<numdofperelement_,1> elevec1(elevec1_epetra.A(),true);
+    // elemat1+2, elevec2+3 are not used anyway
+
+    // need current displacement and residual/incremental displacements
+    Teuchos::RCP<const Epetra_Vector> disp
+      = discretization.GetState(0,"displacement");
+    Teuchos::RCP<const Epetra_Vector> res
+      = discretization.GetState(0,"residual displacement");
+    if ( (disp == Teuchos::null) or (res==Teuchos::null) )
+      dserror("Cannot get state vectors 'displacement' and/or residual");
+    std::vector<double> mydisp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+    std::vector<double> myres(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
+    // create a dummy element matrix to apply linearised EAS-stuff onto
+    LINALG::Matrix<numdofperelement_,numdofperelement_> myemat(true);
+
+    // fbar element?
+    DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+      = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+
+    // default: geometrically non-linear analysis with Total Lagrangean approach
+    if (kintype_ == geo_nonlinear)
+    {
+      if (!eleFBAR)
+        nln_stiffmass(la[0].lm_,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+            INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+      else
+        nln_stiffmass_fbar(la[0].lm_,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+            INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+    }
+    // geometric geo_linear
+    else if (kintype_ == geo_linear)
+    {
+      lin_stiffmass(la[0].lm_,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+    }
+    else
+      dserror("unknown kinematics type");
+
+
+    break;
+  }
+
+  //============================================================================
+  // nonlinear stiffness
+  case calc_struct_nlnstiff:
+  {
+    // stiffness
+    LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
+    LINALG::Matrix<numdofperelement_,numdofperelement_>* matptr = NULL;
+    if (elemat1.IsInitialized()) matptr = &elemat1;
+    LINALG::Matrix<numdofperelement_,1> elevec1(elevec1_epetra.A(),true);
+
+    // need current displacement and residual forces
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+    if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+    std::vector<double> mydisp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+    std::vector<double> myres(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
+
+    // fbar element?
+    DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+      = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+
+
+    // default: geometrically non-linear analysis with Total Lagrangean approach
+    if (kintype_ == geo_nonlinear)
+    {
+      if (!eleFBAR)
+        nln_stiffmass(la[0].lm_,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+            INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+      else
+        nln_stiffmass_fbar(la[0].lm_,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+            INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+    }
+    // geometric geo_linear
+    else if (kintype_ == geo_linear)
+    {
+      lin_stiffmass(la[0].lm_,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+    }
+    else
+      dserror("unknown kinematics type");
+
+    break;
+  }  // calc_struct_nlnstiff
+
+  //============================================================================
+  // (non)linear stiffness, mass matrix and internal force vector
+  case calc_struct_nlnstiffmass:
+  case calc_struct_nlnstifflmass:
+  {
+    // need current displacement and residual forces
+     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+     Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+     if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+     std::vector<double> mydisp(la[0].lm_.size());
+     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+     std::vector<double> myres(la[0].lm_.size());
+     DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
+     // stiffness
+     LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
+     // mass
+     LINALG::Matrix<numdofperelement_,numdofperelement_> elemat2(elemat2_epetra.A(),true);
+     // internal force
+     LINALG::Matrix<numdofperelement_,1> elevec1(elevec1_epetra.A(),true);
+
+     // fbar element?
+     DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+       = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+
+     // default: geometrically non-linear analysis with Total Lagrangean approach
+     if (kintype_ == geo_nonlinear)
+     {
+       if (!eleFBAR)
+         nln_stiffmass(la[0].lm_,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+             INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+       else
+         nln_stiffmass_fbar(la[0].lm_,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+             INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+     }
+     // geometric geo_linear
+     else if (kintype_ == geo_linear)
+     {
+       lin_stiffmass(la[0].lm_,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+           INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
+     }
+     else
+       dserror("unknown kinematics type");
+
+     if(act==calc_struct_nlnstifflmass)
+       // lump mass matrix
+       // we assume #elemat2 is a square matrix
+       for (int c=0; c<elemat2_epetra.N(); ++c)  // parse columns
+       {
+         double d = 0.0;
+         for (int r=0; r<elemat2_epetra.M(); ++r)  // parse rows
+         {
+           d += elemat2(r,c);  // accumulate row entries
+           elemat2(r,c) = 0.0;
+         }
+         elemat2(c,c) = d;  // apply sum of row entries on diagonal
+       }
+    break;
+  }  // calc_struct_nlnstiff(l)mass
+
+  case calc_struct_stress:
+  {
+    // elemat1+2,elevec1-3 are not used anyway
+
+    // nothing to do for ghost elements
+    if (discretization.Comm().MyPID() == so3_ele::Owner())
+    {
+      Teuchos::RCP<const Epetra_Vector> disp
+        = discretization.GetState(0,"displacement");
+      Teuchos::RCP<const Epetra_Vector> res
+        = discretization.GetState(0,"residual displacement");
+      if ( (disp == Teuchos::null) or (res == Teuchos::null) )
+        dserror("Cannot get state vectors 'displacement'");
+      Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos:: null);
+      if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
+
+      std::vector<double> mydisp((la[0].lm_).size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+      std::vector<double> myres((la[0].lm_).size());
+      DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
+
+      LINALG::Matrix<numgpt_post,numstr_> stress;
+      LINALG::Matrix<numgpt_post,numstr_> strain;
+      INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+
+      // fbar element?
+      DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+        = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+
+
+      // default: geometrically non-linear analysis with Total Lagrangean approach
+      if (kintype_ == geo_nonlinear)
+      {
+        if (!eleFBAR)
+          nln_stiffmass(la[0].lm_,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
+              iostress,iostrain,discretization.Comm().MyPID());
+        else
+          nln_stiffmass_fbar(la[0].lm_,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
+              iostress,iostrain,discretization.Comm().MyPID());
+      }
+      // geometric geo_linear
+      else if (kintype_ == geo_linear)
+      {
+        lin_stiffmass(la[0].lm_,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,
+            iostress,iostrain,discretization.Comm().MyPID());
+      }
+
+      else
+        dserror("unknown kinematics type");
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+      }
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+      }
+    }
+
+    break;
+  }
+
+
+  //============================================================================
+  // required for predictor TangDis --> can be helpful in compressible case!
+  case calc_struct_reset_istep:
+  {
+    for (int i=0; i<numgpt_; i++)
+      DalphaK_last_iter_->at(i).Clear();
+    break;
+  }
+
+  //============================================================================
+  case calc_struct_update_istep:
+  {
+    // update plastic deformation
+    // default: geometrically non-linear analysis with Total Lagrangean approach
+    if (kintype_ == geo_nonlinear)
+      UpdatePlasticDeformation_nln();
+    // geometric geo_linear
+    else if (kintype_ == geo_linear)
+      UpdatePlasticDeformation_lin();
+    else
+      dserror("unknown kinematics type");
+
+    break;
+  }  // calc_struct_update_istep
+
+// calc_struct_stifftemp
+
+  //============================================================================
+  default:
+    dserror("Unknown type of action for So3_Plast");
+    break;
+  } // action
+
+  return 0;
+}  // Evaluate()
+
+
+
+
+
+/*----------------------------------------------------------------------*
+ | calculate the nonlinear B-operator                       seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalculateBop(
+  LINALG::Matrix<numstr_,numdofperelement_>* bop,
+  LINALG::Matrix<nsd_,nsd_>* defgrd,
+  LINALG::Matrix<nsd_,nen_>* N_XYZ
+  )
+{
+  // lump mass matrix
+  if (bop != NULL)
+  {
+    /* non-linear B-operator (may so be called, meaning of B-operator is not so
+    **  sharp in the non-linear realm) *
+    **   B = F^{i,T} . B_L *
+    ** with linear B-operator B_L =  N_XYZ (6x24) = (3x8)
+    **
+    **   B    =   F  . N_XYZ
+    ** (6x24)   (3x3) (3x8)
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    */
+    for (int i=0; i<nen_; ++i)
+    {
+      (*bop)(0,numdofpernode_*i+0) = (*defgrd)(0,0)*(*N_XYZ)(0,i);
+      (*bop)(0,numdofpernode_*i+1) = (*defgrd)(1,0)*(*N_XYZ)(0,i);
+      (*bop)(0,numdofpernode_*i+2) = (*defgrd)(2,0)*(*N_XYZ)(0,i);
+      (*bop)(1,numdofpernode_*i+0) = (*defgrd)(0,1)*(*N_XYZ)(1,i);
+      (*bop)(1,numdofpernode_*i+1) = (*defgrd)(1,1)*(*N_XYZ)(1,i);
+      (*bop)(1,numdofpernode_*i+2) = (*defgrd)(2,1)*(*N_XYZ)(1,i);
+      (*bop)(2,numdofpernode_*i+0) = (*defgrd)(0,2)*(*N_XYZ)(2,i);
+      (*bop)(2,numdofpernode_*i+1) = (*defgrd)(1,2)*(*N_XYZ)(2,i);
+      (*bop)(2,numdofpernode_*i+2) = (*defgrd)(2,2)*(*N_XYZ)(2,i);
+      /* ~~~ */
+      (*bop)(3,numdofpernode_*i+0) = (*defgrd)(0,0)*(*N_XYZ)(1,i) + (*defgrd)(0,1)*(*N_XYZ)(0,i);
+      (*bop)(3,numdofpernode_*i+1) = (*defgrd)(1,0)*(*N_XYZ)(1,i) + (*defgrd)(1,1)*(*N_XYZ)(0,i);
+      (*bop)(3,numdofpernode_*i+2) = (*defgrd)(2,0)*(*N_XYZ)(1,i) + (*defgrd)(2,1)*(*N_XYZ)(0,i);
+      (*bop)(4,numdofpernode_*i+0) = (*defgrd)(0,1)*(*N_XYZ)(2,i) + (*defgrd)(0,2)*(*N_XYZ)(1,i);
+      (*bop)(4,numdofpernode_*i+1) = (*defgrd)(1,1)*(*N_XYZ)(2,i) + (*defgrd)(1,2)*(*N_XYZ)(1,i);
+      (*bop)(4,numdofpernode_*i+2) = (*defgrd)(2,1)*(*N_XYZ)(2,i) + (*defgrd)(2,2)*(*N_XYZ)(1,i);
+      (*bop)(5,numdofpernode_*i+0) = (*defgrd)(0,2)*(*N_XYZ)(0,i) + (*defgrd)(0,0)*(*N_XYZ)(2,i);
+      (*bop)(5,numdofpernode_*i+1) = (*defgrd)(1,2)*(*N_XYZ)(0,i) + (*defgrd)(1,0)*(*N_XYZ)(2,i);
+      (*bop)(5,numdofpernode_*i+2) = (*defgrd)(2,2)*(*N_XYZ)(0,i) + (*defgrd)(2,0)*(*N_XYZ)(2,i);
+    }
+  }
+}  // CalculateBop()
+
+
+/*----------------------------------------------------------------------*
+ | calculate the linear B-operator                          seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::CalculateBoplin(
+  LINALG::Matrix<numstr_,numdofperelement_>* boplin,
+  LINALG::Matrix<nsd_,nen_>* N_XYZ
+  )
+{
+  // lump mass matrix
+  if (boplin != NULL)
+  {
+    // linear B-operator B = N_XYZ
+    // disperse global derivatives to bop-lines
+    // bop is arranged as usual (refer to script FE or elsewhere):
+    // [ N1,X  0  0  | N2,X  0  0  | ... | Ni,X  0  0  ]
+    // [ 0  N1,Y  0  | 0  N2,Y  0  | ... | 0  Ni,Y  0  ]
+    // [ 0  0  N1,Z  | 0  0  N2,Z  | ... | 0  0  Ni,Z  ]
+    // [ N1,Y N1,X 0 | N2,Y N2,X 0 | ... | Ni,Y Ni,X 0 ]
+    // [ 0 N1,Z N1,Y | 0 N2,Z N2,Y | ... | 0 Ni,Z Ni,Y ]
+    // [ N1,Z 0 N1,X | N2,Z 0 N2,X | ... | Ni,Z 0 Ni,X ]
+    for (int i=0; i<nen_; ++i)
+    {
+      (*boplin)(0,numdofpernode_*i+0) = (*N_XYZ)(0,i);
+      (*boplin)(0,numdofpernode_*i+1) = 0.0;
+      (*boplin)(0,numdofpernode_*i+2) = 0.0;
+      (*boplin)(1,numdofpernode_*i+0) = 0.0;
+      (*boplin)(1,numdofpernode_*i+1) = (*N_XYZ)(1,i);
+      (*boplin)(1,numdofpernode_*i+2) = 0.0;
+      (*boplin)(2,numdofpernode_*i+0) = 0.0;
+      (*boplin)(2,numdofpernode_*i+1) = 0.0;
+      (*boplin)(2,numdofpernode_*i+2) = (*N_XYZ)(2,i);
+      /* ~~~ */
+      (*boplin)(3,numdofpernode_*i+0) = (*N_XYZ)(1,i);
+      (*boplin)(3,numdofpernode_*i+1) = (*N_XYZ)(0,i);
+      (*boplin)(3,numdofpernode_*i+2) = 0.0;
+      (*boplin)(4,numdofpernode_*i+0) = 0.0;
+      (*boplin)(4,numdofpernode_*i+1) = (*N_XYZ)(2,i);
+      (*boplin)(4,numdofpernode_*i+2) = (*N_XYZ)(1,i);
+      (*boplin)(5,numdofpernode_*i+0) = (*N_XYZ)(2,i);
+      (*boplin)(5,numdofpernode_*i+1) = 0.0;
+      (*boplin)(5,numdofpernode_*i+2) = (*N_XYZ)(0,i);
+    }
+  }
+}  // CalculateBoplin()
+
+
+
+
+/*----------------------------------------------------------------------*
+ | initialise Jacobian                                       dano 08/12 |
+ | is called once in Initialize() in so3_thermo_eletypes.cpp            |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::InitJacobianMapping()
+{
+  // get the material coordinates
+  LINALG::Matrix<nen_,nsd_> xrefe;
+  for (int i=0; i<nen_; ++i)
+  {
+    Node** nodes = Nodes();
+    if (!nodes) dserror("Nodes() returned null pointer");
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+  invJ_.resize(numgpt_);
+  detJ_.resize(numgpt_);
+  xsi_.resize(numgpt_);
+
+  // initialise the derivatives of the shape functions
+  LINALG::Matrix<nsd_,nen_> deriv;
+
+  // coordinates of the current integration point (xsi_)
+  for (int gp=0; gp<numgpt_; ++gp)
+  {
+    // get the coordinates of Gauss points, here use intrepid
+    const double* gpcoord = intpoints_.Point(gp);
+    for (int idim=0; idim<nsd_; idim++)
+    {
+      xsi_[gp](idim) = gpcoord[idim];
+    }
+    // first derivatives of shape functions (deriv)
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    // compute Jacobian matrix and determinant
+    // actually compute its transpose....
+    /*
+      +-            -+ T      +-            -+
+      | dx   dx   dx |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dr   dr   dr |
+      |              |        |              |
+      | dy   dy   dy |        | dx   dy   dz |
+      | --   --   -- |   =    | --   --   -- |
+      | dr   ds   dt |        | ds   ds   ds |
+      |              |        |              |
+      | dz   dz   dz |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dt   dt   dt |
+      +-            -+        +-            -+
+     */
+    // derivatives of coordinates w.r.t material coordinates xjm_ = dx/ds
+    invJ_[gp].Multiply(deriv,xrefe);
+    // xij_ = ds/dx
+    detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] < 1.0E-16)
+      dserror("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",detJ_[gp]);
+  }  // end gp loop
+
+  return;
+}  // InitJacobianMapping()
+
+/*----------------------------------------------------------------------*
+ | internal force, nonlinear stiffness, and mass            seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
+    std::vector<int>&              lm,             // location matrix
+    std::vector<double>&           disp,           // current displacements
+    std::vector<double>&           residual,       // current residual displ
+    LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+    LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+    LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+    LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+    LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+    Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType   iostress,  // stress output option
+    const INPAR::STR::StrainType   iostrain,  // strain output option
+    const int MyPID  // processor id
+    )
+{
+  // update element geometry 3D:
+  LINALG::Matrix<nen_,nsd_> xrefe;  // X, material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr;  // x, current  coord. of element
+
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<nen_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+  }
+
+  // we need the (residual) displacement -- current increment of displacement
+  LINALG::Matrix<numdofperelement_,1> res_d;
+  for (int i = 0; i<numdofperelement_; ++i)
+  {
+    res_d(i) = residual[i];
+  }
+
+  // compute derivatives N_XYZ at gp w.r.t. material coordinates
+  // by N_XYZ = J^-1 * N_rst
+  LINALG::Matrix<nsd_,nen_> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  LINALG::Matrix<nsd_,nsd_> defgrd(false);
+  // shape functions and their first derivatives
+  LINALG::Matrix<nen_,1> shapefunct;
+  LINALG::Matrix<nsd_,nen_> deriv;
+
+  // 3x3 LINALG matrix for temporary stuff
+  LINALG::Matrix<nsd_,nsd_> tmp1(false);
+  LINALG::Matrix<nsd_,nsd_> tmp2(false);
+
+  // get plastic material paramters
+  MAT::PlasticSemiSmooth* plmat = dynamic_cast<MAT::PlasticSemiSmooth*>(plasticmat_.access_private_ptr());
+  double kinhard=plmat->KinHard();
+  double isohard=plmat->IsoHard();
+  double expisohard=plmat->ExpIsoHard();
+  double infyield=plmat->InfYield();
+  double inityield=plmat->InitYield();
+
+  // converged active set
+  bool converged_active_set=true;
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  for (int gp=0; gp<numgpt_; ++gp)
+  {
+    // shape functions (shapefunct) and their first derivatives (deriv)
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
+    */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
+    double detJ = detJ_[gp]; // (6.22)
+
+    // (material) deformation gradient
+    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+
+    // calcualte total rcg/gl/ea for output
+    LINALG::Matrix<nsd_,nsd_> total_cauchygreen(false);
+    total_cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<numstr_,1> total_glstrain(false);
+    total_glstrain(0) = 0.5 * (total_cauchygreen(0,0) - 1.0);
+    total_glstrain(1) = 0.5 * (total_cauchygreen(1,1) - 1.0);
+    total_glstrain(2) = 0.5 * (total_cauchygreen(2,2) - 1.0);
+    total_glstrain(3) = total_cauchygreen(0,1);
+    total_glstrain(4) = total_cauchygreen(1,2);
+    total_glstrain(5) = total_cauchygreen(2,0);
+    // calculate nonlinear B-operator
+    LINALG::Matrix<numstr_,numdofperelement_> bop(false);
+    CalculateBop(&bop,&defgrd,&N_XYZ);
+
+    // strain output *********************************
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = total_glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * total_glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      tmp2(0,0) = total_glstrain(0);
+      tmp2(0,1) = 0.5*total_glstrain(3);
+      tmp2(0,2) = 0.5*total_glstrain(5);
+      tmp2(1,0) = tmp2(0,1);
+      tmp2(1,1) = total_glstrain(1);
+      tmp2(1,2) = 0.5*total_glstrain(4);
+      tmp2(2,0) = tmp2(0,2);
+      tmp2(2,1) = tmp2(1,2);
+      tmp2(2,2) = total_glstrain(2);
+
+      // inverse of deformation gradient
+      LINALG::Matrix<nsd_,nsd_> invdefgrd;
+      invdefgrd.Invert(defgrd);
+
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> total_euler_almansi;
+      tmp1.Multiply(tmp2,invdefgrd);
+      total_euler_almansi.MultiplyTN(invdefgrd,tmp1);
+
+      (*elestrain)(gp,0) = total_euler_almansi(0,0);
+      (*elestrain)(gp,1) = total_euler_almansi(1,1);
+      (*elestrain)(gp,2) = total_euler_almansi(2,2);
+      (*elestrain)(gp,3) = total_euler_almansi(0,1);
+      (*elestrain)(gp,4) = total_euler_almansi(1,2);
+      (*elestrain)(gp,5) = total_euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+    {
+      dserror("requested strain type not available");
+      break;
+    }
+    }// end of strain output **************************
+
+    // recover condensed variables from last iteration step *********
+    if (res_d.NormInf()!=0.)
+    {
+      // first part
+      LINALG::Matrix<5,1> tmp51;
+      tmp51.Multiply(KbbInv_->at(gp),fbeta_->at(gp));
+      DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+
+      // second part
+      LINALG::Matrix<5,numdofperelement_> tmp524;
+      tmp524.Multiply(KbbInv_->at(gp),Kbd_->at(gp));
+      tmp51.Multiply(tmp524,res_d);
+      DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+    }// end of recover *********************************************
+
+
+    // elastic deformation gradient
+    LINALG::Matrix<nsd_,nsd_> elastic_defgrd(false);
+    // inverse plastic deformation gradient
+    LINALG::Matrix<nsd_,nsd_> InvPlasticDefgrd(false);
+    // inverse plastic deformation gradient at last time step
+    LINALG::Matrix<nsd_,nsd_> InvPlasticDefgrdLast = last_plastic_defgrd_inverse_->at(gp);
+    // current plastic flow increment
+    LINALG::Matrix<nsd_,nsd_> DeltaAlphaK(false);
+    DeltaAlphaK(0,0) = DalphaK_last_iter_->at(gp)(0);
+    DeltaAlphaK(1,1) = DalphaK_last_iter_->at(gp)(1);
+    DeltaAlphaK(2,2) = -1.0*(DalphaK_last_iter_->at(gp)(0)+DalphaK_last_iter_->at(gp)(1));
+    DeltaAlphaK(0,1) = DalphaK_last_iter_->at(gp)(2);
+    DeltaAlphaK(1,0) = DalphaK_last_iter_->at(gp)(2);
+    DeltaAlphaK(1,2) = DalphaK_last_iter_->at(gp)(3);
+    DeltaAlphaK(2,1) = DalphaK_last_iter_->at(gp)(3);
+    DeltaAlphaK(0,2) = DalphaK_last_iter_->at(gp)(4);
+    DeltaAlphaK(2,0) = DalphaK_last_iter_->at(gp)(4);
+
+    tmp1=DeltaAlphaK;
+    MatrixExponential3x3(tmp1);
+    InvPlasticDefgrd.Multiply(InvPlasticDefgrdLast,tmp1);
+
+    // calculate elastic deformation gradient
+    elastic_defgrd.Multiply(defgrd,InvPlasticDefgrd);
+
+    // calculate elastic right Cauchy green
+    LINALG::Matrix<nsd_,nsd_> elastic_cauchygreen;
+    elastic_cauchygreen.MultiplyTN(elastic_defgrd,elastic_defgrd);
+
+    // elastic Green-Lagrange strains(F^e) matrix E = 0.5 * (Cauchygreen(F^e) - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<numstr_,1> elastic_glstrain(false);
+    elastic_glstrain(0) = 0.5 * (elastic_cauchygreen(0,0) - 1.0);
+    elastic_glstrain(1) = 0.5 * (elastic_cauchygreen(1,1) - 1.0);
+    elastic_glstrain(2) = 0.5 * (elastic_cauchygreen(2,2) - 1.0);
+    elastic_glstrain(3) = elastic_cauchygreen(0,1);
+    elastic_glstrain(4) = elastic_cauchygreen(1,2);
+    elastic_glstrain(5) = elastic_cauchygreen(2,0);
+
+    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     ** For semi-smooth plasticity only isotropic materials are valid.
+     ** The evaluation and the corresponding pk2 stresses and material
+     ** stiffness matrix are defined in the intermediate configuration
+     ** of the multiplicative kinematics in plasticity.
+     */
+     LINALG::Matrix<numstr_,numstr_> elastic_cmat(true);
+     LINALG::Matrix<numstr_,1> elastic_stress(true);
+     params.set<int>("gp",gp);
+     params.set<int>("eleID",Id());
+     EvaluateELasticMaterial(&elastic_defgrd,&elastic_glstrain,params,&elastic_stress,&elastic_cmat);
+     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+     // convert elastic stress to matrix format
+     LINALG::Matrix<nsd_,nsd_> elastic_stress_matrix(false);
+     elastic_stress_matrix(0,0) = elastic_stress(0);
+     elastic_stress_matrix(1,1) = elastic_stress(1);
+     elastic_stress_matrix(2,2) = elastic_stress(2);
+     elastic_stress_matrix(0,1) = elastic_stress(3);
+     elastic_stress_matrix(1,0) = elastic_stress(3);
+     elastic_stress_matrix(1,2) = elastic_stress(4);
+     elastic_stress_matrix(2,1) = elastic_stress(4);
+     elastic_stress_matrix(0,2) = elastic_stress(5);
+     elastic_stress_matrix(2,0) = elastic_stress(5);
+
+     // pull-back of elastic stress (i.e."pk2" in intermediate configuration)
+     // to reference configuration: S = F^p-1 . S^e . F^p-T
+     LINALG::Matrix<nsd_,nsd_> pk2_stress_matrix(false);
+     LINALG::Matrix<numstr_,1> pk2_stress(false);
+     tmp1.MultiplyNT(elastic_stress_matrix,InvPlasticDefgrd);
+     pk2_stress_matrix.Multiply(InvPlasticDefgrd,tmp1);
+     pk2_stress(0) = pk2_stress_matrix(0,0);
+     pk2_stress(1) = pk2_stress_matrix(1,1);
+     pk2_stress(2) = pk2_stress_matrix(2,2);
+     pk2_stress(3) = pk2_stress_matrix(0,1);
+     pk2_stress(4) = pk2_stress_matrix(1,2);
+     pk2_stress(5) = pk2_stress_matrix(0,2);
+
+     // return gp stresses
+     switch (iostress)
+     {
+     case INPAR::STR::stress_2pk:
+     {
+       if (elestress == NULL) dserror("stress data not available");
+       for (int i = 0; i < numstr_; ++i)
+           (*elestress)(gp,i) = pk2_stress(i);
+     }
+     break;
+     case INPAR::STR::stress_cauchy:
+     {
+       if (elestress == NULL) dserror("stress data not available");
+
+       LINALG::Matrix<3,3> cauchystress_matrix;
+       tmp1.Multiply(elastic_defgrd,elastic_stress_matrix);
+       cauchystress_matrix.MultiplyNT(tmp1,elastic_defgrd);
+       cauchystress_matrix.Scale(1.0/elastic_defgrd.Determinant());
+
+       (*elestress)(gp,0) = cauchystress_matrix(0,0);
+       (*elestress)(gp,1) = cauchystress_matrix(1,1);
+       (*elestress)(gp,2) = cauchystress_matrix(2,2);
+       (*elestress)(gp,3) = cauchystress_matrix(0,1);
+       (*elestress)(gp,4) = cauchystress_matrix(1,2);
+       (*elestress)(gp,5) = cauchystress_matrix(0,2);
+     }
+     break;
+     case INPAR::STR::stress_none:
+       break;
+     default:
+     {
+       dserror("requested stress type not available");
+       break;
+     }
+     }
+
+     // pull-back of elastic material stiffness (i.e."cmat" in intermediate configuration)
+     LINALG::Matrix<6,6> Cmat_ABCD;
+     LINALG::Matrix<6,6> Cmat_ABcd;
+     MAT::CmatPullbackFirstPair(elastic_cmat,Cmat_ABcd,InvPlasticDefgrd);
+     MAT::CmatPullbackSecondPair(Cmat_ABcd,Cmat_ABCD,InvPlasticDefgrd);
+
+     // calculate Mandel stress Mandel_stress = C^e * S^e
+     LINALG::Matrix<nsd_,nsd_> Mandel_stress;
+     Mandel_stress.Multiply(elastic_cauchygreen,elastic_stress_matrix);
+
+     // equivalent stress eta
+     LINALG::Matrix<nsd_,nsd_> eta(Mandel_stress);
+     for (int i=0; i<nsd_; i++)
+       eta(i,i) -= 1./3.*(Mandel_stress(0,0) + Mandel_stress(1,1) + Mandel_stress(2,2));
+     eta.Update(2./3.*kinhard,last_alpha_kinematic_->at(gp),1.);
+     eta.Update(2./3.*kinhard,DeltaAlphaK,1.);
+     LINALG::Matrix<5,1> eta_vec(false);
+     eta_vec(0) = eta(0,0);
+     eta_vec(1) = eta(1,1);
+     eta_vec(2) = 0.5*(eta(0,1)+eta(1,0));
+     eta_vec(3) = 0.5*(eta(2,1)+eta(1,2));
+     eta_vec(4) = 0.5*(eta(0,2)+eta(2,0));
+
+     // eta_trial
+      LINALG::Matrix<nsd_,nsd_> eta_trial(eta);
+      eta_trial.Update(-1.*cpl_,DeltaAlphaK,1.);
+      LINALG::Matrix<5,1> eta_trial_vec(false);
+      eta_trial_vec(0) = eta_trial(0,0);
+      eta_trial_vec(1) = eta_trial(1,1);
+      eta_trial_vec(2) = 0.5*(eta_trial(0,1)+eta_trial(1,0));
+      eta_trial_vec(3) = 0.5*(eta_trial(2,1)+eta_trial(1,2));
+      eta_trial_vec(4) = 0.5*(eta_trial(0,2)+eta_trial(2,0));
+
+      // absolute values
+      double absetatrial=0.;
+      double absDeltaAlphaK=0.;
+      double abseta=0.;
+      double Dissipation=0.;
+      for (int i=0; i<3; i++)
+        for (int j=0; j<3; j++)
+        {
+          absetatrial += eta_trial(i,j) * eta_trial(i,j);
+          absDeltaAlphaK += DeltaAlphaK(i,j) * DeltaAlphaK(i,j);
+          abseta+=eta(i,j)*eta(i,j);
+          Dissipation-=eta(i,j)*DeltaAlphaK(i,j);
+        }
+      absetatrial = sqrt(absetatrial);
+      absDeltaAlphaK = sqrt(absDeltaAlphaK);
+      abseta = sqrt(abseta);
+
+      // current yield stress equivalent (yield stress scaled by sqrt(2/3))
+      double Ypl=0.;
+      if (Dissipation>0.)
+        Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)))
+                           + isohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK) +inityield);
+      else
+        Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0))))
+                                   + isohard*(last_alpha_isotropic_->at(gp)(0,0)) +inityield);
+
+      // check activity state
+      // inactive
+      if (Ypl<absetatrial)
+      {
+        if (activity_state_->at(gp)==false) // gp switches state
+          converged_active_set = false;
+        activity_state_->at(gp) = true;
+      }
+      // active
+      else
+      {
+        if (activity_state_->at(gp)==true) // gp switches state
+          converged_active_set = false;
+        activity_state_->at(gp) = false;
+
+        // communicate number of active plastic gauss points back to time integration
+        // don't sum up for ghost elements
+        if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
+      }
+
+      // integrate usual internal force and stiffness matrix
+      double detJ_w = detJ*intpoints_.Weight(gp);
+      // integrate elastic internal force vector **************************
+      // update internal force vector
+      if (force != NULL)
+      {
+        force->MultiplyTN(detJ_w, bop, pk2_stress, 1.0);
+      }
+
+      // update stiffness matrix
+      if (stiffmatrix != NULL)
+      {
+        // integrate `elastic' and `initial-displacement' stiffness matrix
+        // keu = keu + (B^T . C . B) * detJ * w(gp)
+        LINALG::Matrix<6,numdofperelement_> cb;
+        cb.Multiply(Cmat_ABCD,bop);
+        stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
+
+        // integrate `geometric' stiffness matrix and add to keu *****************
+        LINALG::Matrix<6,1> sfac(pk2_stress); // auxiliary integrated stress
+        sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+        std::vector<double> SmB_L(3); // intermediate Sm.B_L
+        // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+        for (int inod=0; inod<nen_; ++inod)
+        {
+          SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
+                             + sfac(5) * N_XYZ(2, inod);
+          SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
+                             + sfac(4) * N_XYZ(2, inod);
+          SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
+                             + sfac(2) * N_XYZ(2, inod);
+          for (int jnod=0; jnod<nen_; ++jnod)
+          {
+            double bopstrbop = 0.0; // intermediate value
+            for (int idim=0; idim<nsd_; ++idim)
+              bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
+            (*stiffmatrix)(3*inod+0,3*jnod+0) += bopstrbop;
+            (*stiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
+            (*stiffmatrix)(3*inod+2,3*jnod+2) += bopstrbop;
+          }
+        } // end of integrate `geometric' stiffness******************************
+      } // end of stiffness matrix
+
+
+      if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
+      {
+        double density = Material()->Density();
+        // integrate consistent mass matrix
+        const double factor = detJ_w * density;
+        double ifactor, massfactor;
+        for (int inod=0; inod<nen_; ++inod)
+        {
+          ifactor = shapefunct(inod) * factor;
+          for (int jnod=0; jnod<nen_; ++jnod)
+          {
+            massfactor = shapefunct(inod) * ifactor;     // intermediate factor
+            (*massmatrix)(nsd_*inod+0,nsd_*jnod+0) += massfactor;
+            (*massmatrix)(nsd_*inod+1,nsd_*jnod+1) += massfactor;
+            (*massmatrix)(nsd_*inod+2,nsd_*jnod+2) += massfactor;
+          }
+        }
+
+      } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      // plastic modifications
+      if (stiffmatrix!=NULL || force!=NULL)
+      {
+        // variables needed for condensation and calculated seperately for active and inactive Gauss points
+        LINALG::Matrix<5,numdofperelement_> kbetad(true);
+        LINALG::Matrix<5,5> kbetabeta(true);
+        LINALG::Matrix<5,1> force_beta(true);
+        LINALG::Matrix<numdofperelement_,5> kdbeta;
+
+          // 5x5 identitiy matrix
+          LINALG::Matrix<5,5> id5(true);
+          for (int i=0; i<5; i++)
+            id5(i,i)=1.;
+
+        // Due to stabilization, we have to treat inactive nodes as well
+        if (activity_state_->at(gp)==true || Dissipation>0.)
+        {
+          // damping parameter apl
+          double apl=1.;
+          if (Ypl/abseta<1.) apl=Ypl/abseta;
+
+          // A simple matrix to restrict the derivative of the matrix exponential to
+          // the 5 independent entries (DeltaLp is traceless)
+          LINALG::Matrix<6,5> DDalphakDbetaVM(true);
+          DDalphakDbetaVM(0,0) = 1.;  // d Dalphak_0,0 d beta_0
+          DDalphakDbetaVM(1,1) = 1.;  // d Dalphak_1,1 d beta_1
+          DDalphakDbetaVM(2,0) = -1.; // d Dalphak_2,2 d beta_0
+          DDalphakDbetaVM(2,1) = -1.; // d Dalphak_2,2 d beta_1
+          DDalphakDbetaVM(3,2) = 2.;  // d Dalphak_0,1 d beta_2
+          DDalphakDbetaVM(4,3) = 2.;  // d Dalphak_1,2 d beta_3
+          DDalphakDbetaVM(5,4) = 2.;  // d Dalphak_0,2 d beta_4
+
+          // derivative of the matrix exponential
+          // for ease of notation, we don't do the derivative w.r.t. DeltaLp
+          // but -DeltaLp=DeltaAlphaK
+          LINALG::Matrix<6,6> Dexp(false);
+          tmp1=DeltaAlphaK;
+          MatrixExponentialDerivativeSym3x3(tmp1,Dexp);
+          LINALG::Matrix<6,5> DexpRed;
+          DexpRed.Multiply(Dexp,DDalphakDbetaVM);
+
+
+          // **************************************************************
+          // stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
+          // **************************************************************
+
+          // calculate Eop
+          // Eop_aAj = E_abj F^{p-1,n}_Ab
+          std::vector<std::vector<std::vector<double> > > Eop;
+          for (int a=0; a<3; a++)
+          {
+            if (a==0) Eop.resize(3);
+            for (int A=0; A<3; A++)
+            {
+              if (A==0) Eop.at(a).resize(3);
+              for (int j=0; j<5; j++)
+              {
+                if (j==0) Eop.at(a).at(A).resize(5,0);
+                for (int b=0; b<3; b++)
+                  Eop.at(a).at(A).at(j) += DexpRed(TensorToVoigt(a,b),j) * InvPlasticDefgrdLast(A,b);
+              }
+            }
+          }
+
+          // calculate C_CD F^p-1_Dd
+          tmp1.Multiply(total_cauchygreen,InvPlasticDefgrd);
+
+          // EbarCFpinv_cdj = Ebar_cCj . C_CD . F^p-1_Dd = Ebar_cCj . tmp1_Cd
+          std::vector<std::vector<std::vector<double> > > ECFpinv;
+          LINALG::Matrix<6,5> symECP(true);
+          for (int c=0; c<3; c++)
+          {
+            if (c==0) ECFpinv.resize(3);
+            for (int d=0; d<3; d++)
+            {
+              if (d==0) ECFpinv.at(c).resize(3);
+              for (int j=0; j<5; j++)
+              {
+                if (j==0) ECFpinv.at(c).at(d).resize(5,0);
+                for (int C=0; C<3; C++)
+                {
+                  symECP(TensorToVoigt(c,d),j) +=  0.5*( Eop.at(c).at(C).at(j) * tmp1(C,d)
+                      +Eop.at(d).at(C).at(j) * tmp1(C,c));
+                  ECFpinv.at(c).at(d).at(j) += Eop.at(c).at(C).at(j) * tmp1(C,d);
+                }
+              }
+            }
+          }
+
+          // S^e_ab * F^p-1_Bb
+          tmp1.MultiplyNT(elastic_stress_matrix,InvPlasticDefgrd);
+
+          // tensor dSdbeta
+          // in index notation this contains
+          //                   d S_AB
+          // dSdbeta_ABj = --------------
+          //                  d beta_j
+          LINALG::Matrix<numstr_,5> dSdbetaMatrix(true);
+
+          // add second contribution to dSdbeta
+          for (int A=0; A<3; A++)
+            for (int B=A; B<3; B++)
+              for (int j=0; j<5; j++)
+                for (int c=0; c<3; c++)
+                {
+                  dSdbetaMatrix(TensorToVoigt(A,B),j) += Eop.at(c).at(A).at(j) * tmp1(c,B)
+                                                                 + Eop.at(c).at(B).at(j) * tmp1(c,A);
+                }
+          dSdbetaMatrix.Multiply(1.,Cmat_ABcd,symECP,1.);
+
+          // Calculate stiffness matrix [k^e_{d,beta}]_ij (i=1..numdof; j=1..5)
+          kdbeta.MultiplyTN(detJ_w,bop,dSdbetaMatrix);
+          // **************************************************************
+          // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
+          // **************************************************************
+
+          if (activity_state_->at(gp)==true)
+          {
+            // **************************************************************
+            // stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
+            // linearization of the complementarity function
+            // **************************************************************
+
+            //                      d Sigma_ab
+            // dSigmaDbeta_abj = -----------------
+            //                       d beta_j
+            // dSigmaDbeta_abj =  Eop_aAj . C_AC . F^p-1_Cc . S^e_bc
+            //                  + Eop_cCj . C_AC . F^p-1_Aa . S^e_bc
+            //                  + Eop_dDj . C_DE . F^p-1_Ee . Cmat^e_bcde . C^e_ac
+            //                 =  ECFpinv_acj               . S^e_bc
+            //                  + ECFpinv_caj               . S^e_bc
+            //                  + ECFpinv_dej               . Cmat^e_bcde . C^e_ac
+            // in case of F-bar elements, this stores
+            //                      d bar Sigma_ab
+            // dSigmaDbeta_abj = --------------------
+            //                         d beta_j
+            std::vector<std::vector<std::vector<double> > > dSigmaDbeta;
+            LINALG::Matrix<numstr_,5> tmp65;
+            tmp65.Multiply(elastic_cmat,symECP);
+            for (int a=0; a<3; a++)
+            {
+              if (a==0) dSigmaDbeta.resize(3);
+              for (int b=0; b<3; b++)
+              {
+                if (b==0) dSigmaDbeta.at(a).resize(3);
+                for (int j=0; j<5; j++)
+                {
+                  if (j==0) dSigmaDbeta.at(a).at(b).resize(5,0);
+                  for (int c=0; c<3; c++)
+                  {
+                    dSigmaDbeta.at(a).at(b).at(j) += ECFpinv.at(a).at(c).at(j) * elastic_stress_matrix(b,c);
+                    dSigmaDbeta.at(a).at(b).at(j) += ECFpinv.at(c).at(a).at(j) * elastic_stress_matrix(b,c);
+                    dSigmaDbeta.at(a).at(b).at(j) += elastic_cauchygreen(a,c) * tmp65(TensorToVoigt(b,c),j);
+                  }
+                }
+              }
+            }
+
+            //                    d eta_ab
+            // detadbeta_abj = ---------------
+            //                    d beta_j
+            // in Voigt notation
+            // as eta is traceless, there are only 5 components
+            LINALG::Matrix<5,5> detadbeta;
+            for (int i=0; i<5; i++)
+              for (int j=0; j<5; j++)
+              {
+                // diagonal entries
+                if (i==0 || i==1)
+                  detadbeta(i,j) = dSigmaDbeta.at(i).at(i).at(j)
+                  - 1./3.*(  dSigmaDbeta.at(0).at(0).at(j)
+                      +dSigmaDbeta.at(1).at(1).at(j)
+                      +dSigmaDbeta.at(2).at(2).at(j)  )
+                      + 2./3.*kinhard * (i==j);
+                // off-diagonal entries
+                if (i==2)
+                  detadbeta(i,j) = 0.5*(dSigmaDbeta.at(0).at(1).at(j)+dSigmaDbeta.at(1).at(0).at(j))+ 2./3.*kinhard * (i==j);
+                if (i==3)
+                  detadbeta(i,j) = 0.5*(dSigmaDbeta.at(1).at(2).at(j)+dSigmaDbeta.at(2).at(1).at(j))+ 2./3.*kinhard * (i==j);
+                if (i==4)
+                  detadbeta(i,j) = 0.5*(dSigmaDbeta.at(0).at(2).at(j)+dSigmaDbeta.at(2).at(0).at(j))+ 2./3.*kinhard * (i==j);
+              }
+
+            LINALG::Matrix<5,1> dYpl_dbeta(true);
+            LINALG::Matrix<5,1> dabs_eta_trial_dbeta(true);
+            for (int j=0;j<2; j++)
+            {
+              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * (2.*DalphaK_last_iter_->at(gp)(j) + DalphaK_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
+              for (int i=0; i<5; i++)
+                dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j)+ eta_trial_vec((j+1)%2))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial;
+            }
+            for (int j=2; j<5; j++)
+            {
+              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * 2.*DalphaK_last_iter_->at(gp)(j)/absDeltaAlphaK;
+              for (int i=0; i<5; i++)
+                dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial;
+            }
+            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
+
+            // build kbb from the previous linearizations
+            kbetabeta.Update(1.-Ypl/absetatrial,detadbeta,1.);
+            kbetabeta.Update(Ypl/absetatrial*cpl_,id5,1.);
+            kbetabeta.MultiplyNT(-1./absetatrial,eta_trial_vec,dYpl_dbeta,1.);
+            kbetabeta.MultiplyNT((1-stab_s_)*Ypl/pow(absetatrial,2.),eta_trial_vec,dabs_eta_trial_dbeta,1.);
+            kbetabeta.MultiplyNT(stab_s_*apl/absetatrial,eta_vec,dabs_eta_trial_dbeta,1.);
+
+            // **************************************************************
+            // end of stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
+            // **************************************************************
+
+            // **************************************************************
+            // stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
+            // linearization of the complementarity function
+            // **************************************************************
+
+            // calculate derivative detadd
+            //             d eta_ab
+            // detadd = --------------
+            //              d d_i
+            LINALG::Matrix<5,numdofperelement_> detadd;
+
+            // derivative of Mandel stress tensor
+            std::vector<std::vector<std::vector<double> > > dSigmadd;
+            LINALG::Matrix<numstr_,numdofperelement_> bop_inter;
+            PullBop(bop,bop_inter,InvPlasticDefgrd);
+
+            LINALG::Matrix<numstr_,numdofperelement_> tmp624;
+
+            tmp624.Multiply(elastic_cmat,bop_inter);
+            for (int a=0; a<3; a++)
+            {
+              if (a==0) dSigmadd.resize(3);
+              for (int b=0; b<3; b++)
+              {
+                if (b==0) dSigmadd.at(a).resize(3);
+                for (int i=0; i<numdofperelement_; i++)
+                {
+                  if (i==0) dSigmadd.at(a).at(b).resize(numdofperelement_,0);
+                  for (int c=0; c<3; c++)
+                  {
+                    dSigmadd.at(a).at(b).at(i) += (1.-0.5*(double)(a!=c))*bop_inter(TensorToVoigt(a,c),i)*elastic_stress_matrix(b,c);
+                    dSigmadd.at(a).at(b).at(i) += 0.5*tmp624(TensorToVoigt(b,c),i)*elastic_cauchygreen(a,c);
+                  }
+                }
+              }
+            }
+
+            for (int i=0; i<5; i++)
+              for (int j=0; j<numdofperelement_; j++)
+              {
+                // diagonal entries
+                if (i==0 || i==1)
+                  detadd(i,j) = dSigmadd.at(i).at(i).at(j)
+                  - 1./3.*(  dSigmadd.at(0).at(0).at(j)
+                      +dSigmadd.at(1).at(1).at(j)
+                      +dSigmadd.at(2).at(2).at(j)  );
+                if (i==2)
+                  detadd(i,j) = 0.5*(dSigmadd.at(0).at(1).at(j)+dSigmadd.at(1).at(0).at(j));
+                if (i==3)
+                  detadd(i,j) = 0.5*(dSigmadd.at(1).at(2).at(j)+dSigmadd.at(2).at(1).at(j));
+                if (i==4)
+                  detadd(i,j) = 0.5*(dSigmadd.at(0).at(2).at(j)+dSigmadd.at(2).at(0).at(j));
+              }
+
+            LINALG::Matrix<numdofperelement_,1> dabs_eta_trial_dd(true);
+            for (int j=0;j<2; j++)
+              for (int i=0; i<numdofperelement_; i++)
+                dabs_eta_trial_dd(i) += (2.*eta_trial_vec(j)+ eta_trial_vec((j+1)%2))*(detadd(j,i))/absetatrial;
+            for (int j=2; j<5; j++)
+              for (int i=0; i<numdofperelement_; i++)
+                dabs_eta_trial_dd(i) += (2.*eta_trial_vec(j))*(detadd(j,i))/absetatrial;
+
+            kbetad.Clear();
+            kbetad.Update(1.-1.*Ypl/absetatrial,detadd,1.);
+            kbetad.MultiplyNT(stab_s_*apl/absetatrial,eta_vec,dabs_eta_trial_dd,1.);
+            kbetad.MultiplyNT((1.-stab_s_)*Ypl/absetatrial/absetatrial,eta_trial_vec,dabs_eta_trial_dd,1.);
+
+            // store for recover step
+            Kbd_->at(gp) = kbetad;
+            // **************************************************************
+            // end of stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
+            // **************************************************************
+
+
+            // **************************************************************
+            // right hand side term for complementarity function f^int_i (i=1..5)
+            // **************************************************************
+            force_beta.Update(eta_vec);
+            force_beta.Update(-1.*Ypl/absetatrial,eta_trial_vec,1.);
+            // store for recover step
+            fbeta_->at(gp) = force_beta;
+            // **************************************************************
+            // end of right hand side term for complementarity function f^int_i (i=1..5)
+            // **************************************************************
+          } // acrtive Gauss points
+
+          // inactive Gauss point with plastic history within this load/time step
+          else if (activity_state_->at(gp)==false && Dissipation>0.)
+          {
+            // the complementarity function is
+            // C^pl = - Ypl^s * cplparam_ * delta alpha^k
+
+            // Complementarity function independent from displacements
+            kbetad.Clear();
+            Kbd_->at(gp).Clear();
+
+            LINALG::Matrix<5,1> dYpl_dbeta(true);
+            for (int j=0;j<2; j++)
+              dYpl_dbeta(j) += 2./3. * (2.*DalphaK_last_iter_->at(gp)(j) + DalphaK_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
+            for (int j=2; j<5; j++)
+              dYpl_dbeta(j) += 2./3. * 2.*DalphaK_last_iter_->at(gp)(j)/absDeltaAlphaK;
+            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
+
+            kbetabeta.Update(cpl_,id5,0.);
+            kbetabeta.MultiplyNT(stab_s_/Ypl * cpl_,DalphaK_last_iter_->at(gp),dYpl_dbeta,1.);
+
+            // right hand side term
+            force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+            fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+          }
+        }
+        else
+        {
+          // Complementarity function independent from displacements
+          kbetad.Clear();
+          Kbd_->at(gp).Clear();
+          kdbeta.Clear();
+          kbetabeta.Update(cpl_,id5);
+
+          // right hand side term
+          force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+          fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+        }
+
+        // **************************************************************
+        // static condensation of inner variables
+        // **************************************************************
+        //inverse matrix block [k_beta beta]_ij
+        LINALG::Matrix<5,5> InvKbetabeta;
+        Epetra_SerialDenseMatrix Kbetabeta_epetra(5,5);
+        for (int i=0; i<5; i++)
+          for (int j=0; j<5; j++)
+            Kbetabeta_epetra(i,j) = kbetabeta(i,j);
+        // we need the inverse of K_beta beta
+        Epetra_SerialDenseSolver solve_for_inverseKbb;
+        solve_for_inverseKbb.SetMatrix(Kbetabeta_epetra);
+        solve_for_inverseKbb.Invert();
+        for (int i=0; i<5; i++)
+          for (int j=0; j<5; j++)
+            InvKbetabeta(i,j) = Kbetabeta_epetra(i,j);
+        // store for recover step
+        KbbInv_->at(gp) = InvKbetabeta;
+
+        LINALG::Matrix<numdofperelement_,5> KdbKbb; // temporary  Kdb.Kbb^-1
+        KdbKbb.Multiply(kdbeta,InvKbetabeta);
+
+        // "plastic displacement stiffness"
+        // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
+        if (stiffmatrix!=NULL) stiffmatrix->Multiply(-1.,KdbKbb,kbetad,1.);
+
+        // "plastic internal force"
+        // plFint = [K_db.K_bb^-1].f_b
+        if (force!=NULL) force->Multiply(-1.,KdbKbb,force_beta,1.);
+
+      } // modification for plastic Gauss points
+  } // gp loop
+
+  // communicate unconverged active set to time integration
+  if (converged_active_set==false)
+    params.set("unconverged_active_set",true);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | internal force, stiffness and mass for f-bar elements    seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
+    std::vector<int>&              lm,             // location matrix
+    std::vector<double>&           disp,           // current displacements
+    std::vector<double>&           residual,       // current residual displ
+    LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+    LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+    LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+    LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+    LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+    Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType   iostress,  // stress output option
+    const INPAR::STR::StrainType   iostrain,  // strain output option
+    const int MyPID  // processor id
+    )
+{
+  // check for f-bar element
+  DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+    = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
+  if (!eleFBAR)
+    dserror("invalid call for nln_stiffmass_fbar from non-fbar element");
+
+  // update element geometry
+  LINALG::Matrix<nen_,nsd_> xrefe;  // X, material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr;  // x, current  coord. of element
+
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<nen_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+  }
+
+  // we need the (residual) displacement -- current increment of displacement
+  LINALG::Matrix<numdofperelement_,1> res_d;
+  for (int i = 0; i<numdofperelement_; ++i)
+  {
+    res_d(i) = residual[i];
+  }
+
+  // compute derivatives N_XYZ at gp w.r.t. material coordinates
+  // by N_XYZ = J^-1 * N_rst
+  LINALG::Matrix<nsd_,nen_> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  LINALG::Matrix<nsd_,nsd_> defgrd(false);
+  // shape functions and their first derivatives
+  LINALG::Matrix<nen_,1> shapefunct;
+  LINALG::Matrix<nsd_,nen_> deriv;
+
+  // ---------------------- deformation gradient at centroid of element
+  double detF_0 = -1.0;
+  LINALG::Matrix<nsd_,nsd_> invdefgrd_0(false);
+  LINALG::Matrix<nsd_,nen_> N_XYZ_0(false);
+  //element coordinate derivatives at centroid
+  LINALG::Matrix<nsd_,nen_> N_rst_0(false);
+  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, DRT::Element::hex8);
+
+  //inverse jacobian matrix at centroid
+  LINALG::Matrix<nsd_,nsd_> invJ_0(false);
+  invJ_0.Multiply(N_rst_0,xrefe);
+  invJ_0.Invert();
+  //material derivatives at centroid
+  N_XYZ_0.Multiply(invJ_0,N_rst_0);
+
+  //deformation gradient and its determinant at centroid
+  LINALG::Matrix<3,3> defgrd_0(false);
+  defgrd_0.MultiplyTT(xcurr,N_XYZ_0);
+  invdefgrd_0.Invert(defgrd_0);
+  detF_0 = defgrd_0.Determinant();
+
+  // 3x3 LINALG matrix for temporary stuff
+  LINALG::Matrix<nsd_,nsd_> tmp1(false);
+  LINALG::Matrix<nsd_,nsd_> tmp2(false);
+
+  // get plastic material paramters
+  MAT::PlasticSemiSmooth* plmat = dynamic_cast<MAT::PlasticSemiSmooth*>(plasticmat_.access_private_ptr());
+  double kinhard=plmat->KinHard();
+  double isohard=plmat->IsoHard();
+  double expisohard=plmat->ExpIsoHard();
+  double infyield=plmat->InfYield();
+  double inityield=plmat->InitYield();
+
+  // converged active set
+  bool converged_active_set=true;
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  for (int gp=0; gp<numgpt_; ++gp)
+  {
+    // shape functions (shapefunct) and their first derivatives (deriv)
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
+    */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
+    double detJ = detJ_[gp]; // (6.22)
+
+    // (material) deformation gradient
+    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+    LINALG::Matrix<nsd_,nsd_> invdefgrd;
+    double detF=invdefgrd.Invert(defgrd);
+
+    // F_bar deformation gradient =(detF_0/detF)^1/3*F
+    LINALG::Matrix<nsd_,nsd_> defgrd_bar(defgrd);
+    double f_bar_factor=pow(detF_0/detF,1/3.);
+    defgrd_bar.Scale(f_bar_factor);
+
+    // calcualte total rcg/gl/ea for output
+    LINALG::Matrix<nsd_,nsd_> total_cauchygreen(false);
+    total_cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<numstr_,1> total_glstrain(false);
+    total_glstrain(0) = 0.5 * (total_cauchygreen(0,0) - 1.0);
+    total_glstrain(1) = 0.5 * (total_cauchygreen(1,1) - 1.0);
+    total_glstrain(2) = 0.5 * (total_cauchygreen(2,2) - 1.0);
+    total_glstrain(3) = total_cauchygreen(0,1);
+    total_glstrain(4) = total_cauchygreen(1,2);
+    total_glstrain(5) = total_cauchygreen(2,0);
+    // calculate nonlinear B-operator
+    LINALG::Matrix<numstr_,numdofperelement_> bop(false);
+    CalculateBop(&bop,&defgrd,&N_XYZ);
+
+    // strain output *********************************
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = total_glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * total_glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      tmp2(0,0) = total_glstrain(0);
+      tmp2(0,1) = 0.5*total_glstrain(3);
+      tmp2(0,2) = 0.5*total_glstrain(5);
+      tmp2(1,0) = tmp2(0,1);
+      tmp2(1,1) = total_glstrain(1);
+      tmp2(1,2) = 0.5*total_glstrain(4);
+      tmp2(2,0) = tmp2(0,2);
+      tmp2(2,1) = tmp2(1,2);
+      tmp2(2,2) = total_glstrain(2);
+
+      // inverse of deformation gradient
+      LINALG::Matrix<nsd_,nsd_> invdefgrd;
+      invdefgrd.Invert(defgrd);
+
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> total_euler_almansi;
+      tmp1.Multiply(tmp2,invdefgrd);
+      total_euler_almansi.MultiplyTN(invdefgrd,tmp1);
+
+      (*elestrain)(gp,0) = total_euler_almansi(0,0);
+      (*elestrain)(gp,1) = total_euler_almansi(1,1);
+      (*elestrain)(gp,2) = total_euler_almansi(2,2);
+      (*elestrain)(gp,3) = total_euler_almansi(0,1);
+      (*elestrain)(gp,4) = total_euler_almansi(1,2);
+      (*elestrain)(gp,5) = total_euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+    {
+      dserror("requested strain type not available");
+      break;
+    }
+    }
+    // end of strain output **************************
+
+    // recover condensed variables from last iteration step *********
+    if (res_d.NormInf()!=0.)
+    {
+      // first part
+      LINALG::Matrix<5,1> tmp51;
+      tmp51.Multiply(KbbInv_->at(gp),fbeta_->at(gp));
+      DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+
+      // second part
+      LINALG::Matrix<5,numdofperelement_> tmp524;
+      tmp524.Multiply(KbbInv_->at(gp),Kbd_->at(gp));
+      tmp51.Multiply(tmp524,res_d);
+      DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+    }
+    // end of recover **********************************************
+
+    // elastic deformation gradient
+    LINALG::Matrix<nsd_,nsd_> elastic_defgrd_bar(false);
+    // inverse plastic deformation gradient
+    LINALG::Matrix<nsd_,nsd_> InvPlasticDefgrd(false);
+    // inverse plastic deformation gradient at last time step
+    LINALG::Matrix<nsd_,nsd_> InvPlasticDefgrdLast = last_plastic_defgrd_inverse_->at(gp);
+    // current plastic flow increment
+    LINALG::Matrix<nsd_,nsd_> DeltaAlphaK(false);
+    DeltaAlphaK(0,0) = DalphaK_last_iter_->at(gp)(0);
+    DeltaAlphaK(1,1) = DalphaK_last_iter_->at(gp)(1);
+    DeltaAlphaK(2,2) = -1.0*(DalphaK_last_iter_->at(gp)(0)+DalphaK_last_iter_->at(gp)(1));
+    DeltaAlphaK(0,1) = DalphaK_last_iter_->at(gp)(2);
+    DeltaAlphaK(1,0) = DalphaK_last_iter_->at(gp)(2);
+    DeltaAlphaK(1,2) = DalphaK_last_iter_->at(gp)(3);
+    DeltaAlphaK(2,1) = DalphaK_last_iter_->at(gp)(3);
+    DeltaAlphaK(0,2) = DalphaK_last_iter_->at(gp)(4);
+    DeltaAlphaK(2,0) = DalphaK_last_iter_->at(gp)(4);
+
+    tmp1=DeltaAlphaK;
+    MatrixExponential3x3(tmp1);
+    InvPlasticDefgrd.Multiply(InvPlasticDefgrdLast,tmp1);
+
+    // calculate elastic deformation gradient
+    LINALG::Matrix<nsd_,nsd_> elastic_defgrd;
+    elastic_defgrd.Multiply(defgrd,InvPlasticDefgrd);
+
+    // calculate elastic deformation gradient
+    elastic_defgrd_bar.Multiply(defgrd_bar,InvPlasticDefgrd);
+
+    // calculate elastic right Cauchy green
+    LINALG::Matrix<nsd_,nsd_> elastic_cauchygreen;
+    elastic_cauchygreen.MultiplyTN(elastic_defgrd,elastic_defgrd);
+    LINALG::Matrix<numstr_,1> elastic_cauchygreenvector;
+    elastic_cauchygreenvector(0) = elastic_cauchygreen(0,0);
+    elastic_cauchygreenvector(1) = elastic_cauchygreen(1,1);
+    elastic_cauchygreenvector(2) = elastic_cauchygreen(2,2);
+    elastic_cauchygreenvector(3) = 2*elastic_cauchygreen(0,1);
+    elastic_cauchygreenvector(4) = 2*elastic_cauchygreen(1,2);
+    elastic_cauchygreenvector(5) = 2*elastic_cauchygreen(2,0);
+
+
+    // calculate elastic right Cauchy green
+    LINALG::Matrix<nsd_,nsd_> elastic_cauchygreen_bar;
+    elastic_cauchygreen_bar.MultiplyTN(elastic_defgrd_bar,elastic_defgrd_bar);
+
+    // elastic Green-Lagrange strains(F^e) matrix E = 0.5 * (Cauchygreen(F^e) - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<numstr_,1> elastic_glstrain_bar(false);
+    elastic_glstrain_bar(0) = 0.5 * (elastic_cauchygreen_bar(0,0) - 1.0);
+    elastic_glstrain_bar(1) = 0.5 * (elastic_cauchygreen_bar(1,1) - 1.0);
+    elastic_glstrain_bar(2) = 0.5 * (elastic_cauchygreen_bar(2,2) - 1.0);
+    elastic_glstrain_bar(3) = elastic_cauchygreen_bar(0,1);
+    elastic_glstrain_bar(4) = elastic_cauchygreen_bar(1,2);
+    elastic_glstrain_bar(5) = elastic_cauchygreen_bar(2,0);
+
+    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     ** For semi-smooth plasticity only isotropic materials are valid.
+     ** The evaluation and the corresponding pk2 stresses and material
+     ** stiffness matrix are defined in the intermediate configuration
+     ** of the multiplicative kinematics in plasticity.
+     */
+     LINALG::Matrix<numstr_,numstr_> elastic_cmat_bar(true);
+     LINALG::Matrix<numstr_,1> elastic_stress_bar(true);
+     params.set<int>("gp",gp);
+     params.set<int>("eleID",Id());
+     EvaluateELasticMaterial(&elastic_defgrd_bar,&elastic_glstrain_bar,params,&elastic_stress_bar,&elastic_cmat_bar);
+     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+     // convert elastic stress to matrix format
+     LINALG::Matrix<nsd_,nsd_> elastic_stress_matrix_bar(false);
+     elastic_stress_matrix_bar(0,0) = elastic_stress_bar(0);
+     elastic_stress_matrix_bar(1,1) = elastic_stress_bar(1);
+     elastic_stress_matrix_bar(2,2) = elastic_stress_bar(2);
+     elastic_stress_matrix_bar(0,1) = elastic_stress_bar(3);
+     elastic_stress_matrix_bar(1,0) = elastic_stress_bar(3);
+     elastic_stress_matrix_bar(1,2) = elastic_stress_bar(4);
+     elastic_stress_matrix_bar(2,1) = elastic_stress_bar(4);
+     elastic_stress_matrix_bar(0,2) = elastic_stress_bar(5);
+     elastic_stress_matrix_bar(2,0) = elastic_stress_bar(5);
+
+     // pull-back of elastic stress (i.e."pk2" in intermediate configuration)
+     // to reference configuration: S = F^p-1 . S^e . F^p-T
+     LINALG::Matrix<nsd_,nsd_> pk2_stress_matrix_bar(false);
+     LINALG::Matrix<numstr_,1> pk2_stress_bar(false);
+     tmp1.MultiplyNT(elastic_stress_matrix_bar,InvPlasticDefgrd);
+     pk2_stress_matrix_bar.Multiply(InvPlasticDefgrd,tmp1);
+     pk2_stress_bar(0) = pk2_stress_matrix_bar(0,0);
+     pk2_stress_bar(1) = pk2_stress_matrix_bar(1,1);
+     pk2_stress_bar(2) = pk2_stress_matrix_bar(2,2);
+     pk2_stress_bar(3) = pk2_stress_matrix_bar(0,1);
+     pk2_stress_bar(4) = pk2_stress_matrix_bar(1,2);
+     pk2_stress_bar(5) = pk2_stress_matrix_bar(0,2);
+
+     // return gp stresses
+     switch (iostress)
+     {
+     case INPAR::STR::stress_2pk:
+     {
+       if (elestress == NULL) dserror("stress data not available");
+       for (int i = 0; i < numstr_; ++i)
+           (*elestress)(gp,i) = pk2_stress_bar(i);
+     }
+     break;
+     case INPAR::STR::stress_cauchy:
+     {
+       if (elestress == NULL) dserror("stress data not available");
+
+       LINALG::Matrix<3,3> cauchystress_matrix_bar;
+       tmp1.Multiply(elastic_defgrd_bar,elastic_stress_matrix_bar);
+       cauchystress_matrix_bar.MultiplyNT(tmp1,elastic_defgrd_bar);
+       cauchystress_matrix_bar.Scale(1.0/elastic_defgrd_bar.Determinant());
+
+       (*elestress)(gp,0) = cauchystress_matrix_bar(0,0);
+       (*elestress)(gp,1) = cauchystress_matrix_bar(1,1);
+       (*elestress)(gp,2) = cauchystress_matrix_bar(2,2);
+       (*elestress)(gp,3) = cauchystress_matrix_bar(0,1);
+       (*elestress)(gp,4) = cauchystress_matrix_bar(1,2);
+       (*elestress)(gp,5) = cauchystress_matrix_bar(0,2);
+     }
+     break;
+     case INPAR::STR::stress_none:
+       break;
+     default:
+     {
+       dserror("requested stress type not available");
+       break;
+     }
+     }
+
+     // pull-back of elastic material stiffness (i.e."cmat" in intermediate configuration)
+     LINALG::Matrix<6,6> Cmat_ABCD_bar;
+     LINALG::Matrix<6,6> Cmat_ABcd_bar;
+     MAT::CmatPullbackFirstPair(elastic_cmat_bar,Cmat_ABcd_bar,InvPlasticDefgrd);
+     MAT::CmatPullbackSecondPair(Cmat_ABcd_bar,Cmat_ABCD_bar,InvPlasticDefgrd);
+
+     // calculate Mandel stress Mandel_stress = C^e * S^e
+     LINALG::Matrix<nsd_,nsd_> Mandel_stress_bar;
+     Mandel_stress_bar.Multiply(elastic_cauchygreen_bar,elastic_stress_matrix_bar);
+
+     // equivalent stress eta
+     LINALG::Matrix<nsd_,nsd_> eta_bar(Mandel_stress_bar);
+     for (int i=0; i<nsd_; i++)
+       eta_bar(i,i) -= 1./3.*(Mandel_stress_bar(0,0) + Mandel_stress_bar(1,1) + Mandel_stress_bar(2,2));
+     eta_bar.Update(2./3.*kinhard,last_alpha_kinematic_->at(gp),1.);
+     eta_bar.Update(2./3.*kinhard,DeltaAlphaK,1.);
+     LINALG::Matrix<5,1> eta_bar_vec(false);
+     eta_bar_vec(0) = eta_bar(0,0);
+     eta_bar_vec(1) = eta_bar(1,1);
+     eta_bar_vec(2) = 0.5*(eta_bar(0,1)+eta_bar(1,0));
+     eta_bar_vec(3) = 0.5*(eta_bar(2,1)+eta_bar(1,2));
+     eta_bar_vec(4) = 0.5*(eta_bar(0,2)+eta_bar(2,0));
+
+     // eta_trial
+      LINALG::Matrix<nsd_,nsd_> eta_bar_trial(eta_bar);
+      eta_bar_trial.Update(-1.*cpl_,DeltaAlphaK,1.);
+      LINALG::Matrix<5,1> eta_bar_trial_vec(false);
+      eta_bar_trial_vec(0) = eta_bar_trial(0,0);
+      eta_bar_trial_vec(1) = eta_bar_trial(1,1);
+      eta_bar_trial_vec(2) = 0.5*(eta_bar_trial(0,1)+eta_bar_trial(1,0));
+      eta_bar_trial_vec(3) = 0.5*(eta_bar_trial(2,1)+eta_bar_trial(1,2));
+      eta_bar_trial_vec(4) = 0.5*(eta_bar_trial(0,2)+eta_bar_trial(2,0));
+
+      // || eta_trial || = sqrt(eta_trial_ij * eta_trial_ij)
+      double absetatrial_bar=0.;
+      double absDeltaAlphaK=0.;
+      double abseta_bar=0.;
+      double Dissipation=0.;
+      for (int i=0; i<3; i++)
+        for (int j=0; j<3; j++)
+        {
+          absetatrial_bar += eta_bar_trial(i,j) * eta_bar_trial(i,j);
+          absDeltaAlphaK += DeltaAlphaK(i,j) * DeltaAlphaK(i,j);
+          abseta_bar+=eta_bar(i,j)*eta_bar(i,j);
+          Dissipation-=eta_bar(i,j)*DeltaAlphaK(i,j);
+        }
+      absetatrial_bar = sqrt(absetatrial_bar);
+      absDeltaAlphaK = sqrt(absDeltaAlphaK);
+      abseta_bar = sqrt(abseta_bar);
+
+      // current yield stress equivalent (yield stress scaled by sqrt(2/3))
+      double Ypl=0.;
+      if (Dissipation>0.)
+        Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)))
+                           + isohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK) +inityield);
+      else
+        Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0))))
+                                   + isohard*(last_alpha_isotropic_->at(gp)(0,0)) +inityield);
+
+      // check activity state
+      // inactive
+      if (Ypl<absetatrial_bar)
+      {
+        if (activity_state_->at(gp)==false) // gp switches state
+          converged_active_set = false;
+        activity_state_->at(gp) = true;
+      }
+      // active
+      else
+      {
+        if (activity_state_->at(gp)==true) // gp switches state
+          converged_active_set = false;
+        activity_state_->at(gp) = false;
+
+        // communicate number of active plastic gauss points back to time integration
+        // don't sum up for ghost elements
+        if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
+      }
+
+      // integrate usual internal force and stiffness matrix
+      double detJ_w = detJ*intpoints_.Weight(gp);
+      // integrate elastic internal force vector **************************
+      // update internal force vector
+      if (force != NULL)
+      {
+        force->MultiplyTN(detJ_w/f_bar_factor, bop, pk2_stress_bar, 1.0);
+      }
+
+      // additional f-bar derivatives
+      LINALG::Matrix<numdofperelement_,1> htensor(true);
+
+      // update stiffness matrix
+      if (stiffmatrix != NULL)
+      {
+        for(int n=0;n<numdofperelement_;n++)
+          for(int i=0;i<nsd_;i++)
+            htensor(n) += invdefgrd_0(i,n%3)*N_XYZ_0(i,n/3)-invdefgrd(i,n%3)*N_XYZ(i,n/3);
+
+        // integrate `elastic' and `initial-displacement' stiffness matrix
+        // keu = keu + (B^T . C . B) * detJ * w(gp)
+        LINALG::Matrix<6,numdofperelement_> cb;
+        cb.Multiply(Cmat_ABCD_bar,bop);
+        stiffmatrix->MultiplyTN(detJ_w*f_bar_factor,bop,cb,1.0);
+
+        // integrate `geometric' stiffness matrix and add to keu *****************
+        LINALG::Matrix<6,1> sfac(pk2_stress_bar); // auxiliary integrated stress
+        sfac.Scale(detJ_w/f_bar_factor); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+        std::vector<double> SmB_L(3); // intermediate Sm.B_L
+        // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+        for (int inod=0; inod<nen_; ++inod)
+        {
+          SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
+                         + sfac(5) * N_XYZ(2, inod);
+          SmB_L[1] = sfac(3) * N_XYZ(0, inod) + sfac(1) * N_XYZ(1, inod)
+                         + sfac(4) * N_XYZ(2, inod);
+          SmB_L[2] = sfac(5) * N_XYZ(0, inod) + sfac(4) * N_XYZ(1, inod)
+                         + sfac(2) * N_XYZ(2, inod);
+          for (int jnod=0; jnod<nen_; ++jnod)
+          {
+            double bopstrbop = 0.0; // intermediate value
+            for (int idim=0; idim<nsd_; ++idim)
+              bopstrbop += N_XYZ(idim, jnod) * SmB_L[idim];
+            (*stiffmatrix)(3*inod+0,3*jnod+0) += bopstrbop;
+            (*stiffmatrix)(3*inod+1,3*jnod+1) += bopstrbop;
+            (*stiffmatrix)(3*inod+2,3*jnod+2) += bopstrbop;
+          }
+        } // end of integrate `geometric' stiffness******************************
+
+        // integrate additional fbar matrix**************************************
+         LINALG::Matrix<numstr_,1> ccg;
+         ccg.Multiply(Cmat_ABcd_bar,elastic_cauchygreenvector);
+
+         LINALG::Matrix<numdofperelement_,1> bopccg(false); // auxiliary integrated stress
+         bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0,bop,ccg);
+
+         LINALG::Matrix<numdofperelement_,1> bops(false); // auxiliary integrated stress
+         bops.MultiplyTN(-detJ_w/f_bar_factor/3.0,bop,pk2_stress_bar);
+         stiffmatrix->MultiplyNT(1.,bops,htensor,1.);
+         stiffmatrix->MultiplyNT(1.,bopccg,htensor,1.);
+         // end of integrate additional fbar matrix*****************************
+      } // end of stiffness matrix
+
+
+      if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
+      {
+        double density = Material()->Density();
+        // integrate consistent mass matrix
+        const double factor = detJ_w * density;
+        double ifactor, massfactor;
+        for (int inod=0; inod<nen_; ++inod)
+        {
+          ifactor = shapefunct(inod) * factor;
+          for (int jnod=0; jnod<nen_; ++jnod)
+          {
+            massfactor = shapefunct(inod) * ifactor;     // intermediate factor
+            (*massmatrix)(nsd_*inod+0,nsd_*jnod+0) += massfactor;
+            (*massmatrix)(nsd_*inod+1,nsd_*jnod+1) += massfactor;
+            (*massmatrix)(nsd_*inod+2,nsd_*jnod+2) += massfactor;
+          }
+        }
+
+      } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      // plastic modifications
+      if (stiffmatrix!=NULL || force!=NULL)
+      {
+        // variables needed for condensation and calculated seperately for active and inactive Gauss points
+        LINALG::Matrix<5,numdofperelement_> kbetad(true);
+        LINALG::Matrix<5,5> kbetabeta(true);
+        LINALG::Matrix<5,1> force_beta(true);
+        LINALG::Matrix<numdofperelement_,5> kdbeta;
+
+          // 5x5 identitiy matrix
+          LINALG::Matrix<5,5> id5(true);
+          for (int i=0; i<5; i++)
+            id5(i,i)=1.;
+
+        // Due to stabilization, we have to treat inactive nodes as well
+        if (activity_state_->at(gp)==true || Dissipation>0.)
+        {
+          // damping parameter apl
+          double apl=1.;
+          if (Ypl/abseta_bar<1.) apl=Ypl/abseta_bar;
+
+          // A simple matrix to restrict the derivative of the matrix exponential to
+          // the 5 independent entries (DeltaLp is traceless)
+          LINALG::Matrix<6,5> DDalphakDbetaVM(true);
+          DDalphakDbetaVM(0,0) = 1.;  // d Dalphak_0,0 d beta_0
+          DDalphakDbetaVM(1,1) = 1.;  // d Dalphak_1,1 d beta_1
+          DDalphakDbetaVM(2,0) = -1.; // d Dalphak_2,2 d beta_0
+          DDalphakDbetaVM(2,1) = -1.; // d Dalphak_2,2 d beta_1
+          DDalphakDbetaVM(3,2) = 2.;  // d Dalphak_0,1 d beta_2
+          DDalphakDbetaVM(4,3) = 2.;  // d Dalphak_1,2 d beta_3
+          DDalphakDbetaVM(5,4) = 2.;  // d Dalphak_0,2 d beta_4
+
+          // derivative of the matrix exponential
+          // for ease of notation, we don't do the derivative w.r.t. DeltaLp
+          // but -DeltaLp=DeltaAlphaK
+          LINALG::Matrix<6,6> Dexp(false);
+          tmp1=DeltaAlphaK;
+          MatrixExponentialDerivativeSym3x3(tmp1,Dexp);
+          LINALG::Matrix<6,5> DexpRed;
+          DexpRed.Multiply(Dexp,DDalphakDbetaVM);
+
+
+          // **************************************************************
+          // stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
+          // **************************************************************
+
+          // calculate Eop
+          // Eop_aAj = E_abj F^{p-1,n}_Ab
+          std::vector<std::vector<std::vector<double> > > Eop;
+          for (int a=0; a<3; a++)
+          {
+            if (a==0) Eop.resize(3);
+            for (int A=0; A<3; A++)
+            {
+              if (A==0) Eop.at(a).resize(3);
+              for (int j=0; j<5; j++)
+              {
+                if (j==0) Eop.at(a).at(A).resize(5,0);
+                for (int b=0; b<3; b++)
+                  Eop.at(a).at(A).at(j) += DexpRed(TensorToVoigt(a,b),j) * InvPlasticDefgrdLast(A,b);
+              }
+            }
+          }
+
+          // calculate C_CD F^p-1_Dd
+          tmp1.Multiply(total_cauchygreen,InvPlasticDefgrd);
+
+          // EbarCFpinv_cdj = Ebar_cCj . C_CD . F^p-1_Dd = Ebar_cCj . tmp1_Cd
+          std::vector<std::vector<std::vector<double> > > ECFpinv;
+          LINALG::Matrix<6,5> symECP(true);
+          for (int c=0; c<3; c++)
+          {
+            if (c==0) ECFpinv.resize(3);
+            for (int d=0; d<3; d++)
+            {
+              if (d==0) ECFpinv.at(c).resize(3);
+              for (int j=0; j<5; j++)
+              {
+                if (j==0) ECFpinv.at(c).at(d).resize(5,0);
+                for (int C=0; C<3; C++)
+                {
+                  symECP(TensorToVoigt(c,d),j) +=  0.5*( Eop.at(c).at(C).at(j) * tmp1(C,d)
+                                                        +Eop.at(d).at(C).at(j) * tmp1(C,c));
+                  ECFpinv.at(c).at(d).at(j) += Eop.at(c).at(C).at(j) * tmp1(C,d);
+                }
+              }
+            }
+          }
+
+          // S^e_ab * F^p-1_Bb
+          tmp1.MultiplyNT(elastic_stress_matrix_bar,InvPlasticDefgrd);
+
+          // tensor dSdbeta
+          // in index notation this contains
+          //                   d S_AB
+          // dSdbeta_ABj = --------------
+          //                  d beta_j
+          LINALG::Matrix<numstr_,5> dSbardbetaMatrix(true);
+
+          // add second contribution to dSdbeta
+          for (int A=0; A<3; A++)
+            for (int B=A; B<3; B++)
+              for (int j=0; j<5; j++)
+                for (int c=0; c<3; c++)
+                  dSbardbetaMatrix(TensorToVoigt(A,B),j) += Eop.at(c).at(A).at(j) * tmp1(c,B)
+                                                       + Eop.at(c).at(B).at(j) * tmp1(c,A);
+
+          dSbardbetaMatrix.Multiply(pow(f_bar_factor,2.),Cmat_ABcd_bar,symECP,1.);
+
+          // Calculate stiffness matrix [k^e_{d,beta}]_ij (i=1..numdof; j=1..5)
+          kdbeta.MultiplyTN(detJ_w/f_bar_factor,bop,dSbardbetaMatrix);
+          // **************************************************************
+          // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
+          // **************************************************************
+
+          if (activity_state_->at(gp)==true)
+          {
+            // **************************************************************
+            // stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
+            // linearization of the complementarity function
+            // **************************************************************
+
+            //                      d Sigma_ab
+            // dSigmaDbeta_abj = -----------------
+            //                       d beta_j
+            // dSigmaDbeta_abj =  Eop_aAj . C_AC . F^p-1_Cc . S^e_bc
+            //                  + Eop_cCj . C_AC . F^p-1_Aa . S^e_bc
+            //                  + Eop_dDj . C_DE . F^p-1_Ee . Cmat^e_bcde . C^e_ac
+            //                 =  ECFpinv_acj               . S^e_bc
+            //                  + ECFpinv_caj               . S^e_bc
+            //                  + ECFpinv_dej               . Cmat^e_bcde . C^e_ac
+            // in case of F-bar elements, this stores
+            //                      d bar Sigma_ab
+            // dSigmaDbeta_abj = --------------------
+            //                         d beta_j
+            std::vector<std::vector<std::vector<double> > > dSigmaDbeta;
+            LINALG::Matrix<numstr_,5> tmp65;
+            tmp65.Multiply(elastic_cmat_bar,symECP);
+            for (int a=0; a<3; a++)
+            {
+              if (a==0) dSigmaDbeta.resize(3);
+              for (int b=0; b<3; b++)
+              {
+                if (b==0) dSigmaDbeta.at(a).resize(3);
+                for (int j=0; j<5; j++)
+                {
+                  if (j==0) dSigmaDbeta.at(a).at(b).resize(5,0);
+                  for (int c=0; c<3; c++)
+                  {
+                    dSigmaDbeta.at(a).at(b).at(j) += pow(f_bar_factor,2.) * ECFpinv.at(a).at(c).at(j) * elastic_stress_matrix_bar(b,c);
+                    dSigmaDbeta.at(a).at(b).at(j) += pow(f_bar_factor,2.) * ECFpinv.at(c).at(a).at(j) * elastic_stress_matrix_bar(b,c);
+                    dSigmaDbeta.at(a).at(b).at(j) += pow(f_bar_factor,2.) * elastic_cauchygreen_bar(a,c) * tmp65(TensorToVoigt(b,c),j);
+                  }
+                }
+              }
+            }
+
+            //                    d eta_ab
+            // detadbeta_abj = ---------------
+            //                    d beta_j
+            // in Voigt notation
+            // as eta is traceless, there are only 5 components
+            LINALG::Matrix<5,5> detadbeta;
+            for (int i=0; i<5; i++)
+              for (int j=0; j<5; j++)
+              {
+                // diagonal entries
+                if (i==0 || i==1)
+                  detadbeta(i,j) = dSigmaDbeta.at(i).at(i).at(j)
+                  - 1./3.*(  dSigmaDbeta.at(0).at(0).at(j)
+                      +dSigmaDbeta.at(1).at(1).at(j)
+                      +dSigmaDbeta.at(2).at(2).at(j)  )
+                      + 2./3.*kinhard * (i==j);
+                // off-diagonal entries
+                if (i==2)
+                  detadbeta(i,j) = 0.5*(dSigmaDbeta.at(0).at(1).at(j)+dSigmaDbeta.at(1).at(0).at(j))+ 2./3.*kinhard * (i==j);
+                if (i==3)
+                  detadbeta(i,j) = 0.5*(dSigmaDbeta.at(1).at(2).at(j)+dSigmaDbeta.at(2).at(1).at(j))+ 2./3.*kinhard * (i==j);
+                if (i==4)
+                  detadbeta(i,j) = 0.5*(dSigmaDbeta.at(0).at(2).at(j)+dSigmaDbeta.at(2).at(0).at(j))+ 2./3.*kinhard * (i==j);
+              }
+
+            LINALG::Matrix<5,1> dYpl_dbeta(true);
+            LINALG::Matrix<5,1> dabs_eta_trial_dbeta(true);
+            for (int j=0;j<2; j++)
+            {
+              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * (2.*DalphaK_last_iter_->at(gp)(j) + DalphaK_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
+              for (int i=0; i<5; i++)
+                dabs_eta_trial_dbeta(i) += (2.*eta_bar_trial_vec(j)+ eta_bar_trial_vec((j+1)%2))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial_bar;
+            }
+            for (int j=2; j<5; j++)
+            {
+              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * 2.*DalphaK_last_iter_->at(gp)(j)/absDeltaAlphaK;
+              for (int i=0; i<5; i++)
+                dabs_eta_trial_dbeta(i) += (2.*eta_bar_trial_vec(j))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial_bar;
+            }
+            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
+
+            // build kbb from all previous linearizations
+            kbetabeta.Update(1.-Ypl/absetatrial_bar,detadbeta,1.);
+            kbetabeta.Update(Ypl/absetatrial_bar*cpl_,id5,1.);
+            kbetabeta.MultiplyNT(-1./absetatrial_bar,eta_bar_trial_vec,dYpl_dbeta,1.);
+            kbetabeta.MultiplyNT((1-stab_s_)*Ypl/pow(absetatrial_bar,2.),eta_bar_trial_vec,dabs_eta_trial_dbeta,1.);
+            kbetabeta.MultiplyNT(stab_s_*apl/absetatrial_bar,eta_bar_vec,dabs_eta_trial_dbeta,1.);
+
+            // **************************************************************
+            // end of stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
+            // **************************************************************
+
+            // **************************************************************
+            // stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
+            // linearization of the complementarity function
+            // **************************************************************
+
+            // calculate derivative detadd
+            //             d eta_ab
+            // detadd = --------------
+            //              d d_i
+            LINALG::Matrix<5,numdofperelement_> detadd;
+
+            // derivative of Mandel stress tensor
+            std::vector<std::vector<std::vector<double> > > dSigmadd;
+            LINALG::Matrix<numstr_,numdofperelement_> bop_inter;
+            PullBop(bop,bop_inter,InvPlasticDefgrd);
+
+            LINALG::Matrix<numstr_,numdofperelement_> tmp624;
+
+            tmp624.Multiply(elastic_cmat_bar,bop_inter);
+            tmp1.Multiply(elastic_cauchygreen_bar,elastic_stress_matrix_bar);
+            LINALG::Matrix<6,1> CmatRCG;
+            CmatRCG.Multiply(elastic_cmat_bar,elastic_cauchygreenvector);
+            for (int a=0; a<3; a++)
+            {
+              if (a==0) dSigmadd.resize(3);
+              for (int b=0; b<3; b++)
+              {
+                if (b==0) dSigmadd.at(a).resize(3);
+                for (int i=0; i<NUMDOF_SOH8; i++)
+                {
+                  if (i==0) dSigmadd.at(a).at(b).resize(NUMDOF_SOH8,0);
+                  for (int c=0; c<3; c++)
+                  {
+                    dSigmadd.at(a).at(b).at(i) += pow(f_bar_factor,2.)*(1.-0.5*(double)(a!=c))*bop_inter(TensorToVoigt(a,c),i)*elastic_stress_matrix_bar(b,c);
+                    dSigmadd.at(a).at(b).at(i) += pow(f_bar_factor,2.)*0.5*tmp624(TensorToVoigt(b,c),i)*elastic_cauchygreen_bar(a,c);
+                    dSigmadd.at(a).at(b).at(i) += 1./3.*elastic_cauchygreen_bar(a,c)*CmatRCG(TensorToVoigt(b,c))*htensor(i);
+                  }
+                  dSigmadd.at(a).at(b).at(i) += 2./3. * tmp1(a,b)*htensor(i);
+                }
+              }
+            }
+
+
+            for (int i=0; i<5; i++)
+              for (int j=0; j<numdofperelement_; j++)
+              {
+                // diagonal entries
+                if (i==0 || i==1)
+                  detadd(i,j) = dSigmadd.at(i).at(i).at(j)
+                  - 1./3.*(  dSigmadd.at(0).at(0).at(j)
+                      +dSigmadd.at(1).at(1).at(j)
+                      +dSigmadd.at(2).at(2).at(j)  );
+                if (i==2)
+                  detadd(i,j) = 0.5*(dSigmadd.at(0).at(1).at(j)+dSigmadd.at(1).at(0).at(j));
+                if (i==3)
+                  detadd(i,j) = 0.5*(dSigmadd.at(1).at(2).at(j)+dSigmadd.at(2).at(1).at(j));
+                if (i==4)
+                  detadd(i,j) = 0.5*(dSigmadd.at(0).at(2).at(j)+dSigmadd.at(2).at(0).at(j));
+              }
+
+            LINALG::Matrix<numdofperelement_,1> dabs_eta_trial_dd(true);
+            for (int j=0;j<2; j++)
+              for (int i=0; i<numdofperelement_; i++)
+                dabs_eta_trial_dd(i) += (2.*eta_bar_trial_vec(j)+ eta_bar_trial_vec((j+1)%2))*(detadd(j,i))/absetatrial_bar;
+            for (int j=2; j<5; j++)
+              for (int i=0; i<numdofperelement_; i++)
+                dabs_eta_trial_dd(i) += (2.*eta_bar_trial_vec(j))*(detadd(j,i))/absetatrial_bar;
+
+            kbetad.Clear();
+            kbetad.Update(1.-1.*Ypl/absetatrial_bar,detadd,1.);
+            kbetad.MultiplyNT(stab_s_*apl/absetatrial_bar,eta_bar_vec,dabs_eta_trial_dd,1.);
+            kbetad.MultiplyNT((1.-stab_s_)*Ypl/absetatrial_bar/absetatrial_bar,eta_bar_trial_vec,dabs_eta_trial_dd,1.);
+
+            // store for recover step
+            Kbd_->at(gp) = kbetad;
+            // **************************************************************
+            // end of stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
+            // **************************************************************
+
+
+            // **************************************************************
+            // right hand side term for complementarity function f^int_i (i=1..5)
+            // **************************************************************
+            force_beta.Update(eta_bar_vec);
+            force_beta.Update(-1.*Ypl/absetatrial_bar,eta_bar_trial_vec,1.);
+            // store for recover step
+            fbeta_->at(gp) = force_beta;
+            // **************************************************************
+            // end of right hand side term for complementarity function f^int_i (i=1..5)
+            // **************************************************************
+          } // acrtive Gauss points
+
+          // inactive Gauss point with plastic history within this load/time step
+          else if (activity_state_->at(gp)==false && Dissipation>0.)
+          {
+            // the complementarity function is
+            // C^pl = - Ypl^s * cplparam_ * delta alpha^k
+
+            // Complementarity function independent from displacements
+            kbetad.Clear();
+            Kbd_->at(gp).Clear();
+
+            LINALG::Matrix<5,1> dYpl_dbeta(true);
+            for (int j=0;j<2; j++)
+              dYpl_dbeta(j) += 2./3. * (2.*DalphaK_last_iter_->at(gp)(j) + DalphaK_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
+            for (int j=2; j<5; j++)
+              dYpl_dbeta(j) += 2./3. * 2.*DalphaK_last_iter_->at(gp)(j)/absDeltaAlphaK;
+            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
+
+            kbetabeta.Update(cpl_,id5,0.);
+            kbetabeta.MultiplyNT(stab_s_/Ypl * cpl_,DalphaK_last_iter_->at(gp),dYpl_dbeta,1.);
+
+            // right hand side term
+            force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+            fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+          }
+        }
+        else
+        {
+          // Complementarity function independent from displacements
+          kbetad.Clear();
+          Kbd_->at(gp).Clear();
+          kbetabeta.Update(cpl_,id5);
+          kdbeta.Clear();
+
+          // right hand side term
+          force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+          fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+        }
+
+        // **************************************************************
+        // static condensation of inner variables
+        // **************************************************************
+        //inverse matrix block [k_beta beta]_ij
+        LINALG::Matrix<5,5> InvKbetabeta;
+        Epetra_SerialDenseMatrix Kbetabeta_epetra(5,5);
+        for (int i=0; i<5; i++)
+          for (int j=0; j<5; j++)
+            Kbetabeta_epetra(i,j) = kbetabeta(i,j);
+        // we need the inverse of K_beta beta
+        Epetra_SerialDenseSolver solve_for_inverseKbb;
+        solve_for_inverseKbb.SetMatrix(Kbetabeta_epetra);
+        solve_for_inverseKbb.Invert();
+        for (int i=0; i<5; i++)
+          for (int j=0; j<5; j++)
+            InvKbetabeta(i,j) = Kbetabeta_epetra(i,j);
+        // store for recover step
+        KbbInv_->at(gp) = InvKbetabeta;
+
+        LINALG::Matrix<numdofperelement_,5> KdbKbb; // temporary  Kdb.Kbb^-1
+        KdbKbb.Multiply(kdbeta,InvKbetabeta);
+
+        // "plastic displacement stiffness"
+        // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
+        if (stiffmatrix!=NULL) stiffmatrix->Multiply(-1.,KdbKbb,kbetad,1.);
+
+        // "plastic internal force"
+        // plFint = [K_db.K_bb^-1].f_b
+        if (force!=NULL) force->Multiply(-1.,KdbKbb,force_beta,1.);
+
+      } // modification for plastic Gauss points
+  } // gp loop
+
+  // communicate unconverged active set to time integration
+  if (converged_active_set==false)
+    params.set("unconverged_active_set",true);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | internal force, linear stiffness and mass                seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::lin_stiffmass(
+    std::vector<int>&              lm,             // location matrix
+    std::vector<double>&           disp,           // current displacements
+    std::vector<double>&           residual,       // current residual displ
+    LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+    LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+    LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+    LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+    LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+    Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType   iostress,  // stress output option
+    const INPAR::STR::StrainType   iostrain,  // strain output option
+    const int MyPID  // processor id
+    )
+{
+  // update element geometry hex8, 3D: (8x3)
+  LINALG::Matrix<nen_,nsd_> xrefe;  // X, material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr;  // x, current  coord. of element
+
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<nen_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+  }
+
+  // we need the (residual) displacement -- current increment of displacement
+  LINALG::Matrix<numdofperelement_,1> res_d;
+  LINALG::Matrix<numdofperelement_,1> nodaldisp;
+  for (int i = 0; i<numdofperelement_; ++i)
+  {
+    nodaldisp(i) = disp[i];
+    res_d(i) = residual[i];
+  }
+
+  // compute derivatives N_XYZ at gp w.r.t. material coordinates
+  // by N_XYZ = J^-1 * N_rst
+  LINALG::Matrix<nsd_,nen_> N_XYZ;
+  // shape functions and their first derivatives
+  LINALG::Matrix<nen_,1> shapefunct;
+  LINALG::Matrix<nsd_,nen_> deriv;
+
+  // 3x3 LINALG matrix for temporary stuff
+  LINALG::Matrix<nsd_,nsd_> tmp1(false);
+  LINALG::Matrix<nsd_,nsd_> tmp2(false);
+
+  // get plastic material paramters
+  MAT::PlasticSemiSmooth* plmat = dynamic_cast<MAT::PlasticSemiSmooth*>(plasticmat_.access_private_ptr());
+  double kinhard=plmat->KinHard();
+  double isohard=plmat->IsoHard();
+  double expisohard=plmat->ExpIsoHard();
+  double infyield=plmat->InfYield();
+  double inityield=plmat->InitYield();
+
+  // converged active set
+  bool converged_active_set=true;
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  for (int gp=0; gp<numgpt_; ++gp)
+  {
+    // shape functions (shapefunct) and their first derivatives (deriv)
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    /* get the inverse of the Jacobian matrix which looks like:
+     **            [ x_,r  y_,r  z_,r ]^-1
+     **     J^-1 = [ x_,s  y_,s  z_,s ]
+     **            [ x_,t  y_,t  z_,t ]
+     */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
+    double detJ = detJ_[gp]; // (6.22)
+
+    // calculate the linear B-operator B_L = N_XYZ
+    LINALG::Matrix<numstr_,numdofperelement_> boplin;
+    CalculateBoplin(&boplin,&N_XYZ);
+
+
+    // approximate linearised strain tensor using common naming of strain vector
+    // linstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    LINALG::Matrix<numstr_,1> total_linstrain;
+    // E = epsilon_GL == epsilon_1
+    // build the linearised strain epsilon = B . d
+    total_linstrain.Multiply(boplin,nodaldisp);
+
+    // linear strain in matrix notation
+    LINALG::Matrix<nsd_,nsd_> total_linstrain_matrix;
+    total_linstrain_matrix(0,0) = total_linstrain(0);
+    total_linstrain_matrix(0,1) = 0.5*total_linstrain(3);
+    total_linstrain_matrix(0,2) = 0.5*total_linstrain(5);
+    total_linstrain_matrix(1,0) = total_linstrain_matrix(0,1);
+    total_linstrain_matrix(1,1) = total_linstrain(1);
+    total_linstrain_matrix(1,2) = 0.5*total_linstrain(4);
+    total_linstrain_matrix(2,0) = total_linstrain_matrix(0,2);
+    total_linstrain_matrix(2,1) = total_linstrain_matrix(1,2);
+    total_linstrain_matrix(2,2) = total_linstrain(2);
+
+    // return gp strains (only in case of stress/strain output)
+    switch (iostrain)
+    {
+    // in the linear realm all these strain measures are equal
+    case INPAR::STR::strain_gl:
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = total_linstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * total_linstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+    {
+      dserror("requested strain type not available");
+      break;
+    }
+    }
+
+    // recover condensed variables from last iteration step *********
+    if (res_d.NormInf()!=0.)
+    {
+      // first part
+      LINALG::Matrix<5,1> tmp51;
+      tmp51.Multiply(KbbInv_->at(gp),fbeta_->at(gp));
+      DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+
+      // second part
+      LINALG::Matrix<5,numdofperelement_> tmp524;
+      tmp524.Multiply(KbbInv_->at(gp),Kbd_->at(gp));
+      tmp51.Multiply(tmp524,res_d);
+      DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+    }// end of recover **********************************************
+
+    // current plastic flow increment
+    LINALG::Matrix<nsd_,nsd_> DeltaAlphaK(false);
+    DeltaAlphaK(0,0) = DalphaK_last_iter_->at(gp)(0);
+    DeltaAlphaK(1,1) = DalphaK_last_iter_->at(gp)(1);
+    DeltaAlphaK(2,2) = -1.0*(DalphaK_last_iter_->at(gp)(0)+DalphaK_last_iter_->at(gp)(1));
+    DeltaAlphaK(0,1) = DalphaK_last_iter_->at(gp)(2);
+    DeltaAlphaK(1,0) = DalphaK_last_iter_->at(gp)(2);
+    DeltaAlphaK(1,2) = DalphaK_last_iter_->at(gp)(3);
+    DeltaAlphaK(2,1) = DalphaK_last_iter_->at(gp)(3);
+    DeltaAlphaK(0,2) = DalphaK_last_iter_->at(gp)(4);
+    DeltaAlphaK(2,0) = DalphaK_last_iter_->at(gp)(4);
+
+    // additive elastic/plastic split
+    LINALG::Matrix<nsd_,nsd_> elastic_linstrain_matrix(total_linstrain_matrix);
+    elastic_linstrain_matrix.Update(-1.,last_alpha_kinematic_->at(gp),1.);
+    elastic_linstrain_matrix.Update(-1.,DeltaAlphaK,1.);
+
+    // elastic strain in Voigt notation
+    LINALG::Matrix<numstr_,1> elastic_linstrain;
+    elastic_linstrain(0) = elastic_linstrain_matrix(0,0);
+    elastic_linstrain(1) = elastic_linstrain_matrix(1,1);
+    elastic_linstrain(2) = elastic_linstrain_matrix(2,2);
+    elastic_linstrain(3) = 2.*elastic_linstrain_matrix(0,1);
+    elastic_linstrain(4) = 2.*elastic_linstrain_matrix(1,2);
+    elastic_linstrain(5) = 2.*elastic_linstrain_matrix(0,2);
+
+    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     ** For semi-smooth plasticity only isotropic materials are valid.
+     ** Only SVK material for linear kinematics!
+     */
+    if (Material()->MaterialType()!=INPAR::MAT::m_stvenant)
+      dserror("so3_Plast works only with svk material for linear kinematics, sorry");
+    LINALG::Matrix<numstr_,numstr_> cmat(true);
+    LINALG::Matrix<numstr_,1> stress(true);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",Id());
+    EvaluateELasticMaterial(NULL,&elastic_linstrain,params,&stress,&cmat);
+    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+    // return gp stresses
+    switch (iostress)
+    {
+    // linear kinematics --> equal stress
+    case INPAR::STR::stress_2pk:
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < numstr_; ++i)
+        (*elestress)(gp,i) = stress(i);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+    {
+      dserror("requested stress type not available");
+      break;
+    }
+    }
+
+    // stress in matrix form
+    LINALG::Matrix<3,3> stress_matrix;
+    stress_matrix(0,0) = stress(0);
+    stress_matrix(1,1) = stress(1);
+    stress_matrix(2,2) = stress(2);
+    stress_matrix(0,1) = stress(3);
+    stress_matrix(1,0) = stress_matrix(0,1);
+    stress_matrix(1,2) = stress(4);
+    stress_matrix(2,1) = stress_matrix(1,2);
+    stress_matrix(0,2) = stress(5);
+    stress_matrix(2,0) = stress_matrix(0,2);
+
+    // eta
+    LINALG::Matrix<3,3> eta(stress_matrix);
+    for (int i=0; i<3; i++)
+      eta(i,i) -= 1./3.*(stress_matrix(0,0) + stress_matrix(1,1) + stress_matrix(2,2));
+    eta.Update(-2./3.*kinhard,last_alpha_kinematic_->at(gp),1.);
+    eta.Update(-2./3.*kinhard,DeltaAlphaK,1.);
+    LINALG::Matrix<5,1> eta_vec(false);
+    eta_vec(0) = eta(0,0);
+    eta_vec(1) = eta(1,1);
+    eta_vec(2) = 0.5*(eta(0,1)+eta(1,0));
+    eta_vec(3) = 0.5*(eta(2,1)+eta(1,2));
+    eta_vec(4) = 0.5*(eta(0,2)+eta(2,0));
+
+    // eta_trial
+    LINALG::Matrix<3,3> eta_trial(eta);
+    eta_trial.Update(cpl_,DeltaAlphaK,1.0);
+    LINALG::Matrix<5,1> eta_trial_vec(false);
+    eta_trial_vec(0) = eta_trial(0,0);
+    eta_trial_vec(1) = eta_trial(1,1);
+    eta_trial_vec(2) = 0.5*(eta_trial(0,1)+eta_trial(1,0));
+    eta_trial_vec(3) = 0.5*(eta_trial(2,1)+eta_trial(1,2));
+    eta_trial_vec(4) = 0.5*(eta_trial(0,2)+eta_trial(2,0));
+
+    // absolute values
+    double absetatrial=0.;
+    double absDeltaAlphaK=0.;
+    double abseta=0.;
+    double Dissipation=0.;
+    for (int i=0; i<3; i++)
+      for (int j=0; j<3; j++)
+      {
+        absetatrial += eta_trial(i,j) * eta_trial(i,j);
+        absDeltaAlphaK += DeltaAlphaK(i,j) * DeltaAlphaK(i,j);
+        abseta+=eta(i,j)*eta(i,j);
+        Dissipation-=eta(i,j)*DeltaAlphaK(i,j);
+      }
+    absetatrial = sqrt(absetatrial);
+    absDeltaAlphaK = sqrt(absDeltaAlphaK);
+    abseta = sqrt(abseta);
+
+    // current yield stress equivalent (yield stress scaled by sqrt(2/3))
+    double Ypl=0.;
+    if (Dissipation>0.)
+      Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)))
+          + isohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK) +inityield);
+    else
+      Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0))))
+          + isohard*(last_alpha_isotropic_->at(gp)(0,0)) +inityield);
+
+    // check activity state
+    // inactive
+    if (Ypl<absetatrial)
+    {
+      if (activity_state_->at(gp)==false) // gp switches state
+        converged_active_set = false;
+      activity_state_->at(gp) = true;
+    }
+    // active
+    else
+    {
+      if (activity_state_->at(gp)==true) // gp switches state
+        converged_active_set = false;
+      activity_state_->at(gp) = false;
+    }
+
+    // integrate elastic internal force vector **************************
+    double detJ_w = detJ*intpoints_.Weight(gp);
+
+    // update internal force vector
+    if (force != NULL)
+    {
+      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+      force->MultiplyTN(detJ_w, boplin, stress, 1.0);
+    }
+    // end integrate elastic internal force vector **********************
+
+    // update/integrate `elastic' and `initial-displacement' stiffness matrix
+    if (stiffmatrix != NULL)
+    {
+      // keu = keu + (B^T . C . B) * detJ * w(gp)
+      LINALG::Matrix<6,numdofperelement_> cb;
+      cb.Multiply(cmat,boplin);
+      stiffmatrix->MultiplyTN(detJ_w,boplin,cb,1.0);
+    }
+
+    if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
+    {
+      double density = Material()->Density();
+      // integrate consistent mass matrix
+      const double factor = detJ_w * density;
+      double ifactor, massfactor;
+      for (int inod=0; inod<nen_; ++inod)
+      {
+        ifactor = shapefunct(inod) * factor;
+        for (int jnod=0; jnod<nen_; ++jnod)
+        {
+          massfactor = shapefunct(inod) * ifactor;     // intermediate factor
+          (*massmatrix)(nsd_*inod+0,nsd_*jnod+0) += massfactor;
+          (*massmatrix)(nsd_*inod+1,nsd_*jnod+1) += massfactor;
+          (*massmatrix)(nsd_*inod+2,nsd_*jnod+2) += massfactor;
+        }
+      }
+
+    } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // plastic modifications
+    if (stiffmatrix!=NULL || force!=NULL)
+    {
+      // variables needed for condensation and calculated seperately for active and inactive Gauss points
+      LINALG::Matrix<5,numdofperelement_> kbetad(true);
+      LINALG::Matrix<5,5> kbetabeta(true);
+      LINALG::Matrix<5,1> force_beta(true);
+      LINALG::Matrix<numdofperelement_,5> kdbeta;
+
+      // 5x5 identitiy matrix
+      LINALG::Matrix<5,5> id5(true);
+      for (int i=0; i<5; i++)
+        id5(i,i)=1.;
+
+      // Due to stabilization, we have to treat inactive nodes as well
+      if (activity_state_->at(gp)==true || Dissipation>0.)
+      {
+        // damping parameter apl
+        double apl=1.;
+        if (Ypl/abseta<1.) apl=Ypl/abseta;
+
+        // matrix to eliminate the 6th stress variable as the stress is traceless
+        LINALG::Matrix<6,5> DDalphakDbetaVM(true);
+        DDalphakDbetaVM(0,0) = 1.;  // d Dalphak_0,0 d beta_0
+        DDalphakDbetaVM(1,1) = 1.;  // d Dalphak_1,1 d beta_1
+        DDalphakDbetaVM(2,0) = -1.; // d Dalphak_2,2 d beta_0
+        DDalphakDbetaVM(2,1) = -1.; // d Dalphak_2,2 d beta_1
+        DDalphakDbetaVM(3,2) = 2.;  // d Dalphak_0,1 d beta_2
+        DDalphakDbetaVM(4,3) = 2.;  // d Dalphak_1,2 d beta_3
+        DDalphakDbetaVM(5,4) = 2.;  // d Dalphak_0,2 d beta_4
+
+        // [K_d beta]_ij ***************************************************
+        LINALG::Matrix<numstr_,5> dsigmadbeta;
+        dsigmadbeta.Multiply(-1.,cmat,DDalphakDbetaVM);
+        kdbeta.MultiplyTN(detJ_w,boplin,dsigmadbeta);
+
+        if (activity_state_->at(gp)==true)
+        {
+          // communicate number of active plastic gauss points back to time integration
+          // don't sum up for ghost elements
+          if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
+
+          // [K_beta d]_ij ***************************************************
+
+          LINALG::Matrix<numstr_,numdofperelement_> dSigmadd;
+          dSigmadd.Multiply(cmat,boplin);
+
+          LINALG::Matrix<5,numdofperelement_> detadd(false);
+          for (int i=0; i<5; i++)
+            for (int j=0; j<numdofperelement_; j++)
+            {
+              // diagonal entries
+              if (i==0 || i==1)
+                detadd(i,j) = dSigmadd(TensorToVoigt(i,i),j)
+                - 1./3.*(  dSigmadd(0,j)
+                    +dSigmadd(1,j)
+                    +dSigmadd(2,j)  );
+              if (i==2)
+                detadd(i,j) = dSigmadd(3,j);
+              if (i==3)
+                detadd(i,j) = dSigmadd(4,j);
+              if (i==4)
+                detadd(i,j) = dSigmadd(5,j);
+            }
+
+          LINALG::Matrix<numdofperelement_,1> dabs_eta_trial_dd(true);
+          for (int j=0;j<2; j++)
+            for (int i=0; i<numdofperelement_; i++)
+              dabs_eta_trial_dd(i) += (2.*eta_trial_vec(j)+ eta_trial_vec((j+1)%2))*(detadd(j,i))/absetatrial;
+          for (int j=2; j<5; j++)
+            for (int i=0; i<numdofperelement_; i++)
+              dabs_eta_trial_dd(i) += (2.*eta_trial_vec(j))*(detadd(j,i))/absetatrial;
+
+          kbetad.Clear();
+          kbetad.Update(1.-1.*Ypl/absetatrial,detadd,1.);
+          kbetad.MultiplyNT(stab_s_*apl/absetatrial,eta_vec,dabs_eta_trial_dd,1.);
+          kbetad.MultiplyNT((1.-stab_s_)*Ypl/absetatrial/absetatrial,eta_trial_vec,dabs_eta_trial_dd,1.);
+
+          // store for recover step
+          Kbd_->at(gp) = kbetad;
+
+          // [K_ beta beta]_ij *************************************************
+
+          //                    d eta_ab
+          // detadbeta_abj = ---------------
+          //                    d beta_j
+          // in Voigt notation
+          // as eta is traceless, there are only 5 components
+          LINALG::Matrix<5,5> detadbeta;
+          for (int i=0; i<5; i++)
+            for (int j=0; j<5; j++)
+            {
+              // diagonal entries
+              if (i==0 || i==1)
+                detadbeta(i,j) = dsigmadbeta(i,j)
+                - 1./3.*(  dsigmadbeta(0,j)
+                    +dsigmadbeta(1,j)
+                    +dsigmadbeta(2,j)  )
+                    - 2./3.*kinhard * (i==j);
+              // off-diagonal entries
+              if (i==2)
+                detadbeta(i,j) = dsigmadbeta(3,j) - 2./3.*kinhard * (i==j);
+              if (i==3)
+                detadbeta(i,j) = dsigmadbeta(4,j) - 2./3.*kinhard * (i==j);
+              if (i==4)
+                detadbeta(i,j) = dsigmadbeta(5,j) - 2./3.*kinhard * (i==j);
+            }
+
+          LINALG::Matrix<5,1> dYpl_dbeta(true);
+          LINALG::Matrix<5,1> dabs_eta_trial_dbeta(true);
+          for (int j=0;j<2; j++)
+          {
+            if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * (2.*DalphaK_last_iter_->at(gp)(j) + DalphaK_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
+            for (int i=0; i<5; i++)
+              dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j)+ eta_trial_vec((j+1)%2))*(detadbeta(j,i)+id5(i,j)*cpl_)/absetatrial;
+          }
+          for (int j=2; j<5; j++)
+          {
+            if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * 2.*DalphaK_last_iter_->at(gp)(j)/absDeltaAlphaK;
+            for (int i=0; i<5; i++)
+              dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j))*(detadbeta(j,i)+id5(i,j)*cpl_)/absetatrial;
+          }
+          dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
+
+          // build kbb from all previous linearizations
+          kbetabeta.Clear();
+          kbetabeta.Update(1.-Ypl/absetatrial,detadbeta,1.);
+          kbetabeta.Update(-Ypl/absetatrial*cpl_,id5,1.);
+          kbetabeta.MultiplyNT(-1./absetatrial,eta_trial_vec,dYpl_dbeta,1.);
+          kbetabeta.MultiplyNT((1.-stab_s_)*Ypl/pow(absetatrial,2.),eta_trial_vec,dabs_eta_trial_dbeta,1.);
+          kbetabeta.MultiplyNT(stab_s_*apl/absetatrial,eta_vec,dabs_eta_trial_dbeta,1.);
+
+          // right hand side term
+          force_beta.Update(eta_vec);
+          force_beta.Update(-1.*Ypl/absetatrial,eta_trial_vec,1.);
+          // store for recover step
+          fbeta_->at(gp) = force_beta;
+        } // active gp
+
+        // inactive Gauss point with plastic history within this load/time step
+        else if (activity_state_->at(gp)==false && Dissipation>0.)
+        {
+          // the complementarity function is
+          // C^pl = - Ypl^s * cplparam_ * delta alpha^k
+
+          // Complementarity function independent from displacements
+          kbetad.Clear();
+          Kbd_->at(gp).Clear();
+
+          LINALG::Matrix<5,1> dYpl_dbeta(true);
+          for (int j=0;j<2; j++)
+            dYpl_dbeta(j) += 2./3. * (2.*DalphaK_last_iter_->at(gp)(j) + DalphaK_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
+          for (int j=2; j<5; j++)
+            dYpl_dbeta(j) += 2./3. * 2.*DalphaK_last_iter_->at(gp)(j)/absDeltaAlphaK;
+          dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
+
+          kbetabeta.Update(-1.*cpl_,id5,0.);
+          kbetabeta.MultiplyNT(-1.*stab_s_/Ypl * cpl_,DalphaK_last_iter_->at(gp),dYpl_dbeta,1.);
+
+          // right hand side term
+          force_beta.Update(-1.*cpl_,DalphaK_last_iter_->at(gp),0.);
+          fbeta_->at(gp).Update(-1.*cpl_,DalphaK_last_iter_->at(gp),0.);
+        }
+      } // active or dissipation >0.
+
+      else
+      {
+        // Complementarity function independent from displacements
+        kbetad.Clear();
+        Kbd_->at(gp).Clear();
+        kdbeta.Clear();
+        kbetabeta.Update(-cpl_,id5);
+
+        // right hand side term
+        force_beta.Update(-cpl_,DalphaK_last_iter_->at(gp),0.);
+        fbeta_->at(gp).Update(-cpl_,DalphaK_last_iter_->at(gp),0.);
+      }
+
+      // **************************************************************
+      // static condensation of inner variables
+      // **************************************************************
+      //inverse matrix block [k_beta beta]_ij
+      LINALG::Matrix<5,5> InvKbetabeta;
+      Epetra_SerialDenseMatrix Kbetabeta_epetra(5,5);
+      for (int i=0; i<5; i++)
+        for (int j=0; j<5; j++)
+          Kbetabeta_epetra(i,j) = kbetabeta(i,j);
+      // we need the inverse of K_beta beta
+      Epetra_SerialDenseSolver solve_for_inverseKbb;
+      solve_for_inverseKbb.SetMatrix(Kbetabeta_epetra);
+      solve_for_inverseKbb.Invert();
+      for (int i=0; i<5; i++)
+        for (int j=0; j<5; j++)
+          InvKbetabeta(i,j) = Kbetabeta_epetra(i,j);
+      // store for recover step
+      KbbInv_->at(gp) = InvKbetabeta;
+
+      LINALG::Matrix<numdofperelement_,5> KdbKbb; // temporary  Kdb.Kbb^-1
+      KdbKbb.Multiply(kdbeta,InvKbetabeta);
+
+      // "plastic displacement stiffness"
+      // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
+      if (stiffmatrix!=NULL) stiffmatrix->Multiply(-1.,KdbKbb,kbetad,1.);
+
+      // "plastic internal force"
+      // plFint = [K_db.K_bb^-1].f_b
+      if (force!=NULL) force->Multiply(-1.,KdbKbb,force_beta,1.);
+
+    } // if (stiffmatrix!=NULL || force!=NULL)
+  } // gp loop
+
+  // communicate unconverged active set to time integration
+  if (converged_active_set==false)
+    params.set("unconverged_active_set",true);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate the material in the elastic domain              seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::EvaluateELasticMaterial(const LINALG::Matrix<3,3>* defgrd,
+    const LINALG::Matrix<6,1>* glstrain,
+    Teuchos::ParameterList& params,
+    LINALG::Matrix<6,1>* stress,
+    LINALG::Matrix<6,6>* cmat)
+{
+  switch(Material()->MaterialType())
+  {
+  case INPAR::MAT::m_stvenant:  /*------------------ st.venant-kirchhoff-material */
+  {
+    MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(Material().get());
+    stvk->Evaluate(defgrd,glstrain,params,stress,cmat);
+    break;
+  }
+  case INPAR::MAT::m_elasthyper:
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(Material().get());
+      hyper->Evaluate(defgrd,glstrain,params,stress,cmat);
+      break;
+    }
+
+  default: dserror("invalid material for so3_Plast"); break;
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  update plastic deformation for nonlinear kinematics     seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_nln()
+{
+  // loop over all Gauss points
+  for (int gp=0; gp<numgpt_; gp++)
+  {
+    if(activity_state_->at(gp)==true)
+    {
+    LINALG::Matrix<3,3> Dalphak;
+    Dalphak(0,0) = DalphaK_last_iter_->at(gp)(0);
+    Dalphak(1,1) = DalphaK_last_iter_->at(gp)(1);
+    Dalphak(2,2) = -1.0*(DalphaK_last_iter_->at(gp)(0)+DalphaK_last_iter_->at(gp)(1));
+    Dalphak(0,1) = DalphaK_last_iter_->at(gp)(2);
+    Dalphak(1,0) = DalphaK_last_iter_->at(gp)(2);
+    Dalphak(1,2) = DalphaK_last_iter_->at(gp)(3);
+    Dalphak(2,1) = DalphaK_last_iter_->at(gp)(3);
+    Dalphak(0,2) = DalphaK_last_iter_->at(gp)(4);
+    Dalphak(2,0) = DalphaK_last_iter_->at(gp)(4);
+      double absDalphak=0.;
+      for (int i=0; i<3; i++)
+        for (int j=0; j<3; j++)
+          absDalphak += Dalphak(i,j) * Dalphak(i,j);
+      absDalphak = sqrt(absDalphak);
+
+      //cout << "at gp: " << gp << ": delta alpha isotropic: " << absDalphak << endl;
+      // evolution equation for isotropic hardening variable
+      // alpha^i,n+1 = alpha^i,n + || delta alpha^k ||
+      last_alpha_isotropic_->at(gp)(0) = last_alpha_isotropic_->at(gp)(0) + sqrt(2./3.)*absDalphak;
+
+      // evolution equation for kinematic hardening variable
+      // alpha^k,n+1 = alpha^k,n + delta alpha^k
+      last_alpha_kinematic_->at(gp).Update(1.,Dalphak,1.);
+
+      // evolution equation for plastic deformation gradient
+      // F^p,n+1 = exp(-delta alpha^k) * Fp,n
+      LINALG::Matrix<3,3> tmp(Dalphak);
+      tmp.Scale(-1.);
+      MatrixExponential3x3(tmp);
+      LINALG::Matrix<3,3> FpLast(last_plastic_defgrd_inverse_->at(gp));
+      FpLast.Invert();
+      last_plastic_defgrd_inverse_->at(gp).Multiply(tmp,FpLast);
+      last_plastic_defgrd_inverse_->at(gp).Invert();
+    }
+    DalphaK_last_iter_->at(gp).Clear();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  update plastic deformation for linear kinematics        seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_lin()
+{
+  // loop over all Gauss points
+  for (int gp=0; gp<numgpt_; gp++)
+  {
+    if (activity_state_->at(gp)==true)
+    {
+      LINALG::Matrix<3,3> Dalphak;
+      Dalphak(0,0) = DalphaK_last_iter_->at(gp)(0);
+      Dalphak(1,1) = DalphaK_last_iter_->at(gp)(1);
+      Dalphak(2,2) = -1.0*(DalphaK_last_iter_->at(gp)(0)+DalphaK_last_iter_->at(gp)(1));
+      Dalphak(0,1) = DalphaK_last_iter_->at(gp)(2);
+      Dalphak(1,0) = DalphaK_last_iter_->at(gp)(2);
+      Dalphak(1,2) = DalphaK_last_iter_->at(gp)(3);
+      Dalphak(2,1) = DalphaK_last_iter_->at(gp)(3);
+      Dalphak(0,2) = DalphaK_last_iter_->at(gp)(4);
+      Dalphak(2,0) = DalphaK_last_iter_->at(gp)(4);
+
+      double absDalphak=0.;
+      for (int i=0; i<3; i++)
+        for (int j=0; j<3; j++)
+          absDalphak += Dalphak(i,j) * Dalphak(i,j);
+      absDalphak = sqrt(absDalphak);
+
+      // evolution equation for isotropic hardening variable
+      // alpha^i,n+1 = alpha^i,n + || delta alpha^k ||
+      last_alpha_isotropic_->at(gp)(0) = last_alpha_isotropic_->at(gp)(0) + absDalphak;
+
+      // evolution equation for kinematic hardening variable
+      // alpha^k,n+1 = alpha^k,n + delta alpha^k
+      last_alpha_kinematic_->at(gp).Update(1.,Dalphak,1.);
+    }
+    DalphaK_last_iter_->at(gp).Clear();
+  }// gauss point loop
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  matrix exponential                                      seitz 07/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut )
+{
+
+  Epetra_SerialDenseMatrix EV(3,3);
+  Epetra_SerialDenseVector EW(3);
+
+  // convert Input Matrix in Epetra format
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      EV(i,j) = MatrixInOut(i,j);
+
+
+  // calculate eigenvectors and eigenvalues
+  LINALG::SymmetricEigenProblem(EV,EW);
+
+  MatrixInOut.Clear();
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      for (int k=0; k<3; k++)
+        MatrixInOut(j,k) += exp(EW(i)) * EV(j,i) * EV(k,i);
+
+  return;
+}
+
+/*---------------------------------------------------------------------------*
+ |  matrix exponential derivative of a symmetric matrix          seitz 07/13 |
+ *---------------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv)
+{
+  double EWtolerance=1.e-12;
+  Epetra_SerialDenseMatrix EV(3,3);
+  Epetra_SerialDenseVector EW(3);
+
+  // convert Input Matrix in Epetra format
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      EV(i,j) = MatrixIn(i,j);
+
+
+  // calculate eigenvectors and eigenvalues
+  LINALG::SymmetricEigenProblem(EV,EW);
+
+  LINALG::Matrix<3,1> vec1;
+  LINALG::Matrix<3,1> vec2;
+  LINALG::Matrix<3,3> tmp1;
+  LINALG::Matrix<3,3> tmp2;
+
+  MatrixExpDeriv.Clear();
+  // souza eq. (A.52)
+  // note: EW stored in ascending order
+
+  //  d X^2 / d X  =  1/2 * (  delta_jk X_lj + delta_il X_kj
+  //                         + delta_jl X_ik + delta_kj X_il )
+  //
+  // y_i = log(x_i)
+  // dy_i / dx_j = delta_ij 1/x_i
+
+  LINALG::Matrix<3,3> id2(true);
+  for (int i=0; i<3; i++)
+    id2(i,i) =1.0 ;
+  LINALG::Matrix<6,6> id4sharp(true);
+  for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
+  for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
+//  // --------------------------------- switch by number of equal eigenvalues
+
+  if (abs(EW(0)-EW(1))<EWtolerance && abs(EW(1)-EW(2))<EWtolerance ) // ------------------ x_a == x_b == x_c
+  {
+    // calculate derivative
+    MatrixExpDeriv = id4sharp;
+    MatrixExpDeriv.Scale(exp(EW(0)));
+  }
+
+  else if ( ( abs(EW(0)-EW(1))<EWtolerance && abs(EW(1)-EW(2))>EWtolerance ) ||
+            ( abs(EW(0)-EW(1))>EWtolerance && abs(EW(1)-EW(2))<EWtolerance )  ) // ---- x_a != x_b == x_c or x_a == x_b != x_c
+  {
+    // factors
+    double s1=0.0;
+    double s2=0.0;
+    double s3=0.0;
+    double s4=0.0;
+    double s5=0.0;
+    double s6=0.0;
+
+    int a=0;
+    int c=0;
+
+    // switch which two EW are equal
+    if ( abs(EW(0)-EW(1))<EWtolerance && abs(EW(1)-EW(2))>EWtolerance ) // ----------------------- x_a == x_b != x_c
+    {
+      a=2;
+      c=0;
+    }
+    else if ( abs(EW(0)-EW(1))>EWtolerance && abs(EW(1)-EW(2))<EWtolerance) // ------------------ x_a != x_b == x_c
+    {
+      a=0;
+      c=2;
+    }
+    else
+      dserror("you should not be here");
+
+    // in souza eq. (A.53):
+    s1 = ( exp(EW(a)) - exp(EW(c)) ) / ( pow( EW(a) - EW(c),2.0 ) )  -  exp(EW(c)) / (EW(a)-EW(c));
+    s2 = 2.0 * EW(c) * (exp(EW(a))-exp(EW(c)))/(pow(EW(a)-EW(c),2.0)) - (EW(a)+EW(c))/(EW(a)-EW(c)) * exp(EW(c));
+    s3 = 2.0 * (exp(EW(a))-exp(EW(c)))/(pow(EW(a)-EW(c),3.0)) - (exp(EW(a)) + exp(EW(c)))/(pow(EW(a)-EW(c),2.0));
+    s4 = EW(c)*s3;
+    s5 = s4;
+    s6 = EW(c)*EW(c) * s3;
+
+    // calculate derivative
+    MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,s1,MatrixIn,1.);
+    MatrixExpDeriv.Update(-s2,id4sharp,1.);
+    MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*s3,MatrixIn,MatrixIn,1.);
+    MAT::ElastSymTensorMultiply(MatrixExpDeriv,s4,MatrixIn,id2,1.);
+    MAT::ElastSymTensorMultiply(MatrixExpDeriv,s5,id2,MatrixIn,1.);
+    MAT::ElastSymTensorMultiply(MatrixExpDeriv,s6,id2,id2,1.);
+  }
+
+  else if ( abs(EW(0)-EW(1))>EWtolerance && abs(EW(1)-EW(2))>EWtolerance ) // ----------------- x_a != x_b != x_c
+  {
+    for (int a=0; a<3; a++) // loop over all eigenvalues
+    {
+      int b = (a+1)%3;
+      int c = (a+2)%3;
+
+      LINALG::Matrix<3,1> ea;
+      LINALG::Matrix<3,1> eb;
+      LINALG::Matrix<3,1> ec;
+      for (int i=0; i<3; i++)
+      {
+        ea(i) = EV(i,a);
+        eb(i) = EV(i,b);
+        ec(i) = EV(i,c);
+      }
+      LINALG::Matrix<3,3> Ea;
+      Ea.MultiplyNT(ea,ea);
+      LINALG::Matrix<3,3> Eb;
+      Eb.MultiplyNT(eb,eb);
+      LINALG::Matrix<3,3> Ec;
+      Ec.MultiplyNT(ec,ec);
+
+      double fac = exp(EW(a)) / ( (EW(a)-EW(b)) * (EW(a)-EW(c)) );
+
+      // + d X^2 / d X
+      MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,fac,MatrixIn,1.);
+
+      // - (x_b + x_c) I_s
+      MatrixExpDeriv.Update(-1.*(EW(b)+EW(c))*fac,id4sharp,1.);
+
+      // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * ( (EW(a)-EW(b)) + (EW(a)-EW(c)) ),Ea,Ea,1.);
+
+
+      // - (x_b - x_c) (E_b \dyad E_b)
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * (EW(b) - EW(c)),Eb,Eb,1.);
+
+      // + (x_b - x_c) (E_c \dyad E_c)
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,fac * (EW(b) - EW(c)),Ec,Ec,1.);
+
+      // dy / dx_a E_a \dyad E_a
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,exp(EW(a)),Ea,Ea,1.);
+    } // end loop over all eigenvalues
+
+  }
+
+  else dserror("you should not be here.");
+
+
+  return;
+}
+
+/*---------------------------------------------------------------------------*
+ |  pull back of the b-operator                                  seitz 07/13 |
+ *---------------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::PullBop(const LINALG::Matrix<numstr_,numdofperelement_> bopIn,
+                                         LINALG::Matrix<numstr_,numdofperelement_>& bopOut,
+                                         LINALG::Matrix<3,3> Invdefgrd, double scalefac)
+{
+  std::vector<std::vector<std::vector<double> > > tmp3Tensor;
+  std::vector<std::vector<std::vector<double> > > bopOut_cai;
+  double tmp=0.;
+  // first index pull
+  // tmp_cAi = bopIn_CAi * Invdefgrd_Cc
+  for (int c=0; c<3; c++)
+  {
+    if (c==0) tmp3Tensor.resize(3);
+    if (c==0) bopOut_cai.resize(3);
+    for (int A=0; A<3; A++)
+    {
+      if (A==0) tmp3Tensor.at(c).resize(3);
+      if (A==0) bopOut_cai.at(c).resize(3);
+      for (int i=0; i<numdofperelement_; i++)
+      {
+        if (i==0) tmp3Tensor.at(c).at(A).resize(numdofperelement_,0);
+        if (i==0) bopOut_cai.at(c).at(A).resize(numdofperelement_,0);
+        for (int C=0; C<3; C++)
+        {
+          // get the corresponding component of bopIn from Voigt notation
+          int row=-1;
+          if (C==0 && A==0) row=0;
+          if (C==1 && A==1) row=1;
+          if (C==2 && A==2) row=2;
+          if ((C==0 && A==1) || (C==1 && A==0)) row=3;
+          if ((C==1 && A==2) || (C==2 && A==1)) row=4;
+          if ((C==0 && A==2) || (C==2 && A==0)) row=5;
+
+          tmp = bopIn(row,i) * Invdefgrd(C,c);
+          // modification due to conversion from Voigt notation to tensor notation
+          if (row==0 || row ==1 || row==2) tmp *=2.;
+
+          tmp3Tensor.at(c).at(A).at(i) += tmp;
+        }
+      }
+    }
+  }
+  bopOut.Clear();
+  // second inex pull
+  // bopOut_cai = tmp_cAi * Invdefgrd_Aa
+    for (int c=0; c<3; c++)
+      for (int a=0; a<3; a++)
+        for (int i=0; i<numdofperelement_; i++)
+          for (int A=0; A<3; A++)
+            bopOut(TensorToVoigt(a,c),i) += scalefac * tmp3Tensor.at(c).at(A).at(i) * Invdefgrd(A,a);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
