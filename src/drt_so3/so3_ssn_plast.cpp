@@ -252,7 +252,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
  | print this element (public)                              seitz 07/13 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Print(ostream& os) const
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Print(std::ostream& os) const
 {
   os << "So3_Plast ";
   return;
@@ -403,9 +403,9 @@ inline int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Id() const
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisNames(std::map<std::string,int>& names)
 {
-  string accumulatedstrain = "accumulatedstrain";
+  std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
-  string plastic_zone = "plastic_zone";
+  std::string plastic_zone = "plastic_zone";
   names[plastic_zone] = 1; // scalar
   so3_ele::VisNames(names);
 
@@ -416,7 +416,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisNames(std::map<std::string,in
  | return visualization data (public)                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   if (name == "accumulatedstrain")
   {

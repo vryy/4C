@@ -47,7 +47,7 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
   ActionType act = none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")                        act =  calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")                        act =  calc_struct_nlnstiff;
