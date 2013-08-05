@@ -37,7 +37,6 @@ Maintainer: Georg Hammerl
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  | Algorithm constructor                                    ghamm 09/12 |
@@ -223,8 +222,7 @@ void PARTICLE::Algorithm::Integrate()
   CalculateAndApplyForcesToParticles();
 
   {
-    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::Integrate");
-    Teuchos::TimeMonitor monitor(*t);
+    TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::Integrate");
     particles_->Solve();
   }
 
@@ -237,8 +235,7 @@ void PARTICLE::Algorithm::Integrate()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles()
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::CalculateAndApplyForcesToParticles");
-  Teuchos::TimeMonitor monitor(*t);
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CalculateAndApplyForcesToParticles");
 
   particledis_->ClearState();
 
@@ -680,8 +677,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::TransferParticles()
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::TransferParticles");
-  Teuchos::TimeMonitor monitor(*t);
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
   // set of homeless particles
   std::set<Teuchos::RCP<DRT::Node>,Less> homelessparticles;
@@ -768,7 +764,7 @@ void PARTICLE::Algorithm::TransferParticles()
   } // end for ibin
 
   if(homelessparticles.size())
-    cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << endl;
+    std::cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << std::endl;
 
   // homeless particles are sent to their new processors where they are inserted into their correct bin
   FillParticlesIntoBins(homelessparticles);
@@ -779,8 +775,7 @@ void PARTICLE::Algorithm::TransferParticles()
 
   // new ghosting is necessary
   {
-    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::TransferParticles:NewGhost");
-    Teuchos::TimeMonitor monitor(*t);
+    TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles:NewGhost");
     particledis_->ExportColumnElements(*bincolmap_);
 
     // create a set of particle IDs for each proc (row plus ghost)
@@ -805,8 +800,7 @@ void PARTICLE::Algorithm::TransferParticles()
   }
 
   {
-    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::TransferParticles:FillComplete");
-    Teuchos::TimeMonitor monitor(*t);
+    TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles:FillComplete");
     // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
     particledis_->FillComplete(true, false, true);
   }
@@ -986,8 +980,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
     // all corners of the close bin are projected onto the wall element: if at least one projection
     // point is inside the bin, it won't be removed from the list
     {
-      Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::SetupParticleWalls::step2.3_check");
-      Teuchos::TimeMonitor monitor(*t);
+      TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::SetupParticleWalls::step2.3_check");
 
       std::map<int, Teuchos::RCP<DRT::Element> > elements;
       elements[wallele->Id()] = Teuchos::rcp(wallele, false);

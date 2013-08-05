@@ -41,7 +41,6 @@ Maintainer: Georg Hammerl
 #include "../drt_io/io_pstream.H"
 #include "../headers/definitions.h"
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  | Algorithm constructor                                    ghamm 11/12 |
@@ -191,8 +190,7 @@ void CAVITATION::Algorithm::Integrate()
   PARTICLE::Algorithm::Integrate();
 
   {
-    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::IntegrateFluid");
-    Teuchos::TimeMonitor monitor(*t);
+    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::IntegrateFluid");
     fluid_->Solve();
   }
 
@@ -205,8 +203,7 @@ void CAVITATION::Algorithm::Integrate()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::CalculateAndApplyForcesToParticles");
-  Teuchos::TimeMonitor monitor(*t);
+  TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateAndApplyForcesToParticles");
   const int dim = 3;
 
   fluiddis_->ClearState();
@@ -328,8 +325,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       for(int d=0; d<dim; ++d)
         tmpposition[d] = particleposition(d);
       int bubbleBinId = ConvertPosToGid(tmpposition);
-      cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
-          " . The following number of fluid eles is in this bin:" << numfluidelesinbin << endl;
+      std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
+          " . The following number of fluid eles is in this bin:" << numfluidelesinbin << std::endl;
 
       // do not assemble forces for this bubble and continue with next bubble
       continue;
@@ -373,9 +370,9 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     bool output = false;
     if(output)
     {
-      cout << "v_rel: " << v_rel(0) << "  " << v_rel(1) << "  " << v_rel(2) << "  " << endl;
-      cout << "v_relabs: " << v_relabs << endl;
-      cout << "bubble Reynolds number: " << Re_b << endl;
+      std::cout << "v_rel: " << v_rel(0) << "  " << v_rel(1) << "  " << v_rel(2) << "  " << std::endl;
+      std::cout << "v_relabs: " << v_relabs << std::endl;
+      std::cout << "bubble Reynolds number: " << Re_b << std::endl;
     }
 
     // variable to sum forces for the current bubble under observation
@@ -413,10 +410,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     for (int d=0; d<dim; ++d)
       rot_u(d) = elevector3(d);
 
-    LINALG::Matrix<3,1> liftforce;
-    liftforce(0) = v_rel(1) * rot_u(2) - v_rel(2) * rot_u(1);
-    liftforce(1) = v_rel(2) * rot_u(0) - v_rel(0) * rot_u(2);
-    liftforce(2) = v_rel(0) * rot_u(1) - v_rel(1) * rot_u(0);
+    LINALG::Matrix<3,1> liftforce = GEO::computeCrossProduct(v_rel, rot_u);
 
     double coeff2 = c_l * rho_l * vol_b;
     liftforce.Scale(coeff2);
@@ -499,29 +493,29 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       // gravity
       LINALG::Matrix<3,1> gravityforce(gravity_acc_);
       gravityforce.Scale(rho_b*vol_b);
-      cout << "gravity force       : " << gravityforce << endl;
+      std::cout << "gravity force       : " << gravityforce << std::endl;
 
       // buoyancy
       double coeff5 = - vol_b * rho_l;
       LINALG::Matrix<3,1> buoyancyforce(true);
       buoyancyforce.Update(coeff5, gravity_acc_);
-      cout << "buoyancy force      : " << buoyancyforce << endl;
+      std::cout << "buoyancy force      : " << buoyancyforce << std::endl;
 
       // effective buoyancy / inertia term
       LINALG::Matrix<3,1> effectbuoyancyforce;
       effectbuoyancyforce.Update(-coeff5, Du_Dt);
-      cout << "effective buoy force: " << effectbuoyancyforce << endl;
+      std::cout << "effective buoy force: " << effectbuoyancyforce << std::endl;
 
       // drag, lift and added mass force
-      cout << "dragforce force     : " << dragforce << endl;
-      cout << "liftforce force     : " << liftforce << endl;
-      cout << "added mass force    : " << addedmassforce << endl;
+      std::cout << "dragforce force     : " << dragforce << std::endl;
+      std::cout << "liftforce force     : " << liftforce << std::endl;
+      std::cout << "added mass force    : " << addedmassforce << std::endl;
 
       // sum over all bubble forces
-      cout << "sum over all forces : " << bubbleforce << endl;
+      std::cout << "sum over all forces : " << bubbleforce << std::endl;
 
       // fluid force
-      cout << "fluid force         : " << couplingforce << endl;
+      std::cout << "fluid force         : " << couplingforce << std::endl;
     }
 
   } // end iparticle
@@ -707,8 +701,7 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
   // 1st step: exploiting bounding box idea for fluid elements and bins
   //--------------------------------------------------------------------
   {
-    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::DistributeBinsToProcs_step1");
-    Teuchos::TimeMonitor monitor(*t);
+    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::DistributeBinsToProcs_step1");
     // loop over row fluid elements is enough, extended ghosting always includes standard ghosting
     for (int lid = 0; lid < fluiddis_->NumMyRowElements(); ++lid)
     {
@@ -761,8 +754,7 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
 
   std::vector<int> rowbins;
   {
-    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::DistributeBinsToProcs_step2");
-    Teuchos::TimeMonitor monitor(*t);
+    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::DistributeBinsToProcs_step2");
     // NOTE: This part of the setup can be the bottleneck because vectors of all bins
     // are needed on each proc (memory issue!!); std::map could perhaps help when gathering
     // num fluid nodes in each bin, then block wise communication after copying data to vector
