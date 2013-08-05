@@ -166,7 +166,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     else if (prbtype == prb_biofilm_fsi)  scatratype_ = INPAR::SCATRA::scatratype_condif;
     else if (prbtype == prb_thermo_fsi)   scatratype_ = INPAR::SCATRA::scatratype_loma;
     else if (prbtype == prb_poroscatra)   scatratype_ = INPAR::SCATRA::scatratype_poro;
-    else if (prbtype == prb_ssi)          scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype == prb_ssi)
+    {
+      if(scatratype_ == INPAR::SCATRA::scatratype_undefined)
+             dserror("Please define SCATRATYPE in datfile!");    // scatratype_ = INPAR::SCATRA::scatratype_condif;
+    }
     else
       dserror("Problemtype %s not supported", DRT::Problem::Instance()->ProblemName().c_str());
   }
