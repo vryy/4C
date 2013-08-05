@@ -29,7 +29,7 @@ int DRT::ELEMENTS::Dcohesive::Evaluate(Teuchos::ParameterList&    params,
   if( coheStrength_.size() == 0 )
     InitializeElement();
 
-  DRT::ELEMENTS::Dcohesive::ActionType act = Dcohesive::calc_none;
+  /*DRT::ELEMENTS::Dcohesive::ActionType act = Dcohesive::calc_none;
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
@@ -45,7 +45,8 @@ int DRT::ELEMENTS::Dcohesive::Evaluate(Teuchos::ParameterList&    params,
   else if (action=="calc_struct_update_istep")  return 0;//act = Dcohesive::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")   return 0;//act = Dcohesive::calc_struct_reset_istep;
   else if (action=="calc_struct_ptcstiff")      return 0;//act = Dcohesive::calc_struct_ptcstiff;
-  else dserror("Unknown type of action for Beam2");
+  else dserror("Unknown type of action for Dcohesive");*/
+
 
   // calling appropriate crack modeling procedure
   switch ( model_ )
