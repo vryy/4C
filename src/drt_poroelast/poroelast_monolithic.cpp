@@ -126,14 +126,14 @@ void POROELAST::Monolithic::Solve()
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_);
-    //cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
+    //std::cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
     // create the systemmatrix
     SetupSystemMatrix();
-    //cout << "  time for Evaluate offdiagonal blocks: " << timer.ElapsedTime() << "\n";
+    //std::cout << "  time for Evaluate offdiagonal blocks: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
     // check whether we have a sanely filled tangent matrix
@@ -144,13 +144,13 @@ void POROELAST::Monolithic::Solve()
 
     // create full monolithic rhs vector
     SetupRHS(iter_==1);
-    //cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
+    //std::cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
-    //cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
+    //std::cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
     // reset solver tolerance
@@ -225,7 +225,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //   EvaluateForceStiffResidual()
   //   PrepareSystemForNewtonSolve()
   StructureField()->Evaluate(sx);
-  //cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+  //std::cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
   /// fluid field
 
   // fluid Evaluate
@@ -238,7 +238,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //   EvaluateRhsTangResidual() and
   //   PrepareSystemForNewtonSolve()
   FluidField()->Evaluate(Teuchos::null);
-  //cout << "  fluid time for calling Evaluate: " << timerfluid.ElapsedTime() << "\n";
+  //std::cout << "  fluid time for calling Evaluate: " << timerfluid.ElapsedTime() << "\n";
 
 } // Evaluate()
 
@@ -556,13 +556,13 @@ void POROELAST::Monolithic::CreateLinearSolver()
   if (solvertype != INPAR::SOLVER::aztec_msr &&
       solvertype != INPAR::SOLVER::belos)
   {
-    cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
-    cout << " Note: the BGS2x2 preconditioner now "                  << endl;
-    cout << " uses the structural solver and fluid solver blocks"  << endl;
-    cout << " for building the internal inverses"                    << endl;
-    cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << endl;
-    cout << " in the dat files!"                                     << endl;
-    cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
+    std::cout << " Note: the BGS2x2 preconditioner now "                  << endl;
+    std::cout << " uses the structural solver and fluid solver blocks"  << endl;
+    std::cout << " for building the internal inverses"                    << endl;
+    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << endl;
+    std::cout << " in the dat files!"                                     << endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
     dserror("aztec solver expected");
   }
   const int azprectype
@@ -1134,19 +1134,19 @@ void POROELAST::Monolithic::BuildCombinedDBCMap()
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PoroFDCheck()
 {
-  cout << "\n******************finite difference check***************" << endl;
+  std::cout << "\n******************finite difference check***************" << endl;
 
   int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 4;
   int dof_fluid = (FluidField()->Discretization()->NumGlobalNodes()) * 4;
 
-  cout << "structure field has " << dof_struct << " DOFs" << endl;
-  cout << "fluid field has " << dof_fluid << " DOFs" << endl;
+  std::cout << "structure field has " << dof_struct << " DOFs" << endl;
+  std::cout << "fluid field has " << dof_fluid << " DOFs" << endl;
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   iterinc = LINALG::CreateVector(*DofRowMap(), true);
 
   const int dofs = iterinc->GlobalLength();
-  cout << "in total " << dofs << " DOFs" << endl;
+  std::cout << "in total " << dofs << " DOFs" << endl;
   const double delta = 1e-8;
 
   iterinc->PutScalar(0.0);
@@ -1168,14 +1168,14 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   if (false)
   {
-    cout << "iterinc_" << endl << *iterinc_ << endl;
-    cout << "iterinc" << endl << *iterinc << endl;
-    cout << "meshdisp: " << endl << *(FluidField()->Dispnp());
-    cout << "disp: " << endl << *(StructureField()->Dispnp());
-    cout << "fluid vel" << endl << *(FluidField()->Velnp());
-    cout << "fluid acc" << endl << *(FluidField()->Accnp());
-    cout << "gridvel fluid" << endl << *(FluidField()->GridVel());
-    cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
+    std::cout << "iterinc_" << endl << *iterinc_ << endl;
+    std::cout << "iterinc" << endl << *iterinc << endl;
+    std::cout << "meshdisp: " << endl << *(FluidField()->Dispnp());
+    std::cout << "disp: " << endl << *(StructureField()->Dispnp());
+    std::cout << "fluid vel" << endl << *(FluidField()->Velnp());
+    std::cout << "fluid acc" << endl << *(FluidField()->Accnp());
+    std::cout << "gridvel fluid" << endl << *(FluidField()->GridVel());
+    std::cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
   }
 
   const int zeilennr = -1;
@@ -1188,7 +1188,7 @@ void POROELAST::Monolithic::PoroFDCheck()
     }
 
     if (i == spaltenr)
-      cout << "\n******************" << spaltenr + 1
+      std::cout << "\n******************" << spaltenr + 1
           << ". Spalte!!***************" << endl;
 
     Evaluate(iterinc);
@@ -1204,8 +1204,8 @@ void POROELAST::Monolithic::PoroFDCheck()
     if (i == spaltenr)
     {
 
-      cout << "rhs_: " << (*rhs_copy)[zeilennr] << endl;
-      cout << "rhs_old: " << (*rhs_old)[zeilennr] << endl;
+      std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << endl;
+      std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << endl;
     }
 
     rhs_copy->Update(-1.0, *rhs_old, 1.0);
@@ -1219,25 +1219,25 @@ void POROELAST::Monolithic::PoroFDCheck()
 
       if ((j == zeilennr) and (i == spaltenr))
       {
-        cout << "\n******************" << zeilennr + 1
+        std::cout << "\n******************" << zeilennr + 1
             << ". Zeile!!***************" << endl;
-        cout << "iterinc_" << endl << *iterinc_ << endl;
-        cout << "iterinc" << endl << *iterinc << endl;
-        cout << "meshdisp: " << endl << *(FluidField()->Dispnp());
-        cout << "disp: " << endl << *(StructureField()->Dispnp());
-        cout << "fluid vel" << endl << *(FluidField()->Velnp());
-        cout << "fluid acc" << endl << *(FluidField()->Accnp());
-        cout << "gridvel fluid" << endl << *(FluidField()->GridVel());
-        cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
+        std::cout << "iterinc_" << endl << *iterinc_ << endl;
+        std::cout << "iterinc" << endl << *iterinc << endl;
+        std::cout << "meshdisp: " << endl << *(FluidField()->Dispnp());
+        std::cout << "disp: " << endl << *(StructureField()->Dispnp());
+        std::cout << "fluid vel" << endl << *(FluidField()->Velnp());
+        std::cout << "fluid acc" << endl << *(FluidField()->Accnp());
+        std::cout << "gridvel fluid" << endl << *(FluidField()->GridVel());
+        std::cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
 
-        cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
+        std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
             << (*rhs_copy)[zeilennr] << endl;
 
-        cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
+        std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
             << (*rhs_copy)[zeilennr] << endl;
-        cout << "value(" << zeilennr << "," << spaltenr << "): " << value
+        std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value
             << endl;
-        cout << "\n******************" << zeilennr + 1
+        std::cout << "\n******************" << zeilennr + 1
             << ". Zeile Ende!!***************" << endl;
       }
     }
@@ -1251,7 +1251,7 @@ void POROELAST::Monolithic::PoroFDCheck()
       iterinc->ReplaceGlobalValue(i + 1, 0, delta);
 
     if (i == spaltenr)
-      cout << "\n******************" << spaltenr + 1
+      std::cout << "\n******************" << spaltenr + 1
           << ". Spalte Ende!!***************" << endl;
 
   }
@@ -1301,7 +1301,7 @@ void POROELAST::Monolithic::PoroFDCheck()
             if ((abs((*error_crs)[i][j]) > 1e-5))
             //  if( (sparse_ij>1e-1) or (stiff_approx_ij>1e-1) )
             {
-              cout << "finite difference check failed entry (" << i << "," << j
+              std::cout << "finite difference check failed entry (" << i << "," << j
                   << ")! stiff: " << sparse_ij << ", approx: "
                   << stiff_approx_ij << " ,abs. error: " << (*error_crs)[i][j]
                   << " , rel. error: " << error << endl;
@@ -1316,9 +1316,9 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   if(success)
   {
-    cout << "finite difference check successful, max. rel. error: "
+    std::cout << "finite difference check successful, max. rel. error: "
         << error_max << endl;
-    cout << "******************finite difference check done***************\n\n"
+    std::cout << "******************finite difference check done***************\n\n"
         << endl;
   }
   else
