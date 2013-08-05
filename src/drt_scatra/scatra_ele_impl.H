@@ -841,7 +841,10 @@ private:
   LINALG::Matrix<nsd_,1> xsi_;
   //! node coordinates
   LINALG::Matrix<nsd_,nen_> xyze_;
-
+  // Node coordinates in 3D
+  LINALG::Matrix<3,nen_> xyze3D_;
+  // Length of line element (used for transformation of coordinates to be able to define arbitrary 3D lines)
+  double lengthLine3D_;
   //! array for shape functions
   LINALG::Matrix<nen_,1> funct_;
   //! array for shape function derivatives w.r.t r,s,t

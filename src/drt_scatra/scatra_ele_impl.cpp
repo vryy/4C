@@ -292,6 +292,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     migrea_(true),  // initialized to zero
     xsi_(true),     // initialized to zero
     xyze_(true),    // initialized to zero
+    xyze3D_(true),  // initialized to zero
+    lengthLine3D_(0),  // initialized to zero
     funct_(true),   // initialized to zero
     deriv_(true),   // initialized to zero
     deriv2_(true),  // initialized to zero
@@ -363,7 +365,15 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 {
   // --------mandatory are performed here at first ------------
   // get node coordinates (we do this for all actions!)
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  if(nsd_ == 1 && nen_ == 2){ // Rotates line element in order to perform computations in 3D
+    GEO::fillInitialPositionArray<distype,3,LINALG::Matrix<3,nen_> >(ele,xyze3D_);
+    lengthLine3D_ = sqrt( (xyze3D_(0,0)-xyze3D_(0,1))*(xyze3D_(0,0)-xyze3D_(0,1)) + (xyze3D_(1,0)-xyze3D_(1,1))*(xyze3D_(1,0)-xyze3D_(1,1)) + (xyze3D_(2,0)-xyze3D_(2,1))*(xyze3D_(2,0)-xyze3D_(2,1)));
+    xyze_(0,0)=0.0;
+    xyze_(0,1)=lengthLine3D_;
+  }else{
+    GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  }
+
 
   // get additional state vector for ALE case: grid displacement
   is_ale_ = params.get<bool>("isale",false);
@@ -3057,7 +3067,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   {
     const Teuchos::RCP<const MAT::Myocard>& actmat
       = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
-
     if (scatratype != INPAR::SCATRA::scatratype_cardio_monodomain){
       dserror("ScatraType not compatible with myocard material. Change ScatraType to some Cardio_* type.");
     }
