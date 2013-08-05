@@ -257,35 +257,68 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
   if (*(params_->model) == "MV")
   {
     // Model parameter
-    const double u_o = 0.0;
-    const double u_u = 1.55;//1.58;
-    const double Theta_v = 0.3;
-    const double Theta_w = 0.13;//0.015;
-    const double Theta_vm = 0.006;//0.015;
-    const double Theta_o = 0.006;
-    const double Tau_v1m = 60.0;
-    const double Tau_v2m = 1150.0;
-    const double Tau_vp = 1.4506;
-    const double Tau_w1m = 60.0;//70.0;
-    const double Tau_w2m = 15.0;//20.0;
-    const double k_wm = 65.0;
-    const double u_wm = 0.03;
-    const double Tau_wp = 200.0;//280.0;
-    const double Tau_fi = 0.11;
-    const double Tau_o1 = 400.0;//6.0;
-    const double Tau_o2 = 6.0;
-    const double Tau_so1 = 30.0181;//43.0;
-    const double Tau_so2 = 0.9957;//0.2;
-    const double k_so = 2.0458;//2.0;
-    const double u_so = 0.65;
-    const double Tau_s1 = 2.7342;
-    const double Tau_s2 = 16.0;//3.0;
-    const double k_s = 2.0994;
-    const double u_s = 0.9087;
-    const double Tau_si = 1.8875;//2.8723;
-    const double Tau_winf = 0.07;
-    const double w_infs = 0.94;
-
+//    if (*(params_->tissue) == "Epi"){
+    double u_o = 0.0;
+    double u_u = 1.55;//1.58;
+    double Theta_v = 0.3;
+    double Theta_w = 0.13;//0.015;
+    double Theta_vm = 0.006;//0.015;
+    double Theta_o = 0.006;
+    double Tau_v1m = 60.0;
+    double Tau_v2m = 1150.0;
+    double Tau_vp = 1.4506;
+    double Tau_w1m = 60.0;//70.0;
+    double Tau_w2m = 15.0;//20.0;
+    double k_wm = 65.0;
+    double u_wm = 0.03;
+    double Tau_wp = 200.0;//280.0;
+    double Tau_fi = 0.11;
+    double Tau_o1 = 400.0;//6.0;
+    double Tau_o2 = 6.0;
+    double Tau_so1 = 30.0181;//43.0;
+    double Tau_so2 = 0.9957;//0.2;
+    double k_so = 2.0458;//2.0;
+    double u_so = 0.65;
+    double Tau_s1 = 2.7342;
+    double Tau_s2 = 16.0;//3.0;
+    double k_s = 2.0994;
+    double u_s = 0.9087;
+    double Tau_si = 1.8875;//2.8723;
+    double Tau_winf = 0.07;
+    double w_infs = 0.94;
+    //}else
+      if (*(params_->tissue) == "Atria"){
+      u_o = 0.0;
+      u_u = 1.02;//1.58;
+      Theta_v = 0.302;
+      Theta_w = 0.33;//0.015;
+      Theta_vm = 0.172;//0.015;
+      Theta_o = 0.06;
+      Tau_v1m = 65.6;
+      Tau_v2m = 1150.0;
+      Tau_vp = 0.95;
+      Tau_w1m = 170.8;//70.0;
+      Tau_w2m = 112.4;//20.0;
+      k_wm = 135.0;
+      u_wm = 0.0744;
+      Tau_wp = 217.0;//280.0;
+      Tau_fi = 0.0678;
+      Tau_o1 = 100.0;//6.0;
+      Tau_o2 = 64.87;
+      Tau_so1 = 53.54;//43.0;
+      Tau_so2 = 8.03;//0.2;
+      k_so = 1.748;//2.0;
+      u_so = 0.644;
+      Tau_s1 = 5.406;
+      Tau_s2 = 52.91;//3.0;
+      k_s = 1.008;
+      u_s = 0.814;
+      Tau_si = 6.978;//2.8723;
+      Tau_winf = 4.97;
+      w_infs = 1.0;
+    }//else{
+     // dserror("Tissue type not supported for minimal model (only Epi,Atria)");
+   // }
     // calculate voltage dependent time constants ([7] page 545)
     const double Tau_vm = GatingFunction(Tau_v1m, Tau_v2m, p   , phi, Theta_vm);
     const double Tau_wm = GatingFunction(Tau_w1m, Tau_w2m, k_wm, phi, u_wm    );
@@ -517,24 +550,69 @@ void MAT::Myocard::Update(const double phi, const double dt)
   if (*(params_->model) == "MV")
   {
     // Model parameter
-    const double Theta_v = 0.3;
-    const double Theta_w = 0.13;//0.015;
-    const double Theta_vm = 0.006;//0.015;
-    const double Theta_o = 0.006;
-    const double Tau_v1m = 60.0;
-    const double Tau_v2m = 1150.0;
-    const double Tau_vp = 1.4506;
-    const double Tau_w1m = 60.0;//70.0;
-    const double Tau_w2m = 15.0;//20.0;
-    const double k_wm = 65.0;
-    const double u_wm = 0.03;
-    const double Tau_wp = 200.0;//280.0;
-    const double Tau_s1 = 2.7342;
-    const double Tau_s2 = 16.0;//3.0;
-    const double k_s = 2.0994;
-    const double u_s = 0.9087;
-    const double Tau_winf = 0.07;
-    const double w_infs = 0.94;
+    //    if (*(params_->tissue) == "Epi"){
+ //       double u_o = 0.0;
+  //      double u_u = 1.55;//1.58;
+        double Theta_v = 0.3;
+        double Theta_w = 0.13;//0.015;
+        double Theta_vm = 0.006;//0.015;
+        double Theta_o = 0.006;
+        double Tau_v1m = 60.0;
+        double Tau_v2m = 1150.0;
+        double Tau_vp = 1.4506;
+        double Tau_w1m = 60.0;//70.0;
+        double Tau_w2m = 15.0;//20.0;
+        double k_wm = 65.0;
+        double u_wm = 0.03;
+        double Tau_wp = 200.0;//280.0;
+ //       double Tau_fi = 0.11;
+ //       double Tau_o1 = 400.0;//6.0;
+  //      double Tau_o2 = 6.0;
+  //      double Tau_so1 = 30.0181;//43.0;
+  //      double Tau_so2 = 0.9957;//0.2;
+  //      double k_so = 2.0458;//2.0;
+  //      double u_so = 0.65;
+        double Tau_s1 = 2.7342;
+        double Tau_s2 = 16.0;//3.0;
+        double k_s = 2.0994;
+        double u_s = 0.9087;
+   //     double Tau_si = 1.8875;//2.8723;
+        double Tau_winf = 0.07;
+        double w_infs = 0.94;
+        //}else
+          if (*(params_->tissue) == "Atria"){
+     //     u_o = 0.0;
+     //     u_u = 1.02;//1.58;
+          Theta_v = 0.302;
+          Theta_w = 0.33;//0.015;
+          Theta_vm = 0.172;//0.015;
+          Theta_o = 0.06;
+          Tau_v1m = 65.6;
+          Tau_v2m = 1150.0;
+          Tau_vp = 0.95;
+          Tau_w1m = 170.8;//70.0;
+          Tau_w2m = 112.4;//20.0;
+          k_wm = 135.0;
+          u_wm = 0.0744;
+          Tau_wp = 217.0;//280.0;
+    //      Tau_fi = 0.0678;
+    //      Tau_o1 = 100.0;//6.0;
+    //      Tau_o2 = 64.87;
+     //     Tau_so1 = 53.54;//43.0;
+    //      Tau_so2 = 8.03;//0.2;
+    //      k_so = 1.748;//2.0;
+    //      u_so = 0.644;
+          Tau_s1 = 5.406;
+          Tau_s2 = 52.91;//3.0;
+          k_s = 1.008;
+          u_s = 0.814;
+    //      Tau_si = 6.978;//2.8723;
+          Tau_winf = 4.97;
+          w_infs = 1.0;
+        }
+
+
+
 
     // calculate voltage dependent time constants ([7] page 545)
     const double Tau_vm = GatingFunction(Tau_v1m, Tau_v2m, p   , phi, Theta_vm);
@@ -726,96 +804,28 @@ void MAT::Myocard::Update(const double phi, const double dt)
 
 void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
   {
+
+
+  // Normalize fiber1
+  double fiber1normS = fiber1[0]*fiber1[0]+fiber1[1]*fiber1[1]+fiber1[2]*fiber1[2];
+
   // get conductivity values of main fiber direction and perpendicular to fiber direction (rot symmetry)
    const double maindirdiffusivity = params_->maindirdiffusivity;
    const double offdirdiffusivity  = params_->offdirdiffusivity;
 
-   // read local eigenvectors of diffusion tensor at current element
-   std::vector<double> fiber2(3);
-   std::vector<double> fiber3(3);
-
-   // eigenvector matrix
-   double fiber1norm=0.;
-   double fiber2norm=0.;
-   double fiber3norm=0.;
-   LINALG::Matrix<3,3> evmat(true);
-   LINALG::Matrix<3,3> evmatinv(true);
-
-   // construction of ONB for fibers
-   fiber2[0] = -fiber1[1];
-   fiber2[1] = fiber1[0];
-   fiber2[2] = 0;
-   fiber3[0] = -fiber1[2]*fiber2[1];
-   fiber3[1] = fiber1[2]*fiber2[0];
-   fiber3[2] = fiber1[0]*fiber2[1]-fiber1[1]*fiber2[0];
-
-   for (int i = 0; i < 3; ++i)
-     {
-       fiber1norm += fiber1[i]*fiber1[i];
-       fiber2norm += fiber2[i]*fiber2[i];
-       fiber3norm += fiber3[i]*fiber3[i];
-     }
-   fiber1norm = sqrt(fiber1norm);
-   fiber2norm = sqrt(fiber2norm);
-   fiber3norm = sqrt(fiber3norm);
-   for (int i=0; i<3; ++i)
-     {
-       evmat(i,0) = fiber1[i]/fiber1norm;
-       evmat(i,1) = fiber2[i]/fiber2norm;
-       evmat(i,2) = fiber3[i]/fiber3norm;
-     }
-
-   //paranoia check if we really computed an ONB
-   double test1 = 0.0;
-   double test2 = 0.0;
-   double test3 = 0.0;
-   for (int i = 0; i < 3; ++i)
-     {
-       test1 += fiber1[i]*fiber2[i];
-       test2 += fiber1[i]*fiber3[i];
-       test3 += fiber2[i]*fiber3[i];
-     }
-   if (test1>1e-10 or test2>1e-10 or test3>1e-10)
-     {
-       dserror("ONB Calculation in Myocard Material failed");
-     }
-
-   // determinant of eigenvector matrix
-   double const evmatdet = evmat(0,0)*evmat(1,1)*evmat(2,2)
-                   + evmat(0,1)*evmat(1,2)*evmat(2,0)
-                   + evmat(0,2)*evmat(1,0)*evmat(2,1)
-                   - evmat(0,2)*evmat(1,1)*evmat(2,0)
-                   - evmat(0,1)*evmat(1,0)*evmat(2,2)
-                   - evmat(0,0)*evmat(1,2)*evmat(2,1);
-   // double const evmatdet = evmat.Determinant();
-
-   // inverse of eigenvector matrix
-   evmatinv(0,0) = evmat(1,1)*evmat(2,2)-evmat(1,2)*evmat(2,1);
-   evmatinv(0,1) = evmat(0,2)*evmat(2,1)-evmat(0,1)*evmat(2,2);
-   evmatinv(0,2) = evmat(0,1)*evmat(1,2)-evmat(0,2)*evmat(1,1);
-   evmatinv(1,0) = evmat(1,2)*evmat(2,0)-evmat(1,0)*evmat(2,2);
-   evmatinv(1,1) = evmat(0,0)*evmat(2,2)-evmat(0,2)*evmat(2,0);
-   evmatinv(1,2) = evmat(0,2)*evmat(1,0)-evmat(0,0)*evmat(1,2);
-   evmatinv(2,0) = evmat(1,0)*evmat(2,1)-evmat(1,1)*evmat(2,0);
-   evmatinv(2,1) = evmat(0,1)*evmat(2,0)-evmat(0,0)*evmat(2,1);
-   evmatinv(2,2) = evmat(0,0)*evmat(1,1)-evmat(0,1)*evmat(1,0);
-   evmatinv.Scale(1/evmatdet);
-   //const LINALG::Matrix<3,3> ematinv;
-   //evmat.Invert(ematinv);
-   //std::cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << std::endl;
-   // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
-   for (int i = 0; i<3; i++)
-     {
-       evmatinv(0,i) *= maindirdiffusivity;
-       evmatinv(1,i) *= offdirdiffusivity;
-       evmatinv(2,i) *= offdirdiffusivity;
-     }
-
-   difftensor_.Multiply(evmat, evmatinv);
-  // std::cout << "Diffusion tensor" << std::endl;
-   // std::cout << difftensor_ << std::endl;
-
-
+   // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: offdirdiffusivity*Id + (maindirdiffusivity-offdirdiffusivity)*fiber1*fiber1'
+   // first row
+   difftensor_(0,0)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1[0]*fiber1[0]/fiber1normS;
+   difftensor_(0,1)=(maindirdiffusivity-offdirdiffusivity)*fiber1[0]*fiber1[1]/fiber1normS;
+   difftensor_(0,2)=(maindirdiffusivity-offdirdiffusivity)*fiber1[0]*fiber1[2]/fiber1normS;
+   // second row
+   difftensor_(1,0)=(maindirdiffusivity-offdirdiffusivity)*fiber1[1]*fiber1[0]/fiber1normS;
+   difftensor_(1,1)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1[1]*fiber1[1]/fiber1normS;
+   difftensor_(1,2)=(maindirdiffusivity-offdirdiffusivity)*fiber1[1]*fiber1[2]/fiber1normS;
+   // third row
+   difftensor_(2,0)=(maindirdiffusivity-offdirdiffusivity)*fiber1[2]*fiber1[0]/fiber1normS;
+   difftensor_(2,1)=(maindirdiffusivity-offdirdiffusivity)*fiber1[2]*fiber1[1]/fiber1normS;
+   difftensor_(2,2)=offdirdiffusivity + (maindirdiffusivity-offdirdiffusivity)*fiber1[2]*fiber1[2]/fiber1normS;
    // done
    return;
 
