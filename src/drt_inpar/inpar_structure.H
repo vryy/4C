@@ -405,7 +405,8 @@ namespace INPAR
     {
       strain_none,    ///< no strain output
       strain_ea,      ///< output of Euler-Almansi strains
-      strain_gl       ///< output of Green-Lagrange strains
+      strain_gl,       ///< output of Green-Lagrange strains
+      strain_log      ///< output of Logarithmic (or Hencky) strains
     };
 
     //@}

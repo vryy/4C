@@ -1617,6 +1617,10 @@ void STR::TimInt::OutputStressStrain
     {
       straintext = "gauss_GL_strains_xyz";
     }
+    else if (writestrain_ == INPAR::STR::strain_log)
+    {
+      straintext = "gauss_LOG_strains_xyz";
+    }
     else
     {
       dserror("requested strain type not supported");

@@ -213,6 +213,7 @@ void MonWriter::WriteMonStrainFile(
     std::vector<std::string> groupnames;
     groupnames.push_back("gauss_GL_strains_xyz");
     groupnames.push_back("gauss_EA_strains_xyz");
+    groupnames.push_back("gauss_LOG_strains_xyz");
 
     // write, now
     WriteMonStrFile(filename, problem, infieldtype, "strain", straintype, groupnames, node);
@@ -893,6 +894,11 @@ void StructMonWriter::WriteStrResults(
     {
       name = "nodal_EA_strains_xyz";
       out = "Euler-Almansi strains";
+    }
+    else if (groupname == "gauss_LOG_strains_xyz")
+    {
+      name = "nodal_LOG_strains_xyz";
+      out = "Logarithmic strains";
     }
     // the same for plastic strains
     else if (groupname == "gauss_pl_GL_strains_xyz")

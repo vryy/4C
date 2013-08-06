@@ -121,6 +121,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
     // Green-Lagrange _or_ Euler-Almansi strains are written during simulation!
     PostStress("gauss_GL_strains_xyz", straintype_);
     PostStress("gauss_EA_strains_xyz", straintype_);
+    PostStress("gauss_LOG_strains_xyz", straintype_);
     // the same for plastic strains
     PostStress("gauss_pl_GL_strains_xyz", straintype_);
     PostStress("gauss_pl_EA_strains_xyz", straintype_);

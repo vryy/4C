@@ -118,6 +118,11 @@ void StructureEnsightWriter::WriteNodalStress(const std::string groupname,
     name="nodal_EA_strains_xyz";
     out="Euler-Almansi strains";
   }
+  else if (groupname=="gauss_LOG_strains_xyz")
+  {
+    name="nodal_LOG_strains_xyz";
+    out="Logarithmic strains";
+  }
   else
   {
     dserror("trying to write something that is not a stress or a strain");
@@ -287,6 +292,11 @@ void StructureEnsightWriter::WriteElementCenterStress(const std::string groupnam
   {
     name="element_EA_strains_xyz";
     out="Euler-Almansi strains";
+  }
+  else if (groupname=="gauss_LOG_strains_xyz")
+  {
+    name="element_LOG_strains_xyz";
+    out="Logarithmic strains";
   }
   else
   {
@@ -514,6 +524,16 @@ void StructureEnsightWriter::WriteNodalEigenStress(const std::string groupname,
     name[4]="nodal_EA_strains_eigenvec2";
     name[5]="nodal_EA_strains_eigenvec3";
     out="principal Euler-Almansi strains";
+  }
+  else if (groupname=="gauss_LOG_strains_xyz")
+  {
+    name[0]="nodal_LOG_strains_eigenval1";
+    name[1]="nodal_LOG_strains_eigenval2";
+    name[2]="nodal_LOG_strains_eigenval3";
+    name[3]="nodal_LOG_strains_eigenvec1";
+    name[4]="nodal_LOG_strains_eigenvec2";
+    name[5]="nodal_LOG_strains_eigenvec3";
+    out="principal Logarithmic strains";
   }
   else
   {
@@ -847,6 +867,16 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const std::string gro
     name[4]="element_EA_strains_eigenvec2";
     name[5]="element_EA_strains_eigenvec3";
     out="principal Euler-Almansi strains";
+  }
+  else if (groupname=="gauss_LOG_strains_xyz")
+  {
+    name[0]="element_LOG_strains_eigenval1";
+    name[1]="element_LOG_strains_eigenval2";
+    name[2]="element_LOG_strains_eigenval3";
+    name[3]="element_LOG_strains_eigenvec1";
+    name[4]="element_LOG_strains_eigenvec2";
+    name[5]="element_LOG_strains_eigenvec3";
+    out="principal Logarithmic strains";
   }
   else
   {

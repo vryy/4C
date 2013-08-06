@@ -1497,6 +1497,99 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       (*elestrain)(gp,5) = euler_almansi(0,2);
     }
     break;
+    case INPAR::STR::strain_log:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      
+      /// the Eularian logarithmic strain is defined as the natural logarithm of the left stretch tensor [1,2]:
+      /// \f[
+      ///    $e_{log} = e_{hencky} = ln (\mathbf{V}) = \sum_{i=1}^3 (ln \lambda_i) \mathbf{n}_i \otimes \mathbf{n}_i $
+      /// \f]
+      ///<h3>References</h3>
+      /// <ul>
+      /// <li> [1] H. Xiao, Beijing, China, O. T. Bruhns and A. Meyers (1997) Logarithmic strain, logarithmic spin and logarithmic rate, Eq. 5
+      /// <li> [2] Caminero et al. (2011) Modeling large strain anisotropic elasto-plasticity with logarithmic strain and stress measures, Eq. 70
+      /// </ul>
+      ///
+      /// \author HdV
+      /// \date 08/13
+      
+      // eigenvalue decomposition (from elasthyper.cpp)
+      LINALG::Matrix<3,3> prstr2(true);  // squared principal stretches
+      LINALG::Matrix<3,1> prstr(true);   // principal stretch
+      LINALG::Matrix<3,3> prdir(true);   // principal directions
+      LINALG::SYEV(cauchygreen,prstr2,prdir);
+      
+      // THE principal stretches
+      for (int al=0; al<3; ++al) prstr(al) = std::sqrt(prstr2(al,al));
+      
+      // populating the logarithmic strain matrix
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> lnv(true);
+      
+      // checking if cauchy green is correctly determined to ensure eigen vectors in correct direction
+      // i.e. a flipped eigenvector is also a valid solution
+      // C = \sum_{i=1}^3 (\lambda_i^2) \mathbf{n}_i \otimes \mathbf{n}_i
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> tempCG(true);
+      
+      for (int k=0; k < 3; ++k)
+      {
+        double n_00, n_01, n_02, n_11, n_12, n_22 = 0.0;
+        
+        n_00 = prdir(0,k)*prdir(0,k);
+        n_01 = prdir(0,k)*prdir(1,k);
+        n_02 = prdir(0,k)*prdir(2,k);
+        n_11 = prdir(1,k)*prdir(1,k);
+        n_12 = prdir(1,k)*prdir(2,k);
+        n_22 = prdir(2,k)*prdir(2,k);
+        
+        // only compute the symmetric components from a single eigenvector, 
+        // because eigenvalue directions are not consistent (it can be flipped)
+        tempCG(0,0) += (prstr(k))*(prstr(k))*n_00;
+        tempCG(0,1) += (prstr(k))*(prstr(k))*n_01;
+        tempCG(0,2) += (prstr(k))*(prstr(k))*n_02;
+        tempCG(1,0) += (prstr(k))*(prstr(k))*n_01; // symmetry
+        tempCG(1,1) += (prstr(k))*(prstr(k))*n_11;
+        tempCG(1,2) += (prstr(k))*(prstr(k))*n_12;
+        tempCG(2,0) += (prstr(k))*(prstr(k))*n_02; // symmetry
+        tempCG(2,1) += (prstr(k))*(prstr(k))*n_12; // symmetry
+        tempCG(2,2) += (prstr(k))*(prstr(k))*n_22;
+        
+        // Computation of the Logarithmic strain tensor
+        
+        lnv(0,0) += (std::log(prstr(k)))*n_00;
+        lnv(0,1) += (std::log(prstr(k)))*n_01;
+        lnv(0,2) += (std::log(prstr(k)))*n_02;
+        lnv(1,0) += (std::log(prstr(k)))*n_01; // symmetry
+        lnv(1,1) += (std::log(prstr(k)))*n_11;
+        lnv(1,2) += (std::log(prstr(k)))*n_12;
+        lnv(2,0) += (std::log(prstr(k)))*n_02; // symmetry
+        lnv(2,1) += (std::log(prstr(k)))*n_12; // symmetry
+        lnv(2,2) += (std::log(prstr(k)))*n_22;
+      }
+      
+      // compare CG computed with deformation gradient with CG computed 
+      // with eigenvalues and -vectors to determine/ensure the correct 
+      // orientation of the eigen vectors
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> diffCG(true);
+
+      for (int i=0; i < 3; ++i)
+        {
+          for (int j=0; j < 3; ++j) 
+            {
+              diffCG(i,j) = cauchygreen(i,j)-tempCG(i,j);
+              // the solution to this problem is to evaluate the cauchygreen tensor with tempCG computed with every combination of eigenvector orientations -- up to nine comparisons
+              if (diffCG(i,j) > 1e-10) dserror("eigenvector orientation error with the diffCG giving problems: %10.5e \n BUILD SOLUTION TO FIX IT",diffCG(i,j)); 
+            }
+        }
+      
+      (*elestrain)(gp,0) = lnv(0,0);
+      (*elestrain)(gp,1) = lnv(1,1);
+      (*elestrain)(gp,2) = lnv(2,2);
+      (*elestrain)(gp,3) = lnv(0,1);
+      (*elestrain)(gp,4) = lnv(1,2);
+      (*elestrain)(gp,5) = lnv(0,2);
+    }
+    break;
     case INPAR::STR::strain_none:
       break;
     default:
