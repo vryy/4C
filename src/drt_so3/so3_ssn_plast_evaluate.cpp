@@ -281,16 +281,16 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
         dserror("unknown kinematics type");
       {
         DRT::PackBuffer data;
-        AddtoPack(data, stress);
+        this->AddtoPack(data, stress);
         data.StartPacking();
-        AddtoPack(data, stress);
+        this->AddtoPack(data, stress);
         std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
       }
       {
         DRT::PackBuffer data;
-        AddtoPack(data, strain);
+        this->AddtoPack(data, strain);
         data.StartPacking();
-        AddtoPack(data, strain);
+        this->AddtoPack(data, strain);
         std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
       }
     }
