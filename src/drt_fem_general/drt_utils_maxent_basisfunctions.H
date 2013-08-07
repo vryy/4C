@@ -220,7 +220,7 @@ private:
       std::vector<LINALG::SerialDenseMatrix> const &
     );
 
-  }; // end memeber class DualProblem
+  }; // end member class DualProblem
 
   /*--------------------------------------------------------------------------*/
 

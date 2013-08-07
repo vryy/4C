@@ -196,7 +196,7 @@ void DRT::Discretization::ComputeNullSpace(
     nullspace->resize(dimns*lrows,0.0);
   }
   // check if nullspace has correct size
-  else if(nullspace->size()!=(dimns*lrows) or numdf==0)
+  else if((ssize_t)(nullspace->size())!=(dimns*lrows) or numdf==0)
   {
     dserror("nullspace does not have correct size or numdf or dimns are zero");
   }
