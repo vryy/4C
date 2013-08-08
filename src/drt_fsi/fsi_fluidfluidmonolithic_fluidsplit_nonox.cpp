@@ -90,7 +90,7 @@ FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(co
 	//as matrices from 3 different fields (S,F,A) are set together.
 
 	fggtransform_=Teuchos::rcp(new UTILS::MatrixRowColTransform);
-	fmggtransform_=Teuchos::rcp(new UTILS::MatrixRowTransform);
+	//fmggtransform_=Teuchos::rcp(new UTILS::MatrixRowTransform);
 	fgitransform_=Teuchos::rcp(new UTILS::MatrixRowTransform);
 	figtransform_=Teuchos::rcp(new UTILS::MatrixColTransform);
 	fmiitransform_=Teuchos::rcp(new UTILS::MatrixColTransform);
@@ -725,10 +725,18 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
 						  true);
 
 		//F^G_{\Gamma\Gamma} : Scale & transform!
-		(*fmggtransform_)(fmgg,
+/*		(*fmggtransform_)(fmgg,
 			   			(1.0-stimintparam)/(1.0-ftimintparam)*fluidresidualscale,
 						ADAPTER::CouplingSlaveConverter(coupsf),
 						*s,
+						true);*/
+
+		(*fggtransform_)(fmgg,
+						(1.0-stimintparam)/(1.0-ftimintparam)*fluidresidualscale,
+						ADAPTER::CouplingSlaveConverter(coupsf),
+						ADAPTER::CouplingSlaveConverter(coupsf),
+						*s,
+						false,
 						true);
 
 		//F^G_{II} : Transform & directly insert!

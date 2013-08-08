@@ -523,10 +523,9 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool fi
 void FSI::FluidFluidMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
 {
 
-  // build the combined dirichlet boundary maps. This is called in setupsystem in standard
-  // fluid
-  //combined_dbcmaps_ = CombinedDBCMap();
-  //if (combined_dbcmaps_== Teuchos::null) { dserror("Creation of FSI Dirichlet map extractor failed."); }
+  // build the combined dirichlet boundary maps.
+  combined_dbcmaps_ = CombinedDBCMap();
+  if (combined_dbcmaps_== Teuchos::null) { dserror("Creation of FSI Dirichlet map extractor failed."); }
 
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields

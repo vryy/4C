@@ -117,7 +117,7 @@ namespace FSI
 	    //F_\Gamma_\Gamma
 	    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
 
-	    Teuchos::RCP<UTILS::MatrixRowTransform> fmggtransform_;
+	    //Teuchos::RCP<UTILS::MatrixRowTransform> fmggtransform_;
 
 	    //F_\Gamma_I
 	    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
