@@ -65,7 +65,7 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::
   }
   {
     LINALG::Solver& solver = *(fluid.LinearSolver());
-    const Epetra_Map& oldmap = *(fluid.Discretization()->DofRowMap());
+    const Epetra_Map& oldmap = *(fluid.DofRowMap());
     const Epetra_Map& newmap = Matrix(1,1).EpetraMatrix()->RowMap();
     solver.FixMLNullspace("Fluid",oldmap,newmap, solver.Params());
   }

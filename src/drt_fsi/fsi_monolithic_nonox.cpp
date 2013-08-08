@@ -51,20 +51,20 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
 
   TOL_DIS_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
   TOL_DIS_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_DIS_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_DIS_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_FSI_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_FSI_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_FSI_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_FSI_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_PRE_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_PRE_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_PRE_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_PRE_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_VEL_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_VEL_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_VEL_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_VEL_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_DIS_INC_L2_  =  fsidyn.get<double>("TOL_DIS_INC_L2");
+  TOL_DIS_INC_INF_ =  fsidyn.get<double>("TOL_DIS_INC_INF");
+  TOL_FSI_RES_L2_  =  fsidyn.get<double>("TOL_FSI_RES_L2");
+  TOL_FSI_RES_INF_ =  fsidyn.get<double>("TOL_FSI_RES_INF");
+  TOL_FSI_INC_L2_  =  fsidyn.get<double>("TOL_FSI_INC_L2");
+  TOL_FSI_INC_INF_ =  fsidyn.get<double>("TOL_FSI_INC_INF");
+  TOL_PRE_RES_L2_  =  fsidyn.get<double>("TOL_PRE_RES_L2");
+  TOL_PRE_RES_INF_ =  fsidyn.get<double>("TOL_PRE_RES_INF");
+  TOL_PRE_INC_L2_  =  fsidyn.get<double>("TOL_PRE_INC_L2");
+  TOL_PRE_INC_INF_ =  fsidyn.get<double>("TOL_PRE_INC_INF");
+  TOL_VEL_RES_L2_  =  fsidyn.get<double>("TOL_VEL_RES_L2");
+  TOL_VEL_RES_INF_ =  fsidyn.get<double>("TOL_VEL_RES_INF");
+  TOL_VEL_INC_L2_  =  fsidyn.get<double>("TOL_VEL_INC_L2");
+  TOL_VEL_INC_INF_ =  fsidyn.get<double>("TOL_VEL_INC_INF");
   // set tolerances for nonlinear solver
 }
 

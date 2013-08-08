@@ -563,6 +563,9 @@ namespace FSI
     /// debug writer to be used inside preconditioner
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
 
+    /// counter to reuse the block matrix preconditioner
+    int precondreusecount_;
+
   private:
 
     /// setup RHS contributions based on single field residuals
@@ -574,8 +577,6 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
 
-    /// counter to reuse the block matrix preconditioner
-    int precondreusecount_;
 
   };
 }

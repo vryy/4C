@@ -291,7 +291,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // compute null space information
   if (probtype != prb_fsi_xfem and
       probtype != prb_fluid_xfem and
-      probtype != prb_combust)
+      probtype != prb_combust and
+      probtype != prb_fluid_fluid and
+      probtype != prb_fluid_fluid_ale and
+      probtype != prb_fluid_fluid_fsi)
   {
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
     {
@@ -459,6 +462,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_constr_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
         coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
+        coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox or
         coupling == fsi_iter_xfem_monolithic)
     {
       // No explicit predictor for these monolithic FSI schemes, yet.
@@ -586,7 +590,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit 	or
-          coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
+          coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
+          coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
       {
         dirichletcond = false;
       }
@@ -634,7 +639,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
       bool monolithicfluidfluidfsi;
       if(coupling == fsi_iter_fluidfluid_monolithicstructuresplit
-    	  	  or   coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
+    	  	  or coupling == fsi_iter_fluidfluid_monolithicfluidsplit
+    	  	  or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
         monolithicfluidfluidfsi = true;
       else
         monolithicfluidfluidfsi = false;

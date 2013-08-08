@@ -106,6 +106,27 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   //print all dofsets
   xfluid_.bgdis_->GetDofSetProxy()->PrintAllDofsets(xfluid_.bgdis_->Comm());
 
+  //--------------------------------------------------------------------------------------
+  // recompute nullspace based on new number of dofs per node
+  // REMARK: this has to be done after replacing the discret_' dofset (via xfluid.discret_->ReplaceDofSet)
+  // we a build a nullspace for both discrretizations and set it into ML-parameter list.
+  if (xfluid_.solver_->Params().isSublist("ML Parameters"))
+  {
+	  // build a nullspace for bg-dis
+	  xfluid_.bgdis_->ComputeNullSpaceIfNecessary(xfluid_.solver_->Params(),true);
+	  Teuchos::ParameterList& ml_params = (xfluid_.solver_->Params()).sublist("ML Parameters");
+	  Teuchos::RCP<std::vector<double> > nullspace = ml_params.get<Teuchos::RCP<std::vector<double> > >("nullspace");
+
+	  // build a nullspace for emb-dis
+	  xfluid_.embdis_->ComputeNullSpaceIfNecessary(xfluid_.solver_->Params(),true);
+	  Teuchos::RCP<std::vector<double> > nullspace_embdis = ml_params.get<Teuchos::RCP<std::vector<double> > >("nullspace");
+
+	  // build a full nullspace
+	  nullspace->insert(nullspace->end(), nullspace_embdis->begin(), nullspace_embdis->end());
+	  ml_params.set<Teuchos::RCP<std::vector<double> > >("nullspace",nullspace);
+	  Teuchos::RCP<std::vector<double> > nullspaceend = ml_params.get<Teuchos::RCP<std::vector<double> > >("nullspace");
+  }
+
   FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_, 1,velpressplitter_);
 
   fluiddofrowmap_ = Teuchos::rcp(new Epetra_Map(*xfluid.bgdis_->DofRowMap()));
@@ -2881,8 +2902,31 @@ void FLD::XFluidFluid::PrepareTimeStep()
 
   gmsh_count_ = 0;
 
-  // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-  if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+  // -------------------------------------------------------------------
+  // set time parameters dependent on time integration scheme and step
+  // -------------------------------------------------------------------
+  if (timealgo_ == INPAR::FLUID::timeint_stationary)
+  {
+    theta_ = 1.0;
+  }
+  else
+  {
+    // do a backward Euler step for the first timestep
+    if (step_==1)
+    {
+      theta_ = params_->get<double>("start theta");
+    }
+    else if (step_ > 1)
+    {
+      // for OST
+      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta) theta_ = params_->get<double>("theta");
+
+      // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
+      if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+    }
+    else dserror("number of time step is wrong");
+  }
+
 
   // -------------------------------------------------------------------
   //  Set time parameter for element call

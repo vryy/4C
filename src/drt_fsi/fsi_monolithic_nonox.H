@@ -155,6 +155,7 @@ namespace FSI
     void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     Teuchos::RCP<Epetra_Map> fullmap_;
+
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;   //!< block system matrix
 
     bool firstcall_;
