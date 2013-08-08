@@ -148,18 +148,6 @@ namespace STR
 
     //@}
 
-    //! @name Fluid-structure-interaction specific methods
-    //@{
-
-    //! Set forces due to interface with fluid
-    virtual void SetForceInterface
-    (
-      const AUX::MapExtractor& extractor,
-      Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
-    );
-
-    //@}
-
     //! @name System vectors
     //@{
 

@@ -74,19 +74,6 @@ STR::TimIntExpl::TimIntExpl
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/* Set forces due to interface with fluid */
-void STR::TimIntExpl::SetForceInterface
-(
-  const STR::AUX::MapExtractor& extractor,
-  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
-)
-{
-  fifc_->PutScalar(0.0);
-  extractor.AddFSICondVector(iforce, fifc_);
-}
-
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
 void STR::TimIntExpl::ApplyForceExternal
