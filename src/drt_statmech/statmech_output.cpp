@@ -4484,7 +4484,7 @@ void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&   
   if(!discret_->Comm().MyPID())
   {
     FILE* fp = NULL;
-    fp = fopen(filename.str().c_str(), "a");
+    fp = fopen(filename.str().c_str(), "w");
 
     std::stringstream dispnode;
     // retrieve translational node displacements
@@ -4508,13 +4508,16 @@ void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringst
     if(pid==discret_->Comm().MyPID())
     {
       FILE* fp = NULL;
-      fp = fopen(filename.str().c_str(), "a");
+      if(pid==0)
+        fp = fopen(filename.str().c_str(), "w");
+      else
+        fp = fopen(filename.str().c_str(), "a");
 
       for(int i=0; i<discret_->ElementRowMap()->NumMyElements(); i++)
       {
         DRT::Element* element = discret_->lRowElement(i);
         // element internal force vector
-        Teuchos::RCP<Epetra_SerialDenseVector> force = Teuchos::null;
+        Epetra_SerialDenseVector force(6*element->NumNode());
         // normal strain
         double eps = 0.0;
         
@@ -4523,20 +4526,19 @@ void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringst
         {
           force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->InternalForces();
           eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->EpsilonSgn();
-          if(force==Teuchos::null)
-            force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(element->NumNode())));
         }
         else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
         {
           force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->InternalForces();
           eps = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->EpsilonSgn();
-          if(force==Teuchos::null)
-            force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(element->NumNode())));
         }
+        else
+          dserror("No implementation for other Beam elements yet!");
+
         // compute element averaged force
         LINALG::Matrix<3,1> avgforce;
         for(int j=0; j<(int)avgforce.M(); j++)
-          avgforce(j) = 0.5*((*force)(j)+(*force)(j+3));
+          avgforce(j) = 0.5*(force(j)+force(j+6));
         double fabsolute = avgforce.Norm2();
         if(eps<0.0)
           fabsolute *= -1.0;

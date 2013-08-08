@@ -240,7 +240,7 @@ public:
   int HowManyRandomNumbersINeed();
 
   //! \brief internal force vector
-  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+  const Epetra_SerialDenseVector& InternalForces() const {return internalforces_;}
   
   //! brief epsilonnormal
   const double& EpsilonSgn() const { return eps_;}
@@ -287,6 +287,9 @@ public:
       kapparef_.resize(nnode-1);
       jacobimass_.resize(nnode);
       jacobinode_.resize(nnode);
+
+      internalforces_.Resize(6*nnode);
+      internalforces_.Scale(0.0);
 
       //create Matrix for the derivates of the shapefunctions at the GP
       LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -557,24 +560,12 @@ private:
     lobattointegration
   };
 
-  //! local enum for friction model
-  enum Beam3iiFrictionModel
-  {
-    beam3iifrict_none,
-    beam3iifrict_isotropicconsistent,
-    beam3iifrict_isotropiclumped,
-    beam3iifrict_anisotropicconsistent
-  };
-
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-
-  //! friction model on element scope
-  Beam3iiFrictionModel frictionmodel_;
-  //! vector storing the internal force vector
-  Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
   //! storing epsilonn(0)
   double eps_;
+  //! vector storing the internal force vector
+  Epetra_SerialDenseVector internalforces_;
 
   //! nodal triads in quaternion form at the end of the preceeding time step
   std::vector<LINALG::Matrix<4,1> > Qconv_;

@@ -213,7 +213,7 @@ public:
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}
 
-  //! \brief vector, which stores the actual x node coordinates of the element; changes during calculation
+  //! \brief vector, which stores the actual x node coordinates of the element; subject to change during runtime
   LINALG::Matrix<6,1> xactrefe_;
 
   //! \brief vector, which stores the initial rotational node coordinates of the element
@@ -248,7 +248,7 @@ public:
   int HowManyRandomNumbersINeed();
 
   //! \brief internal force vector
-  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+  const Epetra_SerialDenseVector& InternalForces() const {return internalforces_;}
 
   //! brief epsilonnormal
   const double& EpsilonSgn() const { return eps_;}
@@ -395,6 +395,8 @@ public:
     thetaprimeconv_.resize((nnode-1));
     thetaprimeold_.resize((nnode-1));
     thetaprimenew_.resize((nnode-1));
+    internalforces_.Resize(6*this->NumNode());
+    internalforces_.Scale(0.0);
 
     //create Matrix for the derivates of the shapefunctions at the GP
     LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -594,24 +596,11 @@ private:
     lobattointegration
   };
 
-
-  //! local enum for friction model
-  enum Beam3FrictionModel
-  {
-    beam3frict_none,
-    beam3frict_isotropicconsistent,
-    beam3frict_isotropiclumped,
-    beam3frict_anisotropicconsistent
-  };
-
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //! friction model on element scope
-  Beam3FrictionModel frictionmodel_;
-
   //! vector storing the internal force vector
-  Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
+  Epetra_SerialDenseVector internalforces_;
 
   //! storing epsilonn(0)
   double eps_;

@@ -165,6 +165,7 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
 DRT::ELEMENTS::Beam3ii::Beam3ii(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
+eps_(0.0),
 nodeI_(0),
 nodeJ_(0),
 crosssec_(0),
@@ -176,26 +177,6 @@ jacobi_(0),
 jacobimass_(0),
 jacobinode_(0)
 {
-  // initialize friction model on a local (element) level (in case of StatMech application)
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"FRICTION_MODEL");
-
-  switch(frictionmodel)
-  {
-    case INPAR::STATMECH::frictionmodel_none:
-      frictionmodel_ = beam3iifrict_none;
-    break;
-    case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-      frictionmodel_ = beam3iifrict_isotropicconsistent;
-    break;
-    case INPAR::STATMECH::frictionmodel_isotropiclumped:
-      frictionmodel_ = beam3iifrict_isotropiclumped;
-    break;
-    case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-      frictionmodel_ = beam3iifrict_anisotropicconsistent;
-    break;
-    default:
-      dserror("Unknown friction model %d!", frictionmodel);
-  }
   return;
 }
 /*----------------------------------------------------------------------*
@@ -204,7 +185,7 @@ jacobinode_(0)
 DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
- frictionmodel_(old.frictionmodel_),
+ eps_(old.eps_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -322,6 +303,9 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,dispthetanew_);
   AddtoPack<3,1>(data,kapparef_);
 
+  AddtoPack(data,eps_);
+  AddtoPack(data,internalforces_);
+
 
   return;
 }
@@ -365,6 +349,8 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,dispthetanew_);
   ExtractfromPack<3,1>(position,data,kapparef_);
 
+  ExtractfromPack(position,data,eps_);
+  ExtractfromPack(position,data,internalforces_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

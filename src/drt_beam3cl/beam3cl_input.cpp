@@ -107,7 +107,7 @@ void DRT::ELEMENTS::BeamCL::SetCrossSecShear(const double& crosssecshear)
   return;
 }
 /*------------------------------------------------------------------------*
- | Set internodal Binding Position    (public) mueller 11/12|
+ | Set internodal Binding Position                  (public) mueller 11/12|
  *------------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamCL::SetBindingPosition(const double& pos1,const double& pos2)
 {

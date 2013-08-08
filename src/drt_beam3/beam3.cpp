@@ -179,7 +179,6 @@ void DRT::ELEMENTS::Beam3Type::SetupElementDefinition( std::map<std::string,std:
 DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
-internalforces_(Teuchos::null),
 eps_(0.0),
 crosssec_(0),
 crosssecshear_(0),
@@ -190,26 +189,6 @@ jacobi_(0),
 jacobimass_(0),
 jacobinode_(0)
 {
-  // initialize friction model on a local (element) level (in case of StatMech application)
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"FRICTION_MODEL");
-
-  switch(frictionmodel)
-  {
-    case INPAR::STATMECH::frictionmodel_none:
-      frictionmodel_ = beam3frict_none;
-    break;
-    case INPAR::STATMECH::frictionmodel_isotropicconsistent:
-      frictionmodel_ = beam3frict_isotropicconsistent;
-    break;
-    case INPAR::STATMECH::frictionmodel_isotropiclumped:
-      frictionmodel_ = beam3frict_isotropiclumped;
-    break;
-    case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
-      frictionmodel_ = beam3frict_anisotropicconsistent;
-    break;
-    default:
-      dserror("Unknown friction model %d!", frictionmodel);
-  }
   return;
 }
 /*----------------------------------------------------------------------*
@@ -218,7 +197,7 @@ jacobinode_(0)
 DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
- frictionmodel_(old.frictionmodel_),
+ eps_(old.eps_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -341,6 +320,12 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,thetaprimeconv_);
   AddtoPack<3,1>(data,thetaprimeold_);
 
+  AddtoPack(data,eps_);
+  AddtoPack<6,1>(data,xactrefe_);
+  AddtoPack<6,1>(data,rotinitrefe_);
+  AddtoPack(data,internalforces_);
+
+
   return;
 }
 
@@ -383,6 +368,11 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,thetaprimenew_);
   ExtractfromPack<3,1>(position,data,thetaprimeconv_);
   ExtractfromPack<3,1>(position,data,thetaprimeold_);
+
+  ExtractfromPack(position,data,eps_);
+  ExtractfromPack<6,1>(position,data,xactrefe_);
+  ExtractfromPack<6,1>(position,data,rotinitrefe_);
+  ExtractfromPack(position,data,internalforces_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -622,11 +612,11 @@ void DRT::ELEMENTS::Beam3::SetReferenceLength(const bool changetoshort)
 		// new linker length = initial linker length * (1/scale)
 		// first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
 		sca = 1/sca;
-		std::cout<<"xinit vorher k-l: "<<xactrefe_<<std::endl;
+		//std::cout<<"xinit vorher k-l: "<<xactrefe_<<std::endl;
 		xactrefe_(3,0) = xactrefe_(0,0) + (sca * (xactrefe_(3,0)-xactrefe_(0,0)));
 		xactrefe_(4,0) = xactrefe_(1,0) + (sca * (xactrefe_(4,0)-xactrefe_(1,0)));
 		xactrefe_(5,0) = xactrefe_(2,0) + (sca * (xactrefe_(5,0)-xactrefe_(2,0)));
-		std::cout<<"xinit nachher k-l: "<<xactrefe_<<std::endl;
+		//std::cout<<"xinit nachher k-l: "<<xactrefe_<<std::endl;
 	}
 
 	// store linker coordinates

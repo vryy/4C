@@ -951,7 +951,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
    
    // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
    if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-     internalforces_ = Teuchos::rcp(new Epetra_SerialDenseVector(*force));
+     internalforces_ = *force;
 //  string action = params.get<string>("action","calc_none");
 //  if (action=="calc_struct_nlnstiff")
 //  {
@@ -1054,12 +1054,9 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& p
   double artificial = 4000;//50;  20000//50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
 
-
-
   //in case of an isotropic friction model the same damping coefficients are applied parallel to the polymer axis as perpendicular to it
-  if(frictionmodel_ == beam3iifrict_isotropicconsistent || frictionmodel_ == beam3iifrict_isotropiclumped)
+  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropicconsistent || DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
     gamma(0) = gamma(1);
-
 
    /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a
     * comparison of the finite element simulation with the results of that article; note that we assume that the element
@@ -1169,7 +1166,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(Teuchos::ParameterList& 
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   std::vector<double> jacobi(jacobimass_);
-  if(frictionmodel_ == beam3iifrict_isotropiclumped)
+  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
     jacobi = jacobinode_;
 
 
@@ -1284,7 +1281,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(Teuchos::ParameterLis
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel_ ==beam3iifrict_isotropiclumped)
+  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
   {
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
@@ -1386,7 +1383,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
-  if(frictionmodel_ == beam3iifrict_isotropiclumped)
+  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
   {
     integrationtype = lobattointegration;
     jacobi = jacobinode_;
@@ -1464,7 +1461,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(Teuchos::ParameterList& 
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   std::vector<double> jacobi(jacobimass_);
-  if(frictionmodel_ == beam3iifrict_isotropiclumped)
+  if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
     jacobi = jacobinode_;
 
   //damping coefficients for three translational and one rotatinal degree of freedom

@@ -2715,7 +2715,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
       int checkgid = -1;
 
       // element internal force vector
-      Teuchos::RCP<Epetra_SerialDenseVector> force = Teuchos::null;
+      Epetra_SerialDenseVector force;
       // normal strain
       double eps = 0.0;
 
@@ -2723,11 +2723,9 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
       // retrieve internal force vector
       if(eot == DRT::ELEMENTS::Beam3Type::Instance())
       {
+        force.Resize(crosslinker->NumNode()*6);
         force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForces();
         eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
-        // new linker without history
-        if(force==Teuchos::null)
-          force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(crosslinker->NumNode())));
 
         checkgid = crosslinker->Nodes()[0]->Id();
       }
@@ -2735,10 +2733,9 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
       {
         if(crosslinker->NumNode()!=4)
           dserror("Currently only implemented for BEAM3CL with four nodes.");
+        force.Resize(crosslinker->NumNode()/2*6);
         force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForces();
         eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->EpsilonSgn();
-        if(force==Teuchos::null)
-          force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(crosslinker->NumNode()/2)));
 
         // mapping from binding spot to internal forces
         // convention (see SearchAndSetCrosslinkers): two subsequent node IDs belong to the same filament
@@ -2761,8 +2758,8 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
 
       for(int j=0; j<(int)f0.M(); j++)
       {
-        f0(j) = (*force)[j];
-        f1(j) = (*force)[6+j];
+        f0(j) = force[j];
+        f1(j) = force[6+j];
       }
 
       // pick the larger absolute force value among the nodes

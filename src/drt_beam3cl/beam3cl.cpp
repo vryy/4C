@@ -169,7 +169,6 @@ void DRT::ELEMENTS::BeamCLType::SetupElementDefinition( std::map<std::string,std
 DRT::ELEMENTS::BeamCL::BeamCL(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
-internalforces_(Teuchos::null),
 eps_(0.0),
 nodeI_(0),
 nodeJ_(0),
@@ -304,7 +303,8 @@ void DRT::ELEMENTS::BeamCL::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,rdispthetanew_);
   AddtoPack(data,xrefe_);
   AddtoPack(data,mybindingposition_);
-
+  AddtoPack(data,eps_);
+  AddtoPack(data,internalforces_);
 
 
   return;
@@ -356,6 +356,8 @@ void DRT::ELEMENTS::BeamCL::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,rdispthetanew_);
   ExtractfromPack(position,data,xrefe_);
   ExtractfromPack(position,data,mybindingposition_);
+  ExtractfromPack(position,data,eps_);
+  ExtractfromPack(position,data,internalforces_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

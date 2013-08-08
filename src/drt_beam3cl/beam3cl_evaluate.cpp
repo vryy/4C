@@ -1079,7 +1079,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
 
    // Note that we return the internal force vector of the interpolated/fictitious nodes!
    if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-     internalforces_ = Teuchos::rcp(new Epetra_SerialDenseVector(fforce));
+     internalforces_ = fforce;
 
    return;
 
