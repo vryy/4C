@@ -2748,19 +2748,6 @@ void STR::TimIntImpl::PrintStepText
 }
 
 /*----------------------------------------------------------------------*/
-/* Set forces due to interface with fluid */
-void STR::TimIntImpl::SetForceInterface
-(
-  const STR::AUX::MapExtractor& extractor,
-  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
-)
-{
-  fifc_->PutScalar(0.0);
-  extractor.AddFSICondVector(iforce, fifc_);
-}
-
-
-/*----------------------------------------------------------------------*/
 /* Linear structure solve with just an interface load */
 Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 {

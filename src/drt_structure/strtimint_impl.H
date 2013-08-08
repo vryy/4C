@@ -635,14 +635,6 @@ namespace STR
     void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
                         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
 
-
-    //! Set forces due to interface with fluid
-    void SetForceInterface
-    (
-      const AUX::MapExtractor& extractor,
-      Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
-    );
-
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
     virtual void EvaluateForceStiffResidualRelax() = 0;
