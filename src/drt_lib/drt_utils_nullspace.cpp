@@ -575,7 +575,7 @@ void DRT::UTILS::ComputeFluidDNullSpace( DRT::Discretization & dis, std::vector<
 
         for (unsigned k=0; k<ndof; ++k)
         {
-          if (k%numdf == j)
+          if (k%numdf == j%numdf)
             mode[k%numdf][lid] = 1.0;
           else
             mode[k%numdf][lid] = 0.0;
