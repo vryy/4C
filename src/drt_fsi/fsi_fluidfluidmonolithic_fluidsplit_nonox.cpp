@@ -90,6 +90,7 @@ FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(co
 	//as matrices from 3 different fields (S,F,A) are set together.
 
 	fggtransform_=Teuchos::rcp(new UTILS::MatrixRowColTransform);
+	fmggtransform_=Teuchos::rcp(new UTILS::MatrixRowTransform);
 	fgitransform_=Teuchos::rcp(new UTILS::MatrixRowTransform);
 	figtransform_=Teuchos::rcp(new UTILS::MatrixColTransform);
 	fmiitransform_=Teuchos::rcp(new UTILS::MatrixColTransform);
@@ -724,12 +725,10 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
 						  true);
 
 		//F^G_{\Gamma\Gamma} : Scale & transform!
-		(*fggtransform_)(fmgg,
-						(1.0-stimintparam)/(1.0-ftimintparam)*fluidresidualscale,
-						ADAPTER::CouplingSlaveConverter(coupsf),
+		(*fmggtransform_)(fmgg,
+			   			(1.0-stimintparam)/(1.0-ftimintparam)*fluidresidualscale,
 						ADAPTER::CouplingSlaveConverter(coupsf),
 						*s,
-						false,
 						true);
 
 		//F^G_{II} : Transform & directly insert!
@@ -1665,15 +1664,10 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::BuildCovergenceNorms()
 		 //Teuchos::RCP<const Epetra_Map> innerfluidpresmap=Teuchos::rcp(new Epetra_Map(*LINALG::MultiMapExtractor::IntersectMaps(fluidpresmaps)));
 
 		 Teuchos::RCP<LINALG::MapExtractor> fluidpresextractor=Teuchos::rcp(new LINALG::MapExtractor(*xfluidfluidsplitter_->FluidMap(),FluidField().PressureRowMap(),false));
-		 //cout << "bis hier 1 " << endl;
 		 Teuchos::RCP<Epetra_Vector> tmp=Teuchos::rcp(new Epetra_Vector(fmgicurr_->DomainMap(),true));
-		 //cout << "bis hier 2" << endl;
-		 //cout << *ddialeinc_ << endl;
 		 Teuchos::RCP<Epetra_Vector> aux=AleToFluid(AleField().Interface()->InsertOtherVector(ddialeinc_));
-		 //cout << "aux " << *aux << endl;
 		 // vector with pressure dofs
 		 Teuchos::RCP<Epetra_Vector> auxaux=fluidpresextractor->InsertCondVector(aux);
-     	 //cout << "aucaux " << *auxaux << endl;
 		 tmp=FluidField().Interface()->ExtractOtherVector(auxaux);
 		 fmgicurr_->Apply(*tmp,*fmgiddia);
 		 tmpvec->Update(1.0,*fmgiddia,1.0);
