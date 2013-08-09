@@ -750,7 +750,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
       
       /// the Eularian logarithmic strain is defined as the natural logarithm of the left stretch tensor [1,2]:
       /// \f[
-      ///    $e_{log} = e_{hencky} = ln (\mathbf{V}) = \sum_{i=1}^3 (ln \lambda_i) \mathbf{n}_i \otimes \mathbf{n}_i $
+      ///    e_{log} = e_{hencky} = ln (\mathbf{V}) = \sum_{i=1}^3 (ln \lambda_i) \mathbf{n}_i \otimes \mathbf{n}_i
       /// \f]
       ///<h3>References</h3>
       /// <ul>
