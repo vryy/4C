@@ -955,7 +955,10 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
             id5(i,i)=1.;
 
         // Due to stabilization, we have to treat inactive nodes as well
-        if (activity_state_->at(gp)==true || Dissipation>0.)
+        if (activity_state_->at(gp)==true
+              || absDeltaAlphaK!=0.
+//            || Dissipation>0.
+            )
         {
           // damping parameter apl
           double apl=1.;
@@ -1263,19 +1266,28 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
             force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
             fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
           }
-        }
-        else
-        {
-          // Complementarity function independent from displacements
-          kbetad.Clear();
-          Kbd_->at(gp).Clear();
-          kdbeta.Clear();
-          kbetabeta.Update(cpl_,id5);
+          else // inactive, dissipation <0
+          {
+            kbetabeta.Update(cpl_,id5);
+            kbetad.Clear();
 
-          // right hand side term
-          force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
-          fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+            // right hand side term
+            force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+            fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+          }
         }
+//        else
+//        {
+//          // Complementarity function independent from displacements
+//          kbetad.Clear();
+//          Kbd_->at(gp).Clear();
+//          kdbeta.Clear();
+//          kbetabeta.Update(cpl_,id5);
+//
+//          // right hand side term
+//          force_beta.Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+//          fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
+//        }
 
         // **************************************************************
         // static condensation of inner variables
@@ -2869,24 +2881,15 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_lin()
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut )
 {
-
-  Epetra_SerialDenseMatrix EV(3,3);
-  Epetra_SerialDenseVector EW(3);
-
-  // convert Input Matrix in Epetra format
-  for (int i=0; i<3; i++)
-    for (int j=0; j<3; j++)
-      EV(i,j) = MatrixInOut(i,j);
-
-
-  // calculate eigenvectors and eigenvalues
-  LINALG::SymmetricEigenProblem(EV,EW);
-
+  LINALG::Matrix<3,3> tmp(MatrixInOut);
+  LINALG::Matrix<3,3> Eval;
+  LINALG::SYEV(tmp,Eval,tmp);
   MatrixInOut.Clear();
   for (int i=0; i<3; i++)
-    for (int j=0; j<3; j++)
-      for (int k=0; k<3; k++)
-        MatrixInOut(j,k) += exp(EW(i)) * EV(j,i) * EV(k,i);
+    Eval(i,i)=exp(Eval(i,i));
+  LINALG::Matrix<3,3> tmp2;
+  tmp2.MultiplyNT(Eval,tmp);
+  MatrixInOut.Multiply(tmp,tmp2);
 
   return;
 }
@@ -2898,17 +2901,10 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv)
 {
   double EWtolerance=1.e-12;
-  Epetra_SerialDenseMatrix EV(3,3);
-  Epetra_SerialDenseVector EW(3);
 
-  // convert Input Matrix in Epetra format
-  for (int i=0; i<3; i++)
-    for (int j=0; j<3; j++)
-      EV(i,j) = MatrixIn(i,j);
-
-
-  // calculate eigenvectors and eigenvalues
-  LINALG::SymmetricEigenProblem(EV,EW);
+  LINALG::Matrix<3,3> EV(MatrixIn);
+  LINALG::Matrix<3,3> EW;
+  LINALG::SYEV(EV,EW,EV);
 
   LINALG::Matrix<3,1> vec1;
   LINALG::Matrix<3,1> vec2;
@@ -2933,15 +2929,15 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
   for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
 //  // --------------------------------- switch by number of equal eigenvalues
 
-  if (abs(EW(0)-EW(1))<EWtolerance && abs(EW(1)-EW(2))<EWtolerance ) // ------------------ x_a == x_b == x_c
+  if (abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance ) // ------------------ x_a == x_b == x_c
   {
     // calculate derivative
     MatrixExpDeriv = id4sharp;
-    MatrixExpDeriv.Scale(exp(EW(0)));
+    MatrixExpDeriv.Scale(exp(EW(0,0)));
   }
 
-  else if ( ( abs(EW(0)-EW(1))<EWtolerance && abs(EW(1)-EW(2))>EWtolerance ) ||
-            ( abs(EW(0)-EW(1))>EWtolerance && abs(EW(1)-EW(2))<EWtolerance )  ) // ---- x_a != x_b == x_c or x_a == x_b != x_c
+  else if ( ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) ||
+            ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance )  ) // ---- x_a != x_b == x_c or x_a == x_b != x_c
   {
     // factors
     double s1=0.0;
@@ -2955,12 +2951,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
     int c=0;
 
     // switch which two EW are equal
-    if ( abs(EW(0)-EW(1))<EWtolerance && abs(EW(1)-EW(2))>EWtolerance ) // ----------------------- x_a == x_b != x_c
+    if ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------------- x_a == x_b != x_c
     {
       a=2;
       c=0;
     }
-    else if ( abs(EW(0)-EW(1))>EWtolerance && abs(EW(1)-EW(2))<EWtolerance) // ------------------ x_a != x_b == x_c
+    else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance) // ------------------ x_a != x_b == x_c
     {
       a=0;
       c=2;
@@ -2969,12 +2965,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
       dserror("you should not be here");
 
     // in souza eq. (A.53):
-    s1 = ( exp(EW(a)) - exp(EW(c)) ) / ( pow( EW(a) - EW(c),2.0 ) )  -  exp(EW(c)) / (EW(a)-EW(c));
-    s2 = 2.0 * EW(c) * (exp(EW(a))-exp(EW(c)))/(pow(EW(a)-EW(c),2.0)) - (EW(a)+EW(c))/(EW(a)-EW(c)) * exp(EW(c));
-    s3 = 2.0 * (exp(EW(a))-exp(EW(c)))/(pow(EW(a)-EW(c),3.0)) - (exp(EW(a)) + exp(EW(c)))/(pow(EW(a)-EW(c),2.0));
-    s4 = EW(c)*s3;
+    s1 = ( exp(EW(a,a)) - exp(EW(c,c)) ) / ( pow( EW(a,a) - EW(c,c),2.0 ) )  -  exp(EW(c,c)) / (EW(a,a)-EW(c,c));
+    s2 = 2.0 * EW(c,c) * (exp(EW(a,a))-exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),2.0)) - (EW(a,a)+EW(c,c))/(EW(a,a)-EW(c,c)) * exp(EW(c,c));
+    s3 = 2.0 * (exp(EW(a,a))-exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),3.0)) - (exp(EW(a,a)) + exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),2.0));
+    s4 = EW(c,c)*s3;
     s5 = s4;
-    s6 = EW(c)*EW(c) * s3;
+    s6 = EW(c,c)*EW(c,c) * s3;
 
     // calculate derivative
     MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,s1,MatrixIn,1.);
@@ -2985,7 +2981,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
     MAT::ElastSymTensorMultiply(MatrixExpDeriv,s6,id2,id2,1.);
   }
 
-  else if ( abs(EW(0)-EW(1))>EWtolerance && abs(EW(1)-EW(2))>EWtolerance ) // ----------------- x_a != x_b != x_c
+  else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------- x_a != x_b != x_c
   {
     for (int a=0; a<3; a++) // loop over all eigenvalues
     {
@@ -3008,26 +3004,26 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
       LINALG::Matrix<3,3> Ec;
       Ec.MultiplyNT(ec,ec);
 
-      double fac = exp(EW(a)) / ( (EW(a)-EW(b)) * (EW(a)-EW(c)) );
+      double fac = exp(EW(a,a)) / ( (EW(a,a)-EW(b,b)) * (EW(a,a)-EW(c,c)) );
 
       // + d X^2 / d X
       MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,fac,MatrixIn,1.);
 
       // - (x_b + x_c) I_s
-      MatrixExpDeriv.Update(-1.*(EW(b)+EW(c))*fac,id4sharp,1.);
+      MatrixExpDeriv.Update(-1.*(EW(b,b)+EW(c,c))*fac,id4sharp,1.);
 
       // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * ( (EW(a)-EW(b)) + (EW(a)-EW(c)) ),Ea,Ea,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * ( (EW(a,a)-EW(b,b)) + (EW(a,a)-EW(c,c)) ),Ea,Ea,1.);
 
 
       // - (x_b - x_c) (E_b \dyad E_b)
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * (EW(b) - EW(c)),Eb,Eb,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * (EW(b,b) - EW(c,c)),Eb,Eb,1.);
 
       // + (x_b - x_c) (E_c \dyad E_c)
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,fac * (EW(b) - EW(c)),Ec,Ec,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,fac * (EW(b,b) - EW(c,c)),Ec,Ec,1.);
 
       // dy / dx_a E_a \dyad E_a
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,exp(EW(a)),Ea,Ea,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,exp(EW(a,a)),Ea,Ea,1.);
     } // end loop over all eigenvalues
 
   }
