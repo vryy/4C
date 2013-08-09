@@ -72,13 +72,13 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
 
    if (comm.MyPID() == 0)
     {
-      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
-      cout << "  |                                        PLEASE NOTE:                                         |" << endl;
-      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
-      cout << "  | You run a monolithic structure split scheme. Hence, there are no structural interface DOFs. |" << endl;
-      cout << "  | Structure Dirichlet boundary conditions on the interface will be neglected.                 |" << endl;
-      cout << "  | Check whether you have prescribed appropriate DBCs on structural interface DOFs.            |" << endl;
-      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
+      std::cout << "  +---------------------------------------------------------------------------------------------+" << std::endl;
+      std::cout << "  |                                        PLEASE NOTE:                                         |" << std::endl;
+      std::cout << "  +---------------------------------------------------------------------------------------------+" << std::endl;
+      std::cout << "  | You run a monolithic structure split scheme. Hence, there are no structural interface DOFs. |" << std::endl;
+      std::cout << "  | Structure Dirichlet boundary conditions on the interface will be neglected.                 |" << std::endl;
+      std::cout << "  | Check whether you have prescribed appropriate DBCs on structural interface DOFs.            |" << std::endl;
+      std::cout << "  +---------------------------------------------------------------------------------------------+" << std::endl;
     }
   }
 
@@ -1691,7 +1691,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {
     if (Comm().MyPID() == 0)
-      cout << "Relaxing Ale.." << endl;
+    	std::cout << "Relaxing Ale.." << std::endl;
     AleField().SolveAleXFluidFluidFSI();
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
   }
