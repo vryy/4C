@@ -121,7 +121,9 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
     GlobalOrdinal gDofId = colMap->getGlobalElement(i);
 
     // translate DOFGid to node id
-#ifdef HAVE_Trilinos_Q2_2013
+#if defined( HAVE_Trilinos_Q3_2013)
+    GlobalOrdinal gNodeId = AmalgamationFactory::DOFGid2NodeId(gDofId, fullblocksize, offset, 0 /*indexBase*/);
+#elif defined(HAVE_Trilinos_Q2_2013)
     GlobalOrdinal gNodeId = AmalgamationFactory::DOFGid2NodeId(gDofId, A, fullblocksize, offset, 0 /*indexBase*/);
 #else
     GlobalOrdinal gNodeId = AmalgamationFactory::DOFGid2NodeId(gDofId, A, fullblocksize, offset);

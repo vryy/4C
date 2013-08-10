@@ -137,7 +137,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   // generate global replicated mapping "lagrNodeId -> dispNodeId"
   RCP<const Map> lagrDofMap = A01->getDomainMap();
   GlobalOrdinal gMaxLagrNodeId = AmalgamationFactory::DOFGid2NodeId(
-      lagrDofMap->getMaxAllGlobalIndex(), Teuchos::null /* parameter not used */,
+      lagrDofMap->getMaxAllGlobalIndex(),
+#if defined(HAVE_Trilinos_Q3_2013)
+#else
+      Teuchos::null /* parameter not used */,
+#endif
       lagr_blockdim,
       lagr_offset
 #ifdef HAVE_Trilinos_Q2_2013
@@ -145,7 +149,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 #endif
   );
   GlobalOrdinal gMinLagrNodeId = AmalgamationFactory::DOFGid2NodeId(
-      lagrDofMap->getMinAllGlobalIndex(), Teuchos::null /* parameter not used */,
+      lagrDofMap->getMinAllGlobalIndex(),
+#if defined(HAVE_Trilinos_Q3_2013)
+#else
+      Teuchos::null /* parameter not used */,
+#endif
       lagr_blockdim,
       lagr_offset
 #ifdef HAVE_Trilinos_Q2_2013
@@ -173,7 +181,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
       // translate displacement dof id to displacement node id
       GlobalOrdinal disp_nodeId = AmalgamationFactory::DOFGid2NodeId(
-          disp_grid, Teuchos::null /* parameter not used */,
+          disp_grid,
+#if defined(HAVE_Trilinos_Q3_2013)
+#else
+          Teuchos::null /* parameter not used */,
+#endif
           disp_blockdim,
           disp_offset
 #ifdef HAVE_Trilinos_Q2_2013
@@ -188,7 +200,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
       for(size_t i = 0; i<Teuchos::as<size_t>(lagr_indices.size()); i++) {
         GlobalOrdinal lagr_gcid = A01->getColMap()->getGlobalElement(lagr_indices[i]);
         GlobalOrdinal lagr_nodeId = AmalgamationFactory::DOFGid2NodeId(
-            lagr_gcid, Teuchos::null /* parameter not used */,
+            lagr_gcid,
+#if defined(HAVE_Trilinos_Q3_2013)
+#else
+            Teuchos::null /* parameter not used */,
+#endif
             lagr_blockdim,
             lagr_offset
 #ifdef HAVE_Trilinos_Q2_2013
@@ -230,7 +246,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
     GlobalOrdinal lagr_grid = bOp->getRangeMap(1)->getGlobalElement(r);
     GlobalOrdinal lagr_nodeId =
         AmalgamationFactory::DOFGid2NodeId(
-          lagr_grid, Teuchos::null /* parameter not used */,
+          lagr_grid,
+#if defined(HAVE_Trilinos_Q3_2013)
+#else
+          Teuchos::null /* parameter not used */,
+#endif
           lagr_blockdim, lagr_offset
 #ifdef HAVE_Trilinos_Q2_2013
           , 0 /*indexBase*/
