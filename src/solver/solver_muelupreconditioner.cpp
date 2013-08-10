@@ -202,6 +202,8 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
           }
       }
 
+      mueluOp->SetFixedBlockSize(numdf);
+
       ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
 
       Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
