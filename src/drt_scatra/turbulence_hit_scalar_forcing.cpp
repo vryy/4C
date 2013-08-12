@@ -358,6 +358,7 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
   // note: this is not very efficient, since each
   // processor does the fft and there is no communication
 
+#ifdef HAVE_FFTW
   // set-up
   fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
                                        &((*global_phi)[0]),
@@ -374,6 +375,9 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
   {
     (*phi_hat)[i] /= nummodes_*nummodes_*nummodes_;
   }
+#else
+    dserror("FFTW required for HIT!");
+#endif
 
   //----------------------------------------
   // compute energy spectrum
@@ -704,6 +708,7 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
     // note: this is not very efficient, since each
     // processor does the fft and there is no communication
 
+#ifdef HAVE_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
                                          &((*global_phi)[0]),
@@ -714,6 +719,9 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
     // free memory
     fftw_destroy_plan(fft);
     fftw_cleanup();
+#else
+    dserror("FFTW required for HIT!");
+#endif
 
     // scale solution (not done in the fftw routine)
     for (int i=0; i< phi_hat->size(); i++)
@@ -741,6 +749,7 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
     // fast Fourier transformation using FFTW
     //----------------------------------------
 
+#ifdef HAVE_FFTW
     // setup
     fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
                                            (reinterpret_cast<fftw_complex*>(&((*fphi_hat)[0]))),
@@ -750,6 +759,9 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
     // free memory
     fftw_destroy_plan(fft_back);
     fftw_cleanup();
+#else
+    dserror("FFTW required for HIT!");
+#endif
 
     //----------------------------------------
     // set force

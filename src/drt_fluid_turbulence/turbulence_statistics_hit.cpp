@@ -464,6 +464,7 @@ void TurbulenceStatisticsHit::DoTimeSample(
   // note: this is not very efficient, since each
   // processor does the fft and there is no communication
 
+#ifdef HAVE_FFTW
   // set-up
   fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
                                        &((*global_u1)[0]),
@@ -490,6 +491,9 @@ void TurbulenceStatisticsHit::DoTimeSample(
   // free memory
   fftw_destroy_plan(fft_3);
   fftw_cleanup();
+#else
+    dserror("FFTW required for HIT!");
+#endif
 
   // scale solution (not done in the fftw routine)
   for (int i=0; i< u1_hat->size(); i++)
@@ -872,6 +876,7 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
   // note: this is not very efficient, since each
   // processor does the fft and there is no communication
 
+#ifdef HAVE_FFTW
   // set-up
   fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_,
                                        &((*global_u1)[0]),
@@ -907,6 +912,9 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
   // free memory
   fftw_destroy_plan(fft_4);
   fftw_cleanup();
+#else
+    dserror("FFTW required for HIT!");
+#endif
 
   // scale solution (not done in the fftw routine)
   for (int i=0; i< u1_hat->size(); i++)
@@ -1262,7 +1270,7 @@ void TurbulenceStatisticsHit::DumpStatistics(
         {
           (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
           (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr]/numsamp_;
-          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*dissipationspectrum_)[rr]/numsamp_;
+          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << 2*visc_*(*dissipationspectrum_)[rr]/numsamp_;
           (*log_k) << "\n";
         }
         (*log_k) << "\n\n\n";
@@ -1290,7 +1298,7 @@ void TurbulenceStatisticsHit::DumpStatistics(
           {
             (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
             (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr];
-            (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*dissipationspectrum_)[rr];
+            (*log_k) << "     " << std::setw(11) << std::setprecision(4) << 2*visc_*(*dissipationspectrum_)[rr];
             (*log_k) << "\n";
           }
           (*log_k) << "\n\n\n";
@@ -1400,7 +1408,7 @@ void TurbulenceStatisticsHit::DumpScatraStatistics(
           (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
           (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr]/numsamp_;
           (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*scalarvariancespectrum_)[rr]/numsamp_;
-//          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*dissipationspectrum_)[rr]/numsamp_;
+//          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << 2*visc_*(*dissipationspectrum_)[rr]/numsamp_;
           (*log_k) << "\n";
         }
         (*log_k) << "\n\n\n";

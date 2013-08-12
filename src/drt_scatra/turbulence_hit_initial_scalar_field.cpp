@@ -388,6 +388,7 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
   // fast Fourier transformation using FFTW
   //----------------------------------------
 
+#ifdef HAVE_FFTW
   // set-up
   fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
                                        (reinterpret_cast<fftw_complex*>(&((*phi_hat_fftw)[0]))),
@@ -397,6 +398,9 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
   // free memory
   fftw_destroy_plan(fft);
   fftw_cleanup();
+#else
+    dserror("FFTW required for HIT!");
+#endif
 
   //----------------------------------------
   // set scalar field
