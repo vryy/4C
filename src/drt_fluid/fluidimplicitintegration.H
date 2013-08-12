@@ -587,7 +587,7 @@ public:
   //@}
 
   /// apply external forces to the fluid
-  void ApplyExternalForces(Teuchos::RCP<Epetra_Vector> fext);
+  void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext);
 
   /// create field test
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();

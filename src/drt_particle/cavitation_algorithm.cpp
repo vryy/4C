@@ -40,6 +40,8 @@ Maintainer: Georg Hammerl
 #include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_io/io_pstream.H"
 #include "../headers/definitions.h"
+
+#include <Epetra_FEVector.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
@@ -214,21 +216,13 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->SetState("veln",fluid_->Veln());
   fluiddis_->SetState("velnm",fluid_->Velnm());
 
-  particledis_->SetState("bubblepos", particles_->ExtractDispn());
-  particledis_->SetState("bubblevel", particles_->ExtractVeln());
-  particledis_->SetState("bubbleacc", particles_->ExtractAccn());
-  // miraculous transformation from row to col layout ...
-  Teuchos::RCP<const Epetra_Vector> bubblepos = particledis_->GetState("bubblepos");
-  Teuchos::RCP<const Epetra_Vector> bubblevel = particledis_->GetState("bubblevel");
-  Teuchos::RCP<const Epetra_Vector> bubbleacc = particledis_->GetState("bubbleacc");
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->ExtractDispn();
+  Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->ExtractVeln();
+  Teuchos::RCP<Epetra_Vector> bubbleradius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp();
 
-  // bubble radius of layout nodal col map --> SetState not possible
-  Teuchos::RCP<Epetra_Vector> bubbleradius = LINALG::CreateVector(*particledis_->NodeColMap(),false);
-  LINALG::Export(*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp(),*bubbleradius);
-
-  // vectors to be filled with forces
-  Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*particledis_->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> fluidforces = LINALG::CreateVector(*fluiddis_->DofRowMap(),true);
+  // vectors to be filled with forces, note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
+  Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+  Teuchos::RCP<Epetra_FEVector> fluidforces = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->DofRowMap()));
 
   if(fluiddis_->NumMyColElements() <= 0)
     dserror("there is no fluid element to ask for material parameters");
@@ -247,10 +241,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
 
-  // all particles (incl ghost) are evaluated
-  for(int i=0;i<particledis_->NodeColMap()->NumMyElements();++i)
+  // only row particles are evaluated
+  for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
   {
-    DRT::Node* currparticle = particledis_->lColNode(i);
+    DRT::Node* currparticle = particledis_->lRowNode(i);
     // fill particle position
     LINALG::Matrix<3,1> particleposition;
     std::vector<int> lm_b = particledis_->Dof(currparticle);
@@ -283,22 +277,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     for(int ele=0; ele<numfluidelesinbin; ++ele)
     {
       DRT::Element* fluidele = fluidelesinbin[ele];
-      DRT::Node** fluidnodes = fluidele->Nodes();
-      const int numnode = fluidele->NumNode();
-
-      // fill currentpositions of fluid element
-      std::map<int,LINALG::Matrix<3,1> > currentfluidpositions;
-      for (int j=0; j < numnode; j++)
-      {
-        const DRT::Node* node = fluidnodes[j];
-        LINALG::Matrix<3,1> currpos;
-        for (int d=0; d<dim; ++d)
-        {
-          currpos(d,0) = node->X()[d];
-        }
-        currentfluidpositions[node->Id()] = currpos;
-      }
-      const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(fluidele, currentfluidpositions));
+      const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
 
       //get coordinates of the particle position in parameter space of the element
       bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord);
@@ -357,7 +336,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     DRT::UTILS::ExtractMyValues(*bubblevel,v_bub,lm_b);
 
     // get bubble radius
-    double r_bub = (*bubbleradius)[ particledis_->NodeColMap()->LID(currparticle->Id()) ];
+    double r_bub = (*bubbleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
 
     // bubble Reynolds number
     LINALG::Matrix<3,1> v_rel(false);
@@ -451,11 +430,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     // 3rd step: assemble bubble forces
     //--------------------------------------------------------------------
 
-    // assemble of bubble forces can be done without further need of LINALG::Export (ghost bubbles also evaluated)
+    // assemble of bubble forces (note: row nodes evaluated)
     Epetra_SerialDenseVector forcecurrbubble(3);
     for(int d=0; d<dim; ++d)
       forcecurrbubble[d] = bubbleforce(d);
-    // in order to assemble all entries even for col layout, it is necessary to use myrank_ here
     std::vector<int> lmowner_b(lm_b.size(), myrank_);
     LINALG::Assemble(*bubbleforces,forcecurrbubble,lm_b,lmowner_b);
 
@@ -467,22 +445,30 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     //// coupling force = -(dragforce + liftforce + addedmassforce); actio = reactio --> minus sign
     couplingforce.Update(-1.0, addedmassforce, -1.0);
 
-    // assemble of fluid forces can only be done on row elements (all bubbles in this element must be considered: ghost near boundary)
-    const int numnode = targetfluidele->NumNode();
-    Epetra_SerialDenseVector funct(numnode);
-    // get shape functions of the element; evaluated at the bubble position --> distribution
-    DRT::UTILS::shape_function_3D(funct,elecoord(0,0),elecoord(1,0),elecoord(2,0),targetfluidele->Shape());
-    // prepare assembly for fluid forces (pressure degrees do not have to be filled)
-    Epetra_SerialDenseVector val(numnode*(dim+1));
-    for(int iter=0; iter<numnode; iter++)
+    if(coupalgo_ != INPAR::CAVITATION::OneWay)
     {
-      for(int d=0; d<dim; ++d)
+      // assemble of fluid forces must be done globally because col entries in the fluid can occur
+      // although only row particles are evaluated
+      const int numnode = targetfluidele->NumNode();
+      Epetra_SerialDenseVector funct(numnode);
+      // get shape functions of the element; evaluated at the bubble position --> distribution
+      DRT::UTILS::shape_function_3D(funct,elecoord(0,0),elecoord(1,0),elecoord(2,0),targetfluidele->Shape());
+      // prepare assembly for fluid forces (pressure degrees do not have to be filled)
+
+      int numdofperfluidele = numnode*(dim+1);
+      double val[numdofperfluidele];
+      for(int iter=0; iter<numnode; iter++)
       {
-        val[iter*(dim+1) + d] = funct[iter] * couplingforce(d);
+        for(int d=0; d<dim; ++d)
+        {
+          val[iter*(dim+1) + d] = funct[iter] * couplingforce(d);
+        }
       }
+      // do assembly of bubble forces on fluid
+      int err = fluidforces->SumIntoGlobalValues(numdofperfluidele, &lm_f[0], &val[0]);
+      if (err<0)
+        dserror("summing into Epetra_FEVector failed");
     }
-    // do assembly of bubble forces on fluid
-    LINALG::Assemble(*fluidforces,val,lm_f,lmowner_f);
 
 
     //--------------------------------------------------------------------
@@ -526,7 +512,14 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   particledis_->SetState("particleforces", bubbleforces);
 
   if(coupalgo_ != INPAR::CAVITATION::OneWay)
+  {
+    // call global assemble
+    int err = fluidforces->GlobalAssemble(Add, false);
+    if (err<0)
+      dserror("global assemble into fluidforces failed");
+
     fluid_->ApplyExternalForces(fluidforces);
+  }
 
   return;
 }

@@ -241,7 +241,7 @@ public:
   virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   /// apply external forces to the fluid
-  virtual void ApplyExternalForces(Teuchos::RCP<Epetra_Vector> fext) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   ///  set fields for low-Mach-number flow within outer iteration loop
   virtual void SetIterLomaFields(

@@ -219,7 +219,7 @@ namespace ADAPTER {
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno) = 0;
 
     /// apply external forces to the fluid
-    virtual void ApplyExternalForces(Teuchos::RCP<Epetra_Vector> fext) = 0;
+    virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
 
     ///  set fields for low-Mach-number flow within outer iteration loop
     virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,

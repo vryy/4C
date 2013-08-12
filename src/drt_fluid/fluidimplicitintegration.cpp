@@ -6479,7 +6479,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::ExtrapolateEndPoint
 // -------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::ApplyExternalForces
 (
-  Teuchos::RCP<Epetra_Vector> fext
+  Teuchos::RCP<Epetra_MultiVector> fext
 )
 {
   if(external_loads_ == Teuchos::null)
