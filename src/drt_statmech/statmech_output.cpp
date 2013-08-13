@@ -861,7 +861,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           OutputSlidingMotion(dis, nodepairfilename);
 
   
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FORCEDEPUNLINKING"))
+        if(statmechparams_.get<double>("DELTABELLSEQ", 0.0)!=0.0)
         {
           std::ostringstream forcedepfilename;
           forcedepfilename << outputrootpath_ << "/StatMechOutput/UnbindingProbability_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
@@ -963,6 +963,103 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       }
     }
     break;
+    case INPAR::STATMECH::statout_motassay:
+    {
+      //output of the coordinates of the first node of every free filament and the timestep
+
+      //we need displacements also of ghost nodes and hence export displacment vector to column map format
+      Epetra_Vector discol(*(discret_->DofColMap()), true);
+      LINALG::Export(dis, discol);
+
+      if(discret_->Comm().MyPID()==0)
+      {
+        // get filament number conditions
+        std::vector<DRT::Condition*> filaments(0);
+        discret_->GetCondition("FilamentNumber", filaments);
+
+        // for first time step: begin to write new output-file and save coordinates of node at the beginning
+        if(time==dt)
+        {
+          // calculate for free filaments
+          int subfil = statmechparams_.get<int>("SUBFILNUMBER",0);
+          std::cout<<"size: "<<(int)filaments.size()<<endl;
+          for(int fil=subfil; fil<(int)filaments.size(); fil++)
+          {
+            FILE* fp = NULL; //file pointer for statistical output file
+
+            //name of output file
+            std::ostringstream outputfilename;
+            outputfilename  << outputrootpath_ << "/StatMechOutput/coord_filaments"<<fil<<".dat";
+
+            // get next filament
+            DRT::Condition* currfilament = filaments[fil];
+
+            // obtain column map LIDs of first node of filament
+            int gid0 = currfilament->Nodes()->at(0);
+            int nodelid0 = discret_->NodeColMap()->LID(gid0);
+            DRT::Node* node0 = discret_->lColNode(nodelid0);
+
+            //coordinates of node at the beginning
+            LINALG::Matrix<3, 1> coord;
+            for(int dof=0; dof<3; dof++)
+              coord(dof) = node0->X()[dof];
+
+            // open file and append new data line
+            fp = fopen(outputfilename.str().c_str(), "w");
+
+            //defining temporary stringstream variable
+            std::stringstream filecontent;
+            // write directional vector to stream
+            filecontent<<0.0<<"\t"<<std::setprecision(12)<<coord(0)<<"\t"<<coord(1)<<"\t"<<coord(2)<<endl;
+
+            // move temporary stringstream to file and close it
+            fprintf(fp, filecontent.str().c_str());
+            fclose(fp);
+          }
+        }
+
+        //normal time step
+        // calculate for free filaments
+        int subfil = statmechparams_.get<int>("SUBFILNUMBER",0);
+
+        for(int fil=subfil; fil<(int)filaments.size(); fil++)
+        {
+          // get next filament
+          DRT::Condition* currfilament = filaments[fil];
+
+          // obtain column map LIDs of first node of filament
+          int gid0 = currfilament->Nodes()->at(0);
+          int nodelid0 = discret_->NodeColMap()->LID(gid0);
+          DRT::Node* node0 = discret_->lColNode(nodelid0);
+
+          // calculate coordinates of first node of filament
+          LINALG::Matrix<3, 1> coord;
+          for(int dof=0; dof<3; dof++)
+          {
+            int dofgid0 = discret_->Dof(node0)[dof];
+            coord(dof) = node0->X()[dof]+discol[discret_->DofColMap()->LID(dofgid0)];
+          }
+
+          FILE* fp = NULL; //file pointer for statistical output file
+
+          //name of output file
+          std::ostringstream outputfilename;
+          outputfilename  << outputrootpath_ << "/StatMechOutput/coord_filaments"<<fil<<".dat";
+
+          // open file and append new data line
+          fp = fopen(outputfilename.str().c_str(), "a");
+
+          //defining temporary stringstream variable
+          std::stringstream filecontent;
+            // write directional vector to stream
+            filecontent<<time<<"    "<<std::setprecision(12)<<coord(0)<<"   "<<coord(1)<<"   "<<coord(2)<<endl;
+
+          // move temporary stringstream to file and close it
+          fprintf(fp, filecontent.str().c_str());
+          fclose(fp);
+        }
+      }
+    }
     case INPAR::STATMECH::statout_none:
     default:
     break;
@@ -1668,7 +1765,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
           }
           else  // passive crosslink molecule
           {
-            if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS") && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+            if(linkermodel_ == statmech_linker_stdintpol && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
               dserror("Passified links not implemented for BeamCL elements!");
             // determine position of nodeGID entry
             int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
@@ -1837,7 +1934,7 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
             normal(j) = bspottriad(j,1);
           }
         // rotation angle
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+        if(filamentmodel_ == statmech_filament_helical)
          alpha = (*bspotorientations_)[bspotLID];
         else
           alpha = fmod((double) i, 2*M_PI);
@@ -1891,7 +1988,7 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
           }
           else  // passive crosslink molecule
           {
-            if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS") && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+            if(linkermodel_ == statmech_linker_stdintpol && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
               dserror("Passified links not implemented for BeamCL elements!");
             // determine position of bspotLID entry
             int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
@@ -1915,7 +2012,7 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
             double alpha = 0.0;
 
             // determine tangent and normal direction when helical binding spot geometry is applied
-            if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+            if(filamentmodel_ == statmech_filament_helical)
             {
               LINALG::Matrix<3,3> bspottriad;
               // auxiliary variable for storing a triad in quaternion form

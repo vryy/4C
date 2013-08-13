@@ -23,6 +23,7 @@ Maintainer: Christoph Meier
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
+#include "../drt_inpar/inpar_statmech.H"
 
 
 /*----------------------------------------------------------------------*
@@ -1852,7 +1853,7 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
       {
 
         //only one neighbor element on each side of the considered element is allowed
-        if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+        if(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"LINKERMODEL")==INPAR::STATMECH::linkermodel_none)
           if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
         globalneighborId = (*((**(element1->Nodes())).Elements()+y))->Id();
@@ -1881,7 +1882,7 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
         {
 
           //only one neighbor element on each side of the considered element is allowed
-          if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+          if(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"LINKERMODEL")==INPAR::STATMECH::linkermodel_none)
             if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
           globalneighborId = (*((**(element1->Nodes()+n_right)).Elements()+y))->Id();
@@ -1919,7 +1920,7 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
   {
 
     //only one neighbor element on each side of the considered element is allowed
-    if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+    if(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"LINKERMODEL")==INPAR::STATMECH::linkermodel_none)
       if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
     globalneighborId = (*((**(element2->Nodes())).Elements()+y))->Id();
@@ -1949,7 +1950,7 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
   for (int y=0; y<(**(element2->Nodes()+n_right)).NumElement ();++y)
   {
     //only one neighbor element on each side of the considered element is allowed
-    if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
+    if(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"LINKERMODEL")==INPAR::STATMECH::linkermodel_none)
       if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
     globalneighborId = (*((**(element2->Nodes()+n_right)).Elements()+y))->Id();

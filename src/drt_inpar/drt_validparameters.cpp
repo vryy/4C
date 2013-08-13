@@ -1844,7 +1844,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<int>("DBCTYPE","std","Dirichlet BC type applied",
-                                 //listing possible std::strings in input file in category FRICTION_MODEL
+                                 //listing possible std::strings in input file in category DBCTYPE
                                  tuple<std::string>("none",
                                                     "std",
                                                     "shearfixed",
@@ -1863,6 +1863,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::dbctype_affineshear,
                                             INPAR::STATMECH::dbctype_affinesheardel),
                                             &statmech);
+  //Reading which kind of linker model should be applied
+  setStringToIntegralParameter<int>("LINKERMODEL","none","Linker model applied in Statmech simulations",
+                                 //listing possible std::strings in input file in category LINKERMODEL
+                                 tuple<std::string>("none",
+                                                    "std",
+                                                    "stdintpol",
+                                                    "bellseq",
+                                                    "active"),
+                                 //translating input std::strings into BACI input parameters
+                                 tuple<int>(INPAR::STATMECH::linkermodel_none,
+                                            INPAR::STATMECH::linkermodel_std,
+                                            INPAR::STATMECH::linkermodel_stdintpol,
+                                            INPAR::STATMECH::linkermodel_bellseq,
+                                            INPAR::STATMECH::linkermodel_active),
+                                            &statmech);
+  //Reading which kind of filament model should be applied
+  setStringToIntegralParameter<int>("FILAMENTMODEL","std","Filament model applied in Statmech simulations",
+                                 //listing possible std::strings in input file in category FILAMENTMODEL
+                                 tuple<std::string>("std",
+                                                    "helical"),
+                                 //translating input std::strings into BACI input parameters
+                                 tuple<int>(INPAR::STATMECH::filamentmodel_std,
+                                            INPAR::STATMECH::filamentmodel_helical),
+                                            &statmech);
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
   // Time values at which certain actions are carried out
@@ -1871,18 +1895,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   // index controlling the start of DBC application (see ACTIONTIME)
   IntParameter("DBCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of DBC application. Starts counting at '1' !",&statmech);
-  //Reading whether dynamics remodelling of cross linker distribution takes place
-  setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
-                               yesnotuple,yesnovalue,&statmech);
-  //Unlinking is dependent on internal forces of the linkers, too
-  setStringToIntegralParameter<int>("FORCEDEPUNLINKING","No","Turns force-based unlinking of crosslinks on and off",
-                               yesnotuple,yesnovalue,&statmech);
-  //Toggles the use of internodal binding spots
-  setStringToIntegralParameter<int>("INTERNODALBSPOTS","No","If yes, the four-noded beam element is applied which allows linker positions between FE nodes.",
-                               yesnotuple,yesnovalue,&statmech);
-  //Toggles helical binding spot structure of the actin filament
-  setStringToIntegralParameter<int>("HELICALBINDINGSTRUCT","No","Turns double-helical binding spot geometry on and off",
-                               yesnotuple,yesnovalue,&statmech);
   //Toggles helical binding spot structure of the actin filament
   setStringToIntegralParameter<int>("LOOMSETUP","No","Turns specific routines for loom network on and off",
                                yesnotuple,yesnovalue,&statmech);
@@ -1912,8 +1924,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_OFF_end",0.0,"crosslinker off-rate at the end",&statmech);
   //Reading double parameter for crosslinker off-rate at the end
   DoubleParameter("K_ON_SELF",0.0,"crosslinker on-rate for crosslinkers with both bonds on same filament",&statmech);
+  // chemical rate for contractile conformation change
+  DoubleParameter("K_ACT_SHORT_start",0.0,"rate",&statmech);
+  // chemical rate for contractile conformation change
+  DoubleParameter("K_ACT_SHORT_end",0.0,"rate",&statmech);
+  // chemical rate for extensional conformation change
+  DoubleParameter("K_ACT_LONG_start",0.0,"rate",&statmech);
+  // chemical rate for extensional conformation change
+  DoubleParameter("K_ACT_LONG_end",0.0,"rate",&statmech);
+  // sclaingn factor for linker length changes
+  DoubleParameter("LINKERSCALEFACTOR",0.0,"Scaling factor for active linker length changes",&statmech);
   //displacement in the reaction coordinate used in Bell's euqations
-  DoubleParameter("DELTABELLSEQ",0.001,"displacement in the reaction coordinate used in Bell's euqations",&statmech);
+  DoubleParameter("DELTABELLSEQ",0.0,"displacement in the reaction coordinate used in Bell's eqation (<0.0 -> catch bond, >0 -> std bond, 0 == no Bell's equation ",&statmech);
+  // cycle time
+  DoubleParameter("ACTIVELINKERCYCLE",0.04,"duration of a work cycle of an active linker",&statmech);
+  // time fraction during which no bonding is possible due to the linker being in its recovery state
+  DoubleParameter("ACTIVERECOVERYFRACTION",0.95,"fraction of ACTIVELINKERCYCLE during which the linker recovers (i.e. is unbound)",&statmech);
   //number of overall crosslink molecules in the boundary volume
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //number of overall crosslink molecules in the boundary volume

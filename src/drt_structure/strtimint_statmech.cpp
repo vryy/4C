@@ -44,7 +44,7 @@ Maintainer: Kei Müller
 //#define MEASURETIME
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                           ueller 03/12|
+ |  ctor (public)                                          mueller 03/12|
  *----------------------------------------------------------------------*/
 STR::TimIntStatMech::TimIntStatMech(const Teuchos::ParameterList& params,
                                     const Teuchos::ParameterList& sdynparams,
@@ -66,7 +66,10 @@ isconverged_(false)
   StatMechPrintDBCType();
 
   if(!discret_->Comm().MyPID())
+  {
     std::cout<<"StatMech output path: "<<statmechman_->StatMechRootPath()<<"/StatMechOutput/"<<std::endl;
+    std::cout<<"================================================================"<<std::endl;
+  }
 
   // retrieve number of random numbers per element and store them in randomnumbersperelement_
   RandomNumbersPerElement();
@@ -133,7 +136,6 @@ void STR::TimIntStatMech::StatMechPrintDBCType()
         dserror("Check your DBC type! %i", dbctype);
       break;
     }
-    std::cout<<"================================================================"<<std::endl;
   }
   return;
 }

@@ -92,7 +92,6 @@ KT                              0.0
 CTRANSPTC0                      0.0
 CROTPTC0                        0.145
 ALPHAPTC                        6.0
-DYN_CROSSLINKERS                No
 OUTPUTINTERVALS                 1
 GMSHOUTINTERVALS                1
 PlotFactorThick                 0

@@ -103,9 +103,6 @@ public:
               Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null,
               bool                                 printscreen=true);
 
-  //! \brief starting from the input file, build the path trunk to the StatMech subdirectories
-  void BuildStatMechRootPath();
-
   // Return Gmsh and StatMech Output root path
   const std::string& StatMechRootPath() const{return outputrootpath_;}
 
@@ -331,8 +328,23 @@ protected:
   StatMechManager operator = (const StatMechManager& old);
   StatMechManager(const StatMechManager& old);
 
+  //! \brief starting from the input file, build the path trunk to the StatMech subdirectories
+  void BuildStatMechRootPath();
+
   //! \brief Initialize periodlength_ vector and search resolution
   void InitializeStatMechValues();
+
+  //! \brief creation of a fully overlapping node column map during statmech manager construction
+  void CreateFullyOverlappingNodeMap();
+
+  //! \brief initialize filament numbers
+  void InitializeFilamentNumbers();
+
+  //! \brief initialize force sensors
+  void InitializeForceSensors();
+
+  //! \brief set start step of the simulation (important after restart)
+  void SetStartStep(Teuchos::ParameterList& parameters);
 
   /*! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
    *  \param istep            (in) time step
@@ -416,6 +428,29 @@ protected:
                              const double&                    koff0,
                              const Epetra_Vector&             discol,
                              Teuchos::RCP<Epetra_MultiVector> punlink);
+
+  /*! \brief active linker length change
+   *  \param (in)  timen next point in time
+   *  \param (in)  dt    time step size
+   *  \param (in)  actlinklengthin linker length before
+   *  \param (out) actlinklengthout linker length after
+   *  \param (in) revertchanges self-explanatory
+   */
+  void ChangeActiveLinkerLength(const double&               timen,
+                                const double&               dt,
+                                Teuchos::RCP<Epetra_Vector> actlinklengthin,
+                                Teuchos::RCP<Epetra_Vector> actlinklengthout,
+                                bool                        revertchanges = false);
+
+  //! polarity check for active linkers upon bond breaking
+  bool LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
+                                 Epetra_SerialDenseMatrix&        LID,
+                                 LINALG::Matrix<3,1>&             direction);
+
+  //! polarity check for active linkers upon bond breaking
+  void LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_MultiVector>       punlink,
+                                 const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                 const Teuchos::RCP<Epetra_MultiVector> bspottriadscol);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced
@@ -758,6 +793,27 @@ protected:
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
 
+  enum FilamentModel
+  {
+    statmech_filament_std,
+    statmech_filament_helical
+  };
+
+  enum LinkerModel
+  {
+    statmech_linker_none,
+    statmech_linker_std,
+    statmech_linker_bellseq,
+    statmech_linker_active,
+    statmech_linker_stdintpol
+  };
+
+
+  //! \brief filament model
+  FilamentModel filamentmodel_;
+  //! \brief linker model
+  LinkerModel linkermodel_;
+
   //! \brief output root path for Gmsh and StatMech output
   std::string outputrootpath_;
 
@@ -885,6 +941,16 @@ protected:
   //! \brief vector storing unbinding probabilites in case of force-dependent unlinking
   Teuchos::RCP<Epetra_MultiVector> unbindingprobability_;
 
+  //! \brief a vector indicating the actual length of an active crosslinker: 0=long, 1=short
+  Teuchos::RCP<Epetra_Vector> crosslinkeractlength_;
+
+  //! \brief a vector indication the actual time in the active crosslinker cycle
+  Teuchos::RCP<Epetra_Vector> crosslinkeractcycletime_;
+
+  //TODO Formulierung!
+  //! \brief a vector indicating active crosslinker: GID of binding node of normal filament (either current node or node formerly bound to)
+  Teuchos::RCP<Epetra_Vector> crosslinkeractnodegid_;
+
   //! \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
   Teuchos::RCP<Epetra_Vector> crosslinkonsamefilament_;
 
@@ -915,6 +981,7 @@ protected:
   //! \brief a vector holding indices used in DensityDensityCorrOutput()
   Teuchos::RCP<std::vector<double> > startindex_;
 
+  //! \brief a vector holding node pairs that are part of a crosslinker element (for temporal relative displacement measurements)
   Teuchos::RCP<std::vector<std::vector<int> > > linkernodepairs_;
 
   //the following variables are necessary only for repeating a time step with different random numbers after its having failed one time
@@ -936,6 +1003,8 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> crosslinkerbondconv_;
   //! \brief vector holding converged state of crosslinkerpositions_
   Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionsconv_;
+  //! \brief vector holding converged state of actlinklength__
+  Teuchos::RCP<Epetra_Vector> crosslinkeractlengthconv_;
   //! \brief vector holding converged state of bspotstatus_
   Teuchos::RCP<Epetra_Vector> bspotstatusconv_;
   //! \brief vector holding converged state of numbond_

@@ -46,7 +46,8 @@ namespace INPAR
       statout_structanaly, ///< writing special output in order to determine network structure
       statout_octree, ///< writing output for octree visualization and checks
       statout_loom, ///< writing output for loom setup: a) nearest neighbor b) attractive forces c) coverage
-      statout_loomelnrg ///< writing output for filament elastic energy
+      statout_loomelnrg, ///< writing output for filament elastic energy
+      statout_motassay ///< writing output for motility assay (active linker setup)
     };
 
     /// (this enum represents the input file parameter STAT_OUTPUT)
@@ -69,6 +70,23 @@ namespace INPAR
       dbctype_pinnodes,    ///< pin down individual nodes when a linker is attached
       dbctype_affineshear,  ///< apply affine shear displacement to all nodes
       dbctype_affinesheardel  ///< apply affine shear displacement to all nodes, delete cut elements
+    };
+
+    /// (this enum represents the input file parameter LINKERTYPE
+    enum LinkerModel
+    {
+      linkermodel_none, /// < no linkers at all
+      linkermodel_std, /// < standard linkers with chemical association and dissociation rate
+      linkermodel_stdintpol, /// <standard linker with interpolated binding position on filament
+      linkermodel_bellseq, ///< like standard linker but a force dependent dissociation rate
+      linkermodel_active, ///< like standard linker but with a force dependent dissociation rate and active contraction and extension
+    };
+
+    /// (this enum represents the input file parameter FILAMENTMODEL
+    enum FilamentModel
+    {
+      filamentmodel_std, /// < standard filament type
+      filamentmodel_helical /// < filament with helical orientation of binding spots
     };
   }  // namespace STATMECH
 

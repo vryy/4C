@@ -71,12 +71,8 @@ BEAMS_BOXESINOCT                7
 THERMALBATH                     uniform
 FRICTION_MODEL                  anisotropicconsistent         // isotropicconsistent isotropiclumped
 DBCTYPE                         std                           // none shearfixed sheartrans pinnodes, choose DBC type
-DYN_CROSSLINKERS                Yes                           // (de)activate crosslinking
-HELICALBINDINGSTRUCT            Yes                           // (de)activate helical binding spot structure
 LOOMSETUP                       No                            // (de)activate specific loom network routines
-INTERNODALBSPOTS                Yes                           // (de)activate use of 4-noded beam element
 CHECKORIENT                     Yes                           // check orientation betw. two filaments before linking them
-FORCEDEPUNLINKING               No                            // (de)activate force-dependent unlinking
 FIXEDSEED                       Yes                           // (de)activate pesudo-randomness
 INITIALSEED                     1                             // manipulate initial seed of pseudo random numbers
 //==============                OUTPUT SET UP ============== 
@@ -107,6 +103,7 @@ K_OFF_end                       3                             // in analogy to k
 DBCDISPDIR                      1                             // direction of oscillation after starttimeact_ (x==0, y==1, z==2)
 CURVENUMBER                     1                             // applied time curve after starttimeact_
 //==============                FILAMENT MODEL ============= 
+FILAMENTMODEL                   helical
 NUM_EVAL_ELEMENTS               200                           // number of (initial) beam elements
 RISEPERBSPOT                    0.00277 //0.01                // rise per monomer in the actin helix
 ROTPERBSPOT                     -2.8999                       // rotation per monomer in the actin helix
@@ -114,6 +111,7 @@ BSPOTOFFSET                     -1.5707963                    // angular offset 
 PHIBSPOT                        0.5234                        // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
 BSPOTINTERVAL                   1                             // every n-th binding spot is available for binding
 //============                  CROSSLINKER MODEL ============ 
+LINKERMODEL                     stdintpol
 N_crosslink                     1000                          // number of crosslinkers in the simulated volume
 INITOCCUPIEDBSPOTS              150                           // number of crosslinker elements set up before the first time step
 R_LINK                          0.1                           // distance between the two binding domains of a linker
