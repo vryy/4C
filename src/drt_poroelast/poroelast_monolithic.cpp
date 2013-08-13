@@ -556,13 +556,13 @@ void POROELAST::Monolithic::CreateLinearSolver()
   if (solvertype != INPAR::SOLVER::aztec_msr &&
       solvertype != INPAR::SOLVER::belos)
   {
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
-    std::cout << " Note: the BGS2x2 preconditioner now "                  << endl;
-    std::cout << " uses the structural solver and fluid solver blocks"  << endl;
-    std::cout << " for building the internal inverses"                    << endl;
-    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << endl;
-    std::cout << " in the dat files!"                                     << endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << " Note: the BGS2x2 preconditioner now "                  << std::endl;
+    std::cout << " uses the structural solver and fluid solver blocks"  << std::endl;
+    std::cout << " for building the internal inverses"                    << std::endl;
+    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << std::endl;
+    std::cout << " in the dat files!"                                     << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
   const int azprectype
@@ -1134,19 +1134,19 @@ void POROELAST::Monolithic::BuildCombinedDBCMap()
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PoroFDCheck()
 {
-  std::cout << "\n******************finite difference check***************" << endl;
+  std::cout << "\n******************finite difference check***************" << std::endl;
 
   int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 4;
   int dof_fluid = (FluidField()->Discretization()->NumGlobalNodes()) * 4;
 
-  std::cout << "structure field has " << dof_struct << " DOFs" << endl;
-  std::cout << "fluid field has " << dof_fluid << " DOFs" << endl;
+  std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
+  std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   iterinc = LINALG::CreateVector(*DofRowMap(), true);
 
   const int dofs = iterinc->GlobalLength();
-  std::cout << "in total " << dofs << " DOFs" << endl;
+  std::cout << "in total " << dofs << " DOFs" << std::endl;
   const double delta = 1e-8;
 
   iterinc->PutScalar(0.0);
@@ -1168,14 +1168,14 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   if (false)
   {
-    std::cout << "iterinc_" << endl << *iterinc_ << endl;
-    std::cout << "iterinc" << endl << *iterinc << endl;
-    std::cout << "meshdisp: " << endl << *(FluidField()->Dispnp());
-    std::cout << "disp: " << endl << *(StructureField()->Dispnp());
-    std::cout << "fluid vel" << endl << *(FluidField()->Velnp());
-    std::cout << "fluid acc" << endl << *(FluidField()->Accnp());
-    std::cout << "gridvel fluid" << endl << *(FluidField()->GridVel());
-    std::cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
+    std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
+    std::cout << "iterinc" << std::endl << *iterinc << std::endl;
+    std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
+    std::cout << "disp: " << std::endl << *(StructureField()->Dispnp());
+    std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
+    std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
+    std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
+    std::cout << "gridvel struct" << std::endl << *(StructureField()->ExtractVelnp());
   }
 
   const int zeilennr = -1;
@@ -1189,7 +1189,7 @@ void POROELAST::Monolithic::PoroFDCheck()
 
     if (i == spaltenr)
       std::cout << "\n******************" << spaltenr + 1
-          << ". Spalte!!***************" << endl;
+          << ". Spalte!!***************" << std::endl;
 
     Evaluate(iterinc);
     SetupRHS();
@@ -1204,8 +1204,8 @@ void POROELAST::Monolithic::PoroFDCheck()
     if (i == spaltenr)
     {
 
-      std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << endl;
-      std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << endl;
+      std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << std::endl;
+      std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << std::endl;
     }
 
     rhs_copy->Update(-1.0, *rhs_old, 1.0);
@@ -1220,25 +1220,25 @@ void POROELAST::Monolithic::PoroFDCheck()
       if ((j == zeilennr) and (i == spaltenr))
       {
         std::cout << "\n******************" << zeilennr + 1
-            << ". Zeile!!***************" << endl;
-        std::cout << "iterinc_" << endl << *iterinc_ << endl;
-        std::cout << "iterinc" << endl << *iterinc << endl;
-        std::cout << "meshdisp: " << endl << *(FluidField()->Dispnp());
-        std::cout << "disp: " << endl << *(StructureField()->Dispnp());
-        std::cout << "fluid vel" << endl << *(FluidField()->Velnp());
-        std::cout << "fluid acc" << endl << *(FluidField()->Accnp());
-        std::cout << "gridvel fluid" << endl << *(FluidField()->GridVel());
-        std::cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
+            << ". Zeile!!***************" << std::endl;
+        std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
+        std::cout << "iterinc" << std::endl << *iterinc << std::endl;
+        std::cout << "meshdisp: " << std::endl << *(FluidField()->Dispnp());
+        std::cout << "disp: " << std::endl << *(StructureField()->Dispnp());
+        std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
+        std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
+        std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
+        std::cout << "gridvel struct" << std::endl << *(StructureField()->ExtractVelnp());
 
         std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
-            << (*rhs_copy)[zeilennr] << endl;
+            << (*rhs_copy)[zeilennr] << std::endl;
 
         std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
-            << (*rhs_copy)[zeilennr] << endl;
+            << (*rhs_copy)[zeilennr] << std::endl;
         std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value
-            << endl;
+            << std::endl;
         std::cout << "\n******************" << zeilennr + 1
-            << ". Zeile Ende!!***************" << endl;
+            << ". Zeile Ende!!***************" << std::endl;
       }
     }
 
@@ -1252,7 +1252,7 @@ void POROELAST::Monolithic::PoroFDCheck()
 
     if (i == spaltenr)
       std::cout << "\n******************" << spaltenr + 1
-          << ". Spalte Ende!!***************" << endl;
+          << ". Spalte Ende!!***************" << std::endl;
 
   }
 
@@ -1304,7 +1304,7 @@ void POROELAST::Monolithic::PoroFDCheck()
               std::cout << "finite difference check failed entry (" << i << "," << j
                   << ")! stiff: " << sparse_ij << ", approx: "
                   << stiff_approx_ij << " ,abs. error: " << (*error_crs)[i][j]
-                  << " , rel. error: " << error << endl;
+                  << " , rel. error: " << error << std::endl;
 
               success = false;
             }
@@ -1317,9 +1317,9 @@ void POROELAST::Monolithic::PoroFDCheck()
   if(success)
   {
     std::cout << "finite difference check successful, max. rel. error: "
-        << error_max << endl;
+        << error_max << std::endl;
     std::cout << "******************finite difference check done***************\n\n"
-        << endl;
+        << std::endl;
   }
   else
     dserror("PoroFDCheck failed");
