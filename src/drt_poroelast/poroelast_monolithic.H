@@ -82,13 +82,17 @@ namespace POROELAST
       //! @name Access methods
 
       //! composed system matrix
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
-      {
-        return systemmatrix_;
-      }
+      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
       //! full monolithic dof row map
       Teuchos::RCP<const Epetra_Map> DofRowMap() const {return blockrowdofmap_.FullMap();}
+
+      //! unique map of all dofs that should be constrained with DBC
+      Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
+
+      //! right hand side vector
+      Teuchos::RCP<Epetra_Vector> RHS()
+          {return rhs_;};
 
       //@}
 
@@ -176,9 +180,6 @@ namespace POROELAST
       //! convergence check for Newton solver
       virtual void BuildCovergenceNorms();
 
-      //! convergence check for Newton solver
-      bool ConvergenceCheck(int itnum, int itmax, double ittol);
-
       //! extract the field vectors from a given composed vector
       /*!
        x is the sum of all increments up to this point.
@@ -191,8 +192,6 @@ namespace POROELAST
               const Epetra_Vector>& fx,
               bool firstcall=false);
 
-      //! @name Access methods for subclasses
-
       //! set full monolithic dof row map
       /*!
        A subclass calls this method (from its constructor) and thereby
@@ -202,11 +201,10 @@ namespace POROELAST
       void SetDofRowMaps(
           const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
-      //! unique map of all dofs that should be constrained with DBC
-      Teuchos::RCP<Epetra_Map> CombinedDBCMap(){return combinedDBCMap_;};
-
       //! build map of global dofs with DBC
       virtual void BuildCombinedDBCMap();
+
+      //! @name Access methods for subclasses
 
       //! extractor to communicate between full monolithic map and block maps
       const LINALG::MultiMapExtractor& Extractor() const
@@ -252,7 +250,7 @@ namespace POROELAST
       //! dof row map splitted in (field) blocks
       LINALG::MultiMapExtractor blockrowdofmap_;
 
-      //! dof row map splitted in (field) blocks
+      //! dirichlet map of monolithic system
       Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
       //! return structure fluid coupling sparse matrix
@@ -298,13 +296,16 @@ namespace POROELAST
 
       double normrhsfluidvel_;  //!< norm of residual forces (fluid velocity)
       double normincfluidvel_;  //!< norm of residual unknowns (fluid velocity)
-      double normrhsfluidpres_; //!< norm of residual forces (fluid velocity)
-      double normincfluidpres_; //!< norm of residual unknowns (fluid velocity)
+      double normrhsfluidpres_; //!< norm of residual forces (fluid pressure)
+      double normincfluidpres_; //!< norm of residual unknowns (fluid pressure)
       double normrhsfluid_;     //!< norm of residual forces (fluid )
       double normincfluid_;     //!< norm of residual unknowns (fluid )
 
       double normrhsstruct_;    //!< norm of residual forces (structure)
       double normincstruct_;    //!< norm of residual unknowns (structure)
+
+      double normrhsporo_;    //!< norm of residual forces (porosity)
+      double normincporo_;    //!< norm of residual unknowns (porosity)
 
       Epetra_Time timer_;       //!<timer for solution technique
 

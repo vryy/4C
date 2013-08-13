@@ -29,12 +29,29 @@ namespace PORO_SCATRA
   /// Type of coupling strategy for poro scatra problems
   enum SolutionSchemeOverFields
   {
+    Monolithic,
     Part_ScatraToPoro,
     Part_PoroToScatra,
     Part_TwoWay
  //   Monolithic
   };
 
+  /// @name Solution technique and related
+
+  /// type of norm to check for convergence
+  enum ConvNorm
+  {
+    convnorm_abs  ///< absolute norm
+  };
+
+  /// type of norm to check for convergence
+  enum BinaryOp
+  {
+    bop_and,  ///<  and
+    bop_or    ///<  or
+  };
+
+  //@}
 
 }  // namespace PORO_SCATRA
 

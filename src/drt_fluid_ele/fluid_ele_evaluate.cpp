@@ -188,6 +188,21 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             elevec3 );
         break;
       }
+      case INPAR::FLUID::poro_p2:
+      {
+        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
+            this,
+            discretization,
+            lm,
+            params,
+            mat,
+            elemat1,
+            elemat2,
+            elevec1,
+            elevec2,
+            elevec3 );
+        break;
+      }
       default:
         return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->Evaluate(
             this,
@@ -246,6 +261,22 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             true);
         break;
       }
+      case INPAR::FLUID::poro_p2:
+      {
+        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
+            this,
+            discretization,
+            lm,
+            params,
+            mat,
+            elemat1,
+            elemat2,
+            elevec1,
+            elevec2,
+            elevec3,
+            true);
+        break;
+      }
       default:
         dserror("Unknown physical type for poroelasticity\n");
       break;
@@ -272,6 +303,38 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           elevec2,
           elevec3,
           true);
+    }
+    break;
+    //-----------------------------------------------------------------------
+    // standard implementation enabling time-integration schemes such as
+    // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
+    // for evaluation of off-diagonal matrix block for monolithic
+    // porous flow with scalar transport
+    //-----------------------------------------------------------------------
+    case FLD::calc_poroscatra_mono_odblock:
+    {
+      switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+      {
+      case INPAR::FLUID::poro_p2:
+      {
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
+          this,
+          discretization,
+          lm,
+          params,
+          mat,
+          elemat1,
+          elemat2,
+          elevec1,
+          elevec2,
+          elevec3,
+          true);
+      }
+      break;
+      default:
+        dserror("Unknown physical type for poroelasticity\n");
+      break;
+      }
     }
     break;
     case FLD::calc_div_u:

@@ -262,6 +262,10 @@ namespace ADAPTER
     virtual void CalculateError()
     { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
+    /// return physical type of fluid algorithm
+    virtual const INPAR::FLUID::PhysicalType PhysicalType() const
+    { return fluid_->PhysicalType();}
+
   protected:
 
     Teuchos::RCP<Fluid> fluid_;

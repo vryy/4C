@@ -202,26 +202,35 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(const std::string& eletype,
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
 {
-  // get global id of the structure element
-  int id = Id();
-  //access fluid discretization
-  RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-  //get corresponding fluid element
-  DRT::Element* fluidele = fluiddis->gElement(id);
-  if (fluidele == NULL)
-    dserror("Fluid element %i not on local processor", id);
+  if(fluidmat_==Teuchos::null)
+  {
+    // get global id of the structure element
+    int id = Id();
+    //access fluid discretization
+    Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    if(fluiddis==Teuchos::null)
+      dserror("no fluid discretization");
 
-  //get fluid material
-  fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
-    dserror("invalid fluid material for poroelasticity");
+    //get corresponding fluid element
+    DRT::Element* fluidele = fluiddis->gElement(id);
+    if (fluidele == NULL)
+      dserror("Fluid element %i not on local processor", id);
 
-  //get structure material
-  structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
-     structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
-    dserror("invalid structure material for poroelasticity");
+    //get fluid material
+    fluidmat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
+    if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
+      dserror("invalid fluid material for poroelasticity");
+  }
+
+  if(structmat_==Teuchos::null)
+  {
+    //get structure material
+    if(Material()==Teuchos::null) dserror("no structure material available!");
+    structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+    if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+      dserror("invalid structure material for poroelasticity");
+  }
 
   return;
 }

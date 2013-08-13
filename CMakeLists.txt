@@ -1316,6 +1316,7 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
+  src/drt_fluid_ele/fluid_ele_calc_poro_p2.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_xfem.cpp
@@ -1362,6 +1363,9 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_poro_p1.cpp
   src/drt_w1/wall1_poro_p1_eletypes.cpp
   src/drt_w1/wall1_poro_p1_evaluate.cpp
+  src/drt_w1/wall1_poro_p2.cpp
+  src/drt_w1/wall1_poro_p2_eletypes.cpp
+  src/drt_w1/wall1_poro_p2_evaluate.cpp
 )
 set(OBJS_DRT_CONTACT
   src/drt_contact/contact_abstract_strategy.cpp
@@ -1503,6 +1507,7 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_scatra_part.cpp
   src/drt_poroelast/poro_scatra_part_1wc.cpp
   src/drt_poroelast/poro_scatra_part_2wc.cpp
+  src/drt_poroelast/poro_scatra_monolithic.cpp
 )
 
 set(OBJS_DRT_SSI

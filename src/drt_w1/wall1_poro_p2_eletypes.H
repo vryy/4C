@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file wall1_poro_p1_eletypes.H
+ \file wall1_poro_p2_eletypes.H
 
  \brief
 
@@ -13,8 +13,8 @@
  *----------------------------------------------------------------------*/
 
 
-#ifndef WALL1_PORO_P1_ELETYPES_H_
-#define WALL1_PORO_P1_ELETYPES_H_
+#ifndef WALL1_PORO_P2_ELETYPES_H_
+#define WALL1_PORO_P2_ELETYPES_H_
 
 #include "wall1_poro_eletypes.H"
 
@@ -29,13 +29,13 @@ namespace ELEMENTS
   /*----------------------------------------------------------------------*
    |  QUAD 4 Element                                       |
    *----------------------------------------------------------------------*/
-  class WallQuad4PoroP1Type : public DRT::ELEMENTS::WallQuad4PoroType
+  class WallQuad4PoroP2Type : public DRT::ELEMENTS::WallQuad4PoroType
   {
   public:
 
-    std::string Name() const { return "WallQuad4PoroP1Type"; }
+    std::string Name() const { return "WallQuad4PoroP2Type"; }
 
-    static WallQuad4PoroP1Type & Instance() { return instance_; };
+    static WallQuad4PoroP2Type & Instance() { return instance_; };
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -52,19 +52,19 @@ namespace ELEMENTS
 
   private:
 
-    static WallQuad4PoroP1Type instance_;
+    static WallQuad4PoroP2Type instance_;
   };
 
   /*----------------------------------------------------------------------*
    |  QUAD 9 Element                                       |
    *----------------------------------------------------------------------*/
-  class WallQuad9PoroP1Type : public DRT::ELEMENTS::WallQuad9PoroType
+  class WallQuad9PoroP2Type : public DRT::ELEMENTS::WallQuad9PoroType
   {
   public:
 
-    std::string Name() const { return "WallQuad9PoroP1Type"; }
+    std::string Name() const { return "WallQuad9PoroP2Type"; }
 
-    static WallQuad9PoroP1Type & Instance() { return instance_; };
+    static WallQuad9PoroP2Type & Instance() { return instance_; };
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -81,11 +81,11 @@ namespace ELEMENTS
 
   private:
 
-    static WallQuad9PoroP1Type instance_;
+    static WallQuad9PoroP2Type instance_;
   };
 
 }//ELEMENTS
 }//DRT
 
 
-#endif /* WALL1_PORO_P1_ELETYPES_H_ */
+#endif /* WALL1_PORO_P2_ELETYPES_H_ */

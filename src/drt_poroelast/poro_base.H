@@ -38,6 +38,7 @@ namespace LINALG
 {
   class MapExtractor;
   class SparseMatrix;
+  class BlockSparseMatrixBase;
 }
 
 namespace ADAPTER
@@ -78,11 +79,34 @@ namespace POROELAST
       //! perform result tests
       virtual void TestResults(const Epetra_Comm& comm);
 
+      //! @name access methods
+
       //! access to structural field
       const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
       //! access to fluid field
       const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField(){return fluid_;}
+
+      //! composed system matrix
+      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+          {dserror("system matrix only available for monolithic schemes!"); return Teuchos::null;};
+
+      //! full monolithic dof row map
+      virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
+         {dserror("dof maps only available for monolithic schemes!"); return Teuchos::null;};
+
+      //! unique map of all dofs that should be constrained with DBC
+      virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
+          {dserror("combined DBC map only available for monolithic schemes!"); return Teuchos::null;};
+
+      //! unique map of all dofs that should be constrained with DBC
+      virtual Teuchos::RCP<Epetra_Vector> RHS()
+          {dserror("RHS only available for monolithic schemes!"); return Teuchos::null;};
+
+      //@}
+
+      //! solve time step (depending on algorithm)
+      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc) {};
 
       //! solve time step (depending on algorithm)
       virtual void Solve() = 0;
@@ -92,6 +116,9 @@ namespace POROELAST
 
       //! setup solver (for monolithic only)
       virtual bool SetupSolver(){return false;};
+
+      virtual void SetupRHS(bool firstcall=false)
+          {dserror("SetuoRHS only available for monolithic schemes!"); };
 
       //! @name Time loop building blocks
 
@@ -160,6 +187,8 @@ namespace POROELAST
 
       //! flag for additional porosity degree of freedom
       bool porositydof_;
+
+      Teuchos::RCP<LINALG::MapExtractor>  porositysplitter_;
 
     private:
 

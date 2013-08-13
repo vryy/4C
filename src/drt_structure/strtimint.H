@@ -1133,7 +1133,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> strgrdisp_;
     //@}
 
+    //! @name porous media specific stuff
+    //@{
     Teuchos::RCP<LINALG::MapExtractor>      porositysplitter_;
+    //@}
   };
 
 }  // namespace STR

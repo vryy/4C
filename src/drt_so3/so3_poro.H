@@ -188,7 +188,7 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate So_tet4fbar element stiffness, mass, internal forces, etc.
+  Evaluate element stiffness, mass, internal forces, etc.
 
   If NULL on input, the controlling method does not expect the element
   to fill these matrices or vectors.
@@ -197,21 +197,21 @@ public:
   */
   virtual int Evaluate
   (
-    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
-    DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
-    DRT::Element::LocationArray& la, ///< location array for de-assembly
-    Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
-    Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
-    Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
-    Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
-    Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
+    Teuchos::ParameterList&       params,           ///< ParameterList for communication between control routine and elements
+    DRT::Discretization&          discretization,   ///< pointer to discretization for de-assembly
+    DRT::Element::LocationArray&  la,               ///< location array for de-assembly
+    Epetra_SerialDenseMatrix&     elemat1,          ///< (stiffness-)matrix to be filled by element.
+    Epetra_SerialDenseMatrix&     elemat2,          ///< (mass-)matrix to be filled by element.
+    Epetra_SerialDenseVector&     elevec1,          ///< (internal force-)vector to be filled by element
+    Epetra_SerialDenseVector&     elevec2,          ///< vector to be filled by element
+    Epetra_SerialDenseVector&     elevec3           ///< vector to be filled by element
   );
 
   void PreEvaluate
     (
-      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
-      DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
-      DRT::Element::LocationArray& la ///< location array for de-assembly
+      Teuchos::ParameterList& params,             ///< ParameterList for communication between control routine and elements
+      DRT::Discretization&      discretization,   ///< pointer to discretization for de-assembly
+      DRT::Element::LocationArray& la             ///< location array for de-assembly
     );
 
 
@@ -273,36 +273,44 @@ public:
 
   //@}
 
+  //! compute porosity at gausspoint
+  virtual void ComputePorosity(
+                                Teuchos::ParameterList& params,
+                                double                  press,
+                                double                  J,
+                                int                     gp,
+                                double&                 porosity,
+                                double*                 dphi_dp,
+                                double*                 dphi_dJ,
+                                double*                 dphi_dJdp,
+                                double*                 dphi_dJJ,
+                                double*                 dphi_dpp,
+                                bool                    save
+                              );
 
-  virtual void ComputePorosity( Teuchos::ParameterList& params,
-                             double press,
-                             double J,
-                             int gp,
-                             double& porosity,
-                             double* dphi_dp,
-                             double* dphi_dJ,
-                             double* dphi_dJdp,
-                             double* dphi_dJJ,
-                             double* dphi_dpp,
-                             bool save);
+  //! compute porosity at gauss point at one face of the element
+  virtual void ComputeSurfPorosity(
+                                    Teuchos::ParameterList& params,
+                                    double                  press,
+                                    double                  J,
+                                    int                     surfnum,
+                                    int                     gp,
+                                    double&                 porosity,
+                                    double*                 dphi_dp,
+                                    double*                 dphi_dJ,
+                                    double*                 dphi_dJdp,
+                                    double*                 dphi_dJJ,
+                                    double*                 dphi_dpp,
+                                    bool                    save
+                                  );
 
-  virtual void ComputeSurfPorosity( Teuchos::ParameterList& params,
-                         double press,
-                         double J,
-                         int surfnum,
-                         int gp,
-                         double& porosity,
-                         double* dphi_dp,
-                         double* dphi_dJ,
-                         double* dphi_dJdp,
-                         double* dphi_dJJ,
-                         double* dphi_dpp,
-                         bool save) ;
-
+  //! return time derivative of reference porosity
   virtual double RefPorosityTimeDeriv();
 
-  virtual int NumDof(){return 3;};
+  //! return number of degrees of freedom of node
+  virtual int NumDof(){return noddof_;};
 
+  //! return whether element has more degrees of freedom than standard solid element
   virtual bool HasExtraDof(){return false;}
 
 protected:
@@ -349,8 +357,8 @@ protected:
                                                const double&                    press,
                                                const double&                    J,
                                                const int&                       gp,
-                                               const LINALG::Matrix<numnod_,1>&       shapfct,
-                                               const LINALG::Matrix<numnod_,1>*       myporosity,
+                                               const LINALG::Matrix<numnod_,1>& shapfct,
+                                               const LINALG::Matrix<numnod_,1>* myporosity,
                                                double &                         porosity,
                                                double &                         dphi_dp);
 

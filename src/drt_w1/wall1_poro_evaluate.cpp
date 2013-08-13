@@ -46,19 +46,19 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
   {
     if(la.Size()>2)
     {
-      if (discretization.HasState(2,"temperature"))
+      if (discretization.HasState(2,"scalar"))
       {
         // check if you can get the scalar state
-        Teuchos::RCP<const Epetra_Vector> tempnp
-          = discretization.GetState(2,"temperature");
+        Teuchos::RCP<const Epetra_Vector> scalarnp
+          = discretization.GetState(2,"scalar");
 
         // extract local values of the global vectors
-        Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[2].lm_.size()) );
-        DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[2].lm_);
+        Teuchos::RCP<std::vector<double> >myscalar = Teuchos::rcp(new std::vector<double>(la[2].lm_.size()) );
+        DRT::UTILS::ExtractMyValues(*scalarnp,*myscalar,la[2].lm_);
 
         double scalar = 0.0;
-        for(unsigned int i=0; i<mytemp->size(); i++)
-          scalar += mytemp->at(i)/mytemp->size();
+        for(unsigned int i=0; i<myscalar->size(); i++)
+          scalar += myscalar->at(i)/myscalar->size();
         //params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
         params.set<double>("scalar",scalar);
       }
@@ -85,6 +85,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
     }
   }
 
+  GetMaterials();
+
   return;
 }
 
@@ -104,8 +106,6 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
   if(not init_)
     dserror("internal element data not initialized!");
 
-  GetMaterials();
-
   // start with "none"
   typename Wall1_Poro<distype>::ActionType act = Wall1_Poro<distype>::none;
 
@@ -113,12 +113,14 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = Wall1_Poro<distype>::calc_struct_multidofsetcoupling;
+  else if (action=="calc_struct_poroscatracoupling")   act = Wall1_Poro<distype>::calc_struct_poroscatra_coupling;
   // what should the element do
   switch(act)
   {
   //==================================================================================
   // off diagonal terms in stiffness matrix for monolithic coupling
   case Wall1_Poro<distype>::calc_struct_multidofsetcoupling:
+  case Wall1_Poro<distype>::calc_struct_poroscatra_coupling:
   {
     //in some cases we need to write/change some data before evaluating
     PreEvaluate(params,
@@ -469,7 +471,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
  //   const INPAR::STR::StressType       iostress     // stress output option
     )
 {
-
   // update element geometry
   LINALG::Matrix<numdim_,numnod_> xrefe; // material coord. of element
   LINALG::Matrix<numdim_,numnod_> xcurr; // current  coord. of element
@@ -503,8 +504,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
                         reamatrix,
                         force);
 
-  const double dt = params.get<double>("delta time");
-
   if ( reamatrix != NULL )
   {
     /* additional "reactive darcy-term"
@@ -512,10 +511,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
      */
     reamatrix->Update(1.0,erea_v,1.0);
   }
-        //if the reaction part is not supposed to be computed separately, we add it to the stiffness
-    //(this is not the best way to do it, but it only happens once during initialization)
-  else
-      stiffmatrix->Update(1.0/dt,erea_v,1.0);
 
   return;
 }  // nlnstiff_poroelast()
@@ -713,7 +708,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
 
       for(int j=0; j<numdim_; j++)
       {
-
         /*-------structure- fluid velocity coupling:  RHS
          "dracy-terms"
          - reacoeff * J *  phi^2 *  v^f
@@ -765,11 +759,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
       }
     }
   }
-
-  if(fluidmat_->Type() == "Darcy-Brinkman")
-  {
-
-  }//Darcy_Brinkman
 
   //inverse Right Cauchy-Green tensor as vector
   LINALG::Matrix<numstr_,1> C_inv_vec;
@@ -922,17 +911,16 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkman(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
-    std::vector<int>& lm,                                                 // location matrix
-    LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
-    LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
-    LINALG::Matrix<numdim_, numnod_> & evelnp,                       //current fluid velocity
-    LINALG::Matrix<numnod_, 1> & epreaf,                             //current fluid pressure
+    std::vector<int>&                                 lm,            // location matrix
+    LINALG::Matrix<numdim_, numnod_>&                 disp,          // current displacements
+    LINALG::Matrix<numdim_, numnod_>&                 vel,           // current velocities
+    LINALG::Matrix<numdim_, numnod_> &                evelnp,        //current fluid velocity
+    LINALG::Matrix<numnod_, 1> &                      epreaf,        //current fluid pressure
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix,   // element stiffness matrix
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* reamatrix,     // element reactive matrix
-    LINALG::Matrix<numdof_, 1>* force,                               // element internal force vector
-    Teuchos::ParameterList& params)                                           // algorithmic parameters e.g. time
+    LINALG::Matrix<numdof_, 1>*                       force,         // element internal force vector
+    Teuchos::ParameterList&                           params)        // algorithmic parameters e.g. time
 {
-
   //=======================================================================
 
   // update element geometry
@@ -962,6 +950,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
                          vel,
                          evelnp,
                          epreaf,
+                         NULL,
                          ecoupl );
 
   if (stiffmatrix != NULL)
@@ -989,6 +978,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
                                     const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
                                     const LINALG::Matrix<numdim_,numnod_>&  evelnp,
                                     const LINALG::Matrix<numnod_,1> &       epreaf,
+                                    const LINALG::Matrix<numnod_, 1>*       porosity_dof,
                                     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl
                                         )
 {
@@ -1057,7 +1047,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
                                       J,
                                       gp,
                                       shapefct,
-                                      NULL,
+                                      porosity_dof,
                                       porosity,
                                       dphi_dp);
 
@@ -1152,7 +1142,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
 
           /*-------structure- fluid pressure coupling: "stress terms" + "pressure gradient terms"
            -B^T . ( -1*J*C^-1 ) * Dp
-           - J * F^-T * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
+           - J * F^-T * Grad(p) * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
            */
           ecoupl(fi+j, fk_press) +=  detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k)
                               - fac * J * (   Finvgradp(j) * dphi_dp * shapefct(k)
@@ -1708,15 +1698,15 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAuxiliaryValues(const LINALG::Ma
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearization
-(   Teuchos::ParameterList&                     params,
-    const double& press,
-    const double& J,
-    const int& gp,
-    const LINALG::Matrix<numnod_,1>&       shapfct,
-    const LINALG::Matrix<numnod_,1>*           myporosity,
-    const LINALG::Matrix<1,numdof_>& dJ_dus,
-    double &                         porosity,
-    LINALG::Matrix<1,numdof_>&       dphi_dus)
+(   Teuchos::ParameterList&             params,
+    const double&                       press,
+    const double&                       J,
+    const int&                          gp,
+    const LINALG::Matrix<numnod_,1>&    shapfct,
+    const LINALG::Matrix<numnod_,1>*    myporosity,
+    const LINALG::Matrix<1,numdof_>&    dJ_dus,
+    double &                            porosity,
+    LINALG::Matrix<1,numdof_>&          dphi_dus)
 {
   double dphi_dJ=0.0;
 
@@ -1770,12 +1760,12 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearizationOD
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
-                                    const DRT::Discretization&   discretization, ///< discretization
-                                    const int&                   dofset,
-                                    const std::vector<int>&      lm,             ///<
-                                    LINALG::Matrix<numdim_,numnod_> *  matrixtofill,   ///< vector field
-                                    LINALG::Matrix<numnod_,1> *     vectortofill,   ///< scalar field
-                                    const std::string            state          ///< state of the global vector
+                                    const DRT::Discretization&          discretization, ///< discretization
+                                    const int&                          dofset,
+                                    const std::vector<int>&             lm,             ///<
+                                    LINALG::Matrix<numdim_,numnod_> *   matrixtofill,   ///< vector field
+                                    LINALG::Matrix<numnod_,1> *         vectortofill,   ///< scalar field
+                                    const std::string                   state          ///< state of the global vector
 )
 {
   //todo put on higher level
@@ -1790,20 +1780,45 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
   std::vector<double> mymatrix(lm.size());
   DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
 
-  for (int inode=0; inode<numnod_; ++inode)  // number of nodes
+  if(numdofpernode==numdim_+1)
   {
-    // fill a vector field via a pointer
-    if (matrixtofill != NULL)
+    for (int inode=0; inode<numnod_; ++inode)  // number of nodes
     {
-      for(int idim=0; idim<numdim_; ++idim) // number of dimensions
+      // fill a vector field via a pointer
+      if (matrixtofill != NULL)
       {
-        (*matrixtofill)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
-      }  // end for(idim)
+        for(int idim=0; idim<numdim_; ++idim) // number of dimensions
+        {
+          (*matrixtofill)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
+        }  // end for(idim)
+      }
+      // fill a scalar field via a pointer
+      if (vectortofill != NULL)
+        (*vectortofill)(inode,0) = mymatrix[numdim_+(inode*numdofpernode)];
     }
-    // fill a scalar field via a pointer
-    if (vectortofill != NULL)
-      (*vectortofill)(inode,0) = mymatrix[numdim_+(inode*numdofpernode)];
   }
+  else if (numdofpernode==numdim_)
+  {
+    for (int inode=0; inode<numnod_; ++inode)  // number of nodes
+    {
+      // fill a vector field via a pointer
+      if (matrixtofill != NULL)
+      {
+        for(int idim=0; idim<numdim_; ++idim) // number of dimensions
+        {
+          (*matrixtofill)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
+        }  // end for(idim)
+      }
+    }
+  }
+  else if (numdofpernode==1)
+    for (int inode=0; inode<numnod_; ++inode)  // number of nodes
+    {
+      if (vectortofill != NULL)
+        (*vectortofill)(inode,0) = mymatrix[inode*numdofpernode];
+    }
+  else
+    dserror("wrong number of dofs for extract");
 }
 
 /*----------------------------------------------------------------------*

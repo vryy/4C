@@ -202,8 +202,8 @@ CURVE3 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 4.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 124 QUANTITY velx VALUE -3.56953477139437758e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 124 QUANTITY pressure VALUE 3.90611059263909794e+01 TOLERANCE 1e-4
+FLUID DIS fluid NODE 124 QUANTITY velx VALUE -3.56957355248420982e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 124 QUANTITY pressure VALUE 3.90625529888260985e+01 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -6.15582970243111482e-03 TOLERANCE 1e-8

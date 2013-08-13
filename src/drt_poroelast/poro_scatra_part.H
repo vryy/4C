@@ -20,8 +20,7 @@
  *----------------------------------------------------------------------*/
 #include "poro_scatra_base.H"
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------*
@@ -59,28 +58,11 @@ namespace POROELAST
 
     //Methods
 
-    //! Main time loop.
-    virtual void Timeloop()=0;
-
     //! solve one time/incremental step of porous media problem (depending on coupling algorithm)
     virtual void DoPoroStep()=0;
     //! solve one time/incremental step of scalar transport problem (depending on coupling algorithm)
     virtual void DoScatraStep()=0;
 
-    //! apply solution of poro-problem to scatra
-    void SetPoroSolution();
-
-    //! apply solution of scatra to poro
-    void SetScatraSolution();
-
-    //! read and set fields needed for restart
-    virtual void ReadRestart(int restart)=0;
-
-  private:
-    //! apply displacement fields to scatra
-    void SetMeshDisp();
-    //! apply velocity fields to scatra
-    void SetVelocityFields();
   };
 }
 

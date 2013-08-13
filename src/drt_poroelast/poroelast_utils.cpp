@@ -29,6 +29,7 @@
 
 #include "poro_scatra_part_1wc.H"
 #include "poro_scatra_part_2wc.H"
+#include "poro_scatra_monolithic.H"
 #include "../drt_inpar/inpar_poroscatra.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -44,6 +45,7 @@
 #include "../drt_so3/so3_poro_p1_eletypes.H"
 #include "../drt_w1/wall1_poro_eletypes.H"
 #include "../drt_w1/wall1_poro_p1_eletypes.H"
+#include "../drt_w1/wall1_poro_p2_eletypes.H"
 
 #include "../drt_fluid/fluid_utils.H"
 
@@ -173,6 +175,8 @@ bool POROELAST::UTILS::CheckPoro(
       actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance()   or
       actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance()  or
       actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance()  or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP2Type::Instance() or
+      actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP2Type::Instance() or
       CheckPoroP1(actele)
      )
     return true;
@@ -312,22 +316,30 @@ Teuchos::RCP<POROELAST::PORO_SCATRA_Base> POROELAST::UTILS::CreatePoroScatraAlgo
 
   switch (coupling)
   {
-    case INPAR::PORO_SCATRA::Part_ScatraToPoro:
-    {
-      algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro(comm, timeparams));
-      break;
-    }
-    case INPAR::PORO_SCATRA::Part_PoroToScatra:
-    {
-      algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra(comm, timeparams));
-      break;
-    }
-    case INPAR::PORO_SCATRA::Part_TwoWay:
-    {
-      algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_2WC(comm, timeparams));
-      break;
-    }
+  case INPAR::PORO_SCATRA::Monolithic:
+  {
+    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Mono(comm, timeparams));
+    break;
   }
+  case INPAR::PORO_SCATRA::Part_ScatraToPoro:
+  {
+    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro(comm, timeparams));
+    break;
+  }
+  case INPAR::PORO_SCATRA::Part_PoroToScatra:
+  {
+    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra(comm, timeparams));
+    break;
+  }
+  case INPAR::PORO_SCATRA::Part_TwoWay:
+  {
+    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_2WC(comm, timeparams));
+    break;
+  }
+  }
+
+  //setup solver (if needed)
+  algo->SetupSolver();
 
   return algo;
 }

@@ -2409,7 +2409,7 @@ void STR::TimInt::ApplyCouplingState(
 {
   //check
   if(state == Teuchos::null)
-    dserror("coupling state is Teuchos::null!");
+    dserror("coupling state '%s' is Teuchos::null!",name.c_str());
 
   if(dofset == 0)
     dserror("dofset number equals zero!");

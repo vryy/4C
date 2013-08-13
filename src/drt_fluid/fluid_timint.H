@@ -290,6 +290,8 @@ public:
 
   virtual void CalculateError(){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
+  const INPAR::FLUID::PhysicalType PhysicalType() const {return physicaltype_;}
+
 protected:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;

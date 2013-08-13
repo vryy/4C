@@ -17,6 +17,7 @@
 #define PORO_SCATRA_BASE_H_
 
 #include "../drt_adapter/adapter_algorithmbase.H"
+#include "../drt_scatra/passive_scatra_algorithm.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
@@ -54,21 +55,44 @@ namespace POROELAST
     virtual void Timeloop()=0;
 
     //! read and set fields needed for restart
-    virtual void ReadRestart(int restart);
+    virtual void ReadRestart(int restart)=0;
 
     //! setup for single fields
-    void SetupSystem();
+    virtual void SetupSystem();
 
     //! perform result test
     void TestResults(const Epetra_Comm& comm);
 
+    //! apply solution of poro-problem to scatra
+    void SetPoroSolution();
+
+    //! apply solution of scatra to poro
+    void SetScatraSolution();
+
+    //! return pointer to porous medium problem
+    const Teuchos::RCP<POROELAST::PoroBase>& PoroField(){return poro_;};
+
+    //! return pointer to scalar transport problem
+    SCATRA::ScaTraTimIntImpl& ScatraField(){return scatra_->ScaTraField();};
+
+    //! setup solver (for monolithic only)
+    virtual bool SetupSolver(){return false;};
+
   protected:
-    //Members
+    //!setup up of dofsets for two way coupling
+    void AddDofSets(bool replace = false);
 
     //! Pointer to the porous media problem. (drt_poroelastic)
     Teuchos::RCP<POROELAST::PoroBase> poro_;
     //! Pointer to the ScaTra problem.     (drt_scatra)
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+
+  private:
+    //! apply displacement fields to scatra
+    void SetMeshDisp();
+    //! apply velocity fields to scatra
+    void SetVelocityFields();
+
   };
 }
 

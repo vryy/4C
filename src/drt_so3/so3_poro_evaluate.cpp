@@ -52,20 +52,20 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
       if (la[1].Size() != numnod_*numdofpernode)
         dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
 
-      if (discretization.HasState(1,"temperature"))
+      if (discretization.HasState(1,"scalar"))
       {
         // check if you can get the scalar state
-        Teuchos::RCP<const Epetra_Vector> tempnp
-          = discretization.GetState(1,"temperature");
+        Teuchos::RCP<const Epetra_Vector> scalarnp
+          = discretization.GetState(1,"scalar");
 
-        if (tempnp==Teuchos::null)
+        if (scalarnp==Teuchos::null)
           dserror("calc_struct_nlnstiff: Cannot get state vector 'fluidvel' ");
 
         // extract local values of the global vectors
-        Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
-        DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[1].lm_);
+        Teuchos::RCP<std::vector<double> >myscalar = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
+        DRT::UTILS::ExtractMyValues(*scalarnp,*myscalar,la[1].lm_);
 
-        params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
+        params.set<Teuchos::RCP<std::vector<double> > >("scalar",myscalar);
       }
     }
     else
@@ -467,14 +467,14 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
-    std::vector<int>&                  lm,           // location matrix
-    LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
-    LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
-    LINALG::Matrix<numdim_, numnod_> & evelnp,       // current fluid velocities
-    LINALG::Matrix<numnod_, 1> &       epreaf,       // current fluid pressure
-    LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,  // element stiffness matrix
-    LINALG::Matrix<numdof_, numdof_>*  reamatrix,    // element reactive matrix
-    LINALG::Matrix<numdof_, 1>*        force,        // element internal force vector
+    std::vector<int>&                           lm,           // location matrix
+    LINALG::Matrix<numdim_, numnod_>&           disp,         // current displacements
+    LINALG::Matrix<numdim_, numnod_>&           vel,          // current velocities
+    LINALG::Matrix<numdim_, numnod_> &          evelnp,       // current fluid velocities
+    LINALG::Matrix<numnod_, 1> &                epreaf,       // current fluid pressure
+    LINALG::Matrix<numdof_, numdof_>*           stiffmatrix,  // element stiffness matrix
+    LINALG::Matrix<numdof_, numdof_>*           reamatrix,    // element reactive matrix
+    LINALG::Matrix<numdof_, 1>*                 force,        // element internal force vector
     //LINALG::Matrix<numgptpar_, numstr_>* elestress, // stresses at GP
     //LINALG::Matrix<numgptpar_, numstr_>* elestrain, // strains at GP
     Teuchos::ParameterList&                     params        // algorithmic parameters e.g. time
@@ -526,13 +526,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
        */
       reamatrix->Update(1.0,erea_v,1.0);
     }
-    else
-    {
-      const double dt = params.get<double>("delta time");
-      //if the reaction part is not supposed to be computed separately, we add it to the stiffness
-      //(this is not the best way to do it, but it only happens once during initialization)
-      stiffmatrix->Update(1.0/dt,erea_v,1.0);
-    }
   }
 
   return;
@@ -543,16 +536,16 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
-                                    Teuchos::ParameterList& params,
-                                    const LINALG::Matrix<numdim_,numnod_>& xrefe,
-                                    const LINALG::Matrix<numdim_,numnod_>& xcurr,
-                                    const LINALG::Matrix<numdim_,numnod_>& nodaldisp,
-                                    const LINALG::Matrix<numdim_,numnod_>& nodalvel,
+                                    Teuchos::ParameterList&                 params,
+                                    const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+                                    const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+                                    const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+                                    const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
                                     const LINALG::Matrix<numdim_,numnod_> & evelnp,
-                                    const LINALG::Matrix<numnod_,1> & epreaf,
-                                    const LINALG::Matrix<numnod_, 1>*  porosity_dof,
-                                    LINALG::Matrix<numdof_,numdof_>& erea_v,
-                                    LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,
+                                    const LINALG::Matrix<numnod_,1> &       epreaf,
+                                    const LINALG::Matrix<numnod_, 1>*       porosity_dof,
+                                    LINALG::Matrix<numdof_,numdof_>&        erea_v,
+                                    LINALG::Matrix<numdof_, numdof_>*       stiffmatrix,
                                     LINALG::Matrix<numdof_,1>*              force
                                         )
 {
@@ -691,15 +684,15 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
-    std::vector<int>& lm,                                                 // location matrix
-    LINALG::Matrix<numdim_, numnod_>&               disp,         // current displacements
-    LINALG::Matrix<numdim_, numnod_>&               vel,          // current velocities
-    LINALG::Matrix<numdim_, numnod_> & evelnp,                       //current fluid velocity
-    LINALG::Matrix<numnod_, 1> & epreaf,                             //current fluid pressure
+    std::vector<int>&                                 lm,            // location matrix
+    LINALG::Matrix<numdim_, numnod_>&                 disp,          // current displacements
+    LINALG::Matrix<numdim_, numnod_>&                 vel,           // current velocities
+    LINALG::Matrix<numdim_, numnod_> &                evelnp,        //current fluid velocity
+    LINALG::Matrix<numnod_, 1> &                      epreaf,        //current fluid pressure
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix,   // element stiffness matrix
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* reamatrix,     // element reactive matrix
-    LINALG::Matrix<numdof_, 1>* force,                               // element internal force vector
-    Teuchos::ParameterList& params)                                           // algorithmic parameters e.g. time
+    LINALG::Matrix<numdof_, 1>*                       force,         // element internal force vector
+    Teuchos::ParameterList&                           params)        // algorithmic parameters e.g. time
 {
   //=============================get parameters
 
@@ -758,14 +751,14 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
-                                    Teuchos::ParameterList&                 params,
-                                    const LINALG::Matrix<numdim_,numnod_>&  xrefe,
-                                    const LINALG::Matrix<numdim_,numnod_>&  xcurr,
-                                    const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
-                                    const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
-                                    const LINALG::Matrix<numdim_,numnod_>&  evelnp,
-                                    const LINALG::Matrix<numnod_,1> &       epreaf,
-                                    LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix
+                Teuchos::ParameterList&                           params,
+                const LINALG::Matrix<numdim_,numnod_>&            xrefe,
+                const LINALG::Matrix<numdim_,numnod_>&            xcurr,
+                const LINALG::Matrix<numdim_,numnod_>&            nodaldisp,
+                const LINALG::Matrix<numdim_,numnod_>&            nodalvel,
+                const LINALG::Matrix<numdim_,numnod_>&            evelnp,
+                const LINALG::Matrix<numnod_,1> &                 epreaf,
+                LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix
                                         )
 {
 
@@ -883,12 +876,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
     LINALG::Matrix<numdim_, numnod_>&   disp,         // current displacements
-    LINALG::Matrix<numdim_, numnod_> & evelnp,       // current fluid velocities
-    LINALG::Matrix<numnod_, 1> &       epreaf,       // current fluid pressure
-    Epetra_SerialDenseMatrix*          elestress,    // stresses at GP
-    Epetra_SerialDenseMatrix*          elestrain,    // strains at GP
-    Teuchos::ParameterList&            params,       // algorithmic parameters e.g. time
-    const INPAR::STR::StressType       iostress      // stress output option
+    LINALG::Matrix<numdim_, numnod_> &  evelnp,       // current fluid velocities
+    LINALG::Matrix<numnod_, 1> &        epreaf,       // current fluid pressure
+    Epetra_SerialDenseMatrix*           elestress,    // stresses at GP
+    Epetra_SerialDenseMatrix*           elestrain,    // strains at GP
+    Teuchos::ParameterList&             params,       // algorithmic parameters e.g. time
+    const INPAR::STR::StressType        iostress      // stress output option
     )
 {
 
@@ -1686,6 +1679,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
     const double fac1 = -detJ_w * press;
     const double fac2= fac1 * J;
 
+    // additional fluid stress term -(B^T . C^-1 * J * p^f * detJ * w(gp))
     force->Update(fac2,cinvb,1.0);
 
     LINALG::Matrix<numdof_,numdof_> tmp1;

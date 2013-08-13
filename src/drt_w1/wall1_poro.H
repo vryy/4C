@@ -333,7 +333,7 @@ namespace ELEMENTS
 
     \return 0 if successful, negative otherwise
     */
-    int MyEvaluate
+    virtual int MyEvaluate
     (
       Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
       DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
@@ -354,6 +354,7 @@ namespace ELEMENTS
       calc_struct_nlnstiffmass,
       calc_struct_stress,
       calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
+      calc_struct_poroscatra_coupling
     };
 
     //! vector of inverses of the jacobian in material frame
@@ -423,6 +424,7 @@ namespace ELEMENTS
         const LINALG::Matrix<numdim_,numnod_>&  nodalvel,
         const LINALG::Matrix<numdim_,numnod_>&  evelnp,
         const LINALG::Matrix<numnod_,1> &       epreaf,
+        const LINALG::Matrix<numnod_, 1>*       porosity_dof,
         LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& stiffmatrix
                                             );
 

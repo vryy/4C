@@ -529,6 +529,9 @@ namespace ADAPTER {
 
     /// calculate error in comparison to analytical solution
     virtual void CalculateError() = 0;
+
+    /// return physical type of fluid algorithm
+    virtual const INPAR::FLUID::PhysicalType PhysicalType() const =0;
   };
 }
 

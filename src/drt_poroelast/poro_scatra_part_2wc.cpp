@@ -27,9 +27,9 @@
 POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : PORO_SCATRA_Part(comm, timeparams),
-    scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField().Phinp())))),
-    structincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_->StructureField()()->Dispnp())))),
-    fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_->FluidField()()->Velnp()))))
+    scaincnp_(Teuchos::rcp(new Epetra_Vector(*(ScatraField().Phinp())))),
+    structincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->StructureField()()->Dispnp())))),
+    fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidField()()->Velnp()))))
 {
   // the problem is two way coupled, thus each discretization must know the other discretization
   AddDofSets();
@@ -37,49 +37,7 @@ POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->PoroScatraControlParams();
   // Get the parameters for the ConvergenceCheck
   itmax_ = params.get<int>("ITEMAX"); // default: =10
-  ittol_ = params.get<double>("CONVTOL"); // default: =1e-6
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::AddDofSets(bool replace)
-{
-  // the problem is two way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
-
-  //get discretizations
-  Teuchos::RCP<DRT::Discretization> structdis = poro_->StructureField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> scatradis = scatra_->ScaTraField().Discretization();
-
-  if(poro_->HasSubmeshes())
-  {
-    // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
-    structdofset = structdis->GetDofSetProxy(structdis->NodeColMap(),structdis->ElementColMap());
-    // build a proxy of the fluid discretization for the structure field
-    scatradofset = scatradis->GetDofSetProxy(scatradis->NodeColMap(),scatradis->ElementColMap());
-  }
-  else
-  {
-    // build a proxy of the structure discretization for the fluid field
-    structdofset = structdis->GetDofSetProxy();
-    // build a proxy of the fluid discretization for the structure field
-    scatradofset = scatradis->GetDofSetProxy();
-  }
-
-  if(not replace)
-  {
-    // check if ScatraField has 2 discretizations, so that coupling is possible
-    if (scatradis->AddDofSet(structdofset) != 1)
-      dserror("unexpected dof sets in fluid field");
-    if (structdis->AddDofSet(scatradofset)!=2)
-      dserror("unexpected dof sets in structure field");
-  }
-  else
-  {
-    scatradis->ReplaceDofSet(1,structdofset);
-    structdis->ReplaceDofSet(2,scatradofset);
-  }
+  ittol_ = params.get<double>("INCTOL"); // default: =1e-6
 }
 
 /*----------------------------------------------------------------------*/
@@ -110,11 +68,11 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
     SetScatraSolution();
     SetPoroSolution();
 
-    poro_->ReadRestart(restart);
-    scatra_->ScaTraField().ReadRestart(restart);
+    PoroField()->ReadRestart(restart);
+    ScatraField().ReadRestart(restart);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
-    if(poro_->HasSubmeshes())
+    if(PoroField()->HasSubmeshes())
       AddDofSets(true);
 
     // the variables need to be set on other field
@@ -122,14 +80,14 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
     SetPoroSolution();
 
     //second restart needed due to two way coupling.
-    scatra_->ScaTraField().ReadRestart(restart);
-    poro_->ReadRestart(restart);
+    ScatraField().ReadRestart(restart);
+    PoroField()->ReadRestart(restart);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
-    if(poro_->HasSubmeshes())
+    if(PoroField()->HasSubmeshes())
       AddDofSets(true);
 
-    SetTimeStep(poro_->Time(), restart);
+    SetTimeStep(PoroField()->Time(), restart);
   }
 }
 
@@ -140,11 +98,11 @@ void POROELAST::PORO_SCATRA_Part_2WC::DoPoroStep()
   if (Comm().MyPID() == 0)
   {
     std::cout
-        << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
+        << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
   }
 
   // Newton-Raphson iteration
-  poro_-> Solve();
+  PoroField()-> Solve();
 }
 
 /*----------------------------------------------------------------------*/
@@ -160,7 +118,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->ScaTraField().Solve();
+  ScatraField().Solve();
 
 }
 
@@ -174,11 +132,11 @@ void POROELAST::PORO_SCATRA_Part_2WC::PrepareTimeStep()
   IncrementTimeAndStep();
 
   //SetPoroSolution();
-  scatra_->ScaTraField().PrepareTimeStep();
+  ScatraField().PrepareTimeStep();
   // set structure-based scalar transport values
   SetScatraSolution();
 
-  poro_-> PrepareTimeStep();
+  PoroField()-> PrepareTimeStep();
   SetPoroSolution();
  // SetScatraSolution();
 }
@@ -187,15 +145,15 @@ void POROELAST::PORO_SCATRA_Part_2WC::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_2WC::UpdateAndOutput()
 {
-  poro_-> PrepareOutput();
+  PoroField()-> PrepareOutput();
 
-  poro_-> Update();
-  scatra_->ScaTraField().Update();
+  PoroField()-> Update();
+  ScatraField().Update();
 
-  scatra_->ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+  ScatraField().EvaluateErrorComparedToAnalyticalSol();
 
-  poro_-> Output();
-  scatra_->ScaTraField().Output();
+  PoroField()-> Output();
+  ScatraField().Output();
 }
 
 
@@ -217,15 +175,13 @@ void POROELAST::PORO_SCATRA_Part_2WC::OuterLoop()
 
     // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    scaincnp_->Update(1.0,*scatra_->ScaTraField().Phinp(),0.0);
-    structincnp_->Update(1.0,*poro_->StructureField()->Dispnp(),0.0);
-    fluidincnp_->Update(1.0,*poro_->FluidField()->Velnp(),0.0);
+    scaincnp_->Update(1.0,*ScatraField().Phinp(),0.0);
+    structincnp_->Update(1.0,*PoroField()->StructureField()->Dispnp(),0.0);
+    fluidincnp_->Update(1.0,*PoroField()->FluidField()->Velnp(),0.0);
 
     // set structure-based scalar transport values
     SetScatraSolution();
 
-   // if(itnum!=1)
-   //   poro_->PreparePartitionStep();
     // solve structural system
     DoPoroStep();
 
@@ -268,17 +224,17 @@ bool POROELAST::PORO_SCATRA_Part_2WC::ConvergenceCheck(int itnum)
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0,*(scatra_->ScaTraField().Phinp()),-1.0);
-  structincnp_->Update(1.0,*(poro_->StructureField()->Dispnp()),-1.0);
-  fluidincnp_->Update(1.0,*(poro_->FluidField()->Velnp()),-1.0);
+  scaincnp_->Update(1.0,*(ScatraField().Phinp()),-1.0);
+  structincnp_->Update(1.0,*(PoroField()->StructureField()->Dispnp()),-1.0);
+  fluidincnp_->Update(1.0,*(PoroField()->FluidField()->Velnp()),-1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  scatra_->ScaTraField().Phinp()->Norm2(&scanorm_L2);
+  ScatraField().Phinp()->Norm2(&scanorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
-  poro_->StructureField()->Dispnp()->Norm2(&dispnorm_L2);
+  PoroField()->StructureField()->Dispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);
-  poro_->FluidField()->Velnp()->Norm2(&fluidnorm_L2);
+  PoroField()->FluidField()->Velnp()->Norm2(&fluidnorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;

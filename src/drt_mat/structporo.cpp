@@ -472,19 +472,46 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
 {
   if(porosity == 0.0)
     dserror("porosity equals zero!! Wrong initial porosity?");
+
+  ConsitutiveDerivatives(params,
+                         press,
+                         J,
+                         porosity,
+                         params_->initporosity_,
+                         dW_dp,
+                         dW_dphi,
+                         dW_dJ,
+                         W);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
+                                              double     press,
+                                              double     J,
+                                              double     porosity,
+                                              double     refporosity,
+                                              double*    dW_dp,
+                                              double*    dW_dphi,
+                                              double*    dW_dJ,
+                                              double*    W)
+{
   const double & bulkmodulus  = params_->bulkmodulus_;
   const double & penalty      = params_->penaltyparameter_;
-  const double & initporosity = params_->initporosity_;
 
   //some intermediate values
-  const double a = bulkmodulus / (1 - initporosity) + press - penalty / initporosity;
+  const double a = bulkmodulus / (1 - refporosity) + press - penalty / refporosity;
   const double b = -1.0*J*a+bulkmodulus+penalty;
 
+  const double scale = 1.0/bulkmodulus;
+
   //scale everything with 1/bulkmodulus (I hope this will help the solver...)
-  if(W)       *W       = (J*a*porosity*porosity + porosity* b - penalty)/bulkmodulus;
-  if(dW_dp)   *dW_dp   = (-1.0*J*porosity *(1.0-porosity))/bulkmodulus;
-  if(dW_dphi) *dW_dphi = (2.0*J*a*porosity + b)/bulkmodulus;
-  if(dW_dJ)   *dW_dJ   = (a*porosity*porosity - porosity*a)/bulkmodulus;
+  if(W)       *W       = (J*a*porosity*porosity + porosity* b - penalty) * scale;
+  if(dW_dp)   *dW_dp   = (-1.0*J*porosity *(1.0-porosity)) * scale;
+  if(dW_dphi) *dW_dphi = (2.0*J*a*porosity + b) * scale;
+  if(dW_dJ)   *dW_dJ   = (a*porosity*porosity - porosity*a) * scale;
 
   return;
 }

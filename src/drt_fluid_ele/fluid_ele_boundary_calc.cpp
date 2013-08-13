@@ -2895,9 +2895,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   if(coupling == POROELAST::undefined) dserror("no coupling defined for poro-boundary condition");
   const bool offdiag( coupling == POROELAST::fluidstructure);
 
-  const double timescale = params.get<double>("timescale",-1.0);
+  // get timescale parameter from parameter list (depends on time integration scheme)
+  double timescale = params.get<double>("timescale",-1.0);
   if(timescale == -1.0 and offdiag)
     dserror("no timescale parameter in parameter list");
+
+  //reset timescale in stationary case
+  if(fldpara_->IsStationary())
+    timescale=0.0;
 
   // get element location vector and ownerships
   std::vector<int> lm;
@@ -3159,11 +3164,19 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     {
       double normal_convel = 0.0;
       LINALG::Matrix<1,nsd_> convel;
+
       for (int idof=0;idof<nsd_;idof++)
       {
-        normal_convel += unitnormal_(idof) *(velint_(idof) - gridvelint(idof) ) ;
-        convel(idof)   = velint_(idof) - gridvelint(idof);
+        normal_convel += unitnormal_(idof) *velint_(idof)  ;
+        convel(idof)   = velint_(idof) ;
       }
+
+      if(not fldpara_->IsStationary())
+        for (int idof=0;idof<nsd_;idof++)
+        {
+          normal_convel += unitnormal_(idof) *( - gridvelint(idof) ) ;
+          convel(idof)  -= gridvelint(idof);
+        }
 
       LINALG::Matrix<1,nenparent*nsd_> tmp;
       tmp.Multiply(convel,normalderiv);
@@ -3173,11 +3186,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 
       if(not offdiag)
         for (int nnod=0;nnod<nenparent;nnod++)
+        {
           for (int idof2=0;idof2<nsd_;idof2++)
               elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
                   timefacfacpre * pfunct(inode) * porosity_gp * unitnormal_(idof2) * pfunct(nnod)
-                + timefacfacpre * pfunct(inode) * dphi_dp* normal_convel * unitnormal_(idof2) * pfunct(nnod)
                 ;
+          elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+nsd_) +=
+              + timefacfacpre * pfunct(inode) * dphi_dp* normal_convel * pfunct(nnod);
+        }
 
       else if(not porositydof)
         for (int nnod=0;nnod<nenparent;nnod++)

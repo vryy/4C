@@ -32,6 +32,7 @@ namespace INPAR
       loma,
       poro,
       poro_p1,
+      poro_p2,
       topopt
     };
 

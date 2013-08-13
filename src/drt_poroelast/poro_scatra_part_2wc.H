@@ -17,6 +17,7 @@
 #define PORO_SCATRA_PART_2WC_H_
 
 #include "poro_scatra_part.H"
+#include <Epetra_Vector.h>
 
 namespace POROELAST
 {
@@ -37,9 +38,10 @@ namespace POROELAST
     //! read and set fields needed for restart
     void ReadRestart(int restart);
 
-  protected:
     //! prepare time step for single fields
     void PrepareTimeStep();
+
+  protected:
 
     //! perform iteration step of structure field
     void DoPoroStep();
@@ -55,9 +57,6 @@ namespace POROELAST
 
     //! convergence check of outer loop
     bool ConvergenceCheck(int itnum);
-
-    //!setup up of dofsets for two way coupling
-    void AddDofSets(bool replace = false);
 
     //! scalar increment of the outer loop
     Teuchos::RCP<Epetra_Vector> scaincnp_;

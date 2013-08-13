@@ -603,6 +603,7 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
         switch(physicaltype)
         {
         case INPAR::FLUID::poro:
+        case INPAR::FLUID::poro_p2:
           return DRT::Problem::Instance()->NDim();
           break;
         case INPAR::FLUID::poro_p1:
@@ -624,6 +625,26 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
   }
   else if(nds==0)
     return NumDofPerNode(node);
+  else if(nds==2)
+  {
+    // what's the current problem type?
+    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    switch (probtype)
+    {
+      case prb_poroscatra:
+      {
+        //scalar transport
+        return 1;
+        break;
+      }
+      default:
+      {
+        dserror("invalid number of dofsets (3) for this problem type");
+        return -1;
+        break;
+      }
+    }
+  }
   else
   {
     dserror("invalid number of dof sets");

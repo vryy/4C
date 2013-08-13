@@ -100,6 +100,11 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& param
   // off diagonal terms in stiffness matrix for monolithic coupling
   case my::calc_struct_multidofsetcoupling:
   {
+    //in some cases we need to write/change some data before evaluating
+    my::PreEvaluate(params,
+                discretization,
+                la);
+
     MyEvaluate(params,
                       discretization,
                       la,
@@ -384,20 +389,17 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::InitElement()
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::nlnstiff_poroelast(
     std::vector<int>& lm, ///< location matrix
-    LINALG::Matrix<my::numdim_, my::numnod_>&               disp,         // current displacements
-    LINALG::Matrix<my::numdim_, my::numnod_>&               vel,          // current velocities
-    LINALG::Matrix<my::numnod_, 1>*               porosity_dof,
-    LINALG::Matrix<my::numdim_,my::numnod_> & evelnp, //< fluid velocity of element
-    LINALG::Matrix<my::numnod_,1> & epreaf, //< fluid pressure of element
-    LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
-    LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
-    LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-    Teuchos::ParameterList& params ///< algorithmic parameters e.g. time
+    LINALG::Matrix<my::numdim_, my::numnod_>&   disp,         ///< current displacements
+    LINALG::Matrix<my::numdim_, my::numnod_>&   vel,          ///< current velocities
+    LINALG::Matrix<my::numnod_, 1>*             porosity_dof,
+    LINALG::Matrix<my::numdim_,my::numnod_> &   evelnp,       ///< fluid velocity of element
+    LINALG::Matrix<my::numnod_,1> &             epreaf,       ///< fluid pressure of element
+    LINALG::Matrix<numdof_,numdof_>*            stiffmatrix,  ///< element stiffness matrix
+    LINALG::Matrix<numdof_,numdof_>*            reamatrix,    // element reactive matrix
+    LINALG::Matrix<numdof_,1>*                  force,        ///< element internal force vector
+    Teuchos::ParameterList&                     params        ///< algorithmic parameters e.g. time
     )
 {
-
-  my::GetMaterials();
-
   // update element geometry
   LINALG::Matrix<my::numdim_,my::numnod_> xrefe; // material coord. of element
   LINALG::Matrix<my::numdim_,my::numnod_> xcurr; // current  coord. of element
@@ -454,17 +456,6 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::nlnstiff_poroelast(
           for (int i=0; i<my::numnod_; i++)
             for(int j=0; j<my::numdim_; j++)
               (*reamatrix)(i*noddof_+j,k*noddof_+l) += erea_v(i*my::numdim_+j,k*my::numdim_+l);
-    }
-    else
-    {
-      const double dt = params.get<double>("delta time");
-      //if the reaction part is not supposed to be computed separately, we add it to the stiffness
-      //(this is not the best way to do it, but it only happens once during initialization)
-      for (int k=0; k<my::numnod_; k++)
-        for(int l=0; l<my::numdim_; l++)
-          for (int i=0; i<my::numnod_; i++)
-            for(int j=0; j<my::numdim_; j++)
-              (*stiffmatrix)(i*noddof_+j,k*noddof_+l) += erea_v(i*my::numdim_+j,k*my::numdim_+l) / dt;
     }
 
     for (int k=0; k<my::numnod_; k++)
@@ -734,21 +725,17 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::coupling_poroelast(
-    std::vector<int>& lm,                                                 // location matrix
-    LINALG::Matrix<my::numdim_, my::numnod_>&               disp,         // current displacements
-    LINALG::Matrix<my::numdim_, my::numnod_>&               vel,          // current velocities
-    LINALG::Matrix<my::numnod_, 1>*               porosity,
-    LINALG::Matrix<my::numdim_, my::numnod_> & evelnp,                       //current fluid velocity
-    LINALG::Matrix<my::numnod_, 1> & epreaf,                             //current fluid pressure
-    LINALG::Matrix<numdof_, (my::numdim_ + 1) * my::numnod_>* stiffmatrix,   // element stiffness matrix
-    LINALG::Matrix<numdof_, (my::numdim_ + 1) * my::numnod_>* reamatrix,     // element reactive matrix
-    LINALG::Matrix<numdof_, 1>* force,                               // element internal force vector
-    Teuchos::ParameterList& params)                                           // algorithmic parameters e.g. time
+    std::vector<int>&                                         lm,           // location matrix
+    LINALG::Matrix<my::numdim_, my::numnod_>&                 disp,         // current displacements
+    LINALG::Matrix<my::numdim_, my::numnod_>&                 vel,          // current velocities
+    LINALG::Matrix<my::numnod_, 1>*                           porosity,
+    LINALG::Matrix<my::numdim_, my::numnod_> &                evelnp,       //current fluid velocity
+    LINALG::Matrix<my::numnod_, 1> &                          epreaf,       //current fluid pressure
+    LINALG::Matrix<numdof_, (my::numdim_ + 1) * my::numnod_>* stiffmatrix,  // element stiffness matrix
+    LINALG::Matrix<numdof_, (my::numdim_ + 1) * my::numnod_>* reamatrix,    // element reactive matrix
+    LINALG::Matrix<numdof_, 1>*                               force,        // element internal force vector
+    Teuchos::ParameterList&                                   params)       // algorithmic parameters e.g. time
 {
-  //=============================get parameters
-
-  my::GetMaterials();
-
   //=======================================================================
 
   // update element geometry
@@ -817,16 +804,16 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::coupling_poroelast(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
-                                    Teuchos::ParameterList& params,
-                                    const LINALG::Matrix<my::numdim_,my::numnod_>& xrefe,
-                                    const LINALG::Matrix<my::numdim_,my::numnod_>& xcurr,
-                                    const LINALG::Matrix<my::numdim_,my::numnod_>& nodaldisp,
-                                    const LINALG::Matrix<my::numdim_,my::numnod_>& nodalvel,
-                                    const LINALG::Matrix<my::numdim_,my::numnod_> & evelnp,
-                                    const LINALG::Matrix<my::numnod_,1> & epreaf,
-                                    const LINALG::Matrix<my::numnod_, 1>*  porosity_dof,
-                                    LINALG::Matrix<my::numnod_,my::numnod_>& ecoupl_p1,
-                                    LINALG::Matrix<my::numdof_, (my::numdim_ + 1) * my::numnod_>& sub_stiff
+                    Teuchos::ParameterList&                                       params,
+                    const LINALG::Matrix<my::numdim_,my::numnod_>&                xrefe,
+                    const LINALG::Matrix<my::numdim_,my::numnod_>&                xcurr,
+                    const LINALG::Matrix<my::numdim_,my::numnod_>&                nodaldisp,
+                    const LINALG::Matrix<my::numdim_,my::numnod_>&                nodalvel,
+                    const LINALG::Matrix<my::numdim_,my::numnod_> &               evelnp,
+                    const LINALG::Matrix<my::numnod_,1> &                         epreaf,
+                    const LINALG::Matrix<my::numnod_, 1>*                         porosity_dof,
+                    LINALG::Matrix<my::numnod_,my::numnod_>&                      ecoupl_p1,
+                    LINALG::Matrix<my::numdof_, (my::numdim_ + 1) * my::numnod_>& sub_stiff
                                         )
 {
 

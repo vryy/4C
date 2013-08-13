@@ -170,6 +170,38 @@ void MAT::StructPoroReaction::ComputePorosity( Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void MAT::StructPoroReaction::ConsitutiveDerivatives(Teuchos::ParameterList& params,
+                                              double     press,
+                                              double     J,
+                                              double     porosity,
+                                              double*    dW_dp,
+                                              double*    dW_dphi,
+                                              double*    dW_dJ,
+                                              double*    W)
+{
+  if(porosity == 0.0)
+    dserror("porosity equals zero!! Wrong initial porosity?");
+
+  //evaluate change of reference porosity due to reaction
+  double cnp = params.get<double>("scalar");
+  Reaction(cnp,params);
+
+  //call base class
+  StructPoro::ConsitutiveDerivatives(params,
+                         press,
+                         J,
+                         porosity,
+                         refporosity_,
+                         dW_dp,
+                         dW_dphi,
+                         dW_dJ,
+                         W);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void MAT::StructPoroReaction::Reaction(double cnp, Teuchos::ParameterList& params)
 {
   //double dt = params.get<double>("delta time",-1.0);

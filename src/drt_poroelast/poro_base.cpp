@@ -115,15 +115,21 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     INPAR::FLUID::TimeIntegrationScheme fluidtimealgo
     = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
-    if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
-        fluidtimealgo != INPAR::FLUID::timeint_one_step_theta )
-      dserror("porous media problem is limited in functionality (only one-step-theta scheme possible)");
+    if ( not (
+                   (structtimealgo == INPAR::STR::dyna_onesteptheta and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
+               or (structtimealgo == INPAR::STR::dyna_statics and fluidtimealgo == INPAR::FLUID::timeint_stationary)
+             )
+       )
+      dserror("porous media problem is limited in functionality (only one-step-theta scheme and stationary case possible)");
 
-    double theta_struct = sdyn.sublist("ONESTEPTHETA").get<double>("THETA");
-    double theta_fluid  = fdyn.get<double>("THETA");
+    if(structtimealgo == INPAR::STR::dyna_onesteptheta and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
+    {
+      double theta_struct = sdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+      double theta_fluid  = fdyn.get<double>("THETA");
 
-    if(theta_struct != theta_fluid)
-      dserror("porous media problem is limited in functionality. Only one-step-theta scheme with equal theta for both fields possible");
+      if(theta_struct != theta_fluid)
+        dserror("porous media problem is limited in functionality. Only one-step-theta scheme with equal theta for both fields possible");
+    }
   }
 }
 
@@ -326,7 +332,10 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
   if(numglobalstructdofs == numglobalstructnodes * ndim)
     porositydof_ = false;
   else
+  {
     porositydof_ = true;
+    porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(StructureField()->Discretization());
+  }
 
   // the fluid-structure coupling not always matches
   const Epetra_Map* fluidnoderowmap = fluiddis->NodeRowMap();

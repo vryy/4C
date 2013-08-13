@@ -25,6 +25,7 @@ enum Action {
     none,
     calc_fluid_systemmat_and_residual,
     calc_porousflow_fluid_coupling,
+    calc_poroscatra_mono_odblock,
     calc_loma_mono_odblock,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,

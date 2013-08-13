@@ -279,7 +279,7 @@ namespace MAT
                         ) const;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-      void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
+     virtual void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
                                                     double     press,   ///< (i) fluid pressure at gauss point
                                                     double     J,       ///< (i) Jacobian determinant at gauss point
                                                     double     porosity,///< (i) porosity at gauss point
@@ -380,6 +380,18 @@ namespace MAT
                              double* dphi_dphiref,          ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
                              bool save = true
                              ) ;
+
+      //! evaluate constitutive relation for porosity and compute derivatives using reference porosity
+      void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
+                                                    double     press,   ///< (i) fluid pressure at gauss point
+                                                    double     J,       ///< (i) Jacobian determinant at gauss point
+                                                    double     porosity,///< (i) porosity at gauss point
+                                                    double     refporosity,///< (i) porosity at gauss point
+                                                    double*    dW_dp,   ///< (o) derivative of potential w.r.t. pressure
+                                                    double*    dW_dphi, ///< (o) derivative of potential w.r.t. porosity
+                                                    double*    dW_dJ,   ///< (o) derivative of potential w.r.t. jacobian
+                                                    double*    W        ///< (o) inner potential
+                                                    );
 
       /// my material parameters
       MAT::PAR::StructPoro* params_;

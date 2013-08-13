@@ -199,8 +199,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   if (
        (
             (physicaltype_ == INPAR::FLUID::loma)
-         or (physicaltype_ == INPAR::FLUID::poro)
-         or (physicaltype_ == INPAR::FLUID::poro_p1)
          or (physicaltype_ == INPAR::FLUID::varying_density)
        )
       and (is_stationary_ == true)
@@ -228,7 +226,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     reaction_topopt_= true;
     darcy_= false;
   }
-  else if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
+  else if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
   {
     reaction_= true;
     reaction_topopt_= false;

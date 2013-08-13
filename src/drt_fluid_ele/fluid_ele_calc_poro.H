@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file fluid_ele_calc_poro_p1.H
+
+ \brief
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *----------------------------------------------------------------------*/
+
 #ifndef FLUID_ELE_CALC_PORO_H
 #define FLUID_ELE_CALC_PORO_H
 
@@ -189,7 +203,8 @@ protected:
           \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
           \param egridv           (i) grid velocity at n+1
           \param escaaf           (i) nodal scalar at n+alpha_F/n+1
-          \param material         (i) fluid material
+          \param eporositynp      (i) nodal porosity at n+1
+          \param mat              (i) fluid material
           \param isale            (i) ALE flag
           \param intpoints        (i) Gaussian integration points
      */
@@ -205,6 +220,7 @@ protected:
         const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
         const LINALG::Matrix<my::nen_,1>&                                 escaaf,
+        const LINALG::Matrix<my::nen_,1>*                                 eporositynp,
         Teuchos::RCP<MAT::Material>                                       mat,
         bool                                                              isale,
         const DRT::UTILS::GaussIntegration &                              intpoints);
@@ -287,6 +303,7 @@ protected:
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
       const LINALG::Matrix<my::nen_,1>&                               escaaf,
+      const LINALG::Matrix<my::nen_,1>*                               eporositynp,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_,my::nsd_ * my::nen_>&  ecoupl,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
       Teuchos::RCP<const MAT::Material>                               material,
@@ -301,13 +318,9 @@ protected:
     \param evelaf             (i) nodal velocities at n+1 (np_genalpha)
     \param egridv             (i) nodal pressure at n+alpha_F/n+1
     \param epreaf             (i) nodal pressure at n+alpha_F/n+1
-    \param press              (i) pressure at gauss point
-    \param press_dot          (i) pressure time derivative at gauss point
-    \param porosity           (i) porosity at gauss point
     \param gradphi            (i) porosity gradient at gauss point
     \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
     \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
-    \param J                  (i) jacobian determinant at gauss point
     \param refporositydot     (i) time derivative of reference porosity
     \param timefac            (i) time factor
     \param timefacfac         (i) time factor * integration factor
@@ -318,13 +331,9 @@ protected:
       const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
       const LINALG::Matrix<my::nen_, 1>&                                epreaf,
-      const double &                                                    press,
-      const double &                                                    press_dot,
-      const double &                                                    porosity,
       const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
       const double &                                                    dphi_dp,
       const double &                                                    dphi_dJ,
-      const double &                                                    J,
       const double &                                                    refporositydot,
       const double &                                                    timefac,
       const double &                                                    timefacfac
@@ -338,13 +347,9 @@ protected:
     \param evelaf             (i) nodal velocities at n+1 (np_genalpha)
     \param egridv             (i) nodal pressure at n+alpha_F/n+1
     \param epreaf             (i) nodal pressure at n+alpha_F/n+1
-    \param press              (i) pressure at gauss point
-    \param press_dot          (i) pressure time derivative at gauss point
-    \param porosity           (i) porosity at gauss point
     \param gradphi            (i) porosity gradient at gauss point
     \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
     \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
-    \param J                  (i) jacobian determinant at gauss point
     \param refporositydot     (i) time derivative of reference porosity
     \param timefac            (i) time factor
     \param timefacfac         (i) time factor * integration factor
@@ -355,20 +360,30 @@ protected:
       const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
       const LINALG::Matrix<my::nen_, 1>&                                epreaf,
-      const double &                                                    press,
-      const double &                                                    press_dot,
-      const double &                                                    porosity,
       const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
       const double &                                                    dphi_dp,
       const double &                                                    dphi_dJ,
-      const double &                                                    J,
+      const double &                                                    refporositydot,
+      const double &                                                    timefac,
+      const double &                                                    timefacfac
+      );
+
+  virtual void LinMeshMotion_2D_Pres_OD(
+      LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
+      LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
+      const LINALG::Matrix<my::nen_, 1>&                                epreaf,
+      const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
+      const double &                                                    dphi_dp,
+      const double &                                                    dphi_dJ,
       const double &                                                    refporositydot,
       const double &                                                    timefac,
       const double &                                                    timefacfac
       );
 
   //! Compute element matrix entries: PSPG
-  void PSPG(
+  virtual void PSPG(
       LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &  estif_q_u,      ///< block (weighting function q x u)
       LINALG::Matrix<my::nen_,my::nen_> &            ppmat,          ///< block (weighting function q x p)
       LINALG::Matrix<my::nen_,1> &                   preforce,       ///< rhs forces pressure
@@ -377,6 +392,18 @@ protected:
       const double &                                 timefacfac,     ///< = timefac x fac
       const double &                                 timefacfacpre, ///< = timefacpre x fac
       const double &                                 rhsfac       ///< right-hand-side factor for residuals
+      );
+
+  //! Compute element matrix entries: reactive stabilization
+  virtual void ReacStab(
+      LINALG::Matrix<my::nen_*my::nsd_,my::nen_*my::nsd_> &  estif_u,        ///< block (weighting function v x u)
+      LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &       estif_p_v,      ///< block (weighting function v x p)
+      LINALG::Matrix<my::nsd_,my::nen_> &            velforce,       ///< rhs forces velocity
+      LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &       lin_resM_Du,    ///< linearisation of the stabilization residual
+      const double &                         timefacfac,     ///< = timefac x fac
+      const double &                         timefacfacpre,  ///< = timefacpre x fac
+      const double &                         rhsfac,      ///< right-hand-side factor for residuals
+      const double &                         fac3            ///< factor for residual in current subgrid velocities
       );
 
 
@@ -395,29 +422,8 @@ protected:
                                 );
 
   /*!
-    \brief Compute RHS due to last time step in continuity equation
-
-    \param params       (i) element parameter list
-    \param echist       (i) time rhs for continuity equation
-    \param epren        (i) nodal pressure at n+alpha_F/n+1
-    \param edispn       (i) nodal displacements at n
-    \param preforce     (o) rhs of continuity equation
-    \param rhsfac       (i) time factor for rhs
-    \param scale        (i) additional scaling factor for rhs
-  */
-  void ComputeContiTimeRHS(Teuchos::ParameterList&                   params,
-                           const LINALG::Matrix<my::nen_,1>&         echist,
-                           const LINALG::Matrix<my::nen_, 1>&        epren,
-                           const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
-                           LINALG::Matrix<my::nen_,1>&               preforce,
-                           const double&                             rhsfac,
-                           const double&                             scale
-                          );
-
-  /*!
     \brief Compute spatial gradient of jacobian determinant and porosity
 
-    \param J              (i) jacobian determinant at gauss point
     \param dphidp         (i) derivative of porosity w.r.t. fluid pressure
     \param dphidJ         (i) derivative of porosity w.r.t. jacobian determinant
     \param defgrd_IT_vec  (i) inverse transposed deformation gradient in vector notation
@@ -426,14 +432,13 @@ protected:
     \param gradJ          (o) spatial gradient of jacobian determinant
     \param grad_porosity  (o) spatial gradient of porosity
   */
-  void ComputeGradients(const double&                                      J,
+  void ComputeGradients(
                         const double&                                      dphidp,
                         const double&                                      dphidJ,
                         const LINALG::Matrix<my::nsd_*my::nsd_,1>&         defgrd_IT_vec,
                         const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_x,
                         const LINALG::Matrix<my::nen_,1>*                  eporositynp,
-                        LINALG::Matrix<my::nsd_,1>&                        gradJ,
-                        LINALG::Matrix<my::nsd_,1>&                        grad_porosity);
+                        LINALG::Matrix<my::nsd_,1>&                        gradJ);
 
   /*!
     \brief Compute spatial gradient of porosity
@@ -448,8 +453,7 @@ protected:
                         const double&                                      dphidp,
                         const double&                                      dphidJ,
                         const LINALG::Matrix<my::nsd_,1>&                  gradJ,
-                        const LINALG::Matrix<my::nen_,1>*                  eporositynp,
-                        LINALG::Matrix<my::nsd_,1>&                        grad_porosity);
+                        const LINALG::Matrix<my::nen_,1>*                  eporositynp);
 
   /*!
     \brief Compute linearization needed for diagonal terms (lin. of porosity gradient w.r.t. fluid pressure)
@@ -471,7 +475,6 @@ protected:
     \brief Compute linearization needed for off diagonal terms
       (lin. of jacobian, porosity and porosity gradient w.r.t. structure displacement)
 
-    \param J              (i) derivative of porosity w.r.t. fluid pressure
     \param dphi_dJ        (i) derivative of porosity w.r.t. jacobian determinant
     \param dphi_dJJ       (i) second derivative of porosity w.r.t. jacobian determinant
     \param dphi_dJp       (i) mixed derivative of porosity w.r.t. fluid pressure and jacobian determinant
@@ -484,7 +487,7 @@ protected:
     \param dphi_dus       (o) derivative of porosity determinant w.r.t. structure displacments
     \param dgradphi_dus   (o) derivate of spatial gradient of porosity w.r.t. structure displacments
   */
-  void ComputeLinearizationOD(const double&                                      J,
+  void ComputeLinearizationOD(
                               const double&                                      dphi_dJ,
                               const double&                                      dphi_dJJ,
                               const double&                                      dphi_dJp,
@@ -527,6 +530,72 @@ protected:
                              double*                                dphi_dJJ,
                              double*                                dphi_dpp,
                              bool                                   save);
+
+  /*!
+   \brief evaluate pressure equation (i.e. continuity equation for standard poro elements and constitutive equation for poro_p2)
+          This function is overwritten by the poro_p1 and poro_p2 element
+
+    \param params         (i) element parameter list
+    \param timefacfacpre  (i) fluid pressure at gauss point
+    \param rhsfac         (i) jacobian determinant at gauss point
+    \param dphi_dp        (i) derivative of porosity gradient w.r.t. fluid pressure
+    \param dphi_dJ        (i) derivative of porosity gradient w.r.t. jacobian determinant
+    \param dphi_dJdp      (i) mixed derivative of porosity gradient w.r.t. fluid pressure and jacobian determinant
+    \param dphi_dJJ       (i) second derivative of porosity gradient w.r.t. jacobian determinant
+    \param dphi_dpp       (i) second derivative of porosity gradient w.r.t. fluid pressure
+    \param eporositydot   (i) nodal values of porosity time derivative at time step n+1
+    \param eporositydotn  (i) nodal values of porosity time derivative at time step n
+    \param echist         (i) nodal values of history values of continuity equation
+    \param dgradphi_dp    (i) derivative of porosity gradient w.r.t. fluid pressure
+    \param estif_q_u      (o) element matrix (pressure - fluid velocity weighting) to be filled
+    \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
+    \param preforce       (o) element rhs vector to be filled
+   * */
+  virtual void EvaluatePressureEquation(
+      Teuchos::ParameterList&                       params,
+      const double&                                 timefacfacpre,
+      const double&                                 rhsfac,
+      const double&                                 dphi_dp,
+      const double&                                 dphi_dJ,
+      const double&                                 dphi_dJdp,
+      const double&                                 dphi_dpp,
+      const LINALG::Matrix<my::nen_,1>*             eporositydot,
+      const LINALG::Matrix<my::nen_,1>*             eporositydotn,
+      const LINALG::Matrix<my::nen_,1>&             echist,
+      const LINALG::Matrix<my::nsd_,my::nen_>&      dgradphi_dp,
+      LINALG::Matrix<my::nen_, my::nen_*my::nsd_>&  estif_q_u,
+      LINALG::Matrix<my::nen_,my::nen_>&            ppmat,
+      LINALG::Matrix<my::nen_,1>&                   preforce);
+
+  /*!
+   \brief evaluate transient part of pressure equation (i.e. no time derivative of porosity)
+
+    \param params         (i) element parameter list
+    \param timefacfacpre  (i) fluid pressure at gauss point
+    \param rhsfac         (i) jacobian determinant at gauss point
+    \param dphi_dp        (i) derivative of porosity gradient w.r.t. fluid pressure
+    \param dphi_dJ        (i) derivative of porosity gradient w.r.t. jacobian determinant
+    \param dphi_dJdp      (i) mixed derivative of porosity gradient w.r.t. fluid pressure and jacobian determinant
+    \param dphi_dJJ       (i) second derivative of porosity gradient w.r.t. jacobian determinant
+    \param dphi_dpp       (i) second derivative of porosity gradient w.r.t. fluid pressure
+    \param echist         (i) nodal values of history values of continuity equation
+    \param dgradphi_dp    (i) derivative of porosity gradient w.r.t. fluid pressure
+    \param estif_q_u      (o) element matrix (pressure - fluid velocity weighting) to be filled
+    \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
+    \param preforce       (o) element rhs vector to be filled
+   * */
+  void EvaluatePressureEquationTransient(
+      Teuchos::ParameterList&                       params,
+      const double&                                 timefacfacpre,
+      const double&                                 rhsfac,
+      const double&                                 dphi_dp,
+      const double&                                 dphi_dJ,
+      const double&                                 dphi_dJdp,
+      const double&                                 dphi_dpp,
+      const LINALG::Matrix<my::nsd_,my::nen_>&      dgradphi_dp,
+      LINALG::Matrix<my::nen_, my::nen_*my::nsd_>&  estif_q_u,
+      LINALG::Matrix<my::nen_,my::nen_>&            ppmat,
+      LINALG::Matrix<my::nen_,1>&                   preforce);
 
   /*!
     \brief Gauss point loop for evaluation of off-diagonal terms
@@ -577,42 +646,27 @@ protected:
   */
   void FillMatrixMomentumOD(
       const double&                                               timefacfac,
-      const double&                                               porosity,
-      const LINALG::Matrix<my::nsd_,1>&                           gridvelint,
-      const LINALG::Matrix<my::nsd_,1>&                           grad_porosity,
       const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
       LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&   ecoupl_u);
 
   /*!
-    \brief Evaluate off diagonal terms in momentum equation
+    \brief Evaluate off diagonal terms in continuity equation
 
     \param timefacfacpre      (i) time factor (pressure) * integration factor
-    \param porosity           (i) porosity at gauss point
-    \param J                  (i) jacobian determinant at gauss point
     \param dphi_dJ            (i) derivative of porosity gradient w.r.t. jacobian determinant at gauss point
     \param dphi_dJJ           (i) second derivative of porosity gradient w.r.t. jacobian determinant at gauss point
     \param dphi_dJdp          (i) mixed derivative of porosity gradient w.r.t. jacobian and pressure at gauss point
-    \param press_dot          (i) time derivative of porosity at gauss point
-    \param gridvdiv           (i) divergence of grid (structure) velocity
-    \param gridvelint         (i) grid (structure) velocity at gauss point
-    \param grad_porosity      (i) porosity gradient at gauss point
     \param dgradphi_dus       (i) derivative of porosity gradient w.r.t. structural displacements at gauss point
     \param dphi_dus           (i) derivative of porosity w.r.t. structural displacements at gauss point
     \param dJ_dus             (i) derivative of jacobian w.r.t. structural displacements at gauss point
     \param ecoupl_u           (o) coupling element matrix of continuity equation
   */
-  void FillMatrixContiOD(
+  virtual void FillMatrixContiOD(
       const double&                                               timefacfacpre,
-      const double&                                               porosity,
-      const double&                                               J,
       const double&                                               dphi_dJ,
       const double&                                               dphi_dJJ,
       const double&                                               dphi_dJdp,
-      const double&                                               press_dot,
-      const double&                                               gridvdiv,
-      const LINALG::Matrix<my::nsd_,1>&                           gridvelint,
-      const LINALG::Matrix<my::nsd_,1>&                           grad_porosity,
       const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
@@ -650,6 +704,21 @@ protected:
 
   //! vector containing all values from previous timelevel n for continuity equation
   double histcon_;
+
+  //! porosity at gauss point
+  double             porosity_;
+  //! porosity gradient at gauss point
+  LINALG::Matrix<my::nsd_,1>             grad_porosity_;
+  //! grid (=structure) velocity at gauss point
+  LINALG::Matrix<my::nsd_,1>             gridvelint_;
+  //! grid (=structure) velocity divergence at gauss point
+  double gridvdiv_;
+  //! determinant of deformation gradient
+  double J_;
+  //! fluid pressure at gauss point
+  double press_;
+  //! fluid pressure time derivative at gauss point
+  double pressdot_;
 
   //! corresponding solid element
   DRT::ELEMENTS::So_Poro_Interface* so_interface_;

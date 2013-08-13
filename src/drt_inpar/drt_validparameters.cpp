@@ -2422,18 +2422,54 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&poroscatradyn);
   IntParameter("UPRES",1,"increment for writing solution",&poroscatradyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&poroscatradyn);
-  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&poroscatradyn);
+  IntParameter("ITEMIN",1,"minimal number of iterations over fields",&poroscatradyn);
+
+  // Iterationparameters
+  DoubleParameter("RESTOL",1e-8,"tolerance in the residual norm for the Newton iteration",&poroscatradyn);
+  DoubleParameter("INCTOL",1e-8,"tolerance in the increment norm for the Newton iteration",&poroscatradyn);
+
+  setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
+                               tuple<std::string>(
+                                 "Abs"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PORO_SCATRA::convnorm_abs
+                                 ),
+                               &poroscatradyn);
+
+  setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for residual convergence check",
+                                 tuple<std::string>(
+                                   "Abs"
+                                   ),
+                                 tuple<int>(
+                                   INPAR::PORO_SCATRA::convnorm_abs
+                                   ),
+                                 &poroscatradyn);
+
+  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
+                               tuple<std::string>(
+                                     "And",
+                                     "Or"),
+                                     tuple<int>(
+                                       INPAR::PORO_SCATRA::bop_and,
+                                       INPAR::PORO_SCATRA::bop_or),
+                               &poroscatradyn);
+
+  // number of linear solver used for poroelasticity
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic poroscatra problems",&poroscatradyn);
 
   // Coupling strategy for poroscatra solvers
   setStringToIntegralParameter<int>(
                               "COUPALGO","solid_to_scatra",
-                              "Coupling strategies for SSI solvers",
+                              "Coupling strategies for poroscatra solvers",
                               tuple<std::string>(
+                                "monolithic",
                                 "scatra_to_solid",
                                 "solid_to_scatra",
                                 "two_way"
                                 ),
                               tuple<int>(
+                                INPAR::PORO_SCATRA::Monolithic,
                                 INPAR::PORO_SCATRA::Part_ScatraToPoro,
                                 INPAR::PORO_SCATRA::Part_PoroToScatra,
                                 INPAR::PORO_SCATRA::Part_TwoWay
@@ -2495,6 +2531,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Boussinesq",
                                  "Poro",
                                  "Poro_P1",
+                                 "Poro_P2",
                                  "Topology_optimization"
                                  ),
                                tuple<int>(
@@ -2504,6 +2541,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::boussinesq,
                                      INPAR::FLUID::poro,
                                      INPAR::FLUID::poro_p1,
+                                     INPAR::FLUID::poro_p2,
                                      INPAR::FLUID::topopt),
                                &fdyn);
 
