@@ -605,7 +605,6 @@ void FSI::MonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
@@ -930,7 +929,6 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
 
   Utils()->out().flags(flags);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1460,10 +1458,10 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
 }
 
 void FSI::MonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
-                                          Teuchos::RCP<const Epetra_Vector> sv,
-                                          Teuchos::RCP<const Epetra_Vector> fv,
-                                          Teuchos::RCP<const Epetra_Vector> av,
-                                          bool fullvectors)
+                                          							Teuchos::RCP<const Epetra_Vector> sv,
+                                          							Teuchos::RCP<const Epetra_Vector> fv,
+                                          							Teuchos::RCP<const Epetra_Vector> av,
+                                          							bool fullvectors)
 {
   if (fullvectors)
   {

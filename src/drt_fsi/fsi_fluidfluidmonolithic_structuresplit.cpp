@@ -1,15 +1,18 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file fsi_fluidfluidmonolithic_structuresplit.cpp
+
 \brief Control routine for monolithic fluid-fluid-fsi using XFEM and NOX
 
 <pre>
-Maintainer:  Shadan Shahmiri
-             shahmiri@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15265
+Maintainer:	Shadan Shahmiri
+            shahmiri@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -597,8 +600,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHSLambda(Epetra_Vector& f)
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 {
-
-	// get time integration parameters of structure and fluid time integrators
+  // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
   const double stiparam = StructureField()->TimIntParam();
   const double ftiparam = FluidField().TimIntParam();
@@ -674,8 +676,8 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f
    * (1)  - dt * F^{G}_{I\Gamma} * u^{n}_{\Gamma}
    *
    */
-   // ----------addressing term 1
-   if (mmm!=Teuchos::null)
+  // ----------addressing term 1
+  if (mmm!=Teuchos::null)
   {
     const LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
     rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap(),true));
@@ -718,8 +720,8 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f
     xfluidfluidsplitter_->InsertFluidVector(rhs,fluidfluidtmp);
     fluidfluidtmp->PutScalar(0.0);
 
-     Extractor().AddVector(*fluidfluidtmp,1,f);
- }
+    Extractor().AddVector(*fluidfluidtmp,1,f);
+ 	}
   // ----------end of term 1
 
   // ----------addressing term 2
@@ -759,10 +761,11 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f
    * (1)  - dt * A_{I\Gamma} * u^{n}_{\Gamma}
    *
    */
-   // ----------addressing term 1
+  // ----------addressing term 1
   rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap(),true));
   aig.Apply(*FluidToAleInterface(fveln),*rhs);
   rhs->Scale(-Dt());
+
   Extractor().AddVector(*rhs,2,f);
   // ----------end of term 1
   // ---------- end of inner ale DOFs
@@ -839,7 +842,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSpa
   const double stiparam = StructureField()->TimIntParam();
   const double ftiparam = FluidField().TimIntParam();
 
-  //----------------------------------------------------------------------
+  /*----------------------------------------------------------------------*/
 
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
@@ -867,7 +870,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSpa
 
   Teuchos::RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
   (*sgitransform_)(s->Matrix(1,0),
-		  	  	  ((1.0-ftiparam)/(1.0-stiparam))*(1./scale),
+		  	  	  		 (1.0-ftiparam)/((1.0-stiparam)*scale),
                    ADAPTER::CouplingMasterConverter(coupsf),
                    *lsgi);
 
@@ -884,7 +887,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSpa
                    mat.Matrix(2,1));
   mat.Assign(2,2,View,aii);
 
-  //----------------------------------------------------------------------
+  /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
@@ -1276,7 +1279,6 @@ FSI::FluidFluidMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList
   // setup tests for fluid velocity field
   // --------------------------------------------------------------------
   // build mapextractor
-  // inner fluid velocity Dofs: inner velocity dofs without db-condition
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
   fluidvel.push_back(FluidField().InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
@@ -1378,7 +1380,6 @@ FSI::FluidFluidMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList
   // ---------- end of fluid pressure field tests
 
   // Finally, return the test combo
-
   return combo;
 }
 
@@ -1497,9 +1498,9 @@ void FSI::FluidFluidMonolithicStructureSplit::Output()
   // output Lagrange multiplier
   {
     /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
-    * 'lambdafull' that is defined on the entire structure field. Then, write
-    * output or restart data.
-    */
+     * 'lambdafull' that is defined on the entire structure field. Then, write
+     * output or restart data.
+     */
     Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
@@ -1519,7 +1520,6 @@ void FSI::FluidFluidMonolithicStructureSplit::Output()
     if(Comm().MyPID() == 0)
       StructureField()->GetConstraintManager()->PrintMonitorValues();
   }
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -1552,7 +1552,7 @@ void FSI::FluidFluidMonolithicStructureSplit::RecoverLagrangeMultiplier()
   const double stiparam = StructureField()->TimIntParam();
 
   // some scaling factors for fluid
-  //const double timescale = FluidField().TimeScaling();
+//  const double timescale = FluidField().TimeScaling();
 
   // some often re-used vectors
   Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;     // stores intermediate result of terms (3)-(8)
@@ -1645,10 +1645,10 @@ void FSI::FluidFluidMonolithicStructureSplit::RecoverLagrangeMultiplier()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
-		                                      Teuchos::RCP<const Epetra_Vector> sv,
-                                              Teuchos::RCP<const Epetra_Vector> fv,
-                                              Teuchos::RCP<const Epetra_Vector> av,
-                                              bool fullvectors)
+		                                     					 								Teuchos::RCP<const Epetra_Vector> sv,
+                                              										Teuchos::RCP<const Epetra_Vector> fv,
+                                              										Teuchos::RCP<const Epetra_Vector> av,
+                                              										bool fullvectors)
 {
   if (fullvectors)
   {
