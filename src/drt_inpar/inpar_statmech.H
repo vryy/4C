@@ -79,7 +79,9 @@ namespace INPAR
       linkermodel_std, /// < standard linkers with chemical association and dissociation rate
       linkermodel_stdintpol, /// <standard linker with interpolated binding position on filament
       linkermodel_bellseq, ///< like standard linker but a force dependent dissociation rate
+      linkermodel_bellseqintpol, //< linker with force dependent dissociation rate and interpolated binding spot positions
       linkermodel_active, ///< like standard linker but with a force dependent dissociation rate and active contraction and extension
+      linkermodel_activeintpol ///< active linker with interpolated binding spot positions
     };
 
     /// (this enum represents the input file parameter FILAMENTMODEL

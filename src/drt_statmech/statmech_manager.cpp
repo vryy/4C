@@ -171,7 +171,7 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   //determine linker model
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "LINKERMODEL"))
   {
-    case statmech_linker_none:
+    case INPAR::STATMECH::linkermodel_none:
       linkermodel_ = statmech_linker_none;
       if(!discret_->Comm().MyPID())
         std::cout<<"-- no linkers"<<std::endl;
@@ -181,20 +181,30 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
       if(!discret_->Comm().MyPID())
         std::cout<<"-- standard linkers"<<std::endl;
       break;
-    case statmech_linker_bellseq:
+    case INPAR::STATMECH::linkermodel_stdintpol:
+      linkermodel_ = statmech_linker_stdintpol;
+      if(!discret_->Comm().MyPID())
+        std::cout<<"-- standard linkers with interpolated binding site positions"<<std::endl;
+      break;
+    case INPAR::STATMECH::linkermodel_bellseq:
       linkermodel_ = statmech_linker_bellseq;
       if(!discret_->Comm().MyPID())
         std::cout<<"-- linkers accounting for Bell's equation"<<std::endl;
       break;
-    case statmech_linker_active:
+    case INPAR::STATMECH::linkermodel_bellseqintpol:
+      linkermodel_ = statmech_linker_bellseqintpol;
+      if(!discret_->Comm().MyPID())
+        std::cout<<"-- linkers accounting for Bell's equation (interpolated binding site positions)"<<std::endl;
+      break;
+    case INPAR::STATMECH::linkermodel_active:
       linkermodel_ = statmech_linker_active;
       if(!discret_->Comm().MyPID())
         std::cout<<"-- active linkers"<<std::endl;
       break;
-    case statmech_linker_stdintpol:
-      linkermodel_ = statmech_linker_stdintpol;
+    case INPAR::STATMECH::linkermodel_activeintpol:
+      linkermodel_ = statmech_linker_activeintpol;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- standard linkers with interpolated binding site positions"<<std::endl;
+        std::cout<<"-- active linkers (interpolated binding site positions)"<<std::endl;
       break;
     default:
       dserror("Unknown linker type %i", DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "LINKERMODEL"));
@@ -599,13 +609,6 @@ void STATMECH::StatMechManager::Update(const int&                               
     {
       // change length of active crosslinkers
       ChangeActiveLinkerLength(timen, dt, crosslinkeractlengthconv_, crosslinkeractlength_);
-
-      // update cycle time
-      if(discret_->Comm().MyPID()==0)
-      {
-        for(int i=0; i<crosslinkeractcycletime_->MyLength(); i++)
-          (*crosslinkeractcycletime_)[i] += dt;
-      }
     }
 
     /*settling administrative stuff in order to make the discretization ready for the next time step:
@@ -2013,7 +2016,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     // skip binding process, if cycle time is still detached and
                     // skip binding process, if polarity of active linker is not fulfilled
                     bool polaritycriterion = true;
-                    if(linkermodel_ == statmech_linker_active)
+                    if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
                       polaritycriterion = LinkerPolarityCheckAttach(bspottriadscol, LID, direction);
 
                     if(polaritycriterion)
@@ -2520,8 +2523,8 @@ bool STATMECH::StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID
  |                                             (private)   mueller 08/13|
  *----------------------------------------------------------------------*/
 bool STATMECH::StatMechManager::LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
-                                                            Epetra_SerialDenseMatrix&        LID,
-                                                            LINALG::Matrix<3,1>&             direction)
+                                                            Epetra_SerialDenseMatrix&      LID,
+                                                            LINALG::Matrix<3,1>&           direction)
 {
   // cycle time check:
   // time during which an active linker is in recovery conformation (default values from myosin cycle)
@@ -2638,6 +2641,10 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
         // crosslink molecule with one bond
         case 1:
         {
+          // singly bound crosslinker in motility assay is just bond on the substrate filmant --> don't delete this bond
+          if(DRT::INPUT::IntegralValue<int>(statmechparams_,"MOTILITYASSAY"))
+            continue;
+
           for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
             if ((*crosslinkerbond_)[j][irandom]>-0.9)
               if ((*uniformgen_)() < (*punlink)[j][irandom])
@@ -2659,7 +2666,12 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
         {
           // currently, if an element is deleted, a one-bonded crosslink molecule remains (no simultaneous cut of both bonds)
           std::vector<int> jorder = Permutation(crosslinkerbond_->NumVectors());
-          for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
+
+          //in motility assay: delete just bond of normal element -> do not search through bond of substrate filament
+          int jmax = crosslinkerbond_->NumVectors();
+          if(DRT::INPUT::IntegralValue<int>(statmechparams_,"MOTILITYASSAY"))
+            jmax = 1;
+          for (int j=0; j<jmax; j++)
           {
             if ((*uniformgen_)() < (*punlink)[j][irandom])
             {
@@ -2671,6 +2683,8 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
                 numdelelements++;
                 // random pick of one of the crosslinkerbond entries
                 int jrandom = jorder[j];
+                if(DRT::INPUT::IntegralValue<int>(statmechparams_,"MOTILITYASSAY"))
+                  jrandom = 1;
                 // get the nodal LIDs
                 int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
 
@@ -3040,37 +3054,66 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
       {
         // change linker length to short
         case 1:
+        {
           // just on the processor, were element is located
           if (checkID != -1)
-            (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lRowElement(checkID)))->SetReferenceLength(sca,true);
+          {
+            switch(linkermodel_)
+            {
+              case statmech_linker_active:
+                (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lRowElement(checkID)))->SetReferenceLength(sca,true);
+              break;
+              case statmech_linker_activeintpol:
+                (dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lRowElement(checkID)))->SetReferenceLength(sca,true);
+              break;
+              default: dserror("Unknown active linker beam element!");
+            }
+          }
           if (!discret_->Comm().MyPID())
             toshort++;
+        }
         break;
         // change linker length to long
         case 0:
+        {
           // just on the processor, were element is located
           if (checkID != -1)
-            (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lRowElement(checkID)))->SetReferenceLength(sca,false);
+          {
+            switch(linkermodel_)
+            {
+              case statmech_linker_active:
+                (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lRowElement(checkID)))->SetReferenceLength(sca,false);
+              break;
+              case statmech_linker_activeintpol:
+                (dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lRowElement(checkID)))->SetReferenceLength(sca,false);
+              break;
+              default: dserror("Unknown active linker beam element!");
+            }
+          }
           if (!discret_->Comm().MyPID())
             tolong++;
+        }
         break;
-          default:
-            dserror("Wrong status %d in actlinklength_", (int)(*crosslinkeractlength_)[i]);
-          break;
+        default: dserror("Wrong status %d in actlinklength_", (int)(*crosslinkeractlength_)[i]);
         }
       }
   }
 
-  // number of changed crosslinker length
+  // number of changed crosslinker lengths
   if(!discret_->Comm().MyPID())
   {
     if(revertchanges)
-      cout<<"\nRevert reference lengths..."<<endl;
+      std::cout<<"\nRevert reference lengths..."<<std::endl;
     else
-      cout<<"\n"<<"Number of crosslinkers, which changed their length:"<<endl;
-    cout<<" - from long to short: "<<toshort<<endl;
-    cout<<" - from short to long: "<<tolong<<endl;
+      std::cout<<"\n"<<"Number of crosslinkers, which changed their length:"<<std::endl;
+    std::cout<<" - from long to short: "<<toshort<<std::endl;
+    std::cout<<" - from short to long: "<<tolong<<std::endl;
+
+    // update cycle time
+    for(int i=0; i<crosslinkeractcycletime_->MyLength(); i++)
+      (*crosslinkeractcycletime_)[i] += dt;
   }
+
   return;
 }
 
@@ -4791,33 +4834,72 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       if(numbspots>bspotcolmap_->NumMyElements())
         dserror("Given number of initially occupied binding spots (%i) exceeds the total binding spot count (%i)! Check your input file!",numbspots, bspotcolmap_->NumMyElements());
 
-      // first, establish specified number of singly bound crosslinkers
-      for(int i=0; i<numbspots; i++)
+      // detect motility assay substrate filament and bind just all substrate filament nodes
+      // number of substrate filaments
+      if(DRT::INPUT::IntegralValue<int>(statmechparams_,"MOTILITYASSAY"))
       {
-        int firstbspot = randbspot[i];
-        // if this binding spot is still unoccupied
-        if((*bspotstatus_)[firstbspot]<-0.9 && bspotcolmap_->GID(firstbspot)%bspotinterval==0)
+        int subfil = statmechparams_.get<int>("NUMSUBSTRATEFIL",0);
+        int crosslinknum=0;
+        for(int i=0; i<filamentnumber_->MyLength(); i++)
         {
-          // get the ilink-th random crosslinker
-          int currlink = randlink[i];
-          // attach it to the first binding spot (i.e. update of relevant class vectors)
-          (*bspotstatus_)[firstbspot] = currlink;
-          (*numbond_)[currlink] = 1.0;
-          for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
-            if((*crosslinkerbond_)[j][currlink]<0.1)
+          if (((int)(*filamentnumber_)[i])<subfil) //vector starts with zero element
+          {
+            // if this binding spot is still unoccupied
+            if((*bspotstatus_)[i]<-0.9)
             {
-              (*crosslinkerbond_)[j][currlink] = bspotcolmap_->GID(firstbspot);
-              numsinglybound++;
-              break;
-            }
+              // attach it to the first binding spot (i.e. update of relevant class vectors)
+              (*bspotstatus_)[i] = crosslinknum;
+              (*numbond_)[crosslinknum] = 1.0;
+              for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+                if((*crosslinkerbond_)[j][crosslinknum]<-0.1)
+                {
+                  (*crosslinkerbond_)[j][crosslinknum] = bspotcolmap_->GID(i);
+                  numsinglybound++;
+                  break;
+                }
 
-          //update crosslinker position
-          Epetra_SerialDenseMatrix LID(1,1);
-          LID(0,0) = firstbspot;
-          CrosslinkerIntermediateUpdate(*bspotpositions, LID, currlink);
-          // update visualization
-          for (int j=0; j<visualizepositions_->NumVectors(); j++)
-            (*visualizepositions_)[j][currlink] = (*crosslinkerpositions_)[j][currlink];
+              //update crosslinker position
+              Epetra_SerialDenseMatrix LID(1,1);
+              LID(0,0) = i;
+              CrosslinkerIntermediateUpdate(*bspotpositions, LID, crosslinknum);
+              // update visualization
+              for (int j=0; j<visualizepositions_->NumVectors(); j++)
+                (*visualizepositions_)[j][crosslinknum] = (*crosslinkerpositions_)[j][crosslinknum];
+              crosslinknum++;
+            }
+          }
+        }
+      }
+      else
+      {
+        // first, establish specified number of singly bound crosslinkers
+        for(int i=0; i<numbspots; i++)
+        {
+          int firstbspot = randbspot[i];
+          // if this binding spot is still unoccupied
+          if((*bspotstatus_)[firstbspot]<-0.9 && bspotcolmap_->GID(firstbspot)%bspotinterval==0)
+          {
+            // get the ilink-th random crosslinker
+            int currlink = randlink[i];
+            // attach it to the first binding spot (i.e. update of relevant class vectors)
+            (*bspotstatus_)[firstbspot] = currlink;
+            (*numbond_)[currlink] = 1.0;
+            for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+              if((*crosslinkerbond_)[j][currlink]<0.1)
+              {
+                (*crosslinkerbond_)[j][currlink] = bspotcolmap_->GID(firstbspot);
+                numsinglybound++;
+                break;
+              }
+
+            //update crosslinker position
+            Epetra_SerialDenseMatrix LID(1,1);
+            LID(0,0) = firstbspot;
+            CrosslinkerIntermediateUpdate(*bspotpositions, LID, currlink);
+            // update visualization
+            for (int j=0; j<visualizepositions_->NumVectors(); j++)
+              (*visualizepositions_)[j][currlink] = (*crosslinkerpositions_)[j][currlink];
+          }
         }
       }
     }
@@ -4848,7 +4930,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     RCP<Epetra_Vector> addcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
     int numsetelements = 0;
 
-    if(discret_->Comm().MyPID()==0)
+    if(discret_->Comm().MyPID()==0 && !(DRT::INPUT::IntegralValue<int>(statmechparams_,"MOTILITYASSAY")))
     {
       int numbspots = statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0);
       for(int i=0; i<numbspots; i++)

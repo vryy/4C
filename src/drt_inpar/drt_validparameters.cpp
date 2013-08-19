@@ -1870,13 +1870,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "std",
                                                     "stdintpol",
                                                     "bellseq",
-                                                    "active"),
+                                                    "bellseqintpol",
+                                                    "active",
+                                                    "activeintpol"),
                                  //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::linkermodel_none,
                                             INPAR::STATMECH::linkermodel_std,
                                             INPAR::STATMECH::linkermodel_stdintpol,
                                             INPAR::STATMECH::linkermodel_bellseq,
-                                            INPAR::STATMECH::linkermodel_active),
+                                            INPAR::STATMECH::linkermodel_bellseqintpol,
+                                            INPAR::STATMECH::linkermodel_active,
+                                            INPAR::STATMECH::linkermodel_activeintpol),
                                             &statmech);
   //Reading which kind of filament model should be applied
   setStringToIntegralParameter<int>("FILAMENTMODEL","std","Filament model applied in Statmech simulations",
@@ -1895,8 +1899,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   // index controlling the start of DBC application (see ACTIONTIME)
   IntParameter("DBCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of DBC application. Starts counting at '1' !",&statmech);
-  //Toggles helical binding spot structure of the actin filament
+  //Toggles use of specific routines in statmech
   setStringToIntegralParameter<int>("LOOMSETUP","No","Turns specific routines for loom network on and off",
+                               yesnotuple,yesnovalue,&statmech);
+  //Toggles use of motility assay routines
+  setStringToIntegralParameter<int>("MOTILITYASSAY","No","Turns specific routines for motility assays on and off.",
                                yesnotuple,yesnovalue,&statmech);
   //Rise per monomer in the actin double helix according to Howard, p. 125
   DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
@@ -1944,6 +1951,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //number of overall crosslink molecules in the boundary volume
   IntParameter("INITOCCUPIEDBSPOTS",0,"binding spots occupied by (singly-bound) crosslinkers before the first time step",&statmech);
+  //number of filaments used as substrate for motility assay setups
+  IntParameter("NUMSUBSTRATEFIL",0,"Number of filaments used as substrate filaments",&statmech);
   //number by which the number of crosslinkers is reduced.
   IntParameter("REDUCECROSSLINKSBY",0,"number of crosslinker elements by which the overall number of crosslinker is reduced.",&statmech);
   IntParameter("BSPOTINTERVAL",1,"determines every n-th binding spot available for crosslinking",&statmech);
@@ -1979,14 +1988,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally
   DoubleParameter("PlotFactorThick",0.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
   //Reading whether fixed seed for random numbers should be applied
-  setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments",
-                               yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments", yesnotuple, yesnovalue, &statmech);
   //Gmsh Output switch
-  setStringToIntegralParameter<int>("GMSHOUTPUT","No","If chosen gmsh output is generated.",
-                               yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("GMSHOUTPUT","No","If chosen gmsh output is generated.", yesnotuple,yesnovalue,&statmech);
   // toggling Gmsh Output for structure detection
-  setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen, special gmsh visualization for network structure types is generated.",
-                               yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen, special gmsh visualization for network structure types is generated.", yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
   //Number of time steps between two gmsh outputs written

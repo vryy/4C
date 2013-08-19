@@ -803,9 +803,11 @@ protected:
   {
     statmech_linker_none,
     statmech_linker_std,
+    statmech_linker_stdintpol,
     statmech_linker_bellseq,
+    statmech_linker_bellseqintpol,
     statmech_linker_active,
-    statmech_linker_stdintpol
+    statmech_linker_activeintpol
   };
 
 

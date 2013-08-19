@@ -981,8 +981,8 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         if(time==dt)
         {
           // calculate for free filaments
-          int subfil = statmechparams_.get<int>("SUBFILNUMBER",0);
-          std::cout<<"size: "<<(int)filaments.size()<<endl;
+          int subfil = statmechparams_.get<int>("NUMSUBSTRATEFIL",0);
+          std::cout<<"size: "<<(int)filaments.size()<<std::endl;
           for(int fil=subfil; fil<(int)filaments.size(); fil++)
           {
             FILE* fp = NULL; //file pointer for statistical output file
@@ -1010,7 +1010,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
             //defining temporary stringstream variable
             std::stringstream filecontent;
             // write directional vector to stream
-            filecontent<<0.0<<"\t"<<std::setprecision(12)<<coord(0)<<"\t"<<coord(1)<<"\t"<<coord(2)<<endl;
+            filecontent<<0.0<<"\t"<<std::setprecision(12)<<coord(0)<<"\t"<<coord(1)<<"\t"<<coord(2)<<std::endl;
 
             // move temporary stringstream to file and close it
             fprintf(fp, filecontent.str().c_str());
@@ -1020,7 +1020,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
 
         //normal time step
         // calculate for free filaments
-        int subfil = statmechparams_.get<int>("SUBFILNUMBER",0);
+        int subfil = statmechparams_.get<int>("NUMSUBSTRATEFIL",0);
 
         for(int fil=subfil; fil<(int)filaments.size(); fil++)
         {

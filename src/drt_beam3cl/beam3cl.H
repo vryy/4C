@@ -508,12 +508,14 @@ namespace DRT
                 }
             }
 
-            // When BeamCL is initialized as a crosslinker it additionally needs all 12 Rotational DOFs
+            // When BeamCL is initialized as a crosslinker, it additionally needs all 12 Rotational DOFs
             // Do not overwrite rotational displacements in case of a second initialization due to breakage by Periodic Boundary
+            xrefe_.resize(3*fnnode);
+            xrefe_ = xrefe;
             if (rotrefe.size() > 6 && !secondinit)
             {
-              xrefe_.resize(6);
-              xrefe_ = xrefe;
+              rotrefe_.resize(3*2*fnnode);
+              rotrefe_ = rotrefe;
               for (int i = 0; i < nnode; i++)
                 for (int j = 0; j < 3; j++)
                 {
@@ -638,8 +640,7 @@ namespace DRT
             std::vector<std::vector<LINALG::Matrix<3, 3> > > Itilde(fnnode - 1);
 
             //vector whose numgp-th element is a vector with fnnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^fnnode at fnnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
-            std::vector<std::vector<LINALG::Matrix<3, 3> > > Itildeprime(
-                fnnode - 1);
+            std::vector<std::vector<LINALG::Matrix<3, 3> > > Itildeprime(fnnode - 1);
 
             //vector with rotation matrices at fnnode-1 Gauss points for elasticity
             std::vector<LINALG::Matrix<3, 3> > Lambda(fnnode - 1);
@@ -710,8 +711,11 @@ namespace DRT
         } //DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
 
           //!\brief Set initial quaternions rQconv_ depending on nodal quaternions from already existing beam elements
-        void SetInitialQuaternions(
-            std::vector<LINALG::Matrix<4, 1> >& initquaternions);
+        void SetInitialQuaternions(std::vector<LINALG::Matrix<4, 1> >& initquaternions);
+
+        //! changes the actual linker length
+        void SetReferenceLength(const double& scalefac,
+                                const bool changetoshort);
 
       private:
 
@@ -745,6 +749,7 @@ namespace DRT
 
         //! reference coordinates of the interpolated nodes
         std::vector<double> xrefe_;
+        std::vector<double> rotrefe_;
 
         //! vector storing the internal force vector
         Epetra_SerialDenseVector internalforces_;

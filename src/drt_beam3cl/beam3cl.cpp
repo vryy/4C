@@ -304,6 +304,8 @@ void DRT::ELEMENTS::BeamCL::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,xrefe_);
   AddtoPack(data,mybindingposition_);
   AddtoPack(data,eps_);
+  AddtoPack(data,xrefe_);
+  AddtoPack(data,rotrefe_);
   AddtoPack(data,internalforces_);
 
 
@@ -357,6 +359,8 @@ void DRT::ELEMENTS::BeamCL::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,xrefe_);
   ExtractfromPack(position,data,mybindingposition_);
   ExtractfromPack(position,data,eps_);
+  ExtractfromPack(position,data,xrefe_);
+  ExtractfromPack(position,data,rotrefe_);
   ExtractfromPack(position,data,internalforces_);
 
   if (position != data.size())
@@ -523,15 +527,14 @@ int DRT::ELEMENTS::BeamCLType::Initialize(DRT::Discretization& dis)
             rrotrefe[node*3 + dof]= 0.0;
           }
         std::vector<LINALG::Matrix<1,2> > Ibp(2);
-          for(int filament=0; filament<2; filament++)
-           DRT::UTILS::shape_function_1D(Ibp[filament],currele->mybindingposition_[filament],currele->Shape());
-          for(int filament=0;filament<2;filament++)
-            for(int k=0;k<2;k++)
-             for(int i=0;i<3;i++)
-             {
+        for(int filament=0; filament<2; filament++)
+          DRT::UTILS::shape_function_1D(Ibp[filament],currele->mybindingposition_[filament],currele->Shape());
+        for(int filament=0;filament<2;filament++)
+          for(int k=0;k<2;k++)
+            for(int i=0;i<3;i++)
+            {
               currele->xrefe_[i+3*filament]+= Ibp[filament](k)*rxrefe[i+3*k+6*filament];
-             }
-
+            }
       }
 
 
@@ -563,6 +566,39 @@ void DRT::ELEMENTS::BeamCL::SetInitialQuaternions(std::vector<LINALG::Matrix<4,1
 
   rQconv_ = initquaternions;
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | (public) change active linker length                   mueller 10/12 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::BeamCL::SetReferenceLength(const double& scalefac,
+                                               const bool changetoshort)
+{
+  // change linker length from long to short
+  if(changetoshort)
+  {
+    // new linker length = initial linker length * scale
+    // first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
+    xrefe_.at(3) = xrefe_.at(0) + (scalefac * (xrefe_.at(3)-xrefe_.at(0)));
+    xrefe_.at(4) = xrefe_.at(1) + (scalefac * (xrefe_.at(4)-xrefe_.at(1)));
+    xrefe_.at(5) = xrefe_.at(2) + (scalefac * (xrefe_.at(5)-xrefe_.at(2)));
+  }
+  // change linker length from short to long
+  else
+  {
+    // new linker length = initial linker length * (1/scale)
+    // first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
+    double invscalefac = 1.0/scalefac;
+    //std::cout<<"xinit vorher k-l: "<<xrefe_<<std::endl;
+    xrefe_.at(3) = xrefe_.at(0) + (invscalefac * (xrefe_.at(3)-xrefe_.at(0)));
+    xrefe_.at(4) = xrefe_.at(1) + (invscalefac * (xrefe_.at(4)-xrefe_.at(1)));
+    xrefe_.at(5) = xrefe_.at(2) + (invscalefac * (xrefe_.at(5)-xrefe_.at(2)));
+    //std::cout<<"xrefe_ nachher k-l: "<<xrefe_<<std::endl;
+  }
+
+  // call function to update the linker with the new coordinates
+  SetUpReferenceGeometry<2>(xrefe_,rotrefe_,true);
   return;
 }
 
