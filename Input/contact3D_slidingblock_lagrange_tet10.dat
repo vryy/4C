@@ -46,11 +46,11 @@ MAXTIME                         0.3
 DAMPING                         No
 M_DAMP                          0.00001
 K_DAMP                          0.00001
-TOLRES                          1.0E-8
-TOLDISP                         9.0E-08
+TOLRES                          9.0E-8
+TOLDISP                         1.0E-08
 NORM_RESF                       Abs
 NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              Or
+NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike

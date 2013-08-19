@@ -501,6 +501,16 @@ public:
   virtual void AssembleG(Epetra_Vector& gglobal);
   
   /*!
+  \brief Assemble inactive rhs (incremental delta_z_)
+  */
+  virtual void AssembleInactiverhs(Epetra_Vector& inactiverhs);
+
+  /*!
+  \brief Assemble tangential rhs (incremental delta_z_)
+  */
+  virtual void AssembleTangrhs(Epetra_Vector& tangrhs);
+
+  /*!
   \brief Assemble wear w
   
    This method assembles the weighted wear vector.

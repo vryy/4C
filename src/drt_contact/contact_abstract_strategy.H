@@ -724,6 +724,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<LINALG::SparseMatrix> d2matrix_;   // global Mortar matrix D2
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
+    Teuchos::RCP<Epetra_Vector> tangrhs_;			// global tangential rhs vector (formulation with incremental z_)
+    Teuchos::RCP<Epetra_Vector> inactiverhs_;		// gloabl inactive rhs vectir	(formulation with incremental z_ and saddle point system)
     Teuchos::RCP<Epetra_Vector> wearvector_;        // global weighted wear vector w
     Teuchos::RCP<Epetra_Vector> constrrhs_;         // global constraint rhs vector (only for saddlepoint problems)
 

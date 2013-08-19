@@ -996,6 +996,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // get constraint matrix
   Teuchos::RCP<LINALG::SparseMatrix> constrmt = conmatrix_;
 
+#ifndef DELTALM
   // remove meshtying force terms again
   // (solve directly for z_ and not for increment of z_)
   Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1009,6 +1010,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fm,*fmexp);
   fd->Update(-(1.0-alphaf_),*fmexp,1.0);
+#endif
   
   // build constraint rhs (=empty)
   Teuchos::RCP<Epetra_Vector> constrrhs = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
@@ -1117,15 +1119,20 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // extract results for displacement and LM increments
   //**********************************************************************
-  zincr_->Update(-1.0,*z_,0.0); // store old current Lagrange multiplier vector from previous linear iteration)
   Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
   LINALG::MapExtractor mapext(*mergedmap,ProblemDofs(),glmdofrowmap_);
   mapext.ExtractCondVector(mergedsol,sold);
   mapext.ExtractOtherVector(mergedsol,sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
+
+#ifdef DELTALM
+  zincr_->Update(1.0,*sollm,0.0);
+  z_->Update(1.0,*zincr_,1.0);
+#else
+  zincr_->Update(-1.0,*z_,0.0); // store old current Lagrange multiplier vector from previous linear iteration)
   z_->Update(1.0,*sollm,0.0);   // overwrite Lagrange multiplier vector from previous linear solver call
   zincr_->Update(+1.0,*z_,1.0); // build Lagrange multiplier increment vector for current linear solver call
-  
+#endif
   return;
 }
 

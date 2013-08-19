@@ -84,10 +84,17 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   wlinmatrixsl_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
 #endif
 
+  // inactive rhs for the saddle point problem
+  Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
+  inactiverhs_ = LINALG::CreateVector(*gidofs, true);
+
+
   // further terms depend on friction case
   // (re)setup global matrix containing "no-friction"-derivatives
   if (!friction_)
   {
+	// tangential rhs
+	tangrhs_ = LINALG::CreateVector(*gactivet_, true);
     pmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
   }
   // (re)setup of global friction
@@ -121,6 +128,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->Complete();
   
+  // systemtype
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
   /**********************************************************************/
@@ -132,10 +142,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   }
 
   /**********************************************************************/
-  /* build global matrix t with tangent vectors of active nodes           */
+  /* build global matrix t with tangent vectors of active nodes         */
   /* and global matrix s with normal derivatives of active nodes        */
   /* and global matrix linstick with derivatives of stick nodes         */
   /* and global matrix linslip with derivatives of slip nodes           */
+  /* and inactive right-hand side with old lagrange multipliers (incr)  */
   /**********************************************************************/
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -144,6 +155,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);
     interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
+    if (systype != INPAR::CONTACT::system_condensed)
+    	interface_[i]->AssembleInactiverhs(*inactiverhs_);
 
 #ifdef WEARIMPLICIT
     // assemble wear-specific matrices
@@ -195,9 +208,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     lindmatrix_   = temp1;
   }
 
-  // shape function and system types
+  // shape function
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
   //**********************************************************************
   //**********************************************************************
@@ -792,6 +804,20 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     }
 #endif
     //--------------------------------------------------------- FIFTH LINE
+    Teuchos::RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_,*gslipdofs_);	// get global stick dofs
+
+#ifndef WEARIMPLICIT
+    // split the lagrange multiplier vector in stick and slip part
+    Teuchos::RCP<Epetra_Vector> za = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+    Teuchos::RCP<Epetra_Vector> zi = Teuchos::rcp(new Epetra_Vector(*gidofs));
+#endif
+    Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
+    Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
+
+    LINALG::SplitVector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
+    LINALG::SplitVector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
+    Teuchos::RCP<Epetra_Vector> tempvec1;
+
     // fst: mutliply with linstickLM
     Teuchos::RCP<Epetra_Vector> fstmod;
     if (stickset)
@@ -799,6 +825,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
       Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       temp1->Multiply(false,*fa,*fstmod);
+
+      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
+
+      linstickLM_->Multiply(false, *zst, *tempvec1);
+      fstmod->Update(-1.0,*tempvec1,1.0);
     }
 
     //--------------------------------------------------------- SIXTH LINE
@@ -811,6 +842,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
       Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       temp->Multiply(false,*fa,*fslmod);
+
+      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
+
+      linslipLM_->Multiply(false, *zsl, *tempvec1);
+
+      fslmod->Update(-1.0,*tempvec1,1.0);
 
 #ifdef WEARIMPLICIT
       fslwmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
@@ -1260,6 +1297,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->Complete();
   
+  // system type
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
+
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
   /**********************************************************************/
@@ -1269,11 +1309,15 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     LINALG::Export(*g_,*gact);
     gact->ReplaceMap(*gactiven_);
   }
+  /**********************************************************************/
+  /* calculate*/
 
   /**********************************************************************/
   /* build global matrix t with tangent vectors of active nodes         */
   /* and global matrix s with normal derivatives of active nodes        */
   /* and global matrix p with tangent derivatives of active nodes       */
+  /* and inactive right-hand side with old lagrange multipliers (incr)  */
+  /* and tangential right-hand side (incr) 									*/
   /**********************************************************************/
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -1281,6 +1325,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleP(*pmatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
+    if (systype != INPAR::CONTACT::system_condensed)
+    {
+    	interface_[i]->AssembleInactiverhs(*inactiverhs_);
+    	interface_[i]->AssembleTangrhs(*tangrhs_);
+    }
   }
 
   // FillComplete() global matrix T
@@ -1313,10 +1362,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     lindmatrix_   = temp1;
   }
 
-  // shape function and system types
+  // shape function
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-  
+
   //**********************************************************************
   //**********************************************************************
   // CASE A: CONDENSED SYSTEM (DUAL)
@@ -2698,42 +2746,15 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
     
-    // remove contact force terms again
-    // (solve directly for z_ and not for increment of z_)
-    // for self contact, slave and master sets may have changed,
-    // thus we have to export the product D^T * z to fit
-    // thus we have to export the product M^T * z to fit
-    if (IsSelfContact())
-    {
-      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      Teuchos::RCP<Epetra_Vector> tempvecd  = Teuchos::rcp(new Epetra_Vector(dmatrix_->DomainMap()));
-      Teuchos::RCP<Epetra_Vector> zexp  = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
-      if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
-      dmatrix_->Multiply(true,*zexp,*tempvecd);
-      LINALG::Export(*tempvecd,*fsexp);
-      fd->Update((1.0-alphaf_),*fsexp,1.0);
+    /****************************************************************************************
+     *** 								RIGHT-HAND SIDE									  ***
+     ****************************************************************************************/
 
-      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      Teuchos::RCP<Epetra_Vector> tempvecm  = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-      mmatrix_->Multiply(true,*zexp,*tempvecm);
-      LINALG::Export(*tempvecm,*fmexp);
-      fd->Update(-(1.0-alphaf_),*fmexp,1.0);
-    }
-    // if there is no self contact everything is ok
-    else
-    {
-      Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      dmatrix_->Multiply(true,*z_,*fs);
-      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fs,*fsexp);
-      fd->Update((1.0-alphaf_),*fsexp,1.0);
 
-      Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-      mmatrix_->Multiply(true,*z_,*fm);
-      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fm,*fmexp);
-      fd->Update(-(1.0-alphaf_),*fmexp,1.0);
-    }
+    // We solve for the incremental Langrange multiplier dz_. Hence,
+    // we can keep the contact force terms on the right-hand side!
+    //
+    // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) * z^(i)_(n+1)
     
     // export weighted gap vector
     Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
@@ -2744,8 +2765,22 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     }
     Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*gact,*gactexp);
+
+    // export inactive rhs
+    Teuchos::RCP<Epetra_Vector> inactiverhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*inactiverhs_, *inactiverhsexp);
+
+    // build constraint rhs (1)
+    constrrhs->Update(1.0, *inactiverhsexp, 1.0);
+
+    // export tangential rhs
+    Teuchos::RCP<Epetra_Vector> tangrhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*tangrhs_, *tangrhsexp);
     
-    // build constraint rhs
+    // build constraint rhs (2)
+    constrrhs->Update(1.0, *tangrhsexp, 1.0);
+
+    // build constraint rhs (3)
     constrrhs->Update(-1.0,*gactexp,1.0);
     constrrhs->ReplaceMap(*glmdofrowmap_);
 
@@ -2811,43 +2846,16 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
     trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
 
-    // remove contact force terms again
-    // (solve directly for z_ and not for increment of z_)
-    // for self contact, slave and master sets may have changed,
-    // thus we have to export the product D^T * z to fit
-    // thus we have to export the product M^T * z to fit
-    if (IsSelfContact())
-    {
-      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      Teuchos::RCP<Epetra_Vector> tempvecd  = Teuchos::rcp(new Epetra_Vector(dmatrix_->DomainMap()));
-      Teuchos::RCP<Epetra_Vector> zexp  = Teuchos::rcp(new Epetra_Vector(dmatrix_->RowMap()));
-      if (dmatrix_->RowMap().NumGlobalElements()) LINALG::Export(*z_,*zexp);
-      dmatrix_->Multiply(true,*zexp,*tempvecd);
-      LINALG::Export(*tempvecd,*fsexp);
-      fd->Update((1.0-alphaf_),*fsexp,1.0);
+    /****************************************************************************************
+	 *** 								RIGHT-HAND SIDE									  ***
+	 ****************************************************************************************/
 
-      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      Teuchos::RCP<Epetra_Vector> tempvecm  = Teuchos::rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-      mmatrix_->Multiply(true,*zexp,*tempvecm);
-      LINALG::Export(*tempvecm,*fmexp);
-      fd->Update(-(1.0-alphaf_),*fmexp,1.0);
-    }
-    // if there is no self contact everything is ok
-    else
-    {
-      Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      dmatrix_->Multiply(true,*z_,*fs);
-      Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fs,*fsexp);
-      fd->Update((1.0-alphaf_),*fsexp,1.0);
 
-      Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-      mmatrix_->Multiply(true,*z_,*fm);
-      Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fm,*fmexp);
-      fd->Update(-(1.0-alphaf_),*fmexp,1.0);
-    }
-    
+	// We solve for the incremental Langrange multiplier dz_. Hence,
+	// we can keep the contact force terms on the right-hand side!
+	//
+	// r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) * z^(i)_(n+1)
+
     // export weighted gap vector
     Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
     if (gactiven_->NumGlobalElements())
@@ -2864,40 +2872,12 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     Teuchos::RCP<Epetra_Vector> slipexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*linslipRHS_,*slipexp);
     
-#ifdef WEARIMPLICIT
+    // export inactive rhs
+    Teuchos::RCP<Epetra_Vector> inactiverhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    LINALG::Export(*inactiverhs_, *inactiverhsexp);
 
-
-//    Teuchos::RCP<Epetra_Vector> za = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-//    Teuchos::RCP<Epetra_Vector> zi = Teuchos::rcp(new Epetra_Vector(*gidofs));
-//    Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-//    Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickt));
-//
-//    LINALG::SplitVector( *gsdofrowmap_, *z_,gactivedofs_, za, gidofs, zi);
-//    LINALG::SplitVector( *gactivedofs_, *za, gslipt_, zsl, gstickt, zst);
-
-
-    // WEAR LIN. W.R.T. Z *****************************************************
-    // for normal contact
-    if (gactiven_->NumGlobalElements())
-    {
-      Teuchos::RCP<Epetra_Vector> fw = Teuchos::rcp(new Epetra_Vector(*gactiven_));
-      wlinmatrix_->Multiply(false,*z_,*fw);
-      Teuchos::RCP<Epetra_Vector> fwexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      LINALG::Export(*fw,*fwexp);
-      constrrhs->Update(1.0,*fwexp,1.0);
-    }
-
-    // WEAR LIN. W.R.T. Z *****************************************************
-    // for slip contact
-    if (gslipt_->NumGlobalElements())
-    {
-      Teuchos::RCP<Epetra_Vector> fwsl = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-      wlinmatrixsl_->Multiply(false,*z_,*fwsl);
-      Teuchos::RCP<Epetra_Vector> fwexpsl = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-      LINALG::Export(*fwsl,*fwexpsl);
-      constrrhs->Update(1.0,*fwexpsl,1.0);
-    }
-#endif
+    // build constraint rhs (1)
+    constrrhs->Update(1.0, *inactiverhsexp, 1.0);
 
     // build constraint rhs
     constrrhs->Update(-1.0,*gactexp,1.0);
@@ -2988,7 +2968,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   // invalid system types
   //**********************************************************************
-  else dserror("ERROR: Invalid system type in SaddlePontSolve");
+  else dserror("ERROR: Invalid system type in SaddlePointSolve");
   
   //**********************************************************************
   // extract results for displacement and LM increments
@@ -2999,21 +2979,22 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   mapext.ExtractOtherVector(mergedsol,sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
-  // overwrite Lagrange multiplier vector from previous linear solver call.
+
+  if (IsSelfContact())
   // for self contact, slave and master sets may have changed,
   // thus we have to reinitialize the LM vector map
-  if (IsSelfContact())
   {
-    zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
-    LINALG::Export(*z_,*zincr_);   // store old current Lagrange multiplier vector from previous linear iteration)
-    z_ = Teuchos::rcp(new Epetra_Vector(*sollm));
-    zincr_->Update(+1.0,*z_,-1.0); // build Lagrange multiplier increment vector for current linear solver call
+	  zincr_ = Teuchos::rcp(new Epetra_Vector(*sollm));
+	  LINALG::Export(*z_, *zincr_);							// change the map of z_
+	  z_ = Teuchos::rcp(new Epetra_Vector(*zincr_));
+	  zincr_->Update(1.0, *sollm, 0.0);						// save sollm in zincr_
+	  z_->Update(1.0, *zincr_, 1.0);						// update z_
+
   }
   else
   {
-    zincr_->Update(-1.0,*z_,0.0); // store old current Lagrange multiplier vector from previous linear iteration)
-    z_->Update(1.0,*sollm,0.0);
-    zincr_->Update(+1.0,*z_,1.0); // build Lagrange multiplier increment vector for current linear solver call
+	  zincr_->Update(1.0, *sollm, 0.0);
+	  z_->Update(1.0, *zincr_, 1.0);
   }
 
 
@@ -3506,7 +3487,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
         // The nested active set strategy cannot deal with the case of
         // active nodes that have no integration segments/cells attached,
-        // as this leads to zero rows in D and M and thus to singukar systems.
+        // as this leads to zero rows in D and M and thus to singular systems.
         // However, this case might possibly happen when slave nodes slide
         // over the edge of a master body within one fixed active set step.
         // (Remark: Semi-smooth Newton has no problems in this case, as it
@@ -3790,7 +3771,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // *********************************************************************
   // A problem of the active set strategy which sometimes arises is known
   // from optimization literature as jamming or zig-zagging. This means
-  // that within a load/time-step the semi-smmoth Newton algorithm can get
+  // that within a load/time-step the semi-smooth Newton algorithm can get
   // stuck between more than one intermediate solution due to the fact that
   // the active set decision is a discrete decision. Hence the semi-smooth
   // Newton algorithm fails to converge. The non-uniquenesss results either
@@ -3802,7 +3783,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // and third-last iteration. If an identity occurs, we interfere and
   // let the semi-smooth Newton algorithm restart from another active set
   // (e.g. intermediate set between the two problematic candidates), thus
-  // leasding to some kind of damped / modified semi-smooth Newton method.
+  // leading to some kind of damped / modified semi-smooth Newton method.
   // This very simple approach helps stabilizing the contact algorithm!
   // *********************************************************************
   int zigzagging = 0;

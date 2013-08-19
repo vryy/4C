@@ -68,7 +68,7 @@ FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              yes
 SEMI_SMOOTH_CN                  1000.0
 SEMI_SMOOTH_CT                  1000.0
-SYSTEM                          SaddlePointSimpler
+SYSTEM                          spsimpler
 INITCONTACTBYGAP                Yes
 INITCONTACTGAPVALUE             0.001
 -------------------------------------------------------------MORTAR COUPLING
@@ -78,7 +78,7 @@ SEARCH_PARAM                    0.6
 PARALLEL_REDIST                 Static
 MAX_BALANCE                     1.5
 COUPLING_AUXPLANE               Yes
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -182,7 +182,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 4
 NAME                            Contact_Simpler_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR                    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        25                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel LEASt_Squares Neumann
@@ -220,9 +220,9 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.330000 DENS 1.000
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0 1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 10357 QUANTITY dispx VALUE 1.5065373193558790e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 10357 QUANTITY dispy VALUE 1.7911277486630457e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 10357 QUANTITY dispz VALUE -4.0508311518793099e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10357 QUANTITY dispx VALUE 1.45731824052880042e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10357 QUANTITY dispy VALUE 1.86610724373117455e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10357 QUANTITY dispz VALUE -3.20811136088759155e-03 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

@@ -78,7 +78,7 @@ SEARCH_PARAM                    0.6
 PARALLEL_REDIST                 Static
 MAX_BALANCE                     1.5
 COUPLING_AUXPLANE               Yes
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -220,9 +220,9 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50000 NUE 0.330000 DENS 1.000
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0 1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 10357 QUANTITY dispx VALUE 6.6973261961066565e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 10357 QUANTITY dispy VALUE 1.4376763315221682e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 10357 QUANTITY dispz VALUE -2.2306573540494005e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10357 QUANTITY dispx VALUE 6.63209008624897101e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10357 QUANTITY dispy VALUE 1.42866206175846941e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10357 QUANTITY dispz VALUE -2.21086180245560256e-03 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
