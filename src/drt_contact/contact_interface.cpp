@@ -4114,6 +4114,10 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
   double frcoeff = IParams().get<double>("FRCOEFF");
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");
   double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+#ifdef CONTACTFRICTIONLESSFIRST
+  // get systemtype if CONTACTFRICTIONLESSFIRST is active
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(IParams(),"SYSTEM");
+#endif
 
   //**********************************************************************
   //**********************************************************************
