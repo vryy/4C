@@ -285,7 +285,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
     }
     if(myrank_==0)
     {
-      cout << "Writing coordinates for " << totalnumvisp << " visualisation points\n";
+      std::cout << "Writing coordinates for " << totalnumvisp << " visualisation points\n";
     }
     Write(file, "coordinates");
     Write(file, totalnumvisp);
@@ -317,9 +317,9 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 
   if (myrank_==0)
   {
-    cout << "(computing) coordinates for a ";
-    cout << field_->problem()->SpatialApproximation();
-    cout << " approximation\n";
+    std::cout << "(computing) coordinates for a ";
+    std::cout << field_->problem()->SpatialApproximation();
+    std::cout << " approximation\n";
   }
 
   // map for all visualisation points after they have been
@@ -376,8 +376,8 @@ void EnsightWriter::WriteCells(
 
     if (myrank_ == 0)
     {
-      cout << "writing "<< iter->second<< " "<< DRT::DistypeToString(distypeiter) << " element(s) as "
-           << ne << " " << ensightCellType << " ensight cell(s)..." << endl;
+      std::cout << "writing "<< iter->second<< " "<< DRT::DistypeToString(distypeiter) << " element(s) as "
+           << ne << " " << ensightCellType << " ensight cell(s)..." << std::endl;
       Write(geofile, ensightCellType);
       Write(geofile,ne);
     }
@@ -903,7 +903,7 @@ void EnsightWriter::WriteResult(const std::string groupname,
   case dofbased:
   {
     if (myrank_==0)
-      cout<<"writing node-based field "<<name<<endl;
+      std::cout<<"writing node-based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "node";
 
@@ -942,7 +942,7 @@ void EnsightWriter::WriteResult(const std::string groupname,
   case nodebased:
   {
     if (myrank_==0)
-      cout<<"writing node-based field "<<name<<endl;
+      std::cout<<"writing node-based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "node";
 
@@ -971,7 +971,7 @@ void EnsightWriter::WriteResult(const std::string groupname,
   case elementdof:
   {
     if (myrank_==0)
-      cout<<"writing element based field "<<name<<endl;
+      std::cout<<"writing element based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "element";
 
@@ -1000,7 +1000,7 @@ void EnsightWriter::WriteResult(const std::string groupname,
   case elementbased:
   {
     if (myrank_==0)
-      cout<<"writing element-based field "<<name<<endl;
+      std::cout<<"writing element-based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "element";
 
@@ -1421,7 +1421,7 @@ void EnsightWriter::WriteElementDOFResultStep(
                                      datamap.Comm()));
 #if 0
   if (epetradatamap->PointSameAs(*proc0map_))
-    cout<<"INFO: proc0map and epetradatamap are identical."<<endl;
+    std::cout<<"INFO: proc0map and epetradatamap are identical."<<std::endl;
   // check if the data is distributed over several processors
   bool isdistributed = (data->DistributedGlobal());
 #endif
@@ -1849,7 +1849,7 @@ std::string EnsightWriter::GetTimeSectionStringFromTimesets(
     {
       donetimesets.insert(timesetnumber);
       std::string outstring = GetTimeSectionString(timesetnumber, soltimes);
-      s<< outstring<<endl;
+      s<< outstring<<std::endl;
     }
   }
   return s.str();

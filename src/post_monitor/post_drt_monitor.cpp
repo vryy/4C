@@ -520,7 +520,7 @@ PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 void FluidMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "fluid")
-    cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
+    std::cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -586,7 +586,7 @@ void FluidMonWriter::WriteResult(
 void CombustMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "fluid")
-    cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
+    std::cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -652,7 +652,7 @@ void CombustMonWriter::WriteResult(
 void StructMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "structure")
-    cout << "\nPure structural problem, field option other than structure has been ignored!\n\n";
+    std::cout << "\nPure structural problem, field option other than structure has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -922,7 +922,7 @@ void StructMonWriter::WriteStrResults(
 
     // inform (eagerly waiting) user
     if (myrank_ == 0)
-      cout << "writing node-based " << out << endl;
+      std::cout << "writing node-based " << out << std::endl;
 
     // DOFs at node
     int numdf = 0;
@@ -993,7 +993,7 @@ void StructMonWriter::WriteStrResult(
 void AleMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "ale")
-    cout << "\nPure ALE problem, field option other than ale has been ignored!\n\n";
+    std::cout << "\nPure ALE problem, field option other than ale has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -1174,7 +1174,7 @@ void FsiAleMonWriter::WriteHeader(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 void ScatraMonWriter::CheckInfieldType(std::string& infieldtype)
 {
-  cout << "\nscatra something\n\n";
+  std::cout << "\nscatra something\n\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -1251,7 +1251,7 @@ void ScatraMonWriter::WriteResult(
 void ThermoMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "thermo")
-    cout << "\nPure thermal problem, field option other than thermo has been ignored!\n\n";
+    std::cout << "\nPure thermal problem, field option other than thermo has been ignored!\n\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -1419,7 +1419,7 @@ void ThermoMonWriter::WriteThrResults(
 
     // inform (eagerly waiting) user
     if (myrank_ == 0)
-      cout << "writing node-based " << out << endl;
+      std::cout << "writing node-based " << out << std::endl;
 
     // this is a loop over all time steps that should be written
     // bottom control here, because first set has been read already

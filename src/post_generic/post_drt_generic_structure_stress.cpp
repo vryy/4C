@@ -146,7 +146,7 @@ void StructureEnsightWriter::WriteNodalStress(const std::string groupname,
   int stepsize = 0;
 
   if (myrank_==0)
-    cout<<"writing node-based " << out << endl;
+    std::cout<<"writing node-based " << out << std::endl;
 
   // store information for later case file creation
   variableresulttypemap_[name] = "node";
@@ -321,7 +321,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const std::string groupnam
   int stepsize = 0;
 
   if (myrank_==0)
-    cout<<"writing element-based center " << out << endl;
+    std::cout<<"writing element-based center " << out << std::endl;
 
   // store information for later case file creation
   variableresulttypemap_[name] = "element";
@@ -578,7 +578,7 @@ void StructureEnsightWriter::WriteNodalEigenStress(const std::string groupname,
   }
 
   if (myrank_==0)
-    cout << "writing node-based " << out << endl;
+    std::cout << "writing node-based " << out << std::endl;
 
   // store information for later case file creation
   for (int i=0;i<numfiles;++i)
@@ -922,7 +922,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const std::string gro
   }
 
   if (myrank_==0)
-    cout << "writing element-based center " << out << endl;
+    std::cout << "writing element-based center " << out << std::endl;
 
   // store information for later case file creation
   for (int i=0;i<numfiles;++i)
