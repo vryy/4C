@@ -5440,6 +5440,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                               &cavitationdyn);
 
+  BoolParameter("APPROX_ELECOORDS_INIT","no","switch on/off approximate initial guess for computing element coordinates",&cavitationdyn);
+
   /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& crackdyn = list->sublist("COHESIVE CRACK",false,"");
 

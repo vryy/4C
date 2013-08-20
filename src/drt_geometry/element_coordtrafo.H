@@ -271,6 +271,322 @@ static inline void startingValueCurrentToElementCoords(
 }
 
 
+/*!
+\brief computes starting value for current to volume element computation with a fast guess
+\param xyze                 (in)        : nodal positions of element
+\param x                    (in)        : position in physical coordinates (x, y, z)
+\param xsi                  (out)       : initial guess for xsi
+\param distype              (in)        : shape of the element
+\return  true if point lies in the element, false otherwise (ATTENTION: this is just an approximation and can be incorrect)
+*/
+template <  DRT::Element::DiscretizationType distype,
+      class M1, class V3>
+static inline bool FastInitialGuess(
+  const M1&                                     xyze,            ///< nodal position array
+  const V3&                                     x,               ///< (x,y,z)
+  LINALG::Matrix<3,1>&                          xsi)             ///< initial guess for xsi
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+  {
+     // split hex element into 5 tetrahedra in order to obtain a good initial guess
+    static LINALG::Matrix<4,4> A_tet;
+    static LINALG::Matrix<4,1> b_tet;
+    static LINALG::Matrix<4,1> x_tet;
+
+
+    // first tet 1 3 4 6 + fourth row filled with ones
+    A_tet(0,0) = xyze(0,1);
+    A_tet(1,0) = xyze(1,1);
+    A_tet(2,0) = xyze(2,1);
+    A_tet(3,0) = 1.0;
+
+    A_tet(0,1) = xyze(0,3);
+    A_tet(1,1) = xyze(1,3);
+    A_tet(2,1) = xyze(2,3);
+    A_tet(3,1) = 1.0;
+
+    A_tet(0,2) = xyze(0,4);
+    A_tet(1,2) = xyze(1,4);
+    A_tet(2,2) = xyze(2,4);
+    A_tet(3,2) = 1.0;
+
+    A_tet(0,3) = xyze(0,6);
+    A_tet(1,3) = xyze(1,6);
+    A_tet(2,3) = xyze(2,6);
+    A_tet(3,3) = 1.0;
+
+    // same rhs for all tets
+    b_tet(0) = x(0);
+    b_tet(1) = x(1);
+    b_tet(2) = x(2);
+    b_tet(3) = 1.0;
+
+    double det = LINALG::gaussElimination<true,4>(A_tet, b_tet, x_tet);
+    if(fabs(det) < 1E-14)
+      dserror("determinant is near zero %d", det);
+
+    bool inside = true;
+    for(int i=0; i<4; ++i)
+    {
+      if(std::min(x_tet(i), 1.0-x_tet(i)) < -TOL7)
+      {
+        inside = false;
+        break;
+      }
+    }
+
+    // if inside: map xsi of tet into xsi of hex and leave
+    if(inside)
+    {
+      xsi(0) =  1.0 - 2*(x_tet(1) + x_tet(2));
+      xsi(1) = -1.0 + 2*(x_tet(1) + x_tet(3));
+      xsi(2) = -1.0 + 2*(x_tet(2) + x_tet(3));
+      return inside;
+    }
+
+
+    // second tet 0 1 3 4 + fourth row filled with ones
+    A_tet(0,0) = xyze(0,0);
+    A_tet(1,0) = xyze(1,0);
+    A_tet(2,0) = xyze(2,0);
+    A_tet(3,0) = 1.0;
+
+    A_tet(0,1) = xyze(0,1);
+    A_tet(1,1) = xyze(1,1);
+    A_tet(2,1) = xyze(2,1);
+    A_tet(3,1) = 1.0;
+
+    A_tet(0,2) = xyze(0,3);
+    A_tet(1,2) = xyze(1,3);
+    A_tet(2,2) = xyze(2,3);
+    A_tet(3,2) = 1.0;
+
+    A_tet(0,3) = xyze(0,4);
+    A_tet(1,3) = xyze(1,4);
+    A_tet(2,3) = xyze(2,4);
+    A_tet(3,3) = 1.0;
+
+    // same rhs for all tets
+    b_tet(0) = x(0);
+    b_tet(1) = x(1);
+    b_tet(2) = x(2);
+    b_tet(3) = 1.0;
+
+    det = LINALG::gaussElimination<true,4>(A_tet, b_tet, x_tet);
+    if(fabs(det) < 1E-14)
+      dserror("determinant is near zero %d", det);
+
+    inside = true;
+    for(int i=0; i<4; ++i)
+    {
+      if(std::min(x_tet(i), 1.0-x_tet(i)) < -TOL7)
+      {
+        inside = false;
+        break;
+      }
+    }
+
+    // if inside: map xsi of tet into xsi of hex and leave
+    if(inside)
+    {
+      xsi(0) = -1.0 + 2*x_tet(1);
+      xsi(1) = -1.0 + 2*x_tet(2);
+      xsi(2) = -1.0 + 2*x_tet(3);
+      return inside;
+    }
+
+
+    // third tet 2 3 1 6 + fourth row filled with ones
+    A_tet(0,0) = xyze(0,2);
+    A_tet(1,0) = xyze(1,2);
+    A_tet(2,0) = xyze(2,2);
+    A_tet(3,0) = 1.0;
+
+    A_tet(0,1) = xyze(0,3);
+    A_tet(1,1) = xyze(1,3);
+    A_tet(2,1) = xyze(2,3);
+    A_tet(3,1) = 1.0;
+
+    A_tet(0,2) = xyze(0,1);
+    A_tet(1,2) = xyze(1,1);
+    A_tet(2,2) = xyze(2,1);
+    A_tet(3,2) = 1.0;
+
+    A_tet(0,3) = xyze(0,6);
+    A_tet(1,3) = xyze(1,6);
+    A_tet(2,3) = xyze(2,6);
+    A_tet(3,3) = 1.0;
+
+    // same rhs for all tets
+    b_tet(0) = x(0);
+    b_tet(1) = x(1);
+    b_tet(2) = x(2);
+    b_tet(3) = 1.0;
+
+    det = LINALG::gaussElimination<true,4>(A_tet, b_tet, x_tet);
+    if(fabs(det) < 1E-14)
+      dserror("determinant is near zero %d", det);
+
+    inside = true;
+    for(int i=0; i<4; ++i)
+    {
+      if(std::min(x_tet(i), 1.0-x_tet(i)) < -TOL7)
+      {
+       inside = false;
+       break;
+      }
+    }
+
+    // if inside: map xsi of tet into xsi of hex and leave
+    if(inside)
+    {
+      xsi(0) =  1.0 - 2*x_tet(1);
+      xsi(1) =  1.0 - 2*x_tet(2);
+      xsi(2) = -1.0 + 2*x_tet(3);
+      return inside;
+    }
+
+
+    // fourth tet 5 4 6 1 + fourth row filled with ones
+    A_tet(0,0) = xyze(0,5);
+    A_tet(1,0) = xyze(1,5);
+    A_tet(2,0) = xyze(2,5);
+    A_tet(3,0) = 1.0;
+
+    A_tet(0,1) = xyze(0,4);
+    A_tet(1,1) = xyze(1,4);
+    A_tet(2,1) = xyze(2,4);
+    A_tet(3,1) = 1.0;
+
+    A_tet(0,2) = xyze(0,6);
+    A_tet(1,2) = xyze(1,6);
+    A_tet(2,2) = xyze(2,6);
+    A_tet(3,2) = 1.0;
+
+    A_tet(0,3) = xyze(0,1);
+    A_tet(1,3) = xyze(1,1);
+    A_tet(2,3) = xyze(2,1);
+    A_tet(3,3) = 1.0;
+
+    // same rhs for all tets
+    b_tet(0) = x(0);
+    b_tet(1) = x(1);
+    b_tet(2) = x(2);
+    b_tet(3) = 1.0;
+
+    det = LINALG::gaussElimination<true,4>(A_tet, b_tet, x_tet);
+    if(fabs(det) < 1E-14)
+      dserror("determinant is near zero %d", det);
+
+    inside = true;
+    for(int i=0; i<4; ++i)
+    {
+      if(std::min(x_tet(i), 1.0-x_tet(i)) < -TOL7)
+      {
+        inside = false;
+        break;
+      }
+    }
+
+    // if inside: map xsi of tet into xsi of hex and leave
+    if(inside)
+    {
+      xsi(0) =  1.0 - 2*x_tet(1);
+      xsi(1) = -1.0 + 2*x_tet(2);
+      xsi(2) =  1.0 - 2*x_tet(3);
+      return inside;
+    }
+
+
+    // fifth tet 7 6 4 3 + fourth row filled with ones
+    A_tet(0,0) = xyze(0,7);
+    A_tet(1,0) = xyze(1,7);
+    A_tet(2,0) = xyze(2,7);
+    A_tet(3,0) = 1.0;
+
+    A_tet(0,1) = xyze(0,6);
+    A_tet(1,1) = xyze(1,6);
+    A_tet(2,1) = xyze(2,6);
+    A_tet(3,1) = 1.0;
+
+    A_tet(0,2) = xyze(0,4);
+    A_tet(1,2) = xyze(1,4);
+    A_tet(2,2) = xyze(2,4);
+    A_tet(3,2) = 1.0;
+
+    A_tet(0,3) = xyze(0,3);
+    A_tet(1,3) = xyze(1,3);
+    A_tet(2,3) = xyze(2,3);
+    A_tet(3,3) = 1.0;
+
+    // same rhs for all tets
+    b_tet(0) = x(0);
+    b_tet(1) = x(1);
+    b_tet(2) = x(2);
+    b_tet(3) = 1.0;
+
+    det = LINALG::gaussElimination<true,4>(A_tet, b_tet, x_tet);
+    if(fabs(det) < 1E-14)
+      dserror("determinant is near zero %d", det);
+
+    inside = true;
+    for(int i=0; i<4; ++i)
+    {
+      if(std::min(x_tet(i), 1.0-x_tet(i)) < -TOL7)
+      {
+        inside = false;
+        break;
+      }
+    }
+
+    // if inside: map xsi of tet into xsi of hex and leave
+     if(inside)
+     {
+       xsi(0) = -1.0 + 2*x_tet(1);
+       xsi(1) =  1.0 - 2*x_tet(2);
+       xsi(2) =  1.0 - 2*x_tet(3);
+       return inside;
+     }
+
+    // NOTE: showing up here is equivalent to x being outside the 5 tetrahedrons
+    // which is not necessarily identical to being outside the hex element
+    return false;
+    break;
+  }
+  case DRT::Element::tet4 : case DRT::Element::tet10:
+  {
+    dserror("no fast initial guess implemented");
+    break;
+  }
+  case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
+  {
+    dserror("no fast initial guess implemented");
+    break;
+  }
+  case DRT::Element::tri3 : case DRT::Element::tri6 :
+  {
+    dserror("no fast initial guess implemented");
+    break;
+  }
+  case DRT::Element::line2 : case DRT::Element::line3 :
+  {
+    dserror("no fast initial guess implemented");
+    break;
+  }
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+  case DRT::Element::pyramid5:
+  {
+    dserror("no fast initial guess implemented");
+    break;
+  }
+  default:
+    dserror("distype not yet implemented"); break;
+  }
+  return false;
+}
 
 
 /*!
@@ -407,13 +723,14 @@ static inline void updateRHSForNWE(
 \param xyze                 (in)        : element nodal positions (3,numnode)
 \param x                    (in)        : node in current coordinates \f$(x, y, z)\f$
 \param xsi                  (inout)     : node in element coordinates
+\param fastinitguess        (in)        : if true, fast (but approximate) initial guess is used
 */
 template <DRT::Element::DiscretizationType DISTYPE, class M1, class V3>
 static inline bool currentToVolumeElementCoordinatesT(
     const M1&                                     xyze,            ///< nodal position array
     const V3&                                     x,               ///< (x,y,z)
-    LINALG::Matrix<3,1>&                          xsi              ///< (r,s,t)
-    )
+    LINALG::Matrix<3,1>&                          xsi,             ///< (r,s,t)
+    bool                                          fastinitguess)   ///< enhanced intitial guess
 {
   //REMARK: This function seemed to deliver wrong results!
   // It seems that some matrices (especially dx) were not cleared at the beginning!
@@ -437,7 +754,18 @@ static inline bool currentToVolumeElementCoordinatesT(
   dx.Clear();
 
   // initial guess
-  startingValueCurrentToElementCoords<DISTYPE>(xsi);
+  if(fastinitguess == false)
+  {
+    startingValueCurrentToElementCoords<DISTYPE>(xsi);
+  }
+  else
+  {
+    // either get good initial guess and continue or 
+    // leave here when outside (which is just an approximation and can be incorrect)
+    nodeWithinElement = FastInitialGuess<DISTYPE>(xyze, x, xsi);
+    if(nodeWithinElement == false)
+      return nodeWithinElement;
+  }
 
   updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
 
@@ -475,40 +803,50 @@ static inline bool currentToVolumeElementCoordinatesT(
 
 
 
-
+/*!
+\brief computes element coordinates of point x within element
+\param distype              (in)        : shape of the element
+\param xyze                 (in)        : nodal positions of element
+\param x                    (in)        : position in physical coordinates (x, y, z)
+\param xsi                  (out)       : element coordinates xsi
+\param fastinitguess        (in)        : if true, approximate xsi first (default: false)
+\return  true if point lies in the element, false otherwise
+         (ATTENTION: if fastinitguess == true this is just an approximation and can be incorrect)
+*/
 template <class M1, class V3>
 bool currentToVolumeElementCoordinates(
     const DRT::Element::DiscretizationType  distype,
     const M1&                               xyze,
     const V3&                               x,
-    LINALG::Matrix<3,1>&                    xsi)
+    LINALG::Matrix<3,1>&                    xsi,
+    bool                                    fastinitguess = false)
 {
     bool nodeWithinElement = false;
     switch (distype)
     {
     case DRT::Element::hex8:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex8>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex8>(xyze, x, xsi, fastinitguess);
         break;
     case DRT::Element::hex20:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex20>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex20>(xyze, x, xsi, fastinitguess);
         break;
     case DRT::Element::hex27:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex27>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex27>(xyze, x, xsi, fastinitguess);
         break;
     case DRT::Element::tet4:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::tet4>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::tet4>(xyze, x, xsi, fastinitguess);
         break;
     case DRT::Element::tet10:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::tet10>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::tet10>(xyze, x, xsi, fastinitguess);
         break;
     case DRT::Element::wedge6:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::wedge6>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::wedge6>(xyze, x, xsi, fastinitguess);
         break;
     case DRT::Element::wedge15:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::wedge15>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::wedge15>(xyze, x, xsi, fastinitguess);
         break;
     case DRT::Element::pyramid5:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::pyramid5>(xyze, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::pyramid5>(xyze, x, xsi, fastinitguess);
         break;
     default:
         std::cout << DistypeToString(distype) << std::endl;

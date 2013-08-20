@@ -129,6 +129,8 @@ namespace CAVITATION
 
     INPAR::CAVITATION::CouplingStrategyOverFields coupalgo_;
 
+    bool approxelecoordsinit_;
+
     //@}
 
     //! @name fluid related stuff

@@ -52,6 +52,7 @@ CAVITATION::Algorithm::Algorithm(
   const Teuchos::ParameterList& params
   ) : PARTICLE::Algorithm(comm,params),
   coupalgo_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::CouplingStrategyOverFields>(params,"COUPALGO")),
+  approxelecoordsinit_((bool)DRT::INPUT::IntegralValue<int>(params,"APPROX_ELECOORDS_INIT")),
   fluiddis_(Teuchos::null)
 {
   // setup fluid time integrator
@@ -274,19 +275,40 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     int numfluidelesinbin = currbin->NumAssociatedFluidEle();
 
     std::set<int>::const_iterator eleiter;
+    // search for underlying fluid element with fast search if desired
     for(int ele=0; ele<numfluidelesinbin; ++ele)
     {
       DRT::Element* fluidele = fluidelesinbin[ele];
       const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
 
       //get coordinates of the particle position in parameter space of the element
-      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord);
+      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord, approxelecoordsinit_);
 
       if(insideele == true)
       {
         targetfluidele = fluidele;
         // leave loop over all fluid eles in bin
         break;
+      }
+    }
+
+    // repeat search for underlying fluid element with standard search in case nothing was found
+    if(targetfluidele == NULL and approxelecoordsinit_ == true)
+    {
+      for(int ele=0; ele<numfluidelesinbin; ++ele)
+      {
+        DRT::Element* fluidele = fluidelesinbin[ele];
+        const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
+
+        //get coordinates of the particle position in parameter space of the element
+        bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord, false);
+
+        if(insideele == true)
+        {
+          targetfluidele = fluidele;
+          // leave loop over all fluid eles in bin
+          break;
+        }
       }
     }
 
