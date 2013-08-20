@@ -5,10 +5,10 @@
 \brief basic enums used in xfem routines
 
 <pre>
-Maintainer: Benedikt Schott
-            schott@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15241
+            089 - 289-15236
 </pre>
 */
 /*----------------------------------------------------------------------*/

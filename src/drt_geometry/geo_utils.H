@@ -6,10 +6,10 @@ be used from outside in header files without including the according geometry
 header file
 
 <pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15241
+            089 - 289-15236
 </pre>
  *------------------------------------------------------------------------------------------------*/
 

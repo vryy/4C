@@ -317,7 +317,7 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
   outsteps_->push_back(num_forcing_steps);
   for (std::size_t rr = 0; rr < times_exp.size(); rr++)
   {
-    outsteps_->push_back((int)(times_exp[rr]/dt_) + (double) num_forcing_steps);
+    outsteps_->push_back(((int)(times_exp[rr]/dt_)) + num_forcing_steps);
   }
 
   //-------------------------------------------------------------------------
