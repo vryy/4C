@@ -1052,7 +1052,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           //defining temporary stringstream variable
           std::stringstream filecontent;
             // write directional vector to stream
-            filecontent<<time<<"    "<<std::setprecision(12)<<coord(0)<<"   "<<coord(1)<<"   "<<coord(2)<<endl;
+            filecontent<<time<<"    "<<std::setprecision(12)<<coord(0)<<"   "<<coord(1)<<"   "<<coord(2)<<std::endl;
 
           // move temporary stringstream to file and close it
           fprintf(fp, filecontent.str().c_str());

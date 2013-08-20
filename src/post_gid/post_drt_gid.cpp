@@ -34,7 +34,7 @@ const int MAXNODHARDCODED = 1000;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void write_vector_result(string result_name, PostField* field, PostResult* result)
+void write_vector_result(std::string result_name, PostField* field, PostResult* result)
 {
   const char* componentnames[] = { "x", "y", "z" };
 
@@ -80,7 +80,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void write_scalar_result(string result_name, PostField* field, PostResult* result)
+void write_scalar_result(std::string result_name, PostField* field, PostResult* result)
 {
   //double time = map_read_real(result->group(), "time");
   int step = map_read_int(result->group(), "step");
@@ -122,7 +122,7 @@ void write_scalar_result(string result_name, PostField* field, PostResult* resul
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void write_serialdensematrix_result(string result_name, PostField* field,
+void write_serialdensematrix_result(std::string result_name, PostField* field,
                                     PostResult* result)
 {
   const char* gaussname = "";
@@ -250,7 +250,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void WriteDiscretizationNodes(RCP<DRT::Discretization> dis,PostField* field)
+void WriteDiscretizationNodes(Teuchos::RCP<DRT::Discretization> dis,PostField* field)
 {
   double x[3];
   x[2] = 0;
@@ -270,7 +270,7 @@ void WriteDiscretizationNodes(RCP<DRT::Discretization> dis,PostField* field)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void WriteDiscretizationElements(RCP<DRT::Discretization> dis)
+void WriteDiscretizationElements(Teuchos::RCP<DRT::Discretization> dis)
 {
   GiD_BeginElements();
   for (int i=0; i<dis->NumGlobalElements(); ++i)
@@ -293,7 +293,7 @@ void write_mesh(PostProblem* problem, int disnum)
   PostField* field = problem->get_discretization(disnum);
 
 
-  RCP<DRT::Discretization> dis = field->discretization();
+  Teuchos::RCP<DRT::Discretization> dis = field->discretization();
 
   DRT::Element* actele = dis->gElement(dis->ElementRowMap()->GID(0));
 

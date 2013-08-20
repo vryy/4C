@@ -84,7 +84,7 @@ int main(int argc, char** argv)
   LINALG::Matrix<3,1> rotangle;
   LARGEROTATIONS::quaterniontoangle(quaterion, rotangle);
 
-  std::cout << endl << std::setprecision(10)<<  "Rotation vector: " << rotangle <<  endl;
+  std::cout << std::endl << std::setprecision(10)<<  "Rotation vector: " << rotangle << std::endl;
 
 //  //Check via inverse mapping
 //  LINALG::Matrix<3,3> rotmatrix_test;

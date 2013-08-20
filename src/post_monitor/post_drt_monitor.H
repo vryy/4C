@@ -41,7 +41,7 @@ public:
   //! constructor
   MonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     );
 
@@ -52,47 +52,47 @@ public:
   //! write something
   virtual void WriteMonFile(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     );
 
   //! write something : stress a point
   void WriteMonStressFile(
     PostProblem& problem,
-    string& infieldtype,
-    string stresstype,
+    std::string& infieldtype,
+    std::string stresstype,
     int node
     );
 
   //! write something : strain a point
   void WriteMonStrainFile(
     PostProblem& problem,
-    string& infieldtype,
-    string straintype,
+    std::string& infieldtype,
+    std::string straintype,
     int node
     );
 
   //! write something : strain a point
   void WriteMonPlStrainFile(
     PostProblem& problem,
-    string& infieldtype,
-    string straintype,
+    std::string& infieldtype,
+    std::string straintype,
     int node
     );
 
   //! write something : heatflux a point
   void WriteMonHeatfluxFile(
     PostProblem& problem,
-    string& infieldtype,
-    string heatfluxtype,
+    std::string& infieldtype,
+    std::string heatfluxtype,
     int node
     );
 
   //! write something : temperature gradient a point
   void WriteMonTempgradFile(
     PostProblem& problem,
-    string& infieldtype,
-    string tempgradtype,
+    std::string& infieldtype,
+    std::string tempgradtype,
     int node
     );
 
@@ -100,7 +100,7 @@ protected:
 
   virtual PostField* GetFieldPtr(PostProblem& problem) = 0;
 
-  virtual void CheckInfieldType(string& infieldtype) = 0;
+  virtual void CheckInfieldType(std::string& infieldtype) = 0;
 
   virtual void FieldError(int node) = 0;
 
@@ -116,19 +116,19 @@ protected:
     ) = 0;
 
   void WriteMonStrFile(
-    const string& filename,
+    const std::string& filename,
     PostProblem& problem,
-    string& infieldtype,
-    const string strname,
-    const string strtype,
-    std::vector<string> groupnames,
+    std::string& infieldtype,
+    const std::string strname,
+    const std::string strtype,
+    std::vector<std::string> groupnames,
     int node
     );
 
   virtual void WriteStrTableHead(
     std::ofstream& outfile,
-    const string strname,
-    const string strtype,
+    const std::string strname,
+    const std::string strtype,
     const int dim
     )
   {
@@ -141,27 +141,27 @@ protected:
     PostResult& result,
     std::vector<int>& gdof,
     int dim,
-    string strtype,
-    string groupname,
+    std::string strtype,
+    std::string groupname,
     const int node)
   {
     dserror("Not impl.");
   }
 
   void WriteMonThrFile(
-    const string& filename,
+    const std::string& filename,
     PostProblem& problem,
-    string& infieldtype,
-    const string thrname,
-    const string thrtype,
-    std::vector<string> groupnames,
+    std::string& infieldtype,
+    const std::string thrname,
+    const std::string thrtype,
+    std::vector<std::string> groupnames,
     int node
     );
 
   virtual void WriteThrTableHead(
     std::ofstream& outfile,
-    const string thrname,
-    const string thrtype,
+    const std::string thrname,
+    const std::string thrtype,
     const int dim
     )
   {
@@ -174,8 +174,8 @@ protected:
     PostResult& result,
     std::vector<int>& gdof,
     int dim,
-    string thrtype,
-    string groupname,
+    std::string thrtype,
+    std::string groupname,
     const int node)
   {
     dserror("Not impl.");
@@ -203,7 +203,7 @@ public:
   //! constructor
   FieldMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : MonWriter(problem,infieldtype,node)
@@ -231,7 +231,7 @@ public:
   //! constructor
   FluidMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node)
     : FieldMonWriter(problem,infieldtype,node)
   {}
@@ -242,7 +242,7 @@ public:
 
 protected:
 
-  virtual void CheckInfieldType(string& infieldtype);
+  virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
 
@@ -271,7 +271,7 @@ public:
   //! constructor
   CombustMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node)
     : FieldMonWriter(problem,infieldtype,node)
   {}
@@ -282,7 +282,7 @@ public:
 
 protected:
 
-  virtual void CheckInfieldType(string& infieldtype);
+  virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
 
@@ -311,7 +311,7 @@ public:
   //! constructor
   StructMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : FieldMonWriter(problem,infieldtype,node)
@@ -323,7 +323,7 @@ public:
 
 protected:
 
-  virtual void CheckInfieldType(string& infieldtype);
+  virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
 
@@ -340,8 +340,8 @@ protected:
 
   virtual void WriteStrTableHead(
     std::ofstream& outfile,
-    const string strname,
-    const string strtype,
+    const std::string strname,
+    const std::string strtype,
     const int dim
     );
 
@@ -351,8 +351,8 @@ protected:
     PostResult& result,
     std::vector<int>& gdof,
     int dim,
-    string strtype,
-    string groupname,
+    std::string strtype,
+    std::string groupname,
     const int node
     );
 
@@ -380,7 +380,7 @@ public:
   //! constructor
   AleMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : FieldMonWriter(problem,infieldtype,node)
@@ -392,7 +392,7 @@ public:
 
 protected:
 
-  virtual void CheckInfieldType(string& infieldtype);
+  virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
 
@@ -420,7 +420,7 @@ public:
   //! constructor
   ScatraMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : FieldMonWriter(problem,infieldtype,node)
@@ -432,7 +432,7 @@ public:
 
 protected:
 
-  virtual void CheckInfieldType(string& infieldtype);
+  virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
 
@@ -462,7 +462,7 @@ public:
   //! constructor
   ThermoMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : FieldMonWriter(problem,infieldtype,node)
@@ -474,7 +474,7 @@ public:
 
 protected:
 
-  virtual void CheckInfieldType(string& infieldtype);
+  virtual void CheckInfieldType(std::string& infieldtype);
 
   void FieldError(int node);
 
@@ -491,8 +491,8 @@ protected:
 
   virtual void WriteThrTableHead(
     std::ofstream& outfile,
-    const string thrname,
-    const string thrtype,
+    const std::string thrname,
+    const std::string thrtype,
     const int dim
     );
 
@@ -502,8 +502,8 @@ protected:
     PostResult& result,
     std::vector<int>& gdof,
     int dim,
-    string thrtype,
-    string groupname,
+    std::string thrtype,
+    std::string groupname,
     const int node
     );
 
@@ -531,7 +531,7 @@ public:
   //! constructor
   FsiFluidMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : FluidMonWriter(problem,infieldtype,node)
@@ -543,7 +543,7 @@ public:
 
 protected:
 
-  void CheckInfieldType(string& infieldtype){};
+  void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
@@ -572,7 +572,7 @@ public:
   //! constructor
   FsiStructMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : StructMonWriter(problem,infieldtype,node)
@@ -584,7 +584,7 @@ public:
 
 protected:
 
-  void CheckInfieldType(string& infieldtype){};
+  void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
@@ -604,7 +604,7 @@ public:
   //! constructor
   FsiAleMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : AleMonWriter(problem,infieldtype,node)
@@ -616,7 +616,7 @@ public:
 
 protected:
 
-  void CheckInfieldType(string& infieldtype){};
+  void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
@@ -637,7 +637,7 @@ public:
   //! constructor
   TsiStructMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : StructMonWriter(problem,infieldtype,node)
@@ -649,7 +649,7 @@ public:
 
 protected:
 
-  void CheckInfieldType(string& infieldtype){};
+  void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
@@ -668,7 +668,7 @@ public:
   //! constructor
   TsiThermoMonWriter(
     PostProblem& problem,
-    string& infieldtype,
+    std::string& infieldtype,
     int node
     )
     : ThermoMonWriter(problem,infieldtype,node)
@@ -680,7 +680,7 @@ public:
 
 protected:
 
-  void CheckInfieldType(string& infieldtype){};
+  void CheckInfieldType(std::string& infieldtype){};
 
   PostField* GetFieldPtr(PostProblem& problem);
 
