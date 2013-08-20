@@ -1,6 +1,11 @@
 /*!----------------------------------------------------------------------
 \file biofilm_fsi.cpp
-
+\brief Algorithm for the calculation of biofilm growth.
+       It consists of:
+       - an inner timeloop (resolving fsi and scatra (in both fluid and structure)
+       at fluid-dynamic time-scale
+       - an outer timeloop (resolving only the biofilm growth)
+       at biological time-scale
 <pre>
 Maintainer: Mirella Coroneo
             coroneo@lnm.mw.tum.de
@@ -57,7 +62,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   }
   if (comm.MyPID()==0)
   {
-    IO::cout << "Created discretization " << (structaledis->Name())
+    std::cout << "Created discretization " << (structaledis->Name())
              << " as a clone of discretization " << (structdis->Name())
              << " in...." << time.ElapsedTime() << " secs\n\n";
   }
@@ -138,7 +143,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   nstep_bio= biofilmcontrol.get<int>("BIONUMSTEP");
   fluxcoef_ = biofilmcontrol.get<double>("FLUXCOEF");
   normforcecoef_ = biofilmcontrol.get<double>("NORMFORCECOEF");
-  tangforcecoef_ = biofilmcontrol.get<double>("TANGFORCECOEF");
+  tangoneforcecoef_ = biofilmcontrol.get<double>("TANGONEFORCECOEF");
+  tangtwoforcecoef_ = biofilmcontrol.get<double>("TANGTWOFORCECOEF");
   step_bio=0;
   time_bio = 0.;
 
@@ -173,7 +179,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 
   norminflux_ = Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   normtraction_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
-  tangtraction_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
+  tangtractionone_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
+  tangtractiontwo_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
 }
 
 
@@ -265,7 +272,8 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   // initialize fluxes and tractions each time we enter the innerloop
   norminflux_->PutScalar(0.0);
   normtraction_->PutScalar(0.0);
-  tangtraction_->PutScalar(0.0);
+  tangtractionone_->PutScalar(0.0);
+  tangtractiontwo_->PutScalar(0.0);
 
   // output of initial state
   //  ScatraOutput();
@@ -286,11 +294,12 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   // in case of averaged values we need temporary variables
   Teuchos::RCP<Epetra_Vector> normtempinflux_ = Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   Teuchos::RCP<Epetra_Vector> normtemptraction_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
-  Teuchos::RCP<Epetra_Vector> tangtemptraction_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
+  Teuchos::RCP<Epetra_Vector> tangtemptractionone_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
+  Teuchos::RCP<Epetra_Vector> tangtemptractiontwo_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   normtempinflux_->PutScalar(0.0);
   normtemptraction_->PutScalar(0.0);
-  tangtemptraction_->PutScalar(0.0);
-
+  tangtemptractionone_->PutScalar(0.0);
+  tangtemptractiontwo_->PutScalar(0.0);
 
   while (step_fsi < nstep_fsi and t+1e-10*dt_fsi < maxtime_fsi)
   {
@@ -343,8 +352,26 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     // access structure discretization
     Teuchos::RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
 
-    // recovery of forces at the interface node based on lagrange multipliers values
-    Teuchos::RCP<Epetra_Vector> lambda_ = fsi_->GetLambda();
+    // recovery of forces at the interface nodes based on lagrange multipliers values
+    // lambda_ is defined only at the interface, while lambdafull on the entire fluid/structure field.
+    Teuchos::RCP<Epetra_Vector> lambda_;
+    Teuchos::RCP<Epetra_Vector> lambdafull;
+
+    // at the purpose to compute lambdafull, it is necessary to know which coupling algorithm is used
+    // however the imposition of a Dirichlet condition on the interface produce wrong lambda_ when structuresplit is used
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling == fsi_iter_monolithicfluidsplit)
+    {
+      Teuchos::RCP<Epetra_Vector> lambdafluid = fsi_->GetLambda();
+      lambda_ = fsi_->FluidToStruct(lambdafluid);
+    }
+    else if (coupling == fsi_iter_monolithicstructuresplit)
+    {
+      lambda_ = fsi_->GetLambda();
+    }
+
+    lambdafull = fsi_->StructureField()->Interface()->InsertFSICondVector(lambda_);
 
     // calculate interface normals in deformed configuration
     Teuchos::RCP<Epetra_Vector> nodalnormals = Teuchos::rcp(new Epetra_Vector(*(strudis->DofRowMap())));
@@ -356,6 +383,33 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     strudis->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,nodalnormals,Teuchos::null,Teuchos::null,biogrcondnames[0]);
     strudis->ClearState();
 
+    const Epetra_Map* dofrowmap = strudis->DofRowMap();
+    const Epetra_Map* noderowmap = strudis->NodeRowMap();
+    Teuchos::RCP<Epetra_MultiVector> lambdanode = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+    // lagrange multipliers defined on a nodemap is necessary
+    for(int lnodeid=0;lnodeid<strudis->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = strudis->lRowNode(lnodeid);
+      // get the dofs of the node
+      std::vector<int> dofs= strudis->Dof(lnode);
+      // the set of degrees of freedom associated with the node
+      const std::vector<int> nodedofset = strudis->Dof(0,lnode);
+
+      for(unsigned index=0;index<nodedofset.size();++index)
+      {
+        // get global id of the dof
+        int gid = nodedofset[index];
+        // get local id of the dof
+        int lid = dofrowmap->LID(gid);
+
+        int lnodeid=lnode->LID();
+
+        double lambdai=(*lambdafull)[lid];
+        ((*lambdanode)(index))->ReplaceMyValues(1,&lambdai,&lnodeid);
+      }
+    }
     // loop over all local interface nodes of structure discretization
     Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, biogrcondnames[0]);
     for (int nodei=0; nodei < condnodemap->NumMyElements(); nodei++)
@@ -379,56 +433,84 @@ void FS3I::BiofilmFSI::InnerTimeloop()
         unitnormal[i] = (*nodalnormals)[doflids[i]];
         temp += unitnormal[i]*unitnormal[i];
       }
-      double absval = sqrt(temp);
+      double unitnormalabsval = sqrt(temp);
       int lnodeid = strudis->NodeRowMap()->LID(gnodeid);
 
       // compute average unit nodal normal
       std::vector<double> Values(numdim);
       for(int j=0; j<numdim; ++j)
       {
-        unitnormal[j] /= absval;
+        unitnormal[j] /= unitnormalabsval;
       }
       double tempflux = 0.0;
       double tempnormtrac = 0.0;
-      double temptangtrac = 0.0;
+      double temptangtracone = 0.0;
+      double temptangtractwo = 0.0;
 
-      // compute first tangential direction
+      // compute first unit tangent
       std::vector<double> unittangentone(3);
       unittangentone[0] = -unitnormal[1];
       unittangentone[1] = unitnormal[0];
       unittangentone[2] = 0.0;
+      temp = 0.;
+      for (int i=0; i<numdim; ++i)
+      {
+        temp += unittangentone[i]*unittangentone[i];
+      }
+      double unittangentoneabsval = sqrt(temp);
+      for(int j=0; j<numdim; ++j)
+      {
+        unittangentone[j] /= unittangentoneabsval;
+      }
 
-      // compute second tangential direction
+      // compute second unit tangent
       std::vector<double> unittangenttwo(3);
-      unittangenttwo[0] = unitnormal[2]/(unitnormal[0]+unitnormal[1]*unitnormal[1]);
-      unittangenttwo[1] = unitnormal[1]*unitnormal[2]/(unitnormal[0]+unitnormal[1]*unitnormal[1]);
+      unittangenttwo[0] = (unitnormal[0]*unitnormal[0]*unitnormal[2])/(unitnormal[0]*unitnormal[0]+unitnormal[1]*unitnormal[1]);
+      unittangenttwo[1] = (unitnormal[0]*unitnormal[1]*unitnormal[2])/(unitnormal[0]*unitnormal[0]+unitnormal[1]*unitnormal[1]);
       unittangenttwo[2] = -unitnormal[0];
+      temp = 0.;
+      for (int i=0; i<numdim; ++i)
+      {
+        temp += unittangenttwo[i]*unittangenttwo[i];
+      }
+      double unittangenttwoabsval = sqrt(temp);
+      for(int j=0; j<numdim; ++j)
+      {
+        unittangenttwo[j] /= unittangenttwoabsval;
+      }
 
       for(int index=0;index<numdim;++index)
       {
         double fluxcomp = (*((*strufluxn)(index)))[lnodeid];
         tempflux += fluxcomp*unitnormal[index];
-
         // for the calculation of the growth and erosion both the tangential and the normal
         // components of the forces acting on the interface are important.
         // Since probably they will have a different effect on the biofilm growth,
         // they are calculated separately and a different coefficient can be used.
-        double traccomp = (*((*lambda_)(0)))[numdim*nodei+index];
+        double traccomp = (*((*lambdanode)(index)))[lnodeid];
         tempnormtrac +=traccomp*unitnormal[index];
-        temptangtrac +=abs (traccomp*unittangentone[index]) + abs (traccomp*unittangenttwo[index]);
+        temptangtracone +=abs (traccomp*unittangentone[index]);
+        temptangtractwo +=abs (traccomp*unittangenttwo[index]);
       }
+
+//      // get the current node at the purpose of writing its coordinates
+//      DRT::Node* mynode = strudis->gNode(gnodeid);
+//      mynode->Print(std::cout);
+//      std::cout<<"tempflux= "<< tempflux<<" tempnormtrac= "<< tempnormtrac<<" temptangtracone= "<< temptangtracone<<" temptangtractwo= "<< temptangtractwo <<std::endl;
 
       if (avgrowth)
       {
         (*((*normtempinflux_)(0)))[lnodeid] += tempflux;
         (*((*normtemptraction_)(0)))[lnodeid] += tempnormtrac;
-        (*((*tangtemptraction_)(0)))[lnodeid] += temptangtrac;
+        (*((*tangtemptractionone_)(0)))[lnodeid] += temptangtracone;
+        (*((*tangtemptractiontwo_)(0)))[lnodeid] += temptangtractwo;
       }
       else
       {
         (*((*norminflux_)(0)))[lnodeid] = tempflux;
         (*((*normtraction_)(0)))[lnodeid] = tempnormtrac;
-        (*((*tangtraction_)(0)))[lnodeid] = temptangtrac;
+        (*((*tangtractionone_)(0)))[lnodeid] = temptangtracone;
+        (*((*tangtractiontwo_)(0)))[lnodeid] = temptangtractwo;
       }
     }
   }
@@ -448,7 +530,8 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
       (*((*norminflux_)(0)))[lnodeid] = (*((*normtempinflux_)(0)))[lnodeid] / step_fsi;
       (*((*normtraction_)(0)))[lnodeid] = (*((*normtemptraction_)(0)))[lnodeid] / step_fsi;
-      (*((*tangtraction_)(0)))[lnodeid] = (*((*tangtemptraction_)(0)))[lnodeid] / step_fsi;
+      (*((*tangtractionone_)(0)))[lnodeid] = (*((*tangtemptractionone_)(0)))[lnodeid] / step_fsi;
+      (*((*tangtractiontwo_)(0)))[lnodeid] = (*((*tangtemptractiontwo_)(0)))[lnodeid] / step_fsi;
     }
   }
 
@@ -500,26 +583,35 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
     int lnodeid = strudis->NodeRowMap()->LID(nodegid);
     double influx = (*norminflux_)[lnodeid];
     double normforces = (*normtraction_)[lnodeid];
-    double tangforces = (*tangtraction_)[lnodeid];
+    double tangoneforce = (*tangtractionone_)[lnodeid];
+    double tangtwoforce = (*tangtractiontwo_)[lnodeid];
 
     // compute average unit nodal normal and "interface velocity"
     std::vector<double> Values(numdim);
 
     for(int j=0; j<numdim; ++j)
     {
-      //introduced a tolerance otherwise NAN will be produced in case of zero absval
+      unitnormal[j] /= absval;
+      //introduced a tolerance to know if the second tangent has to be taken in account
+      //for pseudo-3D problems NAN can be introduced in the calculation
+      //and in any case the second tangent should not be taken in account in this case
       double TOL = 1e-6;
-      if (absval > TOL)
+      if (tangtwoforcecoef_ > TOL)
       {
-        unitnormal[j] /= absval;
-        // explanation of signs present in the following phenomenological law
+        // explanation of signs present in the following phenomenological laws
         // influx<0     --> growth  -->  -  fluxcoef_
-        // normforces<0 --> erosion -->  +  normforcecoef_
+        // normforces>0 --> erosion -->  -  normforcecoef_
         // tangforces>0 --> erosion -->  -  tangforcecoef_
         Values[j] = - fluxcoef_ * influx * unitnormal[j]
-                    + normforcecoef_ * normforces * unitnormal[j]
-                    - tangforcecoef_ * tangforces * unitnormal[j];
+                    - normforcecoef_ * normforces * unitnormal[j]
+                    - tangoneforcecoef_ * tangoneforce * unitnormal[j]
+                    - tangtwoforcecoef_ * tangtwoforce * unitnormal[j];
       }
+      else
+        Values[j] = - fluxcoef_ * influx * unitnormal[j]
+                    - normforcecoef_ * normforces * unitnormal[j]
+                    - tangoneforcecoef_ * tangoneforce * unitnormal[j];
+
     }
 
     int error = struiveln_->ReplaceGlobalValues(numdim,&Values[0],&globaldofs[0]);
@@ -835,7 +927,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
 {
   const Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
-  RCP<DRT::Discretization> struscatradis = scatravec_[0]->ScaTraField().Discretization();
+  RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField().Discretization();
 
   const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid", step_bio, 701, false, fluiddis->Comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());
@@ -863,7 +955,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "fluid phi \" {" << std::endl;
     // draw vector field 'fluid phi' for every element
-    IO::GMSH::ScalarFieldToGmsh(struscatradis,fluidphi,gmshfilecontent);
+    IO::GMSH::ScalarFieldToGmsh(fluidscatradis,fluidphi,gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 

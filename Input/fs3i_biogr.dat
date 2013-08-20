@@ -240,7 +240,8 @@ BIOTIMESTEP                     10000
 AVGROWTH                        No
 FLUXCOEF                        0.0003
 NORMFORCECOEF                   0.0
-TANGFORCECOEF                   0.0
+TANGONEFORCECOEF                0.0
+TANGTWOFORCECOEF                0.0
 BIOFILMGROWTH                   Yes
 OUTPUT_GMSH                     No
 --------------------------------------------------------------------SOLVER 6

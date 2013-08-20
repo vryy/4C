@@ -4353,7 +4353,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("AVGROWTH","No","The calculation of growth parameters is based on averaged values",&biofilmcontrol);
   DoubleParameter("FLUXCOEF",0.0,"Coefficient for growth due to scalar flux",&biofilmcontrol);
   DoubleParameter("NORMFORCECOEF",0.0,"Coefficient for erosion due to normal surface forces",&biofilmcontrol);
-  DoubleParameter("TANGFORCECOEF",0.0,"Coefficient for erosion due to tangential surface forces",&biofilmcontrol);
+  DoubleParameter("TANGONEFORCECOEF",0.0,"Coefficient for erosion due to the first tangential surface force",&biofilmcontrol);
+  DoubleParameter("TANGTWOFORCECOEF",0.0,"Coefficient for erosion due to the second tangential surface force",&biofilmcontrol);
   DoubleParameter("BIOTIMESTEP",0.05,"Time step size for biofilm growth",&biofilmcontrol);
   IntParameter("BIONUMSTEP",0,"Maximum number of steps for biofilm growth",&biofilmcontrol);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&biofilmcontrol);

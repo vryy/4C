@@ -122,16 +122,19 @@ namespace FS3I
 
     Teuchos::RCP<Epetra_Vector> lambda_;
     Teuchos::RCP<Epetra_Vector> normtraction_;
-    Teuchos::RCP<Epetra_Vector> tangtraction_;
+    Teuchos::RCP<Epetra_Vector> tangtractionone_;
+    Teuchos::RCP<Epetra_Vector> tangtractiontwo_;
 
     std::vector<double> nvector;
 
     // coefficients used in the calculation of the displacement due to growth
     // fluxcoef_ multiply the scalar influx at the interface,
-    // while normforcecoef_ and tangforcecoef_ multiply forces in the normal and tangential direction at the interface
+    // while normforcecoef_, tangoneforcecoef_ and tangtwoforcecoef_  multiply forces
+    // in the normal and in the two tangential directions at the interface
     double fluxcoef_;
     double normforcecoef_;
-    double tangforcecoef_;
+    double tangoneforcecoef_;
+    double tangtwoforcecoef_;
 
     //// growth time parameters
 
