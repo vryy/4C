@@ -106,7 +106,7 @@ namespace ADAPTER
     /// total number of time steps
     int nstep_;
 
-    /// current physical time
+    /// current physical time at end of time step, i.e. \f$t_{n+1}\f$
     double time_;
 
     /// maximum simulation time
