@@ -210,6 +210,7 @@ protected:
      */
     int EvaluateOD(
         Teuchos::ParameterList&                                           params,
+        const LINALG::Matrix<my::nsd_,my::nen_> &                         ebofoaf,
         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, my::nsd_ * my::nen_> &  elemat1,
         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1> &                    elevec1,
         const LINALG::Matrix<my::nsd_,my::nen_> &                         evelaf,
@@ -220,6 +221,8 @@ protected:
         const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
         const LINALG::Matrix<my::nen_,1>&                                 escaaf,
+        const LINALG::Matrix<my::nsd_,my::nen_>&                          emhist,
+        const LINALG::Matrix<my::nen_,1>&                                 echist,
         const LINALG::Matrix<my::nen_,1>*                                 eporositynp,
         Teuchos::RCP<MAT::Material>                                       mat,
         bool                                                              isale,
@@ -295,6 +298,7 @@ protected:
   */
   void SysmatOD(
       Teuchos::ParameterList&                                         params,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
       const LINALG::Matrix<my::nen_, 1>&                              epreaf,
@@ -303,6 +307,8 @@ protected:
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
       const LINALG::Matrix<my::nen_,1>&                               escaaf,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                        emhist,
+      const LINALG::Matrix<my::nen_,1>&                               echist,
       const LINALG::Matrix<my::nen_,1>*                               eporositynp,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_,my::nsd_ * my::nen_>&  ecoupl,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
@@ -618,6 +624,7 @@ protected:
   */
   void GaussPointLoopOD(
                           Teuchos::ParameterList&                                         params,
+                          const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
                           const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
                           const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
                           const LINALG::Matrix<my::nen_, 1>&                              epreaf,
@@ -626,6 +633,8 @@ protected:
                           const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
                           const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
                           const LINALG::Matrix<my::nen_,1>&                               escaaf,
+                          const LINALG::Matrix<my::nsd_,my::nen_>&                        emhist,
+                          const LINALG::Matrix<my::nen_,1>&                               echist,
                           const LINALG::Matrix<my::nen_,1>*                               eporositynp,
                           LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
                           LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&       ecoupl_u,
@@ -685,6 +694,18 @@ protected:
 
   /// access structure material of corresponding solid (poro) element
   void GetStructMaterial();
+
+  /// get material parameters of poro fluid element
+  void GetMaterialParamters(Teuchos::RCP<const MAT::Material>   material);
+
+  /// get compute RHS of momentum equation of time step n and subgrid-scale velocity
+  void ComputeOldRHSAndSubgridScaleVelocity();
+
+  /// get stabilization paramters
+  void ComputeStabilizationParameters();
+
+  /// get compute RHS of contiuity equation of time step n
+  void ComputeOldRHSConti();
 
   ///effective viscosity (zero for Darcy flow )
   double visceff_;

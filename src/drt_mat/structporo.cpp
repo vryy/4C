@@ -246,7 +246,7 @@ void MAT::StructPoro::ComputePorosity( const double& initporosity,
   if(dphi_dJdp) *dphi_dJdp= -1/J* (*dphi_dp)+ d_J_p/(2*a) - d_J*J/(2.0*a*a);
 
   //d^2(porosity) / d(J)^2
-  if(dphi_dJJ) *dphi_dJJ= phi/(J*J) - (*dphi_dJ)/J - 1/(2.0*J*J) - d_J/(2*a*J) + d_J_J/(2.0*a);
+  if(dphi_dJJ) *dphi_dJJ= phi/(J*J) - (*dphi_dJ)/J - 1/(2.0*J*J) - d_J/(2.0*a*J) + d_J_J/(2.0*a);
 
   //d^2(porosity) / d(pressure)^2
   if(dphi_dpp) *dphi_dpp= -J/a* (*dphi_dp) + phi*J*J/(a*a) - J/(2.0*a*a)*(J+d_p) + d_p_p/(2.0*a);

@@ -63,7 +63,7 @@ GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no_pspg            
+PSPG                            yes //yes no            
 REYNOLDS-STRESS                 no_reynolds
 RSTAB                           rstab_gls //rstab_gls no_rstab 
 STABTYPE                        residual_based //residual_based no_stabilization 
@@ -178,7 +178,7 @@ CURVE1 on EXPR FUNC -1.0 t1 2.0 t2 2000.0 // Tmax=4
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 5 QUANTITY pressure VALUE 6.20950433148520914e-02 TOLERANCE 1e-8 
+FLUID DIS fluid NODE 5 QUANTITY pressure VALUE 6.20950582775473478e-02 TOLERANCE 1e-8 
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.50028320120861403e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.50043647426255844e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -5.00000000000000555e-01 TOLERANCE 1e-8

@@ -249,6 +249,18 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
   my::rotsymmpbc_->Setup(ele);
 
   // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes,
+  // with pressure gradient prescribed as body force included for turbulent
+  // channel flow and with scatra body force included for variable-density flow
+  // (evaluation at time n+alpha_F for generalized-alpha scheme,
+  //  and at time n+1 otherwise)
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
+  LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
+  LINALG::Matrix<my::nen_,1>    escabofoaf(true);
+  this->BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+
+  // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
   // and history
   // velocity/pressure values are at time n+alpha_F/n+alpha_M for
@@ -280,6 +292,11 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
 
   LINALG::Matrix<my::nen_,1> eporosity(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &eporosity,"scaaf");
+
+  LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
+  LINALG::Matrix<my::nen_, 1> echist(true);
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
+      &echist, "hist");
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -315,6 +332,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
 
     // call inner evaluate (does not know about DRT element or discretization object)
     return my::EvaluateOD(params,
+        ebofoaf,
         elemat1,
         elevec1,
         evelaf,
@@ -325,7 +343,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
         edispnp,
         egridv,
         escaaf,
-        &eporosity,
+        emhist,
+        echist,
+        NULL,
         mat,
         ele->IsAle(),
         intpoints);

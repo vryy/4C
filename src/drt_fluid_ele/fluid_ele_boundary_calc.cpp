@@ -3153,69 +3153,74 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     LINALG::Matrix<nsd_,nsd_> xji;
 
     xji.Invert(xjm);
-    derxy.Multiply(xji,pderiv);
+    derxy.Multiply(xji,pderiv_loc);
 
     for (int i=0; i<nenparent; i++)
       for (int j=0; j<nsd_; j++)
         dJ_dus(j+i*nsd_)=J*derxy(j,i);
 
-    //fill element matrix
-    for (int inode=0;inode<nenparent;inode++)
-    {
-      double normal_convel = 0.0;
-      LINALG::Matrix<1,nsd_> convel;
+    double normal_convel = 0.0;
+    LINALG::Matrix<1,nsd_> convel;
 
+    for (int idof=0;idof<nsd_;idof++)
+    {
+      normal_convel += unitnormal_(idof) *velint_(idof)  ;
+      convel(idof)   = velint_(idof) ;
+    }
+
+    if(not fldpara_->IsStationary())
       for (int idof=0;idof<nsd_;idof++)
       {
-        normal_convel += unitnormal_(idof) *velint_(idof)  ;
-        convel(idof)   = velint_(idof) ;
+        normal_convel += unitnormal_(idof) *( - gridvelint(idof) ) ;
+        convel(idof)  -= gridvelint(idof);
       }
 
-      if(not fldpara_->IsStationary())
-        for (int idof=0;idof<nsd_;idof++)
-        {
-          normal_convel += unitnormal_(idof) *( - gridvelint(idof) ) ;
-          convel(idof)  -= gridvelint(idof);
-        }
+    LINALG::Matrix<1,nenparent*nsd_> tmp;
+    tmp.Multiply(convel,normalderiv);
 
-      LINALG::Matrix<1,nenparent*nsd_> tmp;
-      tmp.Multiply(convel,normalderiv);
+    //fill element matrix
+    {
+      if(not offdiag)
+        for (int inode=0;inode<nenparent;inode++)
+          elevec1(inode*numdofpernode_+nsd_) -=  rhsfac * pfunct(inode) * porosity_gp * normal_convel;
 
       if(not offdiag)
-        elevec1(inode*numdofpernode_+nsd_) -=  rhsfac * pfunct(inode) * porosity_gp * normal_convel;
-
-      if(not offdiag)
-        for (int nnod=0;nnod<nenparent;nnod++)
-        {
-          for (int idof2=0;idof2<nsd_;idof2++)
-              elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
-                  timefacfacpre * pfunct(inode) * porosity_gp * unitnormal_(idof2) * pfunct(nnod)
-                ;
-          elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+nsd_) +=
-              + timefacfacpre * pfunct(inode) * dphi_dp* normal_convel * pfunct(nnod);
-        }
+        for (int inode=0;inode<nenparent;inode++)
+          for (int nnod=0;nnod<nenparent;nnod++)
+          {
+            for (int idof2=0;idof2<nsd_;idof2++)
+                elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
+                    timefacfacpre * pfunct(inode) * porosity_gp * unitnormal_(idof2) * pfunct(nnod)
+                  ;
+            elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+nsd_) +=
+                + timefacfacpre * pfunct(inode) * dphi_dp* normal_convel * pfunct(nnod);
+          }
 
       else if(not porositydof)
-        for (int nnod=0;nnod<nenparent;nnod++)
-          for (int idof2=0;idof2<nsd_;idof2++)
-            elemat1(inode*numdofpernode_+nsd_,nnod*nsd_+idof2) +=
-                    + tmp(0,nnod*nsd_+idof2) * porosity_gp* pfunct(inode) * timefacpre * fac
-                    - pfunct(inode) * porosity_gp * unitnormal_(idof2) * timescale * pfunct(nnod) * timefacfacpre
-                    + pfunct(inode) * dphi_dJ * dJ_dus(nnod*nsd_+idof2) * normal_convel * timefacfacpre
-                    ;
+      {
+        for (int inode=0;inode<nenparent;inode++)
+          for (int nnod=0;nnod<nenparent;nnod++)
+            for (int idof2=0;idof2<nsd_;idof2++)
+              elemat1(inode*numdofpernode_+nsd_,nnod*nsd_+idof2) +=
+                      + tmp(0,nnod*nsd_+idof2) * porosity_gp * pfunct(inode) * timefacpre * fac
+                      - pfunct(inode) * porosity_gp * unitnormal_(idof2) * timescale * pfunct(nnod) * timefacfacpre
+                      + pfunct(inode) * dphi_dJ * dJ_dus(nnod*nsd_+idof2) * normal_convel * timefacfacpre
+                      ;
+      }
 
       else // offdiagonal and porositydof
-        for (int nnod=0;nnod<nenparent;nnod++)
-        {
-          for (int idof2=0;idof2<nsd_;idof2++)
-            elemat1(inode*numdofpernode_+nsd_,nnod*(nsd_+1)+idof2) +=
-                    + tmp(0,nnod*nsd_+idof2) * porosity_gp* pfunct(inode) * timefacpre * fac
-                    - pfunct(inode) * porosity_gp * unitnormal_(idof2) * timescale * pfunct(nnod) * timefacfacpre
-                    + pfunct(inode) * dphi_dJ * dJ_dus(nnod*nsd_+idof2) * normal_convel * timefacfacpre
-                    ;
-          elemat1(inode*numdofpernode_+nsd_,nnod*(nsd_+1)+nsd_) +=
-                    pfunct(inode) * pfunct(nnod) * normal_convel * timefacfacpre;
-        }
+        for (int inode=0;inode<nenparent;inode++)
+          for (int nnod=0;nnod<nenparent;nnod++)
+          {
+            for (int idof2=0;idof2<nsd_;idof2++)
+              elemat1(inode*numdofpernode_+nsd_,nnod*(nsd_+1)+idof2) +=
+                      + tmp(0,nnod*nsd_+idof2) * porosity_gp* pfunct(inode) * timefacpre * fac
+                      - pfunct(inode) * porosity_gp * unitnormal_(idof2) * timescale * pfunct(nnod) * timefacfacpre
+                      + pfunct(inode) * dphi_dJ * dJ_dus(nnod*nsd_+idof2) * normal_convel * timefacfacpre
+                      ;
+            elemat1(inode*numdofpernode_+nsd_,nnod*(nsd_+1)+nsd_) +=
+                      pfunct(inode) * pfunct(nnod) * normal_convel * timefacfacpre;
+          }
     }
   } /* end of loop over integration points gpid */
   return;

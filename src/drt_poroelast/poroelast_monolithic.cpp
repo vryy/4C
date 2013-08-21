@@ -1006,6 +1006,8 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
 
   FluidField()->Discretization()->SetState(0,"scaaf",FluidField()->Scaaf());
 
+  FluidField()->Discretization()->SetState(0,"hist",FluidField()->Hist());
+
   // set scheme-specific element parameters and vector values
   //TODO
   //if (is_genalpha_)
@@ -1199,8 +1201,6 @@ void POROELAST::Monolithic::PoroFDCheck()
         std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
             << (*rhs_copy)[zeilennr] << std::endl;
 
-        std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
-            << (*rhs_copy)[zeilennr] << std::endl;
         std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value
             << std::endl;
         std::cout << "\n******************" << zeilennr + 1

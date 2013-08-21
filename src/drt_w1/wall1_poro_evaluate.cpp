@@ -708,7 +708,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
 
       for(int j=0; j<numdim_; j++)
       {
-        /*-------structure- fluid velocity coupling:  RHS
+        /*-------structure- velocity coupling:  RHS
          "dracy-terms"
          - reacoeff * J *  phi^2 *  v^f
          */
@@ -1119,7 +1119,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
   LINALG::Matrix<numdof_,1> cinvb(true);
   cinvb.MultiplyTN(bop,C_inv_vec);
 
-  //F^-T * grad p
+  //F^-T * Grad p
   LINALG::Matrix<numdim_,1> Finvgradp;
   Finvgradp.MultiplyTN(defgrd_inv, Gradp);
 
@@ -1144,9 +1144,10 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
            -B^T . ( -1*J*C^-1 ) * Dp
            - J * F^-T * Grad(p) * dphi/dp * Dp - J * F^-T * d(Grad((p))/(dp) * phi * Dp
            */
-          ecoupl(fi+j, fk_press) +=  detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k)
-                              - fac * J * (   Finvgradp(j) * dphi_dp * shapefct(k)
-                                            + porosity * FinvNXYZ(j,k) )
+          ecoupl(fi+j, fk_press) +=   detJ_w * cinvb(fi+j) * ( -1.0) * J * shapefct(k)
+                                    - fac * J * (   dphi_dp  * Finvgradp(j) * shapefct(k)
+                                                  + porosity * FinvNXYZ(j,k)
+                                                )
                                             ;
 
           /*-------structure- fluid pressure coupling:  "dracy-terms" + "reactive darcy-terms"
@@ -1156,7 +1157,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
           const double tmp = fac * reacoeff * J * 2 * porosity * dphi_dp * shapefct(k);
           ecoupl(fi+j, fk_press) += -tmp * fvelint(j);
 
-          ecoupl(fi+j, fk_press) += tmp * velint(j);
+          ecoupl(fi+j, fk_press) +=  tmp * velint(j);
 
           /*-------structure- fluid velocity coupling:  "darcy-terms"
            -reacoeff * J *  phi^2 *  Dv^f

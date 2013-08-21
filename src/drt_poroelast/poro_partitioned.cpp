@@ -134,7 +134,7 @@ void POROELAST::Partitioned::Solve()
     // convergence is achieved overall
     stopnonliniter = ConvergenceCheck(itnum);
 
-    AitkenRelax();
+    //AitkenRelax();
   }
 
   // initial guess for next time step n+1

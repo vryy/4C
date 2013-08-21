@@ -55,10 +55,10 @@ POROELAST::PORO_SCATRA_Base::PORO_SCATRA_Base(const Epetra_Comm& comm,
     if ( velfield != INPAR::SCATRA::velocity_Navier_Stokes )
       dserror("scalar transport is coupled with the porous medium. Set 'VELOCITYFIELD' to 'Navier_Stokes' in the SCALAR TRANSPORT DYNAMIC section! ");
 
-    bool skipinitder
-    = DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER");
-    if ( not skipinitder )
-      dserror("Calculation of initial time derivative not yet supported for scalar transport in porous media. Set 'SKIPINITDER' to 'yes' in the SCALAR TRANSPORT DYNAMIC section! ");
+//    bool skipinitder
+//    = DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER");
+//    if ( not skipinitder )
+//      dserror("Calculation of initial time derivative not yet supported for scalar transport in porous media. Set 'SKIPINITDER' to 'yes' in the SCALAR TRANSPORT DYNAMIC section! ");
   }
 
   //1.- Setup discretizations.

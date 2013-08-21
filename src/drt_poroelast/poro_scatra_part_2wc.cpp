@@ -131,7 +131,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::PrepareTimeStep()
   // keep them in sinc!
   IncrementTimeAndStep();
 
-  //SetPoroSolution();
+  SetPoroSolution();
   ScatraField().PrepareTimeStep();
   // set structure-based scalar transport values
   SetScatraSolution();

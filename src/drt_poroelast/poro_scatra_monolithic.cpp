@@ -135,6 +135,7 @@ void POROELAST::PORO_SCATRA_Mono::PrepareTimeStep()
   // keep them in sinc!
   IncrementTimeAndStep();
 
+  SetPoroSolution();
   ScatraField().PrepareTimeStep();
   // set structure-based scalar transport values
   SetScatraSolution();
@@ -892,7 +893,7 @@ Teuchos::RCP<const Epetra_Map> POROELAST::PORO_SCATRA_Mono::DofRowMap() const
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROELAST::PORO_SCATRA_Mono::CombinedDBCMap() const
 {
-  return dbcmaps_->FullMap();
+  return dbcmaps_->CondMap();
 }
 
 /*----------------------------------------------------------------------*

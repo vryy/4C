@@ -97,7 +97,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     reacoeff_(0.0),
     // LOMA-specific variables
     diffus_(0.0),
-    rhscon_(true),
+    rhscon_(0.0),
     densaf_(1.0),         // initialized to 1.0 (filled in Fluid::GetMaterialParams)
     densam_(1.0),         // initialized to 1.0 (filled in Fluid::GetMaterialParams)
     densn_(1.0),          // initialized to 1.0 (filled in Fluid::GetMaterialParams)
