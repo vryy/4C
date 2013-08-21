@@ -598,11 +598,15 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,mseg,gseg);
+    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+      scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,mseg,gseg,scseg);
 
     // do the two assemblies into the slave nodes
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);
     integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+    if (scseg!=Teuchos::null) integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
   }
 
   // *******************************************************************
@@ -766,6 +770,9 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
 
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
+    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+      scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     // *******************************************************************
     // different options for mortar integration
@@ -784,13 +791,14 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
         (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad) ||
         (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
-      integrator.EleBased_Integration(dseg,mseg,SlaveElement(),MasterElements(),&boundary_ele);
+      integrator.EleBased_Integration(dseg,mseg,scseg,SlaveElement(),MasterElements(),&boundary_ele);
 
       // Perform Boundary Segmentation if required
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
         if (boundary_ele==true)
-        {std::cout << "Boundary segmentation for element: " << SlaveElement().Id() << "\n" ;
+        {
+          //std::cout << "Boundary segmentation for element: " << SlaveElement().Id() << "\n" ;
           // switch, if consistent boundary modification chosen
           if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
               && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
@@ -841,11 +849,18 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
             }
           }
         }
+        else
+        {
+          integrator.AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
+          integrator.AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
+          if (scseg!=Teuchos::null) integrator.AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
+        }
       }
       else
       {
         integrator.AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
         integrator.AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
+        if (scseg!=Teuchos::null) integrator.AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
       }
     }
   }

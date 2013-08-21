@@ -1503,7 +1503,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("LM_DUAL_CONSISTENT","Yes","If chosen consistent dual shape functions are calculated",
                                yesnotuple,yesnovalue,&mortar);
 
-  setStringToIntegralParameter<int>("LM_NODAL_SCALE","Yes","If chosen a nodal scaling factor is calculated for each LM",
+  setStringToIntegralParameter<int>("LM_NODAL_SCALE","No","If chosen a nodal scaling factor is calculated for each LM",
                                yesnotuple,yesnovalue,&mortar);
 
 

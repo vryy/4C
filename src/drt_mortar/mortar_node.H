@@ -152,6 +152,11 @@ public:
   */
   virtual std::vector<std::map<int,double> >& GetMmod() { return mmodrows_; }
 
+  /*!
+  \brief Return the scale factor of this node
+  */
+  virtual double& GetScale() { return scalefac_; }
+
   //@}
 
 protected:
@@ -168,6 +173,8 @@ protected:
   std::vector<std::map<int,double> >      drows_;      // nodal rows of D matrix
   std::vector<std::map<int,double> >      mrows_;      // nodal rows of M matrix
   std::vector<std::map<int,double> >      mmodrows_;   // nodal rows of Mmod matrix
+
+  double          scalefac_;       // nodal scaling factor for better conditioning
 
 }; // class MortarNodeDataContainer
 
@@ -407,6 +414,14 @@ public:
 
   */
   void AddMmodValue(int& row, int& col, double& val);
+
+  /*!
+  \brief Add a value to the scale factor of this node
+
+  \param val : value to be added
+
+  */
+  void AddScValue(double& val);
 
   /*!
   \brief Build nodal normal

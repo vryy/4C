@@ -3565,16 +3565,20 @@ bool MORTAR::Coupling3d::IntegrateCells()
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       // check whether auxiliary plane coupling or not and call integrator
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,scseg);
       else /*(!CouplingInAuxPlane()*/
-        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
+        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg,scseg);
 
       // assembly of intcell contributions to D and M
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+      if (scseg!=Teuchos::null) integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
     }
 
     // *******************************************************************
@@ -4153,11 +4157,14 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       bool boundary_ele=false;
 
       //integrate D and M -- 2 Cells
-      integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,&boundary_ele);
+      integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
 
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
@@ -4210,6 +4217,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
           // assembly of intcell contributions to D and M
           integrator.AssembleD(Comm(),SlaveElement(),*dseg);
           integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+          if (scseg!=Teuchos::null) integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
         }
       }
       else
@@ -4217,6 +4225,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
         // assembly of intcell contributions to D and M
         integrator.AssembleD(Comm(),SlaveElement(),*dseg);
         integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+        if (scseg!=Teuchos::null) integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
       }
     }
     else
@@ -4296,11 +4305,13 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
+    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+
 
     bool boundary_ele=false;
 
     //integrate D and M -- 2 Cells
-    integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,&boundary_ele);
+    integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
 
     if (IntType()==INPAR::MORTAR::inttype_elements_BS)
     {

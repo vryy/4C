@@ -388,6 +388,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
 void MORTAR::MortarIntegrator::EleBased_Integration(
        Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
        Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+       Teuchos::RCP<Epetra_SerialDenseVector> scseg,
        MORTAR::MortarElement& sele,
        std::vector<MORTAR::MortarElement*> meles,
        bool *boundary_ele)
@@ -673,6 +674,12 @@ void MORTAR::MortarIntegrator::EleBased_Integration(
       }
     }
 
+    // compute nodal scaling factor **************************************
+    if (scseg!=Teuchos::null)
+      for (int j=0;j<nrow;++j)
+        (*scseg)(j) += wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
+    // compute nodal scaling factor **************************************
+
     }//loop-end over all gp
 
     //consistency check
@@ -796,7 +803,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg)
 { 
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
@@ -1012,6 +1020,12 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
       }
     } // ShapeFcn() switch
     // compute segment D/M matrix ****************************************
+
+    // compute nodal scaling factor **************************************
+    if (scseg!=Teuchos::null)
+      for (int j=0;j<nrow;++j)
+        (*scseg)(j) += wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
+    // compute nodal scaling factor **************************************
   }
   //**********************************************************************
 
@@ -1165,7 +1179,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
      Teuchos::RCP<MORTAR::IntCell> cell,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg)
 {
   // explicitely defined shapefunction type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -1334,6 +1349,18 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
       }
     }
     // compute cell D/M matrix *******************************************
+
+    // compute nodal scaling factor **************************************
+    if (scseg!=Teuchos::null)
+      for (int j=0;j<nrow;++j)
+      {
+        double fac=wgt*sval[j]*jaccell;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        (*scseg)(j) += fac;
+      }
+    // compute nodal scaling factor **************************************
   }
   //**********************************************************************
 
@@ -1348,6 +1375,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D_EleBased(
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      bool *boundary_ele)
 {
   // explicitely defined shapefunction type needed
@@ -1533,6 +1561,18 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D_EleBased(
             }
           }
         }
+        // compute nodal scaling factor **************************************
+        if (scseg!=Teuchos::null)
+          for (int j=0;j<nrow;++j)
+          {
+            double fac=wgt*sval[j];
+            fac /= sele.Nodes()[j]->NumElement();
+            if (sele.Shape() == DRT::Element::tri3 )
+              fac *= 6;
+            (*scseg)(j) += fac;
+          }
+        // compute nodal scaling factor **************************************
+
       }//is_on_mele==true
     }//loop over meles
 
@@ -1561,7 +1601,8 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg)
 {
   // explicitely defined shapefunction type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -1749,6 +1790,18 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlane(
       } // nrow*ndof loop
     } // ShapeFcn() switch
     // compute cell D/M matrix *******************************************
+
+    // compute nodal scaling factor **************************************
+    if (scseg!=Teuchos::null)
+      for (int j=0;j<nrow;++j)
+      {
+        double fac=wgt*sval[j]*jac / sele.Jacobian(sxi);
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        (*scseg)(j) += fac;
+      }
+    // compute nodal scaling factor **************************************
   }
   //**********************************************************************
 
@@ -2839,6 +2892,38 @@ bool MORTAR::MortarIntegrator::AssembleMmod(const Epetra_Comm& comm,
      */
   }
 
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble scale factor contribution (2D / 3D)             seitz 03/12|
+ |  This method assembles the contrubution of a 1D/2D slave             |
+ |  element to the scale factor of the adjacent slave nodes.            |
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarIntegrator::AssembleScale(const Epetra_Comm& comm,
+                                             MORTAR::MortarElement& sele,
+                                             Epetra_SerialDenseVector& scseg)
+{
+  // get adjacent slave nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes) dserror("ERROR: AssembleG: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID()) continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound()) continue;
+
+    double val = scseg(slave);
+    snode->AddScValue(val);
+
+  }
   return true;
 }
 

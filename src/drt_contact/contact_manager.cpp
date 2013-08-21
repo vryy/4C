@@ -544,6 +544,17 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
     dserror("ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier strategy.");
 
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements)
+    dserror("ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
+
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("ERROR: Nodal scaling of Lagrange multipliers only for Lagrange multiplier strategy.");
+
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements)
+   dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
 
   // *********************************************************************
   // not (yet) implemented combinations
@@ -606,6 +617,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");  
 
+  // no nodal scaling in for thermal-structure-interaction
+  if (problemtype==prb_tsi &&
+      DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
+    dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
+
   // *********************************************************************
   // contact with wear
   // *********************************************************************
@@ -629,6 +645,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") != INPAR::MORTAR::inttype_segments)
     dserror("ERROR: Calculation of wear only possible by employing segment-based integration!");
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none &&
+      DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE") ==true)
+    dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)

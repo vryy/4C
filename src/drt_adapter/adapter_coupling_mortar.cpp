@@ -69,6 +69,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
     dserror("Mortar coupling adapter only works for dual shape functions");
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
     dserror("Mortar coupling adapter only works for segment-based integration");
+  if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
+    dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
 
   // check for parallel redistribution (only if more than 1 proc)
   bool parredist = false;

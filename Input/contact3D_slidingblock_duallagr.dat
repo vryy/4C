@@ -76,6 +76,7 @@ SEARCH_PARAM                    0.3
 COUPLING_AUXPLANE               Yes
 INTTYPE                         elements_BS
 LM_DUAL_CONSISTENT              yes
+LM_NODAL_SCALE                  yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

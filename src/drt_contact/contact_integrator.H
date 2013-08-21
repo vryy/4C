@@ -113,6 +113,7 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
       Teuchos::RCP<Epetra_SerialDenseVector> wseg,
       bool *boundary_ele);
   /*!
@@ -128,6 +129,7 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
       Teuchos::RCP<Epetra_SerialDenseVector> wseg);
 
   /*!
@@ -140,7 +142,8 @@ public:
       Teuchos::RCP<MORTAR::IntCell> cell,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg);
     
   /*!
   \brief Build all integrals and linearizations without segmentation -- 3D
@@ -152,6 +155,7 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
       INPAR::MORTAR::LagMultQuad lmtype,
       bool *boundary_ele,
       bool *proj_);
@@ -168,6 +172,7 @@ public:
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg,

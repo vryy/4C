@@ -685,6 +685,10 @@ void CONTACT::CoInterface::Initialize()
     (cnode->MoData().GetM()).resize(0);
     (cnode->MoData().GetMmod()).resize(0);
     
+    // reset nodal scaling factor
+    (cnode->MoData().GetScale())=0.0;
+    (cnode->CoData().GetDerivScale()).clear();
+
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)
       (cnode->CoData().GetDerivN())[j].clear();
@@ -770,6 +774,10 @@ void CONTACT::CoInterface::Initialize()
       MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
+
+      // dual shape function coefficient matrix
+      mele->MoData().ResetDualShape();
+      mele->MoData().ResetDerivDualShape();
     }
   }
   else
@@ -784,6 +792,10 @@ void CONTACT::CoInterface::Initialize()
       MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
+
+      // dual shape function coefficient matrix
+      mele->MoData().ResetDualShape();
+      mele->MoData().ResetDerivDualShape();
     }
   }
 
@@ -1487,6 +1499,16 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     {
       std::vector<std::map<int,double> > dmap = cnode->MoData().GetD();
       std::vector<std::map<int,double> > dmapold = cnode->FriData().GetDOld();
+      double scalefac=1.;
+      std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
+      bool scderiv=false;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+                cnode->MoData().GetScale() != 0.)
+      {
+        scderiv=true;
+        scalefac=cnode->MoData().GetScale();
+
+      }
 
       std::set <int> snodes = cnode->FriData().GetSNodes();
 
@@ -1514,7 +1536,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         for (int dim=0;dim<csnode->NumDof();++dim)
         {
           int locid = (xsmod->Map()).LID(csnode->Dofs()[dim]);
-          jump[dim]-=(dik-dikold)*(*xsmod)[locid];
+          jump[dim]-=(dik-dikold)*(*xsmod)[locid] / scalefac;
         }
       } //  loop over adjacent slave nodes
 
@@ -1560,7 +1582,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
 
         for (int dim=0;dim<cnode->NumDof();++dim)
         {
-           jump[dim]+= (mik-mikold)*(cmnode->xspatial()[dim]);
+           jump[dim]+= (mik-mikold)*(cmnode->xspatial()[dim]) / scalefac;
         }
       } //  loop over master nodes
 
@@ -1594,7 +1616,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
           {
             int col = csnode->Dofs()[dimrow];
-            double val = -(dik-dikold);
+            double val = -(dik-dikold) / scalefac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dimrow,col,val);
           }
@@ -1666,7 +1688,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
         {
             int col = cmnode->Dofs()[dimrow];
-            double val = (mik-mikold);
+            double val = (mik-mikold) / scalefac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dimrow,col,val);
         }
@@ -1697,7 +1719,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           for(int dim=0;dim<cnode->NumDof();++dim)
           {
             int locid = (xsmod->Map()).LID(csnode->Dofs()[dim]);
-            double val =-colcurr->second*(*xsmod)[locid];
+            double val =-colcurr->second*(*xsmod)[locid] / scalefac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dim,col,val);
           }
@@ -1729,12 +1751,31 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           // loop over dimensions
           for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
           {
-            double val =colcurr->second*mxi[dimrow];
+            double val =colcurr->second*mxi[dimrow] / scalefac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dimrow,col,val);
           }
         }
       }
+
+      /*** 05 ***********************************************************/
+      if (scderiv==true)
+      {
+        for (std::map<int,double>::iterator dsccurr=dscmap.begin(); dsccurr!=dscmap.end(); dsccurr++)
+        {
+          int gid = dsccurr->first;
+          DRT::Node* snode = idiscret_->gNode(gid);
+          if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
+          for (int dim=0; dim<cnode->NumDof(); dim++)
+          {
+            double val=-jump[dim]/scalefac*dsccurr->second;
+            if (abs(val)>1e-14)
+              cnode->AddDerivJumpValue(dim,gid,val);
+          }
+        }
+      }
+
+
     } // active nodes
   } // loop over slave nodes
   return;
@@ -3061,9 +3102,25 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     {
       int col = colcurr->first;
       double val = colcurr->second;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+          cnode->MoData().GetScale() != 0.0)
+        val /= cnode->MoData().GetScale();
       //std::cout << "Assemble S: " << row << " " << col << " " << val << std::endl;
       // do not assemble zeros into s matrix
       if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+    }
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+        cnode->MoData().GetScale() != 0.0)
+    {
+      std::map<int,double>& dscalemap = cnode->CoData().GetDerivScale();
+      double scalefac = cnode->MoData().GetScale();
+      for (colcurr=dscalemap.begin(); colcurr!=dscalemap.end(); ++colcurr)
+      {
+        int col = colcurr->first;
+        double val = -cnode->CoData().Getg()*(colcurr->second) / (scalefac*scalefac);
+        // do not assemble zeros into s matrix
+        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+      }
     }
 
     /*************************************************************************
@@ -3376,6 +3433,9 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         {
           int col = scolcurr->first;
           double val = lm[prodj] * (scolcurr->second);
+          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+              cnode->MoData().GetScale() != 0.0)
+           val /= cnode->MoData().GetScale();
           ++scolcurr;
 
           // owner of LM slave node can do the assembly, although it actually
@@ -3388,6 +3448,37 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         // check for completeness of DerivD-Derivatives-iteration
         if (scolcurr!=thisdderiv.end())
           dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+      }
+
+      // loop over all directional derivative entries of scaling factor
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+          cnode->MoData().GetScale() != 0.0)
+      {
+        double scalefac = cnode->MoData().GetScale();
+
+        std::map<int,double>& thisscalederiv = cnode->CoData().GetDerivScale();
+        mapsize=thisscalederiv.size();
+
+        // inner product D_{jk} * scalefac_,c / scalefac^2 * z_j for index j
+        for (int prodj=0;prodj<dim;++prodj)
+        {
+          int row = csnode->Dofs()[prodj];
+          std::map<int,double>::iterator scolcurr = thisscalederiv.begin();
+          double d_jk=cnode->MoData().GetD()[0][csnode->Dofs()[0]];
+
+          // loop over all directional derivative entries of scale factor
+          for (int c=0;c<mapsize;++c)
+          {
+            int col = scolcurr->first;
+            double val = -lm[prodj] * d_jk * (scolcurr->second)/(scalefac*scalefac);
+            ++scolcurr;
+
+            if (abs(val)>1.0e-12) lindglobal.FEAssemble(val,row,col);
+          }
+          // check for completeness of DerivScale-Derivatives-iteration
+          if (scolcurr!=thisscalederiv.end())
+            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivScale considered!");
+        }
       }
     }
 
@@ -3423,6 +3514,9 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         {
           int col = mcolcurr->first;
           double val = lm[prodj] * (mcolcurr->second);
+          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+              cnode->MoData().GetScale() != 0.0)
+            val /= cnode->MoData().GetScale();
           ++mcolcurr;
 
           // owner of LM slave node can do the assembly, although it actually
@@ -3435,6 +3529,37 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr!=thismderiv.end())
           dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+      }
+
+      // loop over all directional derivative entries of scaling factor
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+          cnode->MoData().GetScale() != 0.0)
+      {
+        double scalefac = cnode->MoData().GetScale();
+
+        std::map<int,double>& thisscalederiv = cnode->CoData().GetDerivScale();
+        mapsize=thisscalederiv.size();
+
+        // inner product D_{jk} * scalefac_,c / scalefac^2 * z_j for index j
+        for (int prodj=0;prodj<dim;++prodj)
+        {
+          int row = cmnode->Dofs()[prodj];
+          std::map<int,double>::iterator mcolcurr = thisscalederiv.begin();
+          double m_jk=cnode->MoData().GetM()[0][cmnode->Dofs()[0]];
+
+          // loop over all directional derivative entries of scale factor
+          for (int c=0;c<mapsize;++c)
+          {
+            int col = mcolcurr->first;
+            double val = -lm[prodj] * m_jk * (mcolcurr->second)/(scalefac*scalefac);
+            ++mcolcurr;
+
+            if (abs(val)>1.0e-12) linmglobal.FEAssemble(-val,row,col);
+          }
+          // check for completeness of DerivScale-Derivatives-iteration
+          if (mcolcurr!=thisscalederiv.end())
+            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivScale considered!");
+        }
       }
     }
 
@@ -3471,6 +3596,9 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
     if (cnode->CoData().Getg()!=0.0)
     {
       double gap = cnode->CoData().Getg();
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+          cnode->MoData().GetScale() != 0.0)
+        gap /= cnode->MoData().GetScale();
 
       // std::cout << "Node ID: " << cnode->Id() << " HasProj: " << cnode->HasProj()
       //      << " IsActive: " << cnode->Active() << " Gap: " << gap << std::endl;
@@ -3897,24 +4025,24 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 			  }
 		  }
 
-		  // linearization of normal direction *****************************************
-		  // loop over all entries of the current derivative map
-		  for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
-		  {
-			int col = colcurr->first;
-			double valtxi=0.0;
-			valtxi = - frcoeff * z[dim] * colcurr->second * ct * jumptxi;
-			// do not assemble zeros into matrix
-			if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+      // linearization of normal direction *****************************************
+      // loop over all entries of the current derivative map
+      for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
+      {
+      int col = colcurr->first;
+      double valtxi=0.0;
+      valtxi = - frcoeff * z[dim] * colcurr->second * ct * jumptxi;
+      // do not assemble zeros into matrix
+      if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
 
-			if (Dim()==3)
-			{
-				double valteta=0.0;
-				valteta = - frcoeff * z[dim] * colcurr->second * ct * jumpteta;
-				// do not assemble zeros into matrix
-				if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-			}
-		  }
+      if (Dim()==3)
+      {
+        double valteta=0.0;
+        valteta = - frcoeff * z[dim] * colcurr->second * ct * jumpteta;
+        // do not assemble zeros into matrix
+        if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+      }
+      }
 		} // loop over all dimensions
 
 		// linearization of weighted gap**********************************************
@@ -3934,9 +4062,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 			  if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
 		  }
 		}
-
-
-
 	  } // loop over stick nodes
   }
   else
@@ -4143,6 +4268,16 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       std::vector<std::map<int,double> > dnmap = cnode->CoData().GetDerivN();
       std::vector<std::map<int,double> > dtximap = cnode->CoData().GetDerivTxi();
       std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
+      double scalefac=1.;
+      std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
+      bool scderiv=false;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+                cnode->MoData().GetScale() != 0.)
+      {
+        scderiv=true;
+        scalefac=cnode->MoData().GetScale();
+
+      }
 
       // check for Dimension of derivative maps
       for (int j=0;j<Dim()-1;++j)
@@ -4167,6 +4302,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       double* teta = cnode->CoData().teta();
       double* z = cnode->MoData().lm();
       double& wgap = cnode->CoData().Getg();
+      wgap /= scalefac;
 
 #ifdef WEARIMPLICIT
 			// wear as internal state variable --> additional gap
@@ -4542,13 +4678,23 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           for (colcurr=dgmap.begin(); colcurr!=dgmap.end(); ++colcurr)
           {
         	  int col = colcurr->first;
-        	  double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second);
-        	  double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second);
+        	  double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second)/scalefac;
+        	  double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second)/scalefac;
 
         	  //do not assemble zeros into matrix
         	  if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-			  if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+		      if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
           }
+          if (scderiv)
+            for (colcurr=dscmap.begin(); colcurr!=dscmap.end(); ++colcurr)
+            {
+              int col =colcurr->first;
+              double valtxi  = + euclidean * ztxi  / pow(znor - cn * wgap, 2.0) * cn * wgap/scalefac*colcurr->second;
+              double valteta = + euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * wgap/scalefac*colcurr->second;
+              //do not assemble zeros into matrix
+              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
+              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+            }
 #endif
 
 
@@ -4803,6 +4949,20 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
             if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
           }
+
+          /*** 8 ****************** scale factor ***/
+          // loop over all entries of the current derivative map
+          if (scderiv)
+            for (colcurr=dscmap.begin();colcurr!=dscmap.end();++colcurr)
+            {
+              int col = colcurr->first;
+              double valtxi = frcoeff*cn*wgap/scalefac*(ztxi+ct*jumptxi)*colcurr->second;
+              double valteta = frcoeff*cn*wgap/scalefac*(zteta+ct*jumpteta)*colcurr->second;
+
+              // do not assemble zeros into matrix
+              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
+              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+            }
 #endif
 
           /*************************************************************************

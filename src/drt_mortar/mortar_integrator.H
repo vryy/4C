@@ -168,6 +168,7 @@ public:
   virtual void EleBased_Integration(
          Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
          Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+         Teuchos::RCP<Epetra_SerialDenseVector> scseg,
          MORTAR::MortarElement& sele,
          std::vector<MORTAR::MortarElement*> meles,
          bool *boundary_ele);
@@ -182,7 +183,8 @@ public:
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg);
 
   /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -209,7 +211,8 @@ public:
       Teuchos::RCP<MORTAR::IntCell> cell,
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg);
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg);
     
   /*!
   \brief Build all integrals and linearizations without segmentation
@@ -221,6 +224,7 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
       bool *boundary_ele);
 
   /*!
@@ -234,7 +238,8 @@ public:
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -322,6 +327,15 @@ public:
                     MORTAR::MortarElement& sele,
                     MORTAR::MortarElement& mele,
                     Epetra_SerialDenseMatrix& Mmod_seg);
+
+  /*!
+  \brief Assemble scale factor contribution of current overlap into slave nodes
+
+  */
+  bool AssembleScale(const Epetra_Comm& comm,
+                     MORTAR::MortarElement& sele,
+                     Epetra_SerialDenseVector& scseg);
+
 
   //@}
   

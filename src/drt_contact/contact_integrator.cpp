@@ -285,6 +285,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      Teuchos::RCP<Epetra_SerialDenseVector> wseg)
 { 
   // get LMtype
@@ -405,6 +406,10 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     duallin=true;
     sele.DerivShapeDual(dualmap);
   }
+
+  // check: no nodal lm scaling with quadratic finite elements
+  if (sele.Shape()==MORTAR::MortarElement::line3 && scseg!=Teuchos::null)
+    dserror("LM_NODAL_SCALE only for linear ansatz functions.");
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
@@ -1090,6 +1095,12 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     }
     // compute segment gap vector ****************************************
     
+    // compute segment scaling factor ************************************
+    if (scseg!=Teuchos::null)
+      for (int j=0;j<nrow;++j)
+        (*scseg)(j) += wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
+    // compute segment scaling factor ************************************
+
     // compute segment wear vector ***************************************
     // loop over all wseg vector entries
     // nrow represents the slave side dofs !!!
@@ -1721,6 +1732,28 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 #endif
     }// nrow loop
     // compute segment gap linearization *********************************
+
+    // compute segment scaling factor linearization **********************
+    if (scseg!=Teuchos::null)
+      for (int j=0;j<nrow;++j)
+      {
+        CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*>(mynodes[j]);
+        if (!myconode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+
+        // get the corresponding map as a reference
+        std::map<int,double>& dscmap = myconode->CoData().GetDerivScale();
+
+        // (1) linearization of slave gp coordinates in ansatz function
+        for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+          dscmap[p->first] += wgt * sderiv(j,0) *dsxideta * (p->second)/sele.Nodes()[j]->NumElement();
+
+        // (2) linearization of dsxideta - segment end coordinates
+        for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+          dscmap[p->first] -= 0.5*wgt * sval[j]*(p->second)/sele.Nodes()[j]->NumElement();
+        for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+          dscmap[p->first] += 0.5*wgt*sval[j]*(p->second)/sele.Nodes()[j]->NumElement();
+      }
+    // compute segment scaling factor linearization **********************
   }
   //**********************************************************************
 
@@ -1736,6 +1769,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      INPAR::MORTAR::LagMultQuad lmtype,
      bool *boundary_ele,
      bool *proj_)
@@ -2523,6 +2557,20 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
           }
           // compute cell gap vector *******************************************
 
+          // compute cell scaling factor ***************************************
+          // loop over all scseg entries
+          // nrow represents the slave side dofs !!!  */
+          if (scseg!=Teuchos::null)
+            for (int j=0;j<nrow;++j)
+            {
+              double fac = sval[j]*wgt;
+              fac /= sele.Nodes()[j]->NumElement();
+              if (sele.Shape() == DRT::Element::tri3 )
+                fac *= 6;
+              (*scseg)(j) += fac;
+            }
+          // compute cell scaling factor ***************************************
+
           // compute cell D/M linearization ************************************
           // loop over all slave nodes
           for (int j=0; j<nrow; ++j)
@@ -2739,6 +2787,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
             }
           }
           // compute cell gap linearization ************************************
+
+          // compute cell scaling factor linearization *************************
+          // no such linearization for element based integration
+
         }//is_on_mele
         if (is_on_mele==true) break;
       }//mele loop
@@ -2772,7 +2824,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
      Teuchos::RCP<MORTAR::IntCell> cell,
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg)
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg)
 {
   // explicitely defined shapefunction type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -3210,6 +3263,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
     }
     // compute cell gap vector *******************************************
 
+    // compute nodal scaling factor **************************************
+    if (scseg!=Teuchos::null)
+      for (int j=0;j<nrow;++j)
+      {
+        double fac=sval[j]*jaccell*wgt;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        (*scseg)(j) += fac;
+      }
+    // compute nodal scaling factor **************************************
+
     // compute cell D/M linearization ************************************
     // loop over all slave nodes
     for (int j=0; j<nrow; ++j)
@@ -3581,6 +3646,49 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
       }
     }
     // compute cell gap linearization ************************************
+
+    // compute cell scaling factor linearization *************************
+    if (scseg!=Teuchos::null)
+    {
+      for (int j=0;j<nrow;++j)
+      {
+        MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[j]);
+        if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
+
+        double fac = 0.0;
+
+        // get the corresponding map as a reference
+        std::map<int,double>& dscmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivScale();
+
+        // (1) Lin(NSlave) - slave GP coordinates
+        fac = wgt*sderiv(j, 0)*jaccell;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+          dscmap[p->first] += fac*(p->second);
+        fac = wgt*sderiv(j, 1)*jaccell;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+          dscmap[p->first] += fac*(p->second);
+
+        // (2) Lin(dsxideta) - intcell GP Jacobian
+        fac = wgt*sval[j];
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (int m=0; m<(int)jacintcellvec.size(); ++m)
+        {
+          int v = m/2; // which vertex?
+          int dof = m%2; // which dof?
+          for (CI p=(cell->GetDerivVertex(v))[dof].begin(); p!=(cell->GetDerivVertex(v))[dof].end(); ++p)
+            dscmap[p->first] += fac * jacintcellvec[m] * (p->second);
+        }
+      }
+    }
+    // compute cell scaling factor linearization *************************
   }
   //**********************************************************************
 
@@ -3602,6 +3710,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg,
@@ -4533,6 +4642,21 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       (*gseg)(j) += prod*jac*wgt;
     }
     // compute cell gap vector *******************************************
+
+    // compute cell scaling factor ***************************************
+    if (scseg!=Teuchos::null)
+    {
+      double jacsele = sele.Jacobian(sxi);
+      for (int j=0;j<nrow;++j)
+      {
+        double fac=wgt * sval[j] * jac / jacsele;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        (*scseg)(j) += fac;
+      }
+    }
+    // compute cell scaling factor ***************************************
     
     // tsi with contact
     if(tsi and friction)
@@ -4863,6 +4987,76 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 #endif
     }
     // compute cell gap linearization ************************************
+
+    // compute cell scaling factor linearization *************************
+    if (scseg!=Teuchos::null)
+    {
+      double jacsele = sele.Jacobian(sxi);
+      std::map<int,double> derivjacsele;
+      sele.DerivJacobian(sxi,derivjacsele);
+
+      LINALG::SerialDenseMatrix ssecderiv(sele.NumNode(),3);
+      sele.Evaluate2ndDerivShape(sxi,ssecderiv,sele.NumNode());
+      double derivjacselexi[2] = {0.0, 0.0};
+      static_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
+
+      double fac = 0.0;
+
+      for (int j=0;j<nrow;++j)
+      {
+        CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*>(mynodes[j]);
+        if (!myconode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+
+        // get the corresponding map as a reference
+        std::map<int,double>& dscmap = myconode->CoData().GetDerivScale();
+
+        // (1) Lin slave GP coordiantes
+        fac = wgt * sderiv(j,0) * jac / jacsele;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=dsxigp[0].begin() ; p!=dsxigp[0].end(); ++p)
+          dscmap[p->first] += fac * (p->second);
+
+        fac = wgt * sderiv(j,1) * jac / jacsele;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=dsxigp[1].begin() ; p!=dsxigp[1].end(); ++p)
+          dscmap[p->first] += fac * (p->second);
+
+        // (2) Lin integration cell jacobian
+        fac = wgt * sval[j] / jacsele;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end();++p)
+          dscmap[p->first] += fac * (p->second);
+
+        // (3) Lin element jacobian
+        fac = wgt * sval[j] * jac;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=derivjacsele.begin(); p!=derivjacsele.end(); ++p)
+          dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele)*(p->second);
+
+        fac = wgt * sval[j] * jac;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+          dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele) * (derivjacselexi[0] * (p->second)); //
+
+        fac = wgt * sval[j] * jac;
+        fac /= sele.Nodes()[j]->NumElement();
+        if (sele.Shape() == DRT::Element::tri3 )
+          fac *= 6;
+        for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+          dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele) * (derivjacselexi[1] * (p->second));
+      }
+    }
+    // compute cell scaling factor linearization *************************
   }
   //**********************************************************************
 
@@ -5997,6 +6191,7 @@ void CONTACT::CoIntegrator::EleBased_Integration(
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      Teuchos::RCP<Epetra_SerialDenseVector> wseg,
      bool *boundary_ele)
 {
@@ -6528,6 +6723,13 @@ void CONTACT::CoIntegrator::EleBased_Integration(
             // add current Gauss point's contribution to gseg
             (*gseg)(j) += prod*dxdsxi*wgt;
           }
+
+
+          // compute nodal scaling factor **************************************
+          if (scseg!=Teuchos::null)
+            for (int j=0;j<nrow;++j)
+              (*scseg)(j) += wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
+          // compute nodal scaling factor **************************************
 
           // compute segment D/M linearization *********************************
 

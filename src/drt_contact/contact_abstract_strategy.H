@@ -681,6 +681,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) {}
     void MeshInitialization() {}
     void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
+    Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() {return Teuchos::null; }
       
     //@}
     

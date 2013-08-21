@@ -175,6 +175,9 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs = Teuchos::null;
       Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm = Teuchos::null;
@@ -194,14 +197,16 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 
       
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,mdisssegs,mdisssegm,aseg,bseg,wseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,scseg,mdisssegs,mdisssegm,aseg,bseg,wseg);
       else /*(!CouplingInAuxPlane()*/
-        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg);
+        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg,scseg);
   
       // do the assembly into the slave nodes
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+      if (scseg!=Teuchos::null)
+        integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
       
       // assemble of mechanical dissipation to slave and master nodes
       // and matrix A and B
@@ -1462,12 +1467,15 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       bool boundary_ele=false;
       bool proj=false;
 
       //Perform integration and linearization
-      integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
+      integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,LagMultQuad(),&boundary_ele, &proj);
 
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
@@ -1530,12 +1538,16 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
         integrator.AssembleD(Comm(),SlaveElement(),*dseg);
         integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
         integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+        if (scseg!=Teuchos::null)
+          integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
       }
       else if(proj==true)
       {
         integrator.AssembleD(Comm(),SlaveElement(),*dseg);
         integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
         integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+        if (scseg!=Teuchos::null)
+          integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
       }
     }
     else
@@ -1559,6 +1571,10 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
 {
+    // check
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+      dserror("no nodal scaling for quad elements.");
+
   // decide which type of numerical integration scheme
 
   //**********************************************************************
@@ -1624,12 +1640,13 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
 
     bool boundary_ele=false;
     bool proj=false;
 
     //Perform integration and linearization
-    integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,LagMultQuad(),&boundary_ele, &proj);
+    integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,LagMultQuad(),&boundary_ele, &proj);
 
     if (IntType()==INPAR::MORTAR::inttype_elements_BS)
     {

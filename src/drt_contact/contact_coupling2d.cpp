@@ -131,6 +131,9 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+      scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
     Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
     Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg = Teuchos::null;
     if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
@@ -139,7 +142,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     if (WearSide() != INPAR::CONTACT::wear_slave)
       d2seg = Teuchos::rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
 
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,d2seg,mseg,gseg,wseg);
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,d2seg,mseg,gseg,scseg,wseg);
 
     // do the two assemblies into the slave nodes
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -147,6 +150,10 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
 
     // also do assembly of weighted gap vector
     integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+
+    // assemble scaling factor
+    if (scseg!=Teuchos::null)
+      integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
 
     // assemble wear
     if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
@@ -321,12 +328,15 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim() ));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
       Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
       if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
         wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       //perform integration
-      integrator.EleBased_Integration(SlaveElement(),MasterElements(),dseg,mseg,gseg,wseg,&boundary_ele);
+      integrator.EleBased_Integration(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,wseg,&boundary_ele);
 
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
@@ -392,6 +402,10 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
           // also do assembly of weighted gap vector
           integrator.AssembleG(Comm(),SlaveElement(),*gseg);
 
+          // assemble scaling factor
+          if (scseg!=Teuchos::null)
+            integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
+
           // assemble wear
           if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
             integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
@@ -405,6 +419,10 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
 
         // also do assembly of weighted gap vector
         integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+
+        // assemble scaling factor
+        if (scseg!=Teuchos::null)
+          integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
 
         // assemble wear
         if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)

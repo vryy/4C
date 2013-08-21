@@ -385,6 +385,22 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   if (mortar.get<int>("NUMGP_PER_DIM") > 0 && mortar.get<int>("NUMGP_PER_DIM")!=3 && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
     dserror("ERROR: Change of Gauss point number only allowed for FastIntegration!");
 
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier strategy.");
+
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements)
+    dserror("ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
+
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("ERROR: Nodal scaling of Lagrange multipliers only for Lagrange multiplier strategy.");
+
+  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements)
+   dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
+
 
   // *********************************************************************
   // not (yet) implemented combinations
@@ -508,8 +524,9 @@ void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();
   Teuchos::RCP<Epetra_Vector> traction = Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
+  Teuchos::RCP<Epetra_Vector> tractionRescaled = Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOldRescaled())));
   Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  LINALG::Export(*traction, *tractionexp);
+  LINALG::Export(*tractionRescaled, *tractionexp);
 
   // evaluate slave and master forces
   Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));

@@ -377,6 +377,22 @@ void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the scale factor                          seitz 08/18|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::AddScValue(double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddScValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddScValue: function called for boundary node %i", Id());
+
+  // add given value to grow_
+  MoData().GetScale() += val;
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Initialize data container                             gitterle 02/10|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::InitializeDataContainer()

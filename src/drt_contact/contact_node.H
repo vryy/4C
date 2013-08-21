@@ -272,6 +272,16 @@ public:
    */
   virtual std::vector<std::map<int,double> >& GetDerivZ() { return derivz_; }
 
+  /*!
+  \brief Return the 'Derivscalefac_' map of this node
+
+  This map contains the directional derivatives of the node's
+  scaling factor witch is needed for better conditioning
+
+   */
+  virtual std::map<int,double>& GetDerivScale() { return derivscalefac_; }
+
+
   //@}
 
 protected:
@@ -284,15 +294,17 @@ protected:
   double          teta_[3];        // nodal tangent t_eta for contact methods
   double          grow_;           // nodal entry of g vector
 
-  std::vector<std::map<int,double> >      d2rows_;     // nodal rows of master sided D matrix
-  std::vector<std::map<int,double> >      derivn_;     // directional derivative of nodal normal
-  std::vector<std::map<int,double> >      derivtxi_;   // directional derivative of nodal tangent t_xi
-  std::vector<std::map<int,double> >      derivteta_;  // directional derivative of nodal tangent t_eta
-  std::map<int,std::map<int,double> >     derivd_;     // directional derivative of nodal D-matrix value
-  std::map<int,std::map<int,double> >     derivm_;     // directional derivative of nodal M-matrix values
-  std::map<int,double>                    derivg_;     // directional derivative of nodal weighted gap value
-  std::map<int,double>                    derivw_;     // directional derivative of nodal weighted wear value
-  std::map<int,double>                    derivw_lm_;  // directional derivative of nodal weighted wear value
+  std::vector<std::map<int,double> >      d2rows_;        // nodal rows of master sided D matrix
+  std::vector<std::map<int,double> >      derivn_;        // directional derivative of nodal normal
+  std::vector<std::map<int,double> >      derivtxi_;      // directional derivative of nodal tangent t_xi
+  std::vector<std::map<int,double> >      derivteta_;     // directional derivative of nodal tangent t_eta
+  std::map<int,std::map<int,double> >     derivd_;        // directional derivative of nodal D-matrix value
+  std::map<int,std::map<int,double> >     derivm_;        // directional derivative of nodal M-matrix values
+  std::map<int,double>                    derivg_;        // directional derivative of nodal weighted gap value
+  std::map<int,double>                    derivw_;        // directional derivative of nodal weighted wear value
+  std::map<int,double>                    derivw_lm_;     // directional derivative of nodal weighted wear value  std::map<int,double>                    derivscalefac_; // direction derivative of nodal scale factor value
+  std::map<int,double>                    derivscalefac_; // directional derivative of nodal scale factor value
+
 
   // Penalty-related quantities
   double                                  kappa_;      // gap-scaling factor kappa

@@ -2979,7 +2979,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   mapext.ExtractOtherVector(mergedsol,sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
-
   if (IsSelfContact())
   // for self contact, slave and master sets may have changed,
   // thus we have to reinitialize the LM vector map
@@ -3526,10 +3525,17 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+
       CoNode* cnode = static_cast<CoNode*>(node);
 
+      // get scaling factor
+      double scalefac=1.;
+      if (DRT::INPUT::IntegralValue<int>(scontact_,"LM_NODAL_SCALE")==true &&
+                cnode->MoData().GetScale() != 0.)
+        scalefac = cnode->MoData().GetScale();
+
       // compute weighted gap
-      double wgap = (*g_)[g_->Map().LID(gid)];
+      double wgap = (*g_)[g_->Map().LID(gid)]/scalefac;
 
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
@@ -3584,7 +3590,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         {
           cnode->Active() = true;
           activesetconv_ = false;
-          
+
           // friction
           if (friction_)
           {

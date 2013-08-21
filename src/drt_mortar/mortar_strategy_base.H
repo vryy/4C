@@ -205,6 +205,7 @@ class StrategyBase
     virtual bool IsInContact() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMult() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
     virtual void MeshInitialization() = 0;

@@ -1342,6 +1342,7 @@ void MORTAR::MortarInterface::Initialize()
     (monode->MoData().GetD()).resize(0);
     (monode->MoData().GetM()).resize(0);
     (monode->MoData().GetMmod()).resize(0);
+    (monode->MoData().GetScale())=0.;
   }
 
   // loop over all elements to reset candidates / search lists
@@ -2379,6 +2380,11 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
           int col = colcurr->first;
           double val = colcurr->second;
 
+          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+              mrtrnode->MoData().GetScale() != 0.0)
+            val /= mrtrnode->MoData().GetScale();
+
+
           // do the assembly into global D matrix
           if (shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
           {
@@ -2440,6 +2446,11 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
         {
           int col = colcurr->first;
           double val = colcurr->second;
+
+          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+              mrtrnode->MoData().GetScale() != 0.0)
+            val /= mrtrnode->MoData().GetScale();
+
 
           // do not assemble zeros into m matrix
           if (abs(val)>1.0e-12) mglobal.Assemble(val,row,col);
