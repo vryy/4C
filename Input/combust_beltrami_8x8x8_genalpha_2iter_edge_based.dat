@@ -12,8 +12,8 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 combust_beltrami_hex8_8x8x8_2iter_ost
 
-- results must be identical with results from test case 'f3_beltrami_8x8x8_ost_2iter_conv.dat'
-- One-Step-Theta time integration scheme of combustion and standard fluid have to compute identical results
+-results must be identical with results from test case 'f3_beltrami_8x8x8_ost_2iter_conv.dat'
+-One-Step-Theta time integration scheme of combustion and standard fluid have to compute identical results
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        320
 NODES                           125
@@ -34,12 +34,12 @@ CONVTOL                         1e-06
 ITEMAX                          1
 MAXTIME                         0.5
 NUMSTEP                         8
-RESTARTEVRY                     10
-TIMEINT                         One_Step_Theta
+RESTARTEVRY                     2
+TIMEINT                         Gen_Alpha //One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
-COMBUSTTYPE                     Two_Phase_Flow
+COMBUSTTYPE                     Premixed_Combustion
 XFEMSTABILIZATION               no
 VELOCITY_JUMP_TYPE              vel_jump_none
 FLUX_JUMP_TYPE                  flux_jump_const
@@ -64,14 +64,14 @@ REINITINTERVAL                  -1
 LINEAR_SOLVER                   2
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-ALPHA_F                         0.666666
-ALPHA_M                         0.833333
-GAMMA                           0.666666
+ALPHA_M                         0.83333333333333
+ALPHA_F                         0.66666666666666
+GAMMA                           0.66666666666666
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
 CONVTOL                         1e-06
 GRIDVEL                         1
-ITEMAX                          2
+ITEMAX                          10
 MAXTIME                         0.5
 NONLINITER Newton //fixed_point_like
 NUMSTEP                         8
@@ -79,24 +79,32 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
 STARTINGALGO                    One_Step_Theta
-START_THETA                     0.66
-THETA                           0.66
-TIMEINTEGR                      One_Step_Theta
+START_THETA                     0.5 //0.66
+THETA                           0.5 //0.66
+TIMEINTEGR                      Af_Gen_Alpha //One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           8
 MESHTYING                       no
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
-GRAD_DIV                        yes
+GRAD_DIV                           yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds                     // Reynolds stress term not available in combust fluid
-STABTYPE                        residual_based
+STABTYPE                        edge_based
+//STABTYPE                        residual_based
 SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab                        // no viscous stabilization
 EVALUATION_TAU                  integration_point               // only evaluation at integration point available in combust fluid
+-------------------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
+EOS_PRES                        std_eos // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
+EOS_DIV                         div_jump_std_eos //vel_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_DEFINITION_TAU              Burman_Fernandez
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_diameter
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SCATRATYPE                      Undefined
@@ -107,10 +115,11 @@ MAXTIME                         1.0
 NUMSTEP                         10
 RESTARTEVRY                     20
 THETA                           0.5
-TIMEINTEGR                      One_Step_Theta
+TIMEINTEGR                      Gen_Alpha //One_Step_Theta
 TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
+NEUMANNINFLOW                   no
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 ALPHA_F                         0.5
@@ -155,22 +164,23 @@ FUNCT1                          BELTRAMI
 // initial G-function outside of domain -> no cut, no interface, no XFEM dofs
 FUNCT2 EXPR 0 0.0 0 FUNCTION x+100
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.30443286055423194e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.43139508522601422e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY velz VALUE 3.10339297469455044e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -4.97839491988245619e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velx VALUE -2.92016203815932740e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY vely VALUE -2.92016203815932796e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velz VALUE -2.92016203815932796e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -1.29319126942526397e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 453 QUANTITY velx VALUE -6.56146383161794522e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY vely VALUE -4.49168257384873371e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY velz VALUE -4.92214503794568436e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -4.43389050603276547e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.41774498632087159e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.90309237449059099e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.66977191120825674e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.62315145247776926e-01 TOLERANCE 1e-9
+// EOS Pres/Conv/div
+FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.37967237411233132e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.36873215197738363e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY velz VALUE 3.10104241596656782e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -6.91093467217656077e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velx VALUE -2.91405239788165460e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY vely VALUE -2.91405239788165515e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velz VALUE -2.91405239788165571e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -1.29199935609712796e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 453 QUANTITY velx VALUE -6.54727799699536983e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY vely VALUE -4.48795406355083581e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY velz VALUE -4.91202923082357412e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -4.27147931269785563e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.41596306236856789e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.89172061920929679e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.67007317120822862e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.58667568027616412e-01 TOLERANCE 1e-9
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
@@ -183,17 +193,17 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top
-E 1 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 2 0 0 0 0 FUNCT 1 1 1 1 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
 // surface front
-E 2 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 2 0 0 0 0 FUNCT 1 1 1 1 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
 // surface back
-E 3 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 2 0 0 0 0 FUNCT 1 1 1 1 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
 // surface unten
-E 4 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 2 0 0 0 0 FUNCT 1 1 1 1 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
 // surface rechts
-E 5 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 2 0 0 0 0 FUNCT 1 1 1 1 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
 // surface links
-E 6 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 2 0 0 0 0 FUNCT 1 1 1 1 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

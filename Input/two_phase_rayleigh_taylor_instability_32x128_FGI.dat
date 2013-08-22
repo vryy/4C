@@ -42,6 +42,7 @@ UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 ITE_MAX_FRS                     2                               // with "DoNothing" for XFEM time integration below just one FRS shall be done
 COMBUSTTYPE                     Two_Phase_Flow
+XFEMSTABILIZATION               no
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                1
 XFEMINTEGRATION                 Cut

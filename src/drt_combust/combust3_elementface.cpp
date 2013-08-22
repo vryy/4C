@@ -14,6 +14,9 @@ Maintainer: Ursula Rasthofer
 #include "combust3.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_xfem/dof_management_element.H"
+#include "../drt_xfem/field_enriched.H"
+
 
 DRT::ELEMENTS::Combust3IntFaceType DRT::ELEMENTS::Combust3IntFaceType::instance_;
 
@@ -118,21 +121,14 @@ DRT::ELEMENTS::Combust3IntFace::~Combust3IntFace()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
     DRT::Discretization & discretization,       ///< discretization
-    std::vector<int>&     nds_master,           ///< nodal dofset w.r.t master parent element
-    std::vector<int>&     nds_slave,            ///< nodal dofset w.r.t slave parent element
-    std::vector<int>&     patchlm,              ///< local map for gdof ids for patch of elements
     std::vector<int>&     master_lm,            ///< local map for gdof ids for master element
     std::vector<int>&     slave_lm,             ///< local map for gdof ids for slave element
-    std::vector<int>&     face_lm,              ///< local map for gdof ids for face element
-    std::vector<int>&     lm_masterToPatch,     ///< local map between lm_master and lm_patch
-    std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
-    std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
-    std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-    std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+    std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_masterDofPerFieldToPatch, ///< local map between master nodes and nodes in patch
+    std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_slaveDofPerFieldToPatch,  ///< local map between slave nodes and nodes in patch
+    std::map<XFEM::PHYSICS::Field,std::vector<int> >&  patch_components_lm,     ///< rearranged local map for gdof ids for patch of elements
+    std::map<XFEM::PHYSICS::Field,std::vector<int> >&  patch_components_lmowner ///< owner of patch
     )
 {
-  //TODO: ich glaube ich muss den dofmanager und nicht die diskretisierung nach den dofs fragen
-  std::cout << "PatchLocationVector: hier gibts noch was zu tun" << std::endl;
   // create one patch location vector containing all dofs of master, slave and
   // *this Combust3IntFace element only once (no duplicates)
 
@@ -140,26 +136,41 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
   const int m_numnode = parent_master_->NumNode();
   DRT::Node** m_nodes = parent_master_->Nodes();
 
-  if ( m_numnode != static_cast<int>( nds_master.size() ) )
-  {
-    throw std::runtime_error( "wrong number of nodes for master element" );
-  }
-
   //-----------------------------------------------------------------------
   const int s_numnode = parent_slave_->NumNode();
   DRT::Node** s_nodes = parent_slave_->Nodes();
-
-  if ( s_numnode != static_cast<int>( nds_slave.size() ) )
-  {
-    throw std::runtime_error( "wrong number of nodes for slave element" );
-  }
 
   //-----------------------------------------------------------------------
   const int f_numnode = NumNode();
   DRT::Node** f_nodes = Nodes();
 
+  // modify the patch owner to the owner of the internal face element
+  int owner = this->Owner();
+
+  // get element dof manager
+  Teuchos::RCP<XFEM::ElementDofManager> master_eledofmanager = parent_master_->GetEleDofManager();
+  Teuchos::RCP<XFEM::ElementDofManager> slave_eledofmanager = parent_slave_->GetEleDofManager();
+//      std::cout << "Master num dof node  " << master_eledofmanager->NumNodeDof() << " Slave num dof node  " << slave_eledofmanager->NumNodeDof() << std::endl;
+//      std::cout << "Master dof field  " << master_eledofmanager->NumDofPerField(XFEM::PHYSICS::Velx) << "Slave dof field  " << slave_eledofmanager->NumDofPerField(XFEM::PHYSICS::Velx) << std::endl;
+
+
+  const int numfieldpernode = master_eledofmanager->NumFields();
+  if (numfieldpernode != slave_eledofmanager->NumFields())
+    dserror("Same number of fields expected");
+
   //-----------------------------------------------------------------------
   // create the patch local map and additional local maps between elements lm and patch lm
+
+  // local maps for patch dofs
+  std::vector<int> patchlm;
+
+  // local maps for face dofs
+  std::vector<int> face_lm;
+
+  // local maps between master/slave dofs and position in patch dofs (lm_patch)
+  std::vector<int> lm_masterToPatch;
+  std::vector<int> lm_slaveToPatch;
+  std::vector<int> lm_faceToPatch;
 
   patchlm.clear();
 
@@ -171,17 +182,23 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
   lm_slaveToPatch.clear();
   lm_faceToPatch.clear();
 
-  // maps between master/slave nodes and nodes in patch
-  lm_masterNodeToPatch.clear();
-  lm_slaveNodeToPatch.clear();
-
   // for each master node, the offset for node's dofs in master_lm
   std::map<int, int> m_node_lm_offset;
+  std::map<XFEM::PHYSICS::Field,std::map<int, int> > m_dof_per_field_offset;
+  std::map<XFEM::PHYSICS::Field,std::vector<int> >::const_iterator iterator;
+  for (iterator = lm_masterDofPerFieldToPatch.begin(); iterator != lm_masterDofPerFieldToPatch.end(); iterator++)
+      m_dof_per_field_offset[iterator->first]=std::map<int, int>();
 
   // ---------------------------------------------------
   int dofset = 0; // assume dofset 0
 
-  int patchnode_count = 0;
+  // patch node counter
+  std::map<XFEM::PHYSICS::Field,int > fieldpatchdof_count;
+  std::map<XFEM::PHYSICS::Field,std::vector<int> >::const_iterator iter;
+  for (iter = lm_masterDofPerFieldToPatch.begin(); iter != lm_masterDofPerFieldToPatch.end(); iter++)
+    fieldpatchdof_count[iter->first] = 0;
+
+  int masterdof_count = 0;
 
   // fill patch lm with master's nodes
   for (int k=0; k<m_numnode; ++k)
@@ -190,41 +207,53 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
     std::vector<int> dof = discretization.Dof(dofset,node);
 
     // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numnode)
-    const int size = NumDofPerNode(dofset,*node);
-    const int offset = size*nds_master[k];
-
-#ifdef DEBUG
-    if ( dof.size() < static_cast<unsigned>( offset+size ) )
-    {
-      dserror( "illegal physical dofs offset" );
-    }
-#endif
+    const std::size_t size = master_eledofmanager->NumDofPerNode(node->Id());
 
     //insert a pair of node-Id and current length of master_lm ( to get the start offset for node's dofs)
     m_node_lm_offset.insert(std::pair<int,int>(node->Id(), master_lm.size()));
 
-    for (int j=0; j< size; ++j)
+    std::map<XFEM::PHYSICS::Field,std::vector<int> >::const_iterator it;
+    for (it = lm_masterDofPerFieldToPatch.begin(); it != lm_masterDofPerFieldToPatch.end(); it++)
     {
-      int actdof = dof[offset + j];
+        m_dof_per_field_offset[it->first].insert(std::pair<int,int>(node->Id(), lm_masterDofPerFieldToPatch[it->first].size()));
+    }
+
+//    std::cout << "NodeID  " << node->Id() << std::endl;
+
+    for (int j=0; j< ((int)size); ++j)
+    {
+      int actdof = dof[j];
 
       // current last index will be the index for next push_back operation
       lm_masterToPatch.push_back( (patchlm.size()) );
 
       patchlm.push_back(actdof);
       master_lm.push_back(actdof);
+
+      const XFEM::FieldEnr fieldenr = master_eledofmanager->FieldEnrSetPerDof(masterdof_count);
+//      std::cout << "Field  " << physVarToString(fieldenr.getField()) << " dof  " << fieldenr.getEnrichment().toString() << std::endl;
+
+      patch_components_lm[fieldenr.getField()].push_back(actdof);
+      patch_components_lmowner[fieldenr.getField()].push_back(owner);
+
+      lm_masterDofPerFieldToPatch[fieldenr.getField()].push_back(fieldpatchdof_count[fieldenr.getField()]);
+//      std::cout << " dof per field " << fieldpatchdof_count[fieldenr.getField()] << std::endl;
+      fieldpatchdof_count[fieldenr.getField()]++;
+
+      masterdof_count++;
     }
-
-    lm_masterNodeToPatch.push_back(patchnode_count);
-
-    patchnode_count++;
   }
 
   // ---------------------------------------------------
   // fill patch lm with missing slave's nodes and extract slave's lm from patch_lm
 
+  int slavedof_count = 0;
+
   for (int k=0; k<s_numnode; ++k)
   {
     DRT::Node* node = s_nodes[k];
+
+//    std::cout << "NodeID  " << node->Id() << std::endl;
 
     // slave node already contained?
     std::map<int,int>::iterator m_offset;
@@ -236,37 +265,43 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
 
       // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numnode)
       const int size = NumDofPerNode(dofset,*node);
-      const int offset = size*nds_slave[k];
 
-  #ifdef DEBUG
-      if ( dof.size() < static_cast<unsigned>( offset+size ) )
-      {
-        dserror( "illegal physical dofs offset" );
-      }
-  #endif
       for (int j=0; j< size; ++j)
       {
-        int actdof = dof[offset + j];
+          int actdof = dof[j];
 
         lm_slaveToPatch.push_back( patchlm.size() );
 
         patchlm.push_back(actdof);
         slave_lm.push_back(actdof);
 
+        const XFEM::FieldEnr fieldenr = slave_eledofmanager->FieldEnrSetPerDof(slavedof_count);
+
+//        std::cout << "slave new dof" << std::endl;
+//        std::cout << "Field  " << physVarToString(fieldenr.getField()) << " dof  " << fieldenr.getEnrichment().toString() << std::endl;
+
+        patch_components_lm[fieldenr.getField()].push_back(actdof);
+        patch_components_lmowner[fieldenr.getField()].push_back(owner);
+
+        lm_slaveDofPerFieldToPatch[fieldenr.getField()].push_back(fieldpatchdof_count[fieldenr.getField()]);
+        fieldpatchdof_count[fieldenr.getField()]++;
+
+        slavedof_count++;
       }
-
-      lm_slaveNodeToPatch.push_back(patchnode_count);
-
-      patchnode_count++;
 
     }
     else // node is also a master's node
     {
-      const int size = NumDofPerNode(dofset,*node);
+      const std::size_t size = slave_eledofmanager->NumDofPerNode(node->Id());
 
       int offset = m_offset->second;
 
-      for (int j=0; j< size; ++j)
+      std::map<XFEM::PHYSICS::Field, int> offset_per_field;
+      std::map<XFEM::PHYSICS::Field,std::map<int, int> >::iterator it = m_dof_per_field_offset.begin();
+      for (it = m_dof_per_field_offset.begin(); it != m_dof_per_field_offset.end(); it++)
+        offset_per_field[it->first] = (it->second)[node->Id()];
+
+      for (int j=0; j< ((int)size); ++j)
       {
         int actdof = master_lm[offset + j];
 
@@ -274,13 +309,18 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
 
         // copy from lm_masterToPatch
         lm_slaveToPatch.push_back( lm_masterToPatch[offset + j] );
+
+        const XFEM::FieldEnr fieldenr = slave_eledofmanager->FieldEnrSetPerDof(slavedof_count);
+
+//        std::cout << "slave old dof  "<< std::endl;
+//        std::cout << "Field  " << physVarToString(fieldenr.getField()) << " offset "<< offset_per_field[fieldenr.getField()] << std::endl;
+
+
+        lm_slaveDofPerFieldToPatch[fieldenr.getField()].push_back(offset_per_field[fieldenr.getField()]);
+        offset_per_field[fieldenr.getField()]++;
+
+        slavedof_count++;
       }
-
-      if(offset%size != 0) dserror("there was at least one node with not %d dofs per node", size);
-      int patchnode_index = offset/size;
-
-      lm_slaveNodeToPatch.push_back(patchnode_index);
-      // no patchnode_count++; (node already contained)
 
     }
   }
@@ -315,6 +355,40 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
 
   }
 
+// some debug output
+//      const std::vector<XFEM::PHYSICS::Field> fields = master_eledofmanager->GetFields();
+//      std::cout << "lm_patch  " << patchlm.size() << std::endl;
+//      std::cout << "lm_master  " << master_lm.size() << std::endl;
+//      std::cout << "lm_slave  " << slave_lm.size() << std::endl;
+//      std::cout << "lm_face  " << face_lm.size() << std::endl;
+//      std::cout << "lm_masterToPatch  " << lm_masterToPatch.size() << std::endl;
+//      std::cout << "lm_slaveToPatch  " << lm_slaveToPatch.size() << std::endl;
+//      std::cout << "lm_faceToPatch  " << lm_faceToPatch.size() << std::endl;
+//      std::cout << "lm_masterDofPerFieldToPatch  " << lm_masterDofPerFieldToPatch.size() << std::endl;
+//      std::cout << "lm_slaveDofPerFieldToPatch  " << lm_slaveDofPerFieldToPatch.size() << std::endl;
+//      for (std::size_t i=0; i< lm_masterDofPerFieldToPatch.size(); i++)
+//      {
+//          std::cout << "master  " << std::endl;
+//         for (std::size_t j=0; j<lm_masterDofPerFieldToPatch[fields[i]].size(); j++)
+//         {
+//           std::cout << (lm_masterDofPerFieldToPatch[fields[i]])[j] << std::endl;
+//         }
+//         std::cout << "salve  " << std::endl;
+//         for (std::size_t j=0; j<lm_slaveDofPerFieldToPatch[fields[i]].size(); j++)
+//         {
+//           std::cout << (lm_slaveDofPerFieldToPatch[fields[i]])[j] << std::endl;
+//         }
+//      }
+//
+//     std::cout << "patch_components_lm  " << patch_components_lm.size() << std::endl;
+//     std::map<XFEM::PHYSICS::Field,std::vector<int> >::iterator myit;
+//     for (myit=patch_components_lm.begin(); myit != patch_components_lm.end(); myit++)
+//     {
+//         std::cout << XFEM::PHYSICS::physVarToString(myit->first) << std::endl;
+//         std::cout<< (myit->second).size() << std::endl;
+//         for (std::size_t i = 0; i< (myit->second).size(); i++)
+//           std::cout<< (myit->second)[i] << std::endl;
+//     }
 
   return;
 }

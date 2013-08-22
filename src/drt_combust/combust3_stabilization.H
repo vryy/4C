@@ -371,6 +371,7 @@ namespace UTILS
       const double dynvisc,                /// dyamic viscosity
       const double dens,                   /// density
       const double vel_norm,
+      const double normal_vel,             /// projection of velocity in normal direction of face
       const double hk,
       const enum INPAR::FLUID::EOS_TauType tautype,
       double& tau_conv,

@@ -99,7 +99,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   itemaxFRS_(params_->sublist("COMBUSTION FLUID").get<int>("ITE_MAX_FRS")),
   totalitnumFRS_(0),
   curritnumFRS_(0),
-  writestresses_(params_->get<int>("write stresses", 0)),
+  xfemdiscret_(Teuchos::null),
   samstart_(-1),
   samstop_(-1),
   redist_this_step_(true)
@@ -360,6 +360,29 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     samstart_ = modelparams->get<int>("SAMPLING_START",1);
     samstop_  = modelparams->get<int>("SAMPLING_STOP",1);
   }
+
+  // build xfem discretization with all its special options
+  xfemdiscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+  // build internal faces, if required
+  if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" or
+     DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)
+  {
+    // do some checks first
+    if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" and
+       DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)
+       dserror("Combination of face-based stabilization and ghost-penalty stabilization for XFEM currently not supported!");
+
+    // if the definition of internal faces would be included
+    // in the standard discretization, these lines can be removed
+    // and CreateInternalFacesExtension() can be called once
+    // in the constructor of the fluid time integration
+    // since we want to keep the standard discretization as clean as
+    // possible, we create interal faces via an enhanced discretization
+    // including the faces between elements
+    xfemdiscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_, true);
+  }
+
+
 #ifdef FLAME_VORTEX
   if (myrank_ == 0)
   {
@@ -716,8 +739,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareSolve()
     discret_->SetState("velnp",state_.velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
-    xdiscret->EvaluateDirichletCombust(eleparams,state_.velnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
+    xfemdiscret_->EvaluateDirichletCombust(eleparams,state_.velnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
 
     discret_->ClearState();
 
@@ -1147,8 +1169,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     // other parameters needed by the elements
     eleparams.set("total time",time_);
 
-    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
-    xdiscret->EvaluateDirichletCombust(eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+    xfemdiscret_->EvaluateDirichletCombust(eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
 
@@ -1366,15 +1387,6 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
     const bool   isadapttol    = params_->get<bool>("ADAPTCONV");
     const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER");
 
-
-    // REMARK:
-    // commented reduced number of iterations out as it seems that more iterations
-    // are necessary before sampling to obtain a converged result
-    // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
-    //const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
-
-    //const bool fluidrobin = params_->get<bool>("fluidrobin", false);
-
     int               itnum = 0;
     bool              stopnonliniter = false;
 
@@ -1543,42 +1555,37 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
           discret_->ClearState();
 
         // add edged-based stabilization, if selected
-        if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
+        if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" or
+           DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)
         {
-//          if (timealgo_!=INPAR::FLUID::timeint_one_step_theta and timealgo_!=INPAR::FLUID::timeint_stationary)
-//            dserror("Other time integration schemes than OST currently not supported for edge-based stabilization!");
-////           // set the only required state vectors
-////           if (is_genalpha_)
-////           {
-////             discret_->SetState("velaf",velaf_);
-////             if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
-////               discret_->SetState("velnp",velnp_);
-////           }
-////           else discret_->SetState("velaf",velnp_);
-//           if (timealgo_==INPAR::FLUID::timeint_one_step_theta and theta_!=1.0)
-//             dserror("Set theta=1, since only this setting seems to be correctly supported currently!");
-//           discret_->SetState("velaf",velnp_);
-
            // create the parameters for the discretization
            Teuchos::ParameterList faceeleparams;
 
            // action for elements
            faceeleparams.set("action","calc_edge_based_stab_terms");
 
-           // combsution problem
+           // combustion problem
            faceeleparams.set<int>("combusttype",combusttype_);
+
+           // set xfem stabilization, i.e., ghost penalty
+           faceeleparams.set<bool>("xfemstab",DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION"));
+
+           // other parameters that might be needed by the elements
+           faceeleparams.set<int>("timealgo",timealgo_);
+           faceeleparams.set<double>("time",time_);
+           faceeleparams.set<double>("dt",dta_);
+           faceeleparams.set<double>("theta",theta_);
+           faceeleparams.set<double>("gamma",gamma_);
+           faceeleparams.set<double>("alphaF",alphaF_);
+           faceeleparams.set<double>("alphaM",alphaM_);
 
            // parameter for suppressing additional enrichment dofs in two-phase flow problems
            faceeleparams.set<int>("selectedenrichment",DRT::INPUT::IntegralValue<INPAR::COMBUST::SelectedEnrichment>(params_->sublist("COMBUSTION FLUID"),"SELECTED_ENRICHMENT"));
 
-           // other parameters that might be needed by the elements
-           faceeleparams.set<int>("timealgo",timealgo_);
-           faceeleparams.set("time",time_);
-           faceeleparams.set("dt",dta_);
-           faceeleparams.set("theta",theta_);
-           faceeleparams.set("gamma",gamma_);
-           faceeleparams.set("alphaF",alphaF_);
-           faceeleparams.set("alphaM",alphaM_);
+           // set phinp
+           faceeleparams.set<Teuchos::RCP<Epetra_Vector> >("phinp",phinp_);
+           // interface handle
+           faceeleparams.set<Teuchos::RCP<COMBUST::InterfaceHandleCombust> >("interface handle",interfacehandle_);
 
            // parameters for stabilization
            faceeleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
@@ -1587,28 +1594,9 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
            if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
              discret_->SetState("velaf",state_.velaf_);
            else
-             discret_->SetState("velnp",state_.velnp_);
+           discret_->SetState("velnp",state_.velnp_);
 
-           discret_->SetState("veln" ,state_.veln_);
-           discret_->SetState("velnm",state_.velnm_);
-           discret_->SetState("accn" ,state_.accn_);
-
-           if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-             discret_->SetState("accam",state_.accam_);
-
-           // this cast is only for the time being
-           // as soon as the definition of internal faces is included
-           // in the standard discretization, these lines can be removed
-           // and CreateInternalFacesExtension() can be called once
-           // in the constructor of the fluid time integration
-           // TODO: kann ich das trotzdem in den Konstruktor verschieben
-           // TODO: was macht Redistribution damit
-           std::cout << "Jetzt gehts los mit eb .." << std::endl;
-           Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
-           xdiscret->CreateInternalFacesExtension(col_pbcmapmastertoslave_);
-           std::cout << ".. Schritt 1 geschafft .." << std::endl;
-
-           xdiscret->EvaluateEdgeBasedCombust(faceeleparams,sysmat_,residual_);
+           xfemdiscret_->EvaluateEdgeBasedCombust(faceeleparams,sysmat_,residual_);
 
            discret_->ClearState();
         }
@@ -2512,15 +2500,6 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         // output (hydrodynamic) pressure for visualization
         Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_->ExtractCondVector(velnp_out);
         output_->WriteVector("pressure_smoothed", pressure);
-
-        //output_->WriteVector("residual", trueresidual_);
-
-        //only perform stress calculation when output is needed
-        if (writestresses_)
-        {
-//          Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-//          output_->WriteVector("traction",traction);
-        }
       }
       else if (outputfields.find(XFEM::PHYSICS::Temp) != outputfields.end())
       {
@@ -2752,93 +2731,6 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // dump turbulence statistics
   // --------------------------
   turbstatisticsmanager_->DoOutput((*output_), step_, 0);
-
-//  if (step_%upres_ == 0)  //write solution
-//  {
-//    output_.NewStep(step_,time_);
-//    //output_.WriteVector("velnp", state_.velnp_);
-//    std::set<XFEM::PHYSICS::Field> fields_out;
-//    fields_out.insert(XFEM::PHYSICS::Velx);
-//    fields_out.insert(XFEM::PHYSICS::Vely);
-//    fields_out.insert(XFEM::PHYSICS::Velz);
-//    fields_out.insert(XFEM::PHYSICS::Pres);
-//
-//    //----------------------------------------------------------------------------------------------
-//    // output velocity vector
-//    //----------------------------------------------------------------------------------------------
-//    // TODO: check performance time to built convel vector; if this is costly, it could be stored
-//    //       as a private member variable of the time integration scheme, since it is built in two
-//    //       places (here after every time step and in the ConVelnp() function in every nonlinear
-//    //       iteration)
-//
-//    Teuchos::RCP<Epetra_Vector> velnp_out = Teuchos::null;
-//    if (step_ == 0)
-//    {
-//      IO::cout << "output standard velocity vector for time step 0" << IO::endl;
-//      velnp_out = state_.velnp_;
-//    }
-//    else
-//    {
-//      IO::cout << "output transformed velocity vector for time step 0" << IO::endl;
-//      velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
-//          *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, fields_out);
-//    }
-//
-//    output_.WriteVector("velnp", velnp_out);
-//
-//    //----------------------------------------------------------------------------------------------
-//    // output (hydrodynamic) pressure vector
-//    //----------------------------------------------------------------------------------------------
-//    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
-//    output_.WriteVector("pressure", pressure);
-//
-//    //only perform stress calculation when output is needed
-//    if (writestresses_)
-//    {
-//      dserror("not supported, yet");
-//      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-//      output_.WriteVector("traction",traction);
-//    }
-//
-//    // write domain decomposition for visualization (only once!)
-//    if (step_ == upres_)
-//     output_.WriteElementData();
-//
-//    if (uprestart_ != 0 and step_%uprestart_ == 0) //add restart data
-//    {
-//      output_.WriteVector("accn", state_.accn_);
-//      output_.WriteVector("veln", state_.veln_);
-//      output_.WriteVector("velnm", state_.velnm_);
-//    }
-//    else if (physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != physprob_.xfemfieldset_.end())
-//    {
-//      output_.WriteVector("temperature", velnp_out);
-//    }
-//  }
-//
-//  // write restart also when uprestart_ is not a integer multiple of upres_
-//  else if (uprestart_ != 0 and step_%uprestart_ == 0)
-//  {
-//    output_.NewStep    (step_,time_);
-//    output_.WriteVector("velnp", state_.velnp_);
-//    //output_.WriteVector("residual", trueresidual_);
-//
-//    //only perform stress calculation when output is needed
-//    if (writestresses_)
-//    {
-//      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-//      output_.WriteVector("traction",traction);
-//    }
-//
-//    output_.WriteVector("accn", state_.accn_);
-//    output_.WriteVector("veln", state_.veln_);
-//    output_.WriteVector("velnm", state_.velnm_);
-//  }
-//
-//  if (discret_->Comm().NumProc() == 1)
-//  {
-//    OutputToGmsh(step_, time_);
-//  }
 
   redist_this_step_ = false;
 
@@ -5742,13 +5634,14 @@ double FLD::CombustFluidImplicitTimeInt::TimIntParam() const
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
 {
-  // in this map, the results of the lift drag calculation are stored
-  RCP<std::map<int,std::vector<double> > > liftdragvals;
-
-  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
-
-  if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
-    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+//   dserror("LiftDrag() not yet implemented for combustion problems");
+//  // in this map, the results of the lift drag calculation are stored
+//  RCP<std::map<int,std::vector<double> > > liftdragvals;
+//
+//  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
+//
+//  if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
+//    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
 
   return;
 } // CombustFluidImplicitTimeInt::LiftDrag

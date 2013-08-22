@@ -20,6 +20,7 @@ Maintainer: Ursula Rasthofer
 #include "combust3.H"
 #include "../drt_geometry/geo_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_xfem.H"
 #include "../drt_xfem/xfem_utils.H"
 #include "combust3.H"
 
@@ -164,7 +165,7 @@ namespace COMBUST
    */
 void BlendMaterial(
     const DRT::Element* ele,
-    const GEO::IntCell* cell,
+    const bool          indomainplus,
     const double        time,
     double&             denstarget,    // target density
     double&             dynvisctarget, // target dynamic viscosity
@@ -216,21 +217,16 @@ void BlendMaterial(
    */
   void callFacemat(
        const DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
-       std::vector<Epetra_SerialDenseMatrix>&     estif_blocks,    ///< element matrix blocks
-       std::vector<Epetra_SerialDenseVector>&     eforce_blocks,   ///< element vector blocks
+       const COMBUST::InterfaceHandleCombust*     ih,              ///< interface handler
+       std::map<std::pair<XFEM::PHYSICS::Field,XFEM::PHYSICS::Field>,Epetra_SerialDenseMatrix>&  estif_blocks,    ///< element matrix blocks
+       std::map<XFEM::PHYSICS::Field,Epetra_SerialDenseVector>&  eforce_blocks,   ///< element vector blocks
        const INPAR::COMBUST::CombustionType       combusttype,     ///< problem type (combustion (jumps) or two-phase (kinks)
        const std::vector<double>&                 m_velnp,         ///< velocity/pressure unknowns at n+1 (master)
-       const std::vector<double>&                 m_veln,          ///< velocity/pressure unknowns at n (master)
-       const std::vector<double>&                 m_velnm,         ///< velocity/pressure unknowns at n-1 (master)
        const std::vector<double>&                 m_velaf,         ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme (master)
-       const std::vector<double>&                 m_accn,          ///< time derivative of unknowns at n (master)
-       const std::vector<double>&                 m_accam,         ///< time derivative of unknowns at alpha+m for generalized alpha scheme (master)
+       const std::vector<double>&                 m_phinp,         ///< phi at n+1 (master)
        const std::vector<double>&                 s_velnp,         ///< velocity/pressure unknowns at n+1 (slave)
-       const std::vector<double>&                 s_veln,          ///< velocity/pressure unknowns at n (slave)
-       const std::vector<double>&                 s_velnm,         ///< velocity/pressure unknowns at n-1 (slave)
        const std::vector<double>&                 s_velaf,         ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme (slave)
-       const std::vector<double>&                 s_accn,          ///< time derivative of unknowns at n (slave)
-       const std::vector<double>&                 s_accam,         ///< time derivative of unknowns at alpha+m for generalized alpha scheme (slave)
+       const std::vector<double>&                 s_phinp,         ///< phi at n+1 (slave)
        Teuchos::RCP<const MAT::Material>          material,        ///< material list
        const INPAR::FLUID::TimeIntegrationScheme  timealgo,        ///< time discretization type
        const double                               time,            ///< current time step
@@ -246,10 +242,11 @@ void BlendMaterial(
        const INPAR::FLUID::EOS_ElementLength      hk_def,          ///< definition of characteristic element length
        const INPAR::FLUID::EOS_TauType            tau_def,         ///< definition of stab parameter
        const INPAR::FLUID::EOS_GP_Pattern         pattern,         ///< pattern for edge-basd stabilization
+       const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
        const XFEM::AssemblyType                   m_assembly_type, ///< assembly type of master element
        const XFEM::AssemblyType                   s_assembly_type, ///< assembly type of slave element
-       const std::vector<int>&                    lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-       const std::vector<int>&                    lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+       const std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_masterDofPerFieldToPatch, ///< local map between master nodes and nodes in patch
+       const std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_slaveDofPerFieldToPatch,  ///< local map between slave nodes and nodes in patch
        const XFEM::ElementDofManager&             m_eleDofManager, ///< element dof manager of master element
        const XFEM::ElementDofManager&             s_eleDofManager  ///< element dof manager of slave element
        );

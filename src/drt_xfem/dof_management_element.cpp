@@ -4,8 +4,8 @@
 \brief provides the element dofmanager class
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -140,8 +140,8 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
          ++enrfield)
     {
       const XFEM::PHYSICS::Field field = enrfield->getField();
-      //numParamsPerField_[field] += 1;
       paramsLocalEntries_[field].push_back(dofcounter);
+      lidtofieldenr_.push_back(*enrfield);
       unique_enrichments_.insert(enrfield->getEnrichment());
       dofcounter++;
     }
@@ -220,6 +220,16 @@ const std::set<XFEM::FieldEnr>& XFEM::ElementDofManager::FieldEnrSetPerNode(
     //return std::set<FieldEnr>();
   }
   return tmp->second;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const XFEM::FieldEnr& XFEM::ElementDofManager::FieldEnrSetPerDof(
+    const int  lid
+    ) const
+{
+  return lidtofieldenr_[lid];
 }
 
 

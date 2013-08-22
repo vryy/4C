@@ -4562,6 +4562,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::combusttype_twophaseflowjump),
               &combustcontrolfluid);
 
+  BoolParameter("XFEMSTABILIZATION","Yes","Switch on/off face integrals based on edge-based stabilization, i.e., ghost penalty terms",&combustcontrolfluid);
+
   setStringToIntegralParameter<int>("XFEMINTEGRATION","Cut",
       "Type of integration strategy for intersected elements",
       tuple<std::string>(

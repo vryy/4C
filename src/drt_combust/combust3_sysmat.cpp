@@ -23,6 +23,7 @@ Maintainer: Ursula Rasthofer
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
 #include "combust3_facemat_premixed_nitsche.H"
+#include "combust3_facemat_twophaseflow.H"
 #include "combust_defines.H"
 #include "../drt_geometry/position_array.H"
 
@@ -354,23 +355,17 @@ void fillElementUnknownsArrays(
 //! fill a number of (local) element arrays with unknown values from the (global) unknown vector given by the discretization
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
-          class M, class V>
+          class M, class V1, class V2>
 void fillElementUnknownsArrays(
     const XFEM::ElementDofManager& dofman,
     const std::vector<double>& velnp,
-    const std::vector<double>& veln,
-    const std::vector<double>& velnm,
     const std::vector<double>& velaf,
-    const std::vector<double>& accn,
-    const std::vector<double>& accam,
+    const std::vector<double>& phinp,
     const bool instationary,
     const bool gen_alpha,
     M& evelaf,
-    M& eveln,
-    M& evelnm,
-    M& eaccn,
-    M& eaccam,
-    V& epreaf
+    V1& epreaf,
+    V2& ephi
 )
 {
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -396,51 +391,14 @@ void fillElementUnknownsArrays(
   const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
   const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
 
-  if (instationary)
+  if(gen_alpha)
   {
     for (size_t iparam=0; iparam<numparamvelx; ++iparam)
-    {
-      eveln( 0,iparam) = veln[ velxdof[iparam]];
-      evelnm(0,iparam) = velnm[velxdof[iparam]];
-      eaccn( 0,iparam) = accn[ velxdof[iparam]];
-    }
+      evelaf(0,iparam) = velaf[velxdof[iparam]];
     for (size_t iparam=0; iparam<numparamvely; ++iparam)
-    {
-      eveln( 1,iparam) = veln[ velydof[iparam]];
-      evelnm(1,iparam) = velnm[velydof[iparam]];
-      eaccn( 1,iparam) = accn[ velydof[iparam]];
-    }
+      evelaf(1,iparam) = velaf[velydof[iparam]];
     for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-    {
-      eveln( 2,iparam) = veln[ velzdof[iparam]];
-      evelnm(2,iparam) = velnm[velzdof[iparam]];
-      eaccn( 2,iparam) = accn[ velzdof[iparam]];
-    }
-    if(gen_alpha)
-    {
-      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
-        evelaf(0,iparam) = velaf[velxdof[iparam]];
-      for (size_t iparam=0; iparam<numparamvely; ++iparam)
-        evelaf(1,iparam) = velaf[velydof[iparam]];
-      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-        evelaf(2,iparam) = velaf[velzdof[iparam]];
-
-      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
-        eaccam(0,iparam) = accam[velxdof[iparam]];
-      for (size_t iparam=0; iparam<numparamvely; ++iparam)
-        eaccam(1,iparam) = accam[velydof[iparam]];
-      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-        eaccam(2,iparam) = accam[velzdof[iparam]];
-    }
-    else
-    {
-      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
-        evelaf(0,iparam) = velnp[velxdof[iparam]];
-      for (size_t iparam=0; iparam<numparamvely; ++iparam)
-        evelaf(1,iparam) = velnp[velydof[iparam]];
-      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-        evelaf(2,iparam) = velnp[velzdof[iparam]];
-    }
+      evelaf(2,iparam) = velaf[velzdof[iparam]];
   }
   else
   {
@@ -462,6 +420,11 @@ void fillElementUnknownsArrays(
     for (size_t iparam=0; iparam<numparampres; ++iparam)
       epreaf(iparam) = velnp[presdof[iparam]];
   }
+
+  // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
+  // remark: this is inefficient, but it is nice to have only fixed size matrices afterwards!
+  for (size_t iparam=0; iparam<numnode; ++iparam)
+    ephi(iparam,0) = phinp[iparam];
 
   return;
 }
@@ -708,7 +671,7 @@ void COMBUST::GetMaterialParams(
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::BlendMaterial(
     const DRT::Element* ele,
-    const GEO::IntCell* cell,
+    const bool          indomainplus,
     const double        time,
     double&             denstarget,    // target density
     double&             dynvisctarget, // target dynamic viscosity
@@ -733,7 +696,7 @@ void COMBUST::BlendMaterial(
     else
       dserror("Invalid domain in blending material");
 
-    if (cell->getDomainPlus() == blenddomain)
+    if (indomainplus == blenddomain)
     {
       // find out whether there is a time curve
       const std::vector<int>* curve = cond[0]->Get<std::vector<int> >("curve");
@@ -774,7 +737,7 @@ void COMBUST::BlendMaterial(
     }
     else
     {
-      if (cell->getDomainPlus())
+      if (indomainplus)
       {
         denstarget = densplus;
         dynvisctarget = dynviscplus;
@@ -788,7 +751,7 @@ void COMBUST::BlendMaterial(
   }
   else
   {
-    if (cell->getDomainPlus())
+    if (indomainplus)
     {
       denstarget = densplus;
       dynvisctarget = dynviscplus;
@@ -1832,21 +1795,16 @@ namespace COMBUST
 template <DRT::Element::DiscretizationType DISTYPE,XFEM::AssemblyType M_ASSTYPE,XFEM::AssemblyType S_ASSTYPE>
 void Facemat(
         const DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
-        std::vector<Epetra_SerialDenseMatrix>&     estif_blocks,    ///< element matrix blocks
-        std::vector<Epetra_SerialDenseVector>&     eforce_blocks,   ///< element vector blocks
+        const COMBUST::InterfaceHandleCombust*     ih,              ///< interface handler
+        std::map<std::pair<XFEM::PHYSICS::Field,XFEM::PHYSICS::Field>,Epetra_SerialDenseMatrix>&  estif_blocks,    ///< element matrix blocks
+        std::map<XFEM::PHYSICS::Field,Epetra_SerialDenseVector>&  eforce_blocks,   ///< element vector blocks
         const INPAR::COMBUST::CombustionType       combusttype,     ///< problem type (combustion (jumps) or two-phase (kinks)
         const std::vector<double>&                 m_velnp,         ///< velocity/pressure unknowns at n+1 (master)
-        const std::vector<double>&                 m_veln,          ///< velocity/pressure unknowns at n (master)
-        const std::vector<double>&                 m_velnm,         ///< velocity/pressure unknowns at n-1 (master)
         const std::vector<double>&                 m_velaf,         ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme (master)
-        const std::vector<double>&                 m_accn,          ///< time derivative of unknowns at n (master)
-        const std::vector<double>&                 m_accam,         ///< time derivative of unknowns at alpha+m for generalized alpha scheme (master)
+        const std::vector<double>&                 m_phinp,         ///< phi at n+1 (master)
         const std::vector<double>&                 s_velnp,         ///< velocity/pressure unknowns at n+1 (slave)
-        const std::vector<double>&                 s_veln,          ///< velocity/pressure unknowns at n (slave)
-        const std::vector<double>&                 s_velnm,         ///< velocity/pressure unknowns at n-1 (slave)
         const std::vector<double>&                 s_velaf,         ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme (slave)
-        const std::vector<double>&                 s_accn,          ///< time derivative of unknowns at n (slave)
-        const std::vector<double>&                 s_accam,         ///< time derivative of unknowns at alpha+m for generalized alpha scheme (slave)
+        const std::vector<double>&                 s_phinp,         ///< phi at n+1 (slave)
         Teuchos::RCP<const MAT::Material>          material,        ///< material list
         const INPAR::FLUID::TimeIntegrationScheme  timealgo,        ///< time discretization type
         const double                               time,            ///< current time step
@@ -1862,17 +1820,20 @@ void Facemat(
         const INPAR::FLUID::EOS_ElementLength      hk_def,          ///< definition of characteristic element length
         const INPAR::FLUID::EOS_TauType            tau_def,         ///< definition of stab parameter
         const INPAR::FLUID::EOS_GP_Pattern         pattern,         ///< pattern for edge-based stabilization
-        const std::vector<int>&                    lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-        const std::vector<int>&                    lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+        const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
+        const std::map<XFEM::PHYSICS::Field,std::vector<int> >&                    lm_masterDofPerFieldToPatch, ///< local map between master nodes and nodes in patch
+        const std::map<XFEM::PHYSICS::Field,std::vector<int> >&                    lm_slaveDofPerFieldToPatch,  ///< local map between slave nodes and nodes in patch
         const XFEM::ElementDofManager&             m_eleDofManager, ///< element dof manager of master element
         const XFEM::ElementDofManager&             s_eleDofManager  ///< element dof manager of slave element
         )
 {
   // initialize element stiffness matrix and force vector
-  for (std::size_t rr=0; rr<estif_blocks.size(); rr++)
-      (estif_blocks[rr]).Scale(0.0);
-  for (std::size_t rr=0; rr<eforce_blocks.size(); rr++)
-      (estif_blocks[rr]).Scale(0.0);
+    std::map<std::pair<XFEM::PHYSICS::Field,XFEM::PHYSICS::Field>,Epetra_SerialDenseMatrix>::iterator it_stif;
+    for (it_stif=estif_blocks.begin(); it_stif!=estif_blocks.end(); it_stif++)
+      it_stif->second.Scale(0.0);
+    std::map<XFEM::PHYSICS::Field,Epetra_SerialDenseVector>::iterator it_force;
+    for (it_force=eforce_blocks.begin(); it_force!=eforce_blocks.end(); it_force++)
+      it_force->second.Scale(0.0);
 
   const int NUMDOF = 4;
 
@@ -1882,9 +1843,6 @@ void Facemat(
   // generalized alpha time integration scheme
   bool genalpha = false;
   if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
-
-//  for (std::size_t rr=0; rr<m_velnp.size(); rr++)
-//      std::cout << m_velnp[rr] << std::endl;
 
   // here, we have to distinguish kink and jump enrichments
   switch(combusttype)
@@ -1899,44 +1857,41 @@ void Facemat(
         {
           if (ele->ParentSlaveElement()->Shape() == DRT::Element::hex8)
           {
-            // TODO: man koennte auch schon eins vorher mit M_DISTYPE und S_DISTYPE templaten
+            const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+
             const int m_shpVecSize = COMBUST::SizeFac<M_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-            std::cout << "m_shpVecSize  " << m_shpVecSize << std::endl;
+
             LINALG::Matrix<3,m_shpVecSize> evelaf_m(true);
-            LINALG::Matrix<3,m_shpVecSize> eveln_m(true);
-            LINALG::Matrix<3,m_shpVecSize> evelnm_m(true);
-            LINALG::Matrix<3,m_shpVecSize> eaccn_m(true);
-            LINALG::Matrix<3,m_shpVecSize> eaccam_m(true);
             LINALG::Matrix<m_shpVecSize,1> epreaf_m(true);
+            LINALG::Matrix<numnode,1> ephi_m(true);
             const int s_shpVecSize = COMBUST::SizeFac<S_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
             LINALG::Matrix<3,s_shpVecSize> evelaf_s(true);
-            LINALG::Matrix<3,s_shpVecSize> eveln_s(true);
-            LINALG::Matrix<3,s_shpVecSize> evelnm_s(true);
-            LINALG::Matrix<3,s_shpVecSize> eaccn_s(true);
-            LINALG::Matrix<3,s_shpVecSize> eaccam_s(true);
             LINALG::Matrix<s_shpVecSize,1> epreaf_s(true);
+            LINALG::Matrix<numnode,1> ephi_s(true);
             // master element
             COMBUST::fillElementUnknownsArrays<DRT::Element::hex8,M_ASSTYPE>(
                     m_eleDofManager,
-                    m_velnp, m_veln, m_velnm, m_velaf, m_accn, m_accam,
+                    m_velnp, m_velaf, m_phinp,
                     instationary, genalpha,
-                    evelaf_m, eveln_m, evelnm_m, eaccn_m, eaccam_m, epreaf_m);
+                    evelaf_m, epreaf_m, ephi_m);
             // slave element
             COMBUST::fillElementUnknownsArrays<DRT::Element::hex8,S_ASSTYPE>(
                     s_eleDofManager,
-                    s_velnp, s_veln, s_velnm, s_velaf, s_accn, s_accam,
+                    s_velnp, s_velaf, s_phinp,
                     instationary, genalpha,
-                    evelaf_s, eveln_s, evelnm_s, eaccn_s, eaccam_s, epreaf_s);
+                    evelaf_s, epreaf_s, ephi_s);
             COMBUST::LocalPatchAssembler<DRT::Element::hex8,DRT::Element::hex8,M_ASSTYPE,S_ASSTYPE,NUMDOF> assembler(
                     m_eleDofManager, s_eleDofManager,
                     estif_blocks, eforce_blocks, pattern,
-                    lm_masterNodeToPatch, lm_slaveNodeToPatch
+                    lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch
                     );
+
+            // evaluate face-based terms
             COMBUST::FaceMatNitsche<DISTYPE,DRT::Element::hex8,DRT::Element::hex8,M_ASSTYPE,S_ASSTYPE,NUMDOF>(
-              ele, assembler,
-              evelaf_m, eveln_m, evelnm_m, eaccn_m, eaccam_m, epreaf_m,
-              evelaf_s, eveln_s, evelnm_s, eaccn_s, eaccam_s, epreaf_s,
-              material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
+              ele, ih, assembler,
+              evelaf_m, epreaf_m, ephi_m,
+              evelaf_s, epreaf_s, ephi_s,
+              material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, facetype,
               pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def
               );
           }
@@ -1956,7 +1911,60 @@ void Facemat(
     case INPAR::COMBUST::combusttype_twophaseflow:
     case INPAR::COMBUST::combusttype_twophaseflow_surf:
     {
-      dserror("Not yet implemented");
+      switch (ele->ParentMasterElement()->Shape())
+      {
+        case DRT::Element::hex8:
+        {
+          if (ele->ParentSlaveElement()->Shape() == DRT::Element::hex8)
+          {
+            const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+
+            const int m_shpVecSize = COMBUST::SizeFac<M_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+
+            LINALG::Matrix<3,m_shpVecSize> evelaf_m(true);
+            LINALG::Matrix<m_shpVecSize,1> epreaf_m(true);
+            LINALG::Matrix<numnode,1> ephi_m(true);
+            const int s_shpVecSize = COMBUST::SizeFac<S_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+            LINALG::Matrix<3,s_shpVecSize> evelaf_s(true);
+            LINALG::Matrix<s_shpVecSize,1> epreaf_s(true);
+            LINALG::Matrix<numnode,1> ephi_s(true);
+            // master element
+            COMBUST::fillElementUnknownsArrays<DRT::Element::hex8,M_ASSTYPE>(
+                    m_eleDofManager,
+                    m_velnp, m_velaf, m_phinp,
+                    instationary, genalpha,
+                    evelaf_m, epreaf_m, ephi_m);
+            // slave element
+            COMBUST::fillElementUnknownsArrays<DRT::Element::hex8,S_ASSTYPE>(
+                    s_eleDofManager,
+                    s_velnp, s_velaf, s_phinp,
+                    instationary, genalpha,
+                    evelaf_s, epreaf_s, ephi_s);
+            COMBUST::LocalPatchAssembler<DRT::Element::hex8,DRT::Element::hex8,M_ASSTYPE,S_ASSTYPE,NUMDOF> assembler(
+                    m_eleDofManager, s_eleDofManager,
+                    estif_blocks, eforce_blocks, pattern,
+                    lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch
+                    );
+
+            // evaluate face-based terms
+            COMBUST::FaceMatTwoPhase<DISTYPE,DRT::Element::hex8,DRT::Element::hex8,M_ASSTYPE,S_ASSTYPE,NUMDOF>(
+              ele, ih, assembler,
+              evelaf_m, epreaf_m, ephi_m,
+              evelaf_s, epreaf_s, ephi_s,
+              material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, facetype,
+              pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def
+              );
+          }
+          else
+            dserror("Unknown element type");
+          break;
+        }
+        default:
+        {
+          dserror("Unknown element type");
+          break;
+        }
+      }
       break;
     }
     default:
@@ -1972,21 +1980,16 @@ void Facemat(
 
 void COMBUST::callFacemat(
      const DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
-     std::vector<Epetra_SerialDenseMatrix>&     estif_blocks,    ///< element matrix blocks
-     std::vector<Epetra_SerialDenseVector>&     eforce_blocks,   ///< element vector blocks
+     const COMBUST::InterfaceHandleCombust*     ih,              ///< interface handler
+     std::map<std::pair<XFEM::PHYSICS::Field,XFEM::PHYSICS::Field>,Epetra_SerialDenseMatrix>&  estif_blocks,    ///< element matrix blocks
+     std::map<XFEM::PHYSICS::Field,Epetra_SerialDenseVector>&  eforce_blocks,   ///< element vector blocks
      const INPAR::COMBUST::CombustionType       combusttype,     ///< problem type (combustion (jumps) or two-phase (kinks)
      const std::vector<double>&                 m_velnp,         ///< velocity/pressure unknowns at n+1 (master)
-     const std::vector<double>&                 m_veln,          ///< velocity/pressure unknowns at n (master)
-     const std::vector<double>&                 m_velnm,         ///< velocity/pressure unknowns at n-1 (master)
      const std::vector<double>&                 m_velaf,         ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme (master)
-     const std::vector<double>&                 m_accn,          ///< time derivative of unknowns at n (master)
-     const std::vector<double>&                 m_accam,         ///< time derivative of unknowns at alpha+m for generalized alpha scheme (master)
+     const std::vector<double>&                 m_phinp,         ///< phi at n+1 (master)
      const std::vector<double>&                 s_velnp,         ///< velocity/pressure unknowns at n+1 (slave)
-     const std::vector<double>&                 s_veln,          ///< velocity/pressure unknowns at n (slave)
-     const std::vector<double>&                 s_velnm,         ///< velocity/pressure unknowns at n-1 (slave)
      const std::vector<double>&                 s_velaf,         ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme (slave)
-     const std::vector<double>&                 s_accn,          ///< time derivative of unknowns at n (slave)
-     const std::vector<double>&                 s_accam,         ///< time derivative of unknowns at alpha+m for generalized alpha scheme (slave)
+     const std::vector<double>&                 s_phinp,         ///< phi at n+1 (slave)
      Teuchos::RCP<const MAT::Material>          material,        ///< material list
      const INPAR::FLUID::TimeIntegrationScheme  timealgo,        ///< time discretization type
      const double                               time,            ///< current time step
@@ -2002,10 +2005,11 @@ void COMBUST::callFacemat(
      const INPAR::FLUID::EOS_ElementLength      hk_def,          ///< definition of characteristic element length
      const INPAR::FLUID::EOS_TauType            tau_def,         ///< definition of stab parameter
      const INPAR::FLUID::EOS_GP_Pattern         pattern,         ///< pattern for edge-based stabilization
+     const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
      const XFEM::AssemblyType                   m_assembly_type, ///< assembly type of master element
      const XFEM::AssemblyType                   s_assembly_type, ///< assembly type of slave element
-     const std::vector<int>&                    lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-     const std::vector<int>&                    lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+     const std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_masterDofPerFieldToPatch, ///< local map between master nodes and nodes in patch
+     const std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_slaveDofPerFieldToPatch,  ///< local map between slave nodes and nodes in patch
      const XFEM::ElementDofManager&             m_eleDofManager, ///< element dof manager of master element
      const XFEM::ElementDofManager&             s_eleDofManager  ///< element dof manager of slave element
      )
@@ -2020,21 +2024,21 @@ void COMBUST::callFacemat(
         {
           if (s_assembly_type == XFEM::standard_assembly)
             COMBUST::Facemat<DRT::Element::quad4,XFEM::standard_assembly,XFEM::standard_assembly>(
-                        ele, estif_blocks, eforce_blocks, combusttype,
-                        m_velnp, m_veln, m_velnm, m_velaf, m_accn, m_accam,
-                        s_velnp, s_veln, s_velnm, s_velaf, s_accn, s_accam,
+                        ele, ih, estif_blocks, eforce_blocks, combusttype,
+                        m_velnp, m_velaf, m_phinp,
+                        s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern,
-                        lm_masterNodeToPatch, lm_slaveNodeToPatch,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           else
             COMBUST::Facemat<DRT::Element::quad4,XFEM::standard_assembly,XFEM::xfem_assembly>(
-                        ele, estif_blocks, eforce_blocks, combusttype,
-                        m_velnp, m_veln, m_velnm, m_velaf, m_accn, m_accam,
-                        s_velnp, s_veln, s_velnm, s_velaf, s_accn, s_accam,
+                        ele, ih, estif_blocks, eforce_blocks, combusttype,
+                        m_velnp, m_velaf, m_phinp,
+                        s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern,
-                        lm_masterNodeToPatch, lm_slaveNodeToPatch,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           break;
         }
@@ -2042,21 +2046,21 @@ void COMBUST::callFacemat(
         {
           if (s_assembly_type == XFEM::standard_assembly)
             COMBUST::Facemat<DRT::Element::quad4,XFEM::xfem_assembly,XFEM::standard_assembly>(
-                        ele, estif_blocks, eforce_blocks, combusttype,
-                        m_velnp, m_veln, m_velnm, m_velaf, m_accn, m_accam,
-                        s_velnp, s_veln, s_velnm, s_velaf, s_accn, s_accam,
+                        ele, ih, estif_blocks, eforce_blocks, combusttype,
+                        m_velnp, m_velaf, m_phinp,
+                        s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern,
-                        lm_masterNodeToPatch, lm_slaveNodeToPatch,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           else
             COMBUST::Facemat<DRT::Element::quad4,XFEM::xfem_assembly,XFEM::xfem_assembly>(
-                        ele, estif_blocks, eforce_blocks, combusttype,
-                        m_velnp, m_veln, m_velnm, m_velaf, m_accn, m_accam,
-                        s_velnp, s_veln, s_velnm, s_velaf, s_accn, s_accam,
+                        ele, ih, estif_blocks, eforce_blocks, combusttype,
+                        m_velnp, m_velaf, m_phinp,
+                        s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern,
-                        lm_masterNodeToPatch, lm_slaveNodeToPatch,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           break;
         }

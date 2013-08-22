@@ -148,7 +148,7 @@ void SysmatTwoPhaseFlow(
       COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
       // blend smoothly to minus (gas bubble) domain
-      COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+      COMBUST::BlendMaterial(ele, cell->getDomainPlus(), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
 
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained

@@ -4,8 +4,8 @@
 \brief provides the element dofmanager classes
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -27,7 +27,7 @@ namespace XFEM
   class FieldEnr;
 
   /*!
-   * \brief He knows everything about the XFEM enrichments for a particular interface setup for one given element
+   * \brief It knows everything about the XFEM enrichments for a particular interface setup for one given element
    *
    */
   class ElementDofManager
@@ -67,6 +67,11 @@ namespace XFEM
           const int  gid    ///< unique global node id
           ) const;
 
+      //! return enriched field for local dof id
+      const XFEM::FieldEnr& FieldEnrSetPerDof(
+          const int  lid    ///< local dof id
+          ) const;
+
       //! function that returns node specific number of dofs or the given default number
       std::size_t NumDofPerNode(
           const int gid             ///< unique global node id
@@ -92,8 +97,24 @@ namespace XFEM
           const XFEM::PHYSICS::Field  field  ///< field for which we seek the number of DOFs
       ) const;
 
+      // get number of fields
+      const int NumFields() const
+      {
+        return paramsLocalEntries_.size();
+      };
+
+      // get vector of available fields
+      const std::vector<XFEM::PHYSICS::Field> GetFields() const
+      {
+        std::vector<XFEM::PHYSICS::Field> fields;
+        std::map<XFEM::PHYSICS::Field, std::vector<int> >::const_iterator it;
+        for (it=paramsLocalEntries_.begin(); it!=paramsLocalEntries_.end();it++)
+          fields.push_back(it->first);
+        return fields;
+      };
+
       //! return reference to list of local positions in a array of dofs
-      const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const;;
+      const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const;
 
       //! return reference to list of local positions in a array of dofs
       template <XFEM::PHYSICS::Field field>
@@ -140,6 +161,9 @@ namespace XFEM
 
       //! local (elemental) dofpos
       std::map<XFEM::PHYSICS::Field, std::set<XFEM::FieldEnr> > enrichedFieldperPhysField_;
+
+      //! field and enrichment for local dof (nodal dofs)
+      std::vector<XFEM::FieldEnr> lidtofieldenr_;
 
       //! set of all enrichments that are available on this proc.
       std::set<XFEM::Enrichment> unique_enrichments_;

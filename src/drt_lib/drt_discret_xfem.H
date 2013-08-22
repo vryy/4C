@@ -152,8 +152,6 @@ public:
 
   void EvaluateEdgeBasedCombust(
        DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
-       std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
-       std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
        Teuchos::ParameterList&              params,          ///< parameter list
        DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
        Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix

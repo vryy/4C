@@ -43,6 +43,7 @@ PARALLEL_REDIST_RATIO_FAC       1.2
 RESTART_SCATRA_INPUT            No
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow
+XFEMSTABILIZATION               no
 CONNECTED_INTERFACE             No
 FLUX_JUMP_TYPE                  flux_jump_surface_tension
 INITFUNCNO                      1

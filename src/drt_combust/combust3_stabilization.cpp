@@ -460,6 +460,7 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
     const double dynvisc,                /// dynamic viscosity
     const double dens,                   /// density
     const double vel_norm,
+    const double normal_vel,             /// projection of velocity in normal direction of face
     const double hk,
     const enum INPAR::FLUID::EOS_TauType tautype,
     double& tau_conv,
@@ -615,11 +616,11 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
 
       //-----------------------------------------------
       // streamline
-      tau_conv = dens * gamma_u * hk * hk;
+      tau_conv = dens * normal_vel * gamma_u * hk * hk;
 
       //-----------------------------------------------
       // divergence
-      tau_div= 0.05*tau_conv;
+      tau_div= 0.05*dens * gamma_u * hk * hk;
 
       // nu-weighting
       if(nu_weighting) // viscous -> non-viscous case
@@ -653,36 +654,7 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
     break;
     case INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall:
     {
-      // stationary definition of stabilization parameters
-
-      // Barrenechea/Valentin, Franca/Valentin
-      double mk = 1.0/3.0;
-      double Re_K = mk*vel_norm*hk/ (2.0*dynvisc/dens);
-
-      double xi = std::max(1.0, Re_K);
-
-      gamma_p = 1.0/30.0;
-
-      //multibody
-      //1.0, 1.0/8.0 not possible, 1.0/10.0 okay, 1.0/50.0, 1.0/100.0 unstable for multibody
-
-      //cylinder2D fine
-      // 1.0/10.0, 1.0/20.0 not okay, 1.0/30.0 okay, 1.0/50.0 okay
-
-      tau_p = gamma_p * hk*hk*hk*mk/(4.0*dynvisc*xi);
-
-      tau_p = gamma_p * hk*hk*hk*mk/(4.0*dynvisc);
-    //  tau_p = 1.0/40.0    *        hk* hk/max(1.0, max_vel_L2_norm);
-
-      tau_div = 0.0;
-
-      gamma_u = 1.0/40.0; //gamma_p;
-    //  tau_conv   = gamma_u * hk*hk*hk*mk/(4.0*density*kinvisc*xi);
-      tau_conv   = gamma_u * hk*hk/(2.0*dens);
-
-
-      gamma_div = gamma_p*1.0/10.0;//1.0/10.0;
-      tau_div = gamma_div  * hk* hk * vel_norm* dens; // * min(1.0, Re_K);
+      dserror("Franca-Valentin tau-def not implemented yet");
     }
     break;
     default: dserror("unknown definition for tau\n %i  ", tautype); break;

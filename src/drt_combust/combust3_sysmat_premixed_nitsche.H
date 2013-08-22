@@ -134,7 +134,7 @@ void SysmatDomainNitsche(
       COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
       // blend smoothly to minus (gas bubble) domain
-      COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+      COMBUST::BlendMaterial(ele, cell->getDomainPlus(), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
     // density \rho^{n}
     // TODO until the XFEM time integration is done properly, densities from previous and
@@ -641,7 +641,7 @@ void SysmatDomainNitscheGalerkin(
       COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
       // blend smoothly to minus (gas bubble) domain
-      COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+      COMBUST::BlendMaterial(ele, cell->getDomainPlus(), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
     // density \rho^{n}
     // TODO until the XFEM time integration is done properly, densities from previous and
@@ -3068,7 +3068,7 @@ void Nitsche_SysmatNeumannInflow(
     COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
     // blend smoothly to minus (gas bubble) domain
-    COMBUST::BlendMaterial(ele, &cell, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+    COMBUST::BlendMaterial(ele, cell.getDomainPlus(), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
   }
 
   //-----------------------------------------------------------

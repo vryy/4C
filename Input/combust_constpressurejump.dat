@@ -47,6 +47,7 @@ TIMESTEP                        0.0002
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
+XFEMSTABILIZATION               no
 VELOCITY_JUMP_TYPE              vel_jump_none                   // vel_jump_const
 FLUX_JUMP_TYPE                  flux_jump_const
 LAMINAR_FLAMESPEED              0.0

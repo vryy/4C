@@ -39,6 +39,7 @@ namespace COMBUST
 namespace DRT
 {
   class Discretization;
+  class DiscretizationXFEM;
   class IndependentPBCDofSet;
 }
 
@@ -583,15 +584,14 @@ protected:
   /// flag for potential nonlinear boundary conditions
   bool nonlinearbc_;
 
-  //! @name restart variables
-  const int writestresses_;
-  //@}
-
   /// pointer to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> turbstatisticsmanager_;
 
   /// pointer to manager for turbulent inflow transfer condition
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
+
+  /// special discretization for xfem: holds faces and may handle extended DBC
+  Teuchos::RCP<DRT::DiscretizationXFEM>      xfemdiscret_;
 
   //! @name parameters for sampling/dumping period
   int samstart_;

@@ -59,6 +59,7 @@ TIMESTEP                        1.0
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
+XFEMSTABILIZATION               no
 XFEMTIMEINT                     SemiLagrange
 XFEMTIMEINT_ENR                 Projection
 INITSTATSOL                     No

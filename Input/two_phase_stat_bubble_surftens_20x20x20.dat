@@ -41,6 +41,7 @@ TIMESTEP                        0.05
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Surf
+XFEMSTABILIZATION               no
 XFEMINTEGRATION                 Cut
 XFEMTIMEINT                     DoNothing
 XFEMTIMEINT_ENR                 QuasiStatic

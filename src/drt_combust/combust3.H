@@ -22,6 +22,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_xfem/physics.H"
 
 
 namespace COMBUST
@@ -1076,17 +1077,12 @@ private:
       */
       void PatchLocationVector(
           DRT::Discretization & discretization,       ///< discretization
-          std::vector<int>&     nds_master,           ///< nodal dofset w.r.t master parent element
-          std::vector<int>&     nds_slave,            ///< nodal dofset w.r.t slave parent element
-          std::vector<int>&     patchlm,              ///< local map for gdof ids for patch of elements
           std::vector<int>&     master_lm,            ///< local map for gdof ids for master element
           std::vector<int>&     slave_lm,             ///< local map for gdof ids for slave element
-          std::vector<int>&     face_lm,              ///< local map for gdof ids for face element
-          std::vector<int>&     lm_masterToPatch,     ///< local map between lm_master and lm_patch
-          std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
-          std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
-          std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-          std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+          std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_masterDofPerFieldToPatch, ///< local map between master nodes and nodes in patch
+          std::map<XFEM::PHYSICS::Field,std::vector<int> >&  lm_slaveDofPerFieldToPatch,  ///< local map between slave nodes and nodes in patch
+          std::map<XFEM::PHYSICS::Field,std::vector<int> >&  patch_components_lm,     ///< rearranged local map for gdof ids for patch of elements
+          std::map<XFEM::PHYSICS::Field,std::vector<int> >&  patch_components_lmowner ///< owner of patch
           );
 
       /*!
@@ -1134,17 +1130,12 @@ private:
 
       int Evaluate(Teuchos::ParameterList&            params,               ///< parameter list
                    DRT::Discretization&               discretization,       ///< discretization
-                   std::vector<int>&                  lm_patch,             ///< patch local map
-                   std::vector<int>&                  lm_face,              ///< face local map
                    std::vector<int>&                  lm_master,            ///< master local map
                    std::vector<int>&                  lm_slave,             ///< slave local map
-                   std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
-                   std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-                   std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
-                   std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-                   std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-                   std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,   ///< element matrix blocks
-                   std::vector<Epetra_SerialDenseVector>&  elevec_blocks);    ///< element vector blocks
+                   std::map<XFEM::PHYSICS::Field,std::vector<int> > &   lm_masterDofPerFieldToPatch, ///< local map between master nodes and nodes in patch
+                   std::map<XFEM::PHYSICS::Field,std::vector<int> > &   lm_slaveDofPerFieldToPatch,  ///< local map between slave nodes and nodes in patch
+                   std::map<std::pair<XFEM::PHYSICS::Field,XFEM::PHYSICS::Field>,Epetra_SerialDenseMatrix>&  elemat_blocks,   ///< element matrix blocks
+                   std::map<XFEM::PHYSICS::Field,Epetra_SerialDenseVector>&  elevec_blocks);   ///< element vector blocks
 
       //@}
 

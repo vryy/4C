@@ -30,6 +30,8 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_xfem/xfem_element_utils.H"
+#include "../drt_xfem/xfem_utils.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 namespace COMBUST
 {
@@ -40,22 +42,17 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType M_ASSTYPE,
           XFEM::AssemblyType S_ASSTYPE,
           int NUMDOF,
-          class M1, class M2, class V1, class V2>
+          class M1, class M2, class V1, class V2, class V3, class V4>
 void FaceMatNitsche(
      const DRT::ELEMENTS::Combust3IntFace*      ele,     ///< the element whose matrix is calculated
+     const COMBUST::InterfaceHandleCombust*     ih,      ///< connection to the interface handler
      COMBUST::LocalPatchAssembler<M_DISTYPE, S_DISTYPE, M_ASSTYPE, S_ASSTYPE, NUMDOF>& assembler,
      const M1&                                  evelnp_m,
-     const M1&                                  eveln_m,
-     const M1&                                  evelnm_m,
-     const M1&                                  eaccn_m,
-     const M1&                                  eaccam_m,
      const V1&                                  eprenp_m,
+     const V2&                                  ephinp_m,
      const M2&                                  evelnp_s,
-     const M2&                                  eveln_s,
-     const M2&                                  evelnm_s,
-     const M2&                                  eaccn_s,
-     const M2&                                  eaccam_s,
-     const V2&                                  eprenp_s,
+     const V3&                                  eprenp_s,
+     const V4&                                  ephinp_s,
      Teuchos::RCP<const MAT::Material>          material,      ///< fluid material
      const INPAR::FLUID::TimeIntegrationScheme  timealgo,      ///< time discretization type
      const double                               time,          ///< current time
@@ -64,6 +61,7 @@ void FaceMatNitsche(
      const double                               ga_alphaF,
      const double                               ga_alphaM,
      const double                               ga_gamma,
+     const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
      const INPAR::FLUID::EOS_Pres               pres_stab,       ///< face term to evaluate: pressure stab
      const INPAR::FLUID::EOS_Conv_Stream        conv_stream_stab,///< face term to evaluate: conv stab stream
      const INPAR::FLUID::EOS_Conv_Cross         conv_cross_stab, ///< face term to evaluate: conv stab cross
@@ -72,17 +70,6 @@ void FaceMatNitsche(
      const INPAR::FLUID::EOS_TauType            tau_def          ///< definition of stab parameter
 )
 {
-  // hier kommt keine Parameter Liste an, denn die werden uebergeben
-  // state groessen fur master und slave werden ebenfalls uebergeben
-
-//  std::cout << "Jetzt bin ich in der mat" << std::endl;
-//  std::cout << "evelnp_m " << evelnp_m << std::endl;
-//  std::cout << "evelnp_s " << evelnp_s << std::endl;
-//
-//  std::cout << "eprenp_m " << eprenp_m << std::endl;
-//  std::cout << "eprenp_s " << eprenp_s << std::endl;
-
-
   //--------------------------------------------------
   // get adjacent elements
   //--------------------------------------------------
@@ -94,7 +81,6 @@ void FaceMatNitsche(
   // get coordinates of face and adjacent elements
   //--------------------------------------------------
   // space dimension for 3d fluid element
-  // TODO: stimmt das auch fuer face
   const size_t nsd = 3;
   const size_t face_nsd = 2;
 
@@ -115,18 +101,13 @@ void FaceMatNitsche(
   static LINALG::Matrix<nsd,ms_numnode> s_xyze;
   GEO::fillInitialPositionArray<S_DISTYPE>(slave_ele,s_xyze);
 
-//  std::cout << "m_xyze " << m_xyze << std::endl;
-//  std::cout << "s_xyze " << s_xyze << std::endl;
-//  std::cout << "xyze " << xyze << std::endl;
-
   // flag for higher order elements
-  //TODO: klaeren: kommen die ueberhaupt vor?
+  // currently not used
   const bool higher_order_ele = false; //DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
   // get number of parameters (dofs) for each field on master and slave side
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t m_numparamvelx = XFEM::NumParam<ms_numnode,M_ASSTYPE>::get(*(master_ele->GetEleDofManager()), XFEM::PHYSICS::Velx);
-//  std::cout << "m_numparamvelx " << m_numparamvelx << std::endl;
   const size_t m_numparampres = XFEM::NumParam<ms_numnode,M_ASSTYPE>::get(*(master_ele->GetEleDofManager()), XFEM::PHYSICS::Pres);
   dsassert(m_numparamvelx == m_numparampres, "assumption violation");
   const size_t s_numparamvelx = XFEM::NumParam<ms_numnode,S_ASSTYPE>::get(*(slave_ele->GetEleDofManager()), XFEM::PHYSICS::Velx);
@@ -136,10 +117,8 @@ void FaceMatNitsche(
   //--------------------------------------------------
   // get material parameters
   //--------------------------------------------------
-  // TODO: fuer den augenblick sehe ich mal beide vor
-  //       aber eigentlich braucht man hier nur eine, weil
-  //       - beide element im selben Gebiet liegen
-  //       - fuer geschnitte Elemente zweimal, also getrennt fuer beide seiten integriert werden muss
+  // determine domain first
+  bool indomainplus = true;
   // density \rho^{n+1}
   double densaf  = -1.0;
   // dynamic viscosity \mu^{n+1}
@@ -153,15 +132,61 @@ void FaceMatNitsche(
     COMBUST::GetMaterialParams(material, true, densplus, dynviscplus);
     COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
-    // blend smoothly to minus (gas bubble) domain
-    // TODO: klaeren
-    //COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+    if (facetype == INPAR::XFEM::face_type_std)
+    {
+      //face is not intersected -> master and/or slave is also not intersected
+      if ( (not master_ele->Bisected()) or (not slave_ele->Bisected()))
+      {
+        if (not master_ele->Bisected())
+        {
+          // information about domain integration cells
+          const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(master_ele->Id()));
+          // if element is uncut, we usually have only one cell, which is the first one
+          // (exception if small cells have been removed in flamefront)
+          GEO::DomainIntCells::const_iterator itcell = domainIntCells.begin();
+          if (itcell == domainIntCells.end()) dserror("Domain integration cells expected for master!");
+            indomainplus = itcell->getDomainPlus();
 
-    if ((master_ele->Bisected() or master_ele->Touched()) and (slave_ele->Bisected() or slave_ele->Touched()))
-      dserror("Cut elements not yet considered");
+          // do not ask the level set field directly:
+          // If the interface cuts off very, very small pieces, they may have been removed
+          // in the cut algorithm or the flame front, meaning the element is uncut. However,
+          // the level-set field is not apdated to this simplification. Therefore, we have to
+          // ask the interface handler here not to run into this inconsistency.
+          //          for (std::size_t inode = 0; inode < ms_numnode; inode++)
+          //          {
+          //              std::cout << ephinp_m(inode,0) << std::endl;
+          //            if (XFEM::plusDomain(ephinp_m(inode,0)) == false)
+          //            {
+          //              indomainplus = false;
+          //              break;
+          //            }
+          //          }
+        }
+        else
+        {
+          // information about domain from integration cells
+          const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(slave_ele->Id()));
+          // if element is uncut, we usually have only one cell, which is the first one
+          // (exception if small cells have been removed in flamefront)
+          GEO::DomainIntCells::const_iterator itcell = domainIntCells.begin();
+          if (itcell == domainIntCells.end()) dserror("Domain integration cells expected for slave!");
+              indomainplus = itcell->getDomainPlus();
+        }
+      }
+      else dserror("Neither master nor salve is uncut!");
+    }
+    else if (facetype == INPAR::XFEM::face_type_double_plus)
+      indomainplus = true;
+    else if (facetype == INPAR::XFEM::face_type_double_minus)
+      indomainplus = false;
+    else
+      dserror("Unknown face type!");
 
-    densaf = densminus;
-    dynvisc = dynviscplus;
+    // blend smoothly to minus domain if required
+    COMBUST::BlendMaterial(ele, indomainplus, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+
+    if ((master_ele->Touched()) and (slave_ele->Touched()))
+      dserror("Touched elements not yet considered");
   }
 
   //----------------------------------------------
@@ -173,18 +198,25 @@ void FaceMatNitsche(
   // generalized alpha time integration scheme
   bool genalpha = false;
   if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
+
   // time integration constant
-  const double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
-  // TODO: passt das?
-  // integration factors and coefficients of single terms
-  double rhstimefac = timefac;
-  if (genalpha)
-    rhstimefac /= ga_alphaF; // (fac * gamma * dt ) / alpha_M
+  double timefac = 1.0; // stationary
+  double rhstimefac = 1.0; // stationary
+  if (instationary) // ost
+  {
+    timefac = dt;
+    rhstimefac = timefac;
+  }
+
+  if (genalpha) // overwritten for gen-alpha
+  {
+    timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+    rhstimefac = timefac/ga_alphaF; // (gamma * dt ) / alpha_M
+  }
 
   //----------------------------------------------
   // get Gaussian points
   //----------------------------------------------
-  // TODO: quadratische Funktionen der Kinks beruecksichtigen
   const DRT::UTILS::GaussRule2D gaussrule = XFEM::getOptimalFaceGaussrule(DISTYPE);
   const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
 
@@ -203,7 +235,6 @@ void FaceMatNitsche(
   // number of Gaussian points
   int numgp = intpoints.nquad;
 
-  // TODO: checken was das hier genau macht
   // local coordinates of the face's gausspoints w.r.t master and slave element
   Epetra_SerialDenseMatrix master_xi_points(numgp,nsd);
   Epetra_SerialDenseMatrix slave_xi_points(numgp,nsd);
@@ -280,16 +311,7 @@ void FaceMatNitsche(
   //--------------------------------------------
   // prepare evaluation of enrichment function
   //--------------------------------------------
-  // TODO: xfem klaeren
-  // TODO: das muss wohl noch ueergeben werden
-  const bool indomainplus =  false;
-  LINALG::Matrix<ms_numnode,1> m_ephi(true);
-  LINALG::Matrix<ms_numnode,1> s_ephi(true);
-  for (std::size_t inode=0; inode<ms_numnode; inode++)
-  {
-    m_ephi(inode,0) = -1;
-    s_ephi(inode,0) = -1;
-  }
+
   // create dummy cell for master and slave
   LINALG::SerialDenseMatrix xietazetae(nsd,ms_numnode);
   LINALG::SerialDenseMatrix m_xyze_serial_dens_mat(nsd,ms_numnode);
@@ -306,17 +328,14 @@ void FaceMatNitsche(
   GEO::DomainIntCell master_cell(M_DISTYPE,xietazetae,m_xyze_serial_dens_mat,indomainplus);
   GEO::DomainIntCell slave_cell(S_DISTYPE,xietazetae,s_xyze_serial_dens_mat,indomainplus);
 
-  const XFEM::ElementEnrichmentValues master_enrvals(*master_ele,*(master_ele->GetEleDofManager()),master_cell,m_ephi);
-  const XFEM::ElementEnrichmentValues slave_enrvals(*slave_ele,*(slave_ele->GetEleDofManager()),slave_cell,s_ephi);
-
-
+  const XFEM::ElementEnrichmentValues master_enrvals(*master_ele,*(master_ele->GetEleDofManager()),master_cell,ephinp_m);
+  const XFEM::ElementEnrichmentValues slave_enrvals(*slave_ele,*(slave_ele->GetEleDofManager()),slave_cell,ephinp_s);
 
   //----------------------------------------------
   // setup of stabilization parameter
   //----------------------------------------------
   // get characteristic element length
   const double hk = COMBUST::UTILS::computeHKfacestab<M_DISTYPE,S_DISTYPE,nsd>(master_ele, slave_ele, ele, m_xyze, s_xyze, hk_def);
-//  std::cout << "hk  " << hk << std::endl;
 
   // get characteristic velocity
   double vel_norm = 0.0;
@@ -339,17 +358,11 @@ void FaceMatNitsche(
     }
   }
 
-//  std::cout << "vel_norm  " << vel_norm << std::endl;
-
   //--------------------------------------
   // integration loop over Gaussian points
   //--------------------------------------
   for (int iquad=0; iquad<intpoints.nquad; ++iquad)
   {
-
-//    std::cout<< "gp" << std::endl;
-
-
     //--------------------------------------
     // evaluate shape functions w.r.t. master
     //--------------------------------------
@@ -359,14 +372,6 @@ void FaceMatNitsche(
     static LINALG::Matrix<nsd,ms_numnode> m_deriv;
     DRT::UTILS::shape_function_3D(m_funct,master_xi_points(iquad,0),master_xi_points(iquad,1),master_xi_points(iquad,2),M_DISTYPE);
     DRT::UTILS::shape_function_3D_deriv1(m_deriv,master_xi_points(iquad,0),master_xi_points(iquad,1),master_xi_points(iquad,2),M_DISTYPE);
-
-//    std::cout << "gp 1: master " << master_xi_points(iquad,0) << std::endl;
-//    std::cout << "gp 2: master " << master_xi_points(iquad,1) << std::endl;
-//    std::cout << "gp 3: master " << master_xi_points(iquad,2) << std::endl;
-//
-//    std::cout << "gp 1: slave " << slave_xi_points(iquad,0) << std::endl;
-//    std::cout << "gp 2: slave " << slave_xi_points(iquad,1) << std::endl;
-//    std::cout << "gp 3: slave " << slave_xi_points(iquad,2) << std::endl;
 
     // get transposed of the jacobian matrix d x / d \xi
     // xjm(i,j) = deriv(i,k)*xyze(j,k)
@@ -527,7 +532,6 @@ void FaceMatNitsche(
         m_shp.dzdx(iparam) = m_shp.dxdz(iparam);
         m_shp.dzdy(iparam) = m_shp.dydz(iparam);
         m_shp.dzdz(iparam) = m_derxy2(2,iparam);
-//        std::cout << "m_shp.d0(iparam)" << m_shp.d0(iparam) << std::endl;
       }
     }
 
@@ -595,25 +599,17 @@ void FaceMatNitsche(
         s_shp.dzdx(iparam) = s_shp.dxdz(iparam);
         s_shp.dzdy(iparam) = s_shp.dydz(iparam);
         s_shp.dzdz(iparam) = s_derxy2(2,iparam);
-//        std::cout << "s_shp.d0(iparam)" << s_shp.d0(iparam) << std::endl;
       }
     }
-
-    // TODO: brauche ich hier auch face?
 
     //--------------------------------------------------
     // get velocity and pressure at integration point
     //--------------------------------------------------
     // since functions are continuous at element boundaries, one can
     // evaluate the velocity using the master element, the slave element or the face
-    // TODO: was passiert bei touched elements
+    // TODO: what happens for touched elements: Averaging of both sides at interface?
     const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp_m, m_shp.d0, m_numparamvelx);
     const double gppresnp = XFEM::interpolateScalarFieldToIntPoint(eprenp_m, m_shp.d0, m_numparampres);
-//    double gppresnp = 0.0;
-//    for (size_t iparam = 0; iparam != m_numparampres; ++iparam)
-//        gppresnp += eprenp_m(iparam) * m_shp.d0(iparam);
-//    std::cout << "gpvelnp  " << gpvelnp << std::endl;
-//    std::cout << "gppresnp  " << gppresnp << std::endl;
 
     //----------------------------------------------
     // get velocity derivatives at integration point
@@ -654,20 +650,17 @@ void FaceMatNitsche(
     const double s_vdiv = s_vderxy(0,0) + s_vderxy(1,1) + s_vderxy(2,2);
     // vdiv_slave - vdiv_master
     const double vdiv_jump = s_vdiv - m_vdiv;
-//    std::cout << "vdiv_jump  " << vdiv_jump << std::endl;
 
     //----------------------------------------------
     // get gradient jump of velocity at interface
     //----------------------------------------------
     LINALG::Matrix<nsd,nsd> grad_vel_jump(true);
     grad_vel_jump.Update(1.0, s_vderxy, -1.0, m_vderxy);
-//    std::cout << "grad_vel_jump  " << grad_vel_jump << std::endl;
 
     //----------------------------------------------
     // projection of velocity in normal direction of face
     //----------------------------------------------
     const double normal_vel = fabs(gpvelnp.Dot(normal));
-//    std::cout << "normal_vel  " << normal_vel << std::endl;
 
     //-----------------------------------------------------
     // get second velocity derivatives at integration point
@@ -677,9 +670,22 @@ void FaceMatNitsche(
     m_vderxy2.Clear();
     static LINALG::Matrix<3,6> s_vderxy2;
     s_vderxy2.Clear();
-    //vderxy2 = evelnp(i,k)*enr_derxy2(j,k);
+
     if (higher_order_ele)
     {
+      for (size_t iparam = 0; iparam < m_numparamvelx; ++iparam)
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+        {
+          m_vderxy2(isd,0) += evelnp_m(isd,iparam) * m_shp.dxdx(iparam);
+          m_vderxy2(isd,1) += evelnp_m(isd,iparam) * m_shp.dydy(iparam);
+          m_vderxy2(isd,2) += evelnp_m(isd,iparam) * m_shp.dzdz(iparam);
+          m_vderxy2(isd,3) += evelnp_m(isd,iparam) * m_shp.dxdy(iparam);
+          m_vderxy2(isd,4) += evelnp_m(isd,iparam) * m_shp.dxdz(iparam);
+          m_vderxy2(isd,5) += evelnp_m(isd,iparam) * m_shp.dydz(iparam);
+        }
+      }
+
       for (size_t iparam = 0; iparam < s_numparamvelx; ++iparam)
       {
         for (size_t isd = 0; isd < nsd; ++isd)
@@ -724,7 +730,6 @@ void FaceMatNitsche(
     // grad(p_slave) - grad(p_master)
     LINALG::Matrix<nsd,1> grad_pres_jump(true);
     grad_pres_jump.Update(1.0, s_gradp, -1.0, m_gradp);
-//    std::cout << "grad_pres_jump  " << grad_pres_jump << std::endl;
 
     //------------------------------------------
     // compute stabilization parameters (3 taus)
@@ -734,15 +739,11 @@ void FaceMatNitsche(
     double tau_div  = 0.0;   // divergence-stabilization parameter
     double tau_p    = 0.0;   // pressure-stabilization parameter
 
-    // TODO: brauche ich den? wird jetzt nicht sinnvoll berechnet
-    double tau_ghost = 0.0;  // ghost-penalty stabilization parameter due to Nitsche's method in the XFEM
+    double tau_ghost = 0.0;  // ghost-penalty stabilization parameter due to Nitsche's method in the XFEM: currently nut used
 
     COMBUST::UTILS::computeStabilizationParamsEdgeBased(
-            dynvisc, densaf, vel_norm, hk,
+            dynvisc, densaf, vel_norm, normal_vel, hk,
             tau_def, tau_conv, tau_div, tau_p, tau_ghost);
-//    std::cout << "tau_conv  " << tau_conv << std::endl;
-//    std::cout << "tau_div  " << tau_div << std::endl;
-//    std::cout << "tau_p  " << tau_p << std::endl;
 
     //----------------------------------------------
     // build stiffness matrix stabilization entries
@@ -753,14 +754,10 @@ void FaceMatNitsche(
             fac, timefac, rhstimefac, genalpha, instationary, densaf, dynvisc,
             gpvelnp, m_vderxy, s_vderxy,
             gppresnp, s_gradp, s_gradp,
-            grad_pres_jump, vdiv_jump, normal_vel, grad_vel_jump,
+            grad_pres_jump, vdiv_jump, grad_vel_jump,
             pres_stab, conv_stream_stab, conv_cross_stab, conti_stab,
             tau_conv, tau_div, tau_p);
-
-   // dserror("ENDE!");
   } // end: loop all gaussian points
-
-//  std::cout << "done" <<std::endl;
 
   //----------------------------------------
   // finish assembly
@@ -768,11 +765,8 @@ void FaceMatNitsche(
   // assemble master-master, master-slave, slave-master and slave-slave block
   // into patch matrix
   assembler.Finish();
-
-//    assembler.PrintMat();
-//    assembler.PrintRhs();
-//
-//  dserror("ENDE!");
+  // assembler.PrintMat();
+  // assembler.PrintRhs();
 
   return;
 }

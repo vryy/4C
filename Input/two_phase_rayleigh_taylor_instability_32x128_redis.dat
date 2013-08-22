@@ -43,6 +43,7 @@ UPRES                           1
 PARALLEL_REDIST_RATIO_FAC       1.000001
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow
+XFEMSTABILIZATION               no
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                1
 XFEMINTEGRATION                 Cut

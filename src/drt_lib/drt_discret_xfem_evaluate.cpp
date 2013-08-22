@@ -30,6 +30,8 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
+#include "../drt_xfem/dof_management_element.H"
+
 #include "../drt_inpar/inpar_xfem.H"
 
 /*----------------------------------------------------------------------*
@@ -41,9 +43,6 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
         Teuchos::RCP<Epetra_Vector>          systemvector1
 )
 {
-
-  std::cout << "->  EvaluateEdgeBased()" << std::endl;
-
   TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationXFEM::EdgeBased" );
 
 
@@ -65,6 +64,11 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
 
   const int numrowintfaces = NumMyRowIntFaces();
 
+  // get flag to switch between complete face-based stabilization, i.e., evaluation of all faces,
+  // or evaluation of faces belonging to elements intersected by the interface, i.e., ghost penalty
+  const bool xfemstab = params.get<bool>("xfemstab");
+  // false: usual edge-based stabilization
+
   for (int i=0; i<numrowintfaces; ++i)
   {
     DRT::Element* actface = lRowIntFace(i);
@@ -76,44 +80,52 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
     DRT::ELEMENTS::Combust3* p_master = ele->ParentMasterElement();
     DRT::ELEMENTS::Combust3* p_slave  = ele->ParentSlaveElement();
 
-    // TODO: num node
-//    std::cout << "Hier!" << std::endl;
-    size_t p_master_numnode = p_master->NumNode();
-    size_t p_slave_numnode  = p_slave->NumNode();
+    // get cut status of master and slave element
+    const bool m_intersected = p_master->Bisected();
+    const bool s_intersected = p_slave->Bisected();
 
-    std::vector<int> nds_master;
-    nds_master.reserve(p_master_numnode);
+    if (p_master->Touched() or p_slave->Touched())
+      dserror("Touched element not yet considered.");
 
-    std::vector<int> nds_slave;
-    nds_slave.reserve(p_slave_numnode);
+    // - if master is cut and slave is uncut or master is uncut and slave is cut,
+    //   the face has to be considered in the xfem stabilization
+    // - if master is cut and slave is cut, the face has to be integrated twice,
+    //   with respect to the plus and the minus domain
+    // - if master is uncut and slave is uncut, the face has only to be considered
+    //   for a complete edge-based stabilization
 
+    // check, if we have to evaluate this face
+    if ((xfemstab == false) or (xfemstab == true and (m_intersected or s_intersected)))
     {
-      TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
+      // do we have to loop this face twice?
+      int face_loop = 1;
+      if (m_intersected and s_intersected)
+        face_loop = 2;
 
-      for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
+      for (int i = 1; i <= face_loop; i++)
+      {
+        // call the internal faces stabilization routine for the current side/surface
+        TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: AssembleEdgeStabGhostPenalty" );
 
-      for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
+        // set face type for evaluation with respect to plus and minus domain
+        if (face_loop == 2)
+        {
+          if (i == 1)
+            params.set<INPAR::XFEM::FaceType>("facetype", INPAR::XFEM::face_type_double_plus);
+          else
+            params.set<INPAR::XFEM::FaceType>("facetype", INPAR::XFEM::face_type_double_minus);
+        }
+        else
+          params.set<INPAR::XFEM::FaceType>("facetype", INPAR::XFEM::face_type_std);
+
+        // call the egde-based assemble and evaluate routine
+        EvaluateEdgeBasedCombust(ele,
+                                 params,
+                                 *this,
+                                 sysmat_linalg,
+                                 residual_col);
+      }
     }
-
-    // call the internal faces stabilization routine for the current side/surface
-    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: AssembleEdgeStabGhostPenalty" );
-
-
-    // call edge-based stabilization and ghost penalty
-    Teuchos::ParameterList edgebasedparams;
-
-    // set action for elements
-//    edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);
-//    edgebasedparams.set("facetype", INPAR::XFEM::face_type_std);
-
-//    // call the egde-based assemble and evaluate routine
-    EvaluateEdgeBasedCombust(ele,
-                             nds_master,
-                             nds_slave,
-                             params,
-                             *this,
-                             sysmat_linalg,
-                             residual_col);
   }
 
   sysmat_linalg->Complete();
@@ -137,101 +149,71 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
  *----------------------------------------------------------------------*/
 void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
         DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
-        std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
-        std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
         Teuchos::ParameterList&              params,          ///< parameter list
         DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
         RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
         RCP<Epetra_Vector>                   systemvector     ///< systemvector
 )
 {
-    //TODO: denke ich brauche das nicht, weil das bereits alles in der Parameterliste stehen sollte
-    //Teuchos::ParameterList edgebasedparams;
-    //decide which terms have to be assembled and decide the assembly pattern, return if no assembly required
-    //bool stab_required = PrepareAssemble(edgebasedparams, params);
-
-    // do not assemble if no stabilization terms activated for this face
-    // TODO: was mach ich damit
-    //if(!stab_required) return;
-
     if (!discretization.Filled()) dserror("FillComplete() was not called");
     if (!discretization.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
     const bool assemblemat = systemmatrix!=Teuchos::null;
     const bool assemblevec = systemvector!=Teuchos::null;
 
-    //--------------------------------------------------------
-    /// number of space dimensions of the Combust3IntFace element
+    /// safety check first
     if (ele->Shape()!=DRT::Element::quad4) dserror("Quad4 expected!");
-    static const int facensd = DRT::UTILS::DisTypeToDim<DRT::Element::quad4>::dim;
 
-    /// number of space dimensions of the parent element
-    static const int nsd = facensd+1;
 
-    /// number of dof's per node
-    // TODO: Vorsicht xfem
-    std::cout << "das geht so hier wohl nicht" << std::endl;
-    static const int numdofpernode = nsd + 1;
+    // get the parent combust elements
+    DRT::ELEMENTS::Combust3* p_master = ele->ParentMasterElement();
+    DRT::ELEMENTS::Combust3* p_slave  = ele->ParentSlaveElement();
 
+    // get element dof manager
+    Teuchos::RCP<XFEM::ElementDofManager> master_eledofmanager = p_master->GetEleDofManager();
+    Teuchos::RCP<XFEM::ElementDofManager> slave_eledofmanager = p_slave->GetEleDofManager();
+
+    // number of fields per node
+    static const int numfieldpernode = master_eledofmanager->NumFields();
+    if (numfieldpernode != slave_eledofmanager->NumFields())
+      dserror("Same number of fields expected");
 
     //----------------------- create patchlm -----------------
-
-    // local maps for patch dofs
-    std::vector<int> lm_patch;
 
     // local maps for master/slave/face dofs
     std::vector<int> lm_master;
     std::vector<int> lm_slave;
-    std::vector<int> lm_face;
-
-    // local maps between master/slave dofs and position in patch dofs (lm_patch)
-    std::vector<int> lm_masterToPatch;
-    std::vector<int> lm_slaveToPatch;
-    std::vector<int> lm_faceToPatch;
 
     // local maps between master/slave nodes and position in patch nodes
-    std::vector<int> lm_masterNodeToPatch;
-    std::vector<int> lm_slaveNodeToPatch;
+    std::map<XFEM::PHYSICS::Field,std::vector<int> > lm_masterDofPerFieldToPatch;
+    std::map<XFEM::PHYSICS::Field,std::vector<int> > lm_slaveDofPerFieldToPatch;
+
+    // patch_lm for Velx,Vely,Velz, Pres field
+    std::map<XFEM::PHYSICS::Field,std::vector<int> > patch_components_lm;
+    std::map<XFEM::PHYSICS::Field,std::vector<int> > patch_components_lmowner;
+
+    // set all fields
+    const std::vector<XFEM::PHYSICS::Field> fields = master_eledofmanager->GetFields();
+    for (std::size_t ifield = 0; ifield < fields.size(); ifield++)
+    {
+        lm_masterDofPerFieldToPatch[fields[ifield]] = std::vector<int>();
+        lm_slaveDofPerFieldToPatch[fields[ifield]] = std::vector<int>();
+        patch_components_lm[fields[ifield]] = std::vector<int>();
+        patch_components_lmowner[fields[ifield]] = std::vector<int>();
+    }
 
     // create patch location vector combining master element, slave element and face element
     ele->PatchLocationVector(discretization,
-                             nds_master,nds_slave,
-                             lm_patch, lm_master, lm_slave, lm_face,
-                             lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch,
-                             lm_masterNodeToPatch, lm_slaveNodeToPatch
+                             lm_master, lm_slave,
+                             lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
+                             patch_components_lm, patch_components_lmowner
                              );
-
-
-    // patch_lm for Velx,Vely,Velz, Pres field
-    std::vector<std::vector<int> >patch_components_lm(numdofpernode);
-    std::vector<std::vector<int> >patch_components_lmowner(numdofpernode);
-
-    // modify the patch owner to the owner of the internal face element
-    std::vector<int> patchlm_owner;
-    int owner = ele->Owner();
-
-    for(unsigned i=0; i<lm_patch.size(); i++)
-    {
-      // i%4 yields the Velx,Vely,Velz,Pres field
-      patch_components_lm[(i%numdofpernode)].push_back(lm_patch[i]);
-      patch_components_lmowner[(i%numdofpernode)].push_back(owner);
-
-      patchlm_owner.push_back(owner);
-    }
-
-    int numnodeinpatch = patch_components_lm[0].size();
-
-  #ifdef DEBUG
-    for(int isd=0; isd < numdofpernode; isd++)
-    if((int)(patch_components_lm[isd].size()) != numnodeinpatch) dserror("patch_components_lm[%d] has wrong size", isd);
-
-  #endif
 
     //------------- create and evaluate block element matrics -----------------
 
     // define element matrices and vectors
-    std::vector<Epetra_SerialDenseMatrix> elemat_blocks;
-    std::vector<Epetra_SerialDenseVector> elevec_blocks;
+    std::map<std::pair<XFEM::PHYSICS::Field,XFEM::PHYSICS::Field>,Epetra_SerialDenseMatrix> elemat_blocks;
+    std::map<XFEM::PHYSICS::Field,Epetra_SerialDenseVector> elevec_blocks;
 
     //------------------------------------------------------------------------------------
     // decide which pattern
@@ -251,70 +233,63 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
     // set pattern in paramterlist
     params.sublist("EDGE-BASED STABILIZATION").set<INPAR::FLUID::EOS_GP_Pattern>("EOS_PATTERN",eos_gp_pattern);
 
-    int numblocks = 0;
+    // define vector of blocks
+    std::vector<std::pair<XFEM::PHYSICS::Field,XFEM::PHYSICS::Field> > block_vec;
 
     if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_uvwp)
     {
       // 3D: 4 blocks =  u-u block, v-v block, w-w block and p-p block
-      numblocks=numdofpernode;
+      for (std::size_t ifield = 0; ifield < fields.size(); ifield++)
+        block_vec.push_back(std::make_pair(fields[ifield],fields[ifield]));
     }
     else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_up)
     {
       // 3D: 10 blocks = 3x3 u-u blocks + 1x1 p-p block
-      numblocks=nsd*nsd+1;
+      for (std::size_t ifield = 0; ifield < fields.size(); ifield++)
+      {
+        for (std::size_t jfield = 0; jfield < fields.size(); jfield++)
+        {
+          bool add = false;
+          if (fields[ifield] == fields[jfield])
+          {
+            add = true;
+          }
+          else
+          {
+            if (fields[ifield] != XFEM::PHYSICS::Pres and fields[jfield] != XFEM::PHYSICS::Pres)
+              add = true;
+          }
+
+          if (add)
+           block_vec.push_back(std::make_pair(fields[ifield],fields[jfield]));
+        }
+      }
     }
     else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_full)
     {
       // 3D: 16 blocks = 4x4 uvwp blocks
       dserror("Full pattern does not make sense currently");
       // for the time being no terms that require all blocks are implemented
-      numblocks=numdofpernode*numdofpernode;
     }
     else dserror("unknown matrix pattern");
 
 
-    elemat_blocks.resize(numblocks);
+    // resize mat end rhs
+    for (std::size_t ib=0; ib<block_vec.size(); ib++)
+      elemat_blocks[block_vec[ib]] = Epetra_SerialDenseMatrix(patch_components_lm[block_vec[ib].first].size(),patch_components_lm[block_vec[ib].second].size());
 
-    for(int b=0; b<numblocks; b++)
-    {
-      int err = elemat_blocks[b].Shape(numnodeinpatch,numnodeinpatch); // new shape and init values to zero
-
-      if(err != 0) dserror("element matrix Shape not successful");
-    }
-
-    elevec_blocks.resize(numdofpernode); // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
-
-    for(int b=0; b<numdofpernode; b++)
-    {
-      int err = elevec_blocks[b].Size(numnodeinpatch); // new size and init values to zero
-
-      if(err != 0) dserror("element matrix Shape not successful");
-    }
+    for (std::size_t ib=0; ib<fields.size(); ib++)
+      elevec_blocks[fields[ib]] = Epetra_SerialDenseVector(patch_components_lm[fields[ib]].size());
 
 
     //---------------------------------------------------------------------
     // call the element specific evaluate method
 
-    // TODO: dummy call
-//    Epetra_SerialDenseMatrix elemat1;
-//    Epetra_SerialDenseMatrix elemat2;
-//    Epetra_SerialDenseVector elevec1;
-//    Epetra_SerialDenseVector elevec2;
-//    Epetra_SerialDenseVector elevec3;
-//    int err = ele->Evaluate(params,*this,lm_patch,
-//                            elemat1,elemat2,elevec1,elevec2,elevec3);
-      int err = ele->Evaluate(params,*this, lm_patch, lm_face, lm_master, lm_slave,
-                              lm_masterToPatch,lm_slaveToPatch,lm_faceToPatch,
-                              lm_masterNodeToPatch, lm_slaveNodeToPatch,
-                              elemat_blocks, elevec_blocks
-                              );
-
-//    int err = EvaluateInternalFaces( intface, edgebasedparams, discretization,
-//                                     lm_patch,
-//                                     lm_masterToPatch,lm_slaveToPatch,lm_faceToPatch,
-//                                     lm_masterNodeToPatch, lm_slaveNodeToPatch,
-//                                     elemat_blocks, elevec_blocks
-//                                    );
+    int err = ele->Evaluate(params,*this,
+                            lm_master, lm_slave,
+                            lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
+                            elemat_blocks, elevec_blocks
+                            );
     if (err) dserror("error while evaluating elements");
 
     //---------------------------------------------------------------------------------------
@@ -325,41 +300,15 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
       // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
       if (assemblemat)
       {
-        if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_uvwp)
-        {
-          for(int ij=0; ij<numdofpernode; ij++)
-          {
-            systemmatrix->FEAssemble(-1, elemat_blocks[ij], patch_components_lm[ij], patch_components_lmowner[ij], patch_components_lm[ij]);
-          }
-        }
-        else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_up)
-        {
-          for(int i=0; i<nsd; i++)
-          {
-            for(int j=0; j<nsd; j++)
-            {
-              systemmatrix->FEAssemble(-1, elemat_blocks[i*nsd+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
-            }
-          }
-          systemmatrix->FEAssemble(-1, elemat_blocks[nsd*nsd], patch_components_lm[nsd], patch_components_lmowner[nsd], patch_components_lm[nsd]);
-        }
-        else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_full)
-        {
-          dserror("Full pattern does not make sense currently");
-          // for the time being no terms that require all blocks are implemented
-          for(int i=0; i<numdofpernode; i++)
-          {
-            for(int j=0; j<numdofpernode; j++)
-            {
-              systemmatrix->FEAssemble(-1, elemat_blocks[i*numdofpernode+j], patch_components_lm[i], patch_components_lmowner[i], patch_components_lm[j]);
-            }
-          }
-        }
-        else dserror("unknown matrix pattern");
-
-
+          for(std::size_t ib=0; ib<block_vec.size(); ib++)
+            // here, the to fields are equal
+            systemmatrix->FEAssemble(-1, elemat_blocks[block_vec[ib]],
+                                     patch_components_lm[block_vec[ib].first],
+                                     patch_components_lmowner[block_vec[ib].first],
+                                     patch_components_lm[block_vec[ib].second]);
       }
     }
+
     //---------------------------------------------------------------------------------------
     //assemble systemvector
     if (assemblevec)
@@ -371,12 +320,10 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
       // do not exclude non-row nodes (modify the real owner to myowner)
       // after assembly the col vector it has to be exported to the row residual_ vector
       // using the 'Add' flag to get the right value for shared nodes
-      for(int i=0; i<numdofpernode; i++)
-      {
-        LINALG::Assemble(*systemvector,elevec_blocks[i],patch_components_lm[i],patch_components_lmowner[i]);
-      }
-
+      for(std::size_t ib=0; ib<fields.size(); ib++)
+        LINALG::Assemble(*systemvector,elevec_blocks[fields[ib]],patch_components_lm[fields[ib]],patch_components_lmowner[fields[ib]]);
     }
+
 
   return;
 }

@@ -28,6 +28,7 @@ TIMESTEP                        1.0
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Surf
+XFEMSTABILIZATION               no
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                1
 XFEMINTEGRATION                 Cut
