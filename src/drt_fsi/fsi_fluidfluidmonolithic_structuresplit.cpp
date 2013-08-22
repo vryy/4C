@@ -1536,7 +1536,6 @@ void FSI::FluidFluidMonolithicStructureSplit::ReadRestart(int step)
 
   StructureField()->ReadRestart(step);
   FluidField().ReadRestart(step);
-  FluidField().ReadRestartReducedD(step);
   AleField().ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());
