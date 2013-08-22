@@ -286,7 +286,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
 {
 
   // first evaluate terms without porosity time derivative
-  EvaluatePressureEquationTransient(params,
+  my::EvaluatePressureEquationNonTransient(params,
                                     timefacfacpre,
                                     rhsfac,
                                     dphi_dp,
@@ -331,6 +331,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
     else
       dserror("no porosity time derivative given for poro_p1 element!");
   }
+
   return;
 }
 
@@ -887,56 +888,32 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     //***********************************************************************************************
     // 1) coupling terms in momentum balance
 
-    my::FillMatrixMomentumOD(  timefacfac,
-                           dgradphi_dus,
-                           dphi_dus,
-                           ecoupl_u);
+    my::FillMatrixMomentumOD(
+                          timefacfac,
+                          evelaf,
+                          egridv,
+                          epreaf,
+                          dgradphi_dus,
+                          dphi_dp,
+                          dphi_dJ,
+                          dphi_dus,
+                          refporositydot,
+                          ecoupl_u);
 
     //*************************************************************************************************************
     // 2) coupling terms in continuity equation
 
     my::FillMatrixContiOD(  timefacfacpre,
-                           dphi_dJ,
-                           dphi_dJJ,
-                           dphi_dJdp,
-                           dgradphi_dus,
-                           dphi_dus,
-                           dJ_dus,
-                           ecoupl_p);
-
-    //*************************************************************************************************************
-    // 3) shape derivatives
-    LINALG::Matrix<my::nsd_,1> grad_porosity_ref(true);
-    grad_porosity_ref.Multiply(my::xjm_,grad_porosity);
-
-    if (my::nsd_ == 3)
-      my::LinMeshMotion_3D_OD(
-          ecoupl_u,
-          ecoupl_p,
-          evelaf,
-          egridv,
-          epreaf,
-          grad_porosity_ref,
-          dphi_dp,
-          dphi_dJ,
-          refporositydot,
-          my::fldpara_->TimeFac(),
-          timefacfac);
-    else if(my::nsd_ == 2)
-      my::LinMeshMotion_2D_OD(
-          ecoupl_u,
-          ecoupl_p,
-          evelaf,
-          egridv,
-          epreaf,
-          grad_porosity_ref,
-          dphi_dp,
-          dphi_dJ,
-          refporositydot,
-          my::fldpara_->TimeFac(),
-          timefacfac);
-    else
-      dserror("Linearization of the mesh motion is only available in 3D");
+                        dphi_dp,
+                        dphi_dJ,
+                        dphi_dJJ,
+                        dphi_dJdp,
+                        refporositydot,
+                        dgradphi_dus,
+                        dphi_dus,
+                        dJ_dus,
+                        egridv,
+                        ecoupl_p);
 
     for (int ui=0; ui<my::nen_; ++ui)
     {

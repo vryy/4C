@@ -317,10 +317,9 @@ protected:
       const DRT::UTILS::GaussIntegration &                            intpoints);
 
   /*!
-    \brief linearisation in the case of mesh motion 3-D for Poroelasticity
+    \brief linearisation of momentum equation in the case of mesh motion 3-D for Poroelasticity
 
     \param ecoupl_u           (o) coupling element matrix for fluid velocity
-    \param ecoupl_p           (o) coupling element matrix for fluid pressure
     \param evelaf             (i) nodal velocities at n+1 (np_genalpha)
     \param egridv             (i) nodal pressure at n+alpha_F/n+1
     \param epreaf             (i) nodal pressure at n+alpha_F/n+1
@@ -333,7 +332,6 @@ protected:
   */
   void LinMeshMotion_3D_OD(
       LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
-      LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
       const LINALG::Matrix<my::nen_, 1>&                                epreaf,
@@ -346,10 +344,9 @@ protected:
       );
 
   /*!
-    \brief linearisation in the case of mesh motion 2-D for Poroelasticity
+    \brief linearisation of momentum equation in the case of mesh motion 2-D for Poroelasticity
 
     \param ecoupl_u           (o) coupling element matrix for fluid velocity
-    \param ecoupl_p           (o) coupling element matrix for fluid pressure
     \param evelaf             (i) nodal velocities at n+1 (np_genalpha)
     \param egridv             (i) nodal pressure at n+alpha_F/n+1
     \param epreaf             (i) nodal pressure at n+alpha_F/n+1
@@ -362,7 +359,6 @@ protected:
   */
   void LinMeshMotion_2D_OD(
       LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
-      LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
       const LINALG::Matrix<my::nen_, 1>&                                epreaf,
@@ -374,18 +370,48 @@ protected:
       const double &                                                    timefacfac
       );
 
-  virtual void LinMeshMotion_2D_Pres_OD(
-      LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
+  /*!
+    \brief linearisation of continuity equation in the case of mesh motion 2-D for Poroelasticity
+
+    \param ecoupl_p           (o) coupling element matrix for fluid pressure
+    \param egridv             (i) nodal pressure at n+alpha_F/n+1
+    \param gradphi            (i) porosity gradient at gauss point
+    \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
+    \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
+    \param refporositydot     (i) time derivative of reference porosity
+    \param timefac            (i) time factor
+    \param timefacfac         (i) time factor * integration factor
+  */
+  void LinMeshMotion_2D_Pres_OD(
       LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
-      const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
-      const LINALG::Matrix<my::nen_, 1>&                                epreaf,
       const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
       const double &                                                    dphi_dp,
       const double &                                                    dphi_dJ,
       const double &                                                    refporositydot,
-      const double &                                                    timefac,
-      const double &                                                    timefacfac
+      const double &                                                    timefacfacpre
+      );
+
+  /*!
+    \brief linearisation of continuity equation in the case of mesh motion 3-D for Poroelasticity
+
+    \param ecoupl_p           (o) coupling element matrix for fluid pressure
+    \param egridv             (i) nodal pressure at n+alpha_F/n+1
+    \param gradphi            (i) porosity gradient at gauss point
+    \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
+    \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
+    \param refporositydot     (i) time derivative of reference porosity
+    \param timefac            (i) time factor
+    \param timefacfac         (i) time factor * integration factor
+  */
+  virtual void LinMeshMotion_3D_Pres_OD(
+      LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
+      const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
+      const double &                                                    dphi_dp,
+      const double &                                                    dphi_dJ,
+      const double &                                                    refporositydot,
+      const double &                                                    timefacfacpre
       );
 
   //! Compute element matrix entries: PSPG
@@ -574,7 +600,7 @@ protected:
       LINALG::Matrix<my::nen_,1>&                   preforce);
 
   /*!
-   \brief evaluate transient part of pressure equation (i.e. no time derivative of porosity)
+   \brief evaluate nontransient part of pressure equation (i.e. no time derivative of porosity)
 
     \param params         (i) element parameter list
     \param timefacfacpre  (i) fluid pressure at gauss point
@@ -590,7 +616,7 @@ protected:
     \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
     \param preforce       (o) element rhs vector to be filled
    * */
-  void EvaluatePressureEquationTransient(
+  void EvaluatePressureEquationNonTransient(
       Teuchos::ParameterList&                       params,
       const double&                                 timefacfacpre,
       const double&                                 rhsfac,
@@ -655,8 +681,14 @@ protected:
   */
   void FillMatrixMomentumOD(
       const double&                                               timefacfac,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                   evelaf,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                   egridv,
+      const LINALG::Matrix<my::nen_, 1>&                          epreaf,
       const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
+      const double &                                              dphi_dp,
+      const double &                                              dphi_dJ,
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
+      const double &                                              refporositydot,
       LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&   ecoupl_u);
 
   /*!
@@ -673,12 +705,15 @@ protected:
   */
   virtual void FillMatrixContiOD(
       const double&                                               timefacfacpre,
-      const double&                                               dphi_dJ,
+      const double &                                              dphi_dp,
+      const double &                                              dphi_dJ,
       const double&                                               dphi_dJJ,
       const double&                                               dphi_dJdp,
+      const double &                                              refporositydot,
       const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                   egridv,
       LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p);
 
   //! do some evaluation before actual element matrix assembly

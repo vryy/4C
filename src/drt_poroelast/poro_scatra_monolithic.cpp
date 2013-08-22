@@ -898,7 +898,7 @@ Teuchos::RCP<const Epetra_Map> POROELAST::PORO_SCATRA_Mono::CombinedDBCMap() con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> POROELAST::PORO_SCATRA_Mono::SystemMatrix() const
+Teuchos::RCP<LINALG::SparseMatrix> POROELAST::PORO_SCATRA_Mono::SystemMatrix()
 {
   return systemmatrix_->Merge();
 }
@@ -958,6 +958,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   porofluiddis->SetState(0,"gridv",PoroField()->FluidField()->GridVel());
   porofluiddis->SetState(0,"veln",PoroField()->FluidField()->Veln());
   porofluiddis->SetState(0,"accnp",PoroField()->FluidField()->Accnp());
+  porofluiddis->SetState(0,"hist",PoroField()->FluidField()->Hist());
 
   PoroField()->FluidField()->Discretization()->SetState(0,"scaaf",PoroField()->FluidField()->Scaaf());
 
@@ -975,8 +976,8 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   // fluiddofset = 0, structdofset = 1
   DRT::AssembleStrategy fluidstrategy(
       0,              // fluiddofset for row
-      2,              // structdofset for column
-      k_pfs_,   // fluid-mechanical matrix
+      2,              // scatradofset for column
+      k_pfs_,         // scatra-mechanical matrix
       Teuchos::null,  // no other matrix or vectors
       Teuchos::null ,
       Teuchos::null,
@@ -984,8 +985,8 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   );
 
   // evaluate the fluid-mechanical system matrix on the fluid element
-  //PoroField()->FluidField()->Discretization()->EvaluateCondition( fparams, fluidstrategy,"PoroCoupling" );
-  PoroField()->FluidField()->Discretization()->Evaluate( fparams, fluidstrategy );
+  PoroField()->FluidField()->Discretization()->EvaluateCondition( fparams, fluidstrategy,"PoroCoupling" );
+  //PoroField()->FluidField()->Discretization()->Evaluate( fparams, fluidstrategy );
 
   porofluiddis->ClearState();
 
@@ -1050,8 +1051,8 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   // structdofset = 0, fluiddofset = 1
   DRT::AssembleStrategy structuralstrategy(
       0,               // structdofset for row
-      2,               // fluiddofset for column
-      k_pss_,            // mechanical-fluid coupling matrix
+      2,               // scatradofset for column
+      k_pss_,          // mechanical-scatra coupling matrix
       Teuchos::null ,
       Teuchos::null ,
       Teuchos::null,
@@ -1063,12 +1064,8 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
   PoroField()->StructureField()->Discretization()->ClearState();
 
-
   //************************************************************************************
   //************************************************************************************
-
-  //Teuchos::RCP<LINALG::SparseMatrix> k_pss = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_pss_);
-  //Teuchos::RCP<LINALG::SparseMatrix> k_pfs = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_pfs_);
 
   // assign matrix blocks
   k_ps_->Assign(0,0,View,*k_pss_);

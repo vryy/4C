@@ -162,7 +162,7 @@ protected:
       \param isale            (i) ALE flag
       \param intpoints        (i) Gaussian integration points
     */
-    void SysmatOD(
+    void SysmatPoroScatraOD(
         Teuchos::ParameterList&                                         params,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
@@ -219,20 +219,6 @@ protected:
         const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
         const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
         LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p);
-
-    virtual void LinMeshMotion_2D_Pres_OD(
-        LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
-        LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
-        const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
-        const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
-        const LINALG::Matrix<my::nen_, 1>&                                epreaf,
-        const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
-        const double &                                                    dphi_dp,
-        const double &                                                    dphi_dJ,
-        const double &                                                    refporositydot,
-        const double &                                                    timefac,
-        const double &                                                    timefacfac
-        );
 
     /*!
       \brief Compute porosity and derivatives

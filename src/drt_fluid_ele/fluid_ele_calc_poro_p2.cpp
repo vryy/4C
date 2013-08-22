@@ -345,7 +345,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
         escaaf,
         emhist,
         echist,
-        NULL,
+        &eporosity,
         mat,
         ele->IsAle(),
         intpoints);
@@ -624,36 +624,18 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FillMatrixContiOD(
       }
     }
   } // end for(idim)
-}
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::LinMeshMotion_2D_Pres_OD(
-    LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
-    LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
-    const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
-    const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
-    const LINALG::Matrix<my::nen_, 1>&                                epreaf,
-    const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
-    const double &                                                    dphi_dp,
-    const double &                                                    dphi_dJ,
-    const double &                                                    refporositydot,
-    const double &                                                    timefac,
-    const double &                                                    timefacfac)
-{
-
+  //shape derivatives
   for (int vi = 0; vi < my::nen_; ++vi)
   {
-    const double v = timefacfac * my::funct_(vi) * W_;
+    const double v = timefacfacpre * my::funct_(vi) * W_;
     for (int ui = 0; ui < my::nen_; ++ui)
     {
-      ecoupl_p(vi, ui * 2    ) += v * my::derxy_(0, ui);
-      ecoupl_p(vi, ui * 2 + 1) += v * my::derxy_(1, ui);
+      const int ui_nsd  = ui * my::nsd_;
+      for (int idim = 0; idim < my::nsd_; ++idim)
+        ecoupl_p(vi, ui_nsd + idim) += v * my::derxy_(idim, ui);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -692,7 +674,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateODPoroScatra(
     // ---------------------------------------------------------------------
     // call routine for calculating element matrix and right hand side
     // ---------------------------------------------------------------------
-    SysmatOD(
+    SysmatPoroScatraOD(
         params,
         evelaf,
         evelnp,
@@ -716,7 +698,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateODPoroScatra(
  |  calculate coupling matrix flow                          vuong 06/11 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatOD(
+void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
     Teuchos::ParameterList&                                         params,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,

@@ -1483,7 +1483,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
 {
 
   // first evaluate terms without porosity time derivative
-  EvaluatePressureEquationTransient(params,
+  EvaluatePressureEquationNonTransient(params,
                                     timefacfacpre,
                                     rhsfac,
                                     dphi_dp,
@@ -1495,7 +1495,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
                                     ppmat,
                                     preforce);
 
-  // now the porosity time derivative (different for standard poro and poro_p1 elements)
+  // now the porosity time derivative (different for standard poro and other poro elements)
   if (my::fldpara_->IsStationary() == false)
   {
     // inertia terms on the right hand side for instationary fluids
@@ -1534,7 +1534,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationTransient(
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransient(
     Teuchos::ParameterList&                       params,
     const double&                                 timefacfacpre,
     const double&                                 rhsfac,
@@ -2035,73 +2035,58 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
+
     const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
     const double timefacfacpre = my::fldpara_->TimeFacPre() * my::fac_;
 
     //***********************************************************************************************
     // 1) coupling terms in momentum balance
 
-    FillMatrixMomentumOD(  timefacfac,
-                           dgradphi_dus,
-                           dphi_dus,
-                           ecoupl_u);
+    FillMatrixMomentumOD(
+                          timefacfac,
+                          evelaf,
+                          egridv,
+                          epreaf,
+                          dgradphi_dus,
+                          dphi_dp,
+                          dphi_dJ,
+                          dphi_dus,
+                          refporositydot,
+                          ecoupl_u);
 
     //*************************************************************************************************************
     // 2) coupling terms in continuity equation
 
     FillMatrixContiOD(  timefacfacpre,
-                           dphi_dJ,
-                           dphi_dJJ,
-                           dphi_dJdp,
-                           dgradphi_dus,
-                           dphi_dus,
-                           dJ_dus,
-                           ecoupl_p);
-
-    //*************************************************************************************************************
-    // 3) shape derivatives
-    LINALG::Matrix<my::nsd_,1> grad_porosity_ref(true);
-    grad_porosity_ref.Multiply(my::xjm_,grad_porosity_);
-
-    if (my::nsd_ == 3)
-      LinMeshMotion_3D_OD(
-          ecoupl_u,
-          ecoupl_p,
-          evelaf,
-          egridv,
-          epreaf,
-          grad_porosity_ref,
-          dphi_dp,
-          dphi_dJ,
-          refporositydot,
-          my::fldpara_->TimeFac(),
-          timefacfac);
-    else if(my::nsd_ == 2)
-      LinMeshMotion_2D_OD(
-          ecoupl_u,
-          ecoupl_p,
-          evelaf,
-          egridv,
-          epreaf,
-          grad_porosity_ref,
-          dphi_dp,
-          dphi_dJ,
-          refporositydot,
-          my::fldpara_->TimeFac(),
-          timefacfac);
-    else
-      dserror("Linearization of the mesh motion is only available in 2D and 3D");
+                        dphi_dp,
+                        dphi_dJ,
+                        dphi_dJJ,
+                        dphi_dJdp,
+                        refporositydot,
+                        dgradphi_dus,
+                        dphi_dus,
+                        dJ_dus,
+                        egridv,
+                        ecoupl_p);
 
   }//loop over gausspoints
-}//GaussPointLoopOd
+
+  return;
+}//GaussPointLoopOD
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
     const double&                                               timefacfac,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                   evelaf,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                   egridv,
+    const LINALG::Matrix<my::nen_, 1>&                          epreaf,
     const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
+    const double &                                              dphi_dp,
+    const double &                                              dphi_dJ,
     const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
+    const double &                                              refporositydot,
     LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&   ecoupl_u
     )
 {
@@ -2215,20 +2200,55 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
       }
     }
   }
+
+  //*************************************************************************************************************
+  // shape derivatives
+  LINALG::Matrix<my::nsd_,1> grad_porosity_ref(true);
+  grad_porosity_ref.Multiply(my::xjm_,grad_porosity_);
+
+  if (my::nsd_ == 3)
+    LinMeshMotion_3D_OD(
+        ecoupl_u,
+        evelaf,
+        egridv,
+        epreaf,
+        grad_porosity_ref,
+        dphi_dp,
+        dphi_dJ,
+        refporositydot,
+        my::fldpara_->TimeFac(),
+        timefacfac);
+  else if(my::nsd_ == 2)
+    LinMeshMotion_2D_OD(
+        ecoupl_u,
+        evelaf,
+        egridv,
+        epreaf,
+        grad_porosity_ref,
+        dphi_dp,
+        dphi_dJ,
+        refporositydot,
+        my::fldpara_->TimeFac(),
+        timefacfac);
+  else
+    dserror("Linearization of the mesh motion is only available in 2D and 3D");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
-    const double&                                       timefacfacpre,
-    const double&                                       dphi_dJ,
-    const double&                                       dphi_dJJ,
-    const double&                                       dphi_dJdp,
-    const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&   dgradphi_dus,
-    const LINALG::Matrix<1,my::nsd_*my::nen_>&          dphi_dus,
-    const LINALG::Matrix<1,my::nsd_*my::nen_>&          dJ_dus,
-    LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&      ecoupl_p
+    const double&                                               timefacfacpre,
+    const double &                                              dphi_dp,
+    const double &                                              dphi_dJ,
+    const double&                                               dphi_dJJ,
+    const double&                                               dphi_dJdp,
+    const double &                                              refporositydot,
+    const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
+    const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
+    const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                   egridv,
+    LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p
     )
 {
   if (my::fldpara_->IsStationary() == false)
@@ -2420,6 +2440,32 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
 
     } // end if (not stationary)
   }// end if (partial integration)
+
+  //*************************************************************************************************************
+  // shape derivatives
+  LINALG::Matrix<my::nsd_,1> grad_porosity_ref(true);
+  grad_porosity_ref.Multiply(my::xjm_,grad_porosity_);
+
+  if (my::nsd_ == 3)
+    LinMeshMotion_3D_Pres_OD (
+        ecoupl_p,
+        egridv,
+        grad_porosity_ref,
+        dphi_dp,
+        dphi_dJ,
+        refporositydot,
+        timefacfacpre);
+  else if(my::nsd_ == 2)
+    LinMeshMotion_2D_Pres_OD (
+        ecoupl_p,
+        egridv,
+        grad_porosity_ref,
+        dphi_dp,
+        dphi_dJ,
+        refporositydot,
+        timefacfacpre);
+  else
+    dserror("Linearization of the mesh motion is only available in 2D and 3D");
 }
 
 /*----------------------------------------------------------------------*
@@ -2427,7 +2473,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
     LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
-    LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
     const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
     const LINALG::Matrix<my::nen_, 1>&                                epreaf,
@@ -3075,7 +3120,23 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
       }
     }
   }//if(visceff_)
-    //*************************** linearisation of mesh motion in continuity equation**********************************
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
+    LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
+    const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
+    const double &                                                    dphi_dp,
+    const double &                                                    dphi_dJ,
+    const double &                                                    refporositydot,
+    const double &                                                    timefacfac)
+{
+  //*************************** linearisation of mesh motion in continuity equation**********************************
 
   if( my::fldpara_->PoroContiPartInt() == false )
   {
@@ -3276,7 +3337,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
     }
   }
   //-------------------
-
   return;
 }
 
@@ -3285,7 +3345,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
     LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
-    LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
     const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
     const LINALG::Matrix<my::nen_, 1>&                                epreaf,
@@ -3293,7 +3352,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
     const double &                                                    dphi_dp,
     const double &                                                    dphi_dJ,
     const double &                                                    refporositydot,
-    const double & timefac, const double &                            timefacfac)
+    const double &                                                    timefac,
+    const double &                                                    timefacfac)
 {
 
   //*************************** linearisation of mesh motion in momentum balance**********************************
@@ -3523,21 +3583,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
     }
   }//if(visceff_)
 
-    //*************************** linearisation of mesh motion in continuity equation**********************************
-
-  LinMeshMotion_2D_Pres_OD (
-      ecoupl_u,
-      ecoupl_p,
-      evelaf,
-      egridv,
-      epreaf,
-      gradphi,
-      dphi_dp,
-      dphi_dJ,
-      refporositydot,
-      timefac,
-      timefacfac);
-
   return;
 }
 
@@ -3545,17 +3590,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
-    LINALG::Matrix<my::nsd_ * my::nen_, my::nsd_ * my::nen_>&         ecoupl_u,
     LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
-    const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
-    const LINALG::Matrix<my::nen_, 1>&                                epreaf,
     const LINALG::Matrix<my::nsd_, 1>&                                gradphi,
     const double &                                                    dphi_dp,
     const double &                                                    dphi_dJ,
     const double &                                                    refporositydot,
-    const double &                                                    timefac,
-    const double &                                                    timefacfac)
+    const double &                                                    timefacfac  )
 {
 
   if (my::fldpara_->IsStationary() == false)

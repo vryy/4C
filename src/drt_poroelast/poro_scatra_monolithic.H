@@ -113,7 +113,7 @@ namespace POROELAST
     //! @name Access methods
 
     //! composed system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const;
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
     //! right hand side vector
     Teuchos::RCP<Epetra_Vector> RHS()
