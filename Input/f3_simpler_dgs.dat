@@ -119,10 +119,10 @@ DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF                           4
-E 10 - 3 0.5 0.205 0.205 axis 0.0 0.0 0.1
-E 11 - 1 0.5 0.205 0.205 axis 0.0 0.0 0.1
-E 12 - 2 0.5 0.205 0.205 axis 0.0 0.0 0.1
-E 13 - 0 0.5 0.205 0.205 axis 0.0 0.0 0.1
+E 10 - 3 CENTER 0.5 0.205 0.205 //AXIS  0.0 0.0 0.1
+E 11 - 1 CENTER 0.5 0.205 0.205 //AXIS  0.0 0.0 0.1
+E 12 - 2 CENTER 0.5 0.205 0.205 //AXIS  0.0 0.0 0.1
+E 13 - 0 CENTER 0.5 0.205 0.205 //AXIS  0.0 0.0 0.1
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id
 DPOINT                          0

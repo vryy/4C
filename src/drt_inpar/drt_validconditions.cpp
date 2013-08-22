@@ -1926,7 +1926,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   std::vector<Teuchos::RCP<ConditionComponent> > liftdragcomponents;
 
   liftdragcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
+  liftdragcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CENTER")));
   liftdragcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("centerCoord",3)));
+  // optional
+  liftdragcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("AXIS",true)));
+  liftdragcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("axis",3,true)));
 
   Teuchos::RCP<ConditionDefinition> lineliftdrag =
     Teuchos::rcp(new ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG",
@@ -1948,9 +1952,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     lineliftdrag->AddComponent(liftdragcomponents[i]);
     surfliftdrag->AddComponent(liftdragcomponents[i]);
   }
-
-  // axis of rotation for angular momentum calculation (only 3D)
-  AddNamedVector(surfliftdrag,"axis",3);
 
   condlist.push_back(lineliftdrag);
   condlist.push_back(surfliftdrag);

@@ -411,8 +411,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(DRT::IN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(std::string name, int length)
-  : ConditionComponent(name), length_(length)
+DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(std::string name, int length, bool optional)
+  : ConditionComponent(name), length_(length), optional_(optional)
 {
 }
 
@@ -442,13 +442,32 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(D
                                                                                Teuchos::RCP<std::stringstream> condline,
                                                                                Teuchos::RCP<DRT::Condition> condition)
 {
-  std::vector<double> numbers(length_);
+  std::vector<double> numbers(length_,0.0);
 
   for (int i=0; i<length_; ++i)
   {
-    double number = 0;
+    std::string number;
     (*condline) >> number;
-    numbers[i] = number;
+
+    char* ptr;
+    double n = 0.0;
+    n = strtod(number.c_str(),&ptr);
+    if (ptr==number.c_str())
+    {
+      if (optional_ and i==0)
+      {
+        // failed to read the numbers, fall back to default values
+        condline = PushBack(number,condline);
+        break;
+      }
+      dserror("Expected %i input parameters for variable '%s' in '%s'\n"
+              "or \n"
+              "Failed to read number '%s' while reading variable '%s' in '%s'",
+              length_,Name().c_str(),def->SectionName().c_str(),
+              number.c_str(),Name().c_str(),def->SectionName().c_str());
+    }
+
+    numbers[i] = n;
   }
   condition->Add(Name(),numbers);
   return condline;

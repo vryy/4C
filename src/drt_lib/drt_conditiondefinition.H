@@ -312,7 +312,7 @@ namespace INPUT
       \param name variable name in DRT::Condition
       \param length number of double values expected
      */
-    RealVectorConditionComponent(std::string name, int length);
+    RealVectorConditionComponent(std::string name, int length, bool optional=false);
     virtual void DefaultLine(std::ostream& stream);
     virtual void Print(std::ostream& stream, const DRT::Condition* cond);
     virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
@@ -322,6 +322,7 @@ namespace INPUT
 
   private:
     int length_;
+    bool optional_;
   };
 
   /// Dirichlet and Neumann boundary condition specific condition component

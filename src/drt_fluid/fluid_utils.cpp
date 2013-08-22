@@ -279,6 +279,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
 
 
 // -------------------------------------------------------------------
+// compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
 void FLD::UTILS::LiftDrag(
   const DRT::Discretization      & dis         ,
@@ -289,9 +290,6 @@ void FLD::UTILS::LiftDrag(
 {
   const int liftdrag = params.get<int>("liftdrag");
 
-  if (liftdrag == INPAR::FLUID::liftdrag_none)
-  {} // do nothing, we don't want lift & drag
-
   if (liftdrag == INPAR::FLUID::liftdrag_nodeforce)
   {
     int myrank=dis.Comm().MyPID();
@@ -299,6 +297,7 @@ void FLD::UTILS::LiftDrag(
     std::map< const int, std::set<DRT::Node* > > ldnodemap;
     std::map< const int, const std::vector<double>* > ldcoordmap;
     std::map< const int, const std::vector<double>* > ldaxismap;
+    bool axis_for_moment = false;
 
     // allocate and initialise LiftDrag conditions
     std::vector<DRT::Condition*> ldconds;
@@ -347,13 +346,18 @@ void FLD::UTILS::LiftDrag(
            return pointer to nodeset for known label ... */
         std::set<DRT::Node*>& nodes = ldnodemap[label];
 
-        // centre coordinates to present label
+        // center coordinates to present label
         ldcoordmap[label] = ldconds[i]->Get<std::vector<double> >("centerCoord");
 
         // axis of rotation for present label (only needed for 3D)
         if(ldconds[i]->Type() == DRT::Condition::SurfLIFTDRAG)
         {
           ldaxismap[label] = ldconds[i]->Get<std::vector<double> >("axis");
+          // get pointer to axis vector (if available)
+          const std::vector<double>* axisvecptr = ldaxismap[label];
+          if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
+          LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
+          if (axisvec.Norm2() > 1.0e-9) axis_for_moment=true; // axis has been set
         }
 
         /* get pointer to its nodal Ids*/
@@ -378,9 +382,10 @@ void FLD::UTILS::LiftDrag(
       {
         const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
         const int label = labelit->first;                    // the present label
-        std::vector<double> values(6,0.0);             // vector with lift&drag forces
+        std::vector<double> myforces(3,0.0);                 // vector with lift&drag forces
+        std::vector<double> mymoments(3,0.0);                // vector with lift&drag moments
 
-        // get also pointer to centre coordinates
+        // get also pointer to center coordinates
         const std::vector<double>* centerCoordvec = ldcoordmap[label];
         if (centerCoordvec->size() != 3) dserror("axis vector has not length 3");
           LINALG::Matrix<3,1> centerCoord(&((*centerCoordvec)[0]),false);
@@ -391,59 +396,31 @@ void FLD::UTILS::LiftDrag(
           const LINALG::Matrix<3,1> x((*actnode)->X(),false); // pointer to nodal coordinates
           const Epetra_BlockMap& rowdofmap = trueresidual.Map();
           const std::vector<int> dof = dis.Dof(*actnode);
-          const unsigned numdof = dof.size();
-
-          // extension of lift and drag function to enriched two-phase flow problems
-          int dofvelx=0;
-          int dofvely=0;
-          int dofvelz=0;
-
-          // numdof == 4 : standard fluid or node not enriched
-          // numdof == 5 : only pressure field enriched
-          if(numdof==4 or numdof==5)
-          {
-            dofvelx=dof[0];
-            dofvely=dof[1];
-            dofvelz=dof[2];
-          }
-          // numdof == 8 : pressure and velocity field enriched
-          // numdof == 9 : only velocity field enriched (rare)
-          else if(numdof==8 or numdof==7)
-          {
-            dofvelx=dof[0];
-            dofvely=dof[2];
-            dofvelz=dof[4];
-          }
-         else
-          dserror("Number of dofs not known for lift&drag!");
 
           // get nodal forces
-          const double fx = trueresidual[rowdofmap.LID(dofvelx)];
-          const double fy = trueresidual[rowdofmap.LID(dofvely)];
-          const double fz = trueresidual[rowdofmap.LID(dofvelz)];
-          values[0] += fx;
-          values[1] += fy;
-          values[2] += fz;
+          LINALG::Matrix<3,1> actforces (true);
+          for (int idim=0; idim<ndim; idim++)
+          {
+            actforces(idim,0) = trueresidual[rowdofmap.LID(dof[idim])];
+            myforces[idim] += trueresidual[rowdofmap.LID(dof[idim])];
+          }
+          // z-component remains zero for ndim=2
 
           // get moment
-          double mx = 0.0;
-          double my = 0.0;
-          double mz = 0.0;
-
+          LINALG::Matrix<3,1> actmoments (true);
           // get vector of point to center point
           LINALG::Matrix<3,1> distances;
           distances.Update(1.0, x, -1.0, centerCoord);
 
           // calculate nodal angular moment with respect to global coordinate system
-          const double mx_gc = distances(1)*fz-distances(2)*fy;
-          const double my_gc = distances(2)*fx-distances(0)*fz;
-          const double mz_gc = distances(0)*fy-distances(1)*fx;
+          LINALG::Matrix<3,1> actmoment_gc (true);
+          actmoment_gc(0,0) = distances(1)*actforces(2,0)-distances(2)*actforces(1,0); // zero for 2D
+          actmoment_gc(1,0) = distances(2)*actforces(0,0)-distances(0)*actforces(2,0); // zero for 2D
+          actmoment_gc(2,0) = distances(0)*actforces(1,0)-distances(1)*actforces(0,0);
 
-          // get pointer to axis vector (if available)
-          const std::vector<double>* axisvecptr = ldaxismap[label];
-          if (axisvecptr)
+          if (axis_for_moment)
           {
-            if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
+            const std::vector<double>* axisvecptr = ldaxismap[label];
             LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
             double norm = 0.0;
             if (axisvec.Norm2() != 0.0)
@@ -455,27 +432,25 @@ void FLD::UTILS::LiftDrag(
             else
               dserror("norm==0.0!");
             // projection of moment on given axis
-            double mdir = mx_gc*axisvec(0,0) + my_gc*axisvec(1,0)+ mz_gc*axisvec(2,0);
+            double mdir = actmoment_gc.Dot(axisvec);
 
-            mx = mdir*axisvec(0,0);
-            my = mdir*axisvec(1,0);
-            mz = mdir*axisvec(2,0);
+           actmoments(2,0) = mdir;
+
           }
           else
           {
-            mx = mx_gc;
-            my = my_gc;
-            mz = mz_gc;
+            for (int idim=0; idim<3; idim++)
+              actmoments(idim,0) = actmoment_gc(idim,0);
           }
 
-          values[3] += mx;
-          values[4] += my;
-          values[5] += mz;
+          for (int idim=0; idim<3; idim++)
+            mymoments[idim] += actmoments(idim,0);
 
         } // end: loop over nodes
 
         // care for the fact that we are (most likely) parallel
-        trueresidual.Comm().SumAll (&(values[0]), &(((*liftdragvals)[label])[0]), 6);
+        trueresidual.Comm().SumAll (&(myforces[0]), &(((*liftdragvals)[label])[0]), 3);
+        trueresidual.Comm().SumAll (&(mymoments[0]), &(((*liftdragvals)[label])[3]), 3);
 
         // do the output
         if (myrank==0)
@@ -512,6 +487,7 @@ void FLD::UTILS::LiftDrag(
 }
 
 // -------------------------------------------------------------------
+// write forces and moments to file                    rasthofer 08/13
 // -------------------------------------------------------------------
 void FLD::UTILS::WriteLiftDragToFile(
   const double                     time,
@@ -526,7 +502,10 @@ void FLD::UTILS::WriteLiftDragToFile(
          << std::right << std::setw(10) << "Label"
          << std::right << std::setw(16) << "F_x"
          << std::right << std::setw(16) << "F_y"
-         << std::right << std::setw(16) << "F_z";
+         << std::right << std::setw(16) << "F_z"
+         << std::right << std::setw(16) << "M_x"
+         << std::right << std::setw(16) << "M_y"
+         << std::right << std::setw(16) << "M_z";
 
 
   for (std::map<int,std::vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
@@ -537,7 +516,10 @@ void FLD::UTILS::WriteLiftDragToFile(
       << std::right << std::setw(10) << std::scientific << liftdragval->first
       << std::right << std::setw(16) << std::scientific << liftdragval->second[0]
       << std::right << std::setw(16) << std::scientific << liftdragval->second[1]
-      << std::right << std::setw(16) << std::scientific << liftdragval->second[2];
+      << std::right << std::setw(16) << std::scientific << liftdragval->second[2]
+      << std::right << std::setw(16) << std::scientific << liftdragval->second[3]
+      << std::right << std::setw(16) << std::scientific << liftdragval->second[4]
+      << std::right << std::setw(16) << std::scientific << liftdragval->second[5];
 
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << liftdragval->first;
@@ -548,7 +530,7 @@ void FLD::UTILS::WriteLiftDragToFile(
     if (step <= 1)
     {
       f.open(fname.c_str(),std::fstream::trunc);
-      //f << header.str() << std::endl;
+      f << header.str() << std::endl;
     }
     else
     {
