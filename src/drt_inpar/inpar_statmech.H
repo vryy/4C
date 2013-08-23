@@ -72,7 +72,15 @@ namespace INPAR
       dbctype_affinesheardel  ///< apply affine shear displacement to all nodes, delete cut elements
     };
 
-    /// (this enum represents the input file parameter LINKERTYPE
+    /// (this enum represents the input file parameter NETWORKTYPE
+    enum NetworkType
+    {
+      networktype_std, /// < standard actin network
+      networktype_casimir, /// < casimir force type setup
+      networktype_motassay /// < motility assay network setup
+    };
+
+    /// (this enum represents the input file parameter LINKERMODEL
     enum LinkerModel
     {
       linkermodel_none, /// < no linkers at all

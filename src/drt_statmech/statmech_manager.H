@@ -793,6 +793,13 @@ protected:
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
 
+  enum NetworkType
+  {
+    statmech_network_std,
+    statmech_network_casimir,
+    statmech_network_motassay
+  };
+
   enum FilamentModel
   {
     statmech_filament_std,
@@ -811,6 +818,8 @@ protected:
   };
 
 
+  //! \brief network type
+  NetworkType networktype_;
   //! \brief filament model
   FilamentModel filamentmodel_;
   //! \brief linker model
@@ -946,12 +955,8 @@ protected:
   //! \brief a vector indicating the actual length of an active crosslinker: 0=long, 1=short
   Teuchos::RCP<Epetra_Vector> crosslinkeractlength_;
 
-  //! \brief a vector indication the actual time in the active crosslinker cycle
+  //! \brief a vector indicating the actual time in the active crosslinker cycle
   Teuchos::RCP<Epetra_Vector> crosslinkeractcycletime_;
-
-  //TODO Formulierung!
-  //! \brief a vector indicating active crosslinker: GID of binding node of normal filament (either current node or node formerly bound to)
-  Teuchos::RCP<Epetra_Vector> crosslinkeractnodegid_;
 
   //! \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
   Teuchos::RCP<Epetra_Vector> crosslinkonsamefilament_;

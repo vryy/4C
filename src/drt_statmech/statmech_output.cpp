@@ -1933,14 +1933,17 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
             tangent(j) = bspottriad(j,0);
             normal(j) = bspottriad(j,1);
           }
-        // rotation angle
-        if(filamentmodel_ == statmech_filament_helical)
-         alpha = (*bspotorientations_)[bspotLID];
-        else
-          alpha = fmod((double) i, 2*M_PI);
+          // rotation angle
+          if(filamentmodel_ == statmech_filament_helical)
+            alpha = (*bspotorientations_)[bspotLID];
+          else if(networktype_ == statmech_network_motassay)
+            alpha = M_PI/2.0;
+          else
+            alpha = fmod((double) i, 2.0*M_PI);
 
           // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
-          RotationAroundFixedAxis(tangent,normal,alpha);
+          if(alpha!=0.0)
+            RotationAroundFixedAxis(tangent,normal,alpha);
 
           // calculation of the visualized point lying in the direction of the rotated normal
           for (int j=0; j<visualizepositions_->NumVectors(); j++)
@@ -4143,8 +4146,8 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
                                            const std::ostringstream& nearestneighborfilename,
                                            const std::ostringstream& linkerpositionsfilename)
 {
-  if(!DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
-      dserror("For Loom related output, activate LOOMSETUP in your input file!");
+  if(networktype_ != statmech_network_casimir)
+      dserror("For Casimir force related output, set NETWORKTYPE to 'casimir' in your input file!");
 
   //detect loom type
   enum LoomType
@@ -4424,8 +4427,8 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
 {
-  if(!DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
-    dserror("For Loom related output, activate LOOMSETUP in your input file!");
+  if(networktype_ != statmech_network_casimir)
+    dserror("For Casimir force related output, set NETWORKTYPE to 'casimir' in your input file!");
 
   for(int i=0; i<discret_->NumMyRowElements(); i++)
   {

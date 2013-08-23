@@ -564,7 +564,7 @@ public:
 
   //! changes the actual linker length
   void SetReferenceLength(const double& scalefac,
-                          const bool changetoshort);
+                          const bool changetoshort = true);
 
   //@}
 

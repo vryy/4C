@@ -1815,7 +1815,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "structanaly",
                                                     "octree",
                                                     "loom",
-                                                    "loomelnrg"),
+                                                    "loomelnrg",
+                                                    "motassay"),
                                  //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,
@@ -1827,7 +1828,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_structanaly,
                                             INPAR::STATMECH::statout_octree,
                                             INPAR::STATMECH::statout_loom,
-                                            INPAR::STATMECH::statout_loomelnrg),
+                                            INPAR::STATMECH::statout_loomelnrg,
+                                            INPAR::STATMECH::statout_motassay),
                                  &statmech);
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<int>("FRICTION_MODEL","none","friction model for polymer dynamics",
@@ -1862,6 +1864,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::dbctype_pinnodes,
                                             INPAR::STATMECH::dbctype_affineshear,
                                             INPAR::STATMECH::dbctype_affinesheardel),
+                                            &statmech);
+  //Reading which kind of biopolymer network will be simulated
+  setStringToIntegralParameter<int>("NETWORKTYPE","std","Network type simulated",
+                                 //listing possible std::strings in input file in category FILAMENTMODEL
+                                 tuple<std::string>("std",
+                                                    "loom",
+                                                    "motassay"),
+                                 //translating input std::strings into BACI input parameters
+                                 tuple<int>(INPAR::STATMECH::networktype_std,
+                                            INPAR::STATMECH::networktype_casimir,
+                                            INPAR::STATMECH::networktype_motassay),
                                             &statmech);
   //Reading which kind of linker model should be applied
   setStringToIntegralParameter<int>("LINKERMODEL","none","Linker model applied in Statmech simulations",
@@ -1899,12 +1912,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   // index controlling the start of DBC application (see ACTIONTIME)
   IntParameter("DBCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of DBC application. Starts counting at '1' !",&statmech);
-  //Toggles use of specific routines in statmech
-  setStringToIntegralParameter<int>("LOOMSETUP","No","Turns specific routines for loom network on and off",
-                               yesnotuple,yesnovalue,&statmech);
-  //Toggles use of motility assay routines
-  setStringToIntegralParameter<int>("MOTILITYASSAY","No","Turns specific routines for motility assays on and off.",
-                               yesnotuple,yesnovalue,&statmech);
   //Rise per monomer in the actin double helix according to Howard, p. 125
   DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
   //Rotation per monomer in the actin double helix according to Howard, p. 125
