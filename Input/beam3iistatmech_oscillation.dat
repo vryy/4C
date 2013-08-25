@@ -72,7 +72,6 @@ BEAMS_BOXESINOCT                7
 THERMALBATH                     uniform
 FRICTION_MODEL                  anisotropicconsistent         // isotropicconsistent isotropiclumped
 DBCTYPE                         shearfixed //affineshear none shearfixed sheartrans pinnodes, choose DBC type 
-LOOMSETUP                       No                            // (de)activate specific loom network routines
 CHECKORIENT                     Yes                           // check orientation betw. two filaments before linking them
 FIXEDSEED                       Yes                           // (de)activate pesudo-randomness
 INITIALSEED                     1                             // manipulate initial seed of pseudo random numbers

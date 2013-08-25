@@ -2550,7 +2550,8 @@ bool STATMECH::StatMechManager::LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_Mu
   // cycle time check:
   // time during which an active linker is in recovery conformation (default values from myosin cycle)
   double recoverytime = (statmechparams_.get<double>("ACTIVELINKERCYCLE",0.04))*(statmechparams_.get<double>("ACTIVERECOVERYFRACTION",0.95));
-  if((*crosslinkeractcycletime_)[(int)LID(0,0)] >= recoverytime)
+  int crosslid = (*bspotstatus_)[(int)LID(0,0)];
+  if((*crosslinkeractcycletime_)[crosslid] >= recoverytime)
   {
     double dirlength = direction.Norm2();
     direction.Scale(1.0/direction.Norm2());
@@ -2784,6 +2785,11 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
   CommunicateVector(numbondtrans, numbond_);
   CommunicateVector(crosslink2elementtrans, crosslink2element_);
   CommunicateVector(delcrosselementtrans, delcrosselement);
+  if(linkermodel_==statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
+  {
+    Teuchos::RCP<Epetra_Vector> crosslinkeractcycletimetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
+    CommunicateVector(crosslinkeractcycletimetrans,crosslinkeractcycletime_);
+  }
 
   // DELETION OF ELEMENTS
   RemoveCrosslinkerElements(*discret_,*delcrosselement,&deletedelements_);
@@ -3119,19 +3125,27 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
   }
 
   // number of changed crosslinker lengths
-  if(!discret_->Comm().MyPID() && (toshort+tolong)>0)
+  if(!discret_->Comm().MyPID())
   {
     if(revertchanges)
       std::cout<<"\nRevert reference lengths..."<<std::endl;
     else
-      std::cout<<"\n"<<"--Crosslinker length changes--"<<std::endl;
-    std::cout<<" - long to short: "<<toshort<<std::endl;
-    std::cout<<" - short to long: "<<tolong<<std::endl;
+    {
+      if((toshort+tolong)>0)
+      {
+        std::cout<<"\n"<<"--Crosslinker length changes--"<<std::endl;
+        std::cout<<" - long to short: "<<toshort<<std::endl;
+        std::cout<<" - short to long: "<<tolong<<std::endl;
+      }
+    }
 
     // update cycle time
     for(int i=0; i<crosslinkeractcycletime_->MyLength(); i++)
       (*crosslinkeractcycletime_)[i] += dt;
   }
+
+  Teuchos::RCP<Epetra_Vector> crosslinkeractcycletimetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
+  CommunicateVector(crosslinkeractcycletimetrans,crosslinkeractcycletime_);
 
   return;
 }
