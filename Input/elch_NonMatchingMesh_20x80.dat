@@ -69,6 +69,10 @@ SOLVER                          UMFPACK                         // Aztec_MSR vm3
 --------------------------------------------------------------------SOLVER 2
 NAME                            Sca_Tra_Electrical_Potential
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+-------------------------------------------------------------MORTAR COUPLING
+SHAPEFCN                        Dual
+PARALLEL_REDIST                 static
+REDUNDANT_STORAGE               all
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.01 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -1.0

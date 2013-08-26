@@ -80,6 +80,8 @@ LINEAR_SOLVER                   2
 SHAPEFCN                        Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
+PARALLEL_REDIST                 static
+REDUNDANT_STORAGE               all
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
