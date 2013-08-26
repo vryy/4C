@@ -3590,7 +3590,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
       int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+      //if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
