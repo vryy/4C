@@ -173,9 +173,9 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
 
     // structure to fluid
 
-    coupsfm_->Setup(*FluidField().Discretization(),
-                    *StructureField()->Discretization(),
-                    *AleField().Discretization(),
+    coupsfm_->Setup(FluidField().Discretization(),
+                    StructureField()->Discretization(),
+                    AleField().Discretization(),
                     comm_,true);
 
     // fluid to ale at the interface

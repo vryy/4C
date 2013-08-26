@@ -73,9 +73,9 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   else
   {
     matchingnodes_ = false;
-    coupsfm_->Setup( *StructureField()->Discretization(),
-                     *MBFluidField().Discretization(),
-                     *(dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
+    coupsfm_->Setup( StructureField()->Discretization(),
+                     MBFluidField().Discretization(),
+                     (dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
                      comm,false);
   }
 

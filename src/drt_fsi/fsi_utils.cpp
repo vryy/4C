@@ -324,7 +324,7 @@ aletype_(aleproj)
 
   maxmindist_ = 1.0e-1;
 
-  coupff_->Setup(*fluiddis);
+  coupff_->Setup(fluiddis);
 }
 
 /*----------------------------------------------------------------------*/
