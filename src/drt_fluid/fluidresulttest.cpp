@@ -29,6 +29,9 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
     fluiddis_= fluid.discret_;
     mysol_   = fluid.velnp_ ;
     mytraction_ = fluid.CalcStresses();
+    myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
+    mydivu_ = fluid.EvaluateDivU();
+
 }
 
 
@@ -111,6 +114,12 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
           dserror("Cannot test result for tractionz in 2D case.");
         result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,2))];
       }
+      else if(position=="errvel")
+        result = (*myerror_)[0];
+      else if(position=="errpre")
+        result = (*myerror_)[1];
+      else if(position=="divu")
+        result = (*mydivu_);
       else
       {
         dserror("Quantity '%s' not supported in fluid testing", position.c_str());
