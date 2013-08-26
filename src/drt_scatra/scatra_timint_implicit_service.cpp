@@ -1205,8 +1205,8 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  discret_->SetState("timederivative",phidtnp_); // needed for double-layer capacity!
+  // needed for double-layer capacity!
+  discret_->SetState("timederivative",phidtnp_);
 
   // set action for elements
   Teuchos::ParameterList eleparams;
@@ -1228,6 +1228,16 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   // we have to take care for Gen.Alpha!
   // AddSpecificTimeIntegrationParameters cannot be used since we do not want
   // an evaluation for t_{n+\alpha_f} !!!
+
+  // TODO
+  // Warning:
+  // Specific time integration parameter are set in the following function.
+  // In the case of a genalpha-time integration scheme the solution vector phiaf_ at time n+af
+  // is passed to the element evaluation routine. Therefore, the electrode status is evaluate at a
+  // different time (n+af) than our output routine (n+1), resulting in slightly different values at the electrode.
+  // A different approach is not possible (without major hacks) since the time-integration scheme is
+  // necessary to perform galvanostatic simulations, for instance.
+  // Think about: double layer effects for genalpha time-integratio scheme
 
   // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);

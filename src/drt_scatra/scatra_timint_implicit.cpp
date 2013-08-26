@@ -318,7 +318,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     mshtparams.set("theta", params_->get<double>("THETA"));
     mshtparams.set<int>("mshtoption", msht_);
 
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams));
+    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams, DRT::Problem::Instance()->NDim()));
     sysmat_ = meshtying_->Setup();
   }
   else
@@ -1121,7 +1121,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     mshtparams.set("theta", params_->get<double>("THETA"));
     mshtparams.set<int>("mshtoption", msht_);
 
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams));
+    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams, DRT::Problem::Instance()->NDim()));
     sysmat_ = meshtying_->Setup();
   }
   else
