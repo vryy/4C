@@ -72,33 +72,34 @@ namespace ADAPTER
 
     //! setup the machinery
     //! Version 1 ---> for standard ALE FSI mesh tying
-    void Setup( DRT::Discretization& masterdis,
-                DRT::Discretization& slavedis,
-                DRT::Discretization& aledis, ///> we need this for mesh initialization
+    void Setup( Teuchos::RCP<DRT::Discretization> masterdis,
+                Teuchos::RCP<DRT::Discretization> slavedis,
+                Teuchos::RCP<DRT::Discretization> aledis, ///> we need this for mesh initialization
                 const Epetra_Comm& comm,
                 bool structslave = false);
 
     //! setup the machinery
     //! Version 2 ---> for sliding ALE FSI mesh tying
-    void Setup( DRT::Discretization& dis );
+    void Setup( Teuchos::RCP<DRT::Discretization> dis );
 
     //! setup the machinery
     //! Version 3 ---> for Eulerian fluid mesh tying
-    bool Setup( DRT::Discretization& dis,
+    bool Setup( Teuchos::RCP<DRT::Discretization> dis,
                 const Epetra_Comm& comm,
                 int meshtyingoption,
                 bool structslave = false);
 
     /// perform mesh initialization
-    void MeshInit( DRT::Discretization& masterdis,
-                   DRT::Discretization& slavedis,
-                   DRT::Discretization& aledis,
+    void MeshInit( Teuchos::RCP<DRT::Discretization> slavedis,
+                   Teuchos::RCP<DRT::Discretization> aledis,
                    Teuchos::RCP<Epetra_Map> masterdofrowmap,
                    Teuchos::RCP<Epetra_Map> slavedofrowmap,
                    const Epetra_Comm& comm,
                    bool structslave);
 
-    /// filling matrices (standard case)
+    /// perform mesh initialization
+    void ReEvaluate(const Epetra_Comm& comm);
+
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
 
     /// filling matrices (case of transferring same dofs on two different meshes)
@@ -137,8 +138,11 @@ namespace ADAPTER
     /// the interface dof map of the slave side
     Teuchos::RCP<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
 
-    /// the interface dof map of the Lagrange multiplier
-    Teuchos::RCP<Epetra_Map> LmDofRowMap()  const { return glmdofrowmap_; }
+    /// the interface dof map of the master side
+    Teuchos::RCP<Epetra_Map> MasterNodeRowMap() const { return masternoderowmap_; }
+
+    /// the interface dof map of the slave side
+    Teuchos::RCP<Epetra_Map> SlaveNodeRowMap()  const { return slavenoderowmap_; }
 
     /// return mortar D matrix
     Teuchos::RCP<LINALG::SparseMatrix> GetDMatrix() const { return D_;}
@@ -152,9 +156,6 @@ namespace ADAPTER
     /// return the mortar projection operator \f$P=D^{-1} M\f$
     Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
 
-    /// return constraint matrix (for saddle point formulation only)
-    Teuchos::RCP<LINALG::SparseMatrix> GetConMatrix() const { return conmatrix_;}
-
 
   private:
 
@@ -164,14 +165,14 @@ namespace ADAPTER
     Teuchos::RCP<MORTAR::MortarInterface> interface_;       ///< interface
     Teuchos::RCP<Epetra_Map>              masterdofrowmap_; ///< map of master row dofs
     Teuchos::RCP<Epetra_Map>              slavedofrowmap_;  ///< map of slave row dofs
-    Teuchos::RCP<Epetra_Map>              glmdofrowmap_;    ///< map of slave row dofs
+    Teuchos::RCP<Epetra_Map>       masternoderowmap_;  ///< map of master row dofs
+    Teuchos::RCP<Epetra_Map>       slavenoderowmap_;   ///< map of slave row dofs
+
 
     Teuchos::RCP<LINALG::SparseMatrix>    D_;               ///< mortar matrix
     Teuchos::RCP<LINALG::SparseMatrix>    Dinv_;            ///< inverse of mortar matrix D_
     Teuchos::RCP<LINALG::SparseMatrix>    M_;               ///< mortar matrix
     Teuchos::RCP<LINALG::SparseMatrix>    DinvM_;           ///< product of Dinv_ \times M_
-
-    Teuchos::RCP<LINALG::SparseMatrix>    conmatrix_ ;      ///< constraint matrix
   };
 }
 
