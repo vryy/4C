@@ -2436,6 +2436,16 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const double           timefac
 )
 {
+  //TODO:
+  // Warning:
+  // Specific time integration parameter are set in the following function.
+  // In the case of a genalpha-time integration scheme the solution vector phiaf_ at time n+af
+  // is passed to the element evaluation routine. Therefore, the electrode status is evaluate at a
+  // different time (n+af) than our output routine (n+1), resulting in slightly different values at the electrode.
+  // A different approach is not possible (without major hacks) since the time-integration scheme is
+  // necessary to perform galvanostatic simulations, for instance.
+  // Think about: double layer effects for genalpha time-integratio scheme
+
   double faraday = INPAR::SCATRA::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
   // get variables with their current values
