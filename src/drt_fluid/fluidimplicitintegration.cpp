@@ -330,21 +330,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
   else if(params_->get<int>("MESHTYING")!= INPAR::FLUID::no_meshtying)
-  {
-    msht_ = params_->get<int>("MESHTYING");
-
-    if (msht_ == INPAR::FLUID::coupling_iontransport_laplace)
-      dserror("the option 'coupling_iontransport_laplace' is only available in Elch!!");
-
-    // define parameter list for meshtying
-    Teuchos::ParameterList mshtparams;
-    mshtparams.set("theta",theta_);
-    mshtparams.set<int>("mshtoption", msht_);
-
-    meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, mshtparams, surfacesplitter_));
-    sysmat_ = meshtying_->Setup();
-    //meshtying_->OutputSetUp();
-  }
+    SetupMeshtying();
   else
   {
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
@@ -902,17 +888,6 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     StatisticsAndOutput();
 
     // -------------------------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    // -------------------------------------------------------------------
-    EvaluateErrorComparedToAnalyticalSol();
-
-    // -------------------------------------------------------------------
-    // evaluate divergence u
-    // -------------------------------------------------------------------
-    EvaluateDivU();
-
-
-    // -------------------------------------------------------------------
     //                       update time step sizes
     // -------------------------------------------------------------------
     dtp_ = dta_;
@@ -1065,6 +1040,16 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
     // Evaluate the womersley velocities
     vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
+
+    // By definition: Applying DC on the slave side of an internal interface is not allowed
+    //                since it leads to an over-constraint system
+    // Therefore, nodes belonging to the slave side of an internal interface have to be excluded from the DC.
+    // However, a velocity value (projected from the Dirichlet condition on the master side)
+    // has to be assigned to the DOF's on the slave side in order to evaluate the system matrix completely
+
+    // Preparation for including DC on the master side in the condensation process
+    if(msht_ != INPAR::FLUID::no_meshtying)
+      meshtying_->IncludeDirichletInCondensation(velnp_, veln_);
 
     discret_->ClearState();
 
@@ -1311,6 +1296,11 @@ void FLD::FluidImplicitTimeInt::Solve()
   if (not inconsistent_)
   {
     AssembleMatAndRHS();
+
+    // account for meshtying if required
+    if(msht_ != INPAR::FLUID::no_meshtying)
+      meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
+
     // print to screen
     ConvergenceCheck(0,itmax,ittol);
   }
@@ -3245,6 +3235,17 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   statisticsmanager_->DoOutput(*output_,step_);
 
+  // -------------------------------------------------------------------
+  // evaluate error for test flows with analytical solutions
+  // -------------------------------------------------------------------
+  EvaluateErrorComparedToAnalyticalSol();
+
+  // -------------------------------------------------------------------
+  // evaluate divergence u
+  // -------------------------------------------------------------------
+  EvaluateDivU();
+
+
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 
@@ -4753,7 +4754,7 @@ void FLD::FluidImplicitTimeInt::SetTopOptData(
 /*----------------------------------------------------------------------*
  | evaluate error for test cases with analytical solutions   gammi 04/07|
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
+Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
@@ -4761,14 +4762,22 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   switch(calcerr)
   {
   case INPAR::FLUID::no_error_calculation:
+  {
     // do nothing --- no analytical solution available
+    return Teuchos::null;
     break;
+  }
   case INPAR::FLUID::beltrami_flow:
   case INPAR::FLUID::channel2D:
   case INPAR::FLUID::gravitation:
   case INPAR::FLUID::shear_flow:
   case INPAR::FLUID::fsi_fluid_pusher:
   {
+    // std::vector containing
+    // [0]: relative velocity error
+    // [1]: relative pressure error
+    Teuchos::RCP<std::vector<double> > error = Teuchos::rcp(new std::vector<double>(2));
+
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
 
@@ -4806,25 +4815,8 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     discret_->EvaluateScalars(eleparams, errors);
     discret_->ClearState();
 
-    double velerr = 0.0;
-    double preerr = 0.0;
-
-    // integrated analytic solution in order to compute relative error
-    double velint = 0.0;
-    double pint = 0.0;
-
-    // error in the single velocity components
-    //double velerrx = 0.0;
-    //double velerry = 0.0;
-    //double velerrz = 0.0;
-
-    // for the L2 norm, we need the square root
-    velerr = sqrt((*errors)[0]);
-    preerr = sqrt((*errors)[1]);
-
-    // analytical vel_mag and p_mag
-    velint= sqrt((*errors)[2]);
-    pint = sqrt((*errors)[3]);
+    (*error)[0] = sqrt((*errors)[0])/sqrt((*errors)[2]);
+    (*error)[1] = sqrt((*errors)[1])/sqrt((*errors)[3]);
 
     if (myrank_ == 0)
     {
@@ -4833,8 +4825,8 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         std::cout << std::endl << "----relative L_2 error norm for analytical solution Nr. " <<
           DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
           " ----------" << std::endl;
-        std::cout << "| velocity:  " << velerr/velint << std::endl;
-        std::cout << "| pressure:  " << preerr/pint << std::endl;
+        std::cout << "| velocity:  " << (*error)[0] << std::endl;
+        std::cout << "| pressure:  " << (*error)[1] << std::endl;
         std::cout << "--------------------------------------------------------------------" << std::endl << std::endl;
       }
 
@@ -4871,7 +4863,10 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         std::ofstream f;
         f.open(fname.c_str());
         f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5) << time_ << std::setw(8) << std::setprecision(10) << "    " << velerr/velint<< std::setw(15) << std::setprecision(10) << "    " << preerr/pint << " "<<"\n";
+        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
+          << time_ << std::setw(8) << std::setprecision(10) << "    "
+          << (*error)[0] << std::setw(15) << std::setprecision(10) << "    " << (*error)[1] << " "<<"\n";
+
         f.flush();
         f.close();
       }
@@ -4879,25 +4874,29 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       {
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5) << time_ << std::setw(8) << std::setprecision(10) << "    " << velerr/velint<< std::setw(15) << std::setprecision(10) << "    " << preerr/pint << " "<<"\n";
+        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
+        << time_ << std::setw(8) << std::setprecision(10) << "    "
+        << (*error)[0] << std::setw(15) << std::setprecision(10) << "    " << (*error)[1] << " "<<"\n";
+
         f.flush();
         f.close();
       }
     }
+    return error;
   }
   break;
   default:
     dserror("Cannot calculate error. Unknown type of analytical test problem");
     break;
   }
-  return;
+  return Teuchos::null;
 } // end EvaluateErrorComparedToAnalyticalSol
 
 
 /*----------------------------------------------------------------------*
  | evaluate divergence u                                      ehrl 12/12|
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::EvaluateDivU()
+Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
 {
   // Evaluate div u only at the last step
   //if ((step_==stepmax_) or (time_==maxtime_))// write results to file
@@ -4930,17 +4929,16 @@ void FLD::FluidImplicitTimeInt::EvaluateDivU()
     discret_->ClearState();
 
     double maxdivu = 0.0;
-    double sumdivu = 0.0;
-    divu->Norm1(&sumdivu);
+    Teuchos::RCP<double> sumdivu = Teuchos::rcp(new double(0.0));
+    divu->Norm1(&(*sumdivu));
     divu->NormInf(&maxdivu);
 
     if(myrank_==0)
     {
       std::cout << "---------------------------------------------------" << std::endl;
       std::cout << "| divergence-free condition:                      |" << std::endl;
-      std::cout << "| Norm(inf) = " << maxdivu <<  " | Norm(1) = " << sumdivu << "  |" << std::endl ;
+      std::cout << "| Norm(inf) = " << maxdivu <<  " | Norm(1) = " << *sumdivu << "  |" << std::endl ;
       std::cout << "---------------------------------------------------" << std::endl << std::endl;
-
 
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation+".divu";
@@ -4951,20 +4949,21 @@ void FLD::FluidImplicitTimeInt::EvaluateDivU()
       {
         f << "#| " << simulation << "\n";
         f << "#| Step | Time | max. div u | div u (Norm(1)) |\n";
-        f << step_ << " " << time_ << " " << maxdivu << " " << sumdivu << " " << "\n";
+        f << step_ << " " << time_ << " " << maxdivu << " " << *sumdivu << " " << "\n";
         f.flush();
         f.close();
       }
       else
       {
-        f << step_ << " " << time_ << " " << maxdivu << " " << sumdivu << " " << "\n";
+        f << step_ << " " << time_ << " " << maxdivu << " " << *sumdivu << " " << "\n";
         f.flush();
         f.close();
       }
     }
+    return sumdivu;
   }
-
-  return;
+  else
+    return Teuchos::null;
 } // end EvaluateDivU
 
 
@@ -6710,5 +6709,53 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
 void FLD::FluidImplicitTimeInt::SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
 {
   fldgrdisp_= fluid_growth_disp;  return;
+}
+
+
+void FLD::FluidImplicitTimeInt::SetupMeshtying()
+{
+  msht_ = params_->get<int>("MESHTYING");
+
+  if (msht_ == INPAR::FLUID::coupling_iontransport_laplace)
+    dserror("the option 'coupling_iontransport_laplace' is only available in Elch!!");
+
+  // define parameter list for meshtying
+  Teuchos::ParameterList mshtparams;
+  mshtparams.set("theta",theta_);
+  mshtparams.set<int>("mshtoption", msht_);
+
+  meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, mshtparams, numdim_, surfacesplitter_));
+  sysmat_ = meshtying_->Setup();
+
+  // Check if there are DC defined on the master side of the internal interface
+  meshtying_->DirichletOnMaster(dbcmaps_->CondMap());
+
+  // Volume surface flow conditions are treated in the same way as Dirichlet condition.
+  // Therefore, a volume surface flow condition cannot be defined on the same nodes as the
+  // slave side of an internal interface
+  // Solution:  Exclude those nodes of your surface
+  // but:       The resulting inflow rate (based on the area)
+  //            as well as the profile will be different
+  //            since it is based on a different surface discretization!!
+  if(vol_surf_flow_bcmaps_->NumGlobalElements() != 0)
+  {
+    meshtying_->CheckOverlappingBC(vol_surf_flow_bcmaps_);
+    meshtying_->DirichletOnMaster(vol_surf_flow_bcmaps_);
+
+    if(myrank_==0)
+      std::cout << "Think about your flow rate defined on the interal interface!!" << std::endl << std::endl;
+      dserror("Think about your flow rate defined on the interal interface!!\n"
+              "It is working qualitatively!!");
+  }
+
+  if(predictor_!= "steady_state")
+  {
+    if(myrank_==0)
+      dserror("The meshtying framework does only support a steady-state predictor");
+  }
+
+  //meshtying_->OutputSetUp();
+
+  return;
 }
 

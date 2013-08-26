@@ -294,13 +294,13 @@ public:
          numerical solution of a test problems
 
   */
-  void EvaluateErrorComparedToAnalyticalSol();
+  Teuchos::RCP<std::vector<double> > EvaluateErrorComparedToAnalyticalSol();
 
   /*!
   \brief evaluate divergence of velocity field
 
   */
-  void EvaluateDivU();
+  Teuchos::RCP<double> EvaluateDivU();
 
   /*!
   \brief calculate stresses
@@ -683,6 +683,12 @@ protected:
 
   */
   void AssembleEdgeBasedMatandRHS();
+
+  /*!
+  \brief Setup meshtying
+
+  */
+  void SetupMeshtying();
 
 
   //! @name general algorithm parameters
