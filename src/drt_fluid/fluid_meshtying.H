@@ -31,6 +31,11 @@ namespace DRT
   }
 }
 
+namespace MORTAR
+{
+  class MortarInterface;
+}
+
 namespace ADAPTER
 {
   class CouplingMortar;
@@ -72,9 +77,10 @@ class Meshtying
   public:
 
     //! Constructor
-    Meshtying(Teuchos::RCP<DRT::Discretization>      dis,                      ///> actual discretisation
-              LINALG::Solver&               solver,
+    Meshtying(Teuchos::RCP<DRT::Discretization>      dis,             ///> actual discretisation
+              LINALG::Solver&               solver,                   ///> solver
               Teuchos::ParameterList&       params,                   ///> meshting parameter list
+              int                           nsd,                      ///> number space dimensions
               const UTILS::MapExtractor*    surfacesplitter = NULL);  ///> surface splitter
 
 
@@ -82,6 +88,30 @@ class Meshtying
 
     //! Set up mesh-tying framework
     Teuchos::RCP<LINALG::SparseOperator> Setup();
+
+    //! Applied Dirichlet values are adapted on the slave side of the internal interface
+    //! in order to avoid an over-constraint problem setup
+    void CheckOverlappingBC(
+        Teuchos::RCP<Epetra_Map> map      ///> map of boundary condition
+        );
+
+    //! Old routine handling Dirichlet conditions on the master side of the internal interface
+    /// During PrepareTimeStep() DC are projected from the master to the slave
+    void ProjectMasterToSlaveForOverlappingBC(
+        Teuchos::RCP<Epetra_Vector>&    velnp,      ///> solution vector n+1
+        Teuchos::RCP<const Epetra_Map>  bmaps       ///> map of boundary condition
+        );
+
+    //! Check weather Dirichlet BC are defined on the master
+    void DirichletOnMaster(
+        Teuchos::RCP<const Epetra_Map>  bmaps   ///> map of boundary condition
+        );
+
+    //! Preparation for including Dirichlet conditions in the condensation process
+    void IncludeDirichletInCondensation(
+        Teuchos::RCP<Epetra_Vector>& velnp,   ///> solution vector n+1
+        Teuchos::RCP<Epetra_Vector>& veln     ///> solution vector n
+        );
 
     //! Prepare matrix and residual for meshtying
     void PrepareMeshtyingSystem(Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
@@ -166,6 +196,22 @@ class Meshtying
     //! Compute and update the increments of the slave node (Condensation)
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc);
 
+    //! Analyze interface quality and optional interface initialization
+    void InterfacePreparation();
+
+    //! Analyze interface quality (gabs, overlaps, ..)
+    double AnalyzeInterfaceQuality();
+
+    //! Assemble vector containing the nodal coordinates of the internal interface (master, slave)
+    void AssembleCoords(const                                   std::string& sidename,  ///> string defining the side of the internal interface
+                        bool                                    ref,                    ///>
+                        Teuchos::RCP<Epetra_Vector>             vec,
+                        Teuchos::RCP<MORTAR::MortarInterface>&  interface);                   ///> vector containing coordinates of the internal interface
+
+    //! The mesh is initialized in order to minimize the gab / overlap at the internal interface
+    void MeshInitialization(
+         Teuchos::RCP<Epetra_Vector>&            xsmod,
+         Teuchos::RCP<MORTAR::MortarInterface>& interface);
 
   private:
 
@@ -178,8 +224,11 @@ class Meshtying
     /// 0: no_meshtying     -> no mesh-tying
     /// 0: condensed_smat   -> condensation in a sparse matrix
     /// 1: condensed_bmat   -> condensation in a block matrix
-    /// 2: sps_coupled      -> saddle point system in a sparse matrix
-    /// 3: sps_pc           -> saddle point system in a block matrix
+    /// 2: condensed_bmat_merged   -> condensation in a block matrix
+
+    /// deactivated:
+    /// 3: sps_coupled      -> saddle point system in a sparse matrix
+    /// 4: sps_pc           -> saddle point system in a block matrix
     int msht_;
 
     //! the processor ID from the communicator
@@ -206,20 +255,12 @@ class Meshtying
     //! master dof rowmap
     Teuchos::RCP<Epetra_Map> gmdofrowmap_;
 
-    //! dof row map of the complete system and the lagrange multiplier
-    Teuchos::RCP<Epetra_Map> glmdofrowmap_;
-
     //! merged map for saddle point system and 2x2 block matrix
     Teuchos::RCP<Epetra_Map> mergedmap_;
 
-    //! lagrange multiplier at time n+1
-    Teuchos::RCP<Epetra_Vector> lag_;
-
-    //! lagrange multiplier at time n
-    Teuchos::RCP<Epetra_Vector> lagold_;
-
-    //! time integration factor (only necessary for saddle point system)
-    double theta_;
+    //! vector containing time-depending values of the dirichlet condition
+    /// valuesdc_ = (velnp after applying DC) - (veln)
+    Teuchos::RCP<Epetra_Vector> valuesdc_;
 
     //! adapter to mortar framework
     Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
@@ -229,6 +270,16 @@ class Meshtying
 
     //! flag defining pressure coupling
     bool pcoupled_;
+
+    //! flag defining if Dirichlet  or Dirichlet-like boundary conditions are defined on the master
+    //! side of the internal interface
+    bool dconmaster_;
+
+    //! flag for identifying first Newton iteration in each time step
+    bool firstnonliniter_;
+
+    //! number of space dimensions
+    int nsd_;
 
 };  // end  class Meshtying
 } // end namespace FLD
