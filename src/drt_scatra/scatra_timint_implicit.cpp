@@ -273,6 +273,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   {
     // Activation time at time n+1
     activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
+    // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
+    nb_max_mat_int_state_vars_ = 3;
+    material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
+    material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+
   }
 
   if (scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca and numscal_ > 1)
@@ -1142,6 +1147,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
 
   // solutions at time n+1 and n
   Teuchos::RCP<Epetra_Vector> old;
+  Teuchos::RCP<Epetra_MultiVector> oldMulti;
 
   if (activation_time_np_ != Teuchos::null)
   {
@@ -1150,7 +1156,19 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     LINALG::Export(*old, *activation_time_np_);
   }
 
+  if (material_internal_state_np_ != Teuchos::null)
+  {
+    oldMulti = material_internal_state_np_;
+    material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
+    LINALG::Export(*oldMulti, *material_internal_state_np_);
+  }
 
+  if (material_internal_state_np_component_ != Teuchos::null)
+    {
+      old = material_internal_state_np_component_;
+      material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+      LINALG::Export(*old, *material_internal_state_np_component_);
+    }
 
   if (phinp_ != Teuchos::null)
   {
@@ -1201,7 +1219,6 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
 
   // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
-  Teuchos::RCP<Epetra_MultiVector> oldMulti;
   if (convel_ != Teuchos::null)
   {
     oldMulti = convel_;
@@ -1313,7 +1330,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
 void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
   // write out initial state
-  // Output();
+  Output();
 
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
@@ -3125,14 +3142,32 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 {
   // solution
   output_->WriteVector("phinp", phinp_);
-
-  // Compute and write activation time
+  // Compute and write activation time (for electrophysiology)
   if (activation_time_np_ != Teuchos::null){
     for(int k=0;k<phinp_->MyLength();k++){
       if( (*phinp_)[k] >= 0.98 && (*activation_time_np_)[k] <= dta_*0.9)
         (*activation_time_np_)[k] =  time_;
     }
     output_->WriteVector("activation_time_np", activation_time_np_);
+  }
+
+  // Recover internal state of the material (for electrophysiology)
+  if (material_internal_state_np_ != Teuchos::null){
+    Teuchos::ParameterList params;
+    params.set<int>("scatratype", scatratype_);
+    params.set<int>("action", SCATRA::get_material_internal_state);
+    params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state_np_);     // Probably do it once at the beginning
+    discret_->Evaluate(params);
+    material_internal_state_np_ = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state");
+
+   for(int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
+     {
+       std::ostringstream temp;
+       temp << k+1;
+       material_internal_state_np_component_ = Teuchos::rcp((*material_internal_state_np_)(k),false);
+       output_->WriteVector("mat_int_state_"+temp.str(), material_internal_state_np_component_,IO::DiscretizationWriter::elementvector);
+     }
+
   }
 
   // convective velocity (not written in case of coupled simulations)

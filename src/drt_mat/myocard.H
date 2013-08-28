@@ -165,6 +165,12 @@ public:
   /// compute gating variable 'y' from dy/dt = (y_inf-y)/y_tau
   double GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const;
 
+  ///  returns number of internal state variables of the material
+  int GetNumberOfInternalStateVariables() const;
+
+  ///  returns current internal state of the material
+  double GetInternalState(const int k) const;
+
   /// time update for this material
   void Update(const double phi, const double dt);
 

@@ -942,9 +942,6 @@ protected:
   //! phi at times n+1
   Teuchos::RCP<Epetra_Vector> phinp_;
 
-  //! activation_time at times n+1
-    Teuchos::RCP<Epetra_Vector> activation_time_np_;
-
   //! time derivative of phi at times n
   Teuchos::RCP<Epetra_Vector> phidtn_;
   //! time derivative of phi at times n+1
@@ -959,6 +956,24 @@ protected:
 
   //! phi at time 0 as reference for reinitialization procedure
   Teuchos::RCP<Epetra_Vector> phistart_;
+
+
+  /*========================================================================*/
+  //! @name electrophysiology
+  /*========================================================================*/
+
+  //! activation_time at times n+1
+  Teuchos::RCP<Epetra_Vector> activation_time_np_;
+
+  //! maximum expected number of material internal state variables
+  int nb_max_mat_int_state_vars_;
+
+  //! material internal state at times n+1
+  Teuchos::RCP<Epetra_MultiVector> material_internal_state_np_;
+
+  //! one component of the material internal state at times n+1 (for separated postprocessing)
+  Teuchos::RCP<Epetra_Vector> material_internal_state_np_component_;
+
 
   /*========================================================================*/
   //! @name velocity, pressure, and related

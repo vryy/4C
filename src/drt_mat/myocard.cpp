@@ -342,8 +342,6 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
     const double s_inf = GatingFunction(0.0, 1.0, k_s, phi, u_s);
     const double s = GatingVarCalc(dt, s0_, s_inf, Tau_s);
 
-
-
     // calculate currents J_fi, J_so and J_si ([7] page 545)
     const double J_fi = -GatingFunction(0.0, v*(phi - Theta_v)*(u_u - phi)/Tau_fi, p, phi, Theta_v); // fast inward current
     const double J_so =  GatingFunction((phi - u_o)/Tau_o, 1.0/Tau_so, p, phi, Theta_w);// slow outward current
@@ -535,9 +533,29 @@ double MAT::Myocard::GatingVarCalc(const double dt, double y_0, const double y_i
 {
   double Erg =  1.0/(1.0/dt + 1.0/y_tau)*(y_0/dt + y_inf/y_tau);
   return Erg;
+}
 
+/*----------------------------------------------------------------------*
+ |  returns number of internal state variables of the material          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+int MAT::Myocard::GetNumberOfInternalStateVariables() const
+{
+  return 3;
+}
 
-
+/*----------------------------------------------------------------------*
+ |  returns current internal state of the material          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+double MAT::Myocard::GetInternalState(const int k) const
+{
+  double val=0.0;
+  switch(k){
+    case 0: {val=v0_; break;}
+    case 1: {val=w0_; break;}
+    case 2: {val=s0_; break;}
+    default: {dserror("There are only 3 internal variables in this material!"); break;}
+  }
+  return val;
 }
 
 /*----------------------------------------------------------------------*
@@ -804,7 +822,6 @@ void MAT::Myocard::Update(const double phi, const double dt)
 
 void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
   {
-
 
   // Normalize fiber1
   double fiber1normS = fiber1[0]*fiber1[0]+fiber1[1]*fiber1[1]+fiber1[2]*fiber1[2];
