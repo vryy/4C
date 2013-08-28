@@ -2691,13 +2691,16 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //  with    Re_K =  --------------------------------   and  xi = min(1,Re_K)
     //                                nu
 
-//    gamma_p = 2.0 / 100.0;
-//    gamma_u = 2.0 / 100.0;
-//    gamma_div = 0.05 * gamma_u;
+    // values obtained by analyzing various test cases, i.e., Beltrami flow, lid-driven cavity flow, turbulent channel flow, ...
+    // for further details see upcoming paper
+    gamma_p = 3.0 / 100.0;
+    gamma_u = 5.0 / 100.0;
+    gamma_div = 5.0 / 10.0;
 
-    gamma_p = 2.0 / 8.0;
-    gamma_u = 2.0 / 8.0;
-    gamma_div = 2.0 / 8.0;
+    // original values
+    // gamma_p = 2.0 / 8.0;
+    // gamma_u = 2.0 / 8.0;
+    // gamma_div = 2.0 / 8.0;
 
     // element Reynold's number Re_K
     double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
@@ -2722,60 +2725,6 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //-----------------------------------------------
     // divergence
     tau_div= density * gamma_div * xi * max_vel_L2_norm * p_hk_*p_hk_;
-
-#if 0
-    // E.Burman, M.A.Fernandez and P.Hansbo 2006
-    // "Edge stabilization for the incompressible Navier-Stokes equations: a continuous interior penalty finite element method"
-    //
-    // velocity:
-    //                              h_K^2 * rho
-    //             gamma_u *  -----------------------
-    //                           || u ||_0,inf_,K
-    //
-    // divergence:
-    //
-    //             gamma_div * h_K^2 * || u ||_0,inf_,K * rho
-    //
-    // pressure:
-    //
-    //                              h_K^2                                          || u ||_0,inf_,K   *   h_K
-    //  gamma_p * min(1,Re_K) * --------------------------       with    Re_K =  --------------------------------
-    //                           || u ||_0,inf_,K  * rho                                      nu
-    //
-//    // element Reynold's number Re_K
-//    double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
-//
-//    // streamline/velocity:
-//    if(Re_K < 1.0)
-//    {
-//      tau_u   = gamma_u * p_hk_*p_hk_*p_hk_ / kinvisc * density;
-//    }
-//    else
-//    {
-//      tau_u   = gamma_u * p_hk_*p_hk_ / max_vel_L2_norm * density;
-//    }
-//
-//    // divergence:
-//    if(max_vel_L2_norm > 1.0e-14)
-//    {
-//      tau_div = gamma_div  * p_hk_* p_hk_ * max_vel_L2_norm * density;
-//    }
-//    else
-//    {
-//      tau_div = 0.0;
-//    }
-//
-//    // pressure stabilization
-//    // switch between low and high Reynolds numbers
-//    if(Re_K < 1.0)
-//    {
-//      tau_p   = gamma_p    * p_hk_* p_hk_* p_hk_/ (kinvisc * density);
-//    }
-//    else
-//    {
-//      tau_p   = gamma_p    *        p_hk_* p_hk_/ (max_vel_L2_norm * density);
-//    }
-#endif
   }
   break;
   case INPAR::FLUID::EOS_tau_burman_fernandez:
