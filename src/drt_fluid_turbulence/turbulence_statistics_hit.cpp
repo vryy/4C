@@ -292,33 +292,38 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
   //-------------------------------------------------
   // decaying homogeneous isotropic turbulence
 
-  // get number of forcing steps
-  int num_forcing_steps = params_.sublist("TURBULENCE MODEL").get<int>("FORCING_TIME_STEPS",0);
-
-  // determine output steps for energy spectrum of decaying case
-  // experimental data are available for
-  // t*U_0/M = 42 corresponds to 0+(number of forcing steps) in simulation
-  // t*U_0/M = 98 corresponds to 56+(number of forcing steps) in simulation
-  // t*U_0/M = 171 corresponds to 129+(number of forcing steps) in simulation
-  std::vector<double> times_exp(2);
-  times_exp[0] = 56.0;
-  times_exp[1] = 129.0;
-  // using
-  // grid size of experiment M = 0.0508;
-  // domain length  L = 10.0 * M;
-  // reference length L_ref = L / (2.0 * PI);
-  // inlet velocity of experiment U_0 = 10.0;
-  // reference time t_ref = 64.0 * M / U_0;
-  times_exp[0] /= 64.0;
-  times_exp[1] /= 64.0;
-
-  // set steps in vector
-  outsteps_ = Teuchos::rcp(new std::vector<int> );
-  outsteps_->push_back(num_forcing_steps);
-  for (std::size_t rr = 0; rr < times_exp.size(); rr++)
+  if (type_ == decaying_homogeneous_isotropic_turbulence)
   {
-    outsteps_->push_back(((int)(times_exp[rr]/dt_)) + num_forcing_steps);
+    // get number of forcing steps
+    int num_forcing_steps = params_.sublist("TURBULENCE MODEL").get<int>("FORCING_TIME_STEPS",0);
+
+    // determine output steps for energy spectrum of decaying case
+    // experimental data are available for
+    // t*U_0/M = 42 corresponds to 0+(number of forcing steps) in simulation
+    // t*U_0/M = 98 corresponds to 56+(number of forcing steps) in simulation
+    // t*U_0/M = 171 corresponds to 129+(number of forcing steps) in simulation
+    std::vector<double> times_exp(2);
+    times_exp[0] = 56.0;
+    times_exp[1] = 129.0;
+    // using
+    // grid size of experiment M = 0.0508;
+    // domain length  L = 10.0 * M;
+    // reference length L_ref = L / (2.0 * PI);
+    // inlet velocity of experiment U_0 = 10.0;
+    // reference time t_ref = 64.0 * M / U_0;
+    times_exp[0] /= 64.0;
+    times_exp[1] /= 64.0;
+
+    // set steps in vector
+    outsteps_ = Teuchos::rcp(new std::vector<int> );
+    if (num_forcing_steps != 0)
+      outsteps_->push_back(num_forcing_steps);
+    for (std::size_t rr = 0; rr < times_exp.size(); rr++)
+    {
+      outsteps_->push_back(((int)(times_exp[rr]/dt_)) + num_forcing_steps);
+    }
   }
+  else outsteps_ = Teuchos::null;
 
   //-------------------------------------------------------------------------
   // initialize output and initially open respective statistics output file
