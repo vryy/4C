@@ -1592,7 +1592,6 @@ void EnsightWriter::WriteElementResultStep(
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
-
   std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());

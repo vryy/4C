@@ -256,7 +256,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
     EnsightWriter::WriteResult("normalflux","normalflux",dofbased,1);
     // write flux vectors (always 3D)
     EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
-    EnsightWriter::WriteResult("activation_time_np","activation_time",dofbased,1);
+    EnsightWriter::WriteResult("activation_time_np","act_time",dofbased,1);
   }
   else
   {
