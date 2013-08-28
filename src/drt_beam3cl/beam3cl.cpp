@@ -563,7 +563,6 @@ void DRT::ELEMENTS::BeamCL::SetInitialQuaternions(std::vector<LINALG::Matrix<4,1
 {
   if((int)initquaternions.size()!=(int)rQconv_.size())
     dserror("Check size=%i of input quaternion vector!",(int)initquaternions.size());
-
   rQconv_ = initquaternions;
 
   return;
@@ -575,27 +574,10 @@ void DRT::ELEMENTS::BeamCL::SetInitialQuaternions(std::vector<LINALG::Matrix<4,1
 void DRT::ELEMENTS::BeamCL::SetReferenceLength(const double& scalefac,
                                                const bool changetoshort)
 {
-  // change linker length from long to short
-  if(changetoshort)
-  {
-    // new linker length = initial linker length * scale
-    // first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
-    xrefe_.at(3) = xrefe_.at(0) + (scalefac * (xrefe_.at(3)-xrefe_.at(0)));
-    xrefe_.at(4) = xrefe_.at(1) + (scalefac * (xrefe_.at(4)-xrefe_.at(1)));
-    xrefe_.at(5) = xrefe_.at(2) + (scalefac * (xrefe_.at(5)-xrefe_.at(2)));
-  }
-  // change linker length from short to long
-  else
-  {
-    // new linker length = initial linker length * (1/scale)
-    // first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
-    double invscalefac = 1.0/scalefac;
-    //std::cout<<"xinit vorher k-l: "<<xrefe_<<std::endl;
-    xrefe_.at(3) = xrefe_.at(0) + (invscalefac * (xrefe_.at(3)-xrefe_.at(0)));
-    xrefe_.at(4) = xrefe_.at(1) + (invscalefac * (xrefe_.at(4)-xrefe_.at(1)));
-    xrefe_.at(5) = xrefe_.at(2) + (invscalefac * (xrefe_.at(5)-xrefe_.at(2)));
-    //std::cout<<"xrefe_ nachher k-l: "<<xrefe_<<std::endl;
-  }
+  // new reference length = initial reference length * scale
+  xrefe_.at(3) = xrefe_.at(0) + (scalefac * (xrefe_.at(3)-xrefe_.at(0)));
+  xrefe_.at(4) = xrefe_.at(1) + (scalefac * (xrefe_.at(4)-xrefe_.at(1)));
+  xrefe_.at(5) = xrefe_.at(2) + (scalefac * (xrefe_.at(5)-xrefe_.at(2)));
 
   // call function to update the linker with the new coordinates
   SetUpReferenceGeometry<2>(xrefe_,rotrefe_,true);

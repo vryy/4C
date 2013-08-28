@@ -1765,7 +1765,8 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
           }
           else  // passive crosslink molecule
           {
-            if(linkermodel_ == statmech_linker_stdintpol && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+            if((linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol) &&
+                statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
               dserror("Passified links not implemented for BeamCL elements!");
             // determine position of nodeGID entry
             int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
@@ -1991,7 +1992,7 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
           }
           else  // passive crosslink molecule
           {
-            if(linkermodel_ == statmech_linker_stdintpol && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+            if((linkermodel_ == statmech_linker_stdintpol  || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol)&& statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
               dserror("Passified links not implemented for BeamCL elements!");
             // determine position of bspotLID entry
             int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);

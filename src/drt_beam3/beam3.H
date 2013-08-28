@@ -563,8 +563,7 @@ public:
   }//DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
 
   //! changes the actual linker length
-  void SetReferenceLength(const double& scalefac,
-                          const bool changetoshort = true);
+  void SetReferenceLength(const double& scalefac);
 
   //@}
 

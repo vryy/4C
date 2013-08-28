@@ -592,30 +592,12 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  | (public) change active linker length                   mueller 10/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetReferenceLength(const double& scalefac,
-                                              const bool changetoshort)
+void DRT::ELEMENTS::Beam3::SetReferenceLength(const double& scalefac)
 {
-	// change linker length from long to short
-	if(changetoshort)
-	{
-		// new linker length = initial linker length * scale
-		// first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
-		xactrefe_(3,0) = xactrefe_(0,0) + (scalefac * (xactrefe_(3,0)-xactrefe_(0,0)));
-		xactrefe_(4,0) = xactrefe_(1,0) + (scalefac * (xactrefe_(4,0)-xactrefe_(1,0)));
-		xactrefe_(5,0) = xactrefe_(2,0) + (scalefac * (xactrefe_(5,0)-xactrefe_(2,0)));
-	}
-	// change linker length from short to long
-	else
-	{
-		// new linker length = initial linker length * (1/scale)
-		// first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
-	  double invscalefac = 1.0/scalefac;
-		//std::cout<<"xinit vorher k-l: "<<xactrefe_<<std::endl;
-		xactrefe_(3,0) = xactrefe_(0,0) + (invscalefac * (xactrefe_(3,0)-xactrefe_(0,0)));
-		xactrefe_(4,0) = xactrefe_(1,0) + (invscalefac * (xactrefe_(4,0)-xactrefe_(1,0)));
-		xactrefe_(5,0) = xactrefe_(2,0) + (invscalefac * (xactrefe_(5,0)-xactrefe_(2,0)));
-		//std::cout<<"xinit nachher k-l: "<<xactrefe_<<std::endl;
-	}
+  // new reference length = initial reference length * scale
+  xactrefe_(3,0) = xactrefe_(0,0) + (scalefac * (xactrefe_(3,0)-xactrefe_(0,0)));
+  xactrefe_(4,0) = xactrefe_(1,0) + (scalefac * (xactrefe_(4,0)-xactrefe_(1,0)));
+  xactrefe_(5,0) = xactrefe_(2,0) + (scalefac * (xactrefe_(5,0)-xactrefe_(2,0)));
 
 	// store linker coordinates
   std::vector<double> xrefe(6);

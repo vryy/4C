@@ -456,36 +456,49 @@ namespace DRT
             nodeJ_ = (int) floor(0.5 * (0.5 * NumNode() + 2)) - 1;
 
             //resize and initialized STL vectors for interpolated nodes for rotational displacements so that they can store one value at each node
-            dispthetaconv_.clear();
-            dispthetaold_.clear();
-            dispthetanew_.clear();
-            for (int i = 0; i < fnnode; i++)
-            {
-              dispthetaconv_.push_back(LINALG::Matrix<3, 1>(true));
-              dispthetaold_.push_back(LINALG::Matrix<3, 1>(true));
-              dispthetanew_.push_back(LINALG::Matrix<3, 1>(true));
-            }
+            dispthetaconv_.resize(fnnode);
+            dispthetaold_.resize(fnnode);
+            dispthetanew_.resize(fnnode);
 
             //set nodal tridas according to input file
-            rQnew_.clear();
-            rQold_.clear();
-            rQconv_.clear();
-            for (int i = 0; i < 4; i++)
-            {
-              rQnew_.push_back(LINALG::Matrix<4, 1>(true));
-              rQold_.push_back(LINALG::Matrix<4, 1>(true));
-              rQconv_.push_back(LINALG::Matrix<4, 1>(true));
-            }
+            rQnew_.resize(4);
+            rQold_.resize(4);
+            rQconv_.resize(4);
+            Qnew_.resize(2);
+            Qold_.resize(2);
+            Qconv_.resize(2);
 
-            Qnew_.clear();
-            Qold_.clear();
-            Qconv_.clear();
-            for (int i = 0; i < 2; i++)
-            {
-              Qnew_.push_back(LINALG::Matrix<4, 1>(true));
-              Qold_.push_back(LINALG::Matrix<4, 1>(true));
-              Qconv_.push_back(LINALG::Matrix<4, 1>(true));
-            }
+//            //resize and initialized STL vectors for interpolated nodes for rotational displacements so that they can store one value at each node
+//            dispthetaconv_.clear();
+//            dispthetaold_.clear();
+//            dispthetanew_.clear();
+//            for (int i = 0; i < fnnode; i++)
+//            {
+//              dispthetaconv_.push_back(LINALG::Matrix<3, 1>(true));
+//              dispthetaold_.push_back(LINALG::Matrix<3, 1>(true));
+//              dispthetanew_.push_back(LINALG::Matrix<3, 1>(true));
+//            }
+//
+//            //set nodal tridas according to input file
+//            rQnew_.clear();
+//            rQold_.clear();
+//            rQconv_.clear();
+//            for (int i = 0; i < 4; i++)
+//            {
+//              rQnew_.push_back(LINALG::Matrix<4, 1>(true));
+//              rQold_.push_back(LINALG::Matrix<4, 1>(true));
+//              rQconv_.push_back(LINALG::Matrix<4, 1>(true));
+//            }
+//
+//            Qnew_.clear();
+//            Qold_.clear();
+//            Qconv_.clear();
+//            for (int i = 0; i < 2; i++)
+//            {
+//              Qnew_.push_back(LINALG::Matrix<4, 1>(true));
+//              Qold_.push_back(LINALG::Matrix<4, 1>(true));
+//              Qconv_.push_back(LINALG::Matrix<4, 1>(true));
+//            }
 
             for (int i = 0; i < fnnode; i++)
               for (int j = 0; j < 3; j++)
@@ -547,8 +560,7 @@ namespace DRT
             DRT::Element::DiscretizationType distype = Shape();
 
             //Get the applied integrationpoints for underintegration
-            DRT::UTILS::IntegrationPoints1D gausspoints(
-                MyGaussRule(fnnode, gaussunderintegration));
+            DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode, gaussunderintegration));
 
             //Loop through all GPs for underintegration and calculate jacobi determinants and initial curvature at the GPs
             for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
@@ -616,8 +628,7 @@ namespace DRT
               }
               //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
               LINALG::Matrix<4, 1> phi12;
-              LARGEROTATIONS::quaternionproduct(Qnew_[1],
-                  LARGEROTATIONS::inversequaternion(Qnew_[0]), phi12);
+              LARGEROTATIONS::quaternionproduct(Qnew_[1],LARGEROTATIONS::inversequaternion(Qnew_[0]), phi12);
 
               //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
               LARGEROTATIONS::quaterniontoangle(phi12, kapparef_[0]);
@@ -627,8 +638,7 @@ namespace DRT
 
             //Get the applied integrationpoints for exact integration of mass matrix
 
-            DRT::UTILS::IntegrationPoints1D gausspointsmass(
-                MyGaussRule(fnnode, lobattointegration));
+            DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(fnnode, lobattointegration));
 
             //vector whose numgp-th element is a 1xfnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
             std::vector<LINALG::Matrix<1, fnnode> > I(fnnode - 1);
@@ -656,9 +666,7 @@ namespace DRT
             Qnewmass_.resize(fnnode);
 
             //evaluate basis functions
-            evaluatebasisfunctionsandtriads<fnnode>(gausspoints, I, Iprime,
-                Itilde, Itildeprime, Lambda, gausspointsmass, Imass,
-                Itildemass);
+            evaluatebasisfunctionsandtriads<fnnode>(gausspoints, I, Iprime, Itilde, Itildeprime, Lambda, gausspointsmass, Imass, Itildemass);
 
             //Loop through all GPs for exact integration and compute initial jacobi determinant
             for (int numgp = 0; numgp < gausspointsmass.nquad; numgp++)
@@ -705,7 +713,6 @@ namespace DRT
             } //for(int numgp=0; numgp< fnnode; numgp++)
 
           } //if(!isinit_)
-
           return;
 
         } //DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
@@ -834,22 +841,15 @@ namespace DRT
          |required for elasticity only, but not for mass (or damping) matrix                                          cyron 05/10|
          *----------------------------------------------------------------------------------------------------------------------*/
         template<int fnnode>
-        void evaluatebasisfunctionsandtriads(
-            const DRT::UTILS::IntegrationPoints1D& gausspoints,
-            std::vector<LINALG::Matrix<1, fnnode> >& I,
-            std::vector<LINALG::Matrix<1, fnnode> >& Iprime
-            ,
-            std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itilde
-            ,
-            std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildeprime
-            ,
-            std::vector<LINALG::Matrix<3, 3> >& Lambda
-            ,
-            const DRT::UTILS::IntegrationPoints1D& gausspointsmass
-            ,
-            std::vector<LINALG::Matrix<1, fnnode> >& Imass
-            ,
-            std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildemass)
+        void evaluatebasisfunctionsandtriads(const DRT::UTILS::IntegrationPoints1D&            gausspoints,
+                                             std::vector<LINALG::Matrix<1, fnnode> >&          I,
+                                             std::vector<LINALG::Matrix<1, fnnode> >&          Iprime,
+                                             std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itilde,
+                                             std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildeprime,
+                                             std::vector<LINALG::Matrix<3, 3> >&               Lambda,
+                                             const DRT::UTILS::IntegrationPoints1D&            gausspointsmass,
+                                             std::vector<LINALG::Matrix<1, fnnode> >&          Imass,
+                                             std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildemass)
         {
           //declaration of variables
 
@@ -882,8 +882,7 @@ namespace DRT
           //computation of element reference triad and rotations relative to this triad at nodes and Gauss points
 
           //compute reference rotation quaternion Qr corresponding to triad \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
-          LARGEROTATIONS::quaternionproduct(Qnew_[nodeJ_],
-              LARGEROTATIONS::inversequaternion(Qnew_[nodeI_]), QIJ);
+          LARGEROTATIONS::quaternionproduct(Qnew_[nodeJ_], LARGEROTATIONS::inversequaternion(Qnew_[nodeI_]), QIJ);
           LARGEROTATIONS::quaterniontoangle(QIJ, phiIJ);
           phiIJ.Scale(0.5);
           LARGEROTATIONS::angletoquaternion(phiIJ, QIJhalf);
@@ -896,8 +895,7 @@ namespace DRT
           //Compute relative rotations \Psi^l_i at all nodes i according to (3.8), Jelenic 1999
           for (int node = 0; node < fnnode; ++node)
           {
-            LARGEROTATIONS::quaternionproduct(Qnew_[node],
-                LARGEROTATIONS::inversequaternion(Qr), Qli);
+            LARGEROTATIONS::quaternionproduct(Qnew_[node], LARGEROTATIONS::inversequaternion(Qr), Qli);
             LARGEROTATIONS::quaterniontoangle(Qli, Psili[node]);
           }
 
@@ -932,10 +930,8 @@ namespace DRT
             LARGEROTATIONS::quaterniontotriad(Qgauss, Lambda[numgp]);
 
             //compute at this Gauss point basis functions \tilde{I}^i and \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999, for all nodes
-            computeItilde<fnnode>(Psil, Itilde[numgp], phiIJ, Lambdar, Psili,
-                I[numgp]);
-            computeItildeprime<fnnode>(Psil, Psilprime, Itildeprime[numgp],
-                phiIJ, Lambdar, Psili, I[numgp], Iprime[numgp]);
+            computeItilde<fnnode>(Psil, Itilde[numgp], phiIJ, Lambdar, Psili,I[numgp]);
+            computeItildeprime<fnnode>(Psil, Psilprime, Itildeprime[numgp],phiIJ, Lambdar, Psili, I[numgp], Iprime[numgp]);
 
           }
 
@@ -961,8 +957,7 @@ namespace DRT
             LARGEROTATIONS::quaternionproduct(Ql, Qr, Qnewmass_[numgp]);
 
             //compute at this Gauss point basis functions \tilde{I}^i in (3.19), page 152, Jelenic 1999, for all nodes
-            computeItilde<fnnode>(Psil, Itildemass[numgp], phiIJ, Lambdar,
-                Psili, Imass[numgp]);
+            computeItilde<fnnode>(Psil, Itildemass[numgp], phiIJ, Lambdar, Psili, Imass[numgp]);
 
           }
 
@@ -991,8 +986,7 @@ namespace DRT
             LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
 
             //multiply relative rotation with rotation in last configuration to get rotation in new configuration
-            LARGEROTATIONS::quaternionproduct(rQold_[node], deltaQ,
-                rQnew_[node]);
+            LARGEROTATIONS::quaternionproduct(rQold_[node], deltaQ, rQnew_[node]);
 
             //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
             rQnew_[node].Scale(1 / rQnew_[node].Norm2());
@@ -1001,15 +995,11 @@ namespace DRT
         } //DRT::ELEMENTS::BeamCL::UpdateRealNodalTriads
 
         // Interpolate Triads of interpolated Nodes
-        void InterpolateFictiveNodalTriads(
-            std::vector<LINALG::Matrix<1, 2> >& Ibp,
-            std::vector<LINALG::Matrix<3, 3> >& rLambdar
-            ,
-            std::vector<LINALG::Matrix<3, 1> >& rphiIJ
-            ,
-            std::vector<std::vector<LINALG::Matrix<3, 1> > >& rPsili
-            ,
-            std::vector<LINALG::Matrix<3, 1> >& rPsil)
+        void InterpolateFictiveNodalTriads(std::vector<LINALG::Matrix<1, 2> >&               Ibp,
+                                           std::vector<LINALG::Matrix<3, 3> >&               rLambdar,
+                                           std::vector<LINALG::Matrix<3, 1> >&               rphiIJ,
+                                           std::vector<std::vector<LINALG::Matrix<3, 1> > >& rPsili,
+                                           std::vector<LINALG::Matrix<3, 1> >&               rPsil)
         {
           const int fnnode = 2;
           std::vector<LINALG::Matrix<4, 1> > rQr(2);
@@ -1024,24 +1014,20 @@ namespace DRT
           //Compute Reference Triad (Lambda_r) for Filament 1 and 2
           for (int filament = 0; filament < 2; filament++)
           {
-            LARGEROTATIONS::quaternionproduct(rQnew_[2 * filament + 1],
-                LARGEROTATIONS::inversequaternion(rQnew_[2 * filament]), rQIJ);
+            LARGEROTATIONS::quaternionproduct(rQnew_[2 * filament + 1], LARGEROTATIONS::inversequaternion(rQnew_[2 * filament]), rQIJ);
             LARGEROTATIONS::quaterniontoangle(rQIJ, rphiIJ[filament]);
             rphiIJ[filament].Scale(0.5);
             LARGEROTATIONS::angletoquaternion(rphiIJ[filament], rQIJhalf);
             rphiIJ[filament].Scale(2.0);
-            LARGEROTATIONS::quaternionproduct(rQIJhalf, rQnew_[2 * filament],
-                rQr[filament]);
-            LARGEROTATIONS::quaterniontotriad(rQr[filament],
-                rLambdar[filament]);
+            LARGEROTATIONS::quaternionproduct(rQIJhalf, rQnew_[2 * filament], rQr[filament]);
+            LARGEROTATIONS::quaterniontotriad(rQr[filament], rLambdar[filament]);
           }
           //Compute relative rotations \Psi^l_i at all nodes i according to (3.8), Jelenic 1999
           for (int filament = 0; filament < 2; filament++)
           {
             for (int node = 0; node < fnnode; ++node)
             {
-              LARGEROTATIONS::quaternionproduct(rQnew_[2 * filament + node],
-                  LARGEROTATIONS::inversequaternion(rQr[filament]), rQli);
+              LARGEROTATIONS::quaternionproduct(rQnew_[2 * filament + node], LARGEROTATIONS::inversequaternion(rQr[filament]), rQli);
               LARGEROTATIONS::quaterniontoangle(rQli, rPsili[filament][node]);
             }
           }
@@ -1051,8 +1037,7 @@ namespace DRT
           for (int filament = 0; filament < 2; filament++)
             for (int fnode = 0; fnode < 2; fnode++)
               for (int i = 0; i < 3; i++)
-                rPsil[filament](i) += Ibp[filament](fnode)
-                    * rPsili[filament][fnode](i);
+                rPsil[filament](i) += Ibp[filament](fnode) * rPsili[filament][fnode](i);
 
           for (int j = 0; j < 2; j++)
           {
@@ -1067,50 +1052,50 @@ namespace DRT
         //! @name Internal calculation methods
 
         //!compute convected strain at a certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9)
-        void computestrain(const LINALG::Matrix<3, 1>& rprime
-                           , const LINALG::Matrix<3, 3>& Lambda,
-                           LINALG::Matrix<3, 1>& gamma
-                           , LINALG::Matrix<3, 1>& kappa);
+        void computestrain(const LINALG::Matrix<3, 1>& rprime,
+                           const LINALG::Matrix<3, 3>& Lambda,
+                           LINALG::Matrix<3, 1>&       gamma,
+                           LINALG::Matrix<3, 1>&       kappa);
 
         //!computing convected stresses from convected strains vector and returing also convected constitutive matrix between both
-        void strainstress(const LINALG::Matrix<3, 1>& gamma
-                          , const LINALG::Matrix<3, 1>& kappa,
-                          LINALG::Matrix<3, 1>& stressN
-                          , LINALG::Matrix<3, 3>& CN,
-                          LINALG::Matrix<3, 1>& stressM
-                          , LINALG::Matrix<3, 3>& CM);
+        void strainstress(const LINALG::Matrix<3, 1>& gamma,
+                          const LINALG::Matrix<3, 1>& kappa,
+                          LINALG::Matrix<3, 1>& stressN,
+                          LINALG::Matrix<3, 3>& CN,
+                          LINALG::Matrix<3, 1>& stressM,
+                          LINALG::Matrix<3, 3>& CM);
 
         //!push forward strains, stresses and constitutive matrices to their spatial counterparts by rotation matrix Lambda according to Romero 2004, eq. (3.10)
         void pushforward(const LINALG::Matrix<3, 3>& Lambda,
-        const LINALG::Matrix<3, 1>& stressN
-                         , const LINALG::Matrix<3, 3>& CN,
-                         const LINALG::Matrix<3, 1>& stressM
-                         , const LINALG::Matrix<3, 3>& CM,
-                         LINALG::Matrix<3, 1>& stressn
-                         , LINALG::Matrix<3, 3>& cn,
-                         LINALG::Matrix<3, 1>& stressm
-                         , LINALG::Matrix<3, 3>& cm);
+                         const LINALG::Matrix<3, 1>& stressN,
+                         const LINALG::Matrix<3, 3>& CN,
+                         const LINALG::Matrix<3, 1>& stressM,
+                         const LINALG::Matrix<3, 3>& CM,
+                         LINALG::Matrix<3, 1>& stressn,
+                         LINALG::Matrix<3, 3>& cn,
+                         LINALG::Matrix<3, 1>& stressm,
+                         LINALG::Matrix<3, 3>& cm);
 
         //!compute convected strain at certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9)
-        void computestrain(const LINALG::Matrix<3, 1> Psil
-                           , const LINALG::Matrix<3, 1> Psilprime,
-                           const double& xi
-                           , const LINALG::Matrix<3, 1>& rprime
-                           , const LINALG::Matrix<3, 3>& rotmat,
-                           LINALG::Matrix<3, 1>& gamma
-                           , LINALG::Matrix<3, 1>& kappa);
+        void computestrain(const LINALG::Matrix<3, 1> Psil,
+                           const LINALG::Matrix<3, 1> Psilprime,
+                           const double& xi,
+                           const LINALG::Matrix<3, 1>& rprime,
+                           const LINALG::Matrix<3, 3>& rotmat,
+                           LINALG::Matrix<3, 1>& gamma,
+                           LINALG::Matrix<3, 1>& kappa);
 
         //!compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point
         /*----------------------------------------------------------------------------------------------------------------------*
          |compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certaom Gauss point            cyron 04/10|
          *----------------------------------------------------------------------------------------------------------------------*/
         template<int fnnode>
-        void computeItilde(const LINALG::Matrix<3, 1>& Psil
-                           , std::vector<LINALG::Matrix<3, 3> >& Itilde,
-                           const LINALG::Matrix<3, 1>& phiIJ
-                           , const LINALG::Matrix<3, 3>& Lambdar,
-                           const std::vector<LINALG::Matrix<3, 1> >& Psili
-                           , const LINALG::Matrix<1, fnnode>& funct)
+        void computeItilde(const LINALG::Matrix<3, 1>& Psil,
+                           std::vector<LINALG::Matrix<3, 3> >& Itilde,
+                           const LINALG::Matrix<3, 1>& phiIJ,
+                           const LINALG::Matrix<3, 3>& Lambdar,
+                           const std::vector<LINALG::Matrix<3, 1> >& Psili,
+                           const LINALG::Matrix<1, fnnode>& funct)
         {
           //auxiliary matrices for storing intermediate results
           LINALG::Matrix<3, 3> auxmatrix;
@@ -1137,8 +1122,7 @@ namespace DRT
 
             //compute rightmost term in curley brackets in (3.18), Jelenic 1999
             Itilde[node].PutScalar(0);
-            Itilde[node].Multiply(LARGEROTATIONS::Tinvmatrix(Psil),
-                LARGEROTATIONS::Tmatrix(Psili[node]));
+            Itilde[node].Multiply(LARGEROTATIONS::Tinvmatrix(Psil), LARGEROTATIONS::Tmatrix(Psili[node]));
             Itilde[node].Scale(funct(node));
 
             //if node i is node I then add squared bracktets term times v_I
@@ -1169,15 +1153,14 @@ namespace DRT
          |compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certaom Gauss point          cyron 04/10|
          *----------------------------------------------------------------------------------------------------------------------*/
         template<int fnnode>
-        void computeItildeprime(
-            const LINALG::Matrix<3, 1>& Psil
-            , const LINALG::Matrix<3, 1>& Psilprime
-            , std::vector<LINALG::Matrix<3, 3> >& Itildeprime,
-            const LINALG::Matrix<3, 1>& phiIJ
-            , const LINALG::Matrix<3, 3>& Lambdar,
-            const std::vector<LINALG::Matrix<3, 1> >& Psili
-            , const LINALG::Matrix<1, fnnode>& funct
-            , const LINALG::Matrix<1, fnnode>& deriv)
+        void computeItildeprime(const LINALG::Matrix<3, 1>& Psil,
+                                const LINALG::Matrix<3, 1>& Psilprime,
+                                std::vector<LINALG::Matrix<3, 3> >& Itildeprime,
+                                const LINALG::Matrix<3, 1>& phiIJ,
+                                const LINALG::Matrix<3, 3>& Lambdar,
+                                const std::vector<LINALG::Matrix<3, 1> >& Psili,
+                                const LINALG::Matrix<1, fnnode>& funct,
+                                const LINALG::Matrix<1, fnnode>& deriv)
         {
           //auxiliary matrices for storing intermediate results
           LINALG::Matrix<3, 3> auxmatrix;
@@ -1233,8 +1216,7 @@ namespace DRT
             auxmatrix += Itildeprime[node];
 
             //compute second squared bracketds time T(\Psi^l_j)
-            Itildeprime[node].Multiply(auxmatrix,
-                LARGEROTATIONS::Tmatrix(Psili[node]));
+            Itildeprime[node].Multiply(auxmatrix, LARGEROTATIONS::Tmatrix(Psili[node]));
 
             //if node i is node I then add first squared bracktets term times v_I
             if (node == nodeI_)
@@ -1311,9 +1293,9 @@ namespace DRT
          *----------------------------------------------------------------------------------------------------------------------*/
         template<int fnnode, int dof>
         void curvederivative(const std::vector<double>& disp,
-                             const LINALG::Matrix<1, fnnode> deriv
-                             , LINALG::Matrix<3, 1>& rprime
-                             , const double& jacobi)
+                             const LINALG::Matrix<1, fnnode> deriv,
+                             LINALG::Matrix<3, 1>& rprime,
+                             const double& jacobi)
         {
           //initialize rprime
           rprime.PutScalar(0);
@@ -1383,44 +1365,38 @@ namespace DRT
 
         //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
         template<int fnnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-        void CalcBrownian(
-            Teuchos::ParameterList& params, //!<parameter list
-            const std::vector<double>& vel, //!< element velocity vector
-            const std::vector<double>& disp, //!<element disp vector
-            Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
-            Epetra_SerialDenseVector force,
-            std::vector<LINALG::Matrix<1, fnnode> >& Imass,
-            std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildemass); //!< element internal force vector
+        void CalcBrownian(Teuchos::ParameterList& params, //!<parameter list
+                          const std::vector<double>& vel, //!< element velocity vector
+                          const std::vector<double>& disp, //!<element disp vector
+                          Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
+                          Epetra_SerialDenseVector force,
+                          std::vector<LINALG::Matrix<1, fnnode> >& Imass,
+                          std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildemass); //!< element internal force vector
 
         //!computes damping coefficients for employed friction model
-        void MyDampingConstants(
-            Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma
-            , const INPAR::STATMECH::FrictionModel& frictionmodel);
+        void MyDampingConstants(Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma,
+                                const INPAR::STATMECH::FrictionModel& frictionmodel);
 
         //!computes rotational damping forces and stiffness
         template<int fnnode> //number of nodes
-        void MyRotationalDamping(
-            Teuchos::ParameterList& params, //!<parameter list
-            const std::vector<double>& vel, //!< element velocity vector
-            const std::vector<double>& disp, //!<element disp vector
-            Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
-            Epetra_SerialDenseVector force, //!< element internal force vector
-            const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
-            const std::vector<LINALG::Matrix<1, fnnode> >& Idamping
-            ,
-            const std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildedamping
-            ,
-            const std::vector<LINALG::Matrix<4, 1> >& Qconvdamping
-            ,
-            const std::vector<LINALG::Matrix<4, 1> >& Qnewdamping);
+        void MyRotationalDamping(Teuchos::ParameterList& params, //!<parameter list
+                                 const std::vector<double>& vel, //!< element velocity vector
+                                 const std::vector<double>& disp, //!<element disp vector
+                                 Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
+                                 Epetra_SerialDenseVector force, //!< element internal force vector
+                                 const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
+                                 const std::vector<LINALG::Matrix<1, fnnode> >& Idamping,
+                                 const std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildedamping,
+                                 const std::vector<LINALG::Matrix<4, 1> >& Qconvdamping,
+                                 const std::vector<LINALG::Matrix<4, 1> >& Qnewdamping);
 
         //!computes translational damping forces and stiffness
         template<int fnnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
         void MyTranslationalDamping(Teuchos::ParameterList& params, //!<parameter list
-            const std::vector<double>& vel, //!< element velocity vector
-            const std::vector<double>& disp, //!<element disp vector
-            Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
-            Epetra_SerialDenseVector force); //!< element internal force vector
+                                    const std::vector<double>& vel, //!< element velocity vector
+                                    const std::vector<double>& disp, //!<element disp vector
+                                    Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
+                                    Epetra_SerialDenseVector force); //!< element internal force vector
 
         //!computes stochastic translational forces and resulting stiffness
         template<int fnnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
@@ -1432,32 +1408,28 @@ namespace DRT
 
         //!computes stochastic rotational moments and resulting stiffness
         template<int fnnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point
-        void MyStochasticMoments(
-            Teuchos::ParameterList& params, //!<parameter list
-            const std::vector<double>& vel, //!< element velocity vector
-            const std::vector<double>& disp, //!<element disp vector
-            Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
-            Epetra_SerialDenseVector force, //!< element internal force vector
-            const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
-            const std::vector<LINALG::Matrix<1, fnnode> >& Idamping
-            ,
-            const std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildedamping
-            ,
-            const std::vector<LINALG::Matrix<4, 1> >& Qconvdamping
-            ,
-            const std::vector<LINALG::Matrix<4, 1> >& Qnewdamping);
+        void MyStochasticMoments(Teuchos::ParameterList& params, //!<parameter list
+                                 const std::vector<double>& vel, //!< element velocity vector
+                                 const std::vector<double>& disp, //!<element disp vector
+                                 Epetra_SerialDenseMatrix stiffmatrix, //!< element stiffness matrix
+                                 Epetra_SerialDenseVector force, //!< element internal force vector
+                                 const DRT::UTILS::IntegrationPoints1D& gausspointsdamping,
+                                 const std::vector<LINALG::Matrix<1, fnnode> >& Idamping,
+                                 const std::vector<std::vector<LINALG::Matrix<3, 3> > >& Itildedamping,
+                                 const std::vector<LINALG::Matrix<4, 1> >& Qconvdamping,
+                                 const std::vector<LINALG::Matrix<4, 1> >& Qnewdamping);
 
         //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
         template<int ndim> //number of dimensions of embedding space
         void MyBackgroundVelocity(Teuchos::ParameterList& params, //!<parameter list
-            const LINALG::Matrix<ndim, 1>& evaluationpoint, //!<point at which background velocity and its gradient has to be computed
-            LINALG::Matrix<ndim, 1>& velbackground, //!< velocity of background fluid
-            LINALG::Matrix<ndim, ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+                                  const LINALG::Matrix<ndim, 1>& evaluationpoint, //!<point at which background velocity and its gradient has to be computed
+                                  LINALG::Matrix<ndim, 1>& velbackground, //!< velocity of background fluid
+                                  LINALG::Matrix<ndim, ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
 
         //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
         template<int fnnode, int ndim> //number of nodes, number of dimensions
         void NodeShift(Teuchos::ParameterList& params, //!<parameter list
-            std::vector<double>& disp); //!<element disp vector
+                       std::vector<double>& disp); //!<element disp vector
 
         //@}
 

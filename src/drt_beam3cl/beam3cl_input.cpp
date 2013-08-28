@@ -23,8 +23,8 @@ using namespace LARGEROTATIONS;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::BeamCL::ReadElement(const std::string& eletype,
-                                       const std::string& distype,
-                                       DRT::INPUT::LineDefinition* linedef)
+                                        const std::string& distype,
+                                        DRT::INPUT::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
