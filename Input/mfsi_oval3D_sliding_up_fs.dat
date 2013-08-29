@@ -89,8 +89,9 @@ TOL_VEL_INC_L2                  1e-06
 TOL_VEL_RES_INF                 1e-06
 TOL_VEL_RES_L2                  1e-06
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 Static
+PARALLEL_REDIST                 no
 SHAPEFCN                        Dual
+REDUNDANT_STORAGE               all
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes

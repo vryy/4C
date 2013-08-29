@@ -34,13 +34,13 @@ Maintainer: Andreas Ehrl
 
 FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
                           LINALG::Solver&               solver,
-                          Teuchos::ParameterList&       params,
+                          int                           msht,
                           int                           nsd,
                           const UTILS::MapExtractor*    surfacesplitter
                           ):
   discret_(dis),
   solver_(solver),
-  msht_(params.get<int>("mshtoption")),
+  msht_(msht),
   surfacesplitter_(surfacesplitter),
   dofrowmap_(discret_->DofRowMap()),
   problemrowmap_(Teuchos::null),
@@ -65,15 +65,18 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
 /*  Setup mesh-tying problem                ehrl (04/11) */
 /*-------------------------------------------------------*/
 
-RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
+RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
 
   // Setup of meshtying adapter
-  pcoupled_ = adaptermeshtying_->Setup(discret_,
+ adaptermeshtying_->Setup(discret_,
+                          discret_,
+                          Teuchos::null,
+                          coupleddof,
+                          "Mortar",
                           discret_->Comm(),
-                          msht_,
                           false);
 
   //OutputSetUp();
@@ -130,7 +133,6 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
   {
   case INPAR::FLUID::condensed_bmat:
   case INPAR::FLUID::condensed_bmat_merged:
-  case INPAR::FLUID::coupling_iontransport_laplace:
   {
     if (pcoupled_ == false)
       dserror("The system cannot be solved in a block matrix!! \n"
@@ -150,8 +152,6 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
 
     // map for 2x2 (uncoupled dof's & master dof's)
     mergedmap_ = LINALG::MergeMap(*gndofrowmap_,*gmdofrowmap_,false);
-
-    AnalyzeInterfaceQuality();
 
     //std::cout << "number of n dof   " << gndofrowmap_->NumGlobalElements() << std::endl;
     //std::cout << "number of m dof   " << gmdofrowmap_->NumGlobalElements() << std::endl;
@@ -245,8 +245,6 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
 
     // dofrowmap for discretisation without slave and master dofrowmap
     gndofrowmap_ = LINALG::SplitMap(*dofrowmap_, *gsmdofrowmap_);
-
-    AnalyzeInterfaceQuality();
 
     if(myrank_==0)
     {
@@ -392,7 +390,7 @@ void FLD::Meshtying::DirichletOnMaster(
                 << std::endl << std::endl;
     }
 
-    if(msht_==INPAR::FLUID::condensed_smat or msht_==INPAR::FLUID::coupling_iontransport_laplace)
+    if(msht_==INPAR::FLUID::condensed_smat)
     {
       if(myrank_==0)
       {
@@ -436,7 +434,6 @@ void FLD::Meshtying::PrepareMeshtyingSystem(
   {
   case INPAR::FLUID::condensed_bmat:
   case INPAR::FLUID::condensed_bmat_merged:
-  case INPAR::FLUID::coupling_iontransport_laplace:
     CondensationBlockMatrix(sysmat, residual);
     break;
   case INPAR::FLUID::condensed_smat:
@@ -464,7 +461,6 @@ void FLD::Meshtying::AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec)
   {
   case INPAR::FLUID::condensed_bmat:
   case INPAR::FLUID::condensed_bmat_merged:
-  case INPAR::FLUID::coupling_iontransport_laplace:
   {
     Teuchos::RCP<Epetra_Vector> vec_mesht  = LINALG::CreateVector(*mergedmap_,true);
     SplitVectorBasedOn3x3(vec, vec_mesht);
@@ -533,7 +529,6 @@ void FLD::Meshtying::SolveMeshtying(
   }
   break;
   case INPAR::FLUID::condensed_bmat_merged:
-  case INPAR::FLUID::coupling_iontransport_laplace:
   {
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatsolve = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
@@ -1371,414 +1366,6 @@ void FLD::Meshtying::AnalyzeMatrix(
     }
   }
 }  // end AnalyzeMatrix()
-
-
-/*-------------------------------------------------------*/
-/*  Output: Analyze interface quality      ehrl (02/13)  */
-/*-------------------------------------------------------*/
-void FLD::Meshtying::InterfacePreparation()
-{
-  // initialize vectors for node coordinates at the internal interface
-  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-
-  // get MortarInterface
-  Teuchos::RCP<MORTAR::MortarInterface> interface = adaptermeshtying_->Interface();
-
-  double gab_norm2=0.0;
-
-  int iter = 0;
-  if(myrank_ == 0)
-  {
-    std::cout << std::endl;
-    std::cout << "Iteration "<< iter << ":" << std::endl;
-  }
-  // Analyze quality of interface (gaps and overlaps)
-  gab_norm2 = AnalyzeInterfaceQuality();
-
-  // fixed norm for termination of initialization loop
-  const double tol = 1.0e-10;
-
-  // more iterations does not improve the quality of the interface without a linearization
-  while(gab_norm2 > tol and iter<2)
-  {
-    iter +=1;
-
-    // initialize modified slave positions
-    Teuchos::RCP<Epetra_Vector> xsmod = LINALG::CreateVector(*gsdofrowmap_,true);
-
-    RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
-    Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-    AssembleCoords("master",true, xm, interface);
-
-    // In the case of dual Lagrange multiplier:
-    // There is no need to solve a system of equation
-    P->Multiply(false,*xm,*xsmod);
-
-    // Initialize the mesh at the internal interface
-    MeshInitialization(xsmod, interface);
-
-    //adaptermeshtying_->ReEvaluate(discret_->Comm());
-
-    xs->Scale(0.0);
-    xm->Scale(0.0);
-
-    if(myrank_ == 0)
-    {
-      std::cout << std::endl;
-      std::cout << "Iteration "<< iter << ":" << std::endl;
-    }
-    // Analyze quality of interface (gaps and overlaps)
-    gab_norm2 = AnalyzeInterfaceQuality();
-
-    if(myrank_ == 0 and gab_norm2<tol)
-    {
-      std::cout.precision(3);
-      std::cout << std::endl << "System is converged: L2-norm of gab vector is smaller than "
-                            << tol << std::endl << std::endl;
-    }
-    else if(myrank_ == 0 and iter>=2)
-    {
-      std::cout << std::endl << "System is NOT converged: A improvement of the interface quality"
-          " is unlikely without a proper linearization of the projection matrix!!"
-          << std::endl << std::endl;;
-    }
-  }
-
-  return;
-}
-
-
-/*-------------------------------------------------------*/
-/*  Output: Analyze interface quality      ehrl (02/13)  */
-/*-------------------------------------------------------*/
-double FLD::Meshtying::AnalyzeInterfaceQuality()
-{
-  // setup
-  Teuchos::RCP<Epetra_Vector> g              = LINALG::CreateVector(*gsdofrowmap_,true);
-
-  Teuchos::RCP<MORTAR::MortarInterface> interface = adaptermeshtying_->Interface();
-
-  // initialize vectors for node coordinates at the internal interface
-  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-
-  // get matrix D and M
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrix = adaptermeshtying_->GetDMatrix();
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrix = adaptermeshtying_->GetMMatrix();
-
-  AssembleCoords("slave",true,xs, interface);
-  AssembleCoords("master",true,xm, interface);
-
-  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  dmatrix->Multiply(false,*xs,*Dxs);
-  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  mmatrix->Multiply(false,*xm,*Mxm);
-  g->Update(1.0,*Dxs,1.0);
-  g->Update(-1.0,*Mxm,1.0);
-
-  double norminf = 0.0;
-  g->NormInf(&norminf);
-  double norml2 = 0.0;
-  g->Norm2(&norml2);
-
-  if (myrank_ == 0)
-  {
-    std::cout.precision(5);
-    std::cout << "------Analyze interface quality----------------------" << std::endl;
-    std::cout << "| Matrix norm (Inf):                 " << norminf << std::endl;
-    std::cout << "| Matrix norm (L2):                  " << norml2 << std::endl;
-    std::cout << "| Matrix norm (L2/slave nodes):      " << norml2/gsdofrowmap_->NumGlobalElements() << std::endl;
-    std::cout << "| Matrix norm (L2/master nodes):     " << norml2/gmdofrowmap_->NumGlobalElements() << std::endl;
-    std::cout << "----------------------------------------------------" << std::endl;
-  }
-
-  return norml2;
-}
-
-/*-----------------------------------------------------------------*
- | Assemble interface coordinates     ehrl (re-imlementation) 02/13|
- *---------------------------------------------------------  ------*/
-void FLD::Meshtying::AssembleCoords(
-          const                       std::string& sidename,
-          bool                        ref,
-          Teuchos::RCP<Epetra_Vector> vec,
-          Teuchos::RCP<MORTAR::MortarInterface>& interface)
-{
-  // NOTE:
-  // An alternative way of doing this would be to loop over
-  // all interfaces and to assemble the coordinates there.
-  // In thast case, one would have to be very careful with
-  // edge nodes / crosspoints, which must not be assembled
-  // twice. The solution would be to overwrite the corresp.
-  // entries in the Epetra_Vector instead of using Assemble().
-
-  // decide which side (slave or master)
-  // Loop over the dof map since we do not have access to the node map
-  Teuchos::RCP<Epetra_Map> sidemap = Teuchos::null;
-  if (sidename=="slave")       sidemap = adaptermeshtying_->SlaveNodeRowMap();
-  else if (sidename=="master") sidemap = adaptermeshtying_->MasterNodeRowMap();
-  else                         dserror("ERROR: Unknown sidename");
-
-  // loop over all row nodes of this side (at the global level)
-  for (int j=0; j<(sidemap->NumMyElements()); ++j)
-  {
-    int gid = sidemap->GID(j);
-
-    // find this node in interface discretizations
-    bool found = false;
-    DRT::Node* node = NULL;
-
-    found = interface->Discret().HaveGlobalNode(gid);
-    if (found)
-      node = interface->Discret().gNode(gid);
-
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
-
-    int coupleddofs = 0;
-    if (pcoupled_ == false)
-      coupleddofs=nsd_;
-    else
-      coupleddofs=nsd_+1;
-
-    // prepare assembly
-    Epetra_SerialDenseVector val(coupleddofs);
-    std::vector<int> lm(coupleddofs);
-    std::vector<int> lmowner(coupleddofs);
-
-    for (int k=0;k<nsd_;++k)
-    {
-      // reference (true) or current (false) configuration
-      if (ref) val[k] = mtnode->X()[k];
-      else     val[k] = mtnode->xspatial()[k];
-
-      lm[k] = mtnode->Dofs()[k];
-      lmowner[k] = mtnode->Owner();
-    }
-
-    if (pcoupled_ == true)
-    {
-      val[nsd_] = 0.0;
-      lm[nsd_] = mtnode->Dofs()[nsd_];
-      lmowner[nsd_] = mtnode->Owner();
-    }
-
-    // do assembly
-    LINALG::Assemble(*vec,val,lm,lmowner);
-  }
-
-  return;
-}
-
-/*------------------------------------------------------------------------------*
- |  mesh intialization for rotational invariance   ehrl(re-implementation) 02/13|
- *------------------------------------------------------------------------------*/
-void FLD::Meshtying::MeshInitialization(
-    Teuchos::RCP<Epetra_Vector>&             xsmod,
-    Teuchos::RCP<MORTAR::MortarInterface>&  interface)
-{
-  //**********************************************************************
-  // (1) perform mesh initialization node by node
-  //**********************************************************************
-  // IMPORTANT NOTE:
-  // We have to be very careful on which nodes on which processor to
-  // relocate! Basically, every processor needs to know about relocation
-  // of all its column nodes in the standard column map with overlap=1,
-  // because all these nodes participate in the processor's element
-  // evaluation! Thus, the modified slave positions are first exported
-  // to the column map of the respective interface and the modification
-  // loop is then also done with respect to this node column map!
-  // A second concern is that we are dealing with a special interface
-  // discretization (including special meshtying nodes, too) here, This
-  // interface discretization has been set up for dealing with meshtying
-  // ONLY, and there is still the underlying problem discretization
-  // dealing with the classical finite element evaluation. Thus, it is
-  // very important that we apply the nodal relocation to BOTH the
-  // MortarNodes in the meshtying interface discretization AND to the
-  // DRT:Nodes in the underlying problem discretization.
-  // Finally, we have to ask ourselves whether the node column distribution
-  // of the slave nodes in the interface discretization is IDENTICAL
-  // to the distribution in the underlying problem discretization. This
-  // is NOT necessarily the case, as we might have redistributed the
-  // interface among all processors. Thus, we loop over the fully over-
-  // lapping slave column map here to keep all processors around. Then,
-  // the first modification (MortarNode) is always performed, but the
-  // second modification (DRT::Node) is only performed if the respective
-  // node in contained in the problem node column map.
-  //**************************************************************
-
-  // export Xslavemod to fully overlapping column map for current interface
-  Teuchos::RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface->SlaveRowDofs()));
-  Teuchos::RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface->SlaveRowNodes()));
-  Epetra_Vector xsmodcol(*fullsdofs,false);
-  LINALG::Export(*xsmod,xsmodcol);
-
-  // loop over all slave nodes on the current interface
-  for (int j=0; j<fullsnodes->NumMyElements(); ++j)
-  {
-    // get global ID of current node
-    int gid = fullsnodes->GID(j);
-
-    // be careful to modify BOTH mtnode in interface discret ...
-    // (check if the node is available on this processor)
-    bool isininterfacecolmap = false;
-    int ilid = interface->SlaveColNodes()->LID(gid);
-    if (ilid>=0) isininterfacecolmap = true;
-    DRT::Node* node = NULL;
-    MORTAR::MortarNode* mtnode = NULL;
-    if (isininterfacecolmap)
-    {
-      node = interface->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      mtnode = static_cast<MORTAR::MortarNode*>(node);
-    }
-
-    // ... AND standard node in underlying problem discret
-    // (check if the node is available on this processor)
-    bool isinproblemcolmap = false;
-    int lid = discret_->NodeColMap()->LID(gid);
-    if (lid>=0) isinproblemcolmap = true;
-    DRT::Node* pnode = NULL;
-    if (isinproblemcolmap)
-    {
-      pnode = discret_->gNode(gid);
-      if (!pnode) dserror("ERROR: Cannot find node with gid %",gid);
-    }
-
-    // new nodal position and problem dimension
-    double Xnew[3] = {0.0, 0.0, 0.0};
-    double Xnewglobal[3] = {0.0, 0.0, 0.0};
-
-    //******************************************************************
-    // compute new nodal position
-    //******************************************************************
-    // first sort out procs that do not know of mtnode
-    if (isininterfacecolmap)
-    {
-      // owner processor of this node will do computation
-      if (discret_->Comm().MyPID()==mtnode->Owner())
-      {
-        // get corresponding entries from Xslavemod
-        int numdof = mtnode->NumDof();
-        //if (nsd_!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
-
-        // find DOFs of current node in Xslavemod and extract this node's position
-        std::vector<int> locindex(numdof);
-
-        for (int dof=0;dof<numdof;++dof)
-        {
-          locindex[dof] = (xsmodcol.Map()).LID(mtnode->Dofs()[dof]);
-          if (locindex[dof]<0) dserror("ERROR: Did not find dof in map");
-          Xnew[dof] = xsmodcol[locindex[dof]];
-        }
-
-        // check is mesh distortion is still OK
-        // (throw a dserror if length of relocation is larger than 80%
-        // of an adjacent element edge -> see Puso, IJNME, 2004)
-        double limit = 0.8;
-        double relocation = 0.0;
-        if (nsd_==2)
-        {
-          relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-                           +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
-        }
-        else if (nsd_==3)
-        {
-          relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-                           +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
-                           +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
-        }
-        else dserror("ERROR: Problem dimension must be either 2 or 3!");
-        bool isok = mtnode->CheckMeshDistortion(relocation,limit);
-        //std::cout << "position (" << Xnew[0] << ", " << Xnew[1] << ", " << Xnew[2] << ")" << std::endl;
-        if (!isok) dserror("ERROR: Mesh distortion generated by relocation is too large!");
-      }
-    }
-
-    // communicate new position Xnew to all procs
-    // (we can use SumAll here, as Xnew will be zero on all processors
-    // except for the owner processor of the current node)
-    discret_->Comm().SumAll(&Xnew[0],&Xnewglobal[0],3);
-
-    // const_cast to force modifed X() into mtnode
-    // const_cast to force modifed xspatial() into mtnode
-    // const_cast to force modifed X() into pnode
-    // (remark: this is REALLY BAD coding)
-    for (int k=0;k<nsd_;++k)
-    {
-      // modification in interface discretization
-      if (isininterfacecolmap)
-      {
-        const_cast<double&>(mtnode->X()[k])        = Xnewglobal[k];
-        const_cast<double&>(mtnode->xspatial()[k]) = Xnewglobal[k];
-      }
-
-      // modification in problem discretization
-      if (isinproblemcolmap)
-      {
-        const_cast<double&>(pnode->X()[k])       = Xnewglobal[k];
-      }
-    }
-  }
-
-  //**********************************************************************
-  // (2) re-initialize finite elements
-  //**********************************************************************
-
-  DRT::ParObjectFactory::Instance().InitializeElements(*discret_);
-
-  return;
-}
-
-/*-------------------------------------------------------------*/
-/*  Output: Replace matrix entries         ehrl (11/11)        */
-/*  Replace computed identity matrix by a real identity matrix */
-/*-------------------------------------------------------------*/
-void FLD::Meshtying::ReplaceMatrixEntries(
-    Teuchos::RCP<LINALG::SparseMatrix>        sparsematrix)
-{
-  Teuchos::RCP< Epetra_CrsMatrix > Pmat = sparsematrix->EpetraMatrix ();
-  const int numdofrows = sparsematrix->RowMap().NumMyElements();
-
-  for (int i=0; i<numdofrows; ++i)
-  {
-    // max. number of non-zero values
-    int maxnumentries = Pmat->MaxNumEntries();
-    int numOfNonZeros = 0;
-    std::vector<int> indices(maxnumentries);
-    std::vector<double> values(maxnumentries);
-
-    int error = Pmat->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);
-    if (error!=0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d",error);
-
-    // Saftey check: only one nonZero value in specific row
-    if (numOfNonZeros!=1)
-      dserror("Replace PMat: more than one nonZero value in specific row");
-
-    double unity = 1.0;
-    int err = Pmat->ReplaceMyValues(i, 1, &unity, &indices[0]);
-    if (err!=0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d",error);
-  }
-
-  double normfrob = sparsematrix->NormFrobenius();
-  double norminf = sparsematrix->NormInf();
-  double normone = sparsematrix->NormOne();
-
-  if (myrank_ == 0)
-  {
-    {
-      std::cout.precision(16);
-      std::cout << "------------------------------------------------------" << std::endl;
-      std::cout << "| projection matrix is replaced by a identity matrix:" << std::endl;
-      std::cout << "| Matrix norm (Frobenius):  " << normfrob << std::endl;
-      std::cout << "| Matrix norm (Inf):  " << norminf << std::endl;
-      std::cout << "| Matrix norm (One):  " << normone << std::endl;
-      std::cout << "------------------------------------------------------" << std::endl;
-    }
-  }
-  //dserror("Remove dserror from OutputSetup()!!");
-} // end ReplaceMatrixEntries()
 
 // -------------------------------------------------------------------
 // check absolut velinc norm                           ehrl   11/2011

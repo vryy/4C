@@ -79,7 +79,7 @@ class Meshtying
     //! Constructor
     Meshtying(Teuchos::RCP<DRT::Discretization>      dis,             ///> actual discretisation
               LINALG::Solver&               solver,                   ///> solver
-              Teuchos::ParameterList&       params,                   ///> meshting parameter list
+              int                           msht,                   ///> meshting parameter list
               int                           nsd,                      ///> number space dimensions
               const UTILS::MapExtractor*    surfacesplitter = NULL);  ///> surface splitter
 
@@ -87,7 +87,7 @@ class Meshtying
     virtual ~Meshtying(){return;};
 
     //! Set up mesh-tying framework
-    Teuchos::RCP<LINALG::SparseOperator> Setup();
+    Teuchos::RCP<LINALG::SparseOperator> Setup(std::vector<int> coupleddof);
 
     //! Applied Dirichlet values are adapted on the slave side of the internal interface
     //! in order to avoid an over-constraint problem setup
@@ -195,23 +195,6 @@ class Meshtying
 
     //! Compute and update the increments of the slave node (Condensation)
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc);
-
-    //! Analyze interface quality and optional interface initialization
-    void InterfacePreparation();
-
-    //! Analyze interface quality (gabs, overlaps, ..)
-    double AnalyzeInterfaceQuality();
-
-    //! Assemble vector containing the nodal coordinates of the internal interface (master, slave)
-    void AssembleCoords(const                                   std::string& sidename,  ///> string defining the side of the internal interface
-                        bool                                    ref,                    ///>
-                        Teuchos::RCP<Epetra_Vector>             vec,
-                        Teuchos::RCP<MORTAR::MortarInterface>&  interface);                   ///> vector containing coordinates of the internal interface
-
-    //! The mesh is initialized in order to minimize the gab / overlap at the internal interface
-    void MeshInitialization(
-         Teuchos::RCP<Epetra_Vector>&            xsmod,
-         Teuchos::RCP<MORTAR::MortarInterface>& interface);
 
   private:
 

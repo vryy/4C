@@ -70,24 +70,17 @@ namespace ADAPTER
     /// empty constructor
     CouplingMortar();
 
-    //! setup the machinery
-    //! Version 1 ---> for standard ALE FSI mesh tying
-    void Setup( Teuchos::RCP<DRT::Discretization> masterdis,
-                Teuchos::RCP<DRT::Discretization> slavedis,
-                Teuchos::RCP<DRT::Discretization> aledis, ///> we need this for mesh initialization
-                const Epetra_Comm& comm,
-                bool structslave = false);
-
-    //! setup the machinery
-    //! Version 2 ---> for sliding ALE FSI mesh tying
-    void Setup( Teuchos::RCP<DRT::Discretization> dis );
-
-    //! setup the machinery
-    //! Version 3 ---> for Eulerian fluid mesh tying
-    bool Setup( Teuchos::RCP<DRT::Discretization> dis,
-                const Epetra_Comm& comm,
-                int meshtyingoption,
-                bool structslave = false);
+    //! setup the machinery (generalized version)
+    /// master and slave discretization are identical for sliding ale and fluid/scatra meshtying
+    /// ale discretization is Techos::null for  sliding ale and fluid/scatra meshtying
+    void Setup( Teuchos::RCP<DRT::Discretization>   masterdis,      ///> master discretization
+                Teuchos::RCP<DRT::Discretization>   slavedis,       ///> slave discretization
+                Teuchos::RCP<DRT::Discretization>   aledis,         ///> ale discretization
+                std::vector<int>                    coupleddof,     ///> vector defining coupled degree's of freedom
+                const string&                       couplingcond,   ///> string for coupling condition
+                const Epetra_Comm&                  comm,           ///> communicate
+                bool                                structslave=false,  ///> flag defining if structure is slave side
+                bool                                slidingale=false);  //> flag defining sliding ale case
 
     /// perform mesh initialization
     void MeshInit( Teuchos::RCP<DRT::Discretization> slavedis,
@@ -95,7 +88,7 @@ namespace ADAPTER
                    Teuchos::RCP<Epetra_Map> masterdofrowmap,
                    Teuchos::RCP<Epetra_Map> slavedofrowmap,
                    const Epetra_Comm& comm,
-                   bool structslave);
+                   bool   structslave);
 
     /// perform mesh initialization
     void ReEvaluate(const Epetra_Comm& comm);
@@ -138,12 +131,6 @@ namespace ADAPTER
     /// the interface dof map of the slave side
     Teuchos::RCP<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
 
-    /// the interface dof map of the master side
-    Teuchos::RCP<Epetra_Map> MasterNodeRowMap() const { return masternoderowmap_; }
-
-    /// the interface dof map of the slave side
-    Teuchos::RCP<Epetra_Map> SlaveNodeRowMap()  const { return slavenoderowmap_; }
-
     /// return mortar D matrix
     Teuchos::RCP<LINALG::SparseMatrix> GetDMatrix() const { return D_;}
 
@@ -165,8 +152,6 @@ namespace ADAPTER
     Teuchos::RCP<MORTAR::MortarInterface> interface_;       ///< interface
     Teuchos::RCP<Epetra_Map>              masterdofrowmap_; ///< map of master row dofs
     Teuchos::RCP<Epetra_Map>              slavedofrowmap_;  ///< map of slave row dofs
-    Teuchos::RCP<Epetra_Map>       masternoderowmap_;  ///< map of master row dofs
-    Teuchos::RCP<Epetra_Map>       slavenoderowmap_;   ///< map of slave row dofs
 
 
     Teuchos::RCP<LINALG::SparseMatrix>    D_;               ///< mortar matrix

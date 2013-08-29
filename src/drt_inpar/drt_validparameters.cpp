@@ -1506,6 +1506,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("LM_NODAL_SCALE","No","If chosen a nodal scaling factor is calculated for each LM",
                                yesnotuple,yesnovalue,&mortar);
 
+  setStringToIntegralParameter<int>("MESH_INIT","Yes","Flag if mesh is initialized during the setup process",
+                               yesnotuple,yesnovalue,&mortar);
 
   setStringToIntegralParameter<int>("REDUNDANT_STORAGE","Master","Type of redundancy in interface storage",
       tuple<std::string>("All","all",
@@ -2734,15 +2736,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "no",
                                     "Condensed_Smat",
                                     "Condensed_Bmat",
-                                    "Condensed_Bmat_merged",
-                                    "Coupling_ionTransport_Laplace"),
+                                    "Condensed_Bmat_merged"),
                                   tuple<int>(
                                       INPAR::FLUID::no_meshtying,
                                       INPAR::FLUID::condensed_smat,
                                       INPAR::FLUID::condensed_bmat,
-                                      INPAR::FLUID::condensed_bmat_merged,
-                                      INPAR::FLUID::coupling_iontransport_laplace),
+                                      INPAR::FLUID::condensed_bmat_merged),
                                   &fdyn);
+
+  BoolParameter("ALLDOFCOUPLED","Yes","all dof (incl. pressure) are coupled",&fdyn);
 
   {
    Teuchos::Tuple<std::string,16> name;
@@ -4022,15 +4024,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "no",
                                       "Condensed_Smat",
                                       "Condensed_Bmat",
-                                      "Condensed_Bmat_merged",
-                                      "Coupling_ionTransport_Laplace"), //use the condensed_bmat_merged strategy
+                                      "Condensed_Bmat_merged"), //use the condensed_bmat_merged strategy
                                     tuple<int>(
                                         INPAR::FLUID::no_meshtying,
                                         INPAR::FLUID::condensed_smat,
                                         INPAR::FLUID::condensed_bmat,
-                                        INPAR::FLUID::condensed_bmat_merged,
-                                        INPAR::FLUID::coupling_iontransport_laplace),   //use the condensed_bmat_merged strategy
+                                        INPAR::FLUID::condensed_bmat_merged),   //use the condensed_bmat_merged strategy
                                     &scatradyn);
+
+  BoolParameter("ONLYPOTENTIAL","no",
+        "Coupling of general ion transport equation with Laplace equation",&scatradyn);
 
   // linear solver id used for scalar transport/elch problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);

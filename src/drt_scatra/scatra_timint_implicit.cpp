@@ -306,25 +306,41 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   }
   else if(msht_!= INPAR::FLUID::no_meshtying)
   {
-    if (((msht_== INPAR::FLUID::condensed_bmat) or
-        (msht_== INPAR::FLUID::condensed_bmat_merged) or
-         msht_== INPAR::FLUID::coupling_iontransport_laplace) and
+    // Important:
+    // Meshtying in scatra is not tested well!!
+
+    bool onlypotential = (DRT::INPUT::IntegralValue<int>(*params_,"ONLYPOTENTIAL"));
+
+    if(msht_== INPAR::FLUID::condensed_bmat)
+      dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
+              "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
+
+    if ((msht_== INPAR::FLUID::condensed_bmat or
+        msht_== INPAR::FLUID::condensed_bmat_merged) and
         (scatratype_ == INPAR::SCATRA::scatratype_elch_enc))
       dserror("In the context of mesh-tying, the ion-transport system inluding the electroneutrality condition \n"
-          "cannot be solved by a block matrix");
+          "cannot be solved in a block matrix");
 
-    if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND") and
-        (msht_== INPAR::FLUID::condensed_bmat or
-                msht_== INPAR::FLUID::condensed_bmat_merged))
-      dserror("Switch of the block matrix!!");
+    int numdof =0;
+    // meshtying: all dofs (all scalars + potential) are coupled
+    if (IsElch(scatratype_))
+      numdof = numscal_+1;
+    else
+      numdof = numscal_;
 
-    // define parameter list for meshtying
-    Teuchos::ParameterList mshtparams;
-    mshtparams.set("theta", params_->get<double>("THETA"));
-    mshtparams.set<int>("mshtoption", msht_);
+    // define coupling
+    std::vector<int> coupleddof(numdof, 1);
+    if(onlypotential==true and IsElch(scatratype_))
+    {
+      // meshtying: only potential is coupled
+      // coupleddof = [0, 0, ..., 0, 1]
+      for(int ii=0;ii<numscal_;++ii)
+        coupleddof[ii]=0;
+    }
 
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams, DRT::Problem::Instance()->NDim()));
-    sysmat_ = meshtying_->Setup();
+
+    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
+    sysmat_ = meshtying_->Setup(coupleddof);
   }
   else
   {
@@ -745,6 +761,16 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
 
+  // By definition: Applying DC on the slave side of an internal interface is not allowed
+  //                since it leads to an over-constraint system
+  // Therefore, nodes belonging to the slave side of an internal interface have to be excluded from the DC.
+  // However, a velocity value (projected from the Dirichlet condition on the master side)
+  // has to be assigned to the DOF's on the slave side in order to evaluate the system matrix completely
+
+  // Preparation for including DC on the master side in the condensation process
+  if(msht_ != INPAR::FLUID::no_meshtying)
+    meshtying_->IncludeDirichletInCondensation(phinp_, phin_);
+
   //TODO (ehrl): experimental boundary condition
   // Manipulate DC in case of a Nernst BC
   //AdaptDC(sysmat_, residual_, phinp_);
@@ -1117,18 +1143,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     sysmat_ = blocksysmat;
   }
   else if(msht_!= INPAR::FLUID::no_meshtying)
-  {
-    if (msht_!= INPAR::FLUID::condensed_smat)
-      dserror("In the moment the only option is condensation in a sparse matrix");
-
-    // define parameter list for meshtying
-    Teuchos::ParameterList mshtparams;
-    mshtparams.set("theta", params_->get<double>("THETA"));
-    mshtparams.set<int>("mshtoption", msht_);
-
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams, DRT::Problem::Instance()->NDim()));
-    sysmat_ = meshtying_->Setup();
-  }
+    dserror("So far a redistribution is not supported in meshtying allgorithm!!");
   else
   {
     // initialize standard (stabilized) system matrix (and save its graph!)
@@ -2655,7 +2670,10 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     // get cpu time
     const double tcpusolve=Teuchos::Time::wallTime();
 
-    solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
+    if (msht_==INPAR::FLUID::no_meshtying)
+      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
+    else
+      meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, 1, Teuchos::null);
 
     // end time measurement for solver
     dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
@@ -2689,7 +2707,12 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     // get cpu time
     const double tcpusolve=Teuchos::Time::wallTime();
 
-    solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
+    if (msht_==INPAR::FLUID::no_meshtying)
+      solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
+    else
+      meshtying_->SolveMeshtying(*solver_, sysmat_, phinp_, residual_, 1, Teuchos::null);
+
+    //solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
     // end time measurement for solver
     dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
@@ -2867,10 +2890,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         UpdateKrylovSpaceProjection();
       }
 
-      if (msht_!=INPAR::FLUID::no_meshtying)
-        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, projector_);
-      else
+      if (msht_==INPAR::FLUID::no_meshtying)
         solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1, projector_);
+      else
+        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, projector_);
 
       solver_->ResetTolerance();
 

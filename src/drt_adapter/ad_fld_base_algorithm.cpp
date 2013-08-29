@@ -255,7 +255,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     break;
     case INPAR::FLUID::condensed_smat:
     case INPAR::FLUID::condensed_bmat_merged:
-    case INPAR::FLUID::coupling_iontransport_laplace:
     {
       // meshtying (no saddle point problem)
       const Teuchos::ParameterList& mshparams = DRT::Problem::Instance()->ContactDynamicParams();
@@ -972,6 +971,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   //--------------------------------------mesh tying for fluid
   fluidtimeparams->set<int>("MESHTYING",
       DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));
+
+  fluidtimeparams->set<bool>("ALLDOFCOUPLED",DRT::INPUT::IntegralValue<bool>(fdyn,"ALLDOFCOUPLED"));
 
   //--------------------------------------analytical error evaluation
   fluidtimeparams->set<int>("calculate error",

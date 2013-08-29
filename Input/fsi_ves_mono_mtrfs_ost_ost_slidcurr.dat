@@ -38,6 +38,8 @@ FILESTEPS                       1000
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
 SHAPEFCN                        Dual
+REDUNDANT_STORAGE               all
+MESH_INIT                       yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      OneStepTheta
@@ -5853,8 +5855,8 @@ NODE 2393 COORD 1.2437880660728e-07 2.9000000000000e+00 0.0000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.85367986207671786e-05 TOLERANCE 1e-13
-FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.85394108331956134e-05 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.47549567045886564e-05 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.47560457357900745e-05 TOLERANCE 1e-13
+FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.85367964925202930e-05 TOLERANCE 1e-13
+FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.85394087242280583e-05 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.47549560068019946e-05 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.47560450428307567e-05 TOLERANCE 1e-13
 -------------------------------------------------------------------------END

@@ -143,6 +143,10 @@ SHAPEFCT                        Polynomial
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 -------------------------------------------------------STATISTICAL MECHANICS
 -------------------------------------------------------------CONTACT DYNAMIC
+-------------------------------------------------------------MORTAR COUPLING
+PARALLEL_REDIST                 No
+SHAPEFCN                        Dual
+REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       No

@@ -6715,17 +6715,25 @@ void FLD::FluidImplicitTimeInt::SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_g
 void FLD::FluidImplicitTimeInt::SetupMeshtying()
 {
   msht_ = params_->get<int>("MESHTYING");
+  bool alldofcoupled = params_->get<bool>("ALLDOFCOUPLED");
 
-  if (msht_ == INPAR::FLUID::coupling_iontransport_laplace)
-    dserror("the option 'coupling_iontransport_laplace' is only available in Elch!!");
+  // meshtying: all dofs (velocity + pressure) are coupled
+  //            -> vector of length velocity dofs (numdim_) + pressure dof initialiued with ones
+  // coupleddof [1, 1, 1, 1]
+  std::vector<int> coupleddof(numdim_+1, 1);
 
-  // define parameter list for meshtying
-  Teuchos::ParameterList mshtparams;
-  mshtparams.set("theta",theta_);
-  mshtparams.set<int>("mshtoption", msht_);
+  if (alldofcoupled == false)
+  {
+    // meshtying: only velocity dofs are coupled
+    // meshtying: all dofs (velocity + pressure) are coupled
+    //            -> vector of length velocity dofs (numdim_) + pressure dof initialiued with ones
+    //            -> last entry (pressure) is set to zero -> pressure is not included into the coupling algorithm
+    // coupleddof [1, 1, 1, 0]
+    coupleddof[numdim_]=0;
+  }
 
-  meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, mshtparams, numdim_, surfacesplitter_));
-  sysmat_ = meshtying_->Setup();
+  meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, numdim_, surfacesplitter_));
+  sysmat_ = meshtying_->Setup(coupleddof);
 
   // Check if there are DC defined on the master side of the internal interface
   meshtying_->DirichletOnMaster(dbcmaps_->CondMap());

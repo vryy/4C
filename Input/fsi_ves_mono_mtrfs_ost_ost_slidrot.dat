@@ -38,6 +38,7 @@ FILESTEPS                       1000
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
 SHAPEFCN                        Dual
+REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      OneStepTheta

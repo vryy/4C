@@ -172,10 +172,15 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     ADAPTER::Coupling& icoupfa = InterfaceFluidAleCoupling();
 
     // structure to fluid
+    // coupling condition at the fsi interface: displacements (=number spacial dimensions) are coupled)
+    // e.g.: 3D: coupleddof = [1, 1, 1]
+    std::vector<int> coupleddof(ndim, 1);
 
     coupsfm_->Setup(FluidField().Discretization(),
                     StructureField()->Discretization(),
                     AleField().Discretization(),
+                    coupleddof,
+                    "FSICoupling",
                     comm_,true);
 
     // fluid to ale at the interface

@@ -88,6 +88,7 @@ THERM_TEMPGRAD                  None
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
 SHAPEFCN                        Dual
+REDUNDANT_STORAGE               all
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0

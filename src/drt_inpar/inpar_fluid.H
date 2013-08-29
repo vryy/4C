@@ -244,8 +244,7 @@ namespace INPAR
       no_meshtying,
       condensed_smat,
       condensed_bmat,
-      condensed_bmat_merged,
-      coupling_iontransport_laplace
+      condensed_bmat_merged
     };
 
     //! physical turbulence models

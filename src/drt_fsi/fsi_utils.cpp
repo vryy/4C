@@ -324,7 +324,13 @@ aletype_(aleproj)
 
   maxmindist_ = 1.0e-1;
 
-  coupff_->Setup(fluiddis);
+  // coupling condition at the fsi interface: displacements (=number spacial dimensions) are coupled)
+  // e.g.: 3D: coupleddof = [1, 1, 1]
+  std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(), 1);
+
+  // this setup only initialize two sets of identical mortar elements (master and slave)
+  // -> projection matrix is a unity matrix
+  coupff_->Setup(fluiddis, fluiddis, Teuchos::null, coupleddof, "FSICoupling", fluiddis->Comm(),true,true);
 }
 
 /*----------------------------------------------------------------------*/

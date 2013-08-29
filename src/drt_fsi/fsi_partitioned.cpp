@@ -72,10 +72,16 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   }
   else
   {
+    // coupling condition at the fsi interface: displacements (=number spacial dimensions) are coupled)
+    // e.g.: 3D: coupleddof = [1, 1, 1]
+    std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(), 1);
+
     matchingnodes_ = false;
     coupsfm_->Setup( StructureField()->Discretization(),
                      MBFluidField().Discretization(),
                      (dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
+                     coupleddof,
+                     "FSICoupling",
                      comm,false);
   }
 
