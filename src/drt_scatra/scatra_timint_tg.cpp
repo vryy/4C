@@ -218,7 +218,6 @@ void SCATRA::TimIntTaylorGalerkin::Update(const int num)
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 
-  std::cout << "Update done" << std::endl;
   return;
 }
 
