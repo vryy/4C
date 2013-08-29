@@ -444,6 +444,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     else
       preint = funct_.Dot(epreaf);
 
+    /* H1 -error norm
+    // compute first derivative of the velocity
+    LINALG::Matrix<nsd_,nsd_> dervelint;
+    dervelint.MultiplyNT(evelaf,derxy_);
+    */
+
     // get coordinates at integration point
     LINALG::Matrix<nsd_,1> xyzint(true);
     xyzint.Multiply(xyze_,funct_);
@@ -490,6 +496,42 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
             exp(a*xyzint(0)) * cos(a*xyzint(1) + d*xyzint(2)) ) * exp(-visc_*d*d*t);
         u(2) = -a * ( exp(a*xyzint(2)) * sin(a*xyzint(0) + d*xyzint(1)) +
             exp(a*xyzint(1)) * cos(a*xyzint(2) + d*xyzint(0)) ) * exp(-visc_*d*d*t);
+
+        /* H1 -error norm
+        // sacado data type replaces "double"
+        typedef Sacado::Fad::DFad<double> FAD;  // for first derivs
+
+        FAD x = xyzint(0);
+        x.diff(0,3);  // independent variable 0 out of a total of 3
+
+        FAD y = xyzint(1);
+        y.diff(1,3);  // independent variable 1 out of a total of 3
+
+        FAD z = xyzint(2);
+        z.diff(2,3);  // independent variable 2 out of a total of 3
+
+        // compute the function itself AND its derivatives w.r.t. ALL indep. variables
+        FAD uu = -a * ( exp(a*x) * sin(a*y + d*z) +
+                exp(a*z) * cos(a*x + d*y) ) * exp(-visc_*d*d*t);
+        FAD vv = -a * ( exp(a*y) * sin(a*z + d*x) +
+            exp(a*x) * cos(a*y + d*z) ) * exp(-visc_*d*d*t);
+        FAD ww = -a * ( exp(a*z) * sin(a*x + d*y) +
+            exp(a*y) * cos(a*z + d*x) ) * exp(-visc_*d*d*t);
+
+        u(0) = uu.val();
+        u(1) = vv.val();
+        u(2) = ww.val();
+
+        dervel(0,0)=u.dx(0);
+        dervel(0,1)=u.dx(1);
+        dervel(0,2)=u.dx(2);
+        dervel(1,0)=v.dx(0);
+        dervel(1,1)=v.dx(1);
+        dervel(1,2)=v.dx(2);
+        dervel(2,0)=w.dx(0);
+        dervel(2,1)=w.dx(1);
+        dervel(2,2)=w.dx(2);
+        */
       }
       else dserror("action 'calc_fluid_beltrami_error' is a 3D specific action");
     }
@@ -681,6 +723,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     deltap    = preint - p;
     deltavel.Update(1.0, velint_, -1.0, u);
 
+    /* H1 -error norm
+    // compute error for first velocity derivative
+    for(int i=0;i<nsd_;++i)
+      for(int j=0;j<nsd_;++j)
+        deltadervel(i,j)= dervelint(i,j) - dervel(i,j);
+    */
+
     // L2 error
     // 0: vel_mag
     // 1: p
@@ -700,6 +749,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     elevec1[1] += deltap*deltap*fac_;
     //integrate analytical pressure (computation of relative error)
     elevec1[3] += p*p*fac_;
+
+    /*
+    //H1-error norm: first derivative of the velocity
+    elevec1[4] += deltadervel.Dot(deltadervel)*fac_;
+    */
   }
 
   return 0;
