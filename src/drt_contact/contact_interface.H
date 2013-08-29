@@ -374,12 +374,6 @@ public:
   virtual void EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
                               const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
                               const Teuchos::RCP<LINALG::SparseMatrix> doldmod);
-
-  /*!
-  \brief Assemble jump vector into global jump vector
-
-  */
-  virtual void AssembleRelMov(Epetra_Vector& jumpglobal);
   
   /*!
   \brief Assemble slave coordinates (xs)
@@ -459,6 +453,7 @@ public:
   */
   virtual void AssembleLinWLm(LINALG::SparseMatrix& sglobal);
   virtual void AssembleLinWLmSl(LINALG::SparseMatrix& sglobal);
+  virtual void AssembleLinWLmSt(LINALG::SparseMatrix& sglobal);
 
   /*!
   \brief Assemble matrix P containing linearizations
@@ -600,6 +595,13 @@ public:
   void FDCheckGapDeriv();
 
   /*!
+  \brief Check weighted slip increment derivatives with finite differences (gp-wise calculated)
+
+  */
+  void FDCheckSlipIncrDerivTXI(); //- TXI
+  void FDCheckSlipIncrDerivTETA(); //- TETA
+
+  /*!
   \brief Check weighted wear ~w derivatives with finite differences
          derivation w.r.t. displ.
 
@@ -623,13 +625,15 @@ public:
   \brief Check stick condition derivatives with finite differences
 
   */
-  virtual void FDCheckStickDeriv();
+  virtual void FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglobal,
+                                 LINALG::SparseMatrix& linstickDISglobal);
 
   /*!
   \brief Check slip condition derivatives with finite differences
 
   */
-  virtual void FDCheckSlipDeriv();
+  virtual void FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
+                                LINALG::SparseMatrix& linslipDISglobal);
   
   /*!
   \brief Check penalty approach with finite differences

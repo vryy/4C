@@ -389,6 +389,22 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add jump value from gp-wise integration of slip          farah 08/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddJumpValue(double val, int k)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddJumpValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
+
+  FriData().jump_var()[k] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Add a value to the 'A' map                             gitterle 10/10|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddAValue(int& row, int& col, double& val)

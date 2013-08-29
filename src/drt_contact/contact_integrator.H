@@ -129,6 +129,7 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> useg,
       Teuchos::RCP<Epetra_SerialDenseVector> scseg,
       Teuchos::RCP<Epetra_SerialDenseVector> wseg);
 
@@ -172,6 +173,7 @@ public:
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> useg,
      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
@@ -312,6 +314,15 @@ public:
                  MORTAR::MortarElement& sele,
                  Epetra_SerialDenseVector& g_seg);
   
+  /*!
+  \brief Assemble u~ contribution of current overlap into slave nodes
+         --> this is the relative tangential weighted slip integrated at the gp
+
+  */
+  bool AssembleU(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseMatrix& u_seg);
+
   /*!
   \brief Assemble g~ contribution of current overlap into slave nodes
          (special version for 3D quadratic mortar with piecewise linear LM interpolation)

@@ -48,6 +48,8 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_mortar/mortar_projector.H"
 #include "contact_element.H"
+#include "contact_defines.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -136,13 +138,20 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
       scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
     Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
     Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg = Teuchos::null;
+    Teuchos::RCP<Epetra_SerialDenseMatrix> useg = Teuchos::null;
     if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
       wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
+    // slip increment built at gp
+#ifdef OBJECTVARSLIPINCREMENT
+    useg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow,1));
+#endif
+
+    // both-sided wear with mortar mapping --> mortar D matrix on master side required (D2)
     if (WearSide() != INPAR::CONTACT::wear_slave)
       d2seg = Teuchos::rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
 
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,d2seg,mseg,gseg,scseg,wseg);
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,d2seg,mseg,gseg,useg,scseg,wseg);
 
     // do the two assemblies into the slave nodes
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -150,6 +159,10 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
 
     // also do assembly of weighted gap vector
     integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+
+#ifdef OBJECTVARSLIPINCREMENT
+    integrator.AssembleU(Comm(),SlaveElement(),*useg);
+#endif
 
     // assemble scaling factor
     if (scseg!=Teuchos::null)

@@ -193,12 +193,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<LINALG::SparseMatrix> MMatrix() { return mmatrix_; }
 
     /*!
-    \brief Return jump vector (t_n+1)
-
-    */
-    inline Teuchos::RCP<Epetra_Vector> Jump() { return jump_; }
-
-    /*!
     \brief Return vector of normal contact stresses (t_n+1)
 
     */
@@ -740,7 +734,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
     Teuchos::RCP<Epetra_Vector> zincr_;             // Lagrange multiplier vector increment within SaddlePointSolve (this is NOT the increment of z_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> zuzawa_;            // vector of Lagrange multipliers from last Uzawa step
-    Teuchos::RCP<Epetra_Vector> jump_;              // displacement jump (slave dofs)
     
     Teuchos::RCP<Epetra_Vector> stressnormal_;      // vector of normal contact forces at t_n+1
     Teuchos::RCP<Epetra_Vector> stresstangential_;  // vector of tangential contact forces at t_n+1

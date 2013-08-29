@@ -866,7 +866,6 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   d2matrix_= Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,10));
   mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
-  if (friction_) jump_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 
   // wear
   if (wear_) wearvector_ = LINALG::CreateVector(*gsnoderowmap_, true);
@@ -975,7 +974,7 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
 }
 
 /*----------------------------------------------------------------------*
- | evaluate reference state                                gitterle 01/10|
+ | evaluate reference state                               gitterle 01/10|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
                             const Teuchos::RCP<Epetra_Vector> vec)
@@ -1118,7 +1117,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
 }
 
 /*----------------------------------------------------------------------*
- | evaluate relative movement of contact bodies            gitterle 10/09|
+ | evaluate relative movement of contact bodies           gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::EvaluateRelMov()
 {
@@ -1155,8 +1154,9 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
   // loop over all slave row nodes on the current interface
   for (int i=0; i<(int)interface_.size(); ++i)
   {
+#ifndef OBJECTVARSLIPINCREMENT
     interface_[i]->EvaluateRelMov(xsmod,dmatrixmod_,doldmod_);
-    interface_[i]->AssembleRelMov(*jump_);
+#endif
   }
   return;
 }
@@ -1239,11 +1239,6 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       }
       case MORTAR::StrategyBase::activeold:
       {
-        break;
-      }
-      case MORTAR::StrategyBase::jump:
-      {
-        vectorglobal = Jump();
         break;
       }
       case MORTAR::StrategyBase::wear:
@@ -1341,14 +1336,6 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
             dserror("ERROR: This should not be called for contact without friction");
           CONTACT::FriNode* frinode = static_cast<FriNode*>(cnode);
           frinode->FriData().ActiveOld() = frinode->Active();
-          break;
-        }
-        case MORTAR::StrategyBase::jump:
-        {
-          if(!friction_)
-            dserror("ERROR: This should not be called for contact without friction");
-          FriNode* frinode = static_cast<FriNode*>(cnode);
-          frinode->FriData().jump()[dof] = (*vectorinterface)[locindex[dof]];
           break;
         }
         case MORTAR::StrategyBase::wear:

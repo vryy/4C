@@ -195,9 +195,14 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
         wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
+      // slip increment built at gp
+      Teuchos::RCP<Epetra_SerialDenseMatrix> useg = Teuchos::null;
+  #ifdef OBJECTVARSLIPINCREMENT
+      useg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow,2));
+  #endif
       
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,scseg,mdisssegs,mdisssegm,aseg,bseg,wseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,useg,scseg,mdisssegs,mdisssegm,aseg,bseg,wseg);
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg,scseg);
   
@@ -234,7 +239,12 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
         // dserror 
         if (!CouplingInAuxPlane()) 
           dserror("Contact with wear only implemented for CouplingInAuxPlane");        
-      }  
+      }
+
+      // assemble slip
+#ifdef OBJECTVARSLIPINCREMENT
+      integrator.AssembleU(Comm(),SlaveElement(),*useg);
+#endif
     }
     
     // *******************************************************************

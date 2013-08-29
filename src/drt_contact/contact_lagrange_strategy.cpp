@@ -75,15 +75,6 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   // (re)setup global matrix containing gap derivatives
   smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
 
-
-#ifdef WEARIMPLICIT
-  // create matrices for implicite wear: these matrices are due to
-  // the gap-change in the compl. fnc.
-  // Here are only the lin. w.r.t. the lagr. mult.
-  wlinmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
-  wlinmatrixsl_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
-#endif
-
   // inactive rhs for the saddle point problem
   Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
   inactiverhs_ = LINALG::CreateVector(*gidofs, true);
@@ -109,6 +100,19 @@ void CONTACT::CoLagrangeStrategy::Initialize()
     linslipLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
     linslipDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
     linslipRHS_ = LINALG::CreateVector(*gslipt_,true);
+
+#ifdef WEARIMPLICIT
+  // create matrices for implicite wear: these matrices are due to
+  // the gap-change in the compl. fnc.
+  // Here are only the lin. w.r.t. the lagr. mult.
+  wlinmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  wlinmatrixsl_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
+
+#ifdef CONSISTENTSTICK
+  wlinmatrixst_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
+#endif
+
+#endif
   }
 
   return;
@@ -162,6 +166,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     // assemble wear-specific matrices
     interface_[i]->AssembleLinWLm(*wlinmatrix_);
     interface_[i]->AssembleLinWLmSl(*wlinmatrixsl_);
+
+#ifdef CONSISTENTSTICK
+    interface_[i]->AssembleLinWLmSt(*wlinmatrixst_);
+#endif
+
 #endif
   }
 
@@ -193,6 +202,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   // complete wear-specific matrices
   wlinmatrix_->Complete(*gsdofrowmap_,*gactiven_);
   wlinmatrixsl_->Complete(*gsdofrowmap_,*gslipt_);
+
+#ifdef CONSISTENTSTICK
+  wlinmatrixst_->Complete(*gsdofrowmap_,*gstickt);
+#endif
+
 #endif
 
   //----------------------------------------------------------------------
@@ -1042,6 +1056,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       feffnew->Update(-1.0,*gexp,1.0);
 
 #ifdef WEARIMPLICIT
+      //commented due to incremental solution algorithm.
       fwexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fw,*fwexp);
       feffnew->Update(+1.0,*fwexp,1.0);
@@ -1092,6 +1107,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       LINALG::Export(*fslwmod,*fslwmodexp);
       feffnew->Update(+1.0,*fslwmodexp,1.0);
     }
+    //commented due to incremental solution algorithm
     if (slipset)
     {
       fwslexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
@@ -1232,6 +1248,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   }
 #endif // #ifdef CONTACTFDGAP
 
+#ifdef CONTACTFDSLIPINCR
+  // FD check of weighted gap g derivatives (non-penetr. condition)
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->FDCheckSlipIncrDerivTXI();
+    if (Dim()==3)
+      interface_[i]->FDCheckSlipIncrDerivTETA();
+
+  }
+#endif // #ifdef CONTACTFDGAP
+
 #ifdef CONTACTFDSTICK
 
   if (gstickt->NumGlobalElements())
@@ -1239,19 +1266,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     // FD check of stick condition
     for (int i=0; i<(int)interface_.size(); ++i)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> deriv1 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
-      Teuchos::RCP<LINALG::SparseMatrix> deriv2 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+//      Teuchos::RCP<LINALG::SparseMatrix> deriv1 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+//      Teuchos::RCP<LINALG::SparseMatrix> deriv2 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+//
+//      deriv1->Add(*linstickLM_,false,1.0,1.0);
+//      deriv1->Complete(*gsmdofrowmap_,*gactivet_);
+//
+//      deriv2->Add(*linstickDIS_,false,1.0,1.0);
+//      deriv2->Complete(*gsmdofrowmap_,*gactivet_);
+//
+//      std::cout << "DERIV 1 *********** "<< *deriv1 << std::endl;
+//      std::cout << "DERIV 2 *********** "<< *deriv2 << std::endl;
 
-      deriv1->Add(*linstickLM_,false,1.0,1.0);
-      deriv1->Complete(*gsmdofrowmap_,*gactivet_);
-
-      deriv2->Add(*linstickDIS_,false,1.0,1.0);
-      deriv2->Complete(*gsmdofrowmap_,*gactivet_);
-
-      std::cout << "DERIV 1 *********** "<< *deriv1 << std::endl;
-      std::cout << "DERIV 2 *********** "<< *deriv2 << std::endl;
-
-      interface_[i]->FDCheckStickDeriv();
+      interface_[i]->FDCheckStickDeriv(*linstickLM_,*linstickDIS_);
     }
   }
 #endif // #ifdef CONTACTFDSTICK
@@ -1263,19 +1290,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     // FD check of slip condition
     for (int i=0; i<(int)interface_.size(); ++i)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> deriv1 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
-      Teuchos::RCP<LINALG::SparseMatrix> deriv2 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+//      Teuchos::RCP<LINALG::SparseMatrix> deriv1 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+//      Teuchos::RCP<LINALG::SparseMatrix> deriv2 = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,81));
+//
+//      deriv1->Add(*linslipLM_,false,1.0,1.0);
+//      deriv1->Complete(*gsmdofrowmap_,*gslipt_);
+//
+//      deriv2->Add(*linslipDIS_,false,1.0,1.0);
+//      deriv2->Complete(*gsmdofrowmap_,*gslipt_);
+//
+//      std::cout << *deriv1 << std::endl;
+//      std::cout << *deriv2 << std::endl;
   
-      deriv1->Add(*linslipLM_,false,1.0,1.0);
-      deriv1->Complete(*gsmdofrowmap_,*gslipt_);
-  
-      deriv2->Add(*linslipDIS_,false,1.0,1.0);
-      deriv2->Complete(*gsmdofrowmap_,*gslipt_);
-  
-      std::cout << *deriv1 << std::endl;
-      std::cout << *deriv2 << std::endl;
-  
-      interface_[i]->FDCheckSlipDeriv();
+      interface_[i]->FDCheckSlipDeriv(*linslipLM_,*linslipDIS_);
     }
   }
 #endif // #ifdef CONTACTFDSLIP
@@ -2840,6 +2867,11 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     // add C-fnc. derivatives w.r.t. lm-values to kzz
     if (gactiven_->NumGlobalElements()) kzz->Add(*wlinmatrix_,false,1.0,1.0);
     if (gslipt_->NumGlobalElements()) kzz->Add(*wlinmatrixsl_,false,1.0,1.0);
+
+#ifdef CONSISTENTSTICK
+    if (gstickt->NumGlobalElements()) kzz->Add(*wlinmatrixst_,false,1.0,1.0);
+#endif
+
 #endif
     kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
     
@@ -2994,6 +3026,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   {
 	  zincr_->Update(1.0, *sollm, 0.0);
 	  z_->Update(1.0, *zincr_, 1.0);
+
+	  //std::cout << "z_= " << *z_ << std::endl;
+    //std::cout << "zincr_= " << *zincr_ << std::endl;
+
   }
 
 
@@ -3180,8 +3216,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         // compute tangential part of Lagrange multiplier
         tz = frinode->CoData().txi()[0]*frinode->MoData().lm()[0] + frinode->CoData().txi()[1]*frinode->MoData().lm()[1];
 
-        // compute tangential part of jump
+        // compute tangential part of jump FIXME -- also the teta component should be considered
+#ifdef OBJECTVARSLIPINCREMENT
+        tjump = frinode->FriData().jump_var()[0];
+#else
         tjump = frinode->CoData().txi()[0]*frinode->FriData().jump()[0] + frinode->CoData().txi()[1]*frinode->FriData().jump()[1];
+#endif
       }
 
       // check nodes of inactive set *************************************
@@ -3563,9 +3603,17 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           tz[0] += frinode->CoData().txi()[i]*frinode->MoData().lm()[i];
           if(Dim()==3) tz[1] += frinode->CoData().teta()[i]*frinode->MoData().lm()[i];
 
-           tjump[0] += frinode->CoData().txi()[i]*frinode->FriData().jump()[i];
-           if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->FriData().jump()[i];
+#ifndef OBJECTVARSLIPINCREMENT
+
+          tjump[0] += frinode->CoData().txi()[i]*frinode->FriData().jump()[i];
+          if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->FriData().jump()[i];
+#endif
         }
+
+#ifdef OBJECTVARSLIPINCREMENT
+        tjump[0] = frinode->FriData().jump_var()[0];
+        if(Dim()==3) tjump[1] = frinode->FriData().jump_var()[1];
+#endif
 
         // evaluate euclidean norm |tz+ct.tjump|
         std::vector<double> sum (Dim()-1,0);

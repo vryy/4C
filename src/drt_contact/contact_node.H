@@ -126,6 +126,16 @@ public:
   virtual double* teta() { return teta_; }
 
   /*!
+  \brief Return current nodal tangent t_xi_old (only for slave side!) (length 3)
+  */
+  virtual double* txiold() { return txiold_; }
+
+  /*!
+  \brief Return current nodal tangent t_eta_old (only for slave side!) (length 3)
+  */
+  virtual double* tetaold() { return tetaold_; }
+
+  /*!
   \brief Return the weighted gap (scalar) of this node
   */
   virtual double& Getg() { return grow_; }
@@ -290,8 +300,10 @@ protected:
   CoNodeDataContainer operator = (const CoNodeDataContainer& old);
   CoNodeDataContainer(const CoNodeDataContainer& old);
 
-  double          txi_[3];         // nodal tangent t_xi for contact methods
-  double          teta_[3];        // nodal tangent t_eta for contact methods
+  double          txi_[3];         // nodal tangent t_xi for contact methods at newton step n
+  double          teta_[3];        // nodal tangent t_eta for contact methods at newton step n
+  double          txiold_[3];      // nodal tangent t_xi for contact methods at newton step n-1
+  double          tetaold_[3];     // nodal tangent t_eta for contact methods at newton step n-1
   double          grow_;           // nodal entry of g vector
 
   std::vector<std::map<int,double> >      d2rows_;        // nodal rows of master sided D matrix
@@ -500,7 +512,9 @@ public:
 
   */
   void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
-                           double length, double ltxi);
+                           double length, double ltxi,
+                           bool txiflipped, bool tetaflipped,
+                           bool txirot, bool tetarot);
 
   /*!
   \brief Initializes the data container of the node
@@ -510,6 +524,14 @@ public:
 
   */
   virtual void InitializeDataContainer();
+
+  /*
+
+   Check orientation of tangent vectors txi and teta to the old vectors txiold,tetaold
+
+   */
+  void TangentCheck(bool* txirot, bool* tetarot,
+                    bool* txiflipped, bool* tetaflipped);
 
   /*!
   \brief Resets the data container of the node

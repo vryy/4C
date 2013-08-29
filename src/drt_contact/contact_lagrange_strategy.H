@@ -272,6 +272,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     Teuchos::RCP<LINALG::SparseMatrix> wlinmatrix_;   // global Matrix Wg containing wear-lm derivatives
     Teuchos::RCP<LINALG::SparseMatrix> wlinmatrixsl_; // global Matrix Wsl containing wear-lm slip derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> wlinmatrixst_; // global Matrix Wst containing wear-lm stick derivatives
 
 
     Teuchos::RCP<Epetra_Vector> fs_;          // slave side effective forces (needed for LM)

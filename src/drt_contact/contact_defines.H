@@ -43,6 +43,7 @@ Maintainer: Alexander Popp
 /************************************************************************/
 /* Wear algorithm options                                               */
 /************************************************************************/
+
 //#define WEARIMPLICIT              /* flag for implicit wear algorithm including linearizations*/
 //#define WEARIMPLICITFD            /* flag for FD-check w.r.t. disp. */
 //#define WEARIMPLICITFDLM          /* flag for FD-check w.r.t. lm-mult. */
@@ -53,8 +54,11 @@ Maintainer: Alexander Popp
 
 //#define CONTACTFRICTIONLESSFIRST  /* flag for frictionless contact in first contact step */
 //#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
-//#define CONSISTENTSTICK		    /* flag for consistent stick branch of the complementarity function */
-//#define CONSISTENTSLIP			/* flag for consistent slip branch of the complementarity function */
+//#define CONSISTENTSTICK		        /* flag for consistent stick branch of the complementarity function */
+//#define CONSISTENTSLIP			      /* flag for consistent slip branch of the complementarity function */
+//#define OBJECTVARSLIPINCREMENT    /* flag for object-variant slip increment created in integrator*/
+#define SIMPLETANGENT             /* flag for simple tangent formulation*/
+//#define TANGENTCHECK              /* Check tangents from solution step n-1 to n --> enforcing same orientation */
 
 /************************************************************************/
 /* Debugging options                                                    */
@@ -73,6 +77,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP              /* flag for FD check of weighted gap g */
+//#define CONTACTFDSLIPINCR         /* flag for FD check of weighted obj.-var. slip */
 
 // LAGRANGE DEBUGGING OPTIONS
 //#define CONTACTFDTANGLM           /* flag for FD check of (frictionless) tangential LM */

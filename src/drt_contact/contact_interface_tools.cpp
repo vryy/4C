@@ -1828,9 +1828,6 @@ void CONTACT::CoInterface::FDCheckWearDerivLm()
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CoNode* snode = static_cast<CoNode*>(node);
 
-    //int sdof = snode->Dofs()[fd%dim];
-    //std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << endl;
-
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
     if (fd%dim==0)
@@ -1865,14 +1862,6 @@ void CONTACT::CoInterface::FDCheckWearDerivLm()
 
       // store gap-values into newG
       newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
-
-//      cout << "newW[k]  = " << newW[k] << endl;
-//      cout << "refW[k]  = " << refW[k] << endl;
-//      cout << "newW[k]-refW[k]  =  " << newW[k]-refW[k] << endl;
-//      cout << "(newW[k]-refW[k])/delta  =  " << (newW[k]-refW[k])/delta << endl;
-//      cout << "DerivWLm()  = " << kcnode->CoData().GetDerivWlm()[snode->Dofs()[fd%dim]] << endl;
-//      cout << "*********************** " << endl;
-
 
 //      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
 //      {
@@ -2030,12 +2019,6 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
       // store gap-values into newG
       newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
 
-//      cout << "newW[k]  = " << newW[k] << endl;
-//      cout << "refW[k]  = " << refW[k] << endl;
-//      cout << "(newW[k]-refW[k])/delta  =  " << (newW[k]-refW[k])/delta << endl;
-//      cout << "*********************** " << endl;
-
-
       if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
       {
          double finit = (newW[k]-refW[k])/delta;
@@ -2098,13 +2081,6 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
 
     int mdof = mnode->Dofs()[fd%dim];
     std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
-
-    // apply finite difference scheme
-    /*if (Comm().MyPID()==mnode->Owner())
-    {
-      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
-           << " Dof(g): " << mnode->Dofs()[fd%dim] << endl;
-    }*/
 
     // do step forward (modify nodal displacement)
     double delta = 1e-6;
@@ -2202,6 +2178,470 @@ void CONTACT::CoInterface::FDCheckWearDeriv()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Finite difference check for obj.-variant splip           farah 08/13 |
+ | derivatives -- TXI                                                   |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
+{
+  // FD checks only for serial case
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // create storage for gap values
+  int nrow = snoderowmap_->NumMyElements();
+  std::vector<double> refU(nrow);
+  std::vector<double> newU(nrow);
+
+  // problem dimension (2D or 3D)
+  int dim = Dim();
+
+  // store reference
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    refU[i]=cnode->FriData().jump_var()[0]; //txi value
+  }
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* snode = static_cast<CoNode*>(node);
+
+    int sdof = snode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      FriNode* kcnode = static_cast<FriNode*>(knode);
+
+      // store gap-values into newG
+      newU[k]=kcnode->FriData().jump_var()[0];
+
+      if (abs(newU[k]-refU[k]) > 1e-12 && newU[k]!=1.0e12 && refU[k] != 1.0e12)
+      {
+         double finit = (newU[k]-refU[k])/delta;
+         double analy = kcnode->FriData().GetDerivVarJump()[0][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivu -- 1=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           //dserror("WARNING --- LIN");
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // global loop to apply FD scheme to all master dofs (=dim*nodes)
+  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CoNode* mnode = static_cast<CoNode*>(node);
+
+    int mdof = mnode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      FriNode* kcnode = static_cast<FriNode*>(knode);
+
+      // store gap-values into newG
+      newU[k]=kcnode->FriData().jump_var()[0];
+
+      if (abs(newU[k]-refU[k]) > 1e-12 && newU[k]!=1.0e12 && refU[k] != 1.0e12)
+      {
+         double finit = (newU[k]-refU[k])/delta;
+         double analy = kcnode->FriData().GetDerivVarJump()[0][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivu -- 1=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           //dserror("WARNING --- LIN");
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // back to normal...
+  Initialize();
+  Evaluate();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check for obj.-variant splip           farah 08/13 |
+ | derivatives -- TXI                                                        |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
+{
+  // FD checks only for serial case
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // create storage for gap values
+  int nrow = snoderowmap_->NumMyElements();
+  std::vector<double> refU(nrow);
+  std::vector<double> newU(nrow);
+
+  // problem dimension (2D or 3D)
+  int dim = Dim();
+
+  // store reference
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    // store gap-values into refG
+    refU[i]=cnode->FriData().jump_var()[1]; //txi value
+  }
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* snode = static_cast<CoNode*>(node);
+
+    int sdof = snode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      FriNode* kcnode = static_cast<FriNode*>(knode);
+
+      // store gap-values into newG
+      newU[k]=kcnode->FriData().jump_var()[1];
+
+      if (abs(newU[k]-refU[k]) > 1e-12 && newU[k]!=1.0e12 && refU[k] != 1.0e12)
+      {
+         double finit = (newU[k]-refU[k])/delta;
+         double analy = kcnode->FriData().GetDerivVarJump()[1][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivu -- 2=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           //dserror("WARNING --- LIN");
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // global loop to apply FD scheme to all master dofs (=dim*nodes)
+  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CoNode* mnode = static_cast<CoNode*>(node);
+
+    int mdof = mnode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      FriNode* kcnode = static_cast<FriNode*>(knode);
+
+      // store gap-values into newG
+      newU[k]=kcnode->FriData().jump_var()[1];
+
+      if (abs(newU[k]-refU[k]) > 1e-12 && newU[k]!=1.0e12 && refU[k] != 1.0e12)
+      {
+         double finit = (newU[k]-refU[k])/delta;
+         double analy = kcnode->FriData().GetDerivVarJump()[1][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivu -- 2=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           //dserror("WARNING --- LIN");
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // back to normal...
+  Initialize();
+  Evaluate();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | Finite difference check for normal gap derivatives         popp 06/08|
@@ -3161,10 +3601,16 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
 }
 
 /*----------------------------------------------------------------------*
- | Finite difference check of stick condition derivatives      mgit 03/09|
+ | Finite difference check of stick condition derivatives    farah 08/13|
+ | Not for Wear Lin. or modifications concerning the compl.             |
+ | fnc. !!! See flags CONSISTENTSTICK / CONSISTENTSLIP                  |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::FDCheckStickDeriv()
+void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglobal,
+                                             LINALG::SparseMatrix& linstickDISglobal)
 {
+  // create stream
+  std::ostringstream oss;
+
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
@@ -3175,6 +3621,7 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
+  int dim = Dim();
   std::vector<double> refCtxi(nrow);
   std::vector<double> refCteta(nrow);
   std::vector<double> newCtxi(nrow);
@@ -3238,6 +3685,16 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
           jumpteta+= (cnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
         }
       } //  loop over master nodes
+
+      // gp-wise slip !!!!!!!
+#ifdef OBJECTVARSLIPINCREMENT
+      jumptxi=cnode->FriData().jump_var()[0];
+      jumpteta = 0.0;
+
+      if (Dim()==3)
+        jumpteta=cnode->FriData().jump_var()[1];
+#endif
+
     } // if cnode == Stick
 
     // store C in vector
@@ -3245,8 +3702,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     refCteta[i] = jumpteta;
   } // loop over procs slave nodes
 
+  // **************************************************************************
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
+  // **************************************************************************
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -3254,7 +3713,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/3);
+    int gid = snodefullmap->GID(fd/dim);
+    int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     FriNode* snode = static_cast<FriNode*>(node);
@@ -3268,17 +3728,20 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       snode->xspatial()[0] += delta;
+      coldof = snode->Dofs()[0];
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       snode->xspatial()[1] += delta;
+      coldof = snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
+      coldof = snode->Dofs()[2];
     }
 
     // compute element areas
@@ -3346,41 +3809,96 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
             jumpteta+= (kcnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
           }
         } //  loop over master nodes
+
+        // gp-wise slip !!!!!!!
+  #ifdef OBJECTVARSLIPINCREMENT
+        jumptxi=kcnode->FriData().jump_var()[0];
+        jumpteta = 0.0;
+
+        if (Dim()==3)
+          jumpteta=kcnode->FriData().jump_var()[1];
+  #endif
+
       } // if cnode == Slip
 
     newCtxi[k] = jumptxi;
     newCteta[k] = jumpteta;
 
-      // print results (derivatives) to screen
-      if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
-      {
-        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //std::cout << "Ref-G: " << refG[k] << endl;
-        //std::cout << "New-G: " << newG[k] << endl;
-        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
-      }
+    // ************************************************************************
+    // Extract linearizations from sparse matrix !!!
+    // ************************************************************************
 
-      // print results (derivatives) to screen
-      if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+    // ********************************* TXI
+    Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.EpetraMatrix();
+    sparse_crs->FillComplete();
+    double sparse_ij=0.0;
+    int sparsenumentries=0;
+    int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+    std::vector<double> sparsevalues(sparselength);
+    std::vector<int> sparseindices(sparselength);
+   // int sparseextractionstatus =
+    sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+
+    for(int h = 0; h < sparselength; ++h)
+    {
+      if(sparseindices[h] == coldof)
       {
-        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //std::cout << "Ref-G: " << refG[k] << endl;
-        //std::cout << "New-G: " << newG[k] << endl;
-        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
+        sparse_ij=sparsevalues[h];
+        break;
       }
+      else
+        sparse_ij=0.0;
+    }
+    double analyt_txi = sparse_ij;
+
+    // ********************************* TETA
+    Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.EpetraMatrix();
+    sparse_crs2->FillComplete();
+    double sparse_2= 0.0;
+    int sparsenumentries2=0;
+    int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+    std::vector<double> sparsevalues2(sparselength2);
+    std::vector<int> sparseindices2(sparselength2);
+   // int sparseextractionstatus =
+    sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+
+    for(int h = 0; h < sparselength2; ++h)
+    {
+      if(sparseindices2[h] == coldof)
+      {
+        sparse_2=sparsevalues2[h];
+        break;
+      }
+      else
+        sparse_2=0.0;
+    }
+    double analyt_teta = sparse_2;
+
+    // print results (derivatives) to screen
+    if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
+    {
+      std::cout << "STICK DIS-Deriv_xi:  " << kcnode->Id() << "\t w.r.t Master: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<< (newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(4)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
+      if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+        std::cout << "*** WARNING ***" << std::endl;
+      else
+        std::cout << " " << std::endl;
+    }
+
+    if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+    {
+      std::cout << "STICK DIS-Deriv_eta: " << kcnode->Id() << "\t w.r.t Master: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(4)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
+      if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+        std::cout << "*** WARNING ***" << std::endl;
+      else
+        std::cout << " " << std::endl;
+    }
     }
     // undo finite difference modification
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -3390,8 +3908,10 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     }
   } // loop over procs slave nodes
 
+  // **************************************************************************
   // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap->NumMyElements();++fd)
+  // **************************************************************************
+  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
   {
     // Initialize
     // loop over all nodes to reset normals, closestnode and Mortar maps
@@ -3399,7 +3919,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/dim);
+    int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     FriNode* mnode = static_cast<FriNode*>(node);
@@ -3413,17 +3934,20 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       mnode->xspatial()[0] += delta;
+      coldof = mnode->Dofs()[0];
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       mnode->xspatial()[1] += delta;
+      coldof = mnode->Dofs()[1];
     }
     else
     {
       mnode->xspatial()[2] += delta;
+      coldof = mnode->Dofs()[2];
     }
 
     // compute element areas
@@ -3491,42 +4015,98 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
             jumpteta+= (kcnode->CoData().teta()[dim])*(mik-mikold)*(cmnode->xspatial()[dim]);
           }
         } //  loop over master nodes
+        // gp-wise slip !!!!!!!
+
+  #ifdef OBJECTVARSLIPINCREMENT
+        jumptxi=kcnode->FriData().jump_var()[0];
+        jumpteta = 0.0;
+
+        if (Dim()==3)
+          jumpteta=kcnode->FriData().jump_var()[1];
+  #endif
+
       } // if cnode == Slip
 
     newCtxi[k] = jumptxi;
     newCteta[k] = jumpteta;
 
-      // print results (derivatives) to screen
-      if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
-      {
-        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //std::cout << "Ref-G: " << refG[k] << endl;
-        //std::cout << "New-G: " << newG[k] << endl;
-        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
-      }
 
-      // print results (derivatives) to screen
-      if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+    // ************************************************************************
+    // Extract linearizations from sparse matrix !!!
+    // ************************************************************************
+
+    // ********************************* TXI
+    Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.EpetraMatrix();
+    sparse_crs->FillComplete();
+    double sparse_ij=0.0;
+    int sparsenumentries=0;
+    int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+    std::vector<double> sparsevalues(sparselength);
+    std::vector<int> sparseindices(sparselength);
+   // int sparseextractionstatus =
+    sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+
+    for(int h = 0; h < sparselength; ++h)
+    {
+      if(sparseindices[h] == coldof)
       {
-        //std::cout << "StickCon-FD-derivative for node S" << kcnode->Id() << endl;
-        //std::cout << "Ref-G: " << refG[k] << endl;
-        //std::cout << "New-G: " << newG[k] << endl;
-        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
+        sparse_ij=sparsevalues[h];
+        break;
       }
+      else
+        sparse_ij=0.0;
+    }
+    double analyt_txi = sparse_ij;
+
+    // ********************************* TETA
+    Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.EpetraMatrix();
+    sparse_crs2->FillComplete();
+    double sparse_2= 0.0;
+    int sparsenumentries2=0;
+    int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+    std::vector<double> sparsevalues2(sparselength2);
+    std::vector<int> sparseindices2(sparselength2);
+   // int sparseextractionstatus =
+    sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+
+    for(int h = 0; h < sparselength2; ++h)
+    {
+      if(sparseindices2[h] == coldof)
+      {
+        sparse_2=sparsevalues2[h];
+        break;
+      }
+      else
+        sparse_2=0.0;
+    }
+    double analyt_teta = sparse_2;
+
+    // print results (derivatives) to screen
+    if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
+    {
+      std::cout << "STICK DIS-Deriv_xi:  " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " <<std::setprecision(4)<< (newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
+      if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+        std::cout << "*** WARNING ***" << std::endl;
+      else
+        std::cout << " " << std::endl;
+    }
+
+    if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+    {
+      std::cout << "STICK DIS-Deriv_eta: " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
+      if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+        std::cout << "*** WARNING ***" << std::endl;
+      else
+        std::cout << " " << std::endl;
+    }
     }
 
     // undo finite difference modification
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       mnode->xspatial()[0] -= delta;
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       mnode->xspatial()[1] -= delta;
     }
@@ -3545,9 +4125,12 @@ void CONTACT::CoInterface::FDCheckStickDeriv()
 } // FDCheckStickDeriv
 
 /*----------------------------------------------------------------------*
- | Finite difference check of slip condition derivatives mgit      03/09|
+ | Finite difference check of slip condition derivatives     farah 08/13|
+ | Not for Wear Lin. or modifications concerning the compl.             |
+ | fnc. !!! See flags CONSISTENTSTICK / CONSISTENTSLIP                  |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::FDCheckSlipDeriv()
+void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
+                                            LINALG::SparseMatrix& linslipDISglobal)
 {
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
@@ -3571,6 +4154,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
   std::vector<double> refCteta(nrow);
   std::vector<double> newCtxi(nrow);
   std::vector<double> newCteta(nrow);
+
+  int dim = Dim();
 
   // store reference
   // loop over proc's slave nodes
@@ -3638,6 +4223,15 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
         }
       } //  loop over master nodes
 
+      // gp-wise slip !!!!!!!
+#ifdef OBJECTVARSLIPINCREMENT
+      jumptxi=cnode->FriData().jump_var()[0];
+      jumpteta = 0.0;
+
+      if (Dim()==3)
+        jumpteta=cnode->FriData().jump_var()[1];
+#endif
+
       // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
       std::vector<double> sum1 (Dim()-1,0);
       sum1[0] =  ztxi+ct*jumptxi;
@@ -3664,36 +4258,34 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
 
   } // loop over procs slave nodes
 
+  // **********************************************************************************
   // global loop to apply FD scheme for LM to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
+  // **********************************************************************************
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
   {
-
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/3);
+    int gid = snodefullmap->GID(fd/dim);
+    int coldof= 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     FriNode* snode = static_cast<FriNode*>(node);
 
-    // apply finite difference scheme
-    if (Comm().MyPID()==snode->Owner())
-    {
-      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
-           << " Dof: " << snode->Dofs()[fd%3] << std::endl;
-    }
-
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       snode->MoData().lm()[0] += delta;
+      coldof=snode->Dofs()[0];
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       snode->MoData().lm()[1] += delta;
+      coldof=snode->Dofs()[1];
     }
     else
     {
       snode->MoData().lm()[2] += delta;
+      coldof=snode->Dofs()[2];
     }
 
     // compute finite difference derivative
@@ -3759,6 +4351,15 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           }
         } //  loop over master nodes
 
+        // gp-wise slip !!!!!!!
+  #ifdef OBJECTVARSLIPINCREMENT
+        jumptxi=kcnode->FriData().jump_var()[0];
+        jumpteta = 0.0;
+
+        if (Dim()==3)
+          jumpteta=kcnode->FriData().jump_var()[1];
+  #endif
+
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
         std::vector<double> sum1 (Dim()-1,0);
         sum1[0] = ztxi+ct*jumptxi;
@@ -3783,36 +4384,82 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(ztxi+ct*jumptxi);
       newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(zteta+ct*jumpteta);
 
+      // ************************************************************************
+      // Extract linearizations from sparse matrix !!!
+      // ************************************************************************
+
+      // ********************************* TXI
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipLMglobal.EpetraMatrix();
+      sparse_crs->FillComplete();
+      double sparse_ij=0.0;
+      int sparsenumentries=0;
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      std::vector<double> sparsevalues(sparselength);
+      std::vector<int> sparseindices(sparselength);
+     // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+
+      for(int h = 0; h < sparselength; ++h)
+      {
+        if(sparseindices[h] == coldof)
+        {
+          sparse_ij=sparsevalues[h];
+          break;
+        }
+        else
+          sparse_ij=0.0;
+      }
+      double analyt_txi = sparse_ij;
+
+      // ********************************* TETA
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipLMglobal.EpetraMatrix();
+      sparse_crs2->FillComplete();
+      double sparse_2= 0.0;
+      int sparsenumentries2=0;
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      std::vector<double> sparsevalues2(sparselength2);
+      std::vector<int> sparseindices2(sparselength2);
+     // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+
+      for(int h = 0; h < sparselength2; ++h)
+      {
+        if(sparseindices2[h] == coldof)
+        {
+          sparse_2=sparsevalues2[h];
+          break;
+        }
+        else
+          sparse_2=0.0;
+      }
+      double analyt_teta = sparse_2;
+
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        std::cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << std::endl;
-        //std::cout << "Ref-G: " << refG[k] << std::endl;
-        //std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << std::endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
+        std::cout << "SLIP LM-Deriv_xi: " << kcnode->Id() << "\t w.r.t: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(4)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
+        if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+          std::cout << "*** WARNING ***" << std::endl;
+        else
+          std::cout << " " << std::endl;
       }
 
       // print results (derivatives) to screen
-       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
-       {
-         std::cout << "SlipCon-FD-derivative for LM for node S " << kcnode->Id() << std::endl;
-         //std::cout << "Ref-G: " << refG[k] << std::endl;
-         //std::cout << "New-G: " << newG[k] << std::endl;
-         std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << std::endl;
-         //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << std::endl;
-         //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-         //  std::cout << "***WARNING*****************************************************************************" << std::endl;
-       }
+      if (abs(newCteta[k]-refCteta[k]) > 1e-12)
+      {
+        std::cout << "SLIP LM-Deriv_eta: " << kcnode->Id() << "\t w.r.t: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(4)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
+        if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+          std::cout << "*** WARNING ***" << std::endl;
+        else
+          std::cout << " " << std::endl;
+      }
      }
     // undo finite difference modification
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       snode->MoData().lm()[0] -= delta;
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       snode->MoData().lm()[1] -= delta;
     }
@@ -3823,38 +4470,37 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
   } // loop over procs slave nodes
 
 
+  // ********************************************************************************************
   // global loop to apply FD scheme to all slave dofs (=3*nodes)
-  for (int fd=0; fd<3*snodefullmap->NumMyElements();++fd)
+  // ********************************************************************************************
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = snodefullmap->GID(fd/3);
+    int gid = snodefullmap->GID(fd/dim);
+    int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     FriNode* snode = static_cast<FriNode*>(node);
 
-    // apply finite difference scheme
-    if (Comm().MyPID()==snode->Owner())
-    {
-      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof: " << fd%3
-           << " Dof: " << snode->Dofs()[fd%3] << std::endl;
-    }
-
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       snode->xspatial()[0] += delta;
+      coldof= snode->Dofs()[0];
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       snode->xspatial()[1] += delta;
+      coldof= snode->Dofs()[1];
     }
     else
     {
       snode->xspatial()[2] += delta;
+      coldof= snode->Dofs()[2];
     }
 
     // compute element areas
@@ -3930,6 +4576,15 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           }
         } //  loop over master nodes
 
+        // gp-wise slip !!!!!!!
+  #ifdef OBJECTVARSLIPINCREMENT
+        jumptxi=kcnode->FriData().jump_var()[0];
+        jumpteta = 0.0;
+
+        if (Dim()==3)
+          jumpteta=kcnode->FriData().jump_var()[1];
+  #endif
+
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
         std::vector<double> sum1 (Dim()-1,0);
         sum1[0] = ztxi+ct*jumptxi;
@@ -3955,36 +4610,84 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(ztxi+ct*jumptxi);
       newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(zteta+ct*jumpteta);
 
-      // print results (derivatives) to screen
+
+
+      // ************************************************************************
+      // Extract linearizations from sparse matrix !!!
+      // ************************************************************************
+
+      // ********************************* TXI
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.EpetraMatrix();
+      sparse_crs->FillComplete();
+      double sparse_ij=0.0;
+      int sparsenumentries=0;
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      std::vector<double> sparsevalues(sparselength);
+      std::vector<int> sparseindices(sparselength);
+     // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+
+      for(int h = 0; h < sparselength; ++h)
+      {
+        if(sparseindices[h] == coldof)
+        {
+          sparse_ij=sparsevalues[h];
+          break;
+        }
+        else
+          sparse_ij=0.0;
+      }
+      double analyt_txi = sparse_ij;
+
+      // ********************************* TETA
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.EpetraMatrix();
+      sparse_crs2->FillComplete();
+      double sparse_2=0.0;
+      int sparsenumentries2=0;
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      std::vector<double> sparsevalues2(sparselength2);
+      std::vector<int> sparseindices2(sparselength2);
+     // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+
+      for(int h = 0; h < sparselength2; ++h)
+      {
+        if(sparseindices2[h] == coldof)
+        {
+          sparse_2=sparsevalues2[h];
+          break;
+        }
+        else
+          sparse_2=0.0;
+      }
+      double analyt_teta = sparse_2;
+
+
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
-        //std::cout << "Ref-G: " << refG[k] << std::endl;
-        //std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << std::endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
+        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id() << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
+        if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+          std::cout << "*** WARNING ***" << std::endl;
+        else
+          std::cout << " " << std::endl;
       }
 
       // print results (derivatives) to screen
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
-        //std::cout << "Ref-G: " << refG[k] << std::endl;
-        //std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << snode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << std::endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
+        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id() << "\t w.r.t Slave: " << snode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
+        if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+          std::cout << "*** WARNING ***" << std::endl;
+        else
+          std::cout << " " << std::endl;
       }
     }
     // undo finite difference modification
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       snode->xspatial()[0] -= delta;
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       snode->xspatial()[1] -= delta;
     }
@@ -3994,38 +4697,37 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
     }
   } // loop over procs slave nodes
 
+  // ********************************************************************************************
   // global loop to apply FD scheme to all master dofs (=3*nodes)
-  for (int fd=0; fd<3*mnodefullmap->NumMyElements();++fd)
+  // ********************************************************************************************
+  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
   {
     // Initialize
     Initialize();
 
     // now get the node we want to apply the FD scheme to
-    int gid = mnodefullmap->GID(fd/3);
+    int gid = mnodefullmap->GID(fd/dim);
+    int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     FriNode* mnode = static_cast<FriNode*>(node);
 
-    // apply finite difference scheme
-    if (Comm().MyPID()==mnode->Owner())
-    {
-      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof: " << fd%3
-           << " Dof: " << mnode->Dofs()[fd%3] << std::endl;
-    }
-
     // do step forward (modify nodal displacement)
     double delta = 1e-8;
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       mnode->xspatial()[0] += delta;
+      coldof = mnode->Dofs()[0];
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       mnode->xspatial()[1] += delta;
+      coldof = mnode->Dofs()[1];
     }
     else
     {
       mnode->xspatial()[2] += delta;
+      coldof = mnode->Dofs()[2];
     }
 
     // compute element areas
@@ -4101,6 +4803,15 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
           }
         } //  loop over master nodes
 
+        // gp-wise slip !!!!!!!
+  #ifdef OBJECTVARSLIPINCREMENT
+        jumptxi=kcnode->FriData().jump_var()[0];
+        jumpteta = 0.0;
+
+        if (Dim()==3)
+          jumpteta=kcnode->FriData().jump_var()[1];
+  #endif
+
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
         std::vector<double> sum1 (Dim()-1,0);
         sum1[0] = ztxi+ct*jumptxi;
@@ -4126,36 +4837,84 @@ void CONTACT::CoInterface::FDCheckSlipDeriv()
       newCtxi[k] = euclidean*ztxi-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(ztxi+ct*jumptxi);
       newCteta[k] = euclidean*zteta-(frcoeff*(znor-cn*kcnode->CoData().Getg()))*(zteta+ct*jumpteta);
 
+
+
+      // ************************************************************************
+      // Extract linearizations from sparse matrix !!!
+      // ************************************************************************
+
+      // ********************************* TXI
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.EpetraMatrix();
+      sparse_crs->FillComplete();
+      double sparse_ij=0.0;
+      int sparsenumentries=0;
+      int sparselength = sparse_crs->NumGlobalEntries(kcnode->Dofs()[1]);
+      std::vector<double> sparsevalues(sparselength);
+      std::vector<int> sparseindices(sparselength);
+     // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[1],sparselength,sparsenumentries,&sparsevalues[0],&sparseindices[0]);
+
+      for(int h = 0; h < sparselength; ++h)
+      {
+        if(sparseindices[h] == coldof)
+        {
+          sparse_ij=sparsevalues[h];
+          break;
+        }
+        else
+          sparse_ij=0.0;
+      }
+      double analyt_txi = sparse_ij;
+
+      // ********************************* TETA
+      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.EpetraMatrix();
+      sparse_crs2->FillComplete();
+      double sparse_2=0.0;
+      int sparsenumentries2=0;
+      int sparselength2 = sparse_crs2->NumGlobalEntries(kcnode->Dofs()[2]);
+      std::vector<double> sparsevalues2(sparselength2);
+      std::vector<int> sparseindices2(sparselength2);
+     // int sparseextractionstatus =
+      sparse_crs->ExtractGlobalRowCopy(kcnode->Dofs()[2],sparselength2,sparsenumentries2,&sparsevalues2[0],&sparseindices2[0]);
+
+      for(int h = 0; h < sparselength2; ++h)
+      {
+        if(sparseindices2[h] == coldof)
+        {
+          sparse_2=sparsevalues2[h];
+          break;
+        }
+        else
+          sparse_2=0.0;
+      }
+      double analyt_teta = sparse_2;
+
       // print results (derivatives) to screen
       if (abs(newCtxi[k]-refCtxi[k]) > 1e-12)
       {
-        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
-        //std::cout << "Ref-G: " << refG[k] << std::endl;
-        //std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCtxi[k]-refCtxi[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << std::endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
+        std::cout << "SLIP DIS-Deriv_xi: " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCtxi[k]-refCtxi[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_txi <<"\t Error= " << analyt_txi - ((newCtxi[k]-refCtxi[k])/delta);
+        if (abs(analyt_txi-(newCtxi[k]-refCtxi[k])/delta)>1.0e-4)
+          std::cout << "*** WARNING ***" << std::endl;
+        else
+          std::cout << " " << std::endl;
       }
 
       if (abs(newCteta[k]-refCteta[k]) > 1e-12)
       {
-        std::cout << "SlipCon-FD-derivative for node S" << kcnode->Id() << std::endl;
-        //std::cout << "Ref-G: " << refG[k] << std::endl;
-        //std::cout << "New-G: " << newG[k] << std::endl;
-        std::cout << "Deriv:      " << mnode->Dofs()[fd%3] << " " << (newCteta[k]-refCteta[k])/delta << std::endl;
-        //std::cout << "Analytical: " << snode->Dofs()[fd%3] << " " << kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]] << std::endl;
-        //if (abs(kcnode->CoData().GetDerivG()[snode->Dofs()[fd%3]]-(newG[k]-refG[k])/delta)>1.0e-5)
-        //  std::cout << "***WARNING*****************************************************************************" << std::endl;
+        std::cout << "SLIP DIS-Deriv_eta: " << kcnode->Id() << "\t w.r.t Master: " << mnode->Dofs()[fd%dim] << "\t FD= " << std::setprecision(4)<<(newCteta[k]-refCteta[k])/delta << "\t analyt= " << std::setprecision(5)<<analyt_teta <<"\t Error= " << analyt_teta - ((newCteta[k]-refCteta[k])/delta);
+        if (abs(analyt_teta-(newCteta[k]-refCteta[k])/delta)>1.0e-4)
+          std::cout << "*** WARNING ***" << std::endl;
+        else
+          std::cout << " " << std::endl;
       }
     }
 
     // undo finite difference modification
-    if (fd%3==0)
+    if (fd%dim==0)
     {
       mnode->xspatial()[0] -= delta;
     }
-    else if (fd%3==1)
+    else if (fd%dim==1)
     {
       mnode->xspatial()[1] -= delta;
     }

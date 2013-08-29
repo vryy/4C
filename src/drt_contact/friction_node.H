@@ -123,6 +123,10 @@ public:
   virtual inline double* jump() { return jump_; }
 
   /*!
+  \brief Return jump per time step (only for slave side!) (max length 2)
+  */
+  virtual inline double* jump_var() { return jumpvar_; }
+  /*!
   \brief Return contact status of last converged state n (active=true)
   */
   virtual inline bool& ActiveOld() { return activeold_; }
@@ -143,7 +147,7 @@ public:
   virtual inline std::vector<std::map<int,double> >& GetMOld() { return mrowsold_; }
 
   /*!
-  \brief Return the map with according master nodes
+  \brief Return the map with according slave nodes
   */
   virtual inline std::set<int>& GetSNodes() { return snodes_; }
 
@@ -168,6 +172,16 @@ public:
   virtual inline std::vector<std::map<int,double> >& GetDerivJump() { return derivjump_; }
 
   /*!
+ \brief Return the 'DerivVarJump' map (vector) of this node
+
+ These maps contain the directional derivatives of the node's
+ relative -- object variant-- movement (jump). This Jump is already
+ multiplied and linearized with the tangent vectors txi and teta.
+ Therefore, the vector has 1/2 components instead of 2/3
+
+ */
+  virtual inline std::vector<std::map<int,double> >& GetDerivVarJump() { return derivvarjump_; }
+  /*!
   \brief Return current penalty traction (length 3)
   */
   virtual inline double* traction() { return traction_; }
@@ -186,6 +200,7 @@ protected:
   FriNodeDataContainer(const FriNodeDataContainer& old);
 
   double          jump_[3];     // jump per time step
+  double          jumpvar_[2];  // variant jump per time step
   bool            activeold_;   // true if cnode was in contact (last converged state n)
   bool            slip_;        // true if cnode slips (contact force reaches friction bound)
 
@@ -196,6 +211,7 @@ protected:
   std::set<int>                      mnodesold_;    // nodal set of old according masternodes
 
   std::vector<std::map<int,double> > derivjump_;    // directional derivative of nodal weighted jump vector
+  std::vector<std::map<int,double> > derivvarjump_; // directional derivative of obj.-variant. nodal weighted jump vector
 
   // penalty related quantities
   double                             traction_[3];  // traction vector of current time step
@@ -425,6 +441,7 @@ public:
   */
   void AddDerivJumpValue(int& row, const int& col, double val);
   
+  void AddJumpValue(double val, int k);
   /*!
   \brief Add value to mechanical dissipation
 
