@@ -2640,8 +2640,9 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
   if (statmechparams_.get<double>("DELTABELLSEQ", 0.0) != 0.0)
     ForceDependentOffRate(dt, koff, discol, punlink);
 
+  int numdetachpolarity = 0;
   if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
-    LinkerPolarityCheckDetach(punlink, bspotpositions, bspottriadscol);
+    numdetachpolarity = LinkerPolarityCheckDetach(punlink, bspotpositions, bspottriadscol);
 
   // a vector indicating the upcoming deletion of crosslinker elements
   Teuchos::RCP<Epetra_Vector> delcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
@@ -2800,7 +2801,11 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
     RemoveCrosslinkerElements(beamcmanager->ContactDiscret(),*delcrosselement,&deletedcelements_);
 
   if(!discret_->Comm().MyPID() && printscreen)
+  {
     std::cout<<numdelelements<<" crosslinker element(s) deleted!"<<std::endl;
+    if((linkermodel_==statmech_linker_active || linkermodel_ == statmech_linker_activeintpol) && numdetachpolarity>0)
+      std::cout<<"  - thereof "<<numdetachpolarity<<" due to filament polarity!"<<std::endl;
+  }
   return;
 } //StatMechManager::SearchAndDeleteCrosslinkers()
 
@@ -3005,6 +3010,8 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
                                                          Teuchos::RCP<Epetra_Vector> actlinklengthout,
                                                          bool                        revertchanges)
 {
+  int numprobshort = 0;
+  int numproblong = 0;
   if(!revertchanges)
   {
     // get current hydrolysis-rate for crosslinkers to change it's length to long or short
@@ -3038,8 +3045,8 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
 
     Teuchos::RCP<Epetra_Vector> actlinklengthtrans = Teuchos::rcp(new Epetra_Vector(*transfermap_, true));
     CommunicateVector(actlinklengthtrans,actlinklengthout,true,false);
-    // probability check, if length of active linker should be changed
 
+    // probability check, if length of active linker should be changed
     for(int i=0; i<actlinklengthtrans->MyLength(); i++)
     {
       // only for doubly-bound crosslinkers
@@ -3050,12 +3057,18 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
           case 0:
             // probability check for long to short
             if((*uniformgen_)() < pshort)
+            {
+              numprobshort++;
               (*actlinklengthtrans)[i] = 1.0;
+            }
           break;
           case 1:
             // probability check for short to long
             if((*uniformgen_)() < plong)
+            {
+              numproblong++;
               (*actlinklengthtrans)[i] = 0.0;
+            }
           break;
           default: dserror("Wrong status %d in actlinklengthtrans", (int)(*actlinklengthtrans)[i]);
         }
@@ -3064,15 +3077,21 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
     CommunicateVector(actlinklengthtrans, actlinklengthout, false, true);
   }
 
+  int numprobshortglob = 0;
+  int numproblongglob = 0;
+
+  discret_->Comm().SumAll(&numprobshort, &numprobshortglob, 1);
+  discret_->Comm().SumAll(&numproblong, &numproblongglob, 1);
+
+
   // store linker length change
   int toshort=0;
   int tolong=0;
-
   // change reference length in actual elements
   for(int i=0; i<actlinklengthout->MyLength(); i++)
   {
     // if length of the active linker changed in the probability check
-    if((*actlinklengthout)[i]!=(*actlinklengthin)[i])
+    if(fabs((*actlinklengthout)[i]-(*actlinklengthin)[i])>1e-6 && (int)(*crosslink2element_)[i]>-0.9)
     {
       // just on the processor, were element is located
       // scaling-factor = 0.75 (myosin II)
@@ -3096,9 +3115,8 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
               break;
               default: dserror("Unknown active linker beam element!");
             }
-          }
-          if (!discret_->Comm().MyPID())
             toshort++;
+          }
         }
         break;
         // change linker length to long
@@ -3116,15 +3134,20 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
               break;
               default: dserror("Unknown active linker beam element!");
             }
-          }
-          if (!discret_->Comm().MyPID())
             tolong++;
+          }
         }
         break;
         default: dserror("Wrong status %d in actlinklength_", (int)(*crosslinkeractlength_)[i]);
       }
     }
   }
+
+  int toshortglob = 0;
+  int tolongglob = 0;
+
+  discret_->Comm().SumAll(&toshort, &toshortglob, 1);
+  discret_->Comm().SumAll(&tolong, &tolongglob,1);
 
   // number of changed crosslinker lengths
   if(!discret_->Comm().MyPID())
@@ -3137,7 +3160,10 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
       {
         std::cout<<"\n"<<"--Crosslinker length changes--"<<std::endl;
         std::cout<<" - long to short: "<<toshort<<std::endl;
+        std::cout<<"   - due to prob: "<<numprobshortglob<<std::endl;
         std::cout<<" - short to long: "<<tolong<<std::endl;
+        std::cout<<"   - due to prob: "<<numproblongglob<<std::endl;
+        std::cout<<"------------------------------"<<std::endl;
       }
     }
 
@@ -3156,10 +3182,13 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
  |  filament polarity check for active linkers upon bond breaking       |
  |                                               (private) mueller 08/13|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_MultiVector>       punlink,
+int STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_MultiVector>       punlink,
                                                           const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                                           const Teuchos::RCP<Epetra_MultiVector> bspottriadscol)
 {
+
+  int numdetach = 0;
+
   if(!discret_->Comm().MyPID())
   {
     for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
@@ -3202,7 +3231,10 @@ void STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_Mu
         //TODO MULTIVECTOR -> i.e. accounting for both binding sites!!!
         // For now, manipulate j==1 since this is the free filament binding site
         if (tangentialscalefactor < 0.0)
+        {
+          numdetach++;
           (*punlink)[1][i]=1.0;
+        }
       }
     }
   }
@@ -3210,7 +3242,7 @@ void STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_Mu
   Teuchos::RCP<Epetra_MultiVector> punlinktrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,2,true));
   CommunicateMultiVector(punlinktrans,punlink);
 
-  return;
+  return numdetach;
 }// StatMechManager::LinkerPolarityCheckDetach()
 
 /*----------------------------------------------------------------------*

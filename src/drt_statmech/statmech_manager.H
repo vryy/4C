@@ -448,7 +448,7 @@ protected:
                                  LINALG::Matrix<3,1>&             direction);
 
   //! polarity check for active linkers upon bond breaking
-  void LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_MultiVector>       punlink,
+  int LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_MultiVector>       punlink,
                                  const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                  const Teuchos::RCP<Epetra_MultiVector> bspottriadscol);
 
