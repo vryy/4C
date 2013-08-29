@@ -434,10 +434,11 @@ namespace COMBUST
 {
 //! fill a number of (local) element arrays
 template <DRT::Element::DiscretizationType DISTYPE,
-          class M, class V>
+          class M1,class M2, class V>
 void fillElementGradPhi(
     const DRT::ELEMENTS::Combust3::MyState& mystate,
-    M& egradphi,
+    M1& egradphi,
+    M2& egradphi2,
     V& ecurv)
 {
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -450,6 +451,22 @@ void fillElementGradPhi(
     egradphi(1, iparam) = mystate.gradphinp_[ipos+1];
     egradphi(2, iparam) = mystate.gradphinp_[ipos+2];
   }
+
+  unsigned ipos2;
+  for (size_t iparam=0; iparam<numnode; ++iparam)
+  {
+    ipos2 = iparam*9;
+    egradphi2(0, iparam) = mystate.gradphi2np_[ipos2  ];
+    egradphi2(1, iparam) = mystate.gradphi2np_[ipos2+1];
+    egradphi2(2, iparam) = mystate.gradphi2np_[ipos2+2];
+    egradphi2(3, iparam) = mystate.gradphi2np_[ipos2+3];
+    egradphi2(4, iparam) = mystate.gradphi2np_[ipos2+4];
+    egradphi2(5, iparam) = mystate.gradphi2np_[ipos2+5];
+    egradphi2(6, iparam) = mystate.gradphi2np_[ipos2+6];
+    egradphi2(7, iparam) = mystate.gradphi2np_[ipos2+7];
+    egradphi2(8, iparam) = mystate.gradphi2np_[ipos2+8];
+  }
+
   for (size_t iparam=0; iparam<numnode; ++iparam)
   {
     ecurv(iparam) = mystate.curv_[iparam];
@@ -802,6 +819,7 @@ void Sysmat(
     const double                            nitschepres,     ///<
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///< type of surface tension approximation
     const double                            variablesurftens,  ///< variable surface tesnion approximation
+    const bool                              second_deriv, ///< for curvature calculation
     const bool                              connected_interface,
     const INPAR::COMBUST::VelocityJumpType  veljumptype,
     const INPAR::COMBUST::FluxJumpType      fluxjumptype,
@@ -887,12 +905,13 @@ void Sysmat(
     }
 #else
         LINALG::Matrix<3,numnode> egradphi(true);
+        LINALG::Matrix<9,numnode> egradphi2(true);
         LINALG::Matrix<numnode,1> ecurv(true);
      // boundary integrals are only added for intersected elements (fully enriched elements)
 //    if (ele->Bisected() == true)
 //    {
       if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
 //    }
     COMBUST::SysmatDomainNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi,
@@ -904,12 +923,13 @@ void Sysmat(
 #ifdef COMBUST_NORMAL_ENRICHMENT
     // get smoothed gradient of phi for surface tension applications
     LINALG::Matrix<3,numnode> egradphi(true);
+    LINALG::Matrix<9,numnode> egradphi2(true);
     LINALG::Matrix<numnode,1> ecurv(true);
      // boundary integrals are only added for intersected elements (fully enriched elements)
 //    if (ele->Bisected() == true)
 //    {
       if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
 //    }
 
 //std::cout << "phi gradient danach" << ele->Id() << " " << egradphi << std::endl;
@@ -940,19 +960,21 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
+      LINALG::Matrix<9,numnode> egradphi2;
+      egradphi2.Clear();
       LINALG::Matrix<numnode,1> ecurv;
       ecurv.Clear();
       if (smoothed_boundary_integration)
-        fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+        fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
 #ifndef COMBUST_NORMAL_ENRICHMENT
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, variablesurftens, connected_interface, veljumptype,
+          surftensapprox, variablesurftens, second_deriv, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
 #else
       COMBUST::SysmatBoundaryNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, material, timealgo, dt, theta, assembler,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
@@ -966,10 +988,12 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
+      LINALG::Matrix<9,numnode> egradphi2;
+      egradphi2.Clear();
       LINALG::Matrix<numnode,1> ecurv;
       ecurv.Clear();
       if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
 
 #ifdef COMBUST_EPSPRES_BASED
 #ifdef COMBUST_NORMAL_ENRICHMENT
@@ -1013,16 +1037,18 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
+      LINALG::Matrix<9,numnode> egradphi2;
+      egradphi2.Clear();
       LINALG::Matrix<numnode,1> ecurv;
       ecurv.Clear();
       if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
 
       COMBUST::SysmatBoundarySurfaceTension<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv, etensor,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv, etensor,
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, nitschevel, nitschepres,
-          surftensapprox, variablesurftens, connected_interface, smoothed_boundary_integration);
+          surftensapprox, variablesurftens, second_deriv, connected_interface, smoothed_boundary_integration);
     }
   }
   break;
@@ -1042,16 +1068,18 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
+      LINALG::Matrix<9,numnode> egradphi2;
+      egradphi2.Clear();
       LINALG::Matrix<numnode,1> ecurv;
       ecurv.Clear();
       if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, egradphi2, ecurv);
 
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv,
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, variablesurftens, connected_interface, INPAR::COMBUST::vel_jump_none,
+          surftensapprox, variablesurftens, second_deriv, connected_interface, INPAR::COMBUST::vel_jump_none,
           INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     }
   }
@@ -1095,6 +1123,7 @@ void COMBUST::callSysmat(
     const double                         nitschepres,
     const INPAR::COMBUST::SurfaceTensionApprox  surftensapprox,
     const double                           variablesurftens,
+    const bool                             second_deriv,
     const bool                             connected_interface,
     const INPAR::COMBUST::VelocityJumpType veljumptype,
     const INPAR::COMBUST::FluxJumpType     fluxjumptype,
@@ -1112,14 +1141,14 @@ void COMBUST::callSysmat(
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens, second_deriv,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
 //    case DRT::Element::hex27:
@@ -1152,14 +1181,14 @@ void COMBUST::callSysmat(
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens, second_deriv,
             connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
 //    case DRT::Element::hex27:
@@ -1474,10 +1503,12 @@ void NitscheErrors(
     {
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
+      LINALG::Matrix<9,numnode> egradphi2;
+      egradphi2.Clear();
       LINALG::Matrix<numnode,1> ecurv;
-        ecurv.Clear();
+      ecurv.Clear();
       if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, egradphi2, ecurv);
 
       COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
           eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, time, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration, false);
@@ -1497,10 +1528,12 @@ void NitscheErrors(
       {
         LINALG::Matrix<3,numnode> egradphi;
         egradphi.Clear();
+        LINALG::Matrix<9,numnode> egradphi2;
+        egradphi2.Clear();
         LINALG::Matrix<numnode,1> ecurv;
         ecurv.Clear();
         if (smoothed_boundary_integration)
-          COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
+          COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
 
         COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
            eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, time, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration, true);
@@ -1844,6 +1877,13 @@ void Facemat(
   bool genalpha = false;
   if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
 
+  const unsigned int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  const unsigned int m_fac = COMBUST::SizeFac<M_ASSTYPE>::fac;
+  const unsigned int s_fac = COMBUST::SizeFac<S_ASSTYPE>::fac;
+  
+  const unsigned int m_shpVecSize = m_fac * numnode;
+  const unsigned int s_shpVecSize = s_fac * numnode;
+
   // here, we have to distinguish kink and jump enrichments
   switch(combusttype)
   {
@@ -1857,14 +1897,10 @@ void Facemat(
         {
           if (ele->ParentSlaveElement()->Shape() == DRT::Element::hex8)
           {
-            const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-
-            const int m_shpVecSize = COMBUST::SizeFac<M_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
 
             LINALG::Matrix<3,m_shpVecSize> evelaf_m(true);
             LINALG::Matrix<m_shpVecSize,1> epreaf_m(true);
             LINALG::Matrix<numnode,1> ephi_m(true);
-            const int s_shpVecSize = COMBUST::SizeFac<S_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
             LINALG::Matrix<3,s_shpVecSize> evelaf_s(true);
             LINALG::Matrix<s_shpVecSize,1> epreaf_s(true);
             LINALG::Matrix<numnode,1> ephi_s(true);
@@ -1917,14 +1953,9 @@ void Facemat(
         {
           if (ele->ParentSlaveElement()->Shape() == DRT::Element::hex8)
           {
-            const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-
-            const int m_shpVecSize = COMBUST::SizeFac<M_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-
             LINALG::Matrix<3,m_shpVecSize> evelaf_m(true);
             LINALG::Matrix<m_shpVecSize,1> epreaf_m(true);
             LINALG::Matrix<numnode,1> ephi_m(true);
-            const int s_shpVecSize = COMBUST::SizeFac<S_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
             LINALG::Matrix<3,s_shpVecSize> evelaf_s(true);
             LINALG::Matrix<s_shpVecSize,1> epreaf_s(true);
             LINALG::Matrix<numnode,1> ephi_s(true);

@@ -865,7 +865,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           DRT::Element::DiscretizationType CELLDISTYPE,
           XFEM::AssemblyType ASSTYPE,
           size_t NUMDOF,
-          class M1, class M2, class M3, class V1, class V2>
+          class M1, class M2, class M3, class M4, class V1, class V2>
 void Nitsche_SysmatBoundaryCellNormal(
     GEO::BoundaryIntCell              cell,
     const DRT::UTILS::GaussRule2D&    intrule2D,
@@ -877,6 +877,7 @@ void Nitsche_SysmatBoundaryCellNormal(
     const V1&                         eprenp,
     const V2&                         ephi,
     const M3&                         egradphi, ///<smoothed nodal G-function gradient values for this element
+    const M4&                         egradphi2, ///<smoothed nodal G-function gradient values for this element
     const double&                     ju_n,
     const double&                     jflux_n,
     const double&                       timefac,
@@ -2223,7 +2224,7 @@ dserror("uncomment this!");
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class M2, class V1, class V2>
+          class M1, class M2, class M3, class V1, class V2>
 void SysmatBoundaryNitscheNormal(
     const DRT::ELEMENTS::Combust3*             ele,            ///< the element those matrix is calculated
     const COMBUST::InterfaceHandleCombust*&    ih,  ///< connection to the interface handler
@@ -2232,6 +2233,7 @@ void SysmatBoundaryNitscheNormal(
     const V1&                                  eprenp,         ///<
     const V2&                                  ephi,           ///<
     const M2&                                  egradphi,
+    const M3&                                  egradphi2,
     Teuchos::RCP<const MAT::Material>          material,       ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,       ///< time discretization type
     const double&                              dt,             ///< delta t (time step size)
@@ -2394,7 +2396,7 @@ void SysmatBoundaryNitscheNormal(
     case DRT::Element::tri3:
       COMBUST::Nitsche_SysmatBoundaryCellNormal<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_tri_6point, xyze, ele, dofman, higher_order_ele,
-          evelnp, eprenp, ephi, egradphi,
+          evelnp, eprenp, ephi, egradphi, egradphi2,
           ju_n, jflux_n,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
@@ -2407,7 +2409,7 @@ void SysmatBoundaryNitscheNormal(
       // TODO check this intrule !!!
       COMBUST::Nitsche_SysmatBoundaryCellNormal<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_quad_9point , xyze, ele, dofman, higher_order_ele,
-          evelnp, eprenp, ephi, egradphi,
+          evelnp, eprenp, ephi, egradphi, egradphi2,
           ju_n, jflux_n,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,

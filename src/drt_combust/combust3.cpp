@@ -364,14 +364,17 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     const bool                                  instationary,
     const bool                                  genalpha,
     const bool                                  gradphi,
+    const bool                                  gradphi2,
     const DRT::ELEMENTS::Combust3*              ele,
     const Epetra_Vector*                        phinp,
     const Epetra_MultiVector*                   gradphinp,
+    const Epetra_MultiVector*                   gradphi2np,
     const Epetra_Vector*                        curvature
     ) :
       instationary_(instationary),
       genalpha_(genalpha),
-      gradphi_(gradphi)
+      gradphi_(gradphi),
+      gradphi2_(gradphi2)
 {
   if (!genalpha_)
     DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),velnp_,lm);
@@ -425,6 +428,14 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
 #ifndef COMBUST_NORMAL_ENRICHMENT
     }
 #endif
+  }
+  if(gradphi2_)
+  {
+    if(ele->Bisected() or ele->Touched() )
+    {
+      if (gradphi2np == NULL) {dserror("no second gradient of phi has been computed!");}
+      else{DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphi2np_,*gradphi2np);}
+    }
   }
 }
 

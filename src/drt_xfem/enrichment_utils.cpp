@@ -66,15 +66,9 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
   const LINALG::SerialDenseMatrix&      elementvalues,
   LINALG::SerialDenseMatrix&            cellvalues)
 {
-#ifndef COMBUST_HEX20
   if (ele.Shape() != DRT::Element::hex8)
     dserror("OutputToGmsh() only available for hex8 elements! However, this is easy to extend.");
-#endif
-#ifndef COMBUST_HEX20
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-#else
-  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-#endif
   const size_t numparam  = dofman.NumDofPerField(field);
 
   // copy element phi vector from std::vector (phivalues) to LINALG::Matrix (phi)
@@ -100,11 +94,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSet(
   for (int inode = 0; inode < cell.NumNode(); ++inode)
   {
     // evaluate shape functions
-#ifndef COMBUST_HEX20
     DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex8);
-#else
-    DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex20);
-#endif
 
 #ifdef COMBUST_SXFEM
     const XFEM::ElementEnrichmentValues enrvals(ele,dofman,phi,cell,funct,derxy,derxy2);
@@ -265,10 +255,8 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(
   const LINALG::SerialDenseMatrix&      elementvalues,
   LINALG::SerialDenseMatrix&            cellvalues)
 {
-#ifndef COMBUST_HEX20
   if (ele.Shape() != DRT::Element::hex8)
     dserror("OutputToGmsh() only available for hex8 elements! However, this is easy to extend.");
-#endif
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
   const size_t numparam  = dofman.NumDofPerField(field);
 
@@ -289,18 +277,10 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKink(
   for (int inode = 0; inode < cell.NumNode(); ++inode)
   {
     // evaluate shape functions
-#ifndef COMBUST_HEX20
     DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex8);
-#else
-    DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex20);
-#endif
     // first and second derivatives are dummy matrices needed to call XFEM::ElementEnrichmentValues for kink enrichment
     const LINALG::Matrix<3,numnode> derxy(true);
-#ifndef COMBUST_HEX20
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement> derxy2(true);
-#else
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex20>::numderiv2, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement> derxy2(true);
-#endif
 
     // compute enrichment values based on a level set field 'phi'
     const XFEM::ElementEnrichmentValues enrvals(ele, dofman, phi, funct, derxy, derxy2);
@@ -351,15 +331,9 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
   const LINALG::SerialDenseMatrix&      elementvalues,
   LINALG::SerialDenseMatrix&            cellvalues)
 {
-#ifndef COMBUST_HEX20
   if (ele.Shape() != DRT::Element::hex8)
     dserror("OutputToGmsh() only available for hex8 elements! However, this is easy to extend.");
-#endif
-#ifndef COMBUST_HEX20
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-#else
-  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-#endif
   const size_t numparam  = dofman.NumDofPerField(field);
 
   // copy element phi vector from std::vector (phivalues) to LINALG::Matrix (phi)
@@ -381,11 +355,7 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetKinkJump(
     DRT::UTILS::shape_function_3D(funct,nodalPosXiDomain(0,inode),nodalPosXiDomain(1,inode),nodalPosXiDomain(2,inode),DRT::Element::hex8);
     // first and second derivatives are dummy matrices needed to call XFEM::ElementEnrichmentValues for kink enrichment
     const LINALG::Matrix<3,numnode> derxy(true);
-#ifndef COMBUST_HEX20
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement> derxy2(true);
-#else
-    const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex20>::numderiv2, DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement> derxy2(true);
-#endif
 
     const XFEM::ElementEnrichmentValues enrvals(ele, dofman, phi, cell, funct, derxy, derxy2);
     LINALG::SerialDenseVector enr_funct(numparam);

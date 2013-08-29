@@ -100,15 +100,18 @@ private:
               const bool                             instationary,
               const bool                             genalpha,
               const bool                             gradphi,
+              const bool                             gradphi2,
               const DRT::ELEMENTS::Combust3*         ele,
               const Epetra_Vector*                   phinp,
               const Epetra_MultiVector*              gradphinp,
+              const Epetra_MultiVector*              gradphi2np,
               const Epetra_Vector*                   curvature
               );
 
           const bool instationary_;
           const bool genalpha_;
           const bool gradphi_;
+          const bool gradphi2_;
           std::vector<double> velnp_;     ///< velocity/pressure unknowns at n+1
           std::vector<double> veln_;      ///< velocity/pressure unknowns at n
           std::vector<double> velnm_;     ///< velocity/pressure unknowns at n-1
@@ -117,6 +120,7 @@ private:
           std::vector<double> accam_;     ///< time derivative of unknowns at alpha+m for generalized alpha scheme
           std::vector<double> phinp_;     ///< G-function unknowns at n+1
           std::vector<double> gradphinp_; ///< smoothed G-function gradient at n+1
+          std::vector<double> gradphi2np_; ///< smoothed G-function second derivative at n+1
           std::vector<double> curv_;      ///< curvature based on G-function gradient at n+1
         };
 
@@ -414,7 +418,8 @@ private:
 
         //! store the smoothed phi-gradient
         Epetra_MultiVector* gradphi_;
-
+        //! store the smoothed phi2-gradient
+        Epetra_MultiVector* gradphi2_;
         //! store the curvature
         Epetra_Vector* curvature_;
 

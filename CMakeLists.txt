@@ -577,6 +577,7 @@ set(OBJS_INTERSECTION
   src/drt_geometry/geo_intersection.cpp
   src/drt_combust/combust_interface.cpp
   src/drt_combust/combust_flamefront.cpp
+  src/drt_combust/combust_flamefront_utils.cpp
 )
 set(OBJS_POST_DRT_MONITOR
   src/post_monitor/post_drt_monitor.cpp

@@ -123,7 +123,14 @@ namespace INPAR
       smooth_grad_phi_leastsquares_3D,
       smooth_grad_phi_leastsquares_2Dx,
       smooth_grad_phi_leastsquares_2Dy,
-      smooth_grad_phi_leastsquares_2Dz
+      smooth_grad_phi_leastsquares_2Dz,
+      smooth_grad_phi_l2_projection
+    };
+
+    enum NodalCurvatureCalc
+    {
+      l2_projected,
+      averaged
     };
 
     /// type of velocity jump

@@ -944,12 +944,14 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     //---------------------------------------------
     // switch state vectors to new dof distribution
     //---------------------------------------------
-    IO::cout << "---  transform state vectors... ";// << IO::flush;
+    if (myrank_ == 0)
+      IO::cout << "---  transform state vectors... ";// << IO::flush;
     // quasi-static enrichment strategy for kink enrichments
     // remark: as soon as the XFEM-time-integration works for kinks, this should be removed
     if (xfemtimeint_enr_==INPAR::COMBUST::xfemtimeintenr_quasistatic)
     {
-      IO::cout << "quasi-static enrichment for two-phase flow problems... ";// << IO::flush;
+      if (myrank_ == 0)
+        IO::cout << "quasi-static enrichment for two-phase flow problems... ";// << IO::flush;
 
       // accelerations at time n+1 and n
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,true);
@@ -981,7 +983,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,false); // use old velocity as start value
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,false);
     }
-    IO::cout << "done" << IO::endl;
+    if (myrank_ == 0)
+      IO::cout << "done" << IO::endl;
 
     // all initial values can be set now; including the enrichment values
     if (step_ == 0)
@@ -1484,8 +1487,9 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
         // parameters for two-phase flow problems with surface tension
         eleparams.set<int>("surftensapprox",surftensapprox_);
-        eleparams.set("variablesurftens",params_->sublist("COMBUSTION FLUID").get<double>("VARIABLESURFTENS"));
-        eleparams.set("connected_interface",connected_interface_);
+        eleparams.set<double>("variablesurftens",params_->sublist("COMBUSTION FLUID").get<double>("VARIABLESURFTENS"));
+        eleparams.set<bool>("connected_interface",connected_interface_);
+        eleparams.set<bool>("second_deriv",DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"L2_PROJECTION_SECOND_DERIVATIVES"));
 
         // smoothed normal vectors for boundary integration
         eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
@@ -1507,9 +1511,9 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
         const bool   nitscheconvflux    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVFLUX");
         const bool   nitscheconvstab    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVSTAB");
         const bool   nitscheconvpenalty    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVPENALTY");
-        eleparams.set("nitsche_convflux",nitscheconvflux);
-        eleparams.set("nitsche_convstab",nitscheconvstab);
-        eleparams.set("nitsche_convpenalty",nitscheconvpenalty);
+        eleparams.set<bool>("nitsche_convflux",nitscheconvflux);
+        eleparams.set<bool>("nitsche_convstab",nitscheconvstab);
+        eleparams.set<bool>("nitsche_convpenalty",nitscheconvpenalty);
 
 
 #ifdef SUGRVEL_OUTPUT
@@ -1623,7 +1627,6 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
             // parameters for two-phase flow problems with surface tension
             condparams.set<int>("surftensapprox",surftensapprox_);
-            eleparams.set("variablesurftens",params_->sublist("COMBUSTION FLUID").get<double>("VARIABLESURFTENS"));
             condparams.set("connected_interface",connected_interface_);
 
             // smoothed normal vectors for boundary integration
@@ -2925,15 +2928,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             // extract G-function values to element level
             DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 #ifdef DEBUG
-#ifndef COMBUST_HEX20
             if (numnode != 8) dserror("pressure jump output only available for hex8 elements!");
 #endif
-#endif
-#ifndef COMBUST_HEX20
             LINALG::Matrix<8,1> ephi;
-#else
-            LINALG::Matrix<20,1> ephi;
-#endif
             for (size_t iparam=0; iparam<numnode; ++iparam)
               ephi(iparam) = myphinp[iparam];
 
@@ -3002,9 +2999,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
                 XFEM::ApproxFunc<0,16> shp_jump;
 #ifdef DEBUG
-#ifndef COMBUST_HEX20
                 if (numparam != 16) dserror("pressure jump output only available for fully enriched hex8 elements!");
-#endif
 #endif
                 // fill approximation functions
                 for (std::size_t iparam = 0; iparam < 16; ++iparam)
@@ -3467,9 +3462,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
       if (interfacehandle_->ElementSplit(ele->Id()))
       {
         size_t numnode = ele->NumNode();
-#ifndef COMBUST_HEX20
         if (numnode != 8) dserror("flame area output only available for hex8 elements!");
-#endif
 
         // get node coordinates for this element
         LINALG::SerialDenseMatrix xyze(3,numnode);
@@ -4011,15 +4004,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
 #ifdef DEBUG
-#ifndef COMBUST_HEX20
             if (numnode != 8) dserror("velocity jump output only available for hex8 elements!");
 #endif
-#endif
-#ifndef COMBUST_HEX20
             LINALG::Matrix<8,1> ephi;
-#else
-            LINALG::Matrix<20,1> ephi;
-#endif
             for (size_t iparam=0; iparam<numnode; ++iparam)
               ephi(iparam) = myphinp[iparam];
 

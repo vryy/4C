@@ -197,6 +197,9 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
   {
     reinit_pde_ = Teuchos::rcp(new COMBUST::ReinitializationPDE(comm));
+//    reinit_pde_->CallReinitialization(ScaTraField().Phinp());
+//    // update flame front according to reinitialized G-function field
+//    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
   }
 
   //---------------------------------------------------
@@ -555,22 +558,10 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   // reinitialize what will later be 'phinp'
   if (stepreinit_)
   {
-    // REMARK:
-    // maybe there are some modified phi-values in phinp_ and so the current interfacehandle_ is adopted
-    // to the modified values
-    // we want to reinitialize the orignial phi-values
-    // => UpdateFlameFront without modifyPhiVectors
-
-    // update flame front according to reinitialized G-function field
-    // the reinitilizer needs the original G-function field
-    // ModifyPhiVector uses an alternative modification such that tetgen does not crash, so UpdateFlameFront is called
-    // with the boolian true
-
     if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") == INPAR::FLUID::timeint_afgenalpha)
       flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phiaf());
     else
       flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
-
 
     // get my flame front (boundary integration cells)
     // remark: we generate a copy of the flame front here, which is not neccessary in the serial case

@@ -80,8 +80,9 @@ namespace COMBUST
 
     /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
     const Teuchos::RCP<Epetra_MultiVector> GradPhi() const { return gradphi_; };
-
-    /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
+    /// remote access method to vector on fluid NodeRowMap holding smoothed second derivatives of G-function at n+1
+    const Teuchos::RCP<Epetra_MultiVector> GradPhi2() const { return gradphi2_; };
+    /// remote access method to vector on fluid NodeRowMap holding curvature G-function at n+1
     const Teuchos::RCP<Epetra_Vector> Curvature() const { return curvature_; };
 
     /// remote access method to combust interface handle at n+1
@@ -133,9 +134,6 @@ namespace COMBUST
         const Teuchos::RCP<const Epetra_Vector> phinp
     );
 
-    /// modify the fluid phinp_ vector but not the originally scatra phi vector
-    void ModifyPhiVector(const Teuchos::ParameterList& combustdyn, bool ReinitModifyPhi);
-
     /// call template of member function SmoothGradPhi() to compute smoothed gradient field of G-function
     void CallSmoothGradPhi(const Teuchos::ParameterList& combustdyn);
 
@@ -145,10 +143,22 @@ namespace COMBUST
     /// compute curvature based on G-function
     void ComputeCurvatureForSurfaceTension(const Teuchos::ParameterList& combustdyn);
 
-    /// compute smoothed gradient field of G-function
+    /// compute curvature based on the average of adjacent elements
+    void ComputeAveragedNodalCurvature(const Teuchos::ParameterList& combustdyn);
+    /// compute L2 Projection for Curvature based on smoothed gradphi
+    void ComputeL2ProjectedNodalCurvature(const Teuchos::ParameterList& combustdyn);
+
+    /// compute smoothed gradphi from L2 Projection
+    void ComputeL2ProjectedGradPhi(const double eta_smooth, const Teuchos::RCP<Epetra_Vector> phi_smoothed = Teuchos::null);
+    /// compute smoothed second derivatives of phi from L2 Projection
+    void ComputeL2ProjectedGrad2Phi(const double eta_smooth);
+    /// compute L2-projected phi: recommended for use after reinitialization via singed distance calculation
+    const Teuchos::RCP<Epetra_Vector> ComputeL2ProjectedPhi(const double eta_smooth);
+ 
+     /// compute smoothed gradient field of G-function: mean value of least-squares
     template<const size_t nsd_real>
     void ComputeSmoothGradPhi(const Teuchos::ParameterList& combustdyn);
-
+ 
     /// refine the region around flame front
     void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
                           const Teuchos::RCP<const Epetra_Vector> phi);
@@ -221,14 +231,6 @@ namespace COMBUST
             const std::vector<double>&            gfuncvalue,
             const std::vector<std::vector<double> >& pointlist
             );
-
-    /// not ducumented yet
-    void buildFlameFrontSegmentsHex20(
-        std::multimap<int, int>& intersectionpointsids,
-        std::multimap<int, std::vector<int> >& segmentlist,
-        const std::vector<double>& gfuncvalues,
-        const std::vector<std::vector<double> >& pointlist
-    );
 
     /// projects midpoint on front and back side of cell for 2D-applications
     void projectMidpoint2D(
@@ -305,14 +307,6 @@ namespace COMBUST
     const GEO::DomainIntCells&     domainintcelllist
     );
 
-    void FlamefrontToGmsh(
-    const COMBUST::RefinementCell*              cell,
-    const std::vector<std::vector<double> >&    pointlist,
-    const std::multimap<int,std::vector<int> >& segmentlist,
-    const std::vector<std::vector<int> >&       trianglelist,
-    const GEO::DomainIntCells&                  domainintcelllist
-    );
-
     /// pointer to fluid discretization
     const Teuchos::RCP<const DRT::Discretization> fluiddis_;
 
@@ -331,7 +325,8 @@ namespace COMBUST
 
     /// pointer to vector on fluid NodeColMap holding smoothed values of the gradient of the G-function at n+1
     Teuchos::RCP<Epetra_MultiVector> gradphi_;
-
+    /// pointer to vector on fluid NodeColMap holding smoothed values of the second derivatives of the G-function at n+1
+    Teuchos::RCP<Epetra_MultiVector> gradphi2_;
     /// pointer to vector on fluid NodeColMap holding smoothed values of the curvature at n+1
     Teuchos::RCP<Epetra_Vector> curvature_;
 

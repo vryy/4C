@@ -4644,7 +4644,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>(
           "zero_field",
           "field_by_function",
-          "disturbed_function_by_function",
+          "disturbed_field_by_function",
           "flame_vortex_interaction",
           "darrieus_landau_instability",
           "beltrami_flow"),
@@ -4678,6 +4678,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::nitsche_error_ellipsoid_bubble_3D,
               INPAR::COMBUST::nitsche_error_beltrami),
               &combustcontrolfluid);
+
   setStringToIntegralParameter<int>("SURFTENSAPPROX","surface_tension_approx_none","Type of surface tension approximation",
       tuple<std::string>(
           "surface_tension_approx_none",
@@ -4696,6 +4697,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed),
               &combustcontrolfluid);
+
   DoubleParameter("VARIABLESURFTENS",0.0,"Variable surface tension coefficient",&combustcontrolfluid);
   setStringToIntegralParameter<int>("SMOOTHGRADPHI","smooth_grad_phi_none","Type of smoothing for grad(phi)",
       tuple<std::string>(
@@ -4704,14 +4706,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "smooth_grad_phi_leastsquares_3D",
           "smooth_grad_phi_leastsquares_2Dx",
           "smooth_grad_phi_leastsquares_2Dy",
-          "smooth_grad_phi_leastsquares_2Dz"),
+          "smooth_grad_phi_leastsquares_2Dz",
+          "smooth_grad_phi_l2_projection"),
           tuple<int>(
               INPAR::COMBUST::smooth_grad_phi_none,
               INPAR::COMBUST::smooth_grad_phi_meanvalue,
               INPAR::COMBUST::smooth_grad_phi_leastsquares_3D,
               INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx,
               INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy,
-              INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz),
+              INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz,
+              INPAR::COMBUST::smooth_grad_phi_l2_projection),
               &combustcontrolfluid);
   // set parameters VELOCITY_JUMP_TYPE and FLUX_JUMP_TYPE in case of CombustType Premixed_Combustion
   // Two_Phase_Flow_Jumps is equal to Premixed_Combustion & vel_jump_none & flux_jump_surface_tension
@@ -4738,8 +4742,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::flux_jump_surface_tension),
               &combustcontrolfluid);
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
-  // unused
-  //DoubleParameter("PHI_MODIFY_TOL",1.0E-10,"We modify GfuncValues near zero",&combustcontrolfluid);
+
   IntParameter("ITE_MAX_FRS",1,"The maximal number of iterations between fluid and recomputation of reference solution",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MOL_DIFFUSIVITY",0.0,"Molecular diffusivity",&combustcontrolfluid);
@@ -4758,6 +4761,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
+
+  BoolParameter("L2_PROJECTION_SECOND_DERIVATIVES","No","L2 Projection Second Derivatives of Level Set",&combustcontrolfluid);
+  setStringToIntegralParameter<int>("NODAL_CURVATURE","l2_projected","Type of calculation of nodal curvature value",
+      tuple<std::string>(
+          "l2_projected",
+          "averaged"),
+          tuple<int>(
+              INPAR::COMBUST::l2_projected,
+              INPAR::COMBUST::averaged),
+              &combustcontrolfluid);
+  DoubleParameter("SMOOTHING_PARAMETER",0.0,"Diffusion Coefficient for Smoothing",&combustcontrolfluid);
+
   // for selection of enriched fields (velocity, pressure, velocity+pressure)
   setStringToIntegralParameter<int>("SELECTED_ENRICHMENT","both",
        "select fields which get enriched dofs",

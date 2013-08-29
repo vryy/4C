@@ -19,7 +19,6 @@ Maintainer: Ursula Rasthofer
 //---------------------------
 //#define COMBUST_2D // turn on/off modifications for 2D (pseudo 3D) problems
 //#define COMBUST_NORMAL_ENRICHMENT // turn on/off normal velocity enrichment approach
-//#define COMBUST_HEX20
 #define COMBUST_CUT
 #define COMBUST_MYBACI
 //-----------------------------

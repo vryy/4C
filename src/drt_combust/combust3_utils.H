@@ -180,12 +180,14 @@ namespace COMBUST
   }
 
   template <DRT::Element::DiscretizationType DISTYPE,
-  class M1, class M2, class M3>
+  class M1, class M2, class M3, class M4>
   void CalcCurvature(
+      double&   curvature,          ///< curvature to be computed
       M1&       posXiDomain,        ///< position of gaussian point for evaluating of surface tension terms
       M2&       xyze,               ///< xyz coordinates of element ele
       const M3& grad_ephi_smoothed, ///< smoothed nodal G-function gradient values for this element
-      double&   curvature           ///<
+      const M4& grad_ephi2_smoothed,///< smoothed nodal G-function second derivatives for this element
+      bool set_ephi2_smoothed = false ///< use grad_ephi2_smoothed
   )
   {
     // number space dimensions for 3d combustion element
@@ -251,15 +253,30 @@ namespace COMBUST
       grad_phi(1) += nodal_grad_xyz_tmp(1) *funct_gp(i);
       grad_phi(2) += nodal_grad_xyz_tmp(2) *funct_gp(i);
 
-      grad_phi2(0) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(0); // ,xx
-      grad_phi2(1) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(1); // ,yy
-      grad_phi2(2) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(2); // ,zz
-      grad_phi2(3) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(0); // ,xy
-      grad_phi2(4) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(0); // ,xz
-      grad_phi2(5) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(1); // ,yz
-      grad_phi2(6) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(1); // ,yx
-      grad_phi2(7) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(2); // ,zx
-      grad_phi2(8) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(2); // ,zy
+      if (not set_ephi2_smoothed)
+      {
+        grad_phi2(0) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(0); // ,xx
+        grad_phi2(1) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(1); // ,yy
+        grad_phi2(2) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(2); // ,zz
+        grad_phi2(3) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(0); // ,xy
+        grad_phi2(4) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(0); // ,xz
+        grad_phi2(5) += deriv_gp_xyz(2,i)*nodal_grad_xyz_tmp(1); // ,yz
+        grad_phi2(6) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(1); // ,yx
+        grad_phi2(7) += deriv_gp_xyz(0,i)*nodal_grad_xyz_tmp(2); // ,zx
+        grad_phi2(8) += deriv_gp_xyz(1,i)*nodal_grad_xyz_tmp(2); // ,zy
+      }
+      else
+      {
+        grad_phi2(0) += grad_ephi2_smoothed(0,i)*funct_gp(i); // ,xx
+        grad_phi2(1) += grad_ephi2_smoothed(1,i)*funct_gp(i); // ,yy
+        grad_phi2(2) += grad_ephi2_smoothed(2,i)*funct_gp(i); // ,zz
+        grad_phi2(3) += grad_ephi2_smoothed(3,i)*funct_gp(i); // ,xy
+        grad_phi2(4) += grad_ephi2_smoothed(4,i)*funct_gp(i); // ,xz
+        grad_phi2(5) += grad_ephi2_smoothed(5,i)*funct_gp(i); // ,yz
+        grad_phi2(6) += grad_ephi2_smoothed(6,i)*funct_gp(i); // ,yx
+        grad_phi2(7) += grad_ephi2_smoothed(7,i)*funct_gp(i); // ,zx
+        grad_phi2(8) += grad_ephi2_smoothed(8,i)*funct_gp(i); // ,zy
+      }
     }
 
     // 3. transform xi-gradient at Gaussian point to xyz-gradient
@@ -282,10 +299,10 @@ namespace COMBUST
     }
     else
     {
-      curvature = -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
+      curvature = -1.0/pow(grad_phi_norm,3.0)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
           + grad_phi(1)*grad_phi(1)*grad_phi2(1)
           + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
-          -1.0/pow(grad_phi_norm,3)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
+          -1.0/pow(grad_phi_norm,3.0)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
               + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
               + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
               +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );

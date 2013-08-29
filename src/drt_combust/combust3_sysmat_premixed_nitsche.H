@@ -1627,7 +1627,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           DRT::Element::DiscretizationType CELLDISTYPE,
           XFEM::AssemblyType ASSTYPE,
           size_t NUMDOF,
-          class M1, class M2, class M3, class V1, class V2>
+          class M1, class M2, class M3, class M4, class V1, class V2>
 void Nitsche_SysmatBoundaryCell(
     GEO::BoundaryIntCell           cell,
     const DRT::UTILS::GaussRule2D& intrule2D,
@@ -1637,6 +1637,7 @@ void Nitsche_SysmatBoundaryCell(
     const M1&                      evelnp,
     const V1&                      eprenp,
     const M3&                      grad_ephi_smoothed, ///< smoothed nodal G-function gradient values for this element
+    const M4&                      grad_ephi2_smoothed, ///< smoothed nodal G-function second derivative values for this element
     const V2&                      ecurv,
     const double&                  flamespeed,
     const double&                  marksteinlength,
@@ -1662,6 +1663,7 @@ void Nitsche_SysmatBoundaryCell(
     const size_t&                              numparampres,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,      ///<
     const double                               variablesurftens,
+    const bool                                 second_deriv,
     const double                               surftenscoeff,       ///<
     const bool                                 connected_interface, ///<
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
@@ -2460,11 +2462,13 @@ void Nitsche_SysmatBoundaryCell(
            and surftensapprox != INPAR::COMBUST::surface_tension_approx_nodal_curvature))
      {
         COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
-                    xyze, grad_ephi_smoothed, ecurv, normal_smooth, timefacfac, surftensapprox, variablesurftens, surftenscoeff, assembler);
+                    xyze, grad_ephi_smoothed, grad_ephi2_smoothed, ecurv, normal_smooth, timefacfac,
+                    surftensapprox, variablesurftens, second_deriv, surftenscoeff, assembler);
       }
       else
         COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
-            xyze, grad_ephi_smoothed, ecurv, normal, timefacfac, surftensapprox, variablesurftens, surftenscoeff, assembler);
+            xyze, grad_ephi_smoothed, grad_ephi2_smoothed, ecurv, normal, timefacfac,
+            surftensapprox, variablesurftens, second_deriv, surftenscoeff, assembler);
     }
     else
     {
@@ -2802,7 +2806,7 @@ if(nitsche_convflux)
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE,
           int NUMDOF,
-          class M1, class M2, class V1, class V2>
+          class M1, class M2, class M3, class V1, class V2>
 void SysmatBoundaryNitsche(
     const DRT::ELEMENTS::Combust3*             ele,            ///< the element those matrix is calculated
     const COMBUST::InterfaceHandleCombust*&  ih,  ///< connection to the interface handler
@@ -2811,6 +2815,7 @@ void SysmatBoundaryNitsche(
     const V1&                                  eprenp,         ///<
     const V2&                                  ephi,           ///<
     const M2&                                  egradphi,
+    const M3&                                  egradphi2,
     const V2&                                  ecurv,
     Teuchos::RCP<const MAT::Material>          material,       ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,       ///< time discretization type
@@ -2828,6 +2833,7 @@ void SysmatBoundaryNitsche(
     const double                               ele_meas_minus, ///< measure of element in minus domain
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const double                               variablesurftens,
+    const bool                                 second_deriv,
     const bool                                 connected_interface,
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
@@ -2980,7 +2986,7 @@ void SysmatBoundaryNitsche(
     case DRT::Element::tri3:
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
-          evelnp, eprenp, egradphi, ecurv,
+          evelnp, eprenp, egradphi, egradphi2, ecurv,
           flamespeed, marksteinlength, dens_minus, dens_plus,
           timefac, assembler,
 #ifndef COMBUST_SXFEM
@@ -2990,14 +2996,15 @@ void SysmatBoundaryNitsche(
 #endif
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, fac_pen, wallfac,
-          numparamvelx, numparampres, surftensapprox, variablesurftens, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
+          numparamvelx, numparampres, surftensapprox, variablesurftens, second_deriv, surftenscoeff, connected_interface,
+          veljumptype, fluxjumptype,
           smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty
       );
       break;
     case DRT::Element::quad4:
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_quad_25point , xyze, ele, higher_order_ele,
-          evelnp, eprenp, egradphi, ecurv,
+          evelnp, eprenp, egradphi, egradphi2, ecurv,
           flamespeed, marksteinlength, dens_minus, dens_plus,
           timefac, assembler,
 #ifndef COMBUST_SXFEM
@@ -3007,7 +3014,8 @@ void SysmatBoundaryNitsche(
 #endif
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, fac_pen, wallfac,
-          numparamvelx, numparampres, surftensapprox, variablesurftens, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
+          numparamvelx, numparampres, surftensapprox, variablesurftens, second_deriv, surftenscoeff, connected_interface,
+          veljumptype, fluxjumptype,
           smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty
       );
       break;

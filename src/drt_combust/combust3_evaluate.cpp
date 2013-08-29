@@ -126,6 +126,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       ih_ = NULL;
       epetra_phinp_ = NULL;
       gradphi_ = NULL;
+      gradphi2_ = NULL;
       curvature_ = NULL;
       DLM_info_ = Teuchos::null;
     }
@@ -139,6 +140,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       ih_ = NULL;
       epetra_phinp_ = NULL;
       gradphi_ = NULL;
+      gradphi2_ = NULL;
       curvature_ = NULL;
     }
     break;
@@ -166,6 +168,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         ih_ = flamefront->InterfaceHandle().get();
         epetra_phinp_ = flamefront->Phinp().get();
         if (flamefront->GradPhi()!=Teuchos::null) gradphi_ = flamefront->GradPhi().get();
+        if (flamefront->GradPhi2()!=Teuchos::null) gradphi2_ = flamefront->GradPhi2().get();
         if (flamefront->Curvature()!=Teuchos::null) curvature_ = flamefront->Curvature().get();
 
         const COMBUST::InterfaceHandleCombust::CutStatus cutstat = ih_->ElementCutStatus(this->Id());
@@ -192,6 +195,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         ih_ = NULL;
         epetra_phinp_ = NULL;
         gradphi_ = NULL;
+        gradphi2_ = NULL;
         curvature_ = NULL;
       }
 
@@ -304,6 +308,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       const bool connected_interface = params.get<bool>("connected_interface");
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
       const double variablesurftens = params.get<double>("variablesurftens");
+      const double second_deriv = params.get<bool>("second_deriv");
 
       // parameters for nitsche boundary terms
       const bool nitsche_convflux = params.get<bool>("nitsche_convflux");
@@ -365,10 +370,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
 
       // smoothed gradient of phi required (surface tension application)
       bool gradphi = true;
+      bool gradphi2 = true;
       if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
           smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
       {
         gradphi = false;
+        gradphi2 = false;
       }
 
       // extract local (element level) vectors from global state vectors
@@ -378,9 +385,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           instationary,
           genalpha,
           gradphi,
+          gradphi2,
           this,
           epetra_phinp_,
           gradphi_,
+          gradphi2_,
           curvature_);
 
 #ifdef COMBUST_STRESS_BASED
@@ -460,7 +469,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
+          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
 #endif
     }
@@ -516,10 +525,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
         // smoothed gradient of phi required (surface tension application)
         bool gradphi = true;
+        bool gradphi2 = true;
         if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
             smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
         {
           gradphi = false;
+          gradphi2 = false;
         }
 
         const INPAR::COMBUST::NitscheError NitscheErrorType = DRT::INPUT::get<INPAR::COMBUST::NitscheError>(params, "Nitsche_Compare_Analyt");
@@ -531,9 +542,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
             false,
             false,
             gradphi,
+            gradphi2,
             this,
             epetra_phinp_,
             gradphi_,
+            gradphi2_,
             curvature_);
 
         // get assembly type
@@ -559,9 +572,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           false,
           true,
           false,
+          false,
           this,
           epetra_phinp_,
           gradphi_,
+          gradphi2_,
           curvature_);
 
       const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(*eleDofManager_, NumNode(), NodeIds());
