@@ -1556,7 +1556,6 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // At this point, everything for the microscale is read,
         // subsequent reading is only for macroscale
         structdis_micro->FillComplete();
-        DRT::UTILS::PrintParallelDistribution(*structdis_micro);
 
         // broadcast restart information
         subgroupcomm->Broadcast(&restartstep_, 1, 0);
@@ -1588,16 +1587,16 @@ void DRT::Problem::ReadMicrofields_NPsupport()
   // prepare the supporting procs for a splitting of gcomm
 
   // groups should be equally sized
-  // firstly: group layout is specified
+  // in a first step every macro proc that needs support gets procpergroup supporting procs
   int procpergroup = int(floor((lcomm->NumProc())/nummicromat));
-  std::vector<int> supgrouplayout;
-  for(int k=0; k<(nummicromat-1); k++)
+  std::vector<int> supgrouplayout(nummicromat, procpergroup);
+  // remaining procs are added to the groups in the beginning
+  int remainingProcs = lcomm->NumProc() - procpergroup*nummicromat;
+  for(int k=0; k<remainingProcs; ++k)
   {
-    supgrouplayout.push_back(procpergroup);
+    supgrouplayout[k]++;
   }
-  // last group can be slightly larger
-  int remainingProcs = lcomm->NumProc() - procpergroup*(nummicromat-1);
-  supgrouplayout.push_back(remainingProcs);
+
   // secondly: colors are distributed
   // color starts with 0 and is incremented for each group
   int color = -1;
@@ -1667,7 +1666,6 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     // At this point, everything for the microscale is read,
     // subsequent reading is only for macroscale
     structdis_micro->FillComplete();
-    DRT::UTILS::PrintParallelDistribution(*structdis_micro);
 
     // broadcast restart information
     subgroupcomm->Broadcast(&restartstep_, 1, 0);
