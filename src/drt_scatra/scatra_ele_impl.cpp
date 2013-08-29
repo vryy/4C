@@ -1150,14 +1150,22 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   }
   case SCATRA::get_material_internal_state:
   {
+
     // access the general material
-     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
-     if(actmat->MaterialType() != INPAR::MAT::m_myocard)
-      dserror("Action get_material_internal_state works only for myocard material");
+    Teuchos::RCP<MAT::Material> material = ele->Material();
     Teuchos::RCP<Epetra_MultiVector> material_internal_state = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state");
-    for (int k = 0; k< actmat->GetNumberOfInternalStateVariables(); ++k)
-      material_internal_state->ReplaceMyValue(ele->Id(),k, actmat->GetInternalState(k));
+
+    if( material->MaterialType() == INPAR::MAT::m_myocard)
+    {
+      Teuchos::RCP<MAT::Myocard> material = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+      for (int k = 0; k< material->GetNumberOfInternalStateVariables(); ++k)
+      {
+        material_internal_state->ReplaceGlobalValue(ele->Id(),k, material->GetInternalState(k));
+      }
+    }
+
     params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state);
+
     break;
   }
   case SCATRA::calc_flux_domain:

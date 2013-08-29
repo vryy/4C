@@ -629,9 +629,6 @@ void MAT::Myocard::Update(const double phi, const double dt)
           w_infs = 1.0;
         }
 
-
-
-
     // calculate voltage dependent time constants ([7] page 545)
     const double Tau_vm = GatingFunction(Tau_v1m, Tau_v2m, p   , phi, Theta_vm);
     const double Tau_wm = GatingFunction(Tau_w1m, Tau_w2m, k_wm, phi, u_wm    );
