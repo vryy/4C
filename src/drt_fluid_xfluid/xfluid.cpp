@@ -6296,7 +6296,7 @@ void FLD::XFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr
         dserror("Quantity '%s' not supported in ale testing", position.c_str());
       }
 
-      nerr += CompareValues(result, res);
+      nerr += CompareValues(result, "NODE", res);
       test_count++;
     }
   }

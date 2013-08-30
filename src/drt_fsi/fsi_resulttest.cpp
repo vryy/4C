@@ -224,7 +224,7 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
         dserror("Quantity '%s' not supported in fsi testing", position.c_str());
 
       // compare values
-      const int err = CompareValues(result, res);
+      const int err = CompareValues(result, "NODE", res);
       nerr += err;
       test_count++;
     }

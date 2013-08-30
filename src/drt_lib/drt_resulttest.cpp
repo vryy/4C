@@ -63,10 +63,10 @@ void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, in
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
+int DRT::ResultTest::CompareValues(double actresult, std::string type, DRT::INPUT::LineDefinition& res)
 {
-  int node;
-  res.ExtractInt("NODE",node);
+  int gid;
+  res.ExtractInt(type,gid);
   std::string quantity;
   res.ExtractString("QUANTITY",quantity);
   double givenresult;
@@ -98,8 +98,9 @@ int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition&
   if (name != "")
     msghead << "(" << name << ")";
 
-  msghead << " at node "
-          << std::right << std::setw(3)<< node;
+  std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+  msghead << " at " << type << " "
+          << std::right << std::setw(3)<< gid;
 
   // write something to screen depending if the result check was ok or not
   if (!(fabs(fabs(actresult-givenresult)-fabs(actresult-givenresult)) < tolerance) )

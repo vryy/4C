@@ -74,7 +74,7 @@ void AIRWAY::RedAirwayResultTest::TestNode(DRT::INPUT::LineDefinition& res, int&
         dserror("Quantity '%s' not supported in result-test of red_airway transport problems", position.c_str());
       }
 
-      nerr += CompareValues(result, res);
+      nerr += CompareValues(result, "NODE", res);
       test_count++;
     }
   }

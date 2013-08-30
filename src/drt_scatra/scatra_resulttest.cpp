@@ -112,7 +112,7 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
         dserror("Quantity '%s' not supported in result-test of scalar transport problems", position.c_str());
       }
 
-      nerr += CompareValues(result, res);
+      nerr += CompareValues(result, "NODE", res);
       test_count++;
     }
   }

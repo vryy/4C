@@ -70,7 +70,7 @@ namespace DRT
   protected:
 
     /// compare a calculated value with the expected one
-    virtual int CompareValues(double actresult, DRT::INPUT::LineDefinition& res);
+    virtual int CompareValues(double actresult, std::string type, DRT::INPUT::LineDefinition& res);
 
   private:
 

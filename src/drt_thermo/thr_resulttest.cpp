@@ -107,7 +107,7 @@ void THR::ResultTest::TestNode(
         dserror("Quantity '%s' not supported in thermo testing", position.c_str());
 
       // compare values
-      const int err = CompareValues(result, res);
+      const int err = CompareValues(result, "NODE", res);
       nerr += err;
       test_count++;
     }

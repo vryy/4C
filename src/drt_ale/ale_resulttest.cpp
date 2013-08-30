@@ -84,7 +84,7 @@ void ALE::AleResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
         dserror("Quantity '%s' not supported in ALE testing", position.c_str());
       }
 
-      nerr += CompareValues(result, res);
+      nerr += CompareValues(result, "NODE", res);
       test_count++;
     }
   }

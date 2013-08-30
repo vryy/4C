@@ -120,7 +120,7 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
              dserror("Quantity '%s' not supported in fluid testing", position.c_str());
          }
 
-         nerr += CompareValues(result, res);
+         nerr += CompareValues(result, "NODE", res);
          test_count++;
      }
    }
@@ -195,7 +195,7 @@ void FLD::XFluidFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& 
              dserror("Quantity '%s' not supported in fluid testing", position.c_str());
          }
 
-         nerr += CompareValues(result, res);
+         nerr += CompareValues(result, "NODE", res);
          test_count++;
      }
    }

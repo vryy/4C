@@ -171,7 +171,7 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         dserror("Quantity '%s' not supported in structure testing", position.c_str());
 
       // compare values
-      const int err = CompareValues(result, res);
+      const int err = CompareValues(result, "NODE", res);
       nerr += err;
       test_count++;
     }
