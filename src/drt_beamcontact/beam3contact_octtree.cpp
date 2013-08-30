@@ -18,6 +18,7 @@ Maintainer: Kei Müller
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_contact.H"
 #include <Teuchos_Time.hpp>
 
 #include <iostream>
@@ -77,27 +78,31 @@ dofoffset_(dofoffset)
     periodicBC_ = false;
 
   // determine bounding box type
-  std::string boundingbox = params.get<std::string>("BEAMS_OCTREE","None");
-  if(boundingbox == "octree_axisaligned")
+  switch(DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(params, "BEAMS_OCTREE"))
   {
-    if(!discret_.Comm().MyPID())
-      std::cout<<"Search routine:\nOctree + Axis Aligned BBs"<<std::endl;
-    boundingbox_ = Beam3ContactOctTree::axisaligned;
+    case INPAR::CONTACT::boct_aabb:
+    {
+      if(!discret_.Comm().MyPID())
+        std::cout<<"Search routine:\nOctree + Axis Aligned BBs"<<std::endl;
+      boundingbox_ = Beam3ContactOctTree::axisaligned;
+    }
+      break;
+    case INPAR::CONTACT::boct_cobb:
+    {
+      if(!discret_.Comm().MyPID())
+        std::cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<std::endl;
+      boundingbox_ = Beam3ContactOctTree::cyloriented;
+    }
+      break;
+    case INPAR::CONTACT::boct_spbb:
+    {
+      if(!discret_.Comm().MyPID())
+        std::cout<<"Search routine:\nOctree + Spherical BBs"<<std::endl;
+      boundingbox_ = Beam3ContactOctTree::spherical;
+    }
+      break;
+    default: dserror("No octree (i.e. none) declared in your input file!");
   }
-  else if(boundingbox == "octree_cylorient")
-  {
-    if(!discret_.Comm().MyPID())
-      std::cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<std::endl;
-    boundingbox_ = Beam3ContactOctTree::cyloriented;
-  }
-  else if(boundingbox == "octree_spherical")
-  {
-    if(!discret_.Comm().MyPID())
-      std::cout<<"Search routine:\nOctree + Spherical BBs"<<std::endl;
-    boundingbox_ = Beam3ContactOctTree::spherical;
-  }
-  else
-    dserror("No Octree declared in your Input file!");
 
   if(!discret_.Comm().MyPID())
     std::cout<<"max. tree depth        = "<<maxtreedepth_<<"\nmax. BB per octant     = "<<minbboxesinoctant_<<"\nextrusion factor       = "<<extrusionfactor_<<std::endl;

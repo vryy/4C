@@ -149,7 +149,7 @@ void STATMECH::StatMechManager::SeedRandomGenerators(const int seedparameter)
 void STATMECH::StatMechManager::InitializeStatMechValues()
 {
   if(!discret_->Comm().MyPID())
-    std::cout<<"====== StatMechManager Init ======="<<std::endl;
+    std::cout<<"=================== StatMechManager Init ======================="<<std::endl;
 
   // determine network type / simulation type
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::NetworkType>(statmechparams_, "NETWORKTYPE"))
@@ -186,14 +186,14 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     {
       filamentmodel_ = statmech_filament_std;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- standard filaments"<<std::endl;
+        std::cout<<"  -- standard filaments"<<std::endl;
     }
     break;
     case INPAR::STATMECH::filamentmodel_helical:
     {
       filamentmodel_ = statmech_filament_helical;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- filaments with helical binding site orientation..."<<std::endl;
+        std::cout<<"  -- filaments with helical binding site orientation..."<<std::endl;
     }
     break;
     default:
@@ -206,40 +206,57 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     case INPAR::STATMECH::linkermodel_none:
       linkermodel_ = statmech_linker_none;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- no linkers"<<std::endl;
+        std::cout<<"  -- no linkers"<<std::endl;
       break;
     case INPAR::STATMECH::linkermodel_std:
       linkermodel_ = statmech_linker_std;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- standard linkers"<<std::endl;
+        std::cout<<"  -- standard linkers"<<std::endl;
       break;
     case INPAR::STATMECH::linkermodel_stdintpol:
       linkermodel_ = statmech_linker_stdintpol;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- standard linkers with interpolated binding site positions"<<std::endl;
+        std::cout<<"  -- standard linkers with interpolated binding site positions"<<std::endl;
       break;
     case INPAR::STATMECH::linkermodel_bellseq:
       linkermodel_ = statmech_linker_bellseq;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- linkers accounting for Bell's equation"<<std::endl;
+        std::cout<<"  -- linkers accounting for Bell's equation"<<std::endl;
       break;
     case INPAR::STATMECH::linkermodel_bellseqintpol:
       linkermodel_ = statmech_linker_bellseqintpol;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- linkers accounting for Bell's equation (interpolated binding site positions)"<<std::endl;
+        std::cout<<"  -- linkers accounting for Bell's equation (interpolated binding site positions)"<<std::endl;
       break;
     case INPAR::STATMECH::linkermodel_active:
       linkermodel_ = statmech_linker_active;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- active linkers"<<std::endl;
+        std::cout<<"  -- active linkers"<<std::endl;
       break;
     case INPAR::STATMECH::linkermodel_activeintpol:
       linkermodel_ = statmech_linker_activeintpol;
       if(!discret_->Comm().MyPID())
-        std::cout<<"-- active linkers (interpolated binding site positions)"<<std::endl;
+        std::cout<<"  -- active linkers (interpolated binding site positions)"<<std::endl;
       break;
     default:
       dserror("Unknown linker model %i", DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "LINKERMODEL"));
+  }
+
+  switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
+  {
+    case INPAR::STATMECH::frictionmodel_isotropiclumped:
+      if(!discret_->Comm().MyPID())
+        std::cout<<"  -- friction model: isotropic lumped"<<std::endl;
+      break;
+    case INPAR::STATMECH::frictionmodel_isotropicconsistent:
+      if(!discret_->Comm().MyPID())
+        std::cout<<"  -- friction model: isotropic consistent"<<std::endl;
+      break;
+    case INPAR::STATMECH::frictionmodel_anisotropicconsistent:
+      if(!discret_->Comm().MyPID())
+        std::cout<<"  -- friction model: anisotropic consistent"<<std::endl;
+      break;
+    default: dserror("No friction model (i.e. FRICTION_MODEL == none) declared in your input file!");
   }
 
   periodlength_ = Teuchos::rcp(new std::vector<double>);
@@ -335,7 +352,7 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     for(int i=0; i<(int)actiontime_->size(); i++)
       if(i>1 && i!=dbctimeindex_)
         std::cout<<"t("<<i<<")        = "<<std::setprecision(10)<<actiontime_->at(i)<<" @ dt = "<<timestepsizes_->at(i)<<std::endl;
-    std::cout<<"==================================="<<std::endl;
+    std::cout<<"================================================================"<<std::endl;
   }
   return;
 }
