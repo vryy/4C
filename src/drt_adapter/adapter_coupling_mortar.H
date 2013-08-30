@@ -77,7 +77,7 @@ namespace ADAPTER
                 Teuchos::RCP<DRT::Discretization>   slavedis,       ///> slave discretization
                 Teuchos::RCP<DRT::Discretization>   aledis,         ///> ale discretization
                 std::vector<int>                    coupleddof,     ///> vector defining coupled degree's of freedom
-                const string&                       couplingcond,   ///> string for coupling condition
+                const std::string&                       couplingcond,   ///> string for coupling condition
                 const Epetra_Comm&                  comm,           ///> communicate
                 bool                                structslave=false,  ///> flag defining if structure is slave side
                 bool                                slidingale=false);  //> flag defining sliding ale case

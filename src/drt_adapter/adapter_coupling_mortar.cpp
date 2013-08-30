@@ -43,7 +43,7 @@ void ADAPTER::CouplingMortar::Setup(
     Teuchos::RCP<DRT::Discretization>   slavedis,
     Teuchos::RCP<DRT::Discretization>   aledis,
     std::vector<int>                    coupleddof,
-    const string&                       couplingcond,
+    const std::string&                  couplingcond,
     const Epetra_Comm&                  comm,
     bool                                structslave,
     bool                                slidingale)
@@ -80,7 +80,7 @@ void ADAPTER::CouplingMortar::Setup(
 
     for (unsigned i=0; i<conds.size(); i++)
     {
-      const string* side = conds[i]->Get<string>("Side");
+      const std::string* side = conds[i]->Get<std::string>("Side");
 
       if (*side == "Master")
         conds_master.push_back(conds[i]);
