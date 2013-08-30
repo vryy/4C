@@ -51,13 +51,14 @@ SCATRATYPE			ConvectionDiffusion
 CONVTOL                         1e-6
 ITEMAX                          2
 EXPLPREDICT                     Yes
---------------------------------------------------------------------SOLVER 1
-NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Dual
 PARALLEL_REDIST                 static
 REDUNDANT_STORAGE               all
+MESH_INIT                       no
+--------------------------------------------------------------------SOLVER 1
+NAME                            Sca_Tra_Solver
+SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.01
 ----------------------------------------------------------------------CURVE1

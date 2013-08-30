@@ -45,13 +45,13 @@ UPRES                           1
 CALCERROR                       No
 BLOCKPRECOND                    No
 MATID                           2
-MESHTYING		        Condensed_Smat	
-ONLYPOTENTIAL			yes
-SCATRATYPE			Elch_ENC_PDE_ELIM
-OUTMEAN 			yes
+MESHTYING                       Condensed_Smat	
+ONLYPOTENTIAL                   yes
+SCATRATYPE                      Elch_ENC_PDE_ELIM
+OUTMEAN                         yes
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL          1e-6
-ITEMAX           3
+CONVTOL                         1e-6
+ITEMAX                          3
 ------------------------------------------------------ELCH CONTROL
 ITEMAX                          3
 MAXTIME                         2.0
@@ -64,6 +64,7 @@ TEMPERATURE                     11604.506 // abused as a scaling factor in order
 SHAPEFCN                        Dual
 PARALLEL_REDIST                 no
 REDUNDANT_STORAGE               all
+MESH_INIT                       no
 ----------------------------------------------------------SOLVER 1
 SOLVER         UMFPACK //Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 ----------------------------------------------------------MATERIALS
