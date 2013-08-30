@@ -3335,6 +3335,15 @@ void FLD::FluidImplicitTimeInt::Output()
       }
     }
 
+    vol_surf_flow_bc_->Output(*output_);
+    traction_vel_comp_adder_bc_->Output(*output_);
+
+    //biofilm growth
+    if (fldgrdisp_!=Teuchos::null)
+    {
+      output_->WriteVector("fld_growth_displ", fldgrdisp_);
+    }
+
     // don't write output in case of separate inflow computation
     // Sep_-Matrix needed for algebraic-multigrid filter has never been build
 #if 0
@@ -3446,21 +3455,19 @@ void FLD::FluidImplicitTimeInt::Output()
       impedancebc_->WriteRestart(*output_);
 
       Wk_optimization_->WriteRestart(*output_);
+      // write reduced model problem
+      // Check if one-dimensional artery network problem exist
+      if (ART_exp_timeInt_ != Teuchos::null)
+      {
+        coupled3D_redDbc_art_->WriteRestart(*output_);
+      }
+      // Check if zero-dimensional airway network problem exist
+      if (airway_imp_timeInt_ != Teuchos::null)
+      {
+        coupled3D_redDbc_airways_->WriteRestart(*output_);
+      }
     }
 
-    vol_surf_flow_bc_->Output(*output_);
-    traction_vel_comp_adder_bc_->Output(*output_);
-    // write reduced model problem
-    // Check if one-dimensional artery network problem exist
-    if (ART_exp_timeInt_ != Teuchos::null)
-    {
-      coupled3D_redDbc_art_->WriteRestart(*output_);
-    }
-    // Check if zero-dimensional airway network problem exist
-    if (airway_imp_timeInt_ != Teuchos::null)
-    {
-      coupled3D_redDbc_airways_->WriteRestart(*output_);
-    }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
@@ -3554,8 +3561,17 @@ void FLD::FluidImplicitTimeInt::Output()
     impedancebc_->WriteRestart(*output_);
 
     Wk_optimization_->WriteRestart(*output_);
-    vol_surf_flow_bc_->Output(*output_);
-    traction_vel_comp_adder_bc_->Output(*output_);
+    // write reduced model problem
+    // Check if one-dimensional artery network problem exist
+    if (ART_exp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_art_->WriteRestart(*output_);
+    }
+    // Check if zero-dimensional airway network problem exist
+    if (airway_imp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_airways_->WriteRestart(*output_);
+    }
   }
 
 //#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current configuration - only works for 1 processor  devaal 02.2011
@@ -3619,12 +3635,6 @@ void FLD::FluidImplicitTimeInt::Output()
     // initial solution (=u_0) is old solution at time step 1
     if (step_==1 and timealgo_!=INPAR::FLUID::timeint_stationary)
       optimizer_->ImportFluidData(velnm_,0); // currently velnm contains veln because timeupdate was called before
-  }
-
-  //biofilm growth
-  if (fldgrdisp_!=Teuchos::null)
-  {
-    output_->WriteVector("fld_growth_displ", fldgrdisp_);
   }
 
   return;
