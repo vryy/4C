@@ -1151,22 +1151,30 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   case SCATRA::get_material_internal_state:
   {
 
-    // access the general material
-    Teuchos::RCP<MAT::Material> material = ele->Material();
-    Teuchos::RCP<Epetra_MultiVector> material_internal_state = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state");
-
-    if( material->MaterialType() == INPAR::MAT::m_myocard)
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    if (ele->Owner() == discretization.Comm().MyPID())
     {
-      Teuchos::RCP<MAT::Myocard> material = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
-      for (int k = 0; k< material->GetNumberOfInternalStateVariables(); ++k)
+
+      // access the general material
+      Teuchos::RCP<MAT::Material> material = ele->Material();
+      Teuchos::RCP<Epetra_MultiVector> material_internal_state = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state");
+
+      if( material->MaterialType() == INPAR::MAT::m_myocard)
       {
-        material_internal_state->ReplaceGlobalValue(ele->Id(),k, material->GetInternalState(k));
+        Teuchos::RCP<MAT::Myocard> material = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+        for (int k = 0; k< material->GetNumberOfInternalStateVariables(); ++k)
+        {
+          int err = material_internal_state->ReplaceGlobalValue(ele->Id(),k, material->GetInternalState(k));
+          if(err != 0) dserror("%i",err);
+        }
       }
+
+      params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state);
+
     }
 
-    params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state);
-
     break;
+
   }
   case SCATRA::calc_flux_domain:
   {

@@ -1344,14 +1344,11 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
-  // write out initial state
-  Output();
-
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
   {
-    OutputElectrodeInfo();
-    OutputMeanScalars();
+    // write out initial state
+    Output();
 
     // compute error for problems with analytical solution (initial field!)
     EvaluateErrorComparedToAnalyticalSol();
@@ -1570,10 +1567,10 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     if (writeflux_!=INPAR::SCATRA::flux_no)
     {
       // for flux output of initial field (before first solve) do:
-      if (step_==0)
-        flux_=CalcFlux(true, num);
-
-      OutputFlux(flux_);
+      if (step_==0){
+        flux_= CalcFlux(true, num);
+        OutputFlux(flux_);
+      }
     }
 
     // write mean values of scalar(s)
