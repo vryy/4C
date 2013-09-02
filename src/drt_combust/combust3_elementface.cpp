@@ -264,7 +264,7 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
       std::vector<int> dof = discretization.Dof(dofset,node);
 
       // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numnode)
-      const int size = NumDofPerNode(dofset,*node);
+      const int size = slave_eledofmanager->NumDofPerNode(node->Id());
 
       for (int j=0; j< size; ++j)
       {
@@ -337,7 +337,7 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
 
     if(m_offset!=m_node_lm_offset.end()) // node not included yet
     {
-      const int size = NumDofPerNode(dofset,*node);
+      const int size = master_eledofmanager->NumDofPerNode(node->Id());
 
       int offset = m_offset->second;
 
