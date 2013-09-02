@@ -109,6 +109,25 @@ namespace ELEMENTS
                                            const GEO::CUT::plain_volumecell_set &            cells)
     {dserror("Implemented in derived xfem class!"); return 1;};
 
+
+    /// Evaluate supporting methods of the element
+    /*!
+      Interface function for supporting methods of the element
+     */
+    virtual int EvaluateService(
+      DRT::ELEMENTS::Fluid*     ele,
+      Teuchos::ParameterList&   params,
+      Teuchos::RCP<MAT::Material> & mat,
+      DRT::Discretization&      discretization,
+      std::vector<int>&         lm,
+      Epetra_SerialDenseMatrix& elemat1,
+      Epetra_SerialDenseMatrix& elemat2,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2,
+      Epetra_SerialDenseVector& elevec3
+      );
+
+
     /*! \brief Calculate a integrated divergence operator in vector form
      *
      *   The vector valued operator \f$B\f$ is constructed such that
@@ -126,7 +145,10 @@ namespace ELEMENTS
     );
 
 
-    /*! \brief Calculate material derivative of velocity at specified material coordinate
+    /*! \brief Calculate material derivative of fluid velocity at specified element coordinates
+     *
+     *   The vector valued operator \f$B\f$ is constructed such that
+     *   \f$\frac{Du}{Dt} = \frac{du}{dt} + u grad(u)\f$
      *
      *   \author: ghamm
      *   \date:   01/2013

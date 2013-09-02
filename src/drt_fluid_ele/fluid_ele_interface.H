@@ -111,16 +111,6 @@ namespace ELEMENTS
                              const GEO::CUT::plain_volumecell_set &            cells,
                              bool                                              offdiag = false) = 0;
 
-    /// Integrate shape function
-    /*!
-      This class does not provide a definition for this function; it
-      must be defined in FluidEleCalc.
-     */
-    virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid*     ele,
-                                       DRT::Discretization&      discretization,
-                                       const std::vector<int>&   lm            ,
-                                       Epetra_SerialDenseVector& elevec1) = 0;
-
     virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid*     ele,
                                        DRT::Discretization&      discretization,
                                        const std::vector<int>&   lm            ,
@@ -135,61 +125,17 @@ namespace ELEMENTS
                                            std::string&                                      VCellGaussPts,
                                            const GEO::CUT::plain_volumecell_set &            cells) = 0;
 
-
-    /*! \brief Calculate a integrated divergence operator in vector form
-     *
-     *   The vector valued operator \f$B\f$ is constructed such that
-     *   \f$\int_\Omega div (u) \,\mathrm{d}\Omega = B^T u = 0\f$
-     */
-    virtual int CalcDivOp(DRT::ELEMENTS::Fluid*     ele,
-                          DRT::Discretization&      discretization,
-                          std::vector<int>&         lm,
-                          Epetra_SerialDenseVector& elevec1) = 0;
-
-    /*! \brief Calculate material derivative of fluid velocity at specified element coordinates
-     *
-     *   The vector valued operator \f$B\f$ is constructed such that
-     *   \f$\frac{Du}{Dt} = \frac{du}{dt} + u grad(u)\f$
-     */
-    virtual int CalcMatDerivAndRotU(DRT::ELEMENTS::Fluid*     ele,
-                             Teuchos::ParameterList&   params,
-                             DRT::Discretization&      discretization,
-                             std::vector<int>&         lm,
-                             Epetra_SerialDenseVector& elevec1,
-                             Epetra_SerialDenseVector& elevec2,
-                             Epetra_SerialDenseVector& elevec3) = 0;
-
-    /*! \brief Calculate void fraction for this element by using a fourth order clipped polynomial
-     *
-     */
-    virtual int ComputeVoidFraction(
-                             DRT::ELEMENTS::Fluid*     ele,
-                             Teuchos::ParameterList&   params,
-                             DRT::Discretization&      discretization,
-                             std::vector<int>&         lm,
-                             Epetra_SerialDenseVector& elevec1
-                             ) = 0;
-
-
-    /*! \brief Calculate a divergence of velocity at the element center
-     *
-     *   \author: ehrl
-     *   \date:   12/2012
-     */
-    virtual int ComputeDivU(
-        DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
-        DRT::Discretization&            discretization,   //< fluid discretization
-        std::vector<int>&                    lm,               //< location vector for DOF management
-        Epetra_SerialDenseVector&       elevec1           //< reference to element vector to be filled
-        )=0;
-
-    /// error computation
-    virtual int ComputeError(DRT::ELEMENTS::Fluid*        ele,
-                             Teuchos::ParameterList&       params,
-                             Teuchos::RCP<MAT::Material>&  mat,
-                             DRT::Discretization&          discretization,
-                             std::vector<int>&             lm,
-                             Epetra_SerialDenseVector&     elevec1) = 0;
+    /// Evaluate supporting methods of the element
+    virtual int EvaluateService(DRT::ELEMENTS::Fluid*     ele,
+                                Teuchos::ParameterList&   params,
+                                Teuchos::RCP<MAT::Material> & mat,
+                                DRT::Discretization&      discretization,
+                                std::vector<int>&         lm,
+                                Epetra_SerialDenseMatrix& elemat1,
+                                Epetra_SerialDenseMatrix& elemat2,
+                                Epetra_SerialDenseVector& elevec1,
+                                Epetra_SerialDenseVector& elevec2,
+                                Epetra_SerialDenseVector& elevec3) = 0;
 
     virtual int ComputeError(DRT::ELEMENTS::Fluid*               ele,
                              Teuchos::ParameterList&              params,
@@ -198,13 +144,6 @@ namespace ELEMENTS
                              std::vector<int>&                    lm,
                              Epetra_SerialDenseVector&            elevec1,
                              const DRT::UTILS::GaussIntegration & intpoints2) = 0;
-
-    /// calculation of dissipation
-    virtual int CalcDissipation(Fluid*                     ele,
-                                Teuchos::ParameterList&     params,
-                                DRT::Discretization&        discretization,
-                                std::vector<int>&           lm,
-                                Teuchos::RCP<MAT::Material> mat) = 0;
 
     virtual int ComputeErrorInterface(
         DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element

@@ -337,18 +337,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       }
     }
     break;
-    case FLD::calc_div_u:
-    {
-      // compute divergence of velocity field at the element
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->ComputeDivU(this, discretization, lm, elevec1);
-    }
-    break;
-    case FLD::calc_fluid_error:
-    {
-      // compute error for a known analytical solution
-      return  DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->ComputeError(this, params, mat, discretization, lm, elevec1);
-    }
-    break;
     case FLD::calc_turbulence_statistics:
     {
       if (nsd == 3)
@@ -774,23 +762,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       this->TDS()->Update(dt,gamma);
     }
     break;
-    case FLD::calc_dissipation:
-    {
-      if (nsd == 3)
-      {
-        if (this->Owner() == discretization.Comm().MyPID()) // don't store values of ghosted elements
-        {
-          return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcDissipation(
-              this,
-              params,
-              discretization,
-              lm,
-              mat);
-        }
-      }
-      else dserror("%i D elements does not support calculation of dissipation", nsd);
-    }
-    break;
     case FLD::calc_model_params_mfsubgr_scales:
     {
       if (nsd == 3)
@@ -954,33 +925,25 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           " added to the template yet. Also it is not tested");
       break;
     }
+    case FLD::calc_div_u:
+    case FLD::calc_fluid_error:
+    case FLD::calc_dissipation:
     case FLD::integrate_shape:
-    {
-      // integrate shape function for this element
-      // (results assembled into element vector)
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->IntegrateShapeFunction(this, discretization, lm, elevec1);
-    }
     case FLD::calc_divop:
-    {
-      // calculate the integrated divergence operator
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcDivOp(this, discretization, lm, elevec1);
-    }
     case FLD::calc_mat_deriv_u_and_rot_u:
-    {
-      // calculate material derivative at specified element coordinates
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->CalcMatDerivAndRotU(
-          this,
-          params,
-          discretization,
-          lm,
-          elevec1,
-          elevec2,
-          elevec3);
-    }
     case FLD::void_fraction_gaussian_integration:
     {
-      // calculate material derivative at specified element coordinates
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->ComputeVoidFraction(this, params, discretization, lm, elevec1);
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->EvaluateService(this,
+                                                                       params,
+                                                                       mat,
+                                                                       discretization,
+                                                                       lm,
+                                                                       elemat1,
+                                                                       elemat2,
+                                                                       elevec1,
+                                                                       elevec2,
+                                                                       elevec3);
+      break;
     }
     case FLD::set_general_fluid_parameter:
     case FLD::set_time_parameter:

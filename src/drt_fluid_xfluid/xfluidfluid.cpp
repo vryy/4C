@@ -5233,12 +5233,22 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*bgdis_,la,false);
 
-        DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,
+        Epetra_SerialDenseMatrix elemat1;
+        Epetra_SerialDenseMatrix elemat2;
+        Epetra_SerialDenseVector elevec2;
+        Epetra_SerialDenseVector elevec3;
+        params_->set<int>("action",FLD::calc_fluid_error);
+
+        DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->EvaluateService(ele,
                                                                                              *params_,
                                                                                              mat,
                                                                                              *bgdis_,
                                                                                              la[0].lm_,
-                                                                                             ele_dom_norms_bg);
+                                                                                             elemat1,
+                                                                                             elemat2,
+                                                                                             ele_dom_norms_bg,
+                                                                                             elevec2,
+                                                                                             elevec3);
 
         // sum up (on each processor)
         cpu_dom_norms_bg += ele_dom_norms_bg;
@@ -5278,12 +5288,22 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*embdis_,la,false);
 
-      DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,
+      Epetra_SerialDenseMatrix elemat1;
+      Epetra_SerialDenseMatrix elemat2;
+      Epetra_SerialDenseVector elevec2;
+      Epetra_SerialDenseVector elevec3;
+      params_->set<int>("action",FLD::calc_fluid_error);
+
+      DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->EvaluateService(ele,
                                                                                            *params_,
                                                                                            mat,
                                                                                            *embdis_,
                                                                                            la[0].lm_,
-                                                                                           ele_dom_norms_emb);
+                                                                                           elemat1,
+                                                                                           elemat2,
+                                                                                           ele_dom_norms_emb,
+                                                                                           elevec2,
+                                                                                           elevec3);
 
       // sum up (on each processor)
       cpu_dom_norms_emb += ele_dom_norms_emb;

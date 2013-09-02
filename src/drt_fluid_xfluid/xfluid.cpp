@@ -1103,7 +1103,14 @@ void FLD::XFluid::XFluidState::IntegrateShapeFunction(
       strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
       // call the element evaluate method
-      int err = impl->IntegrateShapeFunction( ele, discret, la[0].lm_, strategy.Elevector1() );
+      Epetra_SerialDenseMatrix elemat1;
+      Epetra_SerialDenseMatrix elemat2;
+      Epetra_SerialDenseVector elevec2;
+      Epetra_SerialDenseVector elevec3;
+      Teuchos::ParameterList params;
+      params.set<int>("action",FLD::integrate_shape);
+      Teuchos::RCP<MAT::Material> mat = ele->Material();
+      int err = impl->EvaluateService( ele, params, mat, discret, la[0].lm_, elemat1, elemat2, strategy.Elevector1(), elevec2, elevec3 );
 
       if (err) dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
 
@@ -2568,12 +2575,21 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(*discret_,la,false);
 
-        DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->ComputeError(ele,
+        Epetra_SerialDenseMatrix elemat1;
+        Epetra_SerialDenseMatrix elemat2;
+        Epetra_SerialDenseVector elevec2;
+        Epetra_SerialDenseVector elevec3;
+        params_->set<int>("action",FLD::calc_fluid_error);
+        DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->EvaluateService(ele,
             *params_,
             mat,
             *discret_,
             la[0].lm_,
-            ele_dom_norms);
+            elemat1,
+            elemat2,
+            ele_dom_norms,
+            elevec2,
+            elevec3);
       }
 
       // sum up (on each processor)

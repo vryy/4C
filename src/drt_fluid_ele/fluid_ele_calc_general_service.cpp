@@ -13,10 +13,12 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 
+#include "fluid_ele_factory.H"
 #include "fluid_ele_calc.H"
 #include "fluid_ele.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_utils.H"
+#include "fluid_ele_action.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
@@ -30,6 +32,97 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/newtonianfluid.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
+
+/*----------------------------------------------------------------------*
+ * Evaluate supporting methods of the element
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    Teuchos::RCP<MAT::Material> & mat,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
+{
+  // get the action required
+  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params,"action");
+
+  switch(act)
+  {
+    case FLD::calc_div_u:
+    {
+      // compute divergence of velocity field at the element
+      return ComputeDivU(ele, discretization, lm, elevec1);
+    }
+    break;
+    case FLD::calc_fluid_error:
+    {
+      // compute error for a known analytical solution
+      return ComputeError(ele, params, mat, discretization, lm, elevec1);
+    }
+    break;
+    case FLD::calc_dissipation:
+    {
+      if (nsd_ == 3)
+      {
+        if (ele->Owner() == discretization.Comm().MyPID()) // don't store values of ghosted elements
+        {
+          return CalcDissipation(
+              ele,
+              params,
+              discretization,
+              lm,
+              mat);
+        }
+      }
+      else dserror("%i D elements does not support calculation of dissipation", nsd_);
+    }
+    break;
+    case FLD::integrate_shape:
+    {
+      // integrate shape function for this element
+      // (results assembled into element vector)
+      return IntegrateShapeFunction(ele, discretization, lm, elevec1);
+    }
+    break;
+    case FLD::calc_divop:
+    {
+      // calculate the integrated divergence operator
+      return CalcDivOp(ele, discretization, lm, elevec1);
+    }
+    break;
+    case FLD::calc_mat_deriv_u_and_rot_u:
+    {
+      // calculate material derivative at specified element coordinates
+      return CalcMatDerivAndRotU(
+          ele,
+          params,
+          discretization,
+          lm,
+          elevec1,
+          elevec2,
+          elevec3);
+    }
+    break;
+    case FLD::void_fraction_gaussian_integration:
+    {
+      // calculate void fraction of the element for cavitation problems
+      return ComputeVoidFraction(ele, params, discretization, lm, elevec1);
+    }
+    break;
+    default:
+      dserror("Unknown type of action for Fluid");
+    break;
+  } // end of switch(act)
+
+  return 0;
+}
+
 
 /*----------------------------------------------------------------------*
  * Action type: Integrate shape function
@@ -155,6 +248,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
 
   return 0;
 }
+
 
 /*---------------------------------------------------------------------*
  | Action type: calc_mat_derivative_u                                  |
@@ -459,6 +553,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeDivU(
   return 0;
 }
 
+
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
@@ -480,6 +575,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
                        discretization, lm,
                        elevec1, intpoints);
 }
+
+
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
