@@ -977,6 +977,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           elevec2,
           elevec3);
     }
+    case FLD::void_fraction_gaussian_integration:
+    {
+      // calculate material derivative at specified element coordinates
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->ComputeVoidFraction(this, params, discretization, lm, elevec1);
+    }
     case FLD::set_general_fluid_parameter:
     case FLD::set_time_parameter:
     case FLD::set_turbulence_parameter:

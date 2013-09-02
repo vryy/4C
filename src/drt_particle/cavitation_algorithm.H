@@ -36,6 +36,10 @@ namespace ADAPTER
 {
   class Fluid;
 }
+namespace DRT
+{
+  class Element;
+}
 
 /*----------------------------------------------------------------------*
  | cavitation algorithm                                     ghamm 11/12 |
@@ -122,14 +126,108 @@ namespace CAVITATION
       int* ijk   ///< ijk is 1st octant
       );
 
+    //! @name methods for computing the void fraction of the dispersed phase in the fluid
+    //! For details see Bachelor thesis Marcel Menner
+    //@{
+
+    /// void fraction calculation of dispersed phase in fluid
+    void CalculateVoidFraction();
+
+    // use Gaussian integration for solving volume integral to obtain void fraction
+    void DoGaussianIntegration(
+      DRT::Element*         ele,
+      LINALG::Matrix<3,1>&  particleposition,
+      const double          influence,
+      double&               vol_ele
+      );
+
+    // use analytical integration for solving volume integral to obtain void fraction
+    void DoAnalyticalIntegration(
+      DRT::Element*         ele,
+      LINALG::Matrix<3,1>&  particleposition,
+      const double          influence,
+      double&               vol_ele,
+      bool&                 surfaceoverlap
+      );
+
+    /// compute integration points for analytic integration
+    void EvaluateSurface(
+      std::vector<LINALG::Matrix<3,1> >& surfacenodes,
+      const LINALG::Matrix<3,1>&       n,
+      const LINALG::Matrix<3,1>&       centerele ,
+      LINALG::Matrix<3,1>&             particleposition,
+      const double                     influence,
+      double&                          vol_ele,
+      bool&                            surfaceoverlap
+      );
+
+    /// find penetration points of bubble surfaces (+x and -x)
+    void GetPenetrationPointsOfXSurfaces(
+      const LINALG::Matrix<3,1>&         n,
+      std::vector<LINALG::Matrix<3,1> >& surfacenodes,
+      const double                       influence,
+      const LINALG::Matrix<3,1>&         particleposition,
+      std::vector<LINALG::Matrix<3,1> >& bubbleX,
+      std::vector<LINALG::Matrix<3,1> >& bubble_X,
+      bool&                              surfaceoverlap
+      );
+
+    /// calculation of bubble corner points
+    void CalculateBubbleCornerPoint(
+      const LINALG::Matrix<3,1>&    n,
+      const LINALG::Matrix<3,1>&    centersurface,
+      int                           bubblesurface1,
+      int                           bubblesurface2,
+      double                        *bubblesurface,
+      LINALG::Matrix<3,1>&          bubblecorner
+      );
+
+    /// check whether a given point is inside of a surface
+    bool CheckPointInSurface(
+      std::vector<LINALG::Matrix<3,1> >& surfacenodes,
+      const LINALG::Matrix<3,1>&         centersurface,
+      const LINALG::Matrix<3,1>&         centerele,
+      const LINALG::Matrix<3,1>&         pointtocheck
+      );
+
+    /// build convex hull of points in y-z plane
+    void BuildConvexHull(
+      std::vector<LINALG::Matrix<3,1> >& surfacenodes
+      );
+
+    /// evaluate line integral for analytic integration (constan polynomial)
+    void EvaluateTwoPointsConstPoly(
+      const LINALG::Matrix<3,1>&    n,
+      const LINALG::Matrix<3,1>&    CenterRing,
+      const LINALG::Matrix<3,1>&    point1,
+      const LINALG::Matrix<3,1>&    point2,
+      double&                       vol_ele
+      );
+
+    /// evaluate line integral for analytic integration (quadratic polynomial)
+    void EvaluateTwoPointsQuadraticPoly(
+      const LINALG::Matrix<3,1>&    n,
+      const LINALG::Matrix<3,1>&    centerringintgral,
+      LINALG::Matrix<3,1>&          point1,
+      LINALG::Matrix<3,1>&          point2,
+      const LINALG::Matrix<3,1>&    particleposition,
+      double&                       vol_ele,
+      const double                  influence
+      );
+
+    //@}
 
   private:
     //! @name cavitation related stuff
     //@{
 
-    INPAR::CAVITATION::CouplingStrategyOverFields coupalgo_;
+    INPAR::CAVITATION::CouplingStrategyOverFields coupalgo_;   ///< coupling strategy between fluid and particle
 
-    bool approxelecoordsinit_;
+    INPAR::CAVITATION::VoidFractionCalculation void_frac_strategy_;   ///< strategy for void fraction calculation
+
+    int gauss_rule_per_dir_;   ///< number of gauss points in each direction for void fraction computation
+
+    bool approxelecoordsinit_;   ///< bool whether a fast and approximate initial guess is used for computing natural coords
 
     //@}
 
@@ -141,6 +239,8 @@ namespace CAVITATION
     Teuchos::RCP<ADAPTER::Fluid> fluid_;     ///< underlying fluid time integrator
 
     std::map<int, std::list<Teuchos::RCP<BubbleSource> > > bubble_source_;   ///< store particle sources for each bin
+
+    Teuchos::RCP<Epetra_Vector> ele_volume_;   ///< element row map containing the volume of each element
 
     //@}
 

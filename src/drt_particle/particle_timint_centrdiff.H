@@ -118,6 +118,8 @@ namespace PARTICLE
 
     double density_; //!< density of each particle at \f$t_{n+1}\f$
 
+    void ApplyInitialRadiusCondition(double initial_radius);
+
     //@}
 
 

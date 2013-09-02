@@ -3515,6 +3515,33 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(particlecond);
 
   /*--------------------------------------------------------------------*/
+  // particle init radius condition
+
+  std::vector<Teuchos::RCP<ConditionComponent> > particleinitradiuscomponents;
+
+  particleinitradiuscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("SCALAR")));
+  particleinitradiuscomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("SCALAR",1)));
+
+  particleinitradiuscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  particleinitradiuscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("FUNCT",1)));
+
+  Teuchos::RCP<ConditionDefinition> particleradiuscond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE INIT RADIUS CONDITIONS",
+                                         "InitialParticleRadius",
+                                         "Particle Initial Radius Condition",
+                                         DRT::Condition::ParticleInitRadius,
+                                         false,
+                                         DRT::Condition::Particle));
+
+
+  for (unsigned i=0; i<particleinitradiuscomponents.size(); ++i)
+  {
+    particleradiuscond->AddComponent(particleinitradiuscomponents[i]);
+  }
+
+  condlist.push_back(particleradiuscond);
+
+  /*--------------------------------------------------------------------*/
   // particle wall condition
 
   std::vector<Teuchos::RCP<ConditionComponent> > particlewallcomponents;

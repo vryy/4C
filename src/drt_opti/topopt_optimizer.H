@@ -147,7 +147,7 @@ namespace TOPOPT
     Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportAdjointData() const {return adjointvel_;} /// fluid velocity
-    Teuchos::RCP<const Epetra_Vector> Density() const {return dens_;}
+    Teuchos::RCP<Epetra_Vector> Density() const {return dens_;}
 
     const double ObjectiveValue(){return obj_;};
     const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(){return obj_der_;};

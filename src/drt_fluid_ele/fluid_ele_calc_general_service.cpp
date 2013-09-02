@@ -239,6 +239,137 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDerivAndRotU(
   return 0;
 }
 
+
+/*---------------------------------------------------------------------*
+ | Action type: void_fraction_gaussian_integration                     |
+ | calculate void fraction for this element                ghamm 01/13 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeVoidFraction(
+  DRT::ELEMENTS::Fluid*     ele,
+  Teuchos::ParameterList&   params,
+  DRT::Discretization&      discretization,
+  std::vector<int>&         lm,
+  Epetra_SerialDenseVector& elevec1)
+{
+  const double influence = params.get<double>("influence");
+  LINALG::Matrix<3,1> pos = params.get<LINALG::Matrix<3,1> >("particle_pos");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+//------------------------------------------------------------------
+//                       INTEGRATION LOOP
+//------------------------------------------------------------------
+  DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
+  if (nsd_ == 3)
+  {
+    const int gp_per_dir = params.get<int>("gp_per_dir");
+    switch(gp_per_dir)
+    {
+    case 1:
+      gaussrule = DRT::UTILS::intrule_hex_1point;
+    break;
+    case 2:
+      gaussrule = DRT::UTILS::intrule_hex_8point;
+    break;
+    case 3:
+      gaussrule = DRT::UTILS::intrule_hex_27point;
+    break;
+    case 4:
+      gaussrule = DRT::UTILS::intrule_hex_64point;
+    break;
+    case 5:
+      gaussrule = DRT::UTILS::intrule_hex_125point;
+    break;
+    case 6:
+      gaussrule = DRT::UTILS::intrule_hex_216point;
+    break;
+    case 7:
+      gaussrule = DRT::UTILS::intrule_hex_343point;
+    break;
+    case 8:
+      gaussrule = DRT::UTILS::intrule_hex_512point;
+    break;
+    case 9:
+      gaussrule = DRT::UTILS::intrule_hex_729point;
+    break;
+    }
+  }
+  else
+    dserror("gauss rule not implemented");
+
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+  //----------------------------------------------------------------------
+  // loop over all gauss points of the actual element
+  //----------------------------------------------------------------------
+  for (int gp = 0; gp < intpoints.nquad; gp++)
+  {
+    // compute fac_
+    const double e0 = intpoints.qxg[gp][0];
+    const double e1 = intpoints.qxg[gp][1];
+    const double e2 = intpoints.qxg[gp][2];
+
+    // get shape functions and derivatives of the element
+    DRT::UTILS::shape_function_3D(funct_,e0,e1,e2,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_,e0,e1,e2,distype);
+
+
+    xjm_.MultiplyNT(deriv_,xyze_);
+    det_ = xji_.Invert(xjm_);
+
+    if (det_ < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det_);
+
+    // compute integration factor
+    fac_ = intpoints.qwgt[gp]*det_;
+
+    LINALG::Matrix<nsd_,1> x_gp(true);
+    x_gp.Multiply(xyze_,funct_);
+
+
+    // evaluate fourth order clipped polynomial
+    double integrand = 1.0;
+    for(int d=0; d<nsd_; ++d)
+    {
+      if( abs(x_gp(d) - pos(d)) < influence )
+        integrand *= 15.0/16.0 * ( (pow((x_gp(d)-pos(d)), 4.0)/pow(influence, 5.0))
+                                  - 2.0 * (pow((x_gp(d)-pos(d)), 2.0)/pow(influence, 3.0))
+                                  + 1.0 / influence );
+      else
+      {
+        integrand = 0.0;
+        break;
+      }
+    }
+
+    for (int i=0; i<nen_; ++i)
+    {
+      elevec1[0] += integrand*fac_*funct_(i);
+    }
+
+  }
+
+  return 0;
+}
+
+
 /*----------------------------------------------------------------------*
  * Action type: Compute Div u                                 ehrl 12/12|
  *----------------------------------------------------------------------*/

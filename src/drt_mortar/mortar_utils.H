@@ -40,6 +40,8 @@ Maintainer: Alexander Popp
 #ifndef MORTAR_UTILS_H
 #define MORTAR_UTILS_H
 
+#include "mortar_coupling3d_classes.H"
+
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -163,6 +165,23 @@ namespace MORTAR
   Teuchos::RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,
                                               const Epetra_Map& permrowmap,
                                               const Epetra_Map& permdomainmap);
+
+  /*!
+  \brief Convex hull points are sorted in order to obtain final clip polygon
+
+  \param out (in): bool to switch output on/off
+  \param transformed (in): coordinates of vertex objects transformed into auxiliary plane
+  \param collconvexhull (in): vector of vertex objects to be sorted
+  \param respoly (out): vector of vertex objects for result polygon
+  \param tol (in): clipping tolerance for close vertices detection
+  \return number of removed points from collconvexhull
+
+  */
+  int SortConvexHullPoints(bool out,
+                           Epetra_SerialDenseMatrix& transformed,
+                           std::vector<Vertex>& collconvexhull,
+                           std::vector<Vertex>& respoly,
+                           double& tol);
 
 } // namespace MORTAR
 

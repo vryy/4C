@@ -142,6 +142,20 @@ namespace ELEMENTS
         );
 
 
+    /*! \brief Calculate void fraction for this element by using a fourth order clipped polynomial
+     *
+     *   \author: ghamm
+     *   \date:   07/2013
+     */
+    virtual int ComputeVoidFraction(
+      DRT::ELEMENTS::Fluid*     ele,
+      Teuchos::ParameterList&   params,
+      DRT::Discretization&      discretization,
+      std::vector<int>&         lm,
+      Epetra_SerialDenseVector& elevec1
+      );
+
+
 
     /*! \brief Calculate a divergence of velocity at the element center
      *

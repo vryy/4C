@@ -91,6 +91,8 @@ namespace ADAPTER
     { dserror("not implemented"); }
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialPorosityField(initfield, startfuncno); };
+    virtual void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume)
+    { return fluid_->SetVoidVolume(voidvolume); } ;
     virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext)
     { return fluid_->ApplyExternalForces(fext); };
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
@@ -210,7 +212,7 @@ namespace ADAPTER
     { return fluid_->ExtractVelocityPart(velpres); }
     virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres)
     { return fluid_->ExtractPressurePart(velpres); }
-    virtual void SetTopOptData(Teuchos::RCP<const Epetra_Vector> porosity,Teuchos::RCP<TOPOPT::Optimizer>& optimizer){ dserror("not implemented!"); };
+    virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity, Teuchos::RCP<TOPOPT::Optimizer>& optimizer){ dserror("not implemented!"); };
     virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet)
     {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");

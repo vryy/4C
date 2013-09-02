@@ -229,11 +229,22 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
-  DRT::INPUT::LineDefinition fluid;
-  fluid
+  DRT::INPUT::LineDefinition fluid_node;
+  fluid_node
     .AddTag("FLUID")
     .AddNamedString("DIS")
     .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
+  DRT::INPUT::LineDefinition fluid_ele;
+  fluid_ele
+    .AddTag("FLUID")
+    .AddNamedString("DIS")
+    .AddNamedInt("ELEMENT")
     .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")
     .AddNamedDouble("TOLERANCE")
@@ -329,7 +340,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
-  lines->Add(fluid);
+  lines->Add(fluid_node);
+  lines->Add(fluid_ele);
   lines->Add(ale);
   lines->Add(thermal);
   lines->Add(scatra);

@@ -5467,6 +5467,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 INPAR::CAVITATION::TwoWayFull
                                 ),
                               &cavitationdyn);
+  setStringToIntegralParameter<int>(
+                              "VOID_FRACTION_CALC","analytical_quadraticpoly",
+                              "Void fraction calculation strategy",
+                              tuple<std::string>(
+                                "analytical_constpoly",
+                                "analytical_quadraticpoly",
+                                "gaussian_integration"
+                                ),
+                              tuple<int>(
+                                INPAR::CAVITATION::analytical_constpoly,
+                                INPAR::CAVITATION::analytical_quadraticpoly,
+                                INPAR::CAVITATION::gaussian_integration
+                                ),
+                              &cavitationdyn);
+  IntParameter("NUM_GP_VOID_FRACTION",4,"Number of gauss points in each direction for void fraction calculation",&cavitationdyn);
 
   BoolParameter("APPROX_ELECOORDS_INIT","no","switch on/off approximate initial guess for computing element coordinates",&cavitationdyn);
 

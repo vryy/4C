@@ -77,7 +77,8 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
     // initialize radii of particles
     (*radiusn_)[n] = initial_radius;
   }
-
+  //Initial radius condition
+  ApplyInitialRadiusCondition(initial_radius);
   // DetermineMassDampConsistAccel() is called at the end of Algorithm::Init() after proper setup of the problem
 
   return;
@@ -117,23 +118,20 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
   fextn_->PutScalar(0.0);
   LINALG::Export(*bubbleforces, *fextn_);
 
-  //check whether all bubbles are of the same size
-  double maxradius=-1.0;
-  double minradius=-0.5;
-  radiusn_->MaxValue(&maxradius);
-  radiusn_->MinValue(&minradius);
-  if(abs(maxradius-minradius) > EPS10)
-    dserror("Assumption of equally sized bubbles is not valid. Implementation is missing!");
-  // normal case is a proc with at least a few bubbles
+  // new acceleration \f$A_{n+1}\f$
   if(radiusn_->MyLength() != 0)
   {
-    // as long as it is valid, mass can be calculated just once
-    double radius = (*radiusn_)[0];
-    double mass = density_ * 4.0/3.0 * M_PI * radius * radius * radius;
-    accn_->Update(1/mass, *fextn_, 0.0);
+    for(int lid=0; lid<radiusn_->MyLength(); ++lid)
+    {
+      double radius = (*radiusn_)[lid];
+      double mass = density_ * 4.0/3.0 * M_PI * pow(radius, 3.0);
+      for(int d=0; d<3; ++d)
+        (*accn_)[lid*3+d] = (*fextn_)[lid*3+d] / mass;
+    }
   }
   else
     accn_->PutScalar(0.0);
+
 
   // update of end-velocities \f$V_{n+1}\f$
   veln_->Update(dthalf, *accn_, 1.0);
@@ -221,12 +219,16 @@ void PARTICLE::TimIntCentrDiff::DetermineMassDampConsistAccel()
   fextn_->PutScalar(0.0);
   LINALG::Export(*bubbleforces, *fextn_);
 
+  // initial acceleration
   if(radiusn_->MyLength() != 0)
   {
-    // as long as it is valid, mass can be calculated just once
-    double radius = (*radiusn_)[0];
-    double mass = density_ * 4.0/3.0 * M_PI * radius * radius * radius;
-    (*acc_)(0)->Update(1/mass, *fextn_, 0.0);
+    for(int lid=0; lid<radiusn_->MyLength(); ++lid)
+    {
+      double radius = (*radiusn_)[lid];
+      double mass = density_ * 4.0/3.0 * M_PI * pow(radius, 3.0);
+      for(int d=0; d<3; ++d)
+        (*(*acc_)(0))[lid*3+d] = (*fextn_)[lid*3+d] / mass;
+    }
   }
   else
     (*acc_)(0)->PutScalar(0.0);
@@ -324,6 +326,35 @@ void PARTICLE::TimIntCentrDiff::ReadRestartState()
 
   return;
 }
+void PARTICLE::TimIntCentrDiff::ApplyInitialRadiusCondition(double initial_radius)
+  {
+    std::vector<DRT::Condition*> condition;
+    discret_->GetCondition("InitialParticleRadius", condition);
+
+    // loop over conditions
+    for (size_t i=0; i<condition.size(); i++)
+    {
+      double scalar  = condition[i]->GetDouble("SCALAR");
+      int funct_num  = condition[i]->GetInt("FUNCT");
+
+      const std::vector<int>* nodeids = condition[i]->Nodes();
+      // loop over particles in current condition
+      for(size_t counter=0;counter<(*nodeids).size();++counter)
+      {
+        int lid = discret_->NodeRowMap()->LID((*nodeids)[counter]);
+        if(lid != -1)
+        {
+          DRT::Node *CurrentParticle = discret_->gNode((*nodeids)[counter]);
+          double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, CurrentParticle->X(),0.0,discret_.get());
+          (*radiusn_)[lid] =  function_value * scalar * initial_radius;
+          if((*radiusn_)[lid]<=0.0)
+            dserror("negative initial radius");
+
+        }
+      }
+    }
+
+  }
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */

@@ -159,6 +159,17 @@ namespace ELEMENTS
                              Epetra_SerialDenseVector& elevec2,
                              Epetra_SerialDenseVector& elevec3) = 0;
 
+    /*! \brief Calculate void fraction for this element by using a fourth order clipped polynomial
+     *
+     */
+    virtual int ComputeVoidFraction(
+                             DRT::ELEMENTS::Fluid*     ele,
+                             Teuchos::ParameterList&   params,
+                             DRT::Discretization&      discretization,
+                             std::vector<int>&         lm,
+                             Epetra_SerialDenseVector& elevec1
+                             ) = 0;
+
 
     /*! \brief Calculate a divergence of velocity at the element center
      *

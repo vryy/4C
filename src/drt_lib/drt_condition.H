@@ -229,6 +229,7 @@ public:
     RedAirwayNodeTissue,
     ArtPrescribedScatraCond,
     ParticleInflow,
+    ParticleInitRadius,
     ParticleWall,
     CrackMastersurface,
     CrackSlavesurface,

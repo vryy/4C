@@ -279,7 +279,7 @@ public:
 
   */
   void SetTopOptData(
-      Teuchos::RCP<const Epetra_Vector> density,
+      Teuchos::RCP<Epetra_Vector> density,
       Teuchos::RCP<TOPOPT::Optimizer>& optimizer
   );
 
@@ -608,6 +608,12 @@ public:
   void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp);
   //@}
 
+  //! @name Cavitation methods
+  //@{
+  /// void volume in fluid is set from outside
+  void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume);
+  //@}
+
 protected:
 
   // don't want = operator and cctor
@@ -860,10 +866,10 @@ protected:
   LINALG::Matrix<4,1> flowvolumen_;
   LINALG::Matrix<4,1> flowvolumenm_;
 
-      //! @name optimization data
+  //! @name optimization data and cavitation
 
-  /// density in topology optimization
-  Teuchos::RCP<const Epetra_Vector>    topopt_density_;
+  /// density in topology optimization and void fraction in cavitation
+  Teuchos::RCP<Epetra_Vector>    density_scaling_;
 
   /// optimizer for topology optimization
   Teuchos::RCP<TOPOPT::Optimizer> optimizer_;

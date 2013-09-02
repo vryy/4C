@@ -46,18 +46,19 @@ public:
     */
     FluidResultTest(FluidImplicitTimeInt& fluid);
 
-#if 1
-    /*!
-    \brief not documented yet
-    */
-    FluidResultTest(FluidGenAlphaIntegration& fluid);
-#endif
     /// our version of nodal value tests
     /*!
-    Possible position flags are "velx", "vely", "velz" and
-    "pressure". With the obvious meaning.
+    Possible position flags are "velx", "vely", "velz", "pressure",
+    "tractionx", "tractiony", "tractionz", "errvel", "errpre" and "divu".
+    With the obvious meaning.
     */
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
+    /// our version of element value tests
+    /*!
+    Possible flag is "voidfraction". With the obvious meaning.
+    */
+    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
 private:
 
@@ -71,6 +72,8 @@ private:
     Teuchos::RCP<std::vector <double> > myerror_;
     /// pointer to div u evaluation
     Teuchos::RCP<double> mydivu_;
+    /// pointer to density scaling values
+    Teuchos::RCP<Epetra_Vector>       mydensity_scaling_;
 
 };
 

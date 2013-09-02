@@ -33,6 +33,14 @@ namespace INPAR
       TwoWayFull
     };
 
+    /// Strategy for calculation of void fraction of fluid elements
+    enum VoidFractionCalculation
+    {
+      analytical_constpoly,
+      analytical_quadraticpoly,
+      gaussian_integration
+    };
+
 
   }  // namespace CAVITATION
 

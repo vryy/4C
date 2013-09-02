@@ -685,7 +685,7 @@ void PARTICLE::Algorithm::TransferParticles()
   // current positions of particles
   Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
 
-  std::set<int> examinedBins;
+  std::set<int> examinedbins;
   // check in each bin whether particles have moved out
   // first run over particles and then process whole bin in which particle is located
   // until all particles have been checked
@@ -702,14 +702,14 @@ void PARTICLE::Algorithm::TransferParticles()
     int binId = currbin->Id();
 
     // if a bin has already been examined --> continue with next particle
-    if( examinedBins.count(binId) == 1 )
+    if( examinedbins.count(binId) == 1 )
     {
       continue;
     }
-    // else: bin is examined for the first time --> new entry in examinedBins
+    // else: bin is examined for the first time --> new entry in examinedbins
     else
     {
-      examinedBins.insert(binId);
+      examinedbins.insert(binId);
     }
 
     // now all particles in this bin are processed
@@ -805,7 +805,7 @@ void PARTICLE::Algorithm::TransferParticles()
     particledis_->FillComplete(true, false, true);
   }
 
-  // reconstruct element -> bin pointers for particle wall elements
+  // reconstruct element -> bin pointers for particle wall and fluid elements
   BuildElementToBinPointers();
 
   return;

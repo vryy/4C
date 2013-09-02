@@ -675,8 +675,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       MHD_evaluator_=Teuchos::rcp(new FLD::FluidMHDEvaluate(discret_));
   }
 
-  // initialize pseudo-porosity vector for topology optimization as null
-  topopt_density_ = Teuchos::null;
+  // initialize data for topology optimization as null
+  density_scaling_ = Teuchos::null;
+  optimizer_ = Teuchos::null;
 
   // initialize all thermodynamic pressure values and its time derivatives
   // to one or zero, respectively
@@ -1453,7 +1454,10 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
   //set additional pseudo-porosity field for topology optimization
-  eleparams.set("topopt_density",topopt_density_);
+  if(optimizer_ != Teuchos::null)
+  {
+    eleparams.set("topopt_density",rcp_const_cast<const Epetra_Vector>(density_scaling_));
+  }
 
   // set general vector values needed by elements
   discret_->ClearState();
@@ -3344,6 +3348,12 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("fld_growth_displ", fldgrdisp_);
     }
 
+    // cavitation: void fraction
+    if (density_scaling_ != Teuchos::null and optimizer_ == Teuchos::null)
+    {
+      output_->WriteVector("voidfraction", density_scaling_, IO::DiscretizationWriter::elementvector);
+    }
+
     // don't write output in case of separate inflow computation
     // Sep_-Matrix needed for algebraic-multigrid filter has never been build
 #if 0
@@ -3628,7 +3638,7 @@ void FLD::FluidImplicitTimeInt::Output()
   }
 #endif //PRINTALEDEFORMEDNODECOORDS
 
-  if (topopt_density_!=Teuchos::null)
+  if (optimizer_!=Teuchos::null)
   {
     optimizer_->ImportFluidData(velnp_,step_);
 
@@ -4749,14 +4759,14 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractPressurePart
  | sent density field for topology optimization         winklmaier 12/11|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetTopOptData(
-    RCP<const Epetra_Vector> density,
-    RCP<TOPOPT::Optimizer>& optimizer
+    Teuchos::RCP<Epetra_Vector> density,
+    Teuchos::RCP<TOPOPT::Optimizer>& optimizer
 )
 {
   // currently the maps have to fit and, thus, this works
   // in the future this simple procedure may have to be altered,
   // see setiterlomafields or settimelomafields for examples
-  topopt_density_ = density;
+  density_scaling_ = density;
   optimizer_=optimizer;
 }
 
@@ -6777,3 +6787,13 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
   return;
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ | set void volume for cavitation problems                                          (ghamm 08/13) |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume)
+{
+  if(density_scaling_ == Teuchos::null)
+    density_scaling_ = LINALG::CreateVector(*discret_->ElementRowMap(),false);
+  density_scaling_->Update(1.0, *voidvolume, 0.0);
+}

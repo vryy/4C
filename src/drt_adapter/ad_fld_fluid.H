@@ -218,6 +218,9 @@ namespace ADAPTER {
     /// set initial flow field
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno) = 0;
 
+    /// set void fraction for cavitation problems
+    virtual void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume) = 0;
+
     /// apply external forces to the fluid
     virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
 
@@ -421,7 +424,7 @@ namespace ADAPTER {
     //! @name Transfer the porosity field used in the topology optimization to the fluid
 
     /// set pseudo-porosity field in the fluid
-    virtual void SetTopOptData(Teuchos::RCP<const Epetra_Vector> porosity,Teuchos::RCP<TOPOPT::Optimizer>& optimizer) = 0;
+    virtual void SetTopOptData(Teuchos::RCP<Epetra_Vector> porosity, Teuchos::RCP<TOPOPT::Optimizer>& optimizer) = 0;
     //@}
 
     //! @name Import geometrical coupling information about an implicitely defined interface from a different field

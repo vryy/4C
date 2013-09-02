@@ -43,6 +43,7 @@ enum Action {
     integrate_shape,
     calc_divop,
     calc_mat_deriv_u_and_rot_u,
+    void_fraction_gaussian_integration,
     calc_node_normal,
     set_general_fluid_parameter,
     set_time_parameter,
