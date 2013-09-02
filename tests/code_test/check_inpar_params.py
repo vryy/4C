@@ -16,28 +16,40 @@ import sys, subprocess, re
 # Dictionary of unused parameters we want to keep in the code
 UNUSED_PARAMS_TO_KEEP = [ 
 			# IrmLike isn't supported any longer since commit 17668
-			'INPAR::STR::midavg_imrlik',		
-			'INPAR::THR::midavg_imrlik', 
+			'INPAR::STR::midavg_imrlike',		
+			'INPAR::THR::midavg_imrlike', 
 			# value if no solver is given
-			'INPAR::STR::midavg_vag',
-			'INPAR::STR::pred_vag',
-			'INPAR::STR::soltech_vag',
-			'INPAR::THR::midavg_vag',		
-			'INPAR::THR::pred_vag',			
-			'INPAR::THR::soltech_vag',
+			'INPAR::STR::midavg_vague',
+			'INPAR::STR::pred_vague',
+			'INPAR::STR::soltech_vague',
+			'INPAR::THR::midavg_vague',		
+			'INPAR::THR::pred_vague',			
+			'INPAR::THR::soltech_vague',
 			# Parameters for path-following techniques, which currently aren't supported in Baci
 			'INPAR::STR::control_arc1',
 			'INPAR::STR::control_arc2',
-			'INPAR::STR::control_dis',
+			'INPAR::STR::control_disp',
 			'INPAR::STR::control_load',
 			# Paramters are actually used but could be replaced by a true/false flag
 			'INPAR::SCATRA::evalmat_element_center',
 			'INPAR::SCATRA::evaltau_element_center',
-			'INPAR::SCATRA::penalty_method_no',
-			'INPAR::ELCH::elch_mov_bndry_fully_trans',
-                        # Cavitation parameters to be used in the future
+			'INPAR::SCATRA::penalty_method_none',
+			'INPAR::ELCH::elch_mov_bndry_fully_transient',
+                        # Parameter is necessary, but only used in validparameters.cpp
+                        # NOTE To be implemented in future
                         'INPAR::CAVITATION::TwoWayMomentum',
-                        'INPAR::CAVITATION::TwoWayFull'
+                        'INPAR::CAVITATION::TwoWayFull',
+                        'INPAR::CONTACT::wear_both_ale',
+                        'INPAR::CONTACT::wear_both_map',
+                        'INPAR::CONTACT::wear_archard', 
+                        'INPAR::FLUID::EOS_CONV_CROSS_xfem_gp',
+                        'INPAR::SOLVER::PA_AMG',                        
+                        'INPAR::STR::stat_inv_mp_none',
+                        'INPAR::XFEM::MSH_L2_Proj_part',
+                        'INPAR::XFEM::interface_vel_init_zero',
+                        'INPAR::CONTACT::bsm_cpp',
+                        'INPAR::CONTACT::bsm_partially',
+                        'INPAR::CONTACT::bsm_smoothed'
 			]
 
 if __name__=='__main__':
@@ -72,13 +84,15 @@ if __name__=='__main__':
     inpar_parameters = subprocess.check_output('grep INPAR ' + global_src_path +  'drt_inpar/drt_validparameters.cpp', shell=True )
     inpar_parameters = inpar_parameters.split()
     
+    subprocess.call('svn praise ' + global_src_path +  'drt_inpar/drt_validparameters.cpp > praise.txt' , shell=True )
+    
     for inpa_para in progress('Searching inpar params', inpar_parameters):
 
 	# special treatment of lines which include tuple<int> before the parameter
 	# i.e. tuple<int>(INPAR::CAVIATION::TwoWayFull
 	# method is to substitute the brackets ( with an ,
 	inpa_para = re.sub(r'\(',',', inpa_para)
-	inpa_para = (inpa_para.split(','))
+	inpa_para = inpa_para.split(',')
 	
 	# search for desired inpar value
 	for ip in inpa_para:
@@ -115,5 +129,11 @@ if __name__=='__main__':
 	final_fail_printout = [f for f in fail]
 	final_fail_printout.sort()
 	print "The following inpar parameter only exists in drt_validparameters.cpp"
-	print "\n".join(final_fail_printout)
+	for ff in final_fail_printout:
+	    owner = subprocess.check_output('grep ' + ff + ' ./praise.txt', shell=True)
+	    owner = owner.strip(' )(\n,')
+	    owner = owner[owner.index(' '):]
+	    owner = (owner).strip()
+	    owner = (owner.split(' '))
+	    print ff, " ".join( ['' for i in range(55-len(ff))]),'last changed from: ', owner[0]
 	sys.exit(1)	
