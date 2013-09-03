@@ -37,7 +37,7 @@ class ObjectiveFunct {
 
 private:
 
-  void ReadMonitor(std::string filename);
+  void ReadMonitor(std::string monitorfilename);
 
   // discretization
   Teuchos::RCP<DRT::Discretization> discret_;

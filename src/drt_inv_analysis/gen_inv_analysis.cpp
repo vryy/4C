@@ -132,10 +132,23 @@ steps 25 nnodes 5
   ndofs_ = 0;
   {
     char* foundit = NULL;
-    std::string filename = iap.get<std::string>("MONITORFILE");
-    if (filename=="none.monitor") dserror("No monitor file provided");
-    FILE* file = fopen(filename.c_str(),"rb");
-    if (file==NULL) dserror("Could not open monitor file %s",filename.c_str());
+    std::string monitorfilename = iap.get<std::string>("MONITORFILE");
+    if (monitorfilename=="none.monitor") dserror("No monitor file provided");
+    // insert path to monitor file if necessary
+    if (monitorfilename[0]!='/')
+    {
+      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      std::string::size_type pos = filename.rfind('/');
+      if (pos!=std::string::npos)
+      {
+        std::string path = filename.substr(0,pos+1);
+        monitorfilename.insert(monitorfilename.begin(), path.begin(), path.end());
+      }
+    }
+
+    FILE* file = fopen(monitorfilename.c_str(),"rb");
+    if (file==NULL) dserror("Could not open monitor file %s",monitorfilename.c_str());
+
     char buffer[150000];
     fgets(buffer,150000,file);
     // read steps

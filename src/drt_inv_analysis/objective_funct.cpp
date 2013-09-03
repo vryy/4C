@@ -14,6 +14,7 @@ Maintainer: Sebastian Kehl
 #include "objective_funct.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #include "Epetra_MultiVector.h"
 
 #include "matpar_manager.H"
@@ -46,7 +47,7 @@ msteps_(steps)
 
 /*----------------------------------------------------------------------*/
 /* read monitor file */
-void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string filename)
+void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string monitorfilename)
 {
   int myrank = discret_->Comm().MyPID();
 
@@ -64,9 +65,22 @@ void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string filename)
   double timestep = 0.0;
 
   char* foundit = NULL;
-  if (filename=="none.monitor") dserror("No monitor file provided");
-  FILE* file = fopen(filename.c_str(),"rb");
-  if (file==NULL) dserror("Could not open monitor file %s",filename.c_str());
+  if (monitorfilename=="none.monitor") dserror("No monitor file provided");
+  // insert path to monitor file if necessary
+  if (monitorfilename[0]!='/')
+  {
+    std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+    std::string::size_type pos = filename.rfind('/');
+    if (pos!=std::string::npos)
+    {
+      std::string path = filename.substr(0,pos+1);
+      monitorfilename.insert(monitorfilename.begin(), path.begin(), path.end());
+    }
+  }
+
+  FILE* file = fopen(monitorfilename.c_str(),"rb");
+  if (file==NULL) dserror("Could not open monitor file %s",monitorfilename.c_str());
+
   char buffer[150000];
   fgets(buffer,150000,file);
 

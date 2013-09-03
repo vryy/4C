@@ -46,7 +46,7 @@ INV_INITREG                     1.0                           // initial regular
 INV_ALPHA                       1.0e-5                        // perturbation factors for forward finite difference
 INV_BETA                        1.0e-3                        // eps = alpha + beta * matparameter
 INV_ANA_TOL                     0.00001                       // tolerance of inv. analysis
-MONITORFILE                     Input/invaaa1.monitor         // file with monitored displacements
+MONITORFILE                     invaaa1.monitor               // file with monitored displacements
 INV_ANA_MAX_RUN                 10                            // max iterations
 UPDATE_REG                      res                           // gradient or residual based update
 PARAM_BOUNDS                    no                            // bound params to positive values

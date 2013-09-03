@@ -23,7 +23,7 @@ INV_BETA                        0.1
 INV_EH_LIST                     -1
 INV_INITREG                     1
 INV_LIST                        -1
-MONITORFILE                     Input/geninvana.monitor
+MONITORFILE                     geninvana.monitor
 NEW_FILES                       yes
 PARAM_BOUNDS                    yes
 UPDATE_REG                      GRAD
