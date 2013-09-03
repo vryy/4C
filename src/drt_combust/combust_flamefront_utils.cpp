@@ -19,6 +19,7 @@ Maintainer: Ursula Rasthofer
 #include "combust3_utils.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io_gmsh.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -690,6 +691,25 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   // export NodeRowMap to NodeColMap gradphi_
   LINALG::Export(*gradphirow,*gradphi_);
 
+#if 0 // only for debug
+  // additional gmsh output
+  {
+    // turn on/off screen output for writing process of Gmsh postprocessing file
+    const bool screen_out = true;
+
+    // create Gmsh postprocessing file
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("gradient_phi", 0, 10, screen_out, fluiddis_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Grad Phi \" {" << std::endl;
+      // draw scalar field 'Phinp' for every element
+      IO::GMSH::VectorFieldNodeBasedToGmsh(fluiddis_,gradphirow,gmshfilecontent);
+      gmshfilecontent << "};" << std::endl;
+    }
+  }
+#endif
+
   return;
 }
 
@@ -719,6 +739,10 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
 
   //get dof row map of scalar field
   const Epetra_Map* dofrowmap = gfuncdis_->DofRowMap();
+
+  // safety check
+  if (not fluiddis_->NodeRowMap()->SameAs(*(gfuncdis_->NodeRowMap())))
+    dserror("Same node map expected");
 
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> matrix = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -928,12 +952,12 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
   matrix->Complete();
 
   // create a solver
-  // remark: we take the scatra solver here, which is 2
+  // remark: we take a new here, which is assumed to have number 3
   Teuchos::RCP<LINALG::Solver>  solver_ =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(2),
+    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
                                     gfuncdis_->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -951,42 +975,47 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
                  reset);
   solver_->Reset();
 
-  // store result in Vector
-  for (int i = 0; i< numele;i++)
+  // store result in vector
+  // loop all nodes on the processor
+  for(int lfluidnodeid=0;lfluidnodeid<fluiddis_->NumMyRowNodes();lfluidnodeid++)
   {
-    // get element
-    DRT::Element* actele = gfuncdis_->lColElement(i);
-    // get the right number of nodes per element
-    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    // get the processor's scatra node
+    // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
+    DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 
-    // pointer to node
-    const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
-    // pointer to node ids
-    const int* ptToNodeIds = actele->NodeIds();
-    std::vector<int> nodeID(numnode);
+    const int dofgid = gfuncdis_->Dof(gfuncnode,0);
 
-    for (size_t inode=0; inode < numnode; inode++)
-    {
-      nodeID[inode] = ptToNodeIds[inode];
+    const int lid = solcurve->Map().LID(dofgid);
 
-      // which processor has the node
-      int node_owner = (ele_vecOfPtsToNode[inode])->Owner();
+    const int nlid = curvaturerow->Map().LID(gfuncnode->Id());
 
-      // check whether this node is a row node, compare with actual processor id
-      if(node_owner == gfuncdis_->Comm().MyPID())
-      {
-        const int lid = (*curvaturerow).Map().LID(nodeID[inode]);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d (lid = %d) in Epetra_Vector",(*curvaturerow).Comm().MyPID(),gfuncnode->Id(),lid);
 
-        if (lid<0) dserror("Proc %d: Cannot find gid=%d (lid = %d) in Epetra_Vector",(*curvaturerow).Comm().MyPID(),nodeID[inode],lid);
-
-        double err = curvaturerow->ReplaceMyValues(1,&(*solcurve)[lid],&lid);
-        if (err) dserror("Could not set gradient of phi!");
-      }
-    }
+    double err = curvaturerow->ReplaceMyValues(1,&(*solcurve)[lid],&nlid);
+    if (err) dserror("Could not set gradient of phi!");
   }
 
   // export gradient to column map
   LINALG::Export(*curvaturerow,*curvature_);
+
+#if 0 // only for debug
+  // additional gmsh output
+  {
+    // turn on/off screen output for writing process of Gmsh postprocessing file
+    const bool screen_out = true;
+
+    // create Gmsh postprocessing file
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("curvature", 0, 10, screen_out, fluiddis_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Curvature \" {" << std::endl;
+      // draw scalar field 'Phinp' for every element
+      IO::GMSH::ScalarFieldNodeBasedToGmsh(fluiddis_,curvaturerow,gmshfilecontent);
+      gmshfilecontent << "};" << std::endl;
+    }
+  }
+#endif
 
   return;
 }
@@ -1011,6 +1040,10 @@ void COMBUST::FlameFront::ComputeL2ProjectedGradPhi(const double eta_smooth,
 
   //get dof row map of scalar field
   const Epetra_Map* dofrowmap = gfuncdis_->DofRowMap();
+
+  // safety check
+  if (not fluiddis_->NodeRowMap()->SameAs(*(gfuncdis_->NodeRowMap())))
+    dserror("Same node map expected");
 
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> matrix = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -1124,19 +1157,17 @@ void COMBUST::FlameFront::ComputeL2ProjectedGradPhi(const double eta_smooth,
           // integration factor
           const double fac = intpoints.qwgt[iquad]*det;
 
-         // element phi vector
-         Epetra_SerialDenseVector ephi(numnode);
-
+         // get phi at integration point
          double grad_phi=0.0;
-         // extract phi values
+         // element phi vector
+         std::vector<double> myephi(numnode);
          if (phi_smoothed == Teuchos::null)
-           DRT::UTILS::ExtractMyValues(*phinp_, ephi, lm);
+           DRT::UTILS::ExtractMyNodeBasedValues(actele,myephi,*phinp_);
          else
-           DRT::UTILS::ExtractMyValues(*phi_smoothed, ephi, lm);
+           DRT::UTILS::ExtractMyNodeBasedValues(actele,myephi,*phi_smoothed);
          // get gradient of phi at Gauss point
          for (size_t inode = 0; inode< numnode; inode++)
-           grad_phi += ephi(inode) *deriv_gp_xyz(idim,inode);
-
+           grad_phi += myephi[inode] *deriv_gp_xyz(idim,inode);
 
          // element matrix and rhs
          for (size_t vi=0; vi<numnode; ++vi) // loop rows  (test functions)
@@ -1166,12 +1197,12 @@ void COMBUST::FlameFront::ComputeL2ProjectedGradPhi(const double eta_smooth,
     matrix->Complete();
 
     // create a solver
-    // remark: we take the scatra solver here, which is 2
+    // remark: we take a new here, which is assumed to have number 3
     Teuchos::RCP<LINALG::Solver>  solver_ =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(2),
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
                                       gfuncdis_->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -1190,46 +1221,51 @@ void COMBUST::FlameFront::ComputeL2ProjectedGradPhi(const double eta_smooth,
     solver_->Reset();
 
     // store result in MultiVector
-    for (int iele = 0; iele< numele;iele++)
+    // loop all nodes on the processor
+    for(int lfluidnodeid=0;lfluidnodeid<fluiddis_->NumMyRowNodes();lfluidnodeid++)
     {
-      // get element
-      DRT::Element* actele = gfuncdis_->lColElement(iele);
-      // get the right number of nodes per element
-      const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+      // get the processor's scatra node
+      // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
+      DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 
-      // pointer to node
-      const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
-      // pointer to node ids
-      const int* ptToNodeIds = actele->NodeIds();
-      std::vector<int> nodeID(numnode);
+      const int dofgid = gfuncdis_->Dof(gfuncnode,0);
 
-      for (size_t inode=0; inode < numnode; inode++)
-      {
-        nodeID[inode] = ptToNodeIds[inode];
+      const int lid = solgradphi->Map().LID(dofgid);
 
-        // which processor has the node
-        int node_owner = (ele_vecOfPtsToNode[inode])->Owner();
+      const int nlid = gradphirow->Map().LID(gfuncnode->Id());
 
-        // check whether this node is a row node, compare with actual processor id
-        if(node_owner == gfuncdis_->Comm().MyPID())
-        {
-          const int lid = (*gradphirow).Map().LID(nodeID[inode]);
+      if (lid<0) dserror("Proc %d: Cannot find gid=%d (lid = %d) in Epetra_Vector",(*gradphirow).Comm().MyPID(),gfuncnode->Id(),lid);
 
-          if (lid<0) dserror("Proc %d: Cannot find gid=%d (lid = %d) in Epetra_Vector",(*gradphirow).Comm().MyPID(),nodeID[inode],lid);
+      const int numcol = (*gradphirow).NumVectors();
+      if( numcol != (int)nsd) dserror("Number of columns in Epetra_MultiVector is not identically to nsd");
 
-          const int numcol = (*gradphirow).NumVectors();
-          if( numcol != (int)nsd) dserror("Number of columns in Epetra_MultiVector is not identically to nsd");
-
-          double err = gradphirow->ReplaceMyValue(lid,idim,(*solgradphi)[lid]);
-          if (err) dserror("Could not set gradient of phi!");
-        }
-      }
+      double err = gradphirow->ReplaceMyValue(nlid,idim,(*solgradphi)[lid]);
+      if (err) dserror("Could not set gradient of phi!");
     }
 
   } // loop dimensions
 
   // export gradient to column map
   LINALG::Export(*gradphirow,*gradphi_);
+
+#if 0 // only for debug
+  // additional gmsh output
+  {
+    // turn on/off screen output for writing process of Gmsh postprocessing file
+    const bool screen_out = true;
+
+    // create Gmsh postprocessing file
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("gradient_phi", 0, 10, screen_out, fluiddis_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Grad Phi \" {" << std::endl;
+      // draw scalar field 'Phinp' for every element
+      IO::GMSH::VectorFieldNodeBasedToGmsh(fluiddis_,gradphirow,gmshfilecontent);
+      gmshfilecontent << "};" << std::endl;
+    }
+  }
+#endif
 
   return;
 }
@@ -1253,6 +1289,10 @@ void COMBUST::FlameFront::ComputeL2ProjectedGrad2Phi(const double eta_smooth)
 
   //get dof row map of scalar field
   const Epetra_Map* dofrowmap = gfuncdis_->DofRowMap();
+
+  // safety check
+  if (not fluiddis_->NodeRowMap()->SameAs(*(gfuncdis_->NodeRowMap())))
+    dserror("Same node map expected");
 
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> matrix = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -1415,12 +1455,12 @@ void COMBUST::FlameFront::ComputeL2ProjectedGrad2Phi(const double eta_smooth)
     matrix->Complete();
 
     // create a solver
-    // remark: we take the scatra solver here, which is 2
+    // remark: we take a new here, which is assumed to have number 3
     Teuchos::RCP<LINALG::Solver>  solver_ =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(2),
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
                                       gfuncdis_->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -1439,58 +1479,61 @@ void COMBUST::FlameFront::ComputeL2ProjectedGrad2Phi(const double eta_smooth)
     solver_->Reset();
 
     // store result in MultiVector
-    for (int iele = 0; iele < numele; iele++)
+    // loop all nodes on the processor
+    for(int lfluidnodeid=0;lfluidnodeid<fluiddis_->NumMyRowNodes();lfluidnodeid++)
     {
-      // get element
-      DRT::Element* actele = gfuncdis_->lColElement(iele);
-      // get the right number of nodes per element
-      const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+      // get the processor's scatra node
+      // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
+      DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 
-      // pointer to node
-      const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
-      // pointer to node ids
-      const int* ptToNodeIds = actele->NodeIds();
-      std::vector<int> nodeID(numnode);
+      const int dofgid = gfuncdis_->Dof(gfuncnode,0);
 
-      for (size_t inode=0; inode < numnode; inode++)
-      {
-        nodeID[inode] = ptToNodeIds[inode];
+      const int lid = solgrad2phi->Map().LID(dofgid);
 
-        // which processor has the node
-        int node_owner = (ele_vecOfPtsToNode[inode])->Owner();
+      const int nlid = gradphirow2->Map().LID(gfuncnode->Id());
 
-        // check whether this node is a row node, compare with actual processor id
-        if(node_owner == gfuncdis_->Comm().MyPID())
-        {
-          const int lid = (*gradphirow2).Map().LID(nodeID[inode]);
+      if (lid<0) dserror("Proc %d: Cannot find gid=%d (lid = %d) in Epetra_Vector",(*gradphirow2).Comm().MyPID(),gfuncnode->Id(),lid);
 
-          if (lid<0) dserror("Proc %d: Cannot find gid=%d (lid = %d) in Epetra_Vector",(*gradphirow2).Comm().MyPID(),nodeID[inode],lid);
+      const int numcol = (*gradphirow2).NumVectors();
+      if( numcol != (3*(int)nsd)) dserror("Number of columns in Epetra_MultiVector is not identically to 2*nsd");
 
-          const int numcol = (*gradphirow2).NumVectors();
-          if( numcol != (3*(int)nsd)) dserror("Number of columns in Epetra_MultiVector is not identically to 2*nsd");
-
-          // commented lines allow for enforcing symmetry of Hesse matrix
-//          if (ijdim < (2*nsd))
-//          {
-            double err = gradphirow2->ReplaceMyValue(lid,ijdim,(*solgrad2phi)[lid]);
-            if (err) dserror("Could not set gradient of phi!");
-//          }
-//          if (ijdim > (nsd-1) and ijdim < (2*nsd))
-//          {
-//            int pos = ijdim + 3;
-//            double err = gradphirow2->ReplaceMyValue(lid,pos,(*solgrad2phi)[lid]);
-//            if (err) dserror("Could not set gradient of phi!");
-//          }
-        }
-      }
+      // commented lines allow for enforcing symmetry of Hesse matrix
+//      if (ijdim < (2*nsd))
+//      {
+        double err = gradphirow2->ReplaceMyValue(nlid,ijdim,(*solgrad2phi)[lid]);
+        if (err) dserror("Could not set gradient of phi!");
+//      }
+//      if (ijdim > (nsd-1) and ijdim < (2*nsd))
+//      {
+//        int pos = ijdim + 3;
+//        double err = gradphirow2->ReplaceMyValue(lid,pos,(*solgrad2phi)[lid]);
+//        if (err) dserror("Could not set gradient of phi!");
+//      }
     }
 
   } // loop dimensions
 
   // export gradient to column map
   LINALG::Export(*gradphirow2,*gradphi2_);
-//  gradphi2_->Print(std::cout);
-//  dserror("ENDE");
+
+#if 0 // only for debug
+  // additional gmsh output
+  {
+    // turn on/off screen output for writing process of Gmsh postprocessing file
+    const bool screen_out = true;
+
+    // create Gmsh postprocessing file
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("gradient2_phi", 0, 10, screen_out, fluiddis_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Hesse Phi \" {" << std::endl;
+      // draw scalar field 'Phinp' for every element
+      IO::GMSH::VectorFieldNodeBasedToGmsh(fluiddis_,gradphirow2,gmshfilecontent);
+      gmshfilecontent << "};" << std::endl;
+    }
+  }
+#endif
 
   return;
 }
@@ -1511,6 +1554,10 @@ const Teuchos::RCP<Epetra_Vector>  COMBUST::FlameFront::ComputeL2ProjectedPhi(co
 
   //get dof row map of scalar field
   const Epetra_Map* dofrowmap = gfuncdis_->DofRowMap();
+
+  // safety check
+  if (not fluiddis_->NodeRowMap()->SameAs(*(gfuncdis_->NodeRowMap())))
+    dserror("Same node map expected");
 
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> matrix = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -1621,11 +1668,10 @@ const Teuchos::RCP<Epetra_Vector>  COMBUST::FlameFront::ComputeL2ProjectedPhi(co
         // get phi at Gauss point
         double phi_gp = 0.0;
         // element phi vector
-        Epetra_SerialDenseVector ephi(numnode);
-        DRT::UTILS::ExtractMyValues(*phinp_, ephi, lm);
+        std::vector<double> myephi(numnode);
+        DRT::UTILS::ExtractMyNodeBasedValues(actele,myephi,*phinp_);
         for (size_t inode = 0; inode< numnode; inode++)
-          phi_gp += ephi(inode) *funct_gp(inode);
-
+                  phi_gp += myephi[inode] *funct_gp(inode);
 
        // element matrix and rhs
        for (size_t vi=0; vi<numnode; ++vi) // loop rows  (test functions)
@@ -1654,12 +1700,12 @@ const Teuchos::RCP<Epetra_Vector>  COMBUST::FlameFront::ComputeL2ProjectedPhi(co
   matrix->Complete();
 
   // create a solver
-  // remark: we take the scatra solver here, which is 2
+  // remark: we take a new here, which is assumed to have number 3
   Teuchos::RCP<LINALG::Solver>  solver_ =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(2),
+    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
                                     gfuncdis_->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -1677,11 +1723,28 @@ const Teuchos::RCP<Epetra_Vector>  COMBUST::FlameFront::ComputeL2ProjectedPhi(co
                  reset);
   solver_->Reset();
 
-  // 1. ScaTra DofRowMap -> Fluid NodeRowMap
-  LINALG::Export(*solphi,*phiprojectedrow);
+  // loop all nodes on the processor
+  for(int lfluidnodeid=0;lfluidnodeid<fluiddis_->NumMyRowNodes();lfluidnodeid++)
+  {
+    // get the processor's scatra node
+    // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
+    DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
+
+    // find out the local dof id of the dof at the scatra node
+    const int gfuncdofgid = gfuncdis_->Dof(gfuncnode,0);
+
+    const int lgfuncdofidn = solphi->Map().LID(gfuncdofgid);
+
+    if (lgfuncdofidn < 0) dserror("local dof id not found in map for given global dof id");
+
+    // now copy the values
+    const double val = (*solphi)[lgfuncdofidn];
+    const int err = phiprojectedrow->ReplaceMyValue(lfluidnodeid,0,val);
+    if (err) dserror("error while inserting value into phinrow");
+  }
 
   const Teuchos::RCP<Epetra_Vector> phiprojectedcol = Teuchos::rcp(new Epetra_Vector(*fluiddis_->NodeColMap(),true));
-  // 2. Fluid NodeRowMap -> Fluid NodeColMap
+  // export to col map
   LINALG::Export(*phiprojectedrow,*phiprojectedcol);
 
   return phiprojectedcol;

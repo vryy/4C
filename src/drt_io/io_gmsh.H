@@ -74,8 +74,15 @@ namespace IO
 
     //! write node-based vector field to Gmsh postprocessing file
     void VectorFieldNodeBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::RCP<Epetra_MultiVector>  vectorfield,
+        const Teuchos::RCP<const DRT::Discretization> discret,
+        const Teuchos::RCP<const Epetra_MultiVector>  vectorfield,
+        std::ostream&                           s
+        );
+
+    //! write node-based scalar field to Gmsh postprocessing file
+    void ScalarFieldNodeBasedToGmsh(
+        const Teuchos::RCP<const DRT::Discretization> discret,
+        const Teuchos::RCP<const Epetra_Vector>  scalarfield,
         std::ostream&                           s
         );
 
