@@ -788,6 +788,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_reinitialization.cpp
   src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
   src/drt_scatra/turbulence_hit_scalar_forcing.cpp
+  src/drt_levelset/levelset_algorithm.cpp
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
@@ -1185,6 +1186,7 @@ set(OBJS_DRT_PARTICLE
 	src/drt_particle/particle_algorithm.cpp
 	src/drt_particle/particle_dyn.cpp
 	src/drt_particle/cavitation_algorithm.cpp
+	src/drt_particle/scatra_particle_coupling.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp
