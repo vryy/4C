@@ -176,6 +176,9 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 3
+NAME                            Projection_Solver
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4
 MAT 2 MAT_scatra DIFFUSIVITY 0.000000001 // 1*10E-9
