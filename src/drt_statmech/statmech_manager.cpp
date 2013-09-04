@@ -3181,10 +3181,7 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
                 (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lRowElement(rowlid)))->SetReferenceLength(1.0/sca);
               break;
               case statmech_linker_activeintpol:
-              {
                 (dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lRowElement(rowlid)))->SetReferenceLength(1.0/sca);
-                std::cout<<"--------Relax by element "<<discret_->ElementRowMap()->GID(rowlid)<<std::endl;
-              }
               break;
               default: dserror("Unknown active linker beam element!");
             }
