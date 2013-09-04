@@ -223,13 +223,14 @@ public:
 
   //! \brief Shift arbitrary positions (nodes, binding spots, crosslinkers, etc.) according to periodic BCs
   void ShiftPositions(std::vector<double>& pos,
-                      const int&           ndim=3,
                       const int&           nnode=2);
 
-  //! \brief Reverse effect of periodic BCs on arbitrary positions (nodes, binding spots, crosslinkers)
+  /*! \brief Reverse effect of periodic BCs on arbitrary positions (nodes, binding spots, crosslinkers)
+   *  \param (in) pos    (in) position vector of nodes
+   */
   void UnshiftPositions(std::vector<double>& pos,
-                        const int&           ndim=3,
-                        const int&           nnode=2);
+                        const int&           nnode=2,
+                        bool                 separatefil = false);
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(Teuchos::RCP<Epetra_MultiVector> randomnumbers,
@@ -246,7 +247,7 @@ public:
   void PeriodicBoundaryBeam3ebInit(DRT::Element* element);
 
   //! \brief Initializes beam3CL elements in case of periodic boundary conditions
-  void PeriodicBoundaryBeamCLInit(DRT::Element* element);
+  void PeriodicBoundaryBeamCLInit(DRT::Element* element, bool setuprefgeo = true);
 
   //! \brief Initializes truss3 elements in case of periodic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);

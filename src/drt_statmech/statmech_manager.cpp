@@ -971,15 +971,16 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
     /*if bspot currently has coordinate value greater than statmechparams_.get<double>("PeriodLength",0.0),or smaller than 0
      *it is shifted by -statmechparams_.get<double>("PeriodLength",0.0) sufficiently often to lie again in the domain*/
     for(int j=0;j<(int)(periodlength_->size());j++)
-    {  if(currpos(j) > periodlength_->at(j))
-          currpos(j) -= periodlength_->at(j)*floor(currpos(j)/periodlength_->at(j));
+    {
+      if(currpos(j) > periodlength_->at(j))
+        currpos(j) -= periodlength_->at(j)*floor(currpos(j)/periodlength_->at(j));
 
-       if(currpos(j) < 0.0)
-         currpos(j) -= periodlength_->at(j)*floor(currpos(j)/periodlength_->at(j));
+      if(currpos(j) < 0.0)
+        currpos(j) -= periodlength_->at(j)*floor(currpos(j)/periodlength_->at(j));
     }
 
     //Interpolation of Rotations
-    currrot.PutScalar(0);
+    currrot.PutScalar(0.0);
     InterpolateTriadonBindingSpot(Ibp,nQ,currrot,bQ);
 
     for(int j=0;j<3;j++)
@@ -1092,7 +1093,7 @@ void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_
 
 /*------------------------------------------------------------------------------------*
  | (private) update internodal triads at binding positions                            |
- | This is done by a transfer of the current rotations into Quaternions Mueller 10/12 |
+ | This is done by a transfer of the current rotations into Quaternions mueller 10/12 |
  *------------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::GetInterpolatedBindingSpotTriads(const Teuchos::RCP<Epetra_MultiVector> bspotrotations,
                                                                  Teuchos::RCP<Epetra_MultiVector>       bspottriads)
@@ -1117,12 +1118,15 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotTriads(const Teuchos::
     CommunicateMultiVector(bspottriadsrow, bspottriads, false, true);
   else
     bspottriads = Teuchos::rcp(new Epetra_MultiVector(*bspottriadsrow));
+
+  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
  | Shift vector in accordance to periodic BCs                                    mueller 10/12  |
  *----------------------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ShiftPositions(std::vector<double>& pos, const int& ndim, const int& nnode)
+void STATMECH::StatMechManager::ShiftPositions(std::vector<double>& pos,
+                                               const int&           nnode)
 {
   return;
 }
@@ -1131,18 +1135,49 @@ void STATMECH::StatMechManager::ShiftPositions(std::vector<double>& pos, const i
 /*----------------------------------------------------------------------------------------------*
  | Reverse the effect of periodic BCs on a vector                                mueller 10/12  |
  *----------------------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::UnshiftPositions(std::vector<double>& pos, const int& ndim, const int& nnode)
+void STATMECH::StatMechManager::UnshiftPositions(std::vector<double>& pos,
+                                                 const int&           nnode,
+                                                 bool                 separatefil)
 {
   if (periodlength_->at(0) > 0.0)
   {
-    for(int i=1;i<nnode;i++)
+    if((int)pos.size()%nnode!=0)
+      dserror("Check your position vector! It does not have an equal number of entries per node!");
+    int ndim = (int)pos.size()/nnode;
+
+    if(separatefil)
     {
-      for(int dof= ndim - 1; dof > -1; dof--)
+      if(nnode==4)
       {
-        if( fabs( pos[3*i+dof] + periodlength_->at(dof) - pos[dof] ) < fabs( pos[3*i+dof] - pos[dof] ) )
-          pos[3*i+dof] += periodlength_->at(dof);
-        if( fabs( pos[3*i+dof] - periodlength_->at(dof) - pos[dof]) < fabs( pos[3*i+dof] - pos[dof] ) )
-          pos[3*i+dof] -= periodlength_->at(dof);
+        int nfil = 2;
+        for(int h=0; h<nfil; h++)
+        {
+          for(int i=1; i<nnode/2; i++)
+          {
+            for(int dof= ndim - 1; dof > -1; dof--)
+            {
+              if( fabs( pos[nfil*ndim*h+ndim*i+dof] + periodlength_->at(dof) - pos[nfil*ndim*h+ndim*(i-1)+dof] ) < fabs( pos[nfil*ndim*h+ndim*i+dof] - pos[nfil*ndim*h+ndim*(i-1)+dof] ) )
+                pos[nfil*ndim*h+ndim*i+dof] += periodlength_->at(dof);
+              if( fabs( pos[nfil*ndim*h+ndim*i+dof] - periodlength_->at(dof) - pos[nfil*ndim*h+ndim*(i-1)+dof]) < fabs( pos[nfil*ndim*h+ndim*i+dof] - pos[nfil*ndim*h+ndim*(i-1)+dof] ) )
+                pos[nfil*ndim*h+ndim*i+dof] -= periodlength_->at(dof);
+            }
+          }
+        }
+      }
+      else
+        dserror("Only 4-noded element implemented!");
+    }
+    else
+    {
+      for(int i=1; i<nnode; i++)
+      {
+        for(int dof= ndim - 1; dof > -1; dof--)
+        {
+          if( fabs( pos[3*i+dof] + periodlength_->at(dof) - pos[3*(i-1)+dof] ) < fabs( pos[3*i+dof] - pos[3*(i-1)+dof] ) )
+            pos[3*i+dof] += periodlength_->at(dof);
+          if( fabs( pos[3*i+dof] - periodlength_->at(dof) - pos[3*(i-1)+dof]) < fabs( pos[3*i+dof] - pos[3*(i-1)+dof] ) )
+            pos[3*i+dof] -= periodlength_->at(dof);
+        }
       }
     }
   }
@@ -1150,7 +1185,7 @@ void STATMECH::StatMechManager::UnshiftPositions(std::vector<double>& pos, const
 }
 
 /*------------------------------------------------------------------------------*
- | Interpolation of the binding spot triads between nodes mueller 10/12 |
+ | Interpolation of the binding spot triads between nodes         mueller 10/12 |
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::InterpolateTriadonBindingSpot(const LINALG::Matrix<1, 2>&        Ibp,
                                                               std::vector<LINALG::Matrix<4,1> >& bQnew,
@@ -1180,15 +1215,17 @@ void STATMECH::StatMechManager::InterpolateTriadonBindingSpot(const LINALG::Matr
     LARGEROTATIONS::quaternionproduct(bQnew[node],LARGEROTATIONS::inversequaternion(rQr),rQli);
     LARGEROTATIONS::quaterniontoangle(rQli,rPsili[node]);
   }
-  rPsil.PutScalar(0);
-    for(int node=0;node<2;node++)
-      for(int i=0;i<3;i++)
-        rPsil(i)+= Ibp(node)*rPsili[node](i);
+  rPsil.PutScalar(0.0);
+  for(int node=0;node<2;node++)
+    for(int i=0;i<3;i++)
+      rPsil(i)+= Ibp(node)*rPsili[node](i);
 
   LARGEROTATIONS::angletoquaternion(rPsil,rQl);
   LARGEROTATIONS::quaternionproduct(rQl,rQr,rQxi);
   LARGEROTATIONS::quaterniontoangle(rQxi,ThetaXi);
   bQxi=rQxi;
+
+  return;
 }
 
 
@@ -1393,7 +1430,7 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* elemen
 /*------------------------------------------------------------------------*
  | BeamCL initialization when periodic BCs are applied       mueller 10/12|
  *-----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::PeriodicBoundaryBeamCLInit(DRT::Element* element)
+void STATMECH::StatMechManager::PeriodicBoundaryBeamCLInit(DRT::Element* element, bool setuprefgeo)
 {
   // note: in analogy to PeriodicBoundaryBeam3Init()
 
@@ -2042,15 +2079,13 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                         break;
                     }
 
-                    // do not do anything in case of a Loom set up if conditions hereafter are not met
-                    //CHECK make this more elegant later
                     if(networktype_ == statmech_network_casimir)
                     {
                       if(!SetCrosslinkerLoom(LID, bspotpositions, bspottriadscol))
                         break;
                     }
 
-                    //unit direction vector between currently considered two nodes
+                    //direction vector between currently considered two nodes
                     LINALG::Matrix<3,1> direction;
                     for(int j=0;j<3;j++)
                       direction(j) = (*bspotpositions)[j][(int)LID(0,0)]-(*bspotpositions)[j][(int)LID(1,0)];
@@ -2060,6 +2095,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     bool polaritycriterion = true;
                     if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
                       polaritycriterion = LinkerPolarityCheckAttach(bspottriadscol, LID, direction);
+                    else
+                      direction.Scale(1.0/direction.Norm2());
 
                     if(polaritycriterion)
                     {
@@ -2448,6 +2485,8 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
             addedelements_.push_back(crossgid);
         }
         mydiscret.AddElement(newcrosslinker);
+
+
       }
       break;
       default:
@@ -2567,24 +2606,19 @@ bool STATMECH::StatMechManager::LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_Mu
 {
   // cycle time check:
   // time during which an active linker is in recovery conformation (default values from myosin cycle)
-  double recoverytime = (statmechparams_.get<double>("ACTIVELINKERCYCLE",0.04))*(statmechparams_.get<double>("ACTIVERECOVERYFRACTION",0.95));
+  double recoverytime = (statmechparams_.get<double>("ACTIVERECOVERYFRACTION",0.95))*(statmechparams_.get<double>("ACTIVELINKERCYCLE",0.04));
   int crosslid = (*bspotstatus_)[(int)LID(0,0)];
   if((*crosslinkeractcycletime_)[crosslid] >= recoverytime)
   {
     double dirlength = direction.Norm2();
     direction.Scale(1.0/direction.Norm2());
 
-    // 1. polarity check:
-    // crosslinker moves to one end (myosin to +end) of the filament.
-    // direction vector from substrate filament node to filament node must be in positive direction of the filament
-
-    // direction vector, calculated before:
-    // = current position (free filament node) - current position (substrate filament node)
+    // 1. polarity check: direction vector from substrate filament node to filament node must be in positive direction of the filament
+    // direction vector, calculated before := current position (free filament node) - current position (substrate filament node)
     LINALG::Matrix<3,1> linkdirection(true);
     linkdirection -= direction;
 
-    // unit tangential direction of the filament:
-    // first triad vector = tangent
+    // unit tangential direction of the filament: first triad vector = tangent
     LINALG::Matrix<3,1> firstdir(true);
     // retrieve tangential and normal vector from binding spot quaternions
     LINALG::Matrix<3,3> bspottriad(true);
@@ -2600,12 +2634,12 @@ bool STATMECH::StatMechManager::LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_Mu
     // calculate orientation of direction vector to tangential direction
     double tangentialscalefactor = linkdirection.Dot(firstdir);
 
-    // polarity criterion not fulfilled, if director is not parallel to the free filament
+    // zero-positive scale factor signals parallelity, negative scale factor signals antiparallelity
     if (tangentialscalefactor >= 0)
     {
-      // 2. polarity criterion (2D): filaments are not allowed to link from to far away
+      // 2. polarity criterion (2D): filaments are not allowed to link from too far away
       // alpha = angle between new crosslinker and vertical line --> has to be smaller than pi/2
-      double rlink =  statmechparams_.get<double> ("R_LINK", 0.0);
+      double rlink =  statmechparams_.get<double> ("R_LINK", 0.085);
       double alpha = acos(rlink/dirlength);
       if (alpha > statmechparams_.get<double>("PHIBSPOT", 1.0472))
         return false;
@@ -3067,7 +3101,7 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
     for(int i=0; i<actlinklengthtrans->MyLength(); i++)
     {
       // only for doubly-bound crosslinkers
-      if((*crosslink2element_)[i]>-0.9)
+      if((*crosslink2element_)[crosslinkermap_->LID(transfermap_->GID(i))]>-0.9)
       {
         switch((int)(*actlinklengthtrans)[i])
         {
@@ -3147,7 +3181,10 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
                 (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lRowElement(rowlid)))->SetReferenceLength(1.0/sca);
               break;
               case statmech_linker_activeintpol:
+              {
                 (dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lRowElement(rowlid)))->SetReferenceLength(1.0/sca);
+                std::cout<<"--------Relax by element "<<discret_->ElementRowMap()->GID(rowlid)<<std::endl;
+              }
               break;
               default: dserror("Unknown active linker beam element!");
             }
@@ -3208,46 +3245,45 @@ int STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_Mul
 
   if(!discret_->Comm().MyPID())
   {
+    double recoverytime = (statmechparams_.get<double>("ACTIVERECOVERYFRACTION",0.95))*(statmechparams_.get<double>("ACTIVELINKERCYCLE",0.04));
+    double detachtime = (1.0 - (statmechparams_.get<double>("ACTIVERECOVERYFRACTION",0.95)))*(statmechparams_.get<double>("ACTIVELINKERCYCLE",0.04));
+
     for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
     {
       // there exists a crosslinker
       if((*crosslink2element_)[i]>-0.9)
       {
-        // polarity check:
-        // crosslinker goes to one end (myosin to +end) of the filament
-        // direction vector from substrate filament node to filament node must be in positive direction
-        // of the filament
-
-        //Col map LIDs of nodes, which are crosslinked
         int bspotlid0 = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
         int bspotlid1 = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][i]);
 
-        //direction vector between currently considered two nodes
-        // = current position (free filament node) - current position (substrate filament node)
+        // check for periodic boundary conditions
+        std::vector<double> pos(6,0.0);
+        for(int j=0; j<3; j++)
+        {
+          pos[j] = (*bspotpositions)[j][bspotlid0];
+          pos[j+3] = (*bspotpositions)[j][bspotlid1];
+        }
+        UnshiftPositions(pos,2);
+
         LINALG::Matrix<3,1> linkdirection(true);
         for(int j=0; j<(int)linkdirection.M(); j++)
-          linkdirection(j) = (*bspotpositions)[j][bspotlid1] - (*bspotpositions)[j][bspotlid0];
+          linkdirection(j) = pos[j+3]-pos[j];
 
-        // unit tangential direction of the filament:
-        // first triad vector = tangent
         LINALG::Matrix<3,1> firstdir(true);
-        // retrieve tangential and normal vector from binding spot quaternions
         LINALG::Matrix<3,3> bspottriad(true);
-        // auxiliary variable for storing a triad in quaternion form
         LINALG::Matrix<4, 1> qnode(true);
-        // triad of node on free filament
+
         for (int l=0; l<4; l++)
           qnode(l) = (*bspottriadscol)[l][bspotlid1];
+
         LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+
         for (int l=0; l<(int)bspottriad.M(); l++)
           firstdir(l) = bspottriad(l,0);
 
-        // calculate orientation of direction vector to tangential direction
         double tangentialscalefactor = linkdirection.Dot(firstdir);
-        // polarity not fulfilled, if direction vector is not in the direction of the free filament
-        //TODO MULTIVECTOR -> i.e. accounting for both binding sites!!!
         // For now, manipulate j==1 since this is the free filament binding site
-        if (tangentialscalefactor < 0.0)
+        if (tangentialscalefactor < 0.0 || ((*crosslinkeractcycletime_)[i] >= recoverytime+detachtime && (*crosslinkeractlength_)[i]>0.9))
         {
           numdetach++;
           (*punlink)[1][i]=1.0;

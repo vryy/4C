@@ -928,18 +928,18 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
          *parameter in Gauss integration interval and I^{i'} in Jelenic 1999 is derivative with respect to
          *curve length in reference configuration*/
         for (int i=0; i<3; ++i)
-        fforce(6*node+i) += Iprime[numgp](node)*stressn(i)*wgt;
+          fforce(6*node+i) += Iprime[numgp](node)*stressn(i)*wgt;
 
         //lower left block
         for (int i=0; i<3; ++i)
           for (int j=0; j<3; ++j)
-          fforce(6*node+3+i) -= rprimehat(i,j)*stressn(j)*I[numgp](node)*wgt*jacobi_[numgp];
+            fforce(6*node+3+i) -= rprimehat(i,j)*stressn(j)*I[numgp](node)*wgt*jacobi_[numgp];
 
         /*lower right block (note: jacobi determinant cancels out as Iprime is derivative with respect to
          *parameter in Gauss integration interval and I^{i'} in Jelenic 1999 is derivative with respect to
          *curve length in reference configuration*/
         for (int j=0; j<3; ++j)
-        fforce(6*node+3+j) += Iprime[numgp](node)*stressm(j)*wgt;
+          fforce(6*node+3+j) += Iprime[numgp](node)*stressm(j)*wgt;
 
         }
      }//if (fforce != NULL)
@@ -1070,7 +1070,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
 
    if(force != NULL)
    {
-     //Tranform 12x1 force vektor for fiktive nodal beam to 24x1 force vector of the 4-noded beam
+     //Tranform 12x1 force vector for fictitious nodal beam to 24x1 force vector of the 4-noded beam
      for (int node=0; node<fnnode; ++node)
       for(int Ri=0; Ri<2; Ri++)
        for(int i=0;i<6;i++)
