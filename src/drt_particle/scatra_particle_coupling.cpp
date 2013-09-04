@@ -925,47 +925,6 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
     }
   }
 
-#ifdef DEBUG
-  // check whether each particle has an underlying fluid element
-  std::map<int,LINALG::Matrix<3,1> > currentpositions;
-  for(int i=0; i<fluiddis_->NumMyColNodes(); i++)
-  {
-    DRT::Node* node = fluiddis_->lColNode(i);
-    LINALG::Matrix<3,1> currpos;
-
-    for (int a=0; a<3; a++)
-    {
-      currpos(a) = node->X()[a];
-    }
-    currentpositions.insert(std::pair<int,LINALG::Matrix<3,1> >(node->Id(),currpos));
-  }
-  // start loop over all particles
-  for(int k=0; k<particledis_->NumMyColNodes(); k++)
-  {
-    DRT::Node* particle = particledis_->lColNode(k);
-    const double* pos = particle->X();
-    LINALG::Matrix<3,1> projpoint;
-    for(int dim=0; dim<3; dim++)
-      projpoint(dim) = pos[dim];
-    bool foundele = false;
-    for(int i=0; i<fluiddis_->NumMyColElements(); i++)
-    {
-      DRT::Element* fluidele = fluiddis_->lColElement(i);
-
-      LINALG::Matrix<3,1> elecoord(true);
-      const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(Teuchos::rcp(fluidele,false), currentpositions));
-
-      //get coordinates of the particle position in parameter space of the element
-      foundele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, projpoint, elecoord);
-
-      if(foundele == true)
-        break;
-    }
-    if(foundele == false)
-      dserror("particle (Id:%d) was found which does not have fluid support", particle->Id());
-  }
-#endif
-
   return;
 }
 
