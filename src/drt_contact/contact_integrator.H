@@ -386,9 +386,11 @@ protected:
     LINALG::SerialDenseMatrix                        mcoord_;    // master element nodal coordinates
     LINALG::SerialDenseMatrix                        ssecderiv_; // storage for 2nd derivatives of standard shape fct.
     bool                                             duallin_;   // flag indicating linearization of dual shape fct.
-    bool                                             wear_both_;   // flag indicating linearization of dual shape fct.
     std::vector<std::vector<std::map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
     std::vector<std::map<int,double> >               ximaps_;    // storage for 2d segment endpoints derivatives
+
+    //wear-specific stuff
+    bool                                             wearimpl_;  // flag for implicit wear algorithm
 
 }; // class CoIntegrator
 }  // namespace CONTACT

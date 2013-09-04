@@ -1579,12 +1579,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   //DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
-  setStringToIntegralParameter<int>("WEAR","None","Type of wear law",
+  setStringToIntegralParameter<int>("WEARLAW","None","Type of wear law",
       tuple<std::string>("None","none",
                          "Archard","archard"),
       tuple<int>(
-                 INPAR::CONTACT::wear_none,INPAR::CONTACT::wear_none,
-                 INPAR::CONTACT::wear_archard,INPAR::CONTACT::wear_archard),
+                 INPAR::CONTACT::wear_none, INPAR::CONTACT::wear_none,
+                 INPAR::CONTACT::wear_archard, INPAR::CONTACT::wear_archard),
       &scontact);
 
   DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
@@ -1597,6 +1597,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave,
                 INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map,
                 INPAR::CONTACT::wear_both_ale, INPAR::CONTACT::wear_both_ale, INPAR::CONTACT::wear_both_ale),
+        &scontact);
+
+  setStringToIntegralParameter<int>("WEARTYPE","explicit","Definition of wear algorithm",
+        tuple<std::string>("impl","Impl", "implicit" ,
+                           "expl","Expl", "explicit",
+                           "variable_partitioned","var_part", "VariablePartitioned"),
+        tuple<int>(
+                INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl,
+                INPAR::CONTACT::wear_expl, INPAR::CONTACT::wear_expl,INPAR::CONTACT::wear_expl,
+                INPAR::CONTACT::wear_varpart, INPAR::CONTACT::wear_varpart, INPAR::CONTACT::wear_varpart),
         &scontact);
 
   setStringToIntegralParameter<int>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",

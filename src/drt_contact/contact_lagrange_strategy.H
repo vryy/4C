@@ -45,6 +45,8 @@ Maintainer: Alexander Popp
 namespace CONTACT
 {
 
+// forward declaration
+//class WearInterface;
 /*!
  \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
@@ -252,6 +254,11 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     void UpdateAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
     
+    // same procedure for wear stuff:
+    void OutputWear() {};
+    Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;};
+    Teuchos::RCP<Epetra_Vector> ContactWear2() {return Teuchos::null;};
+    //std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() {return std::vector<Teuchos::RCP<CONTACT::WearInterface> >(NULL);};
     //@}
 
   protected:
@@ -269,10 +276,6 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     Teuchos::RCP<LINALG::SparseMatrix> tmatrix_; // global Matrix T containing active node tangents
     Teuchos::RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
     Teuchos::RCP<LINALG::SparseMatrix> pmatrix_; // global Matrix P containing tangent derivatives
-
-    Teuchos::RCP<LINALG::SparseMatrix> wlinmatrix_;   // global Matrix Wg containing wear-lm derivatives
-    Teuchos::RCP<LINALG::SparseMatrix> wlinmatrixsl_; // global Matrix Wsl containing wear-lm slip derivatives
-    Teuchos::RCP<LINALG::SparseMatrix> wlinmatrixst_; // global Matrix Wst containing wear-lm stick derivatives
 
 
     Teuchos::RCP<Epetra_Vector> fs_;          // slave side effective forces (needed for LM)

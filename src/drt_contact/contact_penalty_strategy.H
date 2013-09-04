@@ -45,6 +45,8 @@ Maintainer: Alexander Popp
 namespace CONTACT
 {
 
+// forward declaration
+//class WearInterface;
 /*!
  \brief Contact solving strategy with regularization of Lagrangian multipliers,
  also known as Penalty Method or regularization. An Augmented Lagrangian version
@@ -224,7 +226,12 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   void UpdateActiveSet() {}
   void UpdateActiveSetSemiSmooth() {}
 
-  
+  //same procedure for wear functions:
+  void OutputWear() {};
+  Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;};
+  Teuchos::RCP<Epetra_Vector> ContactWear2() {return Teuchos::null;};
+  //std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() {return std::vector<Teuchos::RCP<CONTACT::WearInterface> >(NULL);};
+
   //@}
   
 protected:

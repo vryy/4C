@@ -43,6 +43,8 @@ Maintainer: Alexander Popp
 #include "contact_node.H"
 #include "contact_element.H"
 #include "contact_lagrange_strategy.H"
+#include "contact_wear_lagrange_strategy.H"
+#include "contact_wear_interface.H"
 #include "contact_penalty_strategy.H"
 #include "contact_defines.H"
 #include "friction_node.H"
@@ -54,6 +56,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io_control.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
@@ -117,6 +120,14 @@ discret_(discret)
   // later we want to create NEW Lagrange multiplier degrees of
   // freedom, which of course must not overlap with displacement dofs
   int maxdof = Discret().DofRowMap()->MaxAllGID();
+
+  // get input par.
+  INPAR::CONTACT::SolvingStrategy stype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
+  INPAR::CONTACT::WearLaw wlaw =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(cparams,"WEARLAW");
+  INPAR::CONTACT::WearType wtype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cparams,"WEARTYPE");
 
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
@@ -284,7 +295,14 @@ discret_(discret)
       dserror("ERROR: CoManager: Contact requires redundant master storage");
     if (isself[0]==true && redundant != INPAR::MORTAR::redundant_all)
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
-    interfaces.push_back(Teuchos::rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,icparams,isself[0],redundant)));
+
+    // decide between contactinterface and wearinterface
+    Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
+    if(wlaw!=INPAR::CONTACT::wear_none)
+      newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+    else
+      newinterface=Teuchos::rcp(new CONTACT::CoInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+    interfaces.push_back(newinterface);
 
     // get it again
     Teuchos::RCP<CONTACT::CoInterface> interface = interfaces[(int)interfaces.size()-1];
@@ -416,9 +434,12 @@ discret_(discret)
     std::cout << "Building contact strategy object............";
     fflush(stdout);
   }
-  INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
-  if (stype == INPAR::CONTACT::solution_lagmult)
+
+  // create WearLagrangeStrategy for wear as non-distinct quantity
+  if (stype == INPAR::CONTACT::solution_lagmult && wlaw!=INPAR::CONTACT::wear_none &&
+      (wtype==INPAR::CONTACT::wear_expl || wtype==INPAR::CONTACT::wear_impl ))
+    strategy_ = Teuchos::rcp(new WearLagrangeStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
+  else if (stype == INPAR::CONTACT::solution_lagmult)
     strategy_ = Teuchos::rcp(new CoLagrangeStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
@@ -629,15 +650,15 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // contact with wear
   // *********************************************************************
   
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") == INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") == INPAR::CONTACT::wear_none &&
       contact.get<double>("WEARCOEFF") != 0.0)
     dserror("ERROR: Wear coefficient only necessary in the context of wear.");
   
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_none &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none)
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none)
     dserror("ERROR: Wear models only applicable to frictional contact.");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
       contact.get<double>("WEARCOEFF") <= 0.0)
     dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.");
 
@@ -645,11 +666,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       Comm().NumProc() > 1)
     dserror("ERROR: Both-sided wear only applicable in serial!");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") != INPAR::MORTAR::inttype_segments)
     dserror("ERROR: Calculation of wear only possible by employing segment-based integration!");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(contact,"WEAR") != INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
       DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE") ==true)
     dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
 

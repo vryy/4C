@@ -71,7 +71,7 @@ namespace INPAR
 
     /// Type of contact wear law
     /// (this enum represents the input file parameter WEAR)
-    enum WearType
+    enum WearLaw
     {
       wear_none,     ///< no wear
       wear_archard   ///< Archard wear law
@@ -86,6 +86,14 @@ namespace INPAR
       wear_both_ale   ///< compute wear on master side with ale strategy
     };
 
+    /// Definition of contact wear algrithm
+    /// (this enum represents the input file parameter WEARTYPE)
+    enum WearType
+    {
+      wear_impl,
+      wear_expl,
+      wear_varpart
+    };
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy

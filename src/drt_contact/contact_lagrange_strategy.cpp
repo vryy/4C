@@ -84,8 +84,8 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   // (re)setup global matrix containing "no-friction"-derivatives
   if (!friction_)
   {
-	// tangential rhs
-	tangrhs_ = LINALG::CreateVector(*gactivet_, true);
+    // tangential rhs
+    tangrhs_ = LINALG::CreateVector(*gactivet_, true);
     pmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
   }
   // (re)setup of global friction
@@ -100,19 +100,6 @@ void CONTACT::CoLagrangeStrategy::Initialize()
     linslipLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
     linslipDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
     linslipRHS_ = LINALG::CreateVector(*gslipt_,true);
-
-#ifdef WEARIMPLICIT
-  // create matrices for implicite wear: these matrices are due to
-  // the gap-change in the compl. fnc.
-  // Here are only the lin. w.r.t. the lagr. mult.
-  wlinmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
-  wlinmatrixsl_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
-
-#ifdef CONSISTENTSTICK
-  wlinmatrixst_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
-#endif
-
-#endif
   }
 
   return;
@@ -161,17 +148,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
     if (systype != INPAR::CONTACT::system_condensed)
     	interface_[i]->AssembleInactiverhs(*inactiverhs_);
-
-#ifdef WEARIMPLICIT
-    // assemble wear-specific matrices
-    interface_[i]->AssembleLinWLm(*wlinmatrix_);
-    interface_[i]->AssembleLinWLmSl(*wlinmatrixsl_);
-
-#ifdef CONSISTENTSTICK
-    interface_[i]->AssembleLinWLmSt(*wlinmatrixst_);
-#endif
-
-#endif
   }
 
   // FillComplete() global matrix T
@@ -197,17 +173,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   // FillComplete global Matrix linslipLM_ and linslipDIS_
   linslipLM_->Complete(*gslipdofs_,*gslipt_);
   linslipDIS_->Complete(*gsmdofrowmap_,*gslipt_);
-  
-#ifdef WEARIMPLICIT
-  // complete wear-specific matrices
-  wlinmatrix_->Complete(*gsdofrowmap_,*gactiven_);
-  wlinmatrixsl_->Complete(*gsdofrowmap_,*gslipt_);
-
-#ifdef CONSISTENTSTICK
-  wlinmatrixst_->Complete(*gsdofrowmap_,*gstickt);
-#endif
-
-#endif
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -441,35 +406,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
     LINALG::SplitMatrix2x2(invda,gactivedofs_,gidofs,gslipdofs_,gstdofs,invdsl,tempmtx1,tempmtx2,tempmtx3);
     LINALG::SplitMatrix2x2(invda,gactivedofs_,gidofs,gstdofs,gslipdofs_,invdst,tempmtx1,tempmtx2,tempmtx3);
-    
-#ifdef WEARIMPLICIT
-    Teuchos::RCP<Epetra_Vector> za = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-    Teuchos::RCP<Epetra_Vector> zi = Teuchos::rcp(new Epetra_Vector(*gidofs));
-
-    LINALG::SplitVector( *gsdofrowmap_, *z_,gactivedofs_, za, gidofs, zi);
-
-    // split wlinmatrix into wa for active dofs
-    Teuchos::RCP<LINALG::SparseMatrix> wa, wi, wsl, wst;
-    LINALG::SplitMatrix2x2(wlinmatrix_,gactiven_,gactiven_,gactivedofs_,gidofs,wa,tempmtx1,tempmtx2,tempmtx3);
-
-    // split wlinmatrixsl into wa for active dofs
-    Teuchos::RCP<LINALG::SparseMatrix> wsla, wsli, wslsl, wslst;
-    LINALG::SplitMatrix2x2(wlinmatrixsl_,gslipt_,gslipt_,gactivedofs_,gidofs,wsla,tempmtx1,tempmtx2,tempmtx3);
-
-    // WEAR LIN. W.R.T. Z *****************************************************
-    // for normal contact
-    Teuchos::RCP<Epetra_Vector> fw = Teuchos::rcp(new Epetra_Vector(*gactiven_));
-    if (aset)
-      wa->Multiply(false,*za,*fw);
-
-    // WEAR LIN. W.R.T. Z *****************************************************
-    // for slip contact
-    Teuchos::RCP<Epetra_Vector> fwsl = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-    if (slipset)
-      wsla->Multiply(false,*za,*fwsl);
-
-#endif
-
 
     // coupling part of dmatrix (only nonzero for 3D quadratic case!)
     Teuchos::RCP<LINALG::SparseMatrix> dai;
@@ -587,35 +523,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     }
 
     //-------------------------------------------------------- FOURTH LINE
-#ifdef WEARIMPLICIT
-    Teuchos::RCP<LINALG::SparseMatrix> kgnmod;
-    if (aset)
-    {
-      kgnmod = LINALG::MLMultiply(*wa,false,*invda,true,false,false,true);
-      kgnmod = LINALG::MLMultiply(*kgnmod,false,*kan,false,false,false,true);
-    }
 
-    Teuchos::RCP<LINALG::SparseMatrix> kgmmod;
-    if (aset)
-    {
-      kgmmod = LINALG::MLMultiply(*wa,false,*invda,true,false,false,true);
-      kgmmod = LINALG::MLMultiply(*kgmmod,false,*kam,false,false,false,true);
-    }
-
-    Teuchos::RCP<LINALG::SparseMatrix> kgimod;
-    if (aset and iset)
-    {
-      kgimod = LINALG::MLMultiply(*wa,false,*invda,true,false,false,true);
-      kgimod = LINALG::MLMultiply(*kgimod,false,*kai,false,false,false,true);
-    }
-
-    Teuchos::RCP<LINALG::SparseMatrix> kgaamod;
-    if (aset)
-    {
-      kgaamod = LINALG::MLMultiply(*wa,false,*invda,true,false,false,true);
-      kgaamod = LINALG::MLMultiply(*kgaamod,false,*kaa,false,false,false,true);
-    }
-#endif
     //--------------------------------------------------------- FIFTH LINE
     // blocks for complementary conditions (stick nodes)
 
@@ -701,36 +609,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       kslstmod = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       kslstmod = LINALG::MLMultiply(*kslstmod,false,*kast,false,false,false,true);
     }
-
-#ifdef WEARIMPLICIT
-    Teuchos::RCP<LINALG::SparseMatrix> kslwnmod;
-    if (slipset)
-    {
-      kslwnmod = LINALG::MLMultiply(*wsla,false,*invda,true,false,false,true);
-      kslwnmod = LINALG::MLMultiply(*kslwnmod,false,*kan,false,false,false,true);
-    }
-
-    Teuchos::RCP<LINALG::SparseMatrix> kslwmmod;
-    if (slipset)
-    {
-      kslwmmod = LINALG::MLMultiply(*wsla,false,*invda,true,false,false,true);
-      kslwmmod = LINALG::MLMultiply(*kslwmmod,false,*kam,false,false,false,true);
-    }
-
-    Teuchos::RCP<LINALG::SparseMatrix> kslwimod;
-    if (slipset and iset)
-    {
-      kslwimod = LINALG::MLMultiply(*wsla,false,*invda,true,false,false,true);
-      kslwimod = LINALG::MLMultiply(*kslwimod,false,*kai,false,false,false,true);
-    }
-
-    Teuchos::RCP<LINALG::SparseMatrix> kslwaamod;
-    if (slipset)
-    {
-      kslwaamod = LINALG::MLMultiply(*wsla,false,*invda,true,false,false,true);
-      kslwaamod = LINALG::MLMultiply(*kslwaamod,false,*kaa,false,false,false,true);
-    }
-#endif
     
     /********************************************************************/
     /* (8) Build the final f blocks                                     */
@@ -808,23 +686,13 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     fimod->Update(1.0,*fi,-1.0);
 
     //-------------------------------------------------------- FOURTH LINE
-#ifdef WEARIMPLICIT
-    Teuchos::RCP<Epetra_Vector> fgmod;
-    if (aset)
-    {
-      fgmod = Teuchos::rcp(new Epetra_Vector(*gactiven_));
-      Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*wa,false,*invda,true,false,false,true);
-      temp1->Multiply(false,*fa,*fgmod);
-    }
-#endif
+
     //--------------------------------------------------------- FIFTH LINE
     Teuchos::RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_,*gslipdofs_);	// get global stick dofs
 
-#ifndef WEARIMPLICIT
     // split the lagrange multiplier vector in stick and slip part
     Teuchos::RCP<Epetra_Vector> za = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
     Teuchos::RCP<Epetra_Vector> zi = Teuchos::rcp(new Epetra_Vector(*gidofs));
-#endif
     Teuchos::RCP<Epetra_Vector> zst = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
     Teuchos::RCP<Epetra_Vector> zsl = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
 
@@ -862,12 +730,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       linslipLM_->Multiply(false, *zsl, *tempvec1);
 
       fslmod->Update(-1.0,*tempvec1,1.0);
-
-#ifdef WEARIMPLICIT
-      fslwmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-      Teuchos::RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*wsla,false,*invda,true,false,false,true);
-      temp2->Multiply(false,*fa,*fslwmod);
-#endif
     }
 
     /********************************************************************/
@@ -903,13 +765,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       if (aset)
       {
         smatrix_ = MORTAR::MatrixRowTransform(smatrix_,pgsdofrowmap_);
-
-#ifdef WEARIMPLICIT
-        kgnmod = MORTAR::MatrixRowTransform(kgnmod,pgsdofrowmap_);
-        kgmmod = MORTAR::MatrixRowTransform(kgmmod,pgsdofrowmap_);
-        if (iset) kgimod = MORTAR::MatrixRowTransform(kgimod,pgsdofrowmap_);
-        kgaamod = MORTAR::MatrixRowTransform(kgaamod,pgsdofrowmap_);
-#endif
       }
 
       //----------------------------------------------------------- FIFTH LINE
@@ -932,13 +787,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
         if (stickset) kslstmod = MORTAR::MatrixRowTransform(kslstmod,pgsdofrowmap_);
         kslslmod = MORTAR::MatrixRowTransform(kslslmod,pgsdofrowmap_);
         linslipDIS_ = MORTAR::MatrixRowTransform(linslipDIS_,pgsdofrowmap_);
-
-#ifdef WEARIMPLICIT
-        kslwnmod = MORTAR::MatrixRowTransform(kslwnmod,pgsdofrowmap_);
-        kslwmmod = MORTAR::MatrixRowTransform(kslwmmod,pgsdofrowmap_);
-        if (iset) kslwimod = MORTAR::MatrixRowTransform(kslwimod,pgsdofrowmap_);
-        kslwaamod = MORTAR::MatrixRowTransform(kslwaamod,pgsdofrowmap_);
-#endif
       }
     }
 
@@ -974,15 +822,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     // add a submatrices to kteffnew
     if (aset) kteffnew->Add(*smatrix_,false,1.0,1.0);
 
-#ifdef WEARIMPLICIT
-    //if (aset) kteffnew->Add(*wlinmatrix_,false,1.0,1.0);
-    if (aset) kteffnew->Add(*kgnmod,false,-1.0,1.0);
-    if (aset) kteffnew->Add(*kgmmod,false,-1.0,1.0);
-    if (aset and iset) kteffnew->Add(*kgimod,false,-1.0,1.0);
-    if (aset) kteffnew->Add(*kgaamod,false,-1.0,1.0);
-    //if (aset and stickset) kteffnew->Add(*kgstmod,false,1.0,1.0);
-#endif
-
     //--------------------------------------------------------- FIFTH LINE
     // add st submatrices to kteffnew
     if (stickset) kteffnew->Add(*kstnmod,false,1.0,1.0);
@@ -1004,15 +843,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     
     // add terms of linearization of slip condition to kteffnew and feffnew
     if (slipset) kteffnew->Add(*linslipDIS_,false,-1.0,+1.0);
-
-#ifdef WEARIMPLICIT
-      //if (slipset) kteffnew->Add(*wlinmatrixsl_,false,1.0,1.0);
-    if (slipset) kteffnew->Add(*kslwnmod,false,1.0,1.0);
-    if (slipset) kteffnew->Add(*kslwmmod,false,1.0,1.0);
-    if (slipset and iset) kteffnew->Add(*kslwimod,false,1.0,1.0);
-    if (slipset) kteffnew->Add(*kslwaamod,false,1.0,1.0);
-    //if (slipset and stickset) kteffnew->Add(*kslwstmod,false,1.0,1.0);
-#endif
 
     // FillComplete kteffnew (square)
     kteffnew->Complete();
@@ -1054,17 +884,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*gact,*gexp);
       feffnew->Update(-1.0,*gexp,1.0);
-
-#ifdef WEARIMPLICIT
-      //commented due to incremental solution algorithm.
-      fwexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fw,*fwexp);
-      feffnew->Update(+1.0,*fwexp,1.0);
-
-      fgmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fgmod,*fgmodexp);
-      feffnew->Update(-1.0,*fgmodexp,+1.0);
-#endif
     }
 
     //--------------------------------------------------------- FIFTH LINE
@@ -1099,22 +918,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       LINALG::Export(*fslmod,*fslmodexp);
       feffnew->Update(1.0,*fslmodexp,1.0);
     }
-
-#ifdef WEARIMPLICIT
-    if (slipset)
-    {
-      fslwmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fslwmod,*fslwmodexp);
-      feffnew->Update(+1.0,*fslwmodexp,1.0);
-    }
-    //commented due to incremental solution algorithm
-    if (slipset)
-    {
-      fwslexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-      LINALG::Export(*fwsl,*fwslexp);
-      feffnew->Update(-1.0,*fwslexp,1.0);
-    }
-#endif
 
     if (slipset)
     {
@@ -1226,19 +1029,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       feff->Update(alphaf_,*fmoldexp,1.0);
     }
   }
-#ifdef WEARIMPLICITFDLM
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    interface_[i]->FDCheckWearDerivLm();
-  }
-#endif
-
-#ifdef WEARIMPLICITFD
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    interface_[i]->FDCheckWearDeriv();
-  }
-#endif
 
 #ifdef CONTACTFDGAP
   // FD check of weighted gap g derivatives (non-penetr. condition)
@@ -2862,17 +2652,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
     if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_,false,1.0,1.0);
     if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
-
-#ifdef WEARIMPLICIT
-    // add C-fnc. derivatives w.r.t. lm-values to kzz
-    if (gactiven_->NumGlobalElements()) kzz->Add(*wlinmatrix_,false,1.0,1.0);
-    if (gslipt_->NumGlobalElements()) kzz->Add(*wlinmatrixsl_,false,1.0,1.0);
-
-#ifdef CONSISTENTSTICK
-    if (gstickt->NumGlobalElements()) kzz->Add(*wlinmatrixst_,false,1.0,1.0);
-#endif
-
-#endif
     kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
     
     // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
@@ -3026,13 +2805,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   {
 	  zincr_->Update(1.0, *sollm, 0.0);
 	  z_->Update(1.0, *zincr_, 1.0);
-
-	  //std::cout << "z_= " << *z_ << std::endl;
-    //std::cout << "zincr_= " << *zincr_ << std::endl;
-
   }
-
-
 
   return;
 }
@@ -3387,10 +3160,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   gslipdofs_ = Teuchos::null;
   gslipt_ = Teuchos::null;
 
-  // for both-sided wear
-  gminvolvednodes_  = Teuchos::null;
-  gminvolveddofs_   = Teuchos::null;
-
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -3400,13 +3169,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
-
-    // for both-sided wear -- involved master nodes/dofs
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(scontact_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
-    {
-      gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
-      gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
-    }
 
     if(friction_)
     {  
@@ -3792,10 +3554,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   gslipdofs_ = Teuchos::null;
   gslipt_ = Teuchos::null;
 
-  // for both-sided wear
-  gminvolvednodes_  = Teuchos::null;
-  gminvolveddofs_   = Teuchos::null;
-
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -3805,13 +3563,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
-
-    // for both-sided wear
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(scontact_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
-    {
-      gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
-      gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
-    }
 
     if(friction_)
     {

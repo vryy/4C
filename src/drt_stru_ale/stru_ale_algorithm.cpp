@@ -20,17 +20,22 @@ Maintainer: Markus Gitterle
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_contact.H"
+
 #include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_contact/meshtying_manager.H"
-#include "../drt_contact/contact_manager.H"
-#include "../drt_contact/contact_abstract_strategy.H"
+
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_ale/ale.H"
+
+#include "../drt_contact/contact_manager.H"
+#include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_defines.H"
+#include "../drt_contact/meshtying_manager.H"
+
 #include "../drt_structure/stru_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -40,6 +45,10 @@ Maintainer: Markus Gitterle
 #include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_adapter/adapter_coupling.H"
+
+#include "../drt_contact/contact_wear_lagrange_strategy.H"
+#include "../drt_contact/contact_wear_interface.H"
+
 /*----------------------------------------------------------------------*
  | constructor (public)                                     farah 05/13 |
  *----------------------------------------------------------------------*/
@@ -127,9 +136,9 @@ void STRU_ALE::Algorithm::TimeLoop()
     AleField().PrepareTimeStep();
 
     // wear as interface displacements in ale dofs
-    RCP<Epetra_Vector> idisale_s, idisale_m, idisale_global;
+    Teuchos::RCP<Epetra_Vector> idisale_s, idisale_m, idisale_global;
     InterfaceDisp(idisale_s, idisale_m);
-    
+
     // system of equation
     AleField().BuildSystemMatrix();
 
@@ -203,10 +212,11 @@ void STRU_ALE::Algorithm::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s 
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
   std::vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<CONTACT::WearInterface>(interface[0]);
+  if (winterface==Teuchos::null) dserror("Casting to WearInterface returned null!");
 
-
-  disinterface_g = Teuchos::rcp(new Epetra_Vector(*interface[0]->Discret().DofRowMap()),true);
-  Teuchos::RCP<Epetra_Vector>  auxvector = Teuchos::rcp(new Epetra_Vector(*interface[0]->Discret().DofRowMap()),true);
+  disinterface_g = Teuchos::rcp(new Epetra_Vector(*winterface->Discret().DofRowMap()),true);
+  Teuchos::RCP<Epetra_Vector>  auxvector = Teuchos::rcp(new Epetra_Vector(*winterface->Discret().DofRowMap()),true);
 
   LINALG::Export(*disinterface_s,*disinterface_g);
   LINALG::Export(*disinterface_m,*auxvector);
@@ -228,13 +238,15 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   // FIXGIT: Perhaps master nodes
   
   // get vector of unweighted wear
-  RCP<Epetra_Vector> realwear = cmtman_->GetStrategy().ContactWear();
+  Teuchos::RCP<Epetra_Vector> realwear = cmtman_->GetStrategy().ContactWear();
+  if(realwear==Teuchos::null) dserror("realwear = Neuchos::null");
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+  CONTACT::WearLagrangeStrategy& cstrategy = static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
 
-  // get vector of contact interfaces
+
+  // get vector of contact interfaces TODO: wear interfaces!!!!
   std::vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   //***********************************************************************
@@ -243,12 +255,16 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   // 2. compute the non-weighted wear vector
   // FIX: This should be done in a different way
   //***********************************************************************
-#ifdef WEARIMPLICIT
-  cstrategy.OutputWear();
-#else
-  cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::wear);
-  cstrategy.OutputWear();
-#endif
+  INPAR::CONTACT::WearType wtype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(DRT::Problem::Instance()->ContactDynamicParams(),"WEARTYPE");
+
+  if(wtype==INPAR::CONTACT::wear_impl)
+    cstrategy.OutputWear();
+  else
+  {
+    cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::wear);
+    cstrategy.OutputWear();
+  }
 
 
   // dimension of the problem
@@ -264,8 +280,11 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   // loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
+    Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<CONTACT::WearInterface>(interface[m]);
+    if (winterface==Teuchos::null) dserror("Casting to WearInterface returned null!");
+
     // get slave row dofs as map
-    Teuchos::RCP<Epetra_Map> slavedofs = interface[0]->SlaveRowDofs();
+    Teuchos::RCP<Epetra_Map> slavedofs = winterface->SlaveRowDofs();
     // additional spatial displacements
     // FIXGIT: transformation of results
 
@@ -276,10 +295,12 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
       if (i%dim == 0)
       {
         // get contact node for the current dofs
-        int gid = interface[0]->SlaveRowNodes()->GID(i/dim);
-        DRT::Node* node = interface[0]->Discret().gNode(gid);
+        int gid = winterface->SlaveRowNodes()->GID(i/dim);
+        DRT::Node* node = winterface->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
         CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+
+        if (cstrategy.ContactWear() == Teuchos::null) dserror("unweighted wear vector returned null-pointer");
 
         //calc (w*n)*n --> if <0 then negative wear !!!
         double xp2=(*cstrategy.ContactWear())[i] * cnode->MoData().n()[0];
@@ -318,11 +339,14 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   // BUT: in which direction wear should be added? normal to master surface?
   // normal to slave surface? Think about that!
   // *********************************************************************************************
-  // loop over all interfaces
+//   loop over all interfaces
   for (int m=0; m<(int)interface.size(); ++m)
   {
+    Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<CONTACT::WearInterface>(interface[m]);
+    if (winterface==Teuchos::null) dserror("Casting to WearInterface returned null!");
+
     // get slave row dofs as map
-    Teuchos::RCP<Epetra_Map> masterdofs = interface[0]->MasterRowDofs();
+    Teuchos::RCP<Epetra_Map> masterdofs = winterface->MasterRowDofs();
 
     disinterface_m = Teuchos::rcp(new Epetra_Vector(*masterdofs,true));
 

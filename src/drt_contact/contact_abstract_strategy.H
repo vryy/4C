@@ -62,6 +62,7 @@ namespace CONTACT
 
 // forward declarations
 class CoInterface;
+//class WearInterface;
 
 /*!
 \brief Main abstract class for contact solution strategies
@@ -203,13 +204,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     Teuchos::RCP<Epetra_Vector> ContactTanStress() { return stresstangential_; }
-    
-    /*!
-    \brief Return vector of wear (t_n+1)
-
-    */
-    Teuchos::RCP<Epetra_Vector> ContactWear() { return wearoutput_; }
-    Teuchos::RCP<Epetra_Vector> ContactWear2() { return wearoutput2_; } // for master side
 
     /*!
     \brief Return required Integration time
@@ -566,7 +560,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle, 
-                        Teuchos::RCP<Epetra_Vector>& sliptoggle, 
+                        Teuchos::RCP<Epetra_Vector>& sliptoggle,
                         Teuchos::RCP<Epetra_Vector>& weightedwear,
                         Teuchos::RCP<Epetra_Vector>& realwear);
     
@@ -623,15 +617,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void VisualizeGmsh(const int step, const int iter = 0);
-    
-    /*!
-    \brief Evaluate wear vector
-    
-    Evaluates the unweighted wear vector.
-    Refer also to the Semesterarbeit of Karl Wichmann 2010
-       
-    */
-    void OutputWear();
 
     //@}
         
@@ -677,6 +662,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
     Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() {return Teuchos::null; }
       
+    // wear stuff:
+    virtual void OutputWear() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ContactWear() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ContactWear2() = 0;
+    //virtual std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() = 0;
+
     //@}
     
     
@@ -721,7 +712,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
     Teuchos::RCP<Epetra_Vector> tangrhs_;			// global tangential rhs vector (formulation with incremental z_)
     Teuchos::RCP<Epetra_Vector> inactiverhs_;		// gloabl inactive rhs vectir	(formulation with incremental z_ and saddle point system)
-    Teuchos::RCP<Epetra_Vector> wearvector_;        // global weighted wear vector w
     Teuchos::RCP<Epetra_Vector> constrrhs_;         // global constraint rhs vector (only for saddlepoint problems)
 
     Teuchos::RCP<LINALG::SparseMatrix> lindmatrix_; // global Matrix LinD containing slave fc derivatives
@@ -757,8 +747,6 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
     // contact with wear
     bool wear_;                                           // flag for contact with wear
-    Teuchos::RCP<Epetra_Vector> wearoutput_;              // vector of wear at t_n+1
-    Teuchos::RCP<Epetra_Vector> wearoutput2_;              // vector of wear at t_n+1
     double inttime_;                                      // integration time
 
 }; // class CoAbstractStrategy

@@ -113,16 +113,6 @@ public:
   }
 
 
-  virtual const Teuchos::RCP<Epetra_Map> InvolvedDofs() const
-  {
-    return involveddofs_;
-  }
-
-  virtual const Teuchos::RCP<Epetra_Map> InvolvedNodes() const
-  {
-    return involvednodes_;
-  }
-
   /*!
   \brief Get row map of active dofs (Filled()==true is prerequisite)
 
@@ -444,18 +434,6 @@ public:
   virtual void AssembleS(LINALG::SparseMatrix& sglobal);
 
   /*!
-  \brief Assemble matrices W containing linearizations
-
-  This method builds an algebraic form of the FULL linearization
-  of the normal contact and slip contact condition for ~w. 
-  --> w.r.t. lagr. mult.
-
-  */
-  virtual void AssembleLinWLm(LINALG::SparseMatrix& sglobal);
-  virtual void AssembleLinWLmSl(LINALG::SparseMatrix& sglobal);
-  virtual void AssembleLinWLmSt(LINALG::SparseMatrix& sglobal);
-
-  /*!
   \brief Assemble matrix P containing linearizations
 
   This method builds an algebraic form of the FULL linearization
@@ -479,7 +457,6 @@ public:
                              LINALG::SparseMatrix& linmglobal);
 
 
-  virtual void AssembleD2(LINALG::SparseMatrix& dglobal);
   /*!
   \brief Assemble weighted gap g
 
@@ -504,13 +481,6 @@ public:
   \brief Assemble tangential rhs (incremental delta_z_)
   */
   virtual void AssembleTangrhs(Epetra_Vector& tangrhs);
-
-  /*!
-  \brief Assemble wear w
-  
-   This method assembles the weighted wear vector.
-   */
-   virtual void AssembleWear(Epetra_Vector& gglobal);
  
   /*!
   \brief Assemble matrix LinStick containing linearizations
@@ -667,10 +637,6 @@ protected:
   Teuchos::RCP<Epetra_Map>      slipnodes_;      // row map of all slip slave nodes
   Teuchos::RCP<Epetra_Map>      slipdofs_;       // row map of all slip slave dofs
   Teuchos::RCP<Epetra_Map>      slipt_;          // row map of part of T-matrix (slip nodes)
-
-  // both-sided wear specific stuff
-  Teuchos::RCP<Epetra_Map>      involvednodes_;  // row map of all involved master nodes
-  Teuchos::RCP<Epetra_Map>      involveddofs_;   // row map of all involved master dofs
 
   Teuchos::ParameterList        icontact_;       // containing contact input parameters of interface
 
