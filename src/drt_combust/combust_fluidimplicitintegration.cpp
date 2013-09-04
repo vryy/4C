@@ -122,7 +122,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     dta_ = 1.0;
     dtp_ = 1.0;
     theta_ = 1.0;
-    IO::cout << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << IO::endl;
+    if (myrank_ == 0)
+      IO::cout << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << IO::endl;
   }
 
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
@@ -588,7 +589,8 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     {
       // get starting 'theta' for first time step
       theta_ = params_->get<double>("start theta");
-      IO::cout << "/!\\ first time step computed with theta =  " << theta_ << IO::endl;
+      if (myrank_ == 0)
+        IO::cout << "/!\\ first time step computed with theta =  " << theta_ << IO::endl;
     }
     // regular time step
     else if (step_ > 1)

@@ -206,6 +206,9 @@ namespace COMBUST
     /// indicate restarted problem
     bool restart_;
 
+    /// merely perform flow generation and skip the soltion of the g-function field
+    bool gen_flow_;
+
   };
 
 } // namespace COMBUST

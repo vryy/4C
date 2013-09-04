@@ -75,7 +75,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   reinit_pde_(Teuchos::null),
   transport_vel_(DRT::INPUT::IntegralValue<INPAR::COMBUST::TransportVel>(combustdyn.sublist("COMBUSTION GFUNCTION"),"TRANSPORT_VEL")),
   transport_vel_no_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("TRANSPORT_VEL_FUNC")),
-  restart_(false)
+  restart_(false),
+  gen_flow_(DRT::INPUT::IntegralValue<int>(combustdyn,"GENERATE_FLOW_FIELD"))
 {
   if (Comm().MyPID()==0)
   {
@@ -156,6 +157,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 
   // compute initial volume of minus domain
   volume_start_ = ComputeVolume();
+  if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
+    reinit_pde_ = Teuchos::rcp(new COMBUST::ReinitializationPDE(comm));
 
   if(reinitinitial_)
   {
@@ -163,7 +166,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     // initial reinitialization by geometric distance computation
     // remark: guarantee (periodic) initial signed distance property
     //--------------------------------------------------------------
-    if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
+    if (reinitaction_ != INPAR::COMBUST::reinitaction_none and reinitaction_ != INPAR::COMBUST::reinitaction_sussman )
     {
       //cou t<< "reinitialization at timestep 0 switched off!" << IO::endl;
 
@@ -193,13 +196,12 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
       // pointer not needed any more
       stepreinit_ = false;
     }
-  }
-  if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
-  {
-    reinit_pde_ = Teuchos::rcp(new COMBUST::ReinitializationPDE(comm));
-//    reinit_pde_->CallReinitialization(ScaTraField().Phinp());
-//    // update flame front according to reinitialized G-function field
-//    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+    if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
+    {
+      reinit_pde_->CallReinitialization(ScaTraField().Phinp());
+      // update flame front according to reinitialized G-function field
+      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+    }
   }
 
   //---------------------------------------------------
@@ -313,10 +315,15 @@ void COMBUST::Algorithm::TimeLoop()
       PrepareFGIteration();
 
       // solve linear G-function equation
-      //std::cout << "---------------------" << IO::endl;
-      //std::cout << "Level set deactivated!" << IO::endl;
-      //std::cout << "---------------------" << IO::endl;
-      DoGfuncField();
+      if (not gen_flow_)
+        DoGfuncField();
+      else
+      {
+        // do not solve the level-field if flow generation for turbulent problems
+        // is performed
+        if (Comm().MyPID()==0)
+          IO::cout << "Level set deactivated!" << IO::endl;
+      }
 
       //(after Scatra transport but before reinitialization)
       // update interface geometry
@@ -385,7 +392,8 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   DoFluidField();
 
   // solve (non)linear G-function equation
-  IO::cout << "/!\\ warning === G-function field not solved for stationary problems" << IO::endl;
+  if (Comm().MyPID()==0)
+    IO::cout << "/!\\ warning === G-function field not solved for stationary problems" << IO::endl;
   //DoGfuncField();
 
   //reinitialize G-function

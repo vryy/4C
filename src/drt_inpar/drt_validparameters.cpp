@@ -4561,6 +4561,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::FLUID::timeint_afgenalpha),
               &combustcontrol);
 
+  BoolParameter("GENERATE_FLOW_FIELD","No","Do not solve g-function, since we merely want to set up a fluid field",&combustcontrol);
+
   BoolParameter("RESTART_FROM_FLUID","No","Restart from a standard fluid problem (no scalar transport field). No XFEM dofs allowed!",&combustcontrol);
   BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&combustcontrol);
 

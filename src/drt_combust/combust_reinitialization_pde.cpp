@@ -106,7 +106,7 @@ void COMBUST::ReinitializationPDE::CheckSteadyState(double&    Gradient_Error_ol
       // -------------------------------------------------------------------
       //                         output of solution
       // -------------------------------------------------------------------
-      OutputReinitializationSteps();
+//      OutputReinitializationSteps();
     }
     else // the reinitialization step was not successful
     {
@@ -126,7 +126,7 @@ void COMBUST::ReinitializationPDE::CheckSteadyState(double&    Gradient_Error_ol
     STOP=false;
     ScaTraReinitField().Update();
     reinitialization_accepted_ = true;
-    OutputReinitializationSteps();
+//    OutputReinitializationSteps();
   }
   else dserror("no valid stationary check");
 
