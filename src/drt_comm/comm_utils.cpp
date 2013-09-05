@@ -162,6 +162,16 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
         npType = every_group_read_dat_file;
       else if(argument == "separateDatFiles")
         npType = separate_dat_files;
+      else if(argument == "nestedMultiscale")
+      {
+        npType = separate_dat_files;
+        // the color is specified: only two groups and group one (macro problem) is distributed over all processors
+        color = -1;
+        if(myrank % (int)(size/grouplayout[0]) == 0 and myrank < (grouplayout[0]*(int)(size/grouplayout[0])))
+          color = 0;
+        else
+          color = 1;
+      }
       else
       {
         if (myrank == (size-1)) // myrank == 0 is eventually not within BACI (i.e. coupling to external codes)

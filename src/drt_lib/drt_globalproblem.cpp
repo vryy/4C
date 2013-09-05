@@ -1466,9 +1466,9 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
     color = MPI_UNDEFINED;
   }
 
-  // do the splitting of the communicator
+  // do the splitting of the communicator (macro proc must always be proc in subcomm with lowest key --> 0 is inserted here)
   MPI_Comm  mpi_local_comm;
-  MPI_Comm_split((Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,gcomm->MyPID(),&mpi_local_comm);
+  MPI_Comm_split((Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm,true)->GetMpiComm()),color,0/*important here*/,&mpi_local_comm);
 
   // sort out macro procs that do not have micro material
   if(foundmicromat == 1)
