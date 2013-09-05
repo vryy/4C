@@ -965,100 +965,11 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     break;
     case INPAR::STATMECH::statout_motassay:
     {
-      //output of the coordinates of the first node of every free filament and the timestep
-
-      //we need displacements also of ghost nodes and hence export displacment vector to column map format
-      Epetra_Vector discol(*(discret_->DofColMap()), true);
-      LINALG::Export(dis, discol);
-
-      if(discret_->Comm().MyPID()==0)
-      {
-        // get filament number conditions
-        std::vector<DRT::Condition*> filaments(0);
-        discret_->GetCondition("FilamentNumber", filaments);
-
-        // for first time step: begin to write new output-file and save coordinates of node at the beginning
-        if(time==dt)
-        {
-          // calculate for free filaments
-          int subfil = statmechparams_.get<int>("NUMSUBSTRATEFIL",0);
-          std::cout<<"size: "<<(int)filaments.size()<<std::endl;
-          for(int fil=subfil; fil<(int)filaments.size(); fil++)
-          {
-            FILE* fp = NULL; //file pointer for statistical output file
-
-            //name of output file
-            std::ostringstream outputfilename;
-            outputfilename  << outputrootpath_ << "/StatMechOutput/coord_filaments"<<fil<<".dat";
-
-            // get next filament
-            DRT::Condition* currfilament = filaments[fil];
-
-            // obtain column map LIDs of first node of filament
-            int gid0 = currfilament->Nodes()->at(0);
-            int nodelid0 = discret_->NodeColMap()->LID(gid0);
-            DRT::Node* node0 = discret_->lColNode(nodelid0);
-
-            //coordinates of node at the beginning
-            LINALG::Matrix<3, 1> coord;
-            for(int dof=0; dof<3; dof++)
-              coord(dof) = node0->X()[dof];
-
-            // open file and append new data line
-            fp = fopen(outputfilename.str().c_str(), "w");
-
-            //defining temporary stringstream variable
-            std::stringstream filecontent;
-            // write directional vector to stream
-            filecontent<<0.0<<"\t"<<std::setprecision(12)<<coord(0)<<"\t"<<coord(1)<<"\t"<<coord(2)<<std::endl;
-
-            // move temporary stringstream to file and close it
-            fprintf(fp, filecontent.str().c_str());
-            fclose(fp);
-          }
-        }
-
-        //normal time step
-        // calculate for free filaments
-        int subfil = statmechparams_.get<int>("NUMSUBSTRATEFIL",0);
-
-        for(int fil=subfil; fil<(int)filaments.size(); fil++)
-        {
-          // get next filament
-          DRT::Condition* currfilament = filaments[fil];
-
-          // obtain column map LIDs of first node of filament
-          int gid0 = currfilament->Nodes()->at(0);
-          int nodelid0 = discret_->NodeColMap()->LID(gid0);
-          DRT::Node* node0 = discret_->lColNode(nodelid0);
-
-          // calculate coordinates of first node of filament
-          LINALG::Matrix<3, 1> coord;
-          for(int dof=0; dof<3; dof++)
-          {
-            int dofgid0 = discret_->Dof(node0)[dof];
-            coord(dof) = node0->X()[dof]+discol[discret_->DofColMap()->LID(dofgid0)];
-          }
-
-          FILE* fp = NULL; //file pointer for statistical output file
-
-          //name of output file
-          std::ostringstream outputfilename;
-          outputfilename  << outputrootpath_ << "/StatMechOutput/coord_filaments"<<fil<<".dat";
-
-          // open file and append new data line
-          fp = fopen(outputfilename.str().c_str(), "a");
-
-          //defining temporary stringstream variable
-          std::stringstream filecontent;
-            // write directional vector to stream
-            filecontent<<time<<"    "<<std::setprecision(12)<<coord(0)<<"   "<<coord(1)<<"   "<<coord(2)<<std::endl;
-
-          // move temporary stringstream to file and close it
-          fprintf(fp, filecontent.str().c_str());
-          fclose(fp);
-        }
-      }
+      std::ostringstream filename;
+      filename  << outputrootpath_ << "/StatMechOutput/filcoords_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+      std::ostringstream filename2;
+      filename2  << outputrootpath_ << "/StatMechOutput/linkerforce_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+      MotilityAssayOutput(dis,time,dt,filename,filename2);
     }
     case INPAR::STATMECH::statout_none:
     default:
@@ -5218,7 +5129,7 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double&        time,
   }
 }
 
-/*------------------------------------------------------------------------------*                                                 
+/*------------------------------------------------------------------------------*
  | Output of relative motion between linker nodes         (public) mueller 05/13|
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::OutputSlidingMotion(const Epetra_Vector& disrow, std::ostringstream& filename)
@@ -5238,13 +5149,13 @@ void STATMECH::StatMechManager::OutputSlidingMotion(const Epetra_Vector& disrow,
       }
     }
   }
-  
+
   Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
   std::map<int, LINALG::Matrix<3, 1> > currentpositions;
   std::map<int, LINALG::Matrix<3, 1> > currentrotations;
   GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
-  
+
   if(!discret_->Comm().MyPID())
   {
     FILE* fp = NULL;
@@ -5257,7 +5168,7 @@ void STATMECH::StatMechManager::OutputSlidingMotion(const Epetra_Vector& disrow,
       int bspotlid1 = bspotcolmap_->LID((*linkernodepairs_)[i][1]);
       std::map<int, LINALG::Matrix<3,1> >::const_iterator posbspot0 = currentpositions.find(bspotlid0);
       std::map<int, LINALG::Matrix<3,1> >::const_iterator posbspot1 = currentpositions.find(bspotlid1);
-      
+
       // write binding spot position
       filecontent<<std::setprecision(8)<<(posbspot0->second)(0)<<" "<<(posbspot0->second)(1)<<" "<<(posbspot0->second)(2)<<" ";
       filecontent<<std::setprecision(8)<<(posbspot1->second)(0)<<" "<<(posbspot1->second)(1)<<" "<<(posbspot1->second)(2)<<" ";
@@ -5275,7 +5186,7 @@ void STATMECH::StatMechManager::OutputSlidingMotion(const Epetra_Vector& disrow,
   }
   return;
 }
-/*------------------------------------------------------------------------------*                                                 
+/*------------------------------------------------------------------------------*
  | Structure COG & inertia tensor ouput                   (public) mueller 05/13|
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&           istep,
@@ -5289,15 +5200,15 @@ void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&      
   std::map<int, LINALG::Matrix<3, 1> > currentpositions;
   std::map<int, LINALG::Matrix<3, 1> > currentrotations;
   GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
-  
+
   if(!discret_->Comm().MyPID())
   {
     FILE* fp = NULL;
     std::stringstream filecontent;
     fp = fopen(filename.str().c_str(), "a");
-    
+
     filecontent << std::scientific << std::setprecision(15) << istep<<"  "<<time<<"  "<<discret_->NumMyColNodes()<<std::endl;
-    
+
     // calculate center of gravity of the structure
     LINALG::Matrix<3,1> COG(true);
     for(std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.begin(); it!=currentpositions.end(); it++)
@@ -5305,7 +5216,7 @@ void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&      
     COG.Scale(1.0/(double)discret_->NumMyColNodes());
 //    std::cout<<"COG =\n"<<COG<<std::endl;
 //    filecontent << std::scientific << std::setprecision(15) << COG(0)<<"  "<<COG(1)<<"  "<<COG(2)<<std::endl;
-    
+
     // calculate relative position to COG
     for(int i=0; i<discret_->NumMyColNodes(); i++)
     {
@@ -5331,8 +5242,8 @@ void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&      
         filecontent << std::scientific << std::setprecision(15) << I_ij(i,j)<<"  ";
       filecontent<<std::endl;
     }
-        
-    
+
+
     fprintf(fp,filecontent.str().c_str());
     fclose(fp);
   }
@@ -5359,6 +5270,130 @@ void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      di
     fprintf(fp,filecontent.str().c_str());
     fclose(fp);
   }
+
+  return;
+}
+
+void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      disrow,
+                                                    const double&             timen,
+                                                    const double&             dt,
+                                                    const std::ostringstream& nodeposfilename,
+                                                    const std::ostringstream& forcefilename)
+{
+  double kt = statmechparams_.get<double>("KT",0.00404531);
+  double delta = statmechparams_.get<double>("DELTABELLSEQ", 0.0);
+  double koff0 = 0.0;
+  if (timen <= actiontime_->at(1) || (timen>actiontime_->at(1) && fabs(actiontime_->at(1))<dt/1e4))
+    koff0 = statmechparams_.get<double> ("K_OFF_start", 0.0);
+  else
+    koff0 = statmechparams_.get<double> ("K_OFF_end", 0.0);
+  int subfil = statmechparams_.get<int>("NUMSUBSTRATEFIL",0);
+
+  // get filament number conditions
+  std::vector<DRT::Condition*> filaments(0);
+  discret_->GetCondition("FilamentNumber", filaments);
+
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
+  LINALG::Export(disrow, discol);
+
+  // Output of filament node positions
+  if(discret_->Comm().MyPID()==0)
+  {
+    FILE* fp = NULL;
+    // open file and append new data line
+    fp = fopen(nodeposfilename.str().c_str(), "w");
+    //defining temporary stringstream variable
+    std::stringstream nodecoords;
+
+    for(int i=subfil; i<(int)filaments.size(); i++)
+    {
+      for(int j=0; j<(int)filaments[i]->Nodes()->size(); j++)
+      {
+        int nodelid = discret_->NodeColMap()->LID((int)filaments[i]->Nodes()->at(j));
+        DRT::Node* node = discret_->lColNode(nodelid);
+        LINALG::Matrix<3, 1> coord;
+        for(int dof=0; dof<3; dof++)
+        {
+          int dofgid = discret_->Dof(node)[dof];
+          coord(dof) = node->X()[dof]+discol[discret_->DofColMap()->LID(dofgid)];
+        }
+        nodecoords<<i<<"\t"<<std::scientific<<std::setprecision(8)<<coord(0)<<"\t"<<coord(1)<<"\t"<<coord(2)<<std::endl;
+      }
+    }
+    fprintf(fp, nodecoords.str().c_str());
+    fclose(fp);
+  }
+
+  //output of forces within crosslinkers
+  FILE* fp02 = NULL;
+  // open file and append new data line
+  if(!discret_->Comm().MyPID())
+    fp02 = fopen(forcefilename.str().c_str(), "w");
+  else
+    fp02 = fopen(forcefilename.str().c_str(), "a");
+  //defining temporary stringstream variable
+  std::stringstream linkerforces;
+
+  Epetra_SerialDenseVector force;
+  double eps = 0.0;
+
+  for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
+  {
+    if(pid==discret_->Comm().MyPID())
+    {
+      if(!pid)
+      {
+        linkerforces<<kt<<"\t"<<koff0<<"\t"<<delta<<"\t"<<dt<<"\t"<<subfil<<std::endl;
+        linkerforces<<filaments[0]->Nodes()->size()<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<std::endl;
+      }
+      for(int i=0; i<crosslink2element_->MyLength(); i++)
+      {
+        int rowlid = discret_->ElementRowMap()->LID((int)(*crosslink2element_)[i]);
+        if((*crosslink2element_)[i]>-0.9 && rowlid!=-1)
+        {
+          DRT::Element* crosslinker = discret_->lRowElement(rowlid);
+          int bspotgid0 = (int)(*crosslinkerbond_)[0][i];
+          int bspotgid1 = (int)(*crosslinkerbond_)[1][i];
+
+          const DRT::ElementType &eot = discret_->lRowElement(rowlid)->ElementType();
+          if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+          {
+            force.Resize(crosslinker->NumNode()*6);
+            force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForces();
+            eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
+          }
+          else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
+          {
+            if(crosslinker->NumNode()!=4)
+              dserror("Currently only implemented for BEAM3CL with four nodes.");
+            force.Resize(crosslinker->NumNode()/2*6);
+            force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForces();
+            eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->EpsilonSgn();
+          }
+          else
+            dserror("Unknown crosslinker beam element!");
+
+          LINALG::Matrix<3,1> f0;
+          LINALG::Matrix<3,1> f1;
+
+          for(int j=0; j<(int)f0.M(); j++)
+          {
+            f0(j) = force[j];
+            f1(j) = force[6+j];
+          }
+
+          double Fbspot0 = f0.Norm2();
+          double Fbspot1 = f1.Norm2();
+
+          linkerforces<<bspotgid0<<"\t"<<bspotgid1<<"\t"<<std::scientific<<std::setprecision(8)<<Fbspot0<<"\t"<<Fbspot1<<"\t"<<eps<<std::endl;
+        }
+      }
+    }
+    discret_->Comm().Barrier();
+  }
+
+  fprintf(fp02, linkerforces.str().c_str());
+  fclose(fp02);
 
   return;
 }

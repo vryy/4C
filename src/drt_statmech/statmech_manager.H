@@ -600,10 +600,17 @@ protected:
                                        const Epetra_Vector& disrow,
                                        std::ostringstream&  filename);
 
-  //! \brief output for density-density-correlation output
+  //! \brief output for Bell's equation
   void BellsEquationOutput(const Epetra_Vector&      disrow,
                            const std::ostringstream& filename,
                            const double&             dt);
+
+  //! \brief output for motility assay
+  void MotilityAssayOutput(const Epetra_Vector&      disrow,
+                           const double&             timen,
+                           const double&             dt,
+                           const std::ostringstream& filename01,
+                           const std::ostringstream& filename02);
 
   //! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
   bool CheckForKinkedVisual(int eleid);
