@@ -43,7 +43,7 @@ THERMOLAGMULT                   Yes
 UZAWACONSTRTOL                  1e-08
 UZAWAMAXSTEPS                   10
 VELOCITY_UPDATE                 No
-WEAR                            None
+WEARLAW                         None
 WEARCOEFF                       0
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
