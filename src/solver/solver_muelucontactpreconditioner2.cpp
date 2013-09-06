@@ -37,7 +37,7 @@
 #include <MueLu_TentativePFactory.hpp>
 #include <MueLu_SaPFactory.hpp>
 #include <MueLu_PgPFactory.hpp>
-//#include <MueLu_InjectionPFactory.hpp>
+#include <MueLu_AmalgamationFactory.hpp>
 #include <MueLu_GenericRFactory.hpp>
 #include <MueLu_TransPFactory.hpp>
 #include <MueLu_VerbosityLevel.hpp>
@@ -51,9 +51,11 @@
 #include <MueLu_MLParameterListInterpreter.hpp>
 
 #ifdef HAVE_MUELU_ISORROPIA
+
+#include "MueLu_IsorropiaInterface.hpp"
+#include "MueLu_RepartitionInterface.hpp"
 #include "MueLu_RepartitionFactory.hpp"
 #include "MueLu_RebalanceTransferFactory.hpp"
-#include "MueLu_IsorropiaInterface.hpp"
 #include "MueLu_RebalanceAcFactory.hpp"
 #include "MueLu_RebalanceMapFactory.hpp"
 #endif
@@ -477,9 +479,20 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     AcFact->SetFactory("P", PFact);
     AcFact->SetFactory("R", RFact);
 
-    // create "Partition"
+    // define rebalancing factory for coarse matrix
+    Teuchos::RCP<AmalgamationFactory> rebAmalgFact = Teuchos::rcp(new AmalgamationFactory());
+    rebAmalgFact->SetFactory("A", AcFact);
+
+    // create amalgamated "Partition"
     Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface = Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
     isoInterface->SetFactory("A", AcFact);
+    isoInterface->SetFactory("UnAmalgamationInfo", rebAmalgFact);
+
+    // create "Partition" by unamalgamtion
+    Teuchos::RCP<MueLu::RepartitionInterface<LO, GO, NO, LMO> > repInterface = Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO, LMO>());
+    repInterface->SetFactory("A", AcFact);
+    repInterface->SetFactory("AmalgamatedPartition", isoInterface);
+    repInterface->SetFactory("UnAmalgamationInfo", rebAmalgFact);
 
     // Repartitioning (creates "Importer" from "Partition")
     RepartitionFact = Teuchos::rcp(new RepartitionFactory());
@@ -490,7 +503,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
       RepartitionFact->SetParameterList(paramList);
     }
     RepartitionFact->SetFactory("A", AcFact);
-    RepartitionFact->SetFactory("Partition", isoInterface);
+    RepartitionFact->SetFactory("Partition", repInterface);
 
     // Reordering of the transfer operators
     RebalancedPFact = Teuchos::rcp(new RebalanceTransferFactory());
