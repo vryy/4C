@@ -221,6 +221,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     is_elch_((numdofpernode_ - numscal_) >= 1),  // bool set implicitely
     is_ale_(false),           // bool set
     is_reactive_(false),      // bool set
+    is_coupled_(false),            //bool set
     diffreastafac_(0.0),       // set double (SUPG)
     is_anisotropic_(false),   // bool set
     is_stationary_(false),    // bool set
@@ -236,6 +237,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     // whichtau_ not initialized
     turbmodel_(INPAR::FLUID::no_model), // enum initialized
     mfs_conservative_(false), // set false
+    HSTCConds_(0,NULL),   //vector containing homogeneous coupling conditions
     phi_(numscal_,0.0),   // size of vector + initialized to zero
     sgphi_(numscal_,0.0),   // size of vector + initialized to zero
     mfssgphi_(numscal_,0.0),// size of vector + initialized to zero
@@ -283,6 +285,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     reacterm_(numscal_,0.0),     // size of vector + initialized to zero
     reacoeff_(numscal_,0.0),     // size of vector + initialized to zero
     reacoeffderiv_(numscal_,0.0),// size of vector + initialized to zero
+    reacoeffderivmatrix_(numscal_,std::vector<double>(numscal_,0.0 )),// size of matrix + initialized to zero
     valence_(numscal_,0.0),      // size of vector + initialized to zero
     diffusvalence_(numscal_,0.0),// size of vector + initialized to zero
     shc_(0.0),      // set double
@@ -423,6 +426,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set flag for including reactive terms to false initially
     // flag will be set to true below when reactive material is included
     is_reactive_ = false;
+
+    // flag will be set to true and data is read and saved below when homogeneous scatra coupling volume condition is included
+    is_coupled_ = IsCoupledAndRead(discretization);
 
     // get control parameters
     is_stationary_  = params.get<bool>("using stationary formulation");
@@ -2039,7 +2045,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         }
 
         // reactive term using current scalar value
-        if (is_reactive_)
+        if (is_reactive_ || is_coupled_)
         {
           rea_phi_[k] = densnp_[k]*reacterm_[k];
         }
@@ -2336,6 +2342,85 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   return;
 }
 
+/*-----------------------------------------------------------------------*
+  |  is there a reaction coupling? (private)                     mthon 09/13|
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::ScaTraImpl<distype>::IsCoupledAndRead(
+  const DRT::Discretization&            ScaTraDiscretization //discretisation of the ScaTra field
+  )
+{
+    ScaTraDiscretization.GetCondition("HomoScaTraCoupling",HSTCConds_);
+    int numcond = HSTCConds_.size();
+
+    if (numcond > 0)  //if there exists condition "DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS"
+        return true; //1;
+    else
+        return false; //0;
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcReacTerm(
+          const std::vector<int>       stoich,                 //!<stoichometrie of current condition
+          const std::string            couplingtype,           //!<type of coupling the stoichometry coefficients
+          const std::string            step,                   //!<which step to evalutate the concentrations
+          double*                      phis                    //!<Output
+)
+{
+bool allpositive = true;
+    for (int i=0; (unsigned)i < stoich.size(); i++)
+      {
+        if (stoich[i]<-EPS14)
+          {
+            allpositive = false;
+
+            double ephi=0;
+            if (step=="np")
+                ephi = funct_.Dot(ephinp_[i]);
+            else if (step=="n")
+                ephi = funct_.Dot(ephin_[i]);
+            else
+                dserror("no valid step-input");
+
+            if (couplingtype == "simple_multiplicative")
+                *phis *=ephi;
+            else //insert new Couplings here
+                    dserror("couplingtype OTHER is just a dummy and hence not implemented");
+          }
+      }
+if (allpositive)
+	dserror("there must be at least one negative entry in each stoich list");
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcReacDerivTerm(
+          const std::vector<int>       stoich,                  //!<stoichometrie of current condition
+          const std::string            couplingtype,            //!<type of coupling the stoichometry coefficients
+          int                          toderive,                //!<concentration to be derived
+          double*                      phisderiv                //!<Output
+)
+{
+    if (stoich[toderive]<-EPS14)
+      {
+        for (int ii=0; (unsigned)ii < stoich.size(); ii++)
+          {
+            if (stoich[ii]<-EPS14)
+              {
+                if (couplingtype == "simple_multiplicative")
+                  {
+                    if (ii!=toderive) {
+                        *phisderiv *= funct_.Dot(ephinp_[ii]);
+                    }
+                  }
+                else //insert new Couplings here
+                    dserror("couplingtype OTHER is just a dummy and hence not implemented");
+              }
+          }
+      }
+    else
+        *phisderiv = 0;
+}
+
 /*----------------------------------------------------------------------*
   |  get the body force  (private)                              gjb 06/08|
   *----------------------------------------------------------------------*/
@@ -2439,6 +2524,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       // set reaction coeff. and temperature rhs for reactive equation system to zero
       reacoeff_[k]   = 0.0;
       reacoeffderiv_[k]   = 0.0;
+      for (int j=0; j<numscal_; j++) {
+          (reacoeffderivmatrix_[k])[j] = 0; //reset to zero
+      }
       reacterm_[k]   = 0.0;
       reatemprhs_[k] = 0.0;
 
@@ -2575,11 +2663,49 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         if (reacoeff_[k] > EPS14) is_reactive_ = true;
         if (reacoeff_[k] < -EPS14)
           dserror("Reaction coefficient for species %d is not positive: %f",k, reacoeff_[k]);
-        reacoeffderiv_[k] = reacoeff_[k];
+        if (is_reactive_ && is_coupled_)
+          {
+            dserror("No support of REACOEFF (in MATerials) HOMOGENEOUS SCATRA COUPLING VOLUME CONDITION at the same time");
+          }
+        else if (is_reactive_)
+        {
+            reacoeffderiv_[k] = reacoeff_[k];
 
-        // scalar at integration point
-        const double phi = funct_.Dot(ephinp_[k]);
-        reacterm_[k]=reacoeff_[k]*phi;
+            // scalar at integration point
+            const double phi = funct_.Dot(ephinp_[k]);
+            reacterm_[k]=reacoeff_[k]*phi;
+        }
+        else if (is_coupled_)
+          {
+            //std::cout <<"---------------IsCoupled-Loop!\n";
+            for (int condnum = 1; (unsigned)condnum <= HSTCConds_.size(); condnum++)
+              {
+                //reading of conditions here, because of future implemantion of nonhomogeneous couplings
+                //get stoichometrie
+                const std::vector<int>   stoich = *HSTCConds_[condnum-1]->GetMutable<std::vector<int> >("stoich");
+                //get coupling type
+                const std::string  couplingtype = *HSTCConds_[condnum-1]->Get<std::string>("coupling");
+                //get reactioncoefficient
+                const double           reaccoeff = HSTCConds_[condnum-1]->GetDouble("reaccoeff");
+                if (reaccoeff<-EPS14)
+                    dserror("reaccoeff of Condition %d is negativ",condnum);
+                if (stoich[k] != 0)
+                  {
+                    double phis = 1;// scalar at integration point np
+
+                    CalcReacTerm(stoich,couplingtype,"np",&phis);
+                    reacterm_[k] += -reaccoeff*stoich[k]*phis;
+
+                    for (int j=0; j<numscal_;j++)
+                      {
+                        double phisderiv = 1; //scalarderivative at integration point np
+
+                        CalcReacDerivTerm(stoich,couplingtype,j,&phisderiv);
+                        (reacoeffderivmatrix_[k])[j] += -reaccoeff*stoich[k]*phisderiv;
+                      }
+                  } //end if(stoich[k] != 0)
+              }
+          }
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_biofilm)
       {
@@ -2658,11 +2784,50 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     if (reacoeff_[0] < -EPS14)
       dserror("Reaction coefficient is not positive: %f",0, reacoeff_[0]);
 
-    reacoeffderiv_[0] = reacoeff_[0];
+    if (is_reactive_ && is_coupled_)
+      {
+        dserror("No support of REACOEFF (in MATerials) HOMOGENEOUS SCATRA COUPLING VOLUME CONDITION at the same time");
+      }
+    else if (is_reactive_)
+    {
+        reacoeffderiv_[0] = reacoeff_[0];
 
-    // scalar at integration point
-    const double phi = funct_.Dot(ephinp_[0]);
-    reacterm_[0]=reacoeff_[0]*phi;
+        // scalar at integration point
+        const double phi = funct_.Dot(ephinp_[0]);
+        reacterm_[0]=reacoeff_[0]*phi;
+    }
+    else if (is_coupled_)
+      {
+        //std::cout <<"---------------IsCoupled-Loop!\n";
+        for (int condnum = 1; (unsigned)condnum <= HSTCConds_.size(); condnum++)
+          {
+            //reading of conditions here, because of possible implementation of nonhomogeneous couplings in the future
+            //For higher efficiency read only once instead of for every concentration
+            //get stoichometrie
+            const std::vector<int>   stoich = *HSTCConds_[condnum-1]->GetMutable<std::vector<int> >("stoich");
+            //get coupling type
+            const std::string  couplingtype = *HSTCConds_[condnum-1]->Get<std::string>("coupling");
+            //get reactioncoefficient
+            const double           reaccoeff = HSTCConds_[condnum-1]->GetDouble("reaccoeff");
+            if (reaccoeff<-EPS14)
+                dserror("reaccoeff of Condition %d is negativ",condnum);
+            if (stoich[0] != 0)
+              {
+                double phis = 1;// scalar at integration point np
+
+                CalcReacTerm(stoich,couplingtype,"np",&phis);
+                reacterm_[0] += -reaccoeff*stoich[0]*phis;
+
+                for (int j=0; j<numscal_;j++)
+                  {
+                    double phisderiv = 1; //scalarderivative at integration point np
+
+                    CalcReacDerivTerm(stoich,couplingtype,j,&phisderiv);
+                    (reacoeffderivmatrix_[0])[j] += -reaccoeff*stoich[0]*phisderiv;
+                  }
+              } //end if(stoich[0] != 0)
+          }
+      }
 
     // set specific heat capacity at constant pressure to 1.0
     shc_ = 1.0;
@@ -3351,8 +3516,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 //----------------------------------------------------------------
 // 3) element matrix: reactive terms
 //----------------------------------------------------------------
-  if (is_reactive_)
+//std::cout <<"Reaktiv?: \t" << is_reactive_ <<"\n";
+//std::cout <<"Coupled?: \t" << is_coupled_ <<"\n";
+
+if (is_reactive_ && is_coupled_)
   {
+    dserror("No support of REACOEFF (in MATerials) HOMOGENEOUS SCATRA COUPLING VOLUME CONDITION at the same time");
+  }
+if (is_reactive_)
+  {
+    //std::cout <<"---------------IsReactiv-Loop!\n";
     const double fac_reac        = timefacfac*densnp_[k]*reacoeffderiv_[k];
     const double timetaufac_reac = timetaufac*densnp_[k]*reacoeffderiv_[k];
     //----------------------------------------------------------------
@@ -3450,7 +3623,108 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
         }
       }
     }
-  } // if (is_reactive_)
+  }
+else if (is_coupled_)
+{
+    for (int j=0; j<numscal_ ;j++)
+    {
+        //std::cout <<"---------------IsReactiv-Loop!\n";
+        const double fac_reac        = timefacfac*densnp_[k]*(reacoeffderivmatrix_[k])[j];
+        const double timetaufac_reac = timetaufac*densnp_[k]*(reacoeffderivmatrix_[k])[j];
+        //----------------------------------------------------------------
+        // standard Galerkin reactive term
+        //----------------------------------------------------------------
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const double v = fac_reac*funct_(vi);
+          const int fvi = vi*numdofpernode_+k;
+
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+j;
+
+            emat(fvi,fui) += v*funct_(ui);
+          }
+        }
+
+        //----------------------------------------------------------------
+        // stabilization of reactive term
+        //----------------------------------------------------------------
+        double densreataufac = timetaufac_reac*densnp_[k];
+        // convective stabilization of reactive term (in convective form)
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const double v = densreataufac*(conv_(vi)+sgconv_(vi));
+          const int fvi = vi*numdofpernode_+k;
+
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+j;
+
+            emat(fvi,fui) += v*funct_(ui);
+          }
+        }
+
+        if (use2ndderiv_)
+        {
+          // diffusive stabilization of reactive term
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const double v = diffreastafac_*timetaufac_reac*diff_(vi);
+            const int fvi = vi*numdofpernode_+k;
+
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui = ui*numdofpernode_+j;
+
+              emat(fvi,fui) -= v*funct_(ui);
+            }
+          }
+        }
+
+        //----------------------------------------------------------------
+        // reactive stabilization
+        //----------------------------------------------------------------
+        densreataufac = diffreastafac_*timetaufac_reac*densnp_[k];
+
+        if (abs(diffreastafac_)>1e-5) // i.e., GLS or USFEM is used
+        {
+            //additional term for USFEM and GLS are not properly implemented in the case of non-linear reaction term
+            dserror("Only SUPG stabilization is implemented for the case of non-linear reaction term");
+        }
+
+        // reactive stabilization of convective (in convective form) and reactive term
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const double v = densreataufac*funct_(vi);
+          const int fvi = vi*numdofpernode_+k;
+
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+j;
+
+            emat(fvi,fui) += v*(conv_(ui)+(reacoeffderivmatrix_[k])[j]*funct_(ui));
+          }
+        }
+
+        if (use2ndderiv_)
+        {
+          // reactive stabilization of diffusive term
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const double v = diffreastafac_*timetaufac_reac*funct_(vi);
+            const int fvi = vi*numdofpernode_+k;
+
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui = ui*numdofpernode_+j;
+
+          emat(fvi,fui) -= v*diff_(ui);
+            }
+          }
+        }
+    }
+  }    // if (is_reactive_ && is_coupled_)
 
 //----------------------------------------------------------------
 // 4) element right hand side
@@ -3519,13 +3793,41 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 
     // reactive term using scalar value at n
     if (is_reactive_)
-    {
-      // scalar at integration point
+    { // scalar at integration point
       const double phi = funct_.Dot(ephin_[k]);
 
       rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
       // reacterm_[k] must be evaluated at t^n to be used in the line above!
     }
+    if (is_coupled_) dserror("work to do here for homogeneous scatra coupling! Probably the following is correct (not tested):");
+//    else if (is_coupled_) //not Tested!!
+//      {
+//        std::vector<double> reacterm(numscal_,0.0);
+//        //std::cout <<"---------------IsCoupled-Loop!\n";
+//        for (int condnum = 1; (unsigned)condnum <= HSTCConds_.size(); condnum++)
+//          {
+//            //get stoichometrie
+//            const std::vector<int>   stoich = *HSTCConds_[condnum-1]->GetMutable<std::vector<int> >("stoich");
+//            //get coupling type
+//            const std::string  couplingtype = *HSTCConds_[condnum-1]->Get<std::string>("coupling");
+//            //get reactioncoefficient
+//            const double           reaccoeff = HSTCConds_[condnum-1]->GetDouble("reaccoeff");
+//            if (reaccoeff<-EPS14)
+//                dserror("reaccoeff of Condition %d is negativ",condnum);
+//            //if (stoich[k] != 0)
+//              {
+//                double phis = 1;
+//                CalcReacTerm(stoich,couplingtype,"n",&phis);
+//
+//                //const double phi = funct_.Dot(ephinp_[k]);
+//
+//                //std::cout <<"Alt: " <<reacoeff_[k]*phi <<"\t" <<"Neu: " <<-reaccoeff*stoich[k]*phis
+//                //        <<"\t" <<stoich[k] <<"\n";
+//                reacterm[k] += -reaccoeff*stoich[k]*phis;
+//              }
+//          }
+//         rea_phi_[k] = densnp_[k]*reacterm[k];
+//      }
 
     rhsint   += densam_[k]*hist_[k]*(alphaF/timefac);
     scatrares_[k] = (1.0-alphaF) * (densn_[k]*conv_phi_[k]
@@ -3708,6 +4010,25 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 
       erhs[fvi] -= vrhs*funct_(vi);
     }
+  }
+  else if(is_coupled_)
+  {
+      vrhs = rhsfac*rea_phi_[k];
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vrhs*funct_(vi);
+      }
+
+    // reactive rhs stabilization
+      vrhs = diffreastafac_*rhstaufac*densnp_[k]*(reacoeffderivmatrix_[k])[k]*scatrares_[k];
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vrhs*funct_(vi);
+      }
   }
 
 //----------------------------------------------------------------
@@ -5527,6 +5848,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     // relating viscous to reactive part
     double epe1 = 0.0;
     if (is_reactive_) epe1 = 2.0*diffus/(mk*densnp_[k]*reacoeff_[k]*DSQR(h));
+    if (is_coupled_) dserror("somthing to do here for homogeneous scatra coupling");
 
     // respective "switching" parameters
     const double xi  = std::max(epe,1.0);

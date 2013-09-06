@@ -226,6 +226,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==CrackSlavesurface)             os << "Slave crack surface";
   else if (Type()==SurfaceModeKrylovProjection)   os << "Surface mode for Krylov space projection";
   else if (Type()==VolumeModeKrylovProjection)    os << "Volume mode for Krylov space projection";
+  else if (Type()==HomoScaTraCoupling)    		  os << "Homogeneous ScaTra Coulping";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

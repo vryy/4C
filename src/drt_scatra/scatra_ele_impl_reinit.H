@@ -326,6 +326,8 @@ private:
   bool is_ale_;
   //! flag for inclusion of reactive terms
   bool is_reactive_;
+  //! flag for inclusion of coupled ScaTra reaction terms
+  bool is_coupled_;
   //! (sign) factor for diffusive and reactive stabilization terms
   double diffreastafac_;
 
@@ -445,6 +447,8 @@ private:
   std::vector<double> reacoeff_;
   //! reaction coefficent derivative (needed for matrix contribution)
   std::vector<double> reacoeffderiv_;
+  //! reaction coefficent derivative matrix
+  std::vector<std::vector<double> > reacoeffderivmatrix_;
 
   //! specific heat capacity (either at constant pressure or at constant volume)
   double shc_;

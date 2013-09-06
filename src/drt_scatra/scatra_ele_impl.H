@@ -148,6 +148,23 @@ private:
     const double                          frt,       //!< factor F/RT needed for ELCH calculations
     const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
   );
+  virtual bool IsCoupledAndRead(
+    const DRT::Discretization&            ScaTraDiscretization //!<discretisation of the ScaTra field
+  );
+
+  virtual void CalcReacTerm(
+          const std::vector<int>        stoich,                 //!<stoichometrie of current condition
+          const std::string             couplingtype,           //!<type of coupling the stoichometry coefficients
+          const std::string             step,                   //!<which step to evalutate the concentrations
+          double*                       phis                    //!<Output
+  );
+
+  virtual void CalcReacDerivTerm(
+            const std::vector<int>       stoich,                 //!<stoichometrie of current condition
+            const std::string            couplingtype,           //!<type of coupling the stoichometry coefficients
+            int                          toderive,               //!<concentration to be derived
+            double*                      phisderiv               //!<Output
+  );
 
   //! get the body force
   virtual void BodyForce(
@@ -641,6 +658,8 @@ private:
   bool is_ale_;
   //! flag for inclusion of reactive terms
   bool is_reactive_;
+  //! flag for inclusion of coupled ScaTra reaction terms
+  bool is_coupled_;
   //! (sign) factor for diffusive and reactive stabilization terms
   double diffreastafac_;
 
@@ -688,6 +707,8 @@ private:
   /*========================================================================*/
   //! @name scalar degrees of freedom and related
   /*========================================================================*/
+  //! Stoich, Parameters and Type of coupled reaction
+  std::vector<DRT::Condition*> HSTCConds_;
 
   //! scalar at integration point
   std::vector<double> phi_;
@@ -815,6 +836,8 @@ private:
   std::vector<double> reacoeff_;
   //! reaction coefficent derivative (needed for matrix contribution)
   std::vector<double> reacoeffderiv_;
+  //! reaction coefficent derivative matrix
+  std::vector<std::vector<double> > reacoeffderivmatrix_;
 
   //! charge numbers of all ion species (ELCH specific)
   std::vector<double> valence_;

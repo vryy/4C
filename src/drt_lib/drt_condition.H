@@ -236,7 +236,8 @@ public:
     BioPointDirichlet,
     BioLineDirichlet,
     BioSurfaceDirichlet,
-    BioVolumeDirichlet
+    BioVolumeDirichlet,
+    HomoScaTraCoupling,
   };
 
   /*!

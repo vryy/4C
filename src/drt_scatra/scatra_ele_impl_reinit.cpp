@@ -87,6 +87,7 @@ DRT::ELEMENTS::ReInitImpl<distype>::ReInitImpl(const int numdofpernode, const in
     numscal_(numscal),
     is_ale_(false),           // bool set
     is_reactive_(false),      // bool set
+    is_coupled_(false),       // bool set
     diffreastafac_(0.0),
     is_stationary_(false),    // bool set
     is_genalpha_(false),      // bool set
@@ -126,6 +127,7 @@ DRT::ELEMENTS::ReInitImpl<distype>::ReInitImpl(const int numdofpernode, const in
     sgdiff_(numscal_),       // size of vector
     reacoeff_(numscal_),     // size of vector
     reacoeffderiv_(numscal_),// size of vector
+    reacoeffderivmatrix_(numscal_,std::vector<double>(numscal_)),// size of matrix + initialized to zero
     shc_(0.0),      // set double
     visc_(0.0),     // set double
     diff_(true),    // initialized to zero
