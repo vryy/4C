@@ -104,8 +104,10 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
   int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
 
-  if ((aletype!=INPAR::ALE::incr_lin) and (monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton))
-    dserror("Relaxing Ale Aprooach is just posiible with Ale-incr-lin!");
+  //Just ALE algorithm type 'incremental linear' and 'springs' supports ALE relaxation
+  if ( (aletype!=INPAR::ALE::incr_lin or aletype!=INPAR::ALE::springs)
+		  and monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton)
+	  dserror("Relaxing ALE approach is just possible with Ale-incr-lin!");
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));

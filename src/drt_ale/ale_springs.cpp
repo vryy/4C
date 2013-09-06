@@ -33,6 +33,18 @@ ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   incr_           = LINALG::CreateVector(*dofrowmap,true);
+
+  xffinterface_ = Teuchos::rcp(new ALE::UTILS::XFluidFluidMapExtractor);
+  xffinterface_->Setup(*actdis);
+
+  if (xffinterface_->XFluidFluidCondRelevant())
+  {
+    // create the toggle vector for fluid-fluid-Coupling
+    Teuchos::RCP<Epetra_Vector> dispnp_xff = LINALG::CreateVector(*xffinterface_->XFluidFluidCondMap(),true);
+    dispnp_xff->PutScalar(1.0);
+    xfftoggle_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    xffinterface_->InsertXFluidFluidCondVector(dispnp_xff,xfftoggle_);
+  }
 }
 
 
@@ -73,6 +85,16 @@ void ALE::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 
   EvaluateElements();
   LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+
+  if (xffinterface_->XFluidFluidCondRelevant())
+  {
+    Teuchos::RCP<Epetra_Vector>  dispnp_ttt = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_ttt,xfftoggle_);
+
+    // set dispnp_ of xfem dofs to dispn_
+    xffinterface_->InsertXFluidFluidCondVector(xffinterface_->ExtractXFluidFluidCondVector(dispn_), dispnp_);
+  }
+
 }
 
 
@@ -92,6 +114,9 @@ void ALE::AleSprings::Solve()
   incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
 
   LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
+
+  if (xffinterface_->XFluidFluidCondRelevant())
+      LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,xfftoggle_);
 
   solver_->Solve(sysmat_->EpetraOperator(),incr_,residual_,true);
 
@@ -527,4 +552,33 @@ Teuchos::RCP<Epetra_Vector> ALE::AleSprings::ExtractDispn() const
 {
   dserror("ExtractDispn() not implemented, yet.");
   return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::AleSprings::SolveAleXFluidFluidFSI()
+{
+  // At the beginning of the fluid-fluid-fsi step the xfem-dofs are
+  // dirichlet values so that they can not change in the next
+  // iterations. After the fsi step we put the ALE FSI-dofs to
+  // dirichlet and we solve the ALE again to find the real ALE
+  // displacement.
+
+  // turn the toggle vector off
+  xfftoggle_->PutScalar(0.0);
+
+  // new toggle vector which is on for the fsi-dofs_
+  Teuchos::RCP<Epetra_Vector> dispnp_fsicond = LINALG::CreateVector(*interface_->FSICondMap(),true);
+  dispnp_fsicond->PutScalar(1.0);
+  interface_->InsertFSICondVector(dispnp_fsicond,xfftoggle_);
+
+  BuildSystemMatrix(true);
+
+  Solve();
+
+  // for the next time step set the xfem dofs to dirichlet values
+  Teuchos::RCP<Epetra_Vector> dispnp_xff = LINALG::CreateVector(*xffinterface_->XFluidFluidCondMap(),true);
+  dispnp_xff->PutScalar(1.0);
+  xfftoggle_->PutScalar(0.0);
+  xffinterface_->InsertXFluidFluidCondVector(dispnp_xff,xfftoggle_);
 }

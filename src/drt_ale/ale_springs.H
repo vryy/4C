@@ -21,6 +21,12 @@ Maintainer: Ulrich Kuettler
 
 namespace ALE {
 
+/// forward declaration
+namespace UTILS
+{
+  class XFluidFluidMapExtractor;
+}
+
 
 /// springs ALE algorithm
 /*!
@@ -57,6 +63,8 @@ public:
   /// the whole displacement field at time step \f$t^{n}\f$ is extracted here
   virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() const;
 
+  virtual void SolveAleXFluidFluidFSI();
+
   //@}
 
   // Solve call for biofilm growth
@@ -68,6 +76,12 @@ private:
   void EvaluateElements();
 
   Teuchos::RCP<Epetra_Vector>    incr_;
+
+  // toggle vector of xfluidfluid
+  Teuchos::RCP<Epetra_Vector>    xfftoggle_;
+
+  /// the interface map setup for xfluid-fluid interface
+  Teuchos::RCP<ALE::UTILS::XFluidFluidMapExtractor> xffinterface_;
 
 };
 

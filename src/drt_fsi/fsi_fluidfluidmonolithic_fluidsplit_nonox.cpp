@@ -118,8 +118,9 @@ FSI::FluidFluidMonolithicFluidSplitNoNOX::FluidFluidMonolithicFluidSplitNoNOX(co
 	//Get the ALE-type index, defining the underlying ALE-algorithm
 	int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
 
-	//Just ALE algorithm type 'incremental linear' supports ALE relaxation
-	if ( (aletype!=INPAR::ALE::incr_lin) and (monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton) )
+	//Just ALE algorithm type 'incremental linear' and 'springs' supports ALE relaxation
+	if ( (aletype!=INPAR::ALE::incr_lin or aletype!=INPAR::ALE::springs)
+			and monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton)
 		dserror("Relaxing ALE approach is just possible with Ale-incr-lin!");
 
 
