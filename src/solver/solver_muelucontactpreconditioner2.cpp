@@ -164,9 +164,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   std::string agg_type = "Uncoupled";
   bool bSegregateAggregates = true; //false; // TODO fix me: only for tests with repartitioning! true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
 
+#ifdef HAVE_MUELU_ISORROPIA
   bool bDoRepartition = false;
   double optNnzImbalance = 1.3;
   int optMinRowsPerProc = 3000;
+#endif
 
   if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
   if(params.isParameter("ML output"))  verbosityLevel = params.get<int>("ML output");
@@ -179,11 +181,15 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
   //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
 
+#ifdef HAVE_MUELU_ISORROPIA
   if(params.isParameter("muelu repartition: enable")) {
     if(params.get<int>("muelu repartition: enable") == 1)      bDoRepartition = true;
   }
   if(params.isParameter("muelu repartition: max min ratio"))      optNnzImbalance     = params.get<double>("muelu repartition: max min ratio");
   if(params.isParameter("muelu repartition: min per proc"))       optMinRowsPerProc   = params.get<int>("muelu repartition: min per proc");
+#else
+  dserror("Isorropia has not been compiled with Trilinos. Repartitioning is not working.");
+#endif
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
@@ -365,7 +371,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   //    avoid local damping factory omega==1 -> oversmoothing, leads to zero rows in P
   //    use matrix A with artificial Dirichlet bcs for prolongator smoothing
   // if agg_damping == 0.0 -> PA-AMG else PG-AMG
-#if 1
   if (agg_damping == 0.0) {
     // tentative prolongation operator (PA-AMG)
     PFact = PtentFact;
@@ -406,13 +411,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     //PFact->SetFactory("A",slaveTransferAFactory);  // produces nans
     RFact  = Teuchos::rcp( new GenericRFactory() );
   }
-#else
-  // TODO outdated experiment -> remove me
-  PFact = PtentFact;
-  Teuchos::RCP<InjectionPFactory> Pinj = Teuchos::rcp(new InjectionPFactory());
-  RFact = Teuchos::rcp( new TransPFactory() );
-  RFact->SetFactory("P", Pinj);
-#endif
 
   // define nullspace factory AFTER tentative PFactory (that generates the nullspace for the coarser levels)
   // use same nullspace factory for all multigrid levels
