@@ -827,6 +827,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     mllist.set("print unused"                  ,-2);
   mllist.set("increasing or decreasing"        ,"increasing");
   mllist.set("coarse: max size"                ,inparams.get<int>("ML_MAXCOARSESIZE"));
+  mllist.set("coarse: pre or post"           ,"pre");
   mllist.set("max levels"                      ,inparams.get<int>("ML_MAXLEVEL"));
   mllist.set("smoother: pre or post"           ,"both");
   mllist.set("aggregation: threshold"          ,inparams.get<double>("ML_PROLONG_THRES"));
