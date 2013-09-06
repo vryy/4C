@@ -130,7 +130,12 @@ namespace MueLu {
         bool optimizeStorage=true;  // false
         //FIXME but once fixed, reenable the next line.
         if (A->getRowMap()->lib() == Xpetra::UseTpetra) optimizeStorage=false;
+#ifdef HAVE_Trilinos_Q3_2013
+        RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+        AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage);
+#else
         AP = Utils::Multiply(*A, false, *Ptent, false, doFillComplete, optimizeStorage);
+#endif
         //Utils::Write("AP.mat", *AP);
       }
 
@@ -204,7 +209,8 @@ namespace MueLu {
           bool doTranspose=false;
           bool PtentHasFixedNnzPerRow=true;
 #ifdef HAVE_Trilinos_Q3_2013
-          Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
+          RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+          Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP,*fos, PtentHasFixedNnzPerRow);
 #else
           Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
 #endif
