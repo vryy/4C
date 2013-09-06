@@ -97,10 +97,10 @@ namespace MueLu {
     else map_ = Teuchos::null; // no map with artificial Dirichlet boundaries available.
 
     if(type_ == "ILU") {
-      s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_,AFact_);
+      s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_);
       s_->SetFactory("A", AFact_);
     } else {
-      s_ = Teuchos::rcp(new TrilinosSmoother(type_, paramList_, overlap_, AFact_));
+      s_ = Teuchos::rcp(new TrilinosSmoother(type_, paramList_, overlap_));
       s_->SetFactory("A", AFact_);
     }
 
@@ -113,7 +113,11 @@ namespace MueLu {
   }
 
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+#ifdef HAVE_Trilinos_Q3_2013
+  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Apply(MultiVector &X, MultiVector const &B, bool InitialGuessIsZero) const {
+#else
   void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero) const {
+#endif
     TEUCHOS_TEST_FOR_EXCEPTION(SmootherPrototype::IsSetup() == false, Exceptions::RuntimeError, "MueLu::AmesosSmoother::Apply(): Setup() has not been called");
     TEUCHOS_TEST_FOR_EXCEPTION(s_ == Teuchos::null, Exceptions::RuntimeError, "IsSetup() == true but s_ == Teuchos::null. This does not make sense");
 

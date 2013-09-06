@@ -753,10 +753,12 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       if(prectype == "ILU") {
         Teuchos::ParameterList SCList;
         SCList.set<int>("fact: level-of-fill", 0);
-        smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,AFact);
+        smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0);
+        smoProtoSC->SetFactory("A",AFact);
       } else if (prectype == "point relaxation") {
         const Teuchos::ParameterList & ifpackParameters =  paramList.sublist("IFPACK Parameters");
-        smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",ifpackParameters,0,AFact));
+        smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",ifpackParameters,0));
+        smoProtoSC->SetFactory("A", AFact);
       } else TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement smoother (IFPACK based)");
     } else {
       // use PermutingSmoother

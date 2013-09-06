@@ -114,7 +114,11 @@ namespace MueLu {
     void Setup(Level &currentLevel);
 
     //! TrilinosSmoother cannot be applied. Apply() always returns a RuntimeError exception.
+#ifdef HAVE_Trilinos_Q3_2013
+    void Apply(MultiVector &X, MultiVector const &B, bool InitialGuessIsZero=false) const;
+#else
     void Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero=false) const;
+#endif
 
     //@}
 
