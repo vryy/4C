@@ -939,8 +939,11 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         (*massmatrix)(i,i) = 1;
 
     }//if (massmatrix != NULL)
-
   }
+
+  // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
+  if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
+    internalforces_ = *force;
 
   	/*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
@@ -948,10 +951,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
    CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force,Imass,Itildemass);
-   
-   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
-   if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-     internalforces_ = *force;
+
 //  string action = params.get<string>("action","calc_none");
 //  if (action=="calc_struct_nlnstiff")
 //  {

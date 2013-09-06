@@ -4544,14 +4544,19 @@ void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringst
           force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->InternalForces();
           eps = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->EpsilonSgn();
         }
+        else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
+        {
+          force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(element))->InternalForces();
+          eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(element))->EpsilonSgn();
+        }
         else
           dserror("No implementation for other Beam elements yet!");
 
         // compute element averaged force
-        LINALG::Matrix<3,1> avgforce;
-        for(int j=0; j<(int)avgforce.M(); j++)
-          avgforce(j) = 0.5*(force(j)+force(j+6));
-        double fabsolute = avgforce.Norm2();
+        LINALG::Matrix<3,1> nodalforce;
+        for(int j=0; j<(int)nodalforce.M(); j++)
+          nodalforce(j) = force(j);
+        double fabsolute = nodalforce.Norm2();
         if(eps<0.0)
           fabsolute *= -1.0;
         elementfint << fabsolute <<std::endl;
