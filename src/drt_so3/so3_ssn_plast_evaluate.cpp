@@ -2496,6 +2496,15 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_lin()
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut )
 {
+  // direct calculation for zero-matrix
+  if (MatrixInOut.Norm2()==0.)
+  {
+    MatrixInOut.Clear();
+    for (int i=0; i<3; i++)
+      MatrixInOut(i,i)=1.;
+    return;
+  }
+
   LINALG::Matrix<3,3> tmp(MatrixInOut);
   LINALG::Matrix<3,3> Eval;
   LINALG::SYEV(tmp,Eval,tmp);
@@ -2515,6 +2524,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Ma
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv)
 {
+  LINALG::Matrix<6,6> id4sharp(true);
+  for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
+  for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
+
+  // direct calculation for zero-matrix
+  if (MatrixIn.Norm2()==0.)
+  {
+    MatrixExpDeriv = id4sharp;
+    return;
+  }
+
   double EWtolerance=1.e-12;
 
   LINALG::Matrix<3,3> EV(MatrixIn);
@@ -2539,9 +2559,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
   LINALG::Matrix<3,3> id2(true);
   for (int i=0; i<3; i++)
     id2(i,i) =1.0 ;
-  LINALG::Matrix<6,6> id4sharp(true);
-  for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
-  for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
 //  // --------------------------------- switch by number of equal eigenvalues
 
   if (abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance ) // ------------------ x_a == x_b == x_c
