@@ -442,6 +442,25 @@ public:
    return intface;
   }
 
+
+  /*!
+  \brief Get nodal connectivity and weights for nodes
+
+  The method is used to build the connectivity between all the nodes adjacent
+  to this element and how expensive its evaluation is
+
+  \param edgeweights (out): A Epetra_SerialDenseMatrix containing weights of all connected nodes
+  \param nodeweights (out): A Epetra_SerialDenseVector containing weights of all nodes
+  */
+  virtual void NodalConnectivity(Epetra_SerialDenseMatrix& edgeweights, Epetra_SerialDenseVector& nodeweights);
+
+  /*!
+  \brief Return value how expensive it is to evaluate this element
+
+  \param double (out): cost to evaluate this element
+  */
+  virtual double EvaluationCost() { return 10.0; }
+
   /*!
   \brief Get number of degrees of freedom of a certain node
 

@@ -326,6 +326,48 @@ bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  Build nodal connectivity and weight nodes and edges        (public) |
+ |                                                          ghamm 09/13 |
+ *----------------------------------------------------------------------*/
+void DRT::Element::NodalConnectivity(Epetra_SerialDenseMatrix& edgeweights, Epetra_SerialDenseVector& nodeweights)
+{
+  // weight for this element
+  double weight = EvaluationCost();
+
+  int numnode = NumNode();
+  nodeweights.Size(numnode);
+  for(int n=0; n<numnode; ++n)
+    nodeweights[n] = weight;
+  edgeweights.Shape(numnode,numnode);
+  weight *= weight;
+
+  std::vector<std::vector<int> > lines = DRT::UTILS::getEleNodeNumberingLines(Shape());
+  size_t nodesperline = lines[0].size();
+  if(nodesperline == 2)
+  {
+    for(size_t l=0; l<lines.size(); ++l)
+    {
+      edgeweights(lines[l][0], lines[l][1]) = weight;
+      edgeweights(lines[l][1], lines[l][0]) = weight;
+    }
+  }
+  else if(nodesperline == 3)
+  {
+    for(size_t l=0; l<lines.size(); ++l)
+    {
+      edgeweights(lines[l][0], lines[l][1]) = weight;
+      edgeweights(lines[l][1], lines[l][0]) = weight;
+
+      edgeweights(lines[l][1], lines[l][2]) = weight;
+      edgeweights(lines[l][2], lines[l][1]) = weight;
+    }
+  }
+  else
+    dserror("implementation is missing for this distype (%s)", DistypeToString(Shape()).c_str());
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Get a condition of a certain name                          (public) |

@@ -336,6 +336,18 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
+  /*!
+  \brief Return value how expensive it is to evaluate this element
+
+  \param double (out): cost to evaluate this element
+  */
+  virtual double EvaluationCost()
+  {
+    if(Material()->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      return 25000.0;
+    else
+      return 10.0;
+  }
 
   //@}
 

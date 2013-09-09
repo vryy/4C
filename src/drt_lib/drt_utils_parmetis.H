@@ -45,6 +45,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
+#include "Epetra_CrsGraph.h"
 
 
 namespace DRT
@@ -79,6 +80,17 @@ namespace UTILS
       Teuchos::RCP<Epetra_Map>& colnodes,
       Teuchos::RCP<Epetra_Comm> comm,
       bool outflag);
+
+  void PartUsingZoltanWithWeights(Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<Epetra_Map>& rownodes,
+      Teuchos::RCP<Epetra_Map>& colnodes,
+      bool outflag);
+
+  Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
+            Teuchos::RCP<Epetra_Map> roweles,
+            Teuchos::RCP<Epetra_Map>& rownodes,
+            Teuchos::RCP<Epetra_Comm> comm,
+            bool outflag);
 #else
 
 #if 0 // this is out of date, we don't support non-parmetis anymore mmwgee 4/12

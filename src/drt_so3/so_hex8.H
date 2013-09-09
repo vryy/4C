@@ -377,6 +377,19 @@ public:
   //const vector<double> GetFibervec(){return fiberdirection_;};
   const std::vector<double> soh8_ElementCenterRefeCoords();
 
+  /*!
+  \brief Return value how expensive it is to evaluate this element
+
+  \param double (out): cost to evaluate this element
+  */
+  virtual double EvaluationCost()
+  {
+    if(Material()->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      return 25000.0;
+    else
+      return 10.0;
+  }
+
   //! struct_ale
   bool structale_;
   //@}

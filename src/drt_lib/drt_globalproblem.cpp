@@ -42,6 +42,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_mat/micromaterial.H"
+#include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_comm/comm_utils.H"
@@ -1403,14 +1404,33 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 {
-  // make sure that we read the micro discretizations only on the processors on
-  // which elements with the corresponding micro material are evaluated
+  // check whether micro material is specified
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_struct_multiscale);
+  if (id==-1)
+    return;
 
   Teuchos::RCP<Epetra_Comm> lcomm = npgroup_->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = npgroup_->GlobalComm();
 
   DRT::Problem* macro_problem = DRT::Problem::Instance();
   Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis("structure");
+
+  // repartition macro problem for a good distribution of elements with micro material
+  Teuchos::RCP<Epetra_Map> rownodes;
+  Teuchos::RCP<Epetra_Map> colnodes;
+  DRT::UTILS::PartUsingZoltanWithWeights(macro_dis, rownodes, colnodes, true);
+  // rebuild of the system with new maps
+  Teuchos::RCP<Epetra_Map> roweles;
+  Teuchos::RCP<Epetra_Map> coleles;
+  macro_dis->BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
+  macro_dis->ExportRowNodes(*rownodes);
+  macro_dis->ExportRowElements(*roweles);
+  macro_dis->ExportColumnNodes(*colnodes);
+  macro_dis->ExportColumnElements(*coleles);
+  macro_dis->FillComplete(true,true,true);
+
+  // make sure that we read the micro discretizations only on the processors on
+  // which elements with the corresponding micro material are evaluated
 
   std::set<int> my_multimat_IDs;
 
