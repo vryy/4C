@@ -129,9 +129,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
   so3_ele::Pack(data);
 
   // plasticity stuff
-  plasticmat_->Pack(data);
-  so3_ele::AddtoPack(data,cpl_);
-  so3_ele::AddtoPack(data,stab_s_);
   int histsize=0;
   if (last_plastic_defgrd_inverse_!=Teuchos::null)
       histsize=last_plastic_defgrd_inverse_->size();
@@ -186,24 +183,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
   so3_ele::ExtractfromPack(position,data,basedata);
   so3_ele::Unpack(basedata);
 
-  so3_ele::ExtractfromPack(position,data,tmp);
-   if (tmp.size()>0)
-   {
-     DRT::ParObject* o = DRT::UTILS::Factory(tmp);
-     MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
-     if (mat==NULL)
-       dserror("failed to unpack material");
-     plasticmat_ = Teuchos::rcp(mat);
-     if (plasticmat_->MaterialType() != INPAR::MAT::m_plsemismooth)
-       dserror("plastic material needs to be of type plasticsemismooth");
-   }
-   else
-   {
-     dserror("no material unpacked");
-   }
-   so3_ele::ExtractfromPack(position,data,cpl_);
-   so3_ele::ExtractfromPack(position,data,stab_s_);
-
    int histsize=so3_ele::ExtractInt(position,data);
 
    // initialize
@@ -219,14 +198,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
    Kbd_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<5,numdofperelement_> >);
    fbeta_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >);
 
-   KbbInv_                      ->resize(numgpt_);
-   Kbd_                         ->resize(numgpt_);
-   fbeta_                       ->resize(numgpt_);
-
    // temporary matrices to unpack data
     LINALG::Matrix<3,3> tmp33;
-    LINALG::Matrix<5,1> tmp51;
+    LINALG::Matrix<5,1> tmp51(true);
     LINALG::Matrix<1,1> tmp11;
+    LINALG::Matrix<5,5> tmp55(true);
+    LINALG::Matrix<5,numdofperelement_> tmp5x(true);
+
+   KbbInv_                      ->resize(numgpt_,tmp55);
+   Kbd_                         ->resize(numgpt_,tmp5x);
+   fbeta_                       ->resize(numgpt_,tmp51);
+
 
     for (int i=0; i<histsize; i++)
     {
@@ -284,17 +266,6 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     kintype_ = geo_nonlinear;
   else
     dserror("Reading of SO3_PLAST element failed! KINEM unknown");
-
-  int plasticmatId=0;
-   linedef->ExtractInt("PLASTICMAT",plasticmatId);
-   plasticmat_=MAT::Material::Factory(plasticmatId);
-   if (plasticmat_->MaterialType() != INPAR::MAT::m_plsemismooth)
-     dserror("plastic material needs to be of type plasticsemismooth");
-
-   linedef->ExtractDouble("CPL",cpl_);
-   if (cpl_<0.) dserror("complementarity parameter must be positive (approx. 2*ShearModulus)");
-   linedef->ExtractDouble("STAB_S",stab_s_);
-   if (stab_s_<0.) dserror("stabilization parameter must be positive (approx. between 0 and 2)");
 
   return true;
 

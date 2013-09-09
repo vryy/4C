@@ -322,15 +322,9 @@ namespace ELEMENTS
         const int MyPID  // processor id
         );
 
-    //! Evaluate (hyper)elastic material law
-    virtual void EvaluateELasticMaterial(const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<6,1>* glstrain,
-        Teuchos::ParameterList& params,
-        LINALG::Matrix<6,1>* stress,
-        LINALG::Matrix<6,6>* cmat);
-
     //! calculate the exponential of a symmetric 3x3 matrix
     void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
+
     //! calculate the derivative of the exponential of a symmetric 3x3 matrix
     void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
 
@@ -346,12 +340,6 @@ namespace ELEMENTS
       else dserror("you should not be here");
       return -1;
     }
-
-    // pull the b-operator to intermediate configuration
-    // bopOut_abi = bopIn_ABi * F^-1_Aa * F^-1_Bb
-    void PullBop(const LINALG::Matrix<numstr_,numdofperelement_> bopIn,
-                LINALG::Matrix<numstr_,numdofperelement_>& bopOut,
-                LINALG::Matrix<3,3> Invdefgrd, double scalefac=1.);
 
     // Add plastic increment of converged state to plastic history for nonlinear kinematics
     void UpdatePlasticDeformation_nln();
@@ -387,14 +375,6 @@ namespace ELEMENTS
     Teuchos::RCP<MAT::Material> Material() const;
 
     int Id() const;
-
-
-    // additional plasticity stuff
-    Teuchos::RCP<MAT::Material> plasticmat_;   // plastic material containing yield strength, hardening, etc.
-    /// complementarity parameter
-    double cpl_;
-    /// stabilization parameter "s"
-    double stab_s_;
 
     // plastic history variables ******************************************
     // inverse plastic deformation gradient for each Gauss point at last converged state

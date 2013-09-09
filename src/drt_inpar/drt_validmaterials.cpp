@@ -816,6 +816,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // collection of hyperelastic materials for finite strain plasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PlasticElastHyper",
+                                            "list/collection of hyperelastic materials, i.e. material IDs",
+                                            INPAR::MAT::m_plelasthyper));
+
+    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
+    AddNamedReal(m,"DENS","material mass density");
+    AddNamedReal(m,"INITYIELD","initial yield stress");
+    AddNamedReal(m,"ISOHARD","linear isotropic hardening modulus");
+    AddNamedReal(m,"EXPISOHARD","nonlinear isotropic hardening exponent");
+    AddNamedReal(m,"INFYIELD","saturation yield stress for nonlinear isotropic hardening");
+    AddNamedReal(m,"KINHARD","linear kinematic hardening modulus");
+    AddNamedReal(m,"CPL","plastic complementarity parameter");
+    AddNamedReal(m,"STAB_S","active set stabilization parameter 's'");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Generalized Maxwell Model compatible with elasthyper
   {
     Teuchos::RCP<MaterialDefinition> m

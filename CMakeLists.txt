@@ -408,6 +408,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/compogden.cpp
   src/drt_mat/constraintmixture.cpp
   src/drt_mat/elasthyper.cpp
+  src/drt_mat/plasticelasthyper.cpp
   src/drt_mat/viscogenmax.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluidporo.cpp
@@ -442,7 +443,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/structporo.cpp
   src/drt_mat/structporo_reaction.cpp
   src/drt_mat/stvenantkirchhoff.cpp
-  src/drt_mat/plasticsemismooth.cpp
   src/drt_mat/sutherland.cpp
   src/drt_mat/thermostvenantkirchhoff.cpp
   src/drt_mat/thermoplasticlinelast.cpp

@@ -318,48 +318,6 @@ namespace MAT
     const LINALG::Matrix<6,6>& cmat  ///< constitutive tensor
     );
 
-  /*! \brief pull-back of the second pair of indices of C
-     * using the inverse deformation gradient Finv
-     *
-     * In tensor index notation this method does
-     * \f[
-     * Cout_{ijKL} := C_{ijkl} \cdot F^{inv}_{Kk} \cdot F^{inv}_{Ll}
-     * \f]
-     *
-   * \param Cin (in)      : Material tangent matrix to be pulled back
-   * \param Cout (out)    : Material tangent matrix that is pulled back
-   * \param Finv (in)     : Dense matrix (3 by 3) as inverse deformation gradient for the pull-back
-   */
-  void CmatPullbackSecondPair(LINALG::Matrix<6,6>& Cin,LINALG::Matrix<6,6>& Cout, LINALG::Matrix<3,3>& Finv);
-
-  /*! \brief pull-back of the first pair of indices of C
-     * using the inverse deformation gradient Finv
-     *
-     * In tensor index notation this method does
-     * \f[
-     * Cout_{ijKL} := C_{ijkl} \cdot F^{inv}_{Ii} \cdot F^{inv}_{Jj}
-     * \f]
-     *
-   * \param Cin (in)      : Material tangent matrix to be pulled back
-   * \param Cout (out)    : Material tangent matrix that is pulled back
-   * \param Finv (in)     : Dense matrix (3 by 3) as inverse deformation gradient for the pull-back
-   */
-  void CmatPullbackFirstPair(LINALG::Matrix<6,6>& Cin,LINALG::Matrix<6,6>& Cout, LINALG::Matrix<3,3>& Finv);
-
-  /*! \brief pull-back of all indices of C
-     * using the inverse deformation gradient Finv
-     *
-     * In tensor index notation this method does
-     * \f[
-     * Cout_{ijKL} := C_{ijkl} \cdot F^{inv}_{Ii} \cdot F^{inv}_{Jj} \cdot F^{inv}_{Kk} \cdot F^{inv}_{Ll}
-     * \f]
-     *
-   * \param Cin (in)      : Material tangent matrix to be pulled back
-   * \param Cout (out)    : Material tangent matrix that is pulled back
-   * \param Finv (in)     : Dense matrix (3 by 3) as inverse deformation gradient for the pull-back
-   */
-  void CmatPullbackAll(LINALG::Matrix<6,6>& Cin,LINALG::Matrix<6,6>& Cout, LINALG::Matrix<3,3>& Finv);
-
   /*! \brief Add the derivative of the square of a tensor to a
    *         4th order symmetric material tensor in matrix notation
    *

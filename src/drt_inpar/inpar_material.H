@@ -36,6 +36,7 @@ namespace INPAR
       m_plnlnlogneohooke,///< Neo-Hooke elasticity with logarithmic finite strain von Mises plasticity
       m_pllinelast,  ///< linear elasticity (St. Venant Kirchhoff) and von Mises plasticity
       m_plsemismooth,  ///< material data for von Mises plasticity and semi-smooth newton strategy
+      m_plelasthyper,  ///< general hyperelastic material for finite strain von-Mises plasticity using a semi-smooth Newton strategy (only in combination with such elements!)
       m_elpldamage,  ///< elasto-plastic material with von Mises plasticity and damage
       m_aaaneohooke, ///< quasi Neo-Hooke material for aneurysmatic artery wall
       m_aaaneohooke_stopro, ///< quasi Neo-Hooke material for aneurysmatic artery wall, with stochastic mat params

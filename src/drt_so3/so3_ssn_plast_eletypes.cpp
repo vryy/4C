@@ -103,9 +103,7 @@ void DRT::ELEMENTS::So_hex8PlastType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs
     = definitions["SOLIDH8PLAST"];
 
-  defs["HEX8"] = defs_hex8["HEX8"].AddNamedInt("PLASTICMAT");
-  defs["HEX8"] = defs_hex8["HEX8"].AddNamedDouble("CPL");
-  defs["HEX8"] = defs_hex8["HEX8"].AddNamedDouble("STAB_S");
+  defs["HEX8"] = defs_hex8["HEX8"];
 
 }  // SetupElementDefinition()
 
@@ -229,9 +227,7 @@ void DRT::ELEMENTS::So_hex8fbarPlastType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs
     = definitions["SOLIDH8FBARPLAST"];
 
-  defs["HEX8"] = defs_hex8fbar["HEX8"].AddNamedInt("PLASTICMAT");
-  defs["HEX8"] = defs_hex8fbar["HEX8"].AddNamedDouble("CPL");
-  defs["HEX8"] = defs_hex8fbar["HEX8"].AddNamedDouble("STAB_S");
+  defs["HEX8"] = defs_hex8fbar["HEX8"];
 
 }  // SetupElementDefinition()
 
@@ -351,9 +347,7 @@ void DRT::ELEMENTS::So_tet4PlastType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs
     = definitions["SOLIDT4PLAST"];
 
-  defs["TET4"] = defs_tet4["TET4"].AddNamedInt("PLASTICMAT");
-  defs["HEX8"] = defs_tet4["HEX8"].AddNamedDouble("CPL");
-  defs["HEX8"] = defs_tet4["HEX8"].AddNamedDouble("STAB_S");
+  defs["TET4"] = defs_tet4["TET4"];
 
 }  // SetupElementDefinition()
 

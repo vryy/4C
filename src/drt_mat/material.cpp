@@ -27,7 +27,6 @@ Maintainer: Lena Wiechert
 #include "plasticneohooke.H"
 #include "plasticnlnlogneohooke.H"
 #include "plasticlinelast.H"
-#include "plasticsemismooth.H"
 #include "robinson.H"
 #include "damage.H"
 #include "micromaterial.H"
@@ -60,6 +59,7 @@ Maintainer: Lena Wiechert
 #include "newman.H"
 #include "compogden.H"
 #include "elasthyper.H"
+#include "plasticelasthyper.H"
 #include "viscogenmax.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
@@ -150,13 +150,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::PlasticLinElast(curmat));
     MAT::PAR::PlasticLinElast* params = static_cast<MAT::PAR::PlasticLinElast*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_plsemismooth:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::PlasticSemiSmooth(curmat));
-    MAT::PAR::PlasticSemiSmooth* params = static_cast<MAT::PAR::PlasticSemiSmooth*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_vp_robinson:
@@ -388,6 +381,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ElastHyper(curmat));
     MAT::PAR::ElastHyper* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_plelasthyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PlasticElastHyper(curmat));
+    MAT::PAR::PlasticElastHyper* params = static_cast<MAT::PAR::PlasticElastHyper*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_viscogenmax:
