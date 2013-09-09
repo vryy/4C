@@ -426,8 +426,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<Teuchos::ParameterList>
   // -------------------------------------------------------------------
   if (myrank_==0)
   {
+    printf("----------------------------------------- STARTING NEW ITERATION -----------------------------------------\n");
     printf("TIME: %11.4E/%11.4E  DT = %11.4E   Solving Reduced Dimensional Airways    STEP = %4d/%4d \n", time_,maxtime_,dta_,step_,stepmax_);
-
   }
 
   // -------------------------------------------------------------------

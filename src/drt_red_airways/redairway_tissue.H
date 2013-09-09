@@ -59,9 +59,10 @@ public:
   void DoRedAirwayStep();
 
   /// flag whether iteration between fields should be finished
-  bool NotConverged();
+  bool NotConverged(int iter);
 
-  void OutputIteration(double pres_inc_norm, double flux_inc_norm);
+  void OutputIteration(Teuchos::RCP<Epetra_Vector> pres_inc, Teuchos::RCP<Epetra_Vector> scaled_pres_inc,
+      Teuchos::RCP<Epetra_Vector> flux_inc, Teuchos::RCP<Epetra_Vector> scaled_flux_inc, int iter);
 
   void UpdateAndOutput();
 
@@ -93,8 +94,11 @@ private:
   /// internal iteration step
   int itermax_ ;
 
-  /// internal iteration step
-  double tol_ ;
+  /// internal tolerance for pressure
+  double tolp_ ;
+
+  /// internal tolerance for flux
+  double tolq_ ;
 
   /// defined normal direction
   double normal_;

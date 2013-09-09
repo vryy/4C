@@ -125,14 +125,16 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
     dserror("Parameter(s) for time integrators inconsistent");
 
 
-
   // get coupling parameters
   const Teuchos::ParameterList& rawtisdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
   // get max iterations
   itermax_ = rawtisdyn.get<int>("MAXITER");
 
-  // get tolarence
-  tol_ = rawtisdyn.get<double>("CONVTOL");;
+  // get tolerance for pressure
+  tolp_ = rawtisdyn.get<double>("CONVTOL_P");
+
+  // get tolerance for flux
+  tolq_ = rawtisdyn.get<double>("CONVTOL_Q");;
   
   // get normal direction 
   // -> if normal == 1.0 : the pressure will be implimented from inside the element to the outside
@@ -168,7 +170,12 @@ void AIRWAY::RedAirwayTissue::Integrate()
       DoRedAirwayStep();
       DoStructureStep();
       iter++;
-    }while (NotConverged()&&iter<=itermax_);
+    }while (NotConverged(iter)&&iter<itermax_);
+
+    if (iter>= itermax_)
+    {
+      dserror("FIELD ITERATION NOT CONVERGED IN %d STEPS AT TIME T=%f",itermax_,Time() );
+    }
 
     UpdateAndOutput();
   }
@@ -178,18 +185,21 @@ void AIRWAY::RedAirwayTissue::Integrate()
 /*----------------------------------------------------------------------*
  |  Output of one iteration between fields               yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::OutputIteration(double pres_inc_norm, double flux_inc_norm)
+void AIRWAY::RedAirwayTissue::OutputIteration(Teuchos::RCP<Epetra_Vector> pres_inc, Teuchos::RCP<Epetra_Vector> scaled_pres_inc,
+    Teuchos::RCP<Epetra_Vector> flux_inc, Teuchos::RCP<Epetra_Vector> scaled_flux_inc, int iter)
 {
   if (couppres_ip_->Comm().MyPID() == 0)
   {
-    std::cout << "-------------------------  FIELD ITERATION ---------------------------" << std::endl;
+    printf("\nFIELD ITERATION: %i / %i\n", iter,itermax_);
+    printf(" Tolerances:                                                                        %4.2e      %4.2e\n", tolp_, tolq_);
+    printf(" Volume ID      Vol            P             Q            dP            dQ           dP_scal       dQ_scal\n");
     for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
     {
-      //            std::cout << "\t time:\t" << Time() << "\t ID:\t" << couppres_ip_->Map().GID(i) << "\t P:\t" <<  (*couppres_ip_)[i]
-      //        << "\t Q:\t" <<  (*coupflux_ip_)[i] << "\t DP2:\t" << pres_inc_norm << "\t DQ2:\t" << flux_inc_norm << std::endl;
-            printf("\t time:\t%f\t ID:\t%d\t P:\t%f\t Q:\t%f\t V:\t%f\t DP2:\t%f \t DQ2:\t %f\n", Time(), couppres_ip_->Map().GID(i), (*couppres_ip_)[i],  (*coupflux_ip_)[i], (*coupvol_ip_)[i], pres_inc_norm , flux_inc_norm);
+      printf("     %d       %4.3e     %4.3e     %4.3e     %4.3e     %4.3e     %4.3e     %4.3e\n",
+          couppres_ip_->Map().GID(i), (*coupvol_ip_)[i], (*couppres_ip_)[i],  (*coupflux_ip_)[i], (*pres_inc)[i],
+          (*flux_inc)[i], (*scaled_pres_inc)[i], (*scaled_flux_inc)[i]);
     }
-    std::cout << "---------------------------------------------------------------------" << std::endl;
+    printf("----------------------------------------------------------------------------------------------------------\n\n");
   }
 }
 
@@ -237,28 +247,63 @@ void AIRWAY::RedAirwayTissue::DoStructureStep()
 /*----------------------------------------------------------------------*
  |  Check for convergence between fields                 yoshihara 09/12|
  *----------------------------------------------------------------------*/
-bool AIRWAY::RedAirwayTissue::NotConverged()
+/* Note: This has to be done for each field on its own, not as a Norm2
+ * over all fields.
+ */
+bool AIRWAY::RedAirwayTissue::NotConverged(int iter)
 {
   Teuchos::RCP<Epetra_Vector> pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
-  pres_inc->Update(-1.0,*couppres_im_,1.0);
-  double pres_inc_norm;
-  pres_inc->Norm2(&pres_inc_norm);
-
+  Teuchos::RCP<Epetra_Vector> scaled_pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
   Teuchos::RCP<Epetra_Vector> flux_inc = Teuchos::rcp(new Epetra_Vector(*coupflux_ip_));
-  flux_inc->Update(-1.0,*coupflux_im_,1.0);
-  double flux_inc_norm;
-  flux_inc->Norm2(&flux_inc_norm);
+  Teuchos::RCP<Epetra_Vector> scaled_flux_inc = Teuchos::rcp(new Epetra_Vector(*coupflux_ip_));
 
+  /*elegant solution not fully finished...
+  pres_inc->Update(1.0,*couppres_ip_, -1.0, *couppres_im_, 0.0);
+  scaled_pres_inc->ReciprocalMultiply(1.0,*couppres_ip_,*pres_inc, 0.0);
 
-  OutputIteration(pres_inc_norm, flux_inc_norm);
+  flux_inc->Update(1.0,*coupflux_ip_, -1.0, *coupflux_im_, 0.0);
+  scaled_flux_inc->ReciprocalMultiply(1.0,*coupflux_ip_,*flux_inc, 0.0);
+  */
 
+  //Calculate Pressure Norm
+  for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+  {
+        //Calculate pressure increment
+        (*pres_inc)[i] = abs((*couppres_ip_)[i] - (*couppres_im_)[i]);
+
+        //Calculate scaled pressure increment
+        if(abs((*couppres_ip_)[i]) > 1e-05)
+          (*scaled_pres_inc)[i] = (*pres_inc)[i] / abs((*couppres_ip_)[i]);
+        else
+          (*scaled_pres_inc)[i] = (*pres_inc)[i];
+   }
+
+  //Calculate Flux Norm
+  for (int i=0; i<coupflux_ip_->Map().NumMyElements(); ++i)
+  {
+          //Calculate flux increment
+          (*flux_inc)[i] = abs((*coupflux_ip_)[i] - (*coupflux_im_)[i]);
+
+          //Calculate scaled flux increment
+          if(abs((*coupflux_ip_)[i]) > 1e-05)
+            (*scaled_flux_inc)[i] = (*flux_inc)[i] / abs((*coupflux_ip_)[i]);
+          else
+            (*scaled_flux_inc)[i] = (*flux_inc)[i];
+  }
+
+  //Output
+  OutputIteration(pres_inc, scaled_pres_inc, flux_inc, scaled_flux_inc, iter);
+
+  //Update values
   couppres_im_->Update(1.0,*couppres_ip_,0.0);
   coupflux_im_->Update(1.0,*coupflux_ip_,0.0);
   coupvol_im_->Update(1.0,*coupvol_ip_,0.0);
-//  couppres_ip_->PutScalar(0.0);
-//  coupflux_ip_->PutScalar(0.0);
 
-  if (pres_inc_norm < tol_ and flux_inc_norm < tol_)
+  double pres_max, flux_max;
+  scaled_pres_inc->NormInf(&pres_max);
+  scaled_flux_inc->NormInf(&flux_max);
+
+  if (pres_max < tolp_ and flux_max < tolq_ and iter > 1)
     return false;
 
   return true;
