@@ -1,0 +1,66 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file myocard_general.H
+\brief
+
+<pre>
+Maintainer: Cristobal Bertoglio
+            bertoglio@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
+</pre>
+*/
+
+/*----------------------------------------------------------------------*
+ |  definitions                                              cbert 08/13 |
+ *----------------------------------------------------------------------*/
+#ifndef MYOCARD_GENERAL_H
+#define MYOCARD_GENERAL_H
+
+/*----------------------------------------------------------------------*
+ |  headers                                                  cbert 08/13 |
+ *----------------------------------------------------------------------*/
+/*#include "matpar_parameter.H"
+#include "material.H"
+#include "../drt_lib/drt_parobjectfactory.H"
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_SerialDenseMatrix.h>
+*/
+// #include "myocard_minimal.H"
+
+/// \date 08/13
+
+class Myocard_General
+
+{
+
+public:
+
+  /// construct empty material object
+  Myocard_General(){};
+
+  /// construct empty material object
+  explicit Myocard_General(const double eps_deriv_myocard, const std::string tissue);
+
+  /// destructor
+  virtual ~Myocard_General() { ; }
+
+  /// compute reaction coefficient
+  virtual double ComputeReactionCoeff(const double phi, const double dt) = 0;
+
+  ///  returns number of internal state variables of the material
+  virtual int GetNumberOfInternalStateVariables() const = 0;
+
+  ///  returns current internal state of the material
+  virtual double GetInternalState(const int k) const = 0;
+
+  ///  set internal state of the material
+  virtual void SetInternalState(const int k, const double val) = 0;
+
+  /// time update for this material
+  virtual void Update(const double phi, const double dt) = 0;
+
+}; // Myocard_general
+
+
+#endif

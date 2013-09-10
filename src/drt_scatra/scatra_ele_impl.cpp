@@ -1182,6 +1182,29 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     break;
 
   }
+  case SCATRA::set_material_internal_state:
+  {
+
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    if (ele->Owner() == discretization.Comm().MyPID())
+    {
+
+      // access the general material
+      Teuchos::RCP<MAT::Material> material = ele->Material();
+      Teuchos::RCP<Epetra_Vector> material_internal_state_component = params.get< Teuchos::RCP<Epetra_Vector> >("material_internal_state_component");
+
+      if( material->MaterialType() == INPAR::MAT::m_myocard)
+      {
+        Teuchos::RCP<MAT::Myocard> material = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+        int k =  params.get< int >("k");
+        material->SetInternalState(k,(*material_internal_state_component)[ele->Id()]);
+      }
+
+    }
+
+    break;
+
+  }
   case SCATRA::calc_flux_domain:
   {
     // get velocity values at the nodes
@@ -2539,8 +2562,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       densam_[k]      = 1.0;
       densgradfac_[k] = 0.0;
 
-      const int matid = actmat->MatID(k);
-      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+      int matid = actmat->MatID(k);
+      Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
       if (singlemat->MaterialType() == INPAR::MAT::m_ion)
       {
@@ -2733,8 +2756,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
       {
-        const Teuchos::RCP<const MAT::Myocard> actsinglemat
-        = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(singlemat);
+        Teuchos::RCP< MAT::Myocard> actsinglemat
+        = Teuchos::rcp_dynamic_cast<MAT::Myocard>(singlemat);
 
         dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
 
@@ -2756,7 +2779,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         is_anisotropic_ = true;
         
         // get reaction coeff. and set temperature rhs for reactive equation system to zero
-        const double csnp = funct_.Dot(ephinp_[k]);
+        double csnp = funct_.Dot(ephinp_[k]);
         reacoeffderiv_[k] = actsinglemat->ComputeReactionCoeffDeriv(csnp, dt);
         reacterm_[k] = actsinglemat->ComputeReactionCoeff(csnp, dt);
         reatemprhs_[k] = 0.0;
@@ -3258,8 +3281,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_myocard)
   {
-    const Teuchos::RCP<const MAT::Myocard>& actmat
-      = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
+
+    //Teuchos::RCP<MAT::Myocard>& actmat
+    Teuchos::RCP<MAT::Myocard> actmat
+      = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
     if (scatratype != INPAR::SCATRA::scatratype_cardio_monodomain){
       dserror("ScatraType not compatible with myocard material. Change ScatraType to some Cardio_* type.");
     }
@@ -3286,7 +3311,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     is_anisotropic_ = true;
 
     // get reaction coeff. and set temperature rhs for reactive equation system to zero
-    const double csnp = funct_.Dot(ephinp_[0]);
+    double csnp = funct_.Dot(ephinp_[0]);
     reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp, dt);
     reacterm_[0] = actmat->ComputeReactionCoeff(csnp, dt);
     reatemprhs_[0] = 0.0;

@@ -1561,7 +1561,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     if (outputgmsh_) OutputToGmsh(step_, time_);
 
     // add restart data
-    if (step_%uprestart_==0) OutputRestart();
+    if (step_%uprestart_==0 and step_ !=0) OutputRestart();
 
     // write flux vector field (only writing, calculation was done during Update() call)
     if (writeflux_!=INPAR::SCATRA::flux_no)

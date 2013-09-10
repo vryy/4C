@@ -30,7 +30,8 @@ enum Action {
   calc_subgrid_diffusivity_matrix, // calc_subgrid_diffusivity_matrix,
   calc_domain_and_bodyforce,       // calc_domain_and_bodyforce,
   get_material_parameters,         // get_material_parameters,
-  get_material_internal_state,     // calculate integral reaction,
+  get_material_internal_state,     // get material internal state (for postprocessing for example),
+  set_material_internal_state,     // set material internal state (for restart for example),
   integrate_shape_functions,       // integrate_shape_functions,
   time_update_material,            // time update for materials
   calc_initial_time_deriv,         // calc_initial_time_deriv,

@@ -25,6 +25,7 @@ Maintainer: Lasse Jagschies
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
+#include "myocard_general.H"
 
 /*----------------------------------------------------------------------*
  |                                                           ljag 07/12 |
@@ -154,10 +155,10 @@ public:
   void ComputeDiffusivity(LINALG::Matrix<3,3>& diffus3) const;
 
   /// compute reaction coefficient
-  double ComputeReactionCoeff(const double phi, const double dt) const;
+  double ComputeReactionCoeff(const double phi, const double dt);
 
   /// compute reaction coefficient derivative
-  double ComputeReactionCoeffDeriv(const double csnp, const double dt) const;
+  double ComputeReactionCoeffDeriv(const double csnp, const double dt);
 
   /// compute Heaviside step function
   double GatingFunction(const double Gate1, const double Gate2, const double p, const double var, const double thresh) const;
@@ -170,6 +171,12 @@ public:
 
   ///  returns current internal state of the material
   double GetInternalState(const int k) const;
+
+  ///  set internal state of the material
+  void SetInternalState(const int k, const double val);
+
+  /// initialize internal variables (called by constructors)
+  void Initialize();
 
   /// time update for this material
   void Update(const double phi, const double dt);
@@ -190,31 +197,13 @@ private:
   /// conductivity tensor
   LINALG::Matrix<3,3> difftensor_;
 
-  /// initial gating variables MV
-  double v0_; /// fast inward current
-  double w0_; /// slow inward current
-  double s0_; /// slow inward current
+  /// number of internal state variables
+  int nb_state_variables_;
 
-  /// initial variables and ionic concentrations TNNP
-  double m_; /// fast Na current
-  double h_; /// fast Na current
-  double j_; /// fast Na current
-  double r_; /// transient outward current
-  double s_; /// transient outward current
-  double x_r1_; /// rapid delayed rectifier current
-  double x_r2_; /// rapid delayed rectifier current
-  double x_s_; /// slow delayed rectifier current
-  double d_; /// L-type Ca2+ current
-  double f_; /// L-type Ca2+ current
-  double f_Ca_; /// L-type Ca2+ current
-  double g_; /// Ca2+ dynamics
+  // std::string* params_->model;
 
-  double Na_i_; /// Sodium concentration
-  double K_i_; /// Potassium concentration
-  double Ca_i_; /// free Calcium concentration
-  double Ca_sr_; /// free Calcium concentration in sarcoplasmatic reticulum
-
-
+  // Type of material model
+  Teuchos::RCP<Myocard_General> myocard_mat_;
 
 }; // Myocard
 } // namespace MAT

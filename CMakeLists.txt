@@ -430,6 +430,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/mixfrac.cpp
   src/drt_mat/modpowerlaw.cpp
   src/drt_mat/myocard.cpp
+  src/drt_mat/myocard_tools.cpp
+  src/drt_mat/myocard_minimal.cpp
   src/drt_mat/neohooke.cpp
   src/drt_mat/newtonianfluid.cpp
   src/drt_mat/optimization_density.cpp
