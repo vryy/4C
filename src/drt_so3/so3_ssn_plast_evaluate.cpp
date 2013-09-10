@@ -2505,15 +2505,26 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Ma
     return;
   }
 
-  LINALG::Matrix<3,3> tmp(MatrixInOut);
-  LINALG::Matrix<3,3> Eval;
-  LINALG::SYEV(tmp,Eval,tmp);
+  // Calculation of matrix exponential via power series. This is in our case
+  //usually faster than by polar decomposition as the matrices are close to
+  // zero for small/moderate plastic deformations.
+  LINALG::Matrix<3,3> In(MatrixInOut);
+  int n=0;
+  int facn=1;
   MatrixInOut.Clear();
   for (int i=0; i<3; i++)
-    Eval(i,i)=exp(Eval(i,i));
-  LINALG::Matrix<3,3> tmp2;
-  tmp2.MultiplyNT(Eval,tmp);
-  MatrixInOut.Multiply(tmp,tmp2);
+    MatrixInOut(i,i)=1.;
+  LINALG::Matrix<3,3> tmp(MatrixInOut);
+  LINALG::Matrix<3,3> tmp2(MatrixInOut);
+  while (n<50 && tmp.Norm2()/facn>1.e-16)
+  {
+    n++;
+    facn*=n;
+    tmp.Multiply(tmp2,In);
+    tmp2=tmp;
+    MatrixInOut.Update(1./facn,tmp,1.);
+  }
+  if (n==50) dserror("matrix exponential unconverged in %i steps",n);
 
   return;
 }
