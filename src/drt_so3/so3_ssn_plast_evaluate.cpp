@@ -2496,8 +2496,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_lin()
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut )
 {
+  double Norm=MatrixInOut.Norm2();
   // direct calculation for zero-matrix
-  if (MatrixInOut.Norm2()==0.)
+  if (Norm==0.)
   {
     MatrixInOut.Clear();
     for (int i=0; i<3; i++)
@@ -2505,9 +2506,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Ma
     return;
   }
 
-  // Calculation of matrix exponential via power series. This is in our case
-  //usually faster than by polar decomposition as the matrices are close to
-  // zero for small/moderate plastic deformations.
+  // Calculation of matrix exponential via power series. This is usually
+  // faster than by polar decomposition for matrices are close to zero.
+  // For small plastic increments this is the case
   LINALG::Matrix<3,3> In(MatrixInOut);
   int n=0;
   int facn=1;
@@ -2535,144 +2536,285 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Ma
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv)
 {
+  double Norm=MatrixIn.Norm2();
+
   LINALG::Matrix<6,6> id4sharp(true);
   for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
   for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
 
   // direct calculation for zero-matrix
-  if (MatrixIn.Norm2()==0.)
+  if (Norm==0.)
   {
     MatrixExpDeriv = id4sharp;
     return;
   }
 
-  double EWtolerance=1.e-12;
-
-  LINALG::Matrix<3,3> EV(MatrixIn);
-  LINALG::Matrix<3,3> EW;
-  LINALG::SYEV(EV,EW,EV);
-
-  LINALG::Matrix<3,1> vec1;
-  LINALG::Matrix<3,1> vec2;
-  LINALG::Matrix<3,3> tmp1;
-  LINALG::Matrix<3,3> tmp2;
-
-  MatrixExpDeriv.Clear();
-  // souza eq. (A.52)
-  // note: EW stored in ascending order
-
-  //  d X^2 / d X  =  1/2 * (  delta_jk X_lj + delta_il X_kj
-  //                         + delta_jl X_ik + delta_kj X_il )
-  //
-  // y_i = log(x_i)
-  // dy_i / dx_j = delta_ij 1/x_i
-
-  LINALG::Matrix<3,3> id2(true);
-  for (int i=0; i<3; i++)
-    id2(i,i) =1.0 ;
-//  // --------------------------------- switch by number of equal eigenvalues
-
-  if (abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance ) // ------------------ x_a == x_b == x_c
+  if(Norm<0.15)
   {
-    // calculate derivative
-    MatrixExpDeriv = id4sharp;
-    MatrixExpDeriv.Scale(exp(EW(0,0)));
-  }
+    // see Souza-Neto: Computational Methods for plasticity, Box B.2.
+    int nmax=0;
+    int n=0;
+    int nfac=1;
+    LINALG::Matrix<3,3> tmp1;
+    LINALG::Matrix<3,3> tmp2(true);
+    for (int i=0; i<3; i++) tmp2(i,i)=1.;
 
-  else if ( ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) ||
-            ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance )  ) // ---- x_a != x_b == x_c or x_a == x_b != x_c
-  {
-    // factors
-    double s1=0.0;
-    double s2=0.0;
-    double s3=0.0;
-    double s4=0.0;
-    double s5=0.0;
-    double s6=0.0;
+    // all needed powers of X
+    std::vector<LINALG::Matrix<3,3> > Xn;
+    Xn.resize(0);
+    Xn.push_back(tmp2);
 
-    int a=0;
-    int c=0;
+    // all needed factorials
+    std::vector<int> fac;
+    fac.resize(0);
+    fac.push_back(nfac);
 
-    // switch which two EW are equal
-    if ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------------- x_a == x_b != x_c
+    // compute nmax and Xn
+    while (n<50 && tmp2.Norm2()/nfac>1.e-16)
     {
-      a=2;
-      c=0;
+      n++;
+      nfac *= n;
+      fac.push_back(nfac);
+      tmp1.Multiply(tmp2,MatrixIn);
+      Xn.push_back(tmp1);
+      tmp2=tmp1;
     }
-    else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance) // ------------------ x_a != x_b == x_c
+    if (n==50) dserror("matrix exponential unconverged in %i steps",n);
+    nmax=n;
+
+    // compose derivative of matrix exponential (symmetric Voigt-notation)
+    MatrixExpDeriv.Clear();
+    for (int n=1; n<=nmax; n++)
     {
-      a=0;
-      c=2;
+      for (int m=1; m<=n/2; m++)
+        AddToSymMatrixExponentialDeriv(1./fac.at(n),Xn.at(m-1),Xn.at(n-m),MatrixExpDeriv);
+      if (n%2==1)
+        AddToSymMatrixExponentialDeriv(0.5/fac.at(n),Xn.at((n-1)/2),Xn.at((n-1)/2),MatrixExpDeriv);
     }
-    else
-      dserror("you should not be here");
-
-    // in souza eq. (A.53):
-    s1 = ( exp(EW(a,a)) - exp(EW(c,c)) ) / ( pow( EW(a,a) - EW(c,c),2.0 ) )  -  exp(EW(c,c)) / (EW(a,a)-EW(c,c));
-    s2 = 2.0 * EW(c,c) * (exp(EW(a,a))-exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),2.0)) - (EW(a,a)+EW(c,c))/(EW(a,a)-EW(c,c)) * exp(EW(c,c));
-    s3 = 2.0 * (exp(EW(a,a))-exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),3.0)) - (exp(EW(a,a)) + exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),2.0));
-    s4 = EW(c,c)*s3;
-    s5 = s4;
-    s6 = EW(c,c)*EW(c,c) * s3;
-
-    // calculate derivative
-    MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,s1,MatrixIn,1.);
-    MatrixExpDeriv.Update(-s2,id4sharp,1.);
-    MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*s3,MatrixIn,MatrixIn,1.);
-    MAT::ElastSymTensorMultiply(MatrixExpDeriv,s4,MatrixIn,id2,1.);
-    MAT::ElastSymTensorMultiply(MatrixExpDeriv,s5,id2,MatrixIn,1.);
-    MAT::ElastSymTensorMultiply(MatrixExpDeriv,s6,id2,id2,1.);
   }
-
-  else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------- x_a != x_b != x_c
+  else
   {
-    for (int a=0; a<3; a++) // loop over all eigenvalues
-    {
-      int b = (a+1)%3;
-      int c = (a+2)%3;
+    double EWtolerance=1.e-12;
 
-      LINALG::Matrix<3,1> ea;
-      LINALG::Matrix<3,1> eb;
-      LINALG::Matrix<3,1> ec;
-      for (int i=0; i<3; i++)
+    LINALG::Matrix<3,3> EV(MatrixIn);
+    LINALG::Matrix<3,3> EW;
+    LINALG::SYEV(EV,EW,EV);
+
+    LINALG::Matrix<3,1> vec1;
+    LINALG::Matrix<3,1> vec2;
+    LINALG::Matrix<3,3> tmp1;
+    LINALG::Matrix<3,3> tmp2;
+
+    MatrixExpDeriv.Clear();
+    // souza eq. (A.52)
+    // note: EW stored in ascending order
+
+    //  d X^2 / d X  =  1/2 * (  delta_jk X_lj + delta_il X_kj
+    //                         + delta_jl X_ik + delta_kj X_il )
+    //
+    // y_i = log(x_i)
+    // dy_i / dx_j = delta_ij 1/x_i
+
+    LINALG::Matrix<3,3> id2(true);
+    for (int i=0; i<3; i++)
+      id2(i,i) =1.0 ;
+    //  // --------------------------------- switch by number of equal eigenvalues
+
+    if (abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance ) // ------------------ x_a == x_b == x_c
+    {
+      // calculate derivative
+      MatrixExpDeriv = id4sharp;
+      MatrixExpDeriv.Scale(exp(EW(0,0)));
+    }
+
+    else if ( ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) ||
+        ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance )  ) // ---- x_a != x_b == x_c or x_a == x_b != x_c
+    {
+      // factors
+      double s1=0.0;
+      double s2=0.0;
+      double s3=0.0;
+      double s4=0.0;
+      double s5=0.0;
+      double s6=0.0;
+
+      int a=0;
+      int c=0;
+
+      // switch which two EW are equal
+      if ( abs(EW(0,0)-EW(1,1))<EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------------- x_a == x_b != x_c
       {
-        ea(i) = EV(i,a);
-        eb(i) = EV(i,b);
-        ec(i) = EV(i,c);
+        a=2;
+        c=0;
       }
-      LINALG::Matrix<3,3> Ea;
-      Ea.MultiplyNT(ea,ea);
-      LINALG::Matrix<3,3> Eb;
-      Eb.MultiplyNT(eb,eb);
-      LINALG::Matrix<3,3> Ec;
-      Ec.MultiplyNT(ec,ec);
+      else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))<EWtolerance) // ------------------ x_a != x_b == x_c
+      {
+        a=0;
+        c=2;
+      }
+      else
+        dserror("you should not be here");
 
-      double fac = exp(EW(a,a)) / ( (EW(a,a)-EW(b,b)) * (EW(a,a)-EW(c,c)) );
+      // in souza eq. (A.53):
+      s1 = ( exp(EW(a,a)) - exp(EW(c,c)) ) / ( pow( EW(a,a) - EW(c,c),2.0 ) )  -  exp(EW(c,c)) / (EW(a,a)-EW(c,c));
+      s2 = 2.0 * EW(c,c) * (exp(EW(a,a))-exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),2.0)) - (EW(a,a)+EW(c,c))/(EW(a,a)-EW(c,c)) * exp(EW(c,c));
+      s3 = 2.0 * (exp(EW(a,a))-exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),3.0)) - (exp(EW(a,a)) + exp(EW(c,c)))/(pow(EW(a,a)-EW(c,c),2.0));
+      s4 = EW(c,c)*s3;
+      s5 = s4;
+      s6 = EW(c,c)*EW(c,c) * s3;
 
-      // + d X^2 / d X
-      MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,fac,MatrixIn,1.);
+      // calculate derivative
+      MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,s1,MatrixIn,1.);
+      MatrixExpDeriv.Update(-s2,id4sharp,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*s3,MatrixIn,MatrixIn,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,s4,MatrixIn,id2,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,s5,id2,MatrixIn,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,s6,id2,id2,1.);
+    }
 
-      // - (x_b + x_c) I_s
-      MatrixExpDeriv.Update(-1.*(EW(b,b)+EW(c,c))*fac,id4sharp,1.);
+    else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------- x_a != x_b != x_c
+    {
+      for (int a=0; a<3; a++) // loop over all eigenvalues
+      {
+        int b = (a+1)%3;
+        int c = (a+2)%3;
 
-      // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * ( (EW(a,a)-EW(b,b)) + (EW(a,a)-EW(c,c)) ),Ea,Ea,1.);
+        LINALG::Matrix<3,1> ea;
+        LINALG::Matrix<3,1> eb;
+        LINALG::Matrix<3,1> ec;
+        for (int i=0; i<3; i++)
+        {
+          ea(i) = EV(i,a);
+          eb(i) = EV(i,b);
+          ec(i) = EV(i,c);
+        }
+        LINALG::Matrix<3,3> Ea;
+        Ea.MultiplyNT(ea,ea);
+        LINALG::Matrix<3,3> Eb;
+        Eb.MultiplyNT(eb,eb);
+        LINALG::Matrix<3,3> Ec;
+        Ec.MultiplyNT(ec,ec);
+
+        double fac = exp(EW(a,a)) / ( (EW(a,a)-EW(b,b)) * (EW(a,a)-EW(c,c)) );
+
+        // + d X^2 / d X
+        MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv,fac,MatrixIn,1.);
+
+        // - (x_b + x_c) I_s
+        MatrixExpDeriv.Update(-1.*(EW(b,b)+EW(c,c))*fac,id4sharp,1.);
+
+        // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
+        MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * ( (EW(a,a)-EW(b,b)) + (EW(a,a)-EW(c,c)) ),Ea,Ea,1.);
 
 
-      // - (x_b - x_c) (E_b \dyad E_b)
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * (EW(b,b) - EW(c,c)),Eb,Eb,1.);
+        // - (x_b - x_c) (E_b \dyad E_b)
+        MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*fac * (EW(b,b) - EW(c,c)),Eb,Eb,1.);
 
-      // + (x_b - x_c) (E_c \dyad E_c)
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,fac * (EW(b,b) - EW(c,c)),Ec,Ec,1.);
+        // + (x_b - x_c) (E_c \dyad E_c)
+        MAT::ElastSymTensorMultiply(MatrixExpDeriv,fac * (EW(b,b) - EW(c,c)),Ec,Ec,1.);
 
-      // dy / dx_a E_a \dyad E_a
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,exp(EW(a,a)),Ea,Ea,1.);
-    } // end loop over all eigenvalues
+        // dy / dx_a E_a \dyad E_a
+        MAT::ElastSymTensorMultiply(MatrixExpDeriv,exp(EW(a,a)),Ea,Ea,1.);
+      } // end loop over all eigenvalues
 
+    }
+
+    else dserror("you should not be here.");
   }
+  return;
+}
 
-  else dserror("you should not be here.");
+/*---------------------------------------------------------------------------*
+ |  add terms for matrix exponential derivative of a symmetric matrix        |
+ | via power series                                              seitz 08/13 |
+ *---------------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::AddToSymMatrixExponentialDeriv(const double fac,
+    const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp)
+{
+  Dexp(0,0) += 2. * fac * A(0,0) * B(0,0);
+  Dexp(0,3) += 0.5e0 * fac * (2. * A(0,0) * B(0,1) + 2. * A(0,1) * B(0,0));
+  Dexp(0,5) += 0.5e0 * fac * (2. * A(0,0) * B(0,2) + 2. * A(0,2) * B(0,0));
+  Dexp(0,1) += 2. * fac * A(0,1) * B(0,1);
+  Dexp(0,4) += 0.5e0 * fac * (2. * A(0,1) * B(0,2) + 2. * A(0,2) * B(0,1));
+  Dexp(0,2) += 2. * fac * A(0,2) * B(0,2);
+
+  Dexp(3,0) += 0.5e0 * fac * (2. * A(0,0) * B(0,1) + 2. * A(0,1) * B(0,0));
+  Dexp(3,3) += 0.5e0 * fac * (A(0,0) * B(1,1) + 2. * A(0,1) * B(0,1) + A(1,1) * B(0,0));
+  Dexp(3,5) += 0.5e0 * fac * (A(0,0) * B(1,2) + A(0,2) * B(0,1) + A(1,2) * B(0,0) + A(0,1) * B(0,2));
+  Dexp(3,1) += 0.5e0 * fac * (2. * A(0,1) * B(1,1) + 2. * A(1,1) * B(0,1));
+  Dexp(3,4) += 0.5e0 * fac * (A(0,1) * B(1,2) + A(0,2) * B(1,1) + A(1,2) * B(0,1) + A(1,1) * B(0,2));
+  Dexp(3,2) += 0.5e0 * fac * (2. * A(0,2) * B(1,2) + 2. * A(1,2) * B(0,2));
+
+  Dexp(5,0) += 0.5e0 * fac * (2. * A(0,0) * B(0,2) + 2. * A(0,2) * B(0,0));
+  Dexp(5,3) += 0.5e0 * fac * (A(0,0) * B(1,2) + A(0,2) * B(0,1) + A(1,2) * B(0,0) + A(0,1) * B(0,2));
+  Dexp(5,5) += 0.5e0 * fac * (A(0,0) * B(2,2) + 2. * A(0,2) * B(0,2) + A(2,2) * B(0,0));
+  Dexp(5,1) += 0.5e0 * fac * (2. * A(0,1) * B(1,2) + 2. * A(1,2) * B(0,1));
+  Dexp(5,4) += 0.5e0 * fac * (A(0,1) * B(2,2) + A(0,2) * B(1,2) + A(2,2) * B(0,1) + A(1,2) * B(0,2));
+  Dexp(5,2) += 0.5e0 * fac * (2. * A(0,2) * B(2,2) + 2. * A(2,2) * B(0,2));
+
+  Dexp(1,0) += 2. * fac * A(0,1) * B(0,1);
+  Dexp(1,3) += 0.5e0 * fac * (2. * A(0,1) * B(1,1) + 2. * A(1,1) * B(0,1));
+  Dexp(1,5) += 0.5e0 * fac * (2. * A(0,1) * B(1,2) + 2. * A(1,2) * B(0,1));
+  Dexp(1,1) += 2. * fac * A(1,1) * B(1,1);
+  Dexp(1,4) += 0.5e0 * fac * (2. * A(1,1) * B(1,2) + 2. * A(1,2) * B(1,1));
+  Dexp(1,2) += 2. * fac * A(1,2) * B(1,2);
+
+  Dexp(4,0) += 0.5e0 * fac * (2. * A(0,1) * B(0,2) + 2. * A(0,2) * B(0,1));
+  Dexp(4,3) += 0.5e0 * fac * (A(0,1) * B(1,2) + A(0,2) * B(1,1) + A(1,2) * B(0,1) + A(1,1) * B(0,2));
+  Dexp(4,5) += 0.5e0 * fac * (A(0,1) * B(2,2) + A(0,2) * B(1,2) + A(2,2) * B(0,1) + A(1,2) * B(0,2));
+  Dexp(4,1) += 0.5e0 * fac * (2. * A(1,1) * B(1,2) + 2. * A(1,2) * B(1,1));
+  Dexp(4,4) += 0.5e0 * fac * (A(1,1) * B(2,2) + 2. * A(1,2) * B(1,2) + A(2,2) * B(1,1));
+  Dexp(4,2) += 0.5e0 * fac * (2. * A(1,2) * B(2,2) + 2. * A(2,2) * B(1,2));
+
+  Dexp(2,0) += 2. * fac * A(0,2) * B(0,2);
+  Dexp(2,3) += 0.5e0 * fac * (2. * A(0,2) * B(1,2) + 2. * A(1,2) * B(0,2));
+  Dexp(2,5) += 0.5e0 * fac * (2. * A(0,2) * B(2,2) + 2. * A(2,2) * B(0,2));
+  Dexp(2,1) += 2. * fac * A(1,2) * B(1,2);
+  Dexp(2,4) += 0.5e0 * fac * (2. * A(1,2) * B(2,2) + 2. * A(2,2) * B(1,2));
+  Dexp(2,2) += 2. * fac * A(2,2) * B(2,2);
 
 
+//  Dexp(0,0) += 2 * fac * A(0,0) * B(0,0);
+//  Dexp(0,3) += fac * (A(0,0) * B(0,1) + A(0,1) * B(0,0));
+//  Dexp(0,5) += fac * (A(0,0) * B(0,2) + A(0,2) * B(0,0));
+//  Dexp(0,1) += 2 * fac * A(0,1) * B(0,1);
+//  Dexp(0,4) += fac * (A(0,1) * B(0,2) + A(0,2) * B(0,1));
+//  Dexp(0,2) += 2 * fac * A(0,2) * B(0,2);
+//
+//  Dexp(3,0) += fac * (A(0,0) * B(0,1) + A(0,1) * B(0,0));
+//  Dexp(3,3) += fac * (A(0,0) * B(1,1) + A(1,1) * B(0,0));
+//  Dexp(3,5) += fac * (A(0,0) * B(1,2) + A(1,2) * B(0,0));
+//  Dexp(3,1) += fac * (A(0,1) * B(1,1) + A(1,1) * B(0,1));
+//  Dexp(3,4) += fac * (A(0,1) * B(1,2) + A(1,2) * B(0,1));
+//  Dexp(3,2) += fac * (A(0,2) * B(1,2) + A(1,2) * B(0,2));
+//
+//  Dexp(5,0) += fac * (A(0,0) * B(0,2) + A(0,2) * B(0,0));
+//  Dexp(5,3) += fac * (A(0,0) * B(1,2) + A(1,2) * B(0,0));
+//  Dexp(5,5) += fac * (A(0,0) * B(2,2) + A(2,2) * B(0,0));
+//  Dexp(5,1) += fac * (A(0,1) * B(1,2) + A(1,2) * B(0,1));
+//  Dexp(5,4) += fac * (A(0,1) * B(2,2) + A(2,2) * B(0,1));
+//  Dexp(5,2) += fac * (A(0,2) * B(2,2) + A(2,2) * B(0,2));
+//
+//  Dexp(1,0) += 2 * fac * A(0,1) * B(0,1);
+//  Dexp(1,3) += fac * (A(0,1) * B(1,1) + A(1,1) * B(0,1));
+//  Dexp(1,5) += fac * (A(0,1) * B(1,2) + A(1,2) * B(0,1));
+//  Dexp(1,1) += 2 * fac * A(1,1) * B(1,1);
+//  Dexp(1,4) += fac * (A(1,1) * B(1,2) + A(1,2) * B(1,1));
+//  Dexp(1,2) += 2 * fac * A(1,2) * B(1,2);
+//
+//  Dexp(4,0) += fac * (A(0,1) * B(0,2) + A(0,2) * B(0,1));
+//  Dexp(4,3) += fac * (A(0,1) * B(1,2) + A(1,2) * B(0,1));
+//  Dexp(4,5) += fac * (A(0,1) * B(2,2) + A(2,2) * B(0,1));
+//  Dexp(4,1) += fac * (A(1,1) * B(1,2) + A(1,2) * B(1,1));
+//  Dexp(4,4) += fac * (A(1,1) * B(2,2) + A(2,2) * B(1,1));
+//  Dexp(4,2) += fac * (A(1,2) * B(2,2) + A(2,2) * B(1,2));
+//
+//  Dexp(2,0) += 2 * fac * A(0,2) * B(0,2);
+//  Dexp(2,3) += fac * (A(0,2) * B(1,2) + A(1,2) * B(0,2));
+//  Dexp(2,5) += fac * (A(0,2) * B(2,2) + A(2,2) * B(0,2));
+//  Dexp(2,1) += 2 * fac * A(1,2) * B(1,2);
+//  Dexp(2,4) += fac * (A(1,2) * B(2,2) + A(2,2) * B(1,2));
+//  Dexp(2,2) += 2 * fac * A(2,2) * B(2,2);
   return;
 }

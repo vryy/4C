@@ -328,6 +328,12 @@ namespace ELEMENTS
     //! calculate the derivative of the exponential of a symmetric 3x3 matrix
     void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
 
+    // index notation:
+    // Dexp_ijkl += 0.5*fac* (A_ik*B_lj + B_ik*A_lj + A_jk*B_li + B_jk*A_li)
+    // A and B symmetric!
+    void AddToSymMatrixExponentialDeriv(const double fac,
+        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp);
+
     // convert indices
     int TensorToVoigt(int i, int j)
     {
