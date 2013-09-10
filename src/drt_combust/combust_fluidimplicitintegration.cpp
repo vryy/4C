@@ -720,19 +720,23 @@ void FLD::CombustFluidImplicitTimeInt::PrepareSolve()
 
       if(xfemtimeint_ != INPAR::COMBUST::xfemtimeint_donothing) // do something for standard values
       {
-        IO::cout << "---  XFEM time integration: adopt standard values to new interface... ";// << IO::flush;
+        if (myrank_ == 0)
+          IO::cout << "---  XFEM time integration: adopt standard values to new interface... ";// << IO::flush;
         timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
         timeIntStd_->compute(newRowVectorsn,newRowVectorsnp); // call computation
-        IO::cout << "done" << IO::endl;
+        if (myrank_ == 0)
+          IO::cout << "done" << IO::endl;
       }
 
       if ((xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_donothing) and
           (xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_quasistatic)) // do something for enrichment values
       {
-        IO::cout << "---  XFEM time integration: adopt enrichment values to new interface... ";// << IO::flush;
+        if (myrank_ == 0)
+          IO::cout << "---  XFEM time integration: adopt enrichment values to new interface... ";// << IO::flush;
         timeIntEnr_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
         timeIntEnr_->compute(newRowVectorsn,newRowVectorsnp); // call computation
-        IO::cout << "done" << IO::endl;
+        if (myrank_ == 0)
+          IO::cout << "done" << IO::endl;
       }
     }
 
@@ -2754,8 +2758,6 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   //IO::cout << state_.velnp_->GlobalLength() << IO::endl;
   //IO::cout << state_.veln_->GlobalLength()  << IO::endl;
   //IO::cout << state_.velnm_->GlobalLength() << IO::endl;
-
-  IO::cout << "Read restart" << IO::endl;
 
   reader.ReadVector(state_.velnp_,"velnp");
   //IO::cout << state_.velnp_->GlobalLength() << IO::endl;
