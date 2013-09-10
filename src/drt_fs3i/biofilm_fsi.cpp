@@ -142,7 +142,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   dt_bio= biofilmcontrol.get<double>("BIOTIMESTEP");
   nstep_bio= biofilmcontrol.get<int>("BIONUMSTEP");
   fluxcoef_ = biofilmcontrol.get<double>("FLUXCOEF");
-  normforcecoef_ = biofilmcontrol.get<double>("NORMFORCECOEF");
+  normforceposcoef_ = biofilmcontrol.get<double>("NORMFORCEPOSCOEF");
+  normforcenegcoef_ = biofilmcontrol.get<double>("NORMFORCENEGCOEF");
   tangoneforcecoef_ = biofilmcontrol.get<double>("TANGONEFORCECOEF");
   tangtwoforcecoef_ = biofilmcontrol.get<double>("TANGTWOFORCECOEF");
   step_bio=0;
@@ -191,6 +192,14 @@ void FS3I::BiofilmFSI::Timeloop()
   const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
   const int biofilmgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"BIOFILMGROWTH");
   const int outputgmsh_ = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"OUTPUT_GMSH");
+
+  std::cout<< std::endl<<"--------------SIMULATION PARAMETERS-----------------"<< std::endl;
+  std::cout<<"FSI TIMESTEP = "<< dt_fsi<< "; FSI NUMSTEP = "<< nstep_fsi<< std::endl;
+  std::cout<<"BIO TIMESTEP = "<< dt_bio<< "; BIO NUMSTEP = "<< nstep_bio<< std::endl;
+  std::cout<<"FLUXCOEF = "<< fluxcoef_<< ";"<< std::endl;
+  std::cout<<"NORMFORCEPOSCOEF = "<< normforceposcoef_<< "; NORMFORCENEGCOEF = "<< normforcenegcoef_<< std::endl;
+  std::cout<<"TANGONEFORCECOEF = "<< tangoneforcecoef_<< "; TANGTWOFORCECOEF = "<< tangtwoforcecoef_<< std::endl;
+  std::cout<<"----------------------------------------------------"<< std::endl;
 
   if (biofilmgrowth)
   {
@@ -387,7 +396,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     const Epetra_Map* noderowmap = strudis->NodeRowMap();
     Teuchos::RCP<Epetra_MultiVector> lambdanode = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
-    // lagrange multipliers defined on a nodemap is necessary
+    // lagrange multipliers defined on a nodemap are necessary
     for(int lnodeid=0;lnodeid<strudis->NumMyRowNodes();lnodeid++)
     {
       // get the processor local node
@@ -442,43 +451,60 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       {
         unitnormal[j] /= unitnormalabsval;
       }
+
+      // compute tangents
+      std::vector<double> unittangentone(3);
+      std::vector<double> unittangenttwo(3);
+
+      //take care of special case
+      double TOL = 1e-11;
+      if ( abs(unitnormal[0])<TOL && abs(unitnormal[1])<TOL )
+      {
+        unittangentone[0] = 1.0;
+        unittangentone[1] = 0.0;
+        unittangentone[2] = 0.0;
+
+        unittangenttwo[0] = 0.0;
+        unittangenttwo[1] = 1.0;
+        unittangenttwo[2] = 0.0;
+      }
+      else
+      {
+        // first unit tangent
+        unittangentone[0] = -unitnormal[1];
+        unittangentone[1] = unitnormal[0];
+        unittangentone[2] = 0.0;
+        temp = 0.;
+        for (int i=0; i<numdim; ++i)
+        {
+          temp += unittangentone[i]*unittangentone[i];
+        }
+        double unittangentoneabsval = sqrt(temp);
+        for(int j=0; j<numdim; ++j)
+        {
+          unittangentone[j] /= unittangentoneabsval;
+        }
+
+        // second unit tangent
+        unittangenttwo[0] = -unitnormal[0]*unitnormal[2];
+        unittangenttwo[1] = -unitnormal[1]*unitnormal[2];
+        unittangenttwo[2] = unitnormal[0]*unitnormal[0]+unitnormal[1]*unitnormal[1];
+        temp = 0.;
+        for (int i=0; i<numdim; ++i)
+        {
+          temp += unittangenttwo[i]*unittangenttwo[i];
+        }
+        double unittangenttwoabsval = sqrt(temp);
+        for(int j=0; j<numdim; ++j)
+        {
+          unittangenttwo[j] /= unittangenttwoabsval;
+        }
+      }
+
       double tempflux = 0.0;
       double tempnormtrac = 0.0;
       double temptangtracone = 0.0;
       double temptangtractwo = 0.0;
-
-      // compute first unit tangent
-      std::vector<double> unittangentone(3);
-      unittangentone[0] = -unitnormal[1];
-      unittangentone[1] = unitnormal[0];
-      unittangentone[2] = 0.0;
-      temp = 0.;
-      for (int i=0; i<numdim; ++i)
-      {
-        temp += unittangentone[i]*unittangentone[i];
-      }
-      double unittangentoneabsval = sqrt(temp);
-      for(int j=0; j<numdim; ++j)
-      {
-        unittangentone[j] /= unittangentoneabsval;
-      }
-
-      // compute second unit tangent
-      std::vector<double> unittangenttwo(3);
-      unittangenttwo[0] = (unitnormal[0]*unitnormal[0]*unitnormal[2])/(unitnormal[0]*unitnormal[0]+unitnormal[1]*unitnormal[1]);
-      unittangenttwo[1] = (unitnormal[0]*unitnormal[1]*unitnormal[2])/(unitnormal[0]*unitnormal[0]+unitnormal[1]*unitnormal[1]);
-      unittangenttwo[2] = -unitnormal[0];
-      temp = 0.;
-      for (int i=0; i<numdim; ++i)
-      {
-        temp += unittangenttwo[i]*unittangenttwo[i];
-      }
-      double unittangenttwoabsval = sqrt(temp);
-      for(int j=0; j<numdim; ++j)
-      {
-        unittangenttwo[j] /= unittangenttwoabsval;
-      }
-
       for(int index=0;index<numdim;++index)
       {
         double fluxcomp = (*((*strufluxn)(index)))[lnodeid];
@@ -486,31 +512,26 @@ void FS3I::BiofilmFSI::InnerTimeloop()
         // for the calculation of the growth and erosion both the tangential and the normal
         // components of the forces acting on the interface are important.
         // Since probably they will have a different effect on the biofilm growth,
-        // they are calculated separately and a different coefficient can be used.
+        // they are calculated separately and different coefficients can be used.
         double traccomp = (*((*lambdanode)(index)))[lnodeid];
         tempnormtrac +=traccomp*unitnormal[index];
-        temptangtracone +=abs (traccomp*unittangentone[index]);
-        temptangtractwo +=abs (traccomp*unittangenttwo[index]);
+        temptangtracone +=traccomp*unittangentone[index];
+        temptangtractwo +=traccomp*unittangenttwo[index];
       }
-
-//      // get the current node at the purpose of writing its coordinates
-//      DRT::Node* mynode = strudis->gNode(gnodeid);
-//      mynode->Print(std::cout);
-//      std::cout<<"tempflux= "<< tempflux<<" tempnormtrac= "<< tempnormtrac<<" temptangtracone= "<< temptangtracone<<" temptangtractwo= "<< temptangtractwo <<std::endl;
 
       if (avgrowth)
       {
         (*((*normtempinflux_)(0)))[lnodeid] += tempflux;
-        (*((*normtemptraction_)(0)))[lnodeid] += tempnormtrac;
-        (*((*tangtemptractionone_)(0)))[lnodeid] += temptangtracone;
-        (*((*tangtemptractiontwo_)(0)))[lnodeid] += temptangtractwo;
+        (*((*normtemptraction_)(0)))[lnodeid] += abs(tempnormtrac);
+        (*((*tangtemptractionone_)(0)))[lnodeid] += abs(temptangtracone);
+        (*((*tangtemptractiontwo_)(0)))[lnodeid] += abs(temptangtractwo);
       }
       else
       {
         (*((*norminflux_)(0)))[lnodeid] = tempflux;
-        (*((*normtraction_)(0)))[lnodeid] = tempnormtrac;
-        (*((*tangtractionone_)(0)))[lnodeid] = temptangtracone;
-        (*((*tangtractiontwo_)(0)))[lnodeid] = temptangtractwo;
+        (*((*normtraction_)(0)))[lnodeid] = abs(tempnormtrac);
+        (*((*tangtractionone_)(0)))[lnodeid] = abs(temptangtracone);
+        (*((*tangtractiontwo_)(0)))[lnodeid] = abs(temptangtractwo);
       }
     }
   }
@@ -579,7 +600,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
       unitnormal[j] = (*nodalnormals)[strudis->DofRowMap()->LID(globaldofs[j])];
       temp += unitnormal[j]*unitnormal[j];
     }
-    double absval = sqrt(temp);
+    double unitnormalabsval = sqrt(temp);
     int lnodeid = strudis->NodeRowMap()->LID(nodegid);
     double influx = (*norminflux_)[lnodeid];
     double normforces = (*normtraction_)[lnodeid];
@@ -587,30 +608,29 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
     double tangtwoforce = (*tangtractiontwo_)[lnodeid];
 
     // compute average unit nodal normal and "interface velocity"
-    std::vector<double> Values(numdim);
+    std::vector<double> Values(numdim, 0);
 
     for(int j=0; j<numdim; ++j)
     {
-      unitnormal[j] /= absval;
-      //introduced a tolerance to know if the second tangent has to be taken in account
-      //for pseudo-3D problems NAN can be introduced in the calculation
-      //and in any case the second tangent should not be taken in account in this case
-      double TOL = 1e-6;
-      if (tangtwoforcecoef_ > TOL)
-      {
-        // explanation of signs present in the following phenomenological laws
-        // influx<0     --> growth  -->  -  fluxcoef_
-        // normforces>0 --> erosion -->  -  normforcecoef_
-        // tangforces>0 --> erosion -->  -  tangforcecoef_
-        Values[j] = - fluxcoef_ * influx * unitnormal[j]
-                    - normforcecoef_ * normforces * unitnormal[j]
-                    - tangoneforcecoef_ * tangoneforce * unitnormal[j]
-                    - tangtwoforcecoef_ * tangtwoforce * unitnormal[j];
-      }
+      unitnormal[j] /= unitnormalabsval;
+
+      // Traction and compression probably have different effect on biofilm growth -->
+      // different coefficients can be used
+      double normforcecoef_;
+      if (normforces > 0)
+        normforcecoef_= normforceposcoef_;
       else
-        Values[j] = - fluxcoef_ * influx * unitnormal[j]
-                    - normforcecoef_ * normforces * unitnormal[j]
-                    - tangoneforcecoef_ * tangoneforce * unitnormal[j];
+        normforcecoef_= normforcenegcoef_;
+
+      // explanation of signs present in the following phenomenological laws
+      // influx<0     --> growth  -->  - fluxcoef_
+      // normforces>0 --> erosion -->  - normforcecoef_
+      // tangforces>0 --> erosion -->  - tangforcecoef_
+      // for pseudo-3D problems the second tangent should not be taken in account
+      Values[j] = - fluxcoef_ * influx * unitnormal[j]
+                  - normforcecoef_ * normforces * unitnormal[j]
+                  - tangoneforcecoef_ * tangoneforce * unitnormal[j]
+                  - tangtwoforcecoef_ * tangtwoforce * unitnormal[j];
 
     }
 

@@ -132,7 +132,8 @@ namespace FS3I
     // while normforcecoef_, tangoneforcecoef_ and tangtwoforcecoef_  multiply forces
     // in the normal and in the two tangential directions at the interface
     double fluxcoef_;
-    double normforcecoef_;
+    double normforceposcoef_;
+    double normforcenegcoef_;
     double tangoneforcecoef_;
     double tangtwoforcecoef_;
 
@@ -168,7 +169,7 @@ namespace FS3I
     // maximum time
     double maxtime_fsi;
 
-    /// total time
+    // total time
     double time_;
 
     /// fluid interface displacement at time t^{n}
