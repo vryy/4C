@@ -36,8 +36,10 @@ double Myocard_Tools::GatingFunction(const double Gate1, const double Gate2, con
 /*----------------------------------------------------------------------*
  |                                                           cbert 08/13 |
  *----------------------------------------------------------------------*/
-double  Myocard_Tools::GatingVarCalc(const double dt, double y_0, const double y_inf, const double y_tau) const
+double  Myocard_Tools::GatingVarCalc(const double dt, double y_0, const double y_inf, const double a) const
 {
-  double Erg =  1.0/(1.0/dt + 1.0/y_tau)*(y_0/dt + y_inf/y_tau);
-  return Erg;
+
+  // Solve dy/dt = (1/a)*(y_inf-y)
+  double y_1 =  1.0/(1.0/dt + 1.0/a)*(y_0/dt + y_inf/a);
+  return y_1;
 }

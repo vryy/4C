@@ -34,15 +34,15 @@ SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     10
-NUMSTEP                         100
-MAXTIME                         1.0
-TIMESTEP                        0.01
+NUMSTEP                         100000
+MAXTIME                         10.0
+TIMESTEP                        0.1
 THETA                           0.5
 VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
-WRITEFLUX                       totalflux_boundary
+WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
 SCATRATYPE                      Cardio_Monodomain
@@ -59,7 +59,7 @@ SOLVER                          UMFPACK//Aztec_MSR              // Aztec_MSR vm3
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_myocard MAIN_DIFFUSIVITY 0.001171 OFF_DIFFUSIVITY 0.001171 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.05 t1 0.0 t2 2.0      //2ms activation
+CURVE1 on EXPR FUNC 0.02 t1 0.0 t2 2.0      //2ms activation
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -71,11 +71,11 @@ NODE    1 DNODE 1
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 1 0 0 FUNCTION 0.0 // -86.2
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.64126274033052666e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  1.40365759336033036e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.16455544382460019e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  6.86355034078873216e-01  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 2.18025524070464771e-01  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 2 QUANTITY phi VALUE 1.58591843878770011e+00 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 4 QUANTITY phi VALUE 1.38874533511315534e+00 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 1.27632352689189599e+00 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 8 QUANTITY phi VALUE 1.21455786944471145e+00 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 1.18710620031257275e+00 TOLERANCE 1e-4
 -----------------------------------------------------------------NODE COORDS
 NODE  1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
 NODE  2 COORD 1.00000000e-02 0.00000000e+00 0.00000000e+00

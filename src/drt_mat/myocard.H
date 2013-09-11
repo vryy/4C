@@ -4,21 +4,21 @@
 \brief
 
 <pre>
-Maintainer: Lasse Jagschies
-            lasse.jagschies@tum.de
+Maintainer:Cristobal Bertoglio
+            bertoglio@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15244
+            089 - 289-15264
 </pre>
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                              ljag 07/12 |
+ |  definitions                                              cbert 08/13 |
  *----------------------------------------------------------------------*/
 #ifndef MYOCARD_H
 #define MYOCARD_H
 
 /*----------------------------------------------------------------------*
- |  headers                                                  ljag 07/12 |
+ |  headers                                                  cbert 08/13 |
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "material.H"
@@ -28,7 +28,7 @@ Maintainer: Lasse Jagschies
 #include "myocard_general.H"
 
 /*----------------------------------------------------------------------*
- |                                                           ljag 07/12 |
+ |                                                           cbert 08/13 |
  *----------------------------------------------------------------------*/
 namespace MAT
 {
@@ -81,21 +81,13 @@ private:
 };
 
 /*----------------------------------------------------------------------*/
-/// Myocard material according to [1], [2]
+/// Myocard material
 ///
 /// This is a reaction-diffusion law of anisotropic, instationary electric conductivity in cardiac muscle tissue
 ///
-/// <h3>References</h3>
-/// <ul>
-/// <li> [1] A Bueno-Orovio et. al., "Minimal model for human ventricular action potentials in tissue", Journal of Theoretical Biology 253 (2008) 544-560
-/// <li> [2] KHWJ ten Tusscher et. al., "A model for human ventricular tissue", American Journal of Physiology Heart and Circulatory Physiology 286 (2004) H1573-H1589
-/// <li> [3] S Rush and H Larsen, "A practical algorithm for solving dynamic membrane equations", IEEE Trans on Biomedical Engineering 25 (1978) 389-392
-/// </ul>
+/// \author cbert
 ///
-/// \author ljag
-
-
-/// \date 06/12
+/// \date 08/13
 
 class Myocard : public Material
 
@@ -199,8 +191,6 @@ private:
 
   /// number of internal state variables
   int nb_state_variables_;
-
-  // std::string* params_->model;
 
   // Type of material model
   Teuchos::RCP<Myocard_General> myocard_mat_;

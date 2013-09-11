@@ -2,19 +2,16 @@
 \file myocard.cpp
 
 <pre>
-Maintainer: Lasse Jagschies
-      lasse.jagschies@tum.de
+Maintainer: Cristobal Bertoglio
+      bertoglio@lnm.mw.tum.de
       http://www.lnm.mw.tum.de
-      089 - 289-15244
+      089 - 289-15264
 </pre>
 */
 
-/*----------------------------------------------------------------------*
- |  definitions                                              ljag 07/12 |
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  headers                                                  ljag 07/12 |
+ |  headers                                                  cbert 09/12 |
  *----------------------------------------------------------------------*/
 
 #include <vector>
@@ -23,11 +20,12 @@ Maintainer: Lasse Jagschies
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include <fstream> // For plotting ion concentrations
-// Different Cell models
+// Possible Cell models
 #include "myocard_minimal.H"
+#include "myocard_fitzhugh_nagumo.H"
 
 /*----------------------------------------------------------------------*
- |                                                                      |
+ |                                                          cbert 09/12 |
  *----------------------------------------------------------------------*/
 MAT::PAR::Myocard::Myocard( Teuchos::RCP<MAT::PAR::Material> matdata )
 : Parameter(matdata),
@@ -83,7 +81,7 @@ MAT::Myocard::Myocard(MAT::PAR::Myocard* params)
 
 
 /*----------------------------------------------------------------------*
- |  Pack                                           (public)  ljag 07/12 |
+ |  Pack                                           (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Pack(DRT::PackBuffer& data) const
 {
@@ -114,7 +112,7 @@ void MAT::Myocard::Pack(DRT::PackBuffer& data) const
 }
 
 /*----------------------------------------------------------------------*
- |  Unpack                                         (public)  ljag 07/12 |
+ |  Unpack                                         (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Unpack(const std::vector<char>& data)
 {
@@ -238,19 +236,23 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
 
 
 /*----------------------------------------------------------------------*
- |                                                           ljag 07/12 |
+ |                                                           cbert 09/13 |
  *----------------------------------------------------------------------*/
 double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt)
 {
-  double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv), dt);
-  double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt);
-  double ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
+  double ReaCoeffDeriv=0.0;
+  if(params_->dt_deriv != 0.0)
+  {
+    double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv), dt);
+    double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt);
+    ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
+  }
   return ReaCoeffDeriv;
 }
 
 
 /*----------------------------------------------------------------------*
- |  returns number of internal state variables of the material          cbert 08/13 |
+ |  returns number of internal state variables              cbert 08/13 |
  *----------------------------------------------------------------------*/
 int MAT::Myocard::GetNumberOfInternalStateVariables() const
 {
@@ -278,13 +280,13 @@ void MAT::Myocard::SetInternalState(const int k, const double val)
 }
 
 /*----------------------------------------------------------------------*
- |  initialize internal variables (called by constructors)   cbert 07/12 |
+ |  initialize internal variables (called by constructors)   cbert 09/12 |
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Initialize()
 {
   if (*(params_->model) == "MV") myocard_mat_ = Teuchos::rcp(new Myocard_Minimal(params_->dt_deriv,*(params_->tissue)));
-  else dserror("Myocard Material type is not supported! (for the moment only MV)");
-
+  else if (*(params_->model) == "FHN") myocard_mat_ = Teuchos::rcp(new Myocard_Fitzhugh_Nagumo(params_->dt_deriv,*(params_->tissue)));
+  else dserror("Myocard Material type is not supported! (for the moment only MV,FHN)");
 
   return;
 }
@@ -294,7 +296,6 @@ void MAT::Myocard::Initialize()
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Update(const double phi, const double dt)
 {
-  // myocard_mat_->ComputeReactionCoeff(phi, dt);
   myocard_mat_->Update(phi, dt);
   return;
 }
