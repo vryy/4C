@@ -1603,8 +1603,6 @@ void POROELAST::Monolithic::Aitken()
   delhist_->Update(1.0,*del_,0.0);  // r^i_{n+1}
   delhist_->Update(1.0, *iterinc_, (-1.0));  // update r^{i+1}_{n+1}
 
- // cout<<"delhist_: "<<endl<<*delhist_<<endl;
- // cout<<"del_: "<<endl<<*del_<<endl;
 
   // del_ = r^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
   del_->Update(1.0,*iterinc_,0.0);
@@ -1622,7 +1620,6 @@ void POROELAST::Monolithic::Aitken()
   // top = ( r^{i+1} - r^i )^T . r^{i+1} --> use -top
   // Uli's implementation: mu_ = mu_ + (mu_ - 1.0) * top / (den*den). with '-' included in top
   mu_ = mu_ + (mu_ - 1)*(-top)/(den*den);
-  cout<<"mu_: "<<mu_<<endl;
 
   iterinc_->Scale(1.0-mu_);
 
