@@ -3181,10 +3181,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     //fill element matrix
     {
       if(not offdiag)
+      {
         for (int inode=0;inode<nenparent;inode++)
           elevec1(inode*numdofpernode_+nsd_) -=  rhsfac * pfunct(inode) * porosity_gp * normal_convel;
 
-      if(not offdiag)
         for (int inode=0;inode<nenparent;inode++)
           for (int nnod=0;nnod<nenparent;nnod++)
           {
@@ -3195,6 +3195,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
             elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+nsd_) +=
                 + timefacfacpre * pfunct(inode) * dphi_dp* normal_convel * pfunct(nnod);
           }
+      }
 
       else if(not porositydof)
       {

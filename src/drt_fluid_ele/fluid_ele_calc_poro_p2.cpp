@@ -438,26 +438,28 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::PSPG(
     LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &         estif_q_u,
     LINALG::Matrix<my::nen_,my::nen_> &                   ppmat,
     LINALG::Matrix<my::nen_,1> &                          preforce,
-    LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &          lin_resM_Du,
+    const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,
+    const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
     const double &                                        fac3,
     const double &                                        timefacfac,
     const double &                                        timefacfacpre,
     const double &                                        rhsfac)
 {
-  my::PSPG( estif_q_u,
-            ppmat,
-            preforce,
-            lin_resM_Du,
-            fac3,
-            timefacfac,
-            timefacfacpre,
-            rhsfac);
+  dserror("PSPG for poro p2 not working");
+//  my::PSPG( estif_q_u,
+//            ppmat,
+//            preforce,
+//            lin_resM_Du,
+//            fac3,
+//            timefacfac,
+//            timefacfacpre,
+//            rhsfac);
 
   double scal_grad_q=0.0;
 
   if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
   {
-    scal_grad_q=0.0;//my::tau_(2);
+    scal_grad_q=0.0;//my::tau_(1);
   }
   else
   {
@@ -498,6 +500,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ReacStab(
     LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &              estif_p_v,
     LINALG::Matrix<my::nsd_,my::nen_> &                       velforce,
     LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &              lin_resM_Du,
+    const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
     const double &                                            timefacfac,
     const double &                                            timefacfacpre,
     const double &                                            rhsfac,
@@ -507,6 +510,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ReacStab(
            estif_p_v,
            velforce,
            lin_resM_Du,
+           lin_resM_Dp,
            timefacfac,
            timefacfacpre,
            rhsfac,

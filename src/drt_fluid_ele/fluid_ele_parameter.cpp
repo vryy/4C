@@ -748,7 +748,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::Paramet
 
 
 //----------------------------------------------------------------------*
-//  set poro parameters                                  voung 11/12|
+//  set poro parameters                                  vuong 11/12|
 //---------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameter::SetElementPoroParameter( Teuchos::ParameterList& params )
 {

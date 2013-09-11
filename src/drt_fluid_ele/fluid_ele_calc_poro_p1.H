@@ -177,12 +177,15 @@ protected:
      */
     int EvaluateOD(
         Teuchos::ParameterList&                                           params,
+        const LINALG::Matrix<my::nsd_,my::nen_> &                         ebofoaf,
         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_> &  elemat1,
         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1> &                    elevec1,
         const LINALG::Matrix<my::nsd_,my::nen_> &                         evelaf,
         const LINALG::Matrix<my::nen_, 1> &                               epreaf,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        evelnp,
         const LINALG::Matrix<my::nen_, 1> &                               eprenp,
+        const LINALG::Matrix<my::nsd_,my::nen_> &                         emhist,
+        const LINALG::Matrix<my::nen_,1>&                                 echist,
         const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
@@ -212,10 +215,13 @@ protected:
     */
     void SysmatOD(
         Teuchos::ParameterList&                                         params,
+        const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
         const LINALG::Matrix<my::nen_, 1>&                              epreaf,
         const LINALG::Matrix<my::nen_, 1>&                              eprenp,
+        const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
+        const LINALG::Matrix<my::nen_,1>&                               echist,
         const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -250,10 +256,13 @@ protected:
     */
     void GaussPointLoopP1OD(
                             Teuchos::ParameterList&                                         params,
+                            const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
                             const LINALG::Matrix<my::nen_, 1>&                              epreaf,
                             const LINALG::Matrix<my::nen_, 1>&                              eprenp,
+                            const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
+                            const LINALG::Matrix<my::nen_,1>&                               echist,
                             const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -357,7 +366,9 @@ protected:
         LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &  estif_q_u,      ///< block (weighting function q x u)
         LINALG::Matrix<my::nen_,my::nen_> &            ppmat,          ///< block (weighting function q x p)
         LINALG::Matrix<my::nen_,1> &                   preforce,       ///< rhs forces pressure
-        LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,    ///< linearisation of the stabilization residual
+        const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,
+        const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
+        const double &                                 dphi_dp,
         const double &                                 fac3,           ///< factor for residual in current subgrid velocities
         const double &                                 timefacfac,     ///< = timefac x fac
         const double &                                 timefacfacpre, ///< = timefacpre x fac
@@ -370,6 +381,7 @@ protected:
         LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &       estif_p_v,      ///< block (weighting function v x p)
         LINALG::Matrix<my::nsd_,my::nen_> &            velforce,       ///< rhs forces velocity
         LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &       lin_resM_Du,    ///< linearisation of the stabilization residual
+        const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
         const double &                         timefacfac,     ///< = timefac x fac
         const double &                         timefacfacpre,  ///< = timefacpre x fac
         const double &                         rhsfac,      ///< right-hand-side factor for residuals

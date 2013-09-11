@@ -1,0 +1,469 @@
+==================================================================
+General Data File CCARAT
+==================================================================
+-----------------------------------------------------------------------TITLE
+created by pre_exodus
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                        1
+//NODES                           8
+DIM                             3
+//MATERIALS                       88
+//NUMDF                           6
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Poroelasticity
+RESTART                         0
+SHAPEFCT                        Polynomial
+--------------------------------------------------------------DISCRETISATION
+NUMAIRWAYSDIS                   0
+NUMALEDIS                       0
+NUMARTNETDIS                    0
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMTHERMDIS                     0
+---------------------------------------------------------------FLUID DYNAMIC
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+ALPHA_F                         1
+ALPHA_M                         1
+CALCERROR                       no
+CONVCHECK                       L_2_norm
+CONVFORM                        convective
+CONVTOL                         1e-06
+GAMMA                           1
+GRIDVEL                         1
+INITIALFIELD                    zero_field
+INITSTATITEMAX                  5
+ITEMAX                          10
+LIFTDRAG                        No
+MAXTIME                         1000
+MESHTYING                       no
+NONLINITER                      fixed_point_like
+NUMSTASTEPS                     0
+NUMSTEP                         1
+PHYSICAL_TYPE                   Poro
+PREDICTOR                       steady_state
+RESTARTEVRY                     20
+SIMPLER                         no
+STARTFUNCNO                     -1
+STARTINGALGO                    One_Step_Theta 
+START_THETA                     1
+STEADYSTEP                      -1
+STEADYTOL                       1e-06
+THETA                           0.66
+TIMEINTEGR                      Stationary //Stationary One_Step_Theta
+TIMESTEP                        0.01
+UPRES                           1
+LINEAR_SOLVER                   3
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+CROSS-STRESS                    no_cross
+GRAD_DIV                        no
+DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+PSPG                            yes //yes no
+REYNOLDS-STRESS                 no_reynolds
+RSTAB                           rstab_gls //rstab_gls no_rstab
+STABTYPE                        residual_based //residual_based no_stabilization
+SUPG                            no
+TDS                             quasistatic
+TRANSIENT                       no_transient
+VSTAB                           no_vstab
+--------------------------------------------------------------------------IO
+FILESTEPS                       1000
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+FLUID_WALL_SHEAR_STRESS         No
+OUTPUT_BIN                      Yes
+OUTPUT_GID                      No
+STRUCT_DISP                     Yes
+STRUCT_SE                       No
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   No                         
+STRUCT_COUPLING_STRESS          No                        
+STRUCT_SURFACTANT               No
+THERM_HEATFLUX                  None
+THERM_TEMPERATURE               No
+THERM_TEMPGRAD                  None
+------------------------------------------------------POROELASTICITY DYNAMIC
+COUPALGO                        poro_monolithic //poro_monolithic
+INCTOL                          1e-04
+ITEMAX                          200
+ITEMIN                          1
+MAXTIME                         16
+NORMCOMBI_RESFINC               And
+NORM_INC                        Abs
+NORM_RESF                       Abs
+NUMSTEP                         10
+RESTARTEVRY                     1
+RESTOL                          1e-05
+TIMESTEP                        0.01
+UPRES                           1
+LINEAR_SOLVER                   1
+CONTIPARTINT                    yes
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK                       // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
+--------------------------------------------------------------------SOLVER 2
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+--------------------------------------------------------------------SOLVER 3
+SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+----------------------------------------------------------STRUCTURAL DYNAMIC
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+CONTROLNODE -1 -1 -1
+CONTROLTYPE                     load
+DAMPING                         Material
+DIVERCONT                       stop
+DYNAMICTYP                      Statics // Statics OneStepTheta
+ITERNORM                        L2
+K_DAMP                          0.5
+LOADLIN                         no
+MAXITER                         50
+MAXTIME                         5
+MINITER                         0
+M_DAMP                          0.5
+NLNSOL fullnewton //fullnewton newtonlinuzawa
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFINCO              And
+NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORM_PRES                       Abs
+NORM_RESF                       Abs
+NUMSTEP                         200
+PREDICT                         ConstDis
+RESEVRYERGY                     0
+RESTARTEVRY                     1
+RESULTSEVRY                     1
+STC_LAYER                       1
+STC_SCALING                     no
+TIMESTEP                        0.05
+TOLCONSTR                       1e-06
+TOLDISP                         1e-6
+TOLINCO                         1e-06
+TOLPRE                          1e-06
+TOLRES                          1e-06
+UZAWAALGO                       direct
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+UZAWATOL                        1e-08
+LINEAR_SOLVER                   2
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           0.66
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.1 BULKMODULUS 2.0e0 PENALTYPARAMETER 1.0
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.0e-3
+MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e2 NUE 0.3
+MAT 3 MAT_FluidPoro DYNVISCOSITY 0.0001 DENSITY 1.0e-3 PERMEABILITY 1.0e-6 TYPE Darcy
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC -0.001*0.5*(1-cos((t*pi/0.2))) t1 0.0 t2 0.2
+CURVE1 on EXPR FUNC -0.001 t1 0.2 t2 1000
+----------------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC 10*0.5*(1-cos((t*pi/0.2))) t1 0.0 t2 0.2
+CURVE2 on EXPR FUNC 10 t1 0.2 t2 1000
+----------------------------------------------------------------------CURVE3
+//CURVE3 on EXPR FUNC 1e1*(1-exp(-(t*t/0.25))) t1 0.0 t2 8.0
+CURVE3 on EXPR FUNC 5.0*t t1 0.0 t2 8.0
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------FUNCT1
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------RESULT DESCRIPTION
+FLUID DIS fluid NODE 1 QUANTITY velx VALUE -4.80368988999226240e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 2 QUANTITY pressure VALUE -2.27043387988654297e-02 TOLERANCE 1e-5
+FLUID DIS fluid NODE 3 QUANTITY velx VALUE -5.03633889290576939e-02 TOLERANCE 1e-5
+FLUID DIS fluid NODE 4 QUANTITY velx VALUE -5.00447512653428503e-02 TOLERANCE 1e-5
+FLUID DIS fluid NODE 5 QUANTITY pressure VALUE 4.94499819749075198e-01 TOLERANCE 1e-5
+FLUID DIS fluid NODE 6 QUANTITY pressure VALUE 4.89498049049704842e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -5.76858380300143236e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -8.47729397331160569e-04 TOLERANCE 1e-8
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         8
+NDLINE                          12
+NDSURF                          6
+NDVOL                           1
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT                          0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE                           0
+----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF                           0
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL                            0
+----------------------------------------DESIGN POINT PORO NEUMANN CONDITIONS
+DPOINT                          0
+-----------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
+DLINE                           0
+-----------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
+DSURF                           1
+// Surface x+
+E 6 - 3 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+// Surface x+
+//E 6 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+// Surface x-
+//E 4 - 0 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+------------------------------------------DESIGN VOL PORO NEUMANN CONDITIONS
+DVOL                            0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          1
+// Node x+y+z+
+////E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x-y+z+
+//E 2 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x-y+z-
+//E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x+y+z-
+//E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x+y-z-
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Node x+y-z+
+//E 6 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x-y-z+
+//E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x-y-z-
+//E 8 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE                           3
+// Line x+z+
+////E 1 - 1 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line y+z+
+////E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x-z+
+//E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line y-z+
+//E 4 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x+z-
+E 5 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line y-z-
+E 6 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line x-z-
+//E 7 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line y+z-
+//E 8 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x-y-
+//E 9 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x+y-
+E 10 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line x-y+
+//E 11 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x+y+
+////E 12 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           3
+// Surface z+
+////E 1 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Surface z-
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Surface y-
+E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Surface x-
+//E 4 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Surface y+
+////E 5 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Surface x+
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL                            0
+//E 1 - NUMDOF 1 ONOFF 1 VAL 1 CURVE 0 FUNCT 0
+-----------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
+DPOINT                          1
+// Node x+y+z+
+//E 1 - NUMDOF 6 ONOFF 0 0 0 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Node x-y+z+
+//E 2 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x-y+z-
+//E 3 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x+y+z-
+//E 4 - 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
+// Node x+y-z-
+//E 5 - 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
+// Node x+y-z+
+//E 6 - 0 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 1 none none none none none 0 0 0 0 0 0
+// Node x-y-z+
+//E 7 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Node x-y-z-
+E 8 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+DLINE                           3
+// Line x+z+
+//E 1 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line y+z+
+//E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line x-z+
+//E 3 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line y-z+
+//E 4 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x+z-
+//E 5 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line y-z-
+E 6 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line x-z-
+E 7 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line y+z-
+//E 8 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x-y-
+E 9 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line x+y-
+//E 10 - 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x-y+
+//E 11 - 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+// Line x+y+
+//E 12 - 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
+DSURF                           3
+// Surface z+
+//E 1 - NUMDOF 0 ONOFF VAL CURVE FUNCT
+// Surface z-
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Surface y-
+E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Surface x-
+E 4 - NUMDOF 6 ONOFF 0 0 0 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Surface y+
+//E 5 - NUMDOF 0 ONOFF VAL CURVE FUNCT
+// Surface x+
+//E 6 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+-------------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
+DVOL                            0
+//E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+------------------------------DESIGN SURFACE NORMAL NO PENETRATION CONDITION
+DSURF                           0
+// Surface z-
+//E 2 -
+// Surface y-
+//E 3 -
+// Surface x-
+//E 4 -
+// Surface z+
+//E 1 -
+// Surface y+
+//E 5 -
+-------------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
+DSURF                           2
+// Surface x+
+E 6 -
+// Surface x-
+E 4 -
+//Surface z-
+//E 2 -
+//   Surface y-
+//E 3 -
+// Surface z+
+//E 1 -
+// Surface y+
+//E 5 -
+---------------------------------------DESIGN SURFACE PORO PRESSURE INTEGRATION
+DSURF                           2
+// Surface z+
+E 1 -
+//Surface z-
+//E 2 -
+//   Surface y-
+//E 3 -
+//   Surface x-
+//E 4 -
+// Surface y+
+E 5 -
+----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
+DVOL                            1
+E 1 -
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 5 DNODE 1
+NODE 8 DNODE 2
+NODE 1 DNODE 3
+NODE 4 DNODE 4
+NODE 2 DNODE 5
+NODE 3 DNODE 6
+NODE 6 DNODE 7
+NODE 7 DNODE 8
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+// Line x+z+
+NODE 5 DLINE 1
+NODE 8 DLINE 1
+// Line y+z+
+NODE 4 DLINE 2
+NODE 8 DLINE 2
+// Line x-z+
+NODE 1 DLINE 3
+NODE 4 DLINE 3
+// Line y-z+
+NODE 1 DLINE 4
+NODE 5 DLINE 4
+// Line x+z-
+NODE 6 DLINE 5
+NODE 7 DLINE 5
+// Line y-z-
+NODE 5 DLINE 6
+NODE 8 DLINE 6
+// Line x-z-
+NODE 2 DLINE 7
+NODE 6 DLINE 7
+// Line y+z-
+NODE 3 DLINE 8
+NODE 7 DLINE 8
+// Line x-y-
+NODE 1 DLINE 9
+NODE 2 DLINE 9
+// Line x+y-
+NODE 5 DLINE 10
+NODE 6 DLINE 10
+// Line x-y+
+NODE 3 DLINE 11
+NODE 4 DLINE 11
+// Line x+y+
+NODE 7 DLINE 12
+NODE 8 DLINE 12
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 8 DSURFACE 1
+NODE 2 DSURFACE 2
+NODE 3 DSURFACE 2
+NODE 6 DSURFACE 2
+NODE 7 DSURFACE 2
+NODE 1 DSURFACE 3
+NODE 2 DSURFACE 3
+NODE 5 DSURFACE 3
+NODE 6 DSURFACE 3
+NODE 1 DSURFACE 4
+NODE 2 DSURFACE 4
+NODE 3 DSURFACE 4
+NODE 4 DSURFACE 4
+NODE 3 DSURFACE 5
+NODE 4 DSURFACE 5
+NODE 7 DSURFACE 5
+NODE 8 DSURFACE 5
+NODE 5 DSURFACE 6
+NODE 6 DSURFACE 6
+NODE 7 DSURFACE 6
+NODE 8 DSURFACE 6
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 3 COORD -5.0000000000000000e-01 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 4 COORD -5.0000000000000000e-01 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 5 COORD 5.0000000000000000e-01 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 6 COORD 5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 7 COORD 5.0000000000000000e-01 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 8 COORD 5.0000000000000000e-01 5.0000000000000000e-01 5.0000000000000000e-01
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8PORO HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+-------------------------------------------------------------THERMO ELEMENTS
+-------------------------------------------------------------------------END
+//                              END

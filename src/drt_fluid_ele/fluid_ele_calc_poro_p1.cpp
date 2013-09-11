@@ -369,6 +369,18 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
   // elevec2 and elevec3 are currently not in use
 
   // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes,
+  // with pressure gradient prescribed as body force included for turbulent
+  // channel flow and with scatra body force included for variable-density flow
+  // (evaluation at time n+alpha_F for generalized-alpha scheme,
+  //  and at time n+1 otherwise)
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
+  LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
+  LINALG::Matrix<my::nen_,1>    escabofoaf(true);
+  this->BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+
+  // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
   // and history
   // velocity/pressure values are at time n+alpha_F/n+alpha_M for
@@ -399,6 +411,11 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
   LINALG::Matrix<my::nen_,1> escaaf(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
 
+  LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
+  LINALG::Matrix<my::nen_, 1> echist(true);
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
+      &echist, "hist");
+
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
@@ -422,12 +439,15 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
 
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = EvaluateOD(params,
+      ebofoaf,
       elemat1,
       elevec1,
       evelaf,
       epreaf,
       evelnp,
       eprenp,
+      emhist,
+      echist,
       epressnp_timederiv,
       edispnp,
       egridv,
@@ -446,12 +466,15 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     Teuchos::ParameterList&                                           params,
+    const LINALG::Matrix<my::nsd_,my::nen_> &                         ebofoaf,
     LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_ + 1) * my::nen_> &  elemat1,
     LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1> &                    elevec1,
     const LINALG::Matrix<my::nsd_,my::nen_> &                         evelaf,
     const LINALG::Matrix<my::nen_, 1> &                               epreaf,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        evelnp,
     const LINALG::Matrix<my::nen_, 1> &                               eprenp,
+    const LINALG::Matrix<my::nsd_,my::nen_> &                         emhist,
+    const LINALG::Matrix<my::nen_,1>&                                 echist,
     const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
@@ -478,10 +501,13 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     // ---------------------------------------------------------------------
     SysmatOD(
         params,
+        ebofoaf,
         evelaf,
         evelnp,
         epreaf,
         eprenp,
+        emhist,
+        echist,
         epressnp_timederiv,
         edispnp,
         egridv,
@@ -502,10 +528,13 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
     Teuchos::ParameterList&                                         params,
+    const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
     const LINALG::Matrix<my::nen_, 1>&                              epreaf,
     const LINALG::Matrix<my::nen_, 1>&                              eprenp,
+    const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
+    const LINALG::Matrix<my::nen_,1>&                               echist,
     const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -545,10 +574,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
   //  start loop over integration points
   //------------------------------------------------------------------------
   GaussPointLoopP1OD(  params,
+                       ebofoaf,
                        evelaf,
                        evelnp,
                        epreaf,
                        eprenp,
+                       emhist,
+                       echist,
                        epressnp_timederiv,
                        edispnp,
                        egridv,
@@ -648,10 +680,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         Teuchos::ParameterList&                                         params,
+                        const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
                         const LINALG::Matrix<my::nen_, 1>&                              epreaf,
                         const LINALG::Matrix<my::nen_, 1>&                              eprenp,
+                        const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
+                        const LINALG::Matrix<my::nen_,1>&                               echist,
                         const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -665,126 +700,35 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         Teuchos::RCP<const MAT::Material>                               material,
                         const DRT::UTILS::GaussIntegration &                            intpoints)
 {
+  // definition of velocity-based momentum residual vectors
+  LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
+
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
+    lin_resM_Dus.Clear();
 
     // evaluate shape functions and derivatives at integration point
     my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
     const double det0 = my::SetupMaterialDerivatives();
-
-    //----------------------------------------------------------------------
-    //  evaluation of various values at integration point:
-    //  1) velocity (including my::derivatives and grid velocity)
-    //  2) pressure (including my::derivatives)
-    //  3) body-force vector
-    //  4) "history" vector for momentum equation
-    //----------------------------------------------------------------------
-    // get velocity at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::velint_.Multiply(evelaf,my::funct_);
-
-    // get velocity my::derivatives at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::vderxy_.MultiplyNT(evelaf,my::derxy_);
-
-    // get convective velocity at integration point
-    // (ALE case handled implicitly here using the (potential
-    //  mesh-movement-dependent) convective velocity, avoiding
-    //  various ALE terms used to be calculated before)
-    // convvelint_.Update(my::velint_);
-    my::convvelint_.Multiply(-1.0, egridv, my::funct_, 0.0);
-
-    // get pressure at integration point
-    // (value at n+alpha_F for generalized-alpha scheme,
-    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    if(my::fldpara_->IsGenalphaNP())
-      my::press_ = my::funct_.Dot(eprenp);
-    else
-      my::press_ = my::funct_.Dot(epreaf);
-
-    // get pressure time my::derivative at integration point
-    // (value at n+1 )
-    my::pressdot_ = my::funct_.Dot(epressnp_timederiv);
-
-    // get pressure gradient at integration point
-    // (value at n+alpha_F for generalized-alpha scheme,
-    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    if(my::fldpara_->IsGenalphaNP())
-      my::gradp_.Multiply(my::derxy_,eprenp);
-    else
-      my::gradp_.Multiply(my::derxy_,epreaf);
-
-    // get velocity at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::gridvelint_.Multiply(egridv,my::funct_);
-
-    // get displacement my::derivatives at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    LINALG::Matrix<my::nsd_,my::nsd_> gridvelderxy;
-    gridvelderxy.MultiplyNT(egridv,my::derxy_);
-
-    //----------------------------------------------------------------------
-    //  evaluation of various partial operators at integration point
-    //  1) convective term from previous iteration (mandatorily set to zero)
-    //  2) viscous term from previous iteration and viscous operator
-    //  3) divergence of velocity from previous iteration
-    //----------------------------------------------------------------------
-    // set convective term from previous iteration to zero (required for
-    // using routine for evaluation of momentum rhs/residual as given)
-    //  conv_old_.Clear();
-
-    //set old convective term to ALE-Term only
-    my::conv_old_.Multiply(my::vderxy_,my::convvelint_);
-    my::conv_c_.MultiplyTN(my::derxy_,my::convvelint_);
-
-    // set viscous term from previous iteration to zero (required for
-    // using routine for evaluation of momentum rhs/residual as given)
-    my::visc_old_.Clear();
-
-    // compute divergence of velocity from previous iteration
-    my::vdiv_ = 0.0;
-    // double dispdiv=0.0;
-    my::gridvdiv_ = 0.0;
-    if (not my::fldpara_->IsGenalphaNP())
-    {
-      for (int idim = 0; idim <my::nsd_; ++idim)
-      {
-        my::vdiv_ += my::vderxy_(idim, idim);
-
-        my::gridvdiv_ += gridvelderxy(idim,idim);
-      }
-    }
-    else
-    {
-      for (int idim = 0; idim <my::nsd_; ++idim)
-      {
-        //get vdiv at time n+1 for np_genalpha,
-        LINALG::Matrix<my::nsd_,my::nsd_> vderxy;
-        vderxy.MultiplyNT(evelnp,my::derxy_);
-        my::vdiv_ += vderxy(idim, idim);
-
-        my::gridvdiv_ += gridvelderxy(idim,idim);
-      }
-    }
-
-    // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
-    LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
-    defgrd.MultiplyNT(my::xyze_,my::N_XYZ_);
-
-    // inverse deformation gradient F^-1
-    LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
-
-    //------------------------------------ build F^-T as vector 9x1
-    LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
-    for(int i=0; i<my::nsd_; i++)
-      for(int j=0; j<my::nsd_; j++)
-        defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
-
     // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
     my::J_ = my::det_/det0;
+
+    my::EvaluateVariablesAtGaussPointOD(
+          params,
+          ebofoaf,
+          evelaf,
+          evelnp,
+          epreaf,
+          eprenp,
+          epressnp_timederiv,
+          edispnp,
+          egridv,
+          escaaf,
+          emhist,
+          echist,
+          eporositynp);
 
     //************************************************auxilary variables for computing the porosity
 
@@ -826,6 +770,20 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(true);
 
     {
+      // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
+      LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
+      defgrd.MultiplyNT(my::xyze_,my::N_XYZ_);
+
+      // inverse deformation gradient F^-1
+      LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
+      defgrd_inv.Invert(defgrd);
+
+      //------------------------------------ build F^-T as vector 9x1
+      LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
+      for(int i=0; i<my::nsd_; i++)
+        for(int j=0; j<my::nsd_; j++)
+          defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
+
       // dF/dx
       LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_x(true);
 
@@ -898,6 +856,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                           dphi_dJ,
                           dphi_dus,
                           refporositydot,
+                          lin_resM_Dus,
                           ecoupl_u);
 
     //*************************************************************************************************************
@@ -913,6 +872,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         dphi_dus,
                         dJ_dus,
                         egridv,
+                        lin_resM_Dus,
                         ecoupl_p);
 
     for (int ui=0; ui<my::nen_; ++ui)
@@ -1008,7 +968,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
     LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &         estif_q_u,
     LINALG::Matrix<my::nen_,my::nen_> &                   ppmat,
     LINALG::Matrix<my::nen_,1> &                          preforce,
-    LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &          lin_resM_Du,
+    const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,
+    const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
+    const double &                                        dphi_dp,
     const double &                                        fac3,
     const double &                                        timefacfac,
     const double &                                        timefacfacpre,
@@ -1018,6 +980,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
             ppmat,
             preforce,
             lin_resM_Du,
+            lin_resM_Dp,
+            dphi_dp,
             fac3,
             timefacfac,
             timefacfacpre,
@@ -1027,7 +991,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
 
   if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
   {
-    scal_grad_q=0.0;//my::tau_(2);
+    scal_grad_q=0.0;//my::tau_(1);
   }
   else
   {
@@ -1067,7 +1031,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
     LINALG::Matrix<my::nen_*my::nsd_,my::nen_*my::nsd_> &     estif_u,
     LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &              estif_p_v,
     LINALG::Matrix<my::nsd_,my::nen_> &                       velforce,
-    LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &              lin_resM_Du,
+    LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &       lin_resM_Du,
+    const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
     const double &                                            timefacfac,
     const double &                                            timefacfacpre,
     const double &                                            rhsfac,
@@ -1077,6 +1042,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
            estif_p_v,
            velforce,
            lin_resM_Du,
+           lin_resM_Dp,
            timefacfac,
            timefacfacpre,
            rhsfac,

@@ -158,6 +158,9 @@ namespace POROELAST
 
     protected:
 
+      void Aitken();
+      void AitkenReset();
+
       //! @name Apply current field state to system
 
       //! Evaluate mechanical-fluid system matrix
@@ -326,6 +329,18 @@ namespace POROELAST
       //! flag for direct solver
       bool directsolve_;
 
+      //! @name Aitken relaxation
+
+      //! difference of last two solutions
+      // del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^i_{n+1}
+      Teuchos::RCP<Epetra_Vector>  del_;
+      //! difference of difference of last two pair of solutions
+      // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+      Teuchos::RCP<Epetra_Vector> delhist_;
+      //! Aitken factor
+      double mu_;
+
+      //@}
   }; // Monolithic
 
 } // namespace POROELAST

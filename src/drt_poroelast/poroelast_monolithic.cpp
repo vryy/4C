@@ -59,7 +59,10 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
     errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
     zeros_(Teuchos::null),
     timer_(comm),
-    directsolve_(true)
+    directsolve_(true),
+    del_(Teuchos::null),
+    delhist_(Teuchos::null),
+    mu_(0.0)
 {
   const Teuchos::ParameterList& sdynparams
   = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -111,7 +114,7 @@ void POROELAST::Monolithic::Solve()
   SetupNewton();
 
   //---------------------------------------------- iteration loop
-
+  //AitkenReset();
   // equilibrium iteration loop (loop over k)
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
@@ -156,6 +159,7 @@ void POROELAST::Monolithic::Solve()
     // print stuff
     PrintNewtonIter();
 
+    //Aitken();
     // increment equilibrium loop index
     iter_ += 1;
   } // end equilibrium loop
@@ -1104,8 +1108,8 @@ void POROELAST::Monolithic::PoroFDCheck()
 {
   std::cout << "\n******************finite difference check***************" << std::endl;
 
-  int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 2;
-  int dof_fluid = (FluidField()->Discretization()->NumGlobalNodes()) * 3;
+  int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 3;
+  int dof_fluid = (FluidField()->Discretization()->NumGlobalNodes()) * 4;
 
   std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
@@ -1576,4 +1580,65 @@ bool POROELAST::Monolithic::SetupSolver()
 Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemMatrix()
 {
   return systemmatrix_->Merge();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::Aitken()
+{
+  // initialise increment vector with solution of last iteration (i)
+  // update del_ with current residual vector
+  // difference of last two solutions
+  if (del_ == Teuchos::null)  // first iteration, itnum==1
+  {
+    del_ = LINALG::CreateVector(*DofRowMap(), true);
+    delhist_ = LINALG::CreateVector(*DofRowMap(), true);
+    del_->PutScalar(1.0e20);
+    delhist_->PutScalar(0.0);
+  }
+
+  // calculate difference of current (i+1) and old (i) residual vector
+  // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+  // update history vector old increment r^i_{n+1}
+  delhist_->Update(1.0,*del_,0.0);  // r^i_{n+1}
+  delhist_->Update(1.0, *iterinc_, (-1.0));  // update r^{i+1}_{n+1}
+
+ // cout<<"delhist_: "<<endl<<*delhist_<<endl;
+ // cout<<"del_: "<<endl<<*del_<<endl;
+
+  // del_ = r^{i+1}_{n+1} = T^{i+1}_{n+1} - T^{i}_{n+1}
+  del_->Update(1.0,*iterinc_,0.0);
+  // den = |r^{i+1} - r^{i}|^2
+  double den = 0.0;
+  delhist_->Norm2(&den);
+  // calculate dot product
+  // dot = delhist_ . del_ = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+  double top = 0.0;
+  delhist_->Dot(*del_,&top);
+
+  // mu_: Aikten factor in Mok's version
+  // mu_: relaxation parameter in Irons & Tuck
+  // mu^{i+1} = mu^i + (mu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2
+  // top = ( r^{i+1} - r^i )^T . r^{i+1} --> use -top
+  // Uli's implementation: mu_ = mu_ + (mu_ - 1.0) * top / (den*den). with '-' included in top
+  mu_ = mu_ + (mu_ - 1)*(-top)/(den*den);
+  cout<<"mu_: "<<mu_<<endl;
+
+  iterinc_->Scale(1.0-mu_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::AitkenReset()
+{
+  if (del_ == Teuchos::null)  // first iteration, itnum==1
+  {
+    del_ = LINALG::CreateVector(*DofRowMap(), true);
+    delhist_ = LINALG::CreateVector(*DofRowMap(), true);
+  }
+  del_->PutScalar(1.0e20);
+  delhist_->PutScalar(0.0);
+  mu_=0.0;
 }
