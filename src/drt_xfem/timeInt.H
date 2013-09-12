@@ -464,7 +464,7 @@ protected:
       type_(newtype)
     {return;}
 
-    //! constructor for curr data in Semi-Lagrange, standard computation
+    //! constructor for curr data in Semi-Lagrange, standard computation, old version
     TimeIntData(
         DRT::Node& node,
         LINALG::Matrix<3,1>& vel,
@@ -487,6 +487,37 @@ protected:
       phiValue_(phiValue),
       searchedProcs_(searchedProcs),
       counter_(counter),
+      startGid_(startGid),
+      startOwner_(startOwner),
+      state_(newstate),
+      type_(newtype)
+    {return;}
+
+    //! constructor for curr data in Semi-Lagrange, standard computation, new version
+    TimeIntData(
+        DRT::Node& node,
+        LINALG::Matrix<3,1>& vel,
+        std::vector<LINALG::Matrix<3,3> >& velDeriv,
+        std::vector<LINALG::Matrix<1,3> >& presDeriv,
+        LINALG::Matrix<3,1>& startpoint,
+        double phiValue,
+        int searchedProcs,
+        int counter,
+        std::vector<int> near_procs,
+        std::vector<int> startGid,
+        std::vector<int> startOwner,
+        type newtype,
+        state newstate
+    ) :
+      node_(node),
+      vel_(vel),
+      velDeriv_(velDeriv),
+      presDeriv_(presDeriv),
+      startpoint_(startpoint),
+      phiValue_(phiValue),
+      searchedProcs_(searchedProcs),
+      counter_(counter),
+      near_procs_(near_procs),
       startGid_(startGid),
       startOwner_(startOwner),
       state_(newstate),
@@ -557,7 +588,7 @@ protected:
       case extrapolateStd_: output = "extrapolate Standard";break;
       case doneStd_: output = "done Standard";break;
       case failedEnr_: output = "failed enrichment";break;
-      default: dserror("unknown status in TimeIntData class");
+      default: dserror("unknown status in TimeIntData class"); break;
       }
       return output;
     };
@@ -570,7 +601,7 @@ protected:
       {
       case standard_: output = "standard type";break;
       case predictor_: output = "predictor";break;
-      default: dserror("unknown type in TimeIntData class");
+      default: dserror("unknown type in TimeIntData class"); break;
       }
       return output;
     }
@@ -587,6 +618,7 @@ protected:
     double 							phiValue_; // phi-value according to the analysed node at time t^n+1
     int 							searchedProcs_; // searched procnumber if point lies in
     int 							counter_; // newton iteration counters for the points
+    std::vector<int>       near_procs_; // processors near to current startpoint
     std::vector<int> 					startGid_; // nearest node for a moving node lying in an "interface element"
     std::vector<int> 					startOwner_; // nearest nodes owner
     double 							dMin_; // minimal distance in initialization
@@ -653,7 +685,7 @@ protected:
     {
     case TimeIntData::predictor_: size = newVectors_.size();break; // old solutions and new initialization of new solutions
     case TimeIntData::standard_: size = newVectors_.size()/2;break; // only first half with old solutions
-    default: dserror("undefined type");
+    default: dserror("undefined type"); break;
     }
     return size;
   };
@@ -782,7 +814,10 @@ protected:
       break;
     }
     default:
+    {
       dserror("undefined side value");
+      break;
+    }
     }
 
 

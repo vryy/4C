@@ -267,7 +267,11 @@ void XFEM::TIMEINT::callXToXiCoords(
   case DRT::Element::tet4:
     XToXiCoords<DRT::Element::tet4>(nodecoords,x,xi,pointInDomain);
     break;
-  default: dserror("add your 3D distype and the according transformation!");
+  default:
+  {
+    dserror("add your 3D distype and the according transformation!");
+    break;
+  }
   } // end switch
 } // end function callXToXiCoords
 
@@ -618,7 +622,7 @@ void XFEM::STD::elementSearch(
   else           startid = -1; // pseudo-id so that id+1 will be 0
 
   //loop over elements
-  for (int ieleid = startid;ieleid<discret_->NumMyRowElements();ieleid++)
+  for (int ieleid = startid;ieleid<discret_->NumMyColElements();ieleid++)
   {
     // if ele != NULL and so initialized,
     // first it should be checked if it is fitting
@@ -628,7 +632,7 @@ void XFEM::STD::elementSearch(
       ele = NULL; // ele will be set if an element is found finally
     }
     else
-      currele = discret_->lRowElement(ieleid);
+      currele = discret_->lColElement(ieleid);
 
     //    std::cout << "currently analysed element" << *currele;
     //    std::cout << "startpoint approximation: " << x;
@@ -667,7 +671,9 @@ void XFEM::STD::getGPValues(
   case DRT::Element::tet4:
     getGPValues<DRT::Element::tet4>(ele,xi,vel,phi);
     break;
-  default: dserror("add your 3D distype here!");
+  default:
+    dserror("add your 3D distype here!");
+    break;
   } // end switch
 } // end function getGPValues
 
@@ -1227,7 +1233,9 @@ bool XFEM::ENR::newEnrValueNeeded(
     break;
   }
   case FRSNot1_: return false;
-  default: dserror("undefined type");
+  default:
+    dserror("undefined type");
+    break;
   } // end switch
   return false;
 } // end function newEnrValueNeeded
@@ -1525,6 +1533,7 @@ void XFEM::TIMEINT::FindFacingPatchProjCellSpace(
   }
   default:
     dserror("unknown type of boundary integration cell");
+    break;
   }
 
   // Newton iteration converged
@@ -1570,6 +1579,7 @@ void XFEM::TIMEINT::FindFacingPatchProjCellSpace(
   }
   default:
     dserror("unknown type of boundary integration cell");
+    break;
   }
   //  if (!converged)
   //  {

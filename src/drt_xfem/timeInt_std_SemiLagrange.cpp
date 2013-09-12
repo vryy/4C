@@ -70,7 +70,11 @@ void XFEM::SemiLagrange::compute(
     resetState(TimeIntData::doneStd_,TimeIntData::currSL_);
     break;
   }
-  default: dserror("not implemented");
+  default:
+  {
+    dserror("not implemented");
+    break;
+  }
   } // end switch
 
   /*----------------------------------------------------*
@@ -116,7 +120,7 @@ void XFEM::SemiLagrange::compute(
           // according data to the vectors which will be sent to the next processor
           if (!elefound)
           {
-            if (data->searchedProcs_ < numproc_)
+            if (data->searchedProcs_ < numproc_+10) // safety + 10
             {
               data->state_ = TimeIntData::nextSL_;
               data->searchedProcs_ += 1;
@@ -160,6 +164,8 @@ void XFEM::SemiLagrange::compute(
               data->state_ = TimeIntData::failedSL_;
             }
           } // end if over nodes which changed interface
+
+          findNearProcs(&*data);
         }
 
           //std::cout << "on proc " << myrank_ << " after " << data->counter_ << " iterations "
@@ -173,7 +179,7 @@ void XFEM::SemiLagrange::compute(
 #ifdef PARALLEL
     // export nodes and according data for which the startpoint isn't still found (next_ vector) to next proc
     bool procDone = globalNewtonFinished();
-    exportIterData(procDone);
+    exportIterDataNew(procDone);
 
     // convergencecheck: procfinished == 1 just if all procs have finished
     if (procDone)
@@ -278,7 +284,10 @@ void XFEM::SemiLagrange::NewtonLoop(
     }
     break;
     default:
+    {
       dserror("xfem assembly type not yet implemented in time integration");
+      break;
+    }
     }; // end switch element type
 
     if (elefound) // element of data->startpoint_ at this processor
@@ -572,6 +581,8 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
       else
         exportDataToStartpointProc();
     }
+
+    break;
   }
   case INPAR::COMBUST::xfemtimeint_semilagrange:
   {
@@ -626,7 +637,10 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
     break;
   }
   default:
+  {
     dserror("Unknown XFEM time-integration scheme");
+    break;
+  }
   }
 } // end getDataForNotConvergedNodes
 
@@ -657,7 +671,10 @@ void XFEM::SemiLagrange::callBackTracking(
   }
   break;
   default:
+  {
     dserror("xfem assembly type not yet implemented in time integration");
+    break;
+  }
   };
 } // end backTracking
 
@@ -1118,7 +1135,10 @@ void XFEM::SemiLagrange::newIteration_nodalData(
       }
       break;
       default:
+      {
         dserror("xfem assembly type not yet implemented in time integration");
+        break;
+      }
       };
 
       for (size_t i=0;i<newColVectors.size();i++)
@@ -1443,11 +1463,59 @@ double XFEM::SemiLagrange::Theta(TimeIntData* data) const
   {
   case TimeIntData::predictor_: theta = 0.0; break;
   case TimeIntData::standard_ : theta = theta_default_; break;
-  default: dserror("type not implemented");
+  default: dserror("type not implemented"); break;
   }
   if (theta < 0.0) dserror("something wrong");
   return theta;
 } // end function theta
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * ind processors around the current startpoint                                  winklmaier 09/13 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::SemiLagrange::findNearProcs(TimeIntData* data)
+{
+  switch (data->state_)
+  {
+  case TimeIntData::nextSL_:
+  {
+    if (data->searchedProcs_==2)
+    {
+      DRT::Element** eles = data->node_.Elements();
+
+      if (!data->node_.Owner()==myrank_)
+        dserror("something wrong");
+
+      for (int i=0;i<data->node_.NumElement();i++)
+      {
+        DRT::Node** nodes = eles[i]->Nodes();
+
+        for (int j=0;j<eles[i]->NumNode();j++)
+        {
+          if ((*nodes)->Owner()!=myrank_)
+          {
+            bool newproc = true;
+            for (std::vector<int>::iterator it=data->near_procs_.begin();it!=data->near_procs_.end();it++)
+              if ((*nodes)->Owner()==(*it)) {newproc=false;break;}
+
+            if (newproc) data->near_procs_.push_back((*nodes)->Owner());
+          }
+
+          nodes++;
+        }
+      }
+    } // else do-nothing
+    break;
+  }
+  case TimeIntData::initfailedSL_:
+  {
+    data->near_procs_.push_back(data->startOwner_[0]);
+    break;
+  }
+  default: break;
+  }
+}
 
 
 
@@ -1703,6 +1771,8 @@ void XFEM::SemiLagrange::exportIterData(
         DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
         DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
         DRT::ParObject::AddtoPack(dataSend,(int)data->state_);
+
+        break;
       }
       default:
         break; // do nothing
@@ -1790,7 +1860,10 @@ void XFEM::SemiLagrange::exportIterData(
         break;
       }
       default:
+      {
         dserror("data sent to new proc which should not be sent!");
+        break;
+      }
       }
       
       timeIntData_->push_back(TimeIntData(
@@ -1810,6 +1883,254 @@ void XFEM::SemiLagrange::exportIterData(
 
     // processors wait for each other
     discret_->Comm().Barrier();
+  } // end if procfinished == false
+} // end exportIterData
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * export data while Newton loop to neighbour proc                               winklmaier 06/10 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::SemiLagrange::exportIterDataNew(
+    bool& procDone
+)
+{
+  const int nsd = 3; // 3 dimensions for a 3d fluid element
+
+  // Initialization
+  int dest = myrank_+1; // destination proc (the "next" one)
+  if(myrank_ == (numproc_-1))
+    dest = 0;
+
+  int source = myrank_-1; // source proc (the "last" one)
+  if(myrank_ == 0)
+    source = numproc_-1;
+
+
+  /*-------------------------------------------*
+   * first part: send procfinished in order to *
+   * check whether all procs have finished     *
+   *-------------------------------------------*/
+  for (int iproc=0;iproc<numproc_-1;iproc++)
+  {
+    DRT::PackBuffer dataSend;
+
+    DRT::ParObject::AddtoPack(dataSend,static_cast<int>(procDone));
+    dataSend.StartPacking();
+    DRT::ParObject::AddtoPack(dataSend,static_cast<int>(procDone));
+
+    std::vector<char> dataRecv;
+    sendData(dataSend,dest,source,dataRecv);
+
+    // pointer to current position of group of cells in global std::string (counts bytes)
+    size_t posinData = 0;
+    int allProcsDone;
+
+    //unpack received data
+    DRT::ParObject::ExtractfromPack(posinData,dataRecv,allProcsDone);
+
+    if (allProcsDone==0)
+      procDone = 0;
+
+    // processors wait for each other
+    discret_->Comm().Barrier();
+  }
+
+
+  /*--------------------------------------*
+   * second part: if not all procs have   *
+   * finished send data to neighbour proc *
+   *--------------------------------------*/
+  if (!procDone)
+  {
+    DRT::PackBuffer dataSend[numproc_];
+
+    // fill vectors with the data
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
+      int targetproc = -1;
+      if (data->near_procs_.size()!=0)
+      {
+        targetproc = *(data->near_procs_.end()-1);
+        data->near_procs_.pop_back();
+      }
+      else
+      {
+        targetproc = myrank_+1;
+        if(myrank_ == (numproc_-1))
+            targetproc = 0;
+      }
+
+      switch (data->state_)
+      {
+      case TimeIntData::initfailedSL_:
+      {
+        if (data->startOwner_[0]==myrank_)
+        {
+          data->state_ = TimeIntData::currSL_;
+          DRT::Node* startnode = discret_->gNode(data->startGid_[0]);
+          data->startpoint_ = LINALG::Matrix<nsd,1>(startnode->X());
+
+          break;
+        } // else -> do same as in nextsl
+      }
+      case TimeIntData::nextSL_:
+      {
+        packNode(dataSend[targetproc],data->node_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->vel_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->searchedProcs_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->counter_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->near_procs_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->startOwner_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],(int)data->type_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],(int)data->state_);
+
+        break;
+      }
+      default:
+        break; // do nothing
+      }
+    }
+
+    for (int i=0;i<numproc_;i++)
+      dataSend[i].StartPacking();
+
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
+      if ((data->state_==TimeIntData::nextSL_) or
+          (data->state_==TimeIntData::initfailedSL_ and data->startOwner_[0]!=myrank_))
+      {
+        int targetproc = -1;
+        if (data->near_procs_.size()!=0)
+        {
+          targetproc = *(data->near_procs_.end()-1);
+          data->near_procs_.pop_back();
+        }
+        else
+        {
+          targetproc = myrank_+1;
+          if(myrank_ == (numproc_-1))
+              targetproc = 0;
+        }
+
+        packNode(dataSend[targetproc],data->node_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->vel_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->searchedProcs_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->counter_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->near_procs_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],data->startOwner_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],(int)data->type_);
+        DRT::ParObject::AddtoPack(dataSend[targetproc],(int)data->state_);
+      }
+    }
+
+    clearState(TimeIntData::nextSL_);
+    clearState(TimeIntData::initfailedSL_);
+
+    std::vector<char> dataRecv[numproc_];
+
+    for (int dest=(myrank_+1)%numproc_;dest!=myrank_;dest=(dest+1)%numproc_) // dest is the target processor
+    {
+      // Initialization
+      int source = myrank_-(dest-myrank_); // source proc (sends (dest-myrank_) far and gets from (dest-myrank_) earlier)
+      if (source<0)       source+=numproc_;
+      else if (source>=numproc_)  source-=numproc_;
+
+      sendData(dataSend[dest],dest,source,dataRecv[source]);
+      discret_->Comm().Barrier(); // processors wait for each other
+    }
+
+    for (int i=0;i<numproc_;i++)
+    {
+      // pointer to current position of group of cells in global std::string (counts bytes)
+      std::vector<char>::size_type posinData = 0;
+
+      // unpack received data
+      while (posinData < dataRecv[i].size())
+      {
+        double coords[nsd] = {0.0};
+        DRT::Node node(0,(double*)coords,0);
+        LINALG::Matrix<nsd,1> vel;
+        std::vector<LINALG::Matrix<nsd,nsd> > velDeriv;
+        std::vector<LINALG::Matrix<1,nsd> > presDeriv;
+        LINALG::Matrix<nsd,1> startpoint;
+        double phiValue;
+        int searchedProcs;
+        int iter;
+        std::vector<int> near_procs;
+        std::vector<int> startGid;
+        std::vector<int> startOwner;
+        int newtype;
+        int newstate;
+
+        unpackNode(posinData,dataRecv[i],node);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],vel);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],velDeriv);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],presDeriv);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],startpoint);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],phiValue);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],searchedProcs);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],iter);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],near_procs);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],startGid);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],startOwner);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],newtype);
+        DRT::ParObject::ExtractfromPack(posinData,dataRecv[i],newstate);
+
+        // reset data of initially failed nodes which get a second chance if on correct proc
+        switch ((TimeIntData::state)newstate)
+        {
+        case TimeIntData::initfailedSL_:
+        {
+          if (startOwner[0]==myrank_)
+          {
+            newstate = (int)TimeIntData::currSL_;
+            DRT::Node* startnode = discret_->gNode(startGid[0]);
+            startpoint = LINALG::Matrix<nsd,1>(startnode->X());
+          }
+          else
+            dserror("in this new version processor has to fit");
+
+          break;
+        }
+        case TimeIntData::nextSL_:
+        {
+          newstate = (int)TimeIntData::currSL_;
+          break;
+        }
+        default:
+          dserror("data sent to new proc which should not be sent!");
+          break;
+        }
+
+        timeIntData_->push_back(TimeIntData(
+            node,
+            vel,
+            velDeriv,
+            presDeriv,
+            startpoint,
+            phiValue,
+            searchedProcs,
+            iter,
+            near_procs,
+            startGid,
+            startOwner,
+            (TimeIntData::type)newtype,
+            (TimeIntData::state)newstate));
+      } // end loop over number of points to get
+    }
   } // end if procfinished == false
 } // end exportIterData
 #endif // parallel

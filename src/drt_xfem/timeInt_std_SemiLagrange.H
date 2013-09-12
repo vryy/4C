@@ -134,6 +134,9 @@ private:
   //! compute the theta which has to be used for computation
   double Theta(TimeIntData* data) const;
 
+  //! find processors around the current startpoint
+  void findNearProcs(TimeIntData* data);
+
   //! check if newton iteration has finished
   bool globalNewtonFinished(
       int counter = 0
@@ -146,6 +149,11 @@ private:
 
   //! export data to neighbour proc in Newton loop
   void exportIterData(
+      bool& procfinished
+  );
+
+  //! export data to neighbour proc in Newton loop
+  void exportIterDataNew(
       bool& procfinished
   );
 # endif
