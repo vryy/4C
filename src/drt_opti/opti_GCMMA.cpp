@@ -87,6 +87,7 @@ c_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 d_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 tol_sub_(params_.get<double>("TOL_SUB")),
 tol_kkt_(params_.get<double>("TOL_KKT")),
+tol_sub_fac_(params_.get<double>("tol_sub_fac")),
 tol_reducefac_(params_.get<double>("tol_reducefac")),
 resfac_sub_(params_.get<double>("resfac_sub")),
 fac_stepsize_(params_.get<double>("fac_stepsize")),
@@ -105,6 +106,8 @@ output_(output)
 
   if (resfac_sub_>0.95 || resfac_sub_<0.5)
     dserror("factor for residuum check in subproblem shall be slightly smaller than one!");
+  if (tol_sub_fac_<1.0 || tol_sub_fac_>1.1)
+    dserror("factor for convergence check shall be slightly greater than one!");
   if (tol_reducefac_>0.99 || tol_reducefac_<0.01)
     dserror("factor for tolerance adaption shall be significant smaller than one!");
   if (fac_stepsize_>-1.0 || fac_stepsize_<-1.1)
@@ -395,8 +398,8 @@ void OPTI::GCMMA::InitIter(
   }
   else // new inner iter -> new values, update rho
   {
-//std::cout << "new obj is " << objective << std::endl;
-//std::cout << "new constr are " << *constraints << std::endl;
+//    std::cout << "new obj is " << objective << std::endl;
+//    std::cout << "new constr are " << *constraints << std::endl;
     UpdateRho(objective,constraints);
   }
 }
@@ -1977,7 +1980,7 @@ void OPTI::GCMMA::SubSolve()
     if ((inner_iter==max_sub_iter_) and (discret_->Comm().MyPID()==0))
       printf("Reached maximal number of iterations in inner loop of primal dual interior point optimization algorithm\n");
 
-    if (tol_sub > 1.001*tol_sub_)
+    if (tol_sub > tol_sub_fac_*tol_sub_)
       tol_sub *= tol_reducefac_;
     else
       tol_reached = true;
@@ -2495,8 +2498,6 @@ Teuchos::RCP<IO::DiscretizationReader> OPTI::GCMMA::ReadRestart(int step)
   obj_ = reader->ReadDouble("obj");
   obj_appr_ = reader->ReadDouble("obj_app");
 
-//  Teuchos::RCP<Epetra_Vector> asymp_min_; /// lower moving asymptote
-//  Teuchos::RCP<Epetra_Vector> asymp_max_; /// upper moving asymptote
   return reader;
 }
 

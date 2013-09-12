@@ -23,6 +23,7 @@ Maintainer: Martin Winklmaier
 /// forward declarations
 class Epetra_Map;
 class Epetra_MultiVector;
+class Epetra_SerialDenseMatrix;
 class Epetra_SerialDenseVector;
 class Epetra_Vector;
 
@@ -99,13 +100,18 @@ namespace TOPOPT
     virtual ~Optimizer(){};
 
     /// setting of objective function and constraints
-    void Values() { ComputeValues(obj_,constr_); };
+    void Values() { ComputeValues(obj_,*constr_); };
 
     /// setting of gradients of objective function and constraints
     void Gradients() {ComputeGradients(obj_der_,constr_der_); };
 
     /// compute the gradient of the objective function in one direction
-    void ComputeGradientDirectionForFD(const double value, const int GID);
+    void ComputeGradientDirectionForFD(
+        const double fac,
+        const int GID,
+        const int index,
+        const int numFDPoints
+    );
 
     /// write output
     void Output();
@@ -168,7 +174,7 @@ namespace TOPOPT
     /// computation of objective function and constraints
     void ComputeValues(
         double& objective,
-        Teuchos::RCP<Epetra_SerialDenseVector>& constraints
+        Epetra_SerialDenseVector& constraints
     );
 
     /// computation of gradients of objective function and constraints
@@ -212,6 +218,9 @@ namespace TOPOPT
     Teuchos::RCP<Epetra_SerialDenseVector> constr_; /// values of the constraints
     Teuchos::RCP<Epetra_MultiVector> constr_der_; /// derivatives of the constraints w.r.t. the optimization variables
     int num_constr_; /// number of constraints
+
+    Teuchos::RCP<Epetra_SerialDenseVector> objective_FD_;
+    Teuchos::RCP<Epetra_SerialDenseMatrix> constraints_FD_;
 
     Teuchos::RCP<OPTI::GCMMA> optimizer_; /// optimizer
     //@}

@@ -84,7 +84,7 @@ namespace TOPOPT
     void DoAdjointField();
 
     /// compute gradient by finite differences
-    void FDGradient();
+    void FDGradient(const int numFDPoints);
 
     /// evaluate the gradient of the objective
     void PrepareOptimizationStep();
@@ -110,7 +110,7 @@ namespace TOPOPT
     Teuchos::RCP<TOPOPT::Optimizer>& optimizer_;
 
     bool doGradient_; /// compute gradient(s) in current optimization step
-    INPAR::TOPOPT::GradientType gradienttype_; /// type of gradient computation
+    const INPAR::TOPOPT::GradientType gradienttype_; /// type of gradient computation
     INPAR::TOPOPT::Restart restarttype_; /// type of restart
   };
 

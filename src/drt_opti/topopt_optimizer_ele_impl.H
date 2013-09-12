@@ -194,8 +194,9 @@ private:
   /// Calculate gradient of objective - main computation function
   virtual void Gradients(
     const int eid,
-    std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
-    std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
+    std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvels,
+    std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvels,
+    std::map<int,LINALG::Matrix<nen_,1> >& eadjointpress,
     LINALG::Matrix<nen_,1>& edens,
     LINALG::Matrix<nen_,1>& egrad,
     LINALG::Matrix<nen_,1>& econstr_der,
@@ -213,6 +214,18 @@ private:
   void EvalPorosityAtIntPoint(
       LINALG::Matrix<nen_,1> edens /// nodal densities
   );
+
+  /// calculate stabilization parameter
+  void CalcStabParameter(
+      const double vol /// volume
+  );
+
+  //! calculate characteristic element length
+  void CalcCharEleLength(const double  vol,       ///< volume
+      const double  fluidvel_norm,  ///< norm of velocity vector
+      double&       strle,     ///< streamlength (for tau_Mu)
+      double&       hk
+  ) const;       ///< length for tau_Mp
 
   /// extract element data from global vector
   void ExtractValuesFromGlobalVector(
@@ -248,15 +261,21 @@ private:
   LINALG::Matrix<nsd_,nen_> efluidvel_;
   /// adjoint velocity of one time step
   LINALG::Matrix<nsd_,nen_> eadjointvel_;
+  /// adjoint pressure of one time step
+  LINALG::Matrix<nen_,1> eadjointpres_;
 
   /// fluid velocity of one time step at gauss point
   LINALG::Matrix<nsd_,1> fluidvelint_;
   /// adjoint velocity of one time step at gauss point
   LINALG::Matrix<nsd_,1> adjointvelint_;
 
+  /// first derivative of fluid pressure of one time step at gauss point w.r.t. x,y,z
+  LINALG::Matrix<nsd_,1> adjointpresxy_;
   /// first derivative of fluid velocity of one time step at gauss point w.r.t. x,y,z
   LINALG::Matrix<nsd_,nsd_> fluidvelxy_;
-  //@}
+
+  //! the stabilisation parameters -> it is a (3,1) vector for 2D and 3D
+  LINALG::Matrix<3,1> tau_;  //@}
 
   /// @name optimization data
 
@@ -272,6 +291,11 @@ private:
   DRT::UTILS::GaussIntegration intpoints_;
   //! coordinates of current integration point in reference coordinates
   LINALG::Matrix<nsd_,1> xsi_;
+  /// jacobian dx/ds
+  LINALG::Matrix<nsd_,nsd_> xjm_;
+  /// invers transposed jacobian ds/dx
+  LINALG::Matrix<nsd_,nsd_> xji_;
+
   //! integration factor
   double fac_;
   //@}

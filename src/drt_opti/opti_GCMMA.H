@@ -310,6 +310,7 @@ namespace OPTI
 
     const double tol_sub_; /// tolerance for MMA subproblem
     const double tol_kkt_; /// tolerance for outer iterations (KKT-conditions are checked)
+    const double tol_sub_fac_; /// convergence check factor in subproblem
     const double tol_reducefac_; /// reduction factor of tolerance in subproblem
     const double resfac_sub_; /// residuum reduction factor in subproblem
     const double fac_stepsize_; /// factor for adjusting step size of optimization step

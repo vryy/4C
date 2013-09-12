@@ -21,6 +21,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_mat/optimization_density.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_fluid_ele/fluid_ele_utils.H"
+#include "../headers/definitions.h"
 
 
 /*----------------------------------------------------------------------*
@@ -126,12 +127,17 @@ deriv_(true),
 derxy_(true),
 efluidvel_(true),
 eadjointvel_(true),
+eadjointpres_(true),
 fluidvelint_(true),
 adjointvelint_(true),
+adjointpresxy_(true),
 fluidvelxy_(true),
+tau_(true),
 poroint_(0.0),
-intpoints_( distype ),
+intpoints_( distype ,10),
 xsi_(true),
+xjm_(true),
+xji_(true),
 fac_(0.0),
 is_higher_order_ele_(false)
 {
@@ -369,9 +375,11 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 
   std::map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
   std::map<int,LINALG::Matrix<nsd_,nen_> > eadjointvels;
+  std::map<int,LINALG::Matrix<nen_,1> > eadjointpress;
 
   LINALG::Matrix<nsd_,nen_> efluidvel;
   LINALG::Matrix<nsd_,nen_> eadjointvel;
+  LINALG::Matrix<nen_,1> eadjointpres;
 
   // extract element data of all time steps from fluid solution
   std::vector<int> fluidlm;
@@ -387,8 +395,9 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=adjointvels->begin();
       i!=adjointvels->end();i++)
   {
-    ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&eadjointvel,NULL,i->second);
+    ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&eadjointvel,&eadjointpres,i->second);
     eadjointvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,eadjointvel));
+    eadjointpress.insert(std::pair<int,LINALG::Matrix<nen_,1> >(i->first,eadjointpres));
   }
 
   Teuchos::RCP<const Epetra_Vector> dens = optidis.GetState("density");
@@ -406,6 +415,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
       ele->Id(),
       efluidvels,
       eadjointvels,
+      eadjointpress,
       edens,
       egrad,
       econstr_der,
@@ -434,8 +444,9 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   const int eid,
-  std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
-  std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
+  std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvels,
+  std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvels,
+  std::map<int,LINALG::Matrix<nen_,1> >& eadjointpress,
   LINALG::Matrix<nen_,1>& edens,
   LINALG::Matrix<nen_,1>& egrad,
   LINALG::Matrix<nen_,1>& econstr_der,
@@ -471,11 +482,13 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         if (optiparams_->IsStationary())
           timestep=1; // just one stationary time step 1
 
-        efluidvel_ = efluidvel.find(timestep)->second;
-        eadjointvel_ = eadjointvel.find(timestep)->second;
+        efluidvel_ = efluidvels.find(timestep)->second;
+        eadjointvel_ = eadjointvels.find(timestep)->second;
+        eadjointpres_ = eadjointpress.find(timestep)->second;
 
         fluidvelint_.Multiply(efluidvel_,funct_);
         adjointvelint_.Multiply(eadjointvel_,funct_);
+        adjointpresxy_.Multiply(derxy_,eadjointpres_);
 
         double timefac = 0.0;
         if (timestep==0)                                timefac = 1.0 - optiparams_->Theta();
@@ -488,7 +501,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         {
           value += timefac*(
               dissipation_fac*fluidvelint_.Dot(fluidvelint_) // dissipation part, zero if not used
-              -fluidvelint_.Dot(adjointvelint_)); // adjoint part
+              -fluidvelint_.Dot(adjointvelint_)
+              -tau_(1)*fluidvelint_.Dot(adjointpresxy_)); // adjoint part
         }
       }
     }
@@ -555,11 +569,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     | dr   ds   dt |        | dt   dt   dt |
     +-            -+        +-            -+
   */
-  LINALG::Matrix<nsd_,nsd_> xjm(true); // jacobian dx/ds
-  LINALG::Matrix<nsd_,nsd_> xij(true); // invers transposed jacobian ds/dx
-
-  xjm.MultiplyNT(deriv_,xyze_);
-  const double det = xij.Invert(xjm);
+  xjm_.MultiplyNT(deriv_,xyze_);
+  const double det = xji_.Invert(xjm_);
 
   if (det < 1E-16)
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
@@ -568,7 +579,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   fac_ = iquad.Weight()*det;
 
   // compute global derivatives
-  derxy_.Multiply(xij,deriv_);
+  derxy_.Multiply(xji_,deriv_);
 
 } //TopOptImpl::CalcSubgrVelocity
 
@@ -591,6 +602,581 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalPorosityAtIntPoint(
   poroderdens_ = (optiparams_->MinPoro()-optiparams_->MaxPoro())
                 *(optiparams_->SmearFac()+optiparams_->SmearFac()*optiparams_->SmearFac())
                 /pow(densint+optiparams_->SmearFac(),2);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  calculation of stabilization parameter             winklmaier 03/12 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TopOptImpl<distype>::CalcStabParameter(const double vol)
+{
+  //---------------------------------------------------------------------
+  // preliminary definition of values which will already be computed for
+  // tau_M and later be used for tau_C again by some of the subsequent
+  // stabilization parameter definitions
+  //---------------------------------------------------------------------
+  double traceG = 0.0;
+  double Gnormu = 0.0;
+  double Gvisc  = 0.0;
+
+  double strle    = 0.0;
+  double hk       = 0.0;
+  double fluidvel_norm = 0.0;
+  double re12     = 0.0;
+  double c3       = 0.0;
+
+  // material parameters
+  const double dens = optiparams_->Density();
+  const double visc = optiparams_->Viscosity();
+
+  //---------------------------------------------------------------------
+  // first step: computation of tau_M with the following options
+  // (both with or without inclusion of dt-part):
+  // A) definition according to Taylor et al. (1998)
+  //    -> see also Gravemeier and Wall (2010) for version for
+  //       variable-density flow at low Mach number
+  // B) combined definition according to Franca and Valentin (2000) as
+  //    well as Barrenechea and Valentin (2002)
+  //    -> differentiating tau_Mu and tau_Mp for this definition
+  // C) definition according to Shakib (1989) / Shakib and Hughes (1991)
+  //    -> differentiating tau_Mu and tau_Mp for this definition
+  // D) definition according to Codina (1998)
+  //    -> differentiating tau_Mu and tau_Mp for this definition
+  // E) definition according to Franca et al. (2005) as well as Badia
+  //    and Codina (2010)
+  //    -> only for Darcy or Darcy-Stokes/Brinkman flow, hence only
+  //       tau_Mp for this definition
+  //---------------------------------------------------------------------
+  // get element-type constant for tau
+  const double mk = DRT::ELEMENTS::MK<distype>();
+
+  // computation depending on which parameter definition is used
+  switch (optiparams_->TauType())
+  {
+  case INPAR::FLUID::tau_taylor_hughes_zarins:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_scaled:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt:
+  {
+    /*
+
+    literature:
+    1) C.A. Taylor, T.J.R. Hughes, C.K. Zarins, Finite element modeling
+       of blood flow in arteries, Comput. Methods Appl. Mech. Engrg. 158
+       (1998) 155-196.
+    2) V. Gravemeier, W.A. Wall, An algebraic variational multiscale-
+       multigrid method for large-eddy simulation of turbulent variable-
+       density flow at low Mach number, J. Comput. Phys. 229 (2010)
+       6047-6070.
+       -> version for variable-density low-Mach-number flow as implemented
+          here, which corresponds to version for incompressible flow as
+          given in the previous publications when density is constant
+
+                                                                           1
+                     +-                                               -+ - -
+                     |        2                                        |   2
+                     | c_1*rho                                  2      |
+          tau  = C * | -------   +  c_2*rho*u*G*rho*u  +  c_3*mu *G:G  |
+             M       |     2                                           |
+                     |   dt                                            |
+                     +-                                               -+
+
+          with the constants and covariant metric tensor defined as follows:
+
+          C   = 1.0 (not explicitly defined here),
+          c_1 = 4.0 (for version with dt), 0.0 (for version without dt),
+          c_2 = 1.0 (not explicitly defined here),
+          c_3 = 12.0/m_k (36.0 for linear and 144.0 for quadratic elements)
+
+                  +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+
+                  +----
+                   \
+          G : G =   +   G   * G
+                   /     ij    ij
+                  +----
+                   i,j
+                             +----
+                             \
+          rho*u*G*rho*u  =   +   rho*u * G  *rho*u
+                             /        i   ij      j
+                            +----
+                              i,j
+    */
+
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    double sigma_tot = poroint_;
+    if (optiparams_->TauType() == INPAR::FLUID::tau_taylor_hughes_zarins or
+        optiparams_->TauType() == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+        optiparams_->TauType() == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
+      sigma_tot += 1.0/optiparams_->Dt();
+
+    // definition of constants as described above
+    const double c1 = 4.0;
+    c3 = 12.0/mk;
+
+    // computation of various values derived from covariant metric tensor
+    // (trace of covariant metric tensor required for computation of tau_C below)
+    double G;
+    double normG = 0.0;
+    const double dens_sqr = dens*dens;
+    for (int nn=0;nn<nsd_;++nn)
+    {
+      const double dens_sqr_velint_nn = dens_sqr*fluidvelint_(nn);
+      for (int mm=0; mm<nsd_; ++mm)
+      {
+        traceG += xji_(nn,mm)*xji_(nn,mm);
+      }
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        G = xji_(nn,0)*xji_(rr,0);
+        for (int mm=1; mm<nsd_; ++mm)
+        {
+          G += xji_(nn,mm)*xji_(rr,mm);
+        }
+        normG  += G*G;
+        Gnormu += dens_sqr_velint_nn*G*fluidvelint_(rr);
+      }
+    }
+
+    // compute viscous part
+    Gvisc = c3*visc*visc*normG;
+
+    // computation of stabilization parameters tau_Mu and tau_Mp
+    // -> identical for the present definitions
+    tau_(0) = 1.0/(sqrt(c1*dens_sqr*DSQR(sigma_tot) + Gnormu + Gvisc));
+    tau_(1) = tau_(0);
+    break;
+  }
+
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
+  {
+    /*
+
+    literature:
+    1) L.P. Franca, F. Valentin, On an improved unusual stabilized
+       finite element method for the advective-reactive-diffusive
+       equation, Comput. Methods Appl. Mech. Engrg. 190 (2000) 1785-1800.
+    2) G.R. Barrenechea, F. Valentin, An unusual stabilized finite
+       element method for a generalized Stokes problem, Numer. Math.
+       92 (2002) 652-677.
+
+
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+
+    */
+    // get velocity norm
+    fluidvel_norm = fluidvelint_.Norm2();
+
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    const double sigma_tot = 1.0/optiparams_->Dt() + poroint_; // originally timefac, not dt here -> sums up with timesteps
+
+    // calculate characteristic element length
+    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+
+    // various parameter computations for case with dt:
+    // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
+    const double re01 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(strle));
+    const double re11 = 4.0 * visc / (mk * dens * sigma_tot * DSQR(hk));
+
+    // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
+    const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
+                 re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
+
+    // respective "switching" parameters
+    const double xi01 = std::max(re01,1.0);
+    const double xi11 = std::max(re11,1.0);
+    const double xi02 = std::max(re02,1.0);
+    const double xi12 = std::max(re12,1.0);
+
+    tau_(0) = DSQR(strle)/(DSQR(strle)*dens*sigma_tot*xi01+(4.0*visc/mk)*xi02);
+    tau_(1) = DSQR(hk)/(DSQR(hk)*dens*sigma_tot*xi11+(4.0*visc/mk)*xi12);
+    break;
+  }
+
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+  {
+    /*
+
+     stabilization parameter as above without inclusion of dt-part
+
+    */
+    // get velocity norm
+    fluidvel_norm = fluidvelint_.Norm2();
+
+    // calculate characteristic element length
+    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+
+    // various parameter computations for case without dt:
+    // relating viscous to reactive part (re01: tau_Mu, re11: tau_Mp)
+    double re01 = 4.0 * visc / (mk * dens * poroint_ * DSQR(strle));
+    double re11 = 4.0 * visc / (mk * dens * poroint_ * DSQR(hk));
+
+    // relating convective to viscous part (re02: tau_Mu, re12: tau_Mp)
+    const double re02 = mk * dens * fluidvel_norm * strle / (2.0 * visc);
+                 re12 = mk * dens * fluidvel_norm * hk / (2.0 * visc);
+
+    // respective "switching" parameters
+    const double xi01 = std::max(re01,1.0);
+    const double xi11 = std::max(re11,1.0);
+    const double xi02 = std::max(re02,1.0);
+    const double xi12 = std::max(re12,1.0);
+
+    tau_(0) = DSQR(strle)/(DSQR(strle)*dens*poroint_*xi01+(4.0*visc/mk)*xi02);
+    tau_(1) = DSQR(hk)/(DSQR(hk)*dens*poroint_*xi11+(4.0*visc/mk)*xi12);
+    break;
+  }
+
+  case INPAR::FLUID::tau_shakib_hughes_codina:
+  case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
+  {
+    /*
+
+    literature:
+    1) F. Shakib, Finite element analysis of the compressible Euler and
+       Navier-Stokes equations, PhD thesis, Division of Applied Mechanics,
+       Stanford University, Stanford, CA, USA, 1989.
+    2) F. Shakib, T.J.R. Hughes, A new finite element formulation for
+       computational fluid dynamics: IX. Fourier analysis of space-time
+       Galerkin/least-squares algorithms, Comput. Methods Appl. Mech.
+       Engrg. 87 (1991) 35-58.
+    3) R. Codina, Stabilized finite element approximation of transient
+       incompressible flows using orthogonal subscales, Comput. Methods
+       Appl. Mech. Engrg. 191 (2002) 4295-4321.
+
+       constants defined as in Shakib (1989) / Shakib and Hughes (1991),
+       merely slightly different with respect to c_3:
+
+       c_1 = 4.0 (for version with dt), 0.0 (for version without dt),
+       c_2 = 4.0,
+       c_3 = 4.0/(m_k*m_k) (36.0 for linear, 576.0 for quadratic ele.)
+
+       Codina (2002) proposed present version without dt and explicit
+       definition of constants
+       (condition for constants as defined here: c_2 <= sqrt(c_3)).
+
+    */
+    // get velocity norm
+    fluidvel_norm = fluidvelint_.Norm2();
+
+    // calculate characteristic element length
+    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    double sigma_tot = poroint_;
+    if (optiparams_->TauType() == INPAR::FLUID::tau_shakib_hughes_codina)
+      sigma_tot += 1.0/optiparams_->Dt();
+
+    // definition of constants as described above
+    const double c1 = 4.0;
+    const double c2 = 4.0;
+    c3 = 4.0/(mk*mk);
+    // alternative value as proposed in Shakib (1989): c3 = 16.0/(mk*mk);
+
+    tau_(0) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
+                      + c2*DSQR(dens)*DSQR(fluidvel_norm)/DSQR(strle)
+                      + c3*DSQR(visc)/(DSQR(strle)*DSQR(strle))));
+    tau_(1) = 1.0/(sqrt(c1*DSQR(dens)*DSQR(sigma_tot)
+                      + c2*DSQR(dens)*DSQR(fluidvel_norm)/DSQR(hk)
+                      + c3*DSQR(visc)/(DSQR(hk)*DSQR(hk))));
+    break;
+  }
+  case INPAR::FLUID::tau_codina:
+  case INPAR::FLUID::tau_codina_wo_dt:
+  {
+    /*
+
+      literature:
+         R. Codina, Comparison of some finite element methods for solving
+         the diffusion-convection-reaction equation, Comput. Methods
+         Appl. Mech. Engrg. 156 (1998) 185-210.
+
+         constants:
+         c_1 = 1.0 (for version with dt), 0.0 (for version without dt),
+         c_2 = 2.0,
+         c_3 = 4.0/m_k (12.0 for linear, 48.0 for quadratic elements)
+
+         Codina (1998) proposed present version without dt.
+
+    */
+    // get velocity norm
+    fluidvel_norm = fluidvelint_.Norm2();
+
+    // calculate characteristic element length
+    CalcCharEleLength(vol,fluidvel_norm,strle,hk);
+
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient (reaction coefficient
+    // ensured to remain zero in GetMaterialParams for non-reactive material)
+    double sigma_tot = poroint_;
+    if (optiparams_->TauType() == INPAR::FLUID::tau_codina)
+      sigma_tot += 1.0/optiparams_->Dt();
+
+    // definition of constants as described above
+    const double c1 = 1.0;
+    const double c2 = 2.0;
+    c3 = 4.0/mk;
+
+    tau_(0) = 1.0/(sqrt(c1*dens*sigma_tot
+                      + c2*dens*fluidvel_norm/strle
+                      + c3*visc/DSQR(strle)));
+    tau_(1) = 1.0/(sqrt(c1*dens*sigma_tot
+                      + c2*dens*fluidvel_norm/hk
+                      + c3*visc/DSQR(hk)));
+    break;
+  }
+  default:
+  {
+    dserror("unknown definition for tau_M\n %i  ", optiparams_->TauType());
+    break;
+  }
+  }  // end switch (fldAdPara_->whichtau_)
+
+
+  //---------------------------------------------------------------------
+  // second step: computation of tau_C with the following options:
+  // A) definition according to Taylor et al. (1998)
+  // B) definition according to Whiting (1999)/Whiting and Jansen (2001)
+  // C) scaled version of definition according to Taylor et al. (1998)
+  // D) definition according to Wall (1999)
+  // E) definition according to Codina (2002)
+  // F) definition according to Badia and Codina (2010)
+  //    (only for Darcy or Darcy-Stokes/Brinkman flow)
+  //---------------------------------------------------------------------
+  // computation depending on which parameter definition is used
+  switch (optiparams_->TauType())
+  {
+  case INPAR::FLUID::tau_taylor_hughes_zarins:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt:
+  {
+    /*
+
+    literature:
+       C.A. Taylor, T.J.R. Hughes, C.K. Zarins, Finite element modeling
+       of blood flow in arteries, Comput. Methods Appl. Mech. Engrg. 158
+       (1998) 155-196.
+
+                                              1/2
+                           (c_2*rho*u*G*rho*u)
+                    tau  = -------------------
+                       C       trace (G)
+
+
+       -> see respective definitions for computation of tau_M above
+
+    */
+
+    tau_(2) = sqrt(Gnormu)/traceG;
+  }
+  break;
+
+  case INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt:
+  {
+    /*
+
+    literature:
+    1) C.H. Whiting, Stabilized finite element methods for fluid dynamics
+       using a hierarchical basis, PhD thesis, Rensselaer Polytechnic
+       Institute, Troy, NY, USA, 1999.
+    2) C.H. Whiting, K.E. Jansen, A stabilized finite element method for
+       the incompressible Navier-Stokes equations using a hierarchical
+       basis, Int. J. Numer. Meth. Fluids 35 (2001) 93-116.
+
+                                  1.0
+                    tau  = ------------------
+                       C    tau  * trace (G)
+                               M
+
+       -> see respective definitions for computation of tau_M above
+
+    */
+
+    tau_(2) = 1.0/(tau_(0)*traceG);
+  }
+  break;
+
+  case INPAR::FLUID::tau_taylor_hughes_zarins_scaled:
+  case INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt:
+  {
+    /*
+
+      Caution: This is an experimental version of a stabilization
+               parameter definition which scales the definition
+               for tau_C by Taylor et al. (1998) in a similar
+               way as proposed below by Franca and Frey (1992)
+               and Wall (1999) by appropriately defining an
+               element Reynolds number based on the covariant
+               metric tensor.
+
+                  /                        1/2    \
+                  |  /                    \       |                       1/2
+                  | |  c_2*rho*u*G*rho*u  |       |    (c_2*rho*u*G*rho*u)
+      tau  =  MIN | | ------------------- | | 1.0 | *  -------------------
+         C        | |          2          |       |         trace (G)
+                  | \    c_3*mu *G:G      /       |
+                  \                               /
+                    |                     |
+                    -----------------------
+                    element Reynolds number
+                      based on covariant
+                        metric tensor
+
+       -> see respective definitions for computation of tau_M above
+
+    */
+
+    // element Reynolds number based on covariant metric tensor
+    const double reG = std::sqrt(Gnormu/Gvisc);
+
+    // "switching" parameter
+    const double xi_tau_c = std::min(reG,1.0);
+
+    tau_(2) = xi_tau_c*sqrt(Gnormu)/traceG;
+  }
+  break;
+
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
+  case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+  {
+    /*
+
+    literature:
+    1) L.P. Franca, S.L. Frey, Stabilized finite element methods:
+       II. The incompressible Navier-Stokes equations, Comput. Methods
+       Appl. Mech. Engrg. 99 (1992) 209-293.
+    2) W.A. Wall, Fluid-Struktur-Interaktion mit stabilisierten Finiten
+       Elementen, Dissertation, Universitaet Stuttgart, 1999.
+
+                 xi_tau_c ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> re12
+                              1
+
+       -> see respective definitions for computation of tau_M above
+
+    */
+
+    // "switching" parameter
+    const double xi_tau_c = std::min(re12,1.0);
+
+    tau_(2) = 0.5 * dens * fluidvel_norm * hk * xi_tau_c;
+  }
+  break;
+
+  case INPAR::FLUID::tau_shakib_hughes_codina:
+  case INPAR::FLUID::tau_shakib_hughes_codina_wo_dt:
+  case INPAR::FLUID::tau_codina:
+  case INPAR::FLUID::tau_codina_wo_dt:
+  {
+    /*
+
+    literature:
+       R. Codina, Stabilized finite element approximations of transient
+       incompressible flows using orthogonal subscales, Comput. Methods
+       Appl. Mech. Engrg. 191 (2002) 4295-4321.
+
+       -> see respective definitions for computation of tau_M above
+
+    */
+
+    tau_(2) = DSQR(hk)/(sqrt(c3)*tau_(1));
+  }
+  break;
+  default:
+  {
+    dserror("unknown definition for tau_C\n %i  ", optiparams_->TauType());
+    break;
+  }
+  }  // end switch (fldAdPara_->whichtau_)
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  calculation of characteristic element length       winklmaier 03/12 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TopOptImpl<distype>::CalcCharEleLength(
+    const double  vol,
+    const double  fluidvel_norm,
+    double&       strle,
+    double&       hk
+) const
+{
+  // cast dimension to a double varibale -> pow()
+  const double dim = double (nsd_);
+
+  //! direction of flow (normed velocity vector)
+  LINALG::Matrix<nsd_,1> fluidvelino;
+
+  //---------------------------------------------------------------------
+  // various definitions for characteristic element length for tau_Mu
+  //---------------------------------------------------------------------
+  // a) streamlength due to Tezduyar et al. (1992) -> default
+  // normed velocity vector
+  if (fluidvel_norm>=1e-6) fluidvelino.Update(1.0/fluidvel_norm,fluidvelint_);
+  else
+  {
+    fluidvelino.Clear();
+    fluidvelino(0,0) = 1.0;
+  }
+
+  LINALG::Matrix<nen_,1> tmp;
+  tmp.MultiplyTN(derxy_,fluidvelino);
+  const double val = tmp.Norm1();
+  strle = 2.0/val;
+
+  // b) volume-equivalent diameter (warning: 3-D formula!)
+  //strle = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+  // c) cubic/square root of element volume/area
+  //strle = std::pow(vol,1/dim);
+
+  //---------------------------------------------------------------------
+  // various definitions for characteristic element length for tau_Mp
+  //---------------------------------------------------------------------
+  // a) volume-equivalent diameter -> default for 3-D computations
+  if (nsd_==3) hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+  // b) square root of element area -> default for 2-D computations,
+  // may also alternatively be used for 3-D computations
+  else if (nsd_==2) hk = std::pow(vol,1/dim);
+  // check for potential 1-D computations
+  else dserror("element length calculation not implemented for 1-D computation!");
+
+  return;
 }
 
 

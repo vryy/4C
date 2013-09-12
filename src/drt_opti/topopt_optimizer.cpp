@@ -83,6 +83,17 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
   // gradient of the constraint(s)
   constr_der_ = Teuchos::rcp(new Epetra_MultiVector(*optidis_->NodeRowMap(),num_constr_,false));
 
+  int numFDPoints = 0; // number of additional points for finite differences
+  switch (gradienttype_)
+  {
+  case INPAR::TOPOPT::gradientByAdjoints: {numFDPoints = 1;break;} // dummy
+  case INPAR::TOPOPT::gradientByFD1:      {numFDPoints = 1;break;}
+  case INPAR::TOPOPT::gradientByFD2:      {numFDPoints = 2;break;}
+  default: {dserror("unknown type of gradient computation");break;}
+  }
+  objective_FD_ = Teuchos::rcp(new Epetra_SerialDenseVector(numFDPoints));
+  constraints_FD_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(num_constr_,numFDPoints));
+
   // set initial density field if present
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
       optimizer_params.get<int>("INITFUNCNO"));
@@ -115,7 +126,7 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
  *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ComputeValues(
     double& objective,
-    Teuchos::RCP<Epetra_SerialDenseVector>& constraints
+    Epetra_SerialDenseVector& constraints
 )
 {
   // initialize local values processor-wise
@@ -149,7 +160,7 @@ void TOPOPT::Optimizer::ComputeValues(
 
   // communicate local values over processors
   optidis_->Comm().SumAll(&loc_obj,&objective,1);
-  optidis_->Comm().SumAll(loc_constr.Values(),constraints->Values(),num_constr_);
+  optidis_->Comm().SumAll(loc_constr.Values(),constraints.Values(),num_constr_);
 
   // Re-Transform fluid field to rowmap
   TransformFlowFields(doAdjoint,false); // TODO is this required (back-mapping + 2nd argument)
@@ -212,19 +223,47 @@ void TOPOPT::Optimizer::ComputeGradients(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TOPOPT::Optimizer::ComputeGradientDirectionForFD(const double value, const int GID)
+void TOPOPT::Optimizer::ComputeGradientDirectionForFD(
+    const double fac,
+    const int GID,
+    const int index,
+    const int numFDPoints
+)
 {
-  double objective = 0.0;
-  Teuchos::RCP<Epetra_SerialDenseVector> constraints = Teuchos::rcp(new Epetra_SerialDenseVector(num_constr_));
+  double& objective = (*objective_FD_)(index);
+  Epetra_SerialDenseVector constraints(View, (*constraints_FD_)[index], num_constr_);
 
   ComputeValues(objective,constraints);
 
-  if (dens_->Map().MyGID(GID))
+  if ((index==numFDPoints-1) and (dens_->Map().MyGID(GID)))
   {
-    obj_der_->ReplaceGlobalValue(GID,0,(objective-obj_)/value);
+    switch (gradienttype_)
+    {
+    case INPAR::TOPOPT::gradientByFD1:
+    {
+      obj_der_->ReplaceGlobalValue(GID,0,((*objective_FD_)(0)-obj_)/fac);
 
-    for (int i=0;i<constraints->Length();i++)
-      constr_der_->ReplaceGlobalValue(GID,i,((*constraints)(i)-(*constr_)(i))/value);
+      for (int i=0;i<constr_->Length();i++)
+        constr_der_->ReplaceGlobalValue(GID,i,((*constraints_FD_)(i,0)-(*constr_)(i))/fac);
+
+      break;
+    }
+    case INPAR::TOPOPT::gradientByFD2:
+    {
+      obj_der_->ReplaceGlobalValue(GID,0,((*objective_FD_)(0)-(*objective_FD_)(1))/(-2.0*fac)); // second, here used direction is -c, so factor -1 to handle this
+
+      for (int i=0;i<constr_->Length();i++)
+        constr_der_->ReplaceGlobalValue(GID,i,((*constraints_FD_)(i,0)-(*constraints_FD_)(i,1))/(-2.0*fac));
+
+      break;
+    }
+    case INPAR::TOPOPT::gradientByAdjoints:
+    default:
+    {
+      dserror("wrong type of gradient computation");
+      break;
+    }
+    }
   }
 }
 
@@ -336,6 +375,8 @@ void TOPOPT::Optimizer::ImportFlowParams(
 
   // flow parameter
   opti_ele_params.set("timealgo",fluidParams_->get<int>("time int algo"));
+  // parameter for stabilization
+  opti_ele_params.sublist("RESIDUAL-BASED STABILIZATION") = fluidParams_->sublist("RESIDUAL-BASED STABILIZATION");
   opti_ele_params.set("dt",fluidParams_->get<double>("time step size"));
   opti_ele_params.set("maxtimesteps",fluidParams_->get<int>("max number timesteps"));
   opti_ele_params.set("theta",fluidParams_->get<double>("theta"));

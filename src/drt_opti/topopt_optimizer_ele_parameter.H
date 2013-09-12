@@ -61,6 +61,7 @@ public:
 //
   bool IsStationary() {return is_stationary_;}
   INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() {return timealgo_;}
+  INPAR::FLUID::TauType TauType() {return whichtau_;}
   double Dt() {return dt_;}
   int NumTimesteps() {return max_timesteps_;}
   double Theta() {return theta_;}
@@ -111,6 +112,8 @@ private:
   bool is_stationary_;
   //! time algorithm
   INPAR::FLUID::TimeIntegrationScheme timealgo_;
+  //! Flag to define tau
+  INPAR::FLUID::TauType whichtau_;
   //! time-step length
   double dt_;
   /// maximal number of time steps

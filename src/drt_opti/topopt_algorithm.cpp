@@ -67,17 +67,33 @@ void TOPOPT::Algorithm::OptimizationLoop()
   {
     if (doGradient_)
     {
-      if (gradienttype_==INPAR::TOPOPT::gradientByAdjoints)
+      switch (gradienttype_)
+      {
+      case INPAR::TOPOPT::gradientByAdjoints:
       {
         // Transfer data from primary field to adjoint field
         PrepareAdjointField();
 
         // solve the adjoint equations
         DoAdjointField();
+
+        break;
       }
-      else if (gradienttype_==INPAR::TOPOPT::gradientByFD1)
+      case INPAR::TOPOPT::gradientByFD1:
       {
-        FDGradient();
+        FDGradient(1);
+        break;
+      }
+      case INPAR::TOPOPT::gradientByFD2:
+      {
+        FDGradient(2);
+        break;
+      }
+      default:
+      {
+        dserror("unknown approach for computation of objective gradient");
+        break;
+      }
       }
     }
 
@@ -237,38 +253,50 @@ void TOPOPT::Algorithm::DoAdjointField()
 /*------------------------------------------------------------------------------------------------*
  | compute gradient by finite differences                                        winklmaier 06/13 |
  *------------------------------------------------------------------------------------------------*/
-void TOPOPT::Algorithm::FDGradient()
+void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
 {
   Teuchos::RCP<const Epetra_Vector> density = Optimizer()->Density();
 
-  if (density->GlobalLength()>1000) dserror("really that much fluid solutions for gradient computation???");
+  if (density->GlobalLength()>5000) dserror("really that much fluid solutions for gradient computation???");
 
-  const double c = 1.0e-7; /// good step size for gradient approximation (low discretization and round-off error)
+  double c = 5.0e-8; /// good step size for gradient approximation (low discretization and round-off error)
   for (int i=0;i<density->GlobalLength();i++)
   {
-    // change optimization variable in current direction
-    Optimizer()->AdoptDensityForFD(c,i);
+    if (Optimizer()->OptiDis()->Comm().MyPID() == 0)
+    {
+      printf("+----------------------------------------------------------------------+\n");
+      printf("|- computing finite difference gradient in direction %6d of %6d -|\n",i+1,density->GlobalLength());
+      printf("+----------------------------------------------------------------------+\n");
+    }
 
-    // adapt porosity field and clear no more required fluid data
-    Update();
+    for (int j=0;j<numFDPoints;j++)
+    {
+      if (j==1) c = -c; // first direction is +c, second -c
 
-    // data of primal (fluid) problem no more required
-    FluidField().Reset(
-        true,
-        DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
-        Optimizer()->Iter()+2);
+      // change optimization variable in current direction
+      Optimizer()->AdoptDensityForFD(c,i);
 
-    // prepare data for new optimization iteration
-    PrepareFluidField();
+      // adapt porosity field and clear no more required fluid data
+      Update();
 
-    // solve the primary field
-    DoFluidField();
+      // data of primal (fluid) problem no more required
+      FluidField().Reset(
+          true,
+          DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+          Optimizer()->Iter()+2);
 
-    // compute gradient in this direction
-    Optimizer()->ComputeGradientDirectionForFD(c,i);
+      // prepare data for new optimization iteration
+      PrepareFluidField();
 
-    // remove change in order to recover original optimization variable
-    Optimizer()->AdoptDensityForFD(-c,i);
+      // solve the primary field
+      DoFluidField();
+
+      // compute gradient in this direction
+      Optimizer()->ComputeGradientDirectionForFD(c,i,j,numFDPoints);
+
+      // remove change in order to recover original optimization variable
+      Optimizer()->AdoptDensityForFD(-c,i);
+    }
   }
 }
 

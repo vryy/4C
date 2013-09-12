@@ -50,6 +50,7 @@ DRT::ELEMENTS::TopOptParam::TopOptParam()
   pressure_drop_fac_(0.0),
   is_stationary_(false),
   timealgo_(INPAR::FLUID::timeint_one_step_theta),
+  whichtau_(INPAR::FLUID::tau_not_defined),
   dt_(-1.0),
   max_timesteps_(-1),
   theta_(-1.0),
@@ -92,6 +93,46 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
     is_stationary_ = true;
   else
     is_stationary_ = false;
+
+  //-------------------------------
+  // get tau definition
+  //-------------------------------
+  whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("RESIDUAL-BASED STABILIZATION"),"DEFINITION_TAU");
+  // check if tau can be handled
+  if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
+      INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+      INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+      INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+      INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+      INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+      INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+      INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+      INPAR::FLUID::tau_shakib_hughes_codina or
+      INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
+      INPAR::FLUID::tau_codina or
+      INPAR::FLUID::tau_codina_wo_dt or
+      INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+      INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+    dserror("Definition of Tau cannot be handled by the element");
+
+  // set correct stationary definition of stabilization parameter automatically
+  if (is_stationary_)
+  {
+    if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins)
+      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen)
+      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
+      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall)
+      whichtau_ = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
+      whichtau_ = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_codina)
+      whichtau_ = INPAR::FLUID::tau_codina_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+      whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
+  }
 
   // set if objective contains dissipation and according factor
   dissipation_ = params.get<bool>("dissipation");
@@ -166,6 +207,8 @@ void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
   std::cout << "|    steady state:    " << is_stationary_ << std::endl;
   //! time algorithm
   std::cout << "|    time algorithm:    " << timealgo_ << std::endl;
+  //! Flag to define tau
+  std::cout << "|    Definition of stabilization parameter:    " << whichtau_ << std::endl;
   //! time-step length
   std::cout << "|    time step:    " << dt_ << std::endl;
   /// maximal number of time steps
