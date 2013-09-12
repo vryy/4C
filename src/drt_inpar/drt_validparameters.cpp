@@ -4394,10 +4394,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("GRADIENT_TYPE","adjoints","basic type of adjoint equations",
       tuple<std::string>(
           "adjoints",
-          "FD1"),
+          "FD1",
+          "FD2"),
           tuple<int>(
               INPAR::TOPOPT::gradientByAdjoints,
-              INPAR::TOPOPT::gradientByFD1),
+              INPAR::TOPOPT::gradientByFD1,
+              INPAR::TOPOPT::gradientByFD2),
               &topoptcontrol);
 
   setStringToIntegralParameter<int>("RESTART_ACTION","Finished_Optimization_Step","Startint field of Restart",
@@ -4480,6 +4482,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("UPRES",1,"Increment for writing solution",&topoptoptimizer);
   BoolParameter("GMSH_OUTPUT","No","Write Gmsh files",&topoptoptimizer);
   DoubleParameter("c_init",1000.0,"initial value for solver parameter",&topoptoptimizer);
+  DoubleParameter("tol_sub_fac",1.001,"convergence factor for subproblem",&topoptoptimizer);
   DoubleParameter("tol_reducefac",0.1,"reduction factor for subproblem tolerance",&topoptoptimizer);
   DoubleParameter("resfac_sub",0.9,"residuum reduction factor for subproblem",&topoptoptimizer);
   DoubleParameter("fac_stepsize",-1.01,"factor for adjusting step size in every optimization step",&topoptoptimizer);

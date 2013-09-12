@@ -51,7 +51,8 @@ namespace INPAR
     enum GradientType
     {
       gradientByAdjoints,
-      gradientByFD1
+      gradientByFD1,
+      gradientByFD2
     };
 
     /// type of adjoint equations
