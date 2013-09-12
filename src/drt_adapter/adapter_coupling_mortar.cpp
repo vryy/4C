@@ -528,15 +528,16 @@ void ADAPTER::CouplingMortar::MeshInit(
   double gnorm = 0.0;
   gold->Norm2(&gnorm);
 
-  double tol = 1.0e-12;
+  const double tol = 1.0e-12;
   // no need to do mesh initialization if g already very small
 
-  if(comm.MyPID()==0)
+  if ( comm.MyPID()==0 )
   {
-  std::cout << "Analyze interface quality:" << std::endl;
-  std::cout << "L2-norm of gab vector = " << gnorm << " < " << tol << std::endl << std::endl;
-  if (gnorm < tol)
-    std::cout << "-> Mesh initialization is not necessary!! " << std::endl;
+    std::cout << "Analyze interface quality: L2-norm of gap vector = "
+              << gnorm << " < " << tol << std::endl;
+
+    if ( gnorm < tol )
+      std::cout << "  --> Mesh initialization is not necessary. " << std::endl;
   }
 
   if (gnorm < tol)  return;
@@ -814,10 +815,10 @@ void ADAPTER::CouplingMortar::MeshInit(
   gnew->Update(-1.0,*Mxm,1.0);
   gnew->Norm2(&gnorm);
 
-  if(gnorm > tol)
+  if( gnorm > tol )
   {
     dserror("ERROR: Mesh initialization was not successful! \n "
-        "Gab norm %e is larger than tolerance %e", gnorm, tol);
+        "Gap norm %e is larger than tolerance %e", gnorm, tol);
   }
 
   //**********************************************************************
@@ -829,7 +830,8 @@ void ADAPTER::CouplingMortar::MeshInit(
   DRT::ParObjectFactory::Instance().InitializeElements(*slavedis);
 
   // print message
-  if (comm.MyPID()==0) std::cout << "done!" << std::endl;
+  if ( comm.MyPID()==0 )
+    std::cout << "done!" << std::endl;
 
   return;
 
