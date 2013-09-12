@@ -1053,7 +1053,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   LINALG::Matrix<nsd_,nen_> ebofoaf(true);
   LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
   LINALG::Matrix<nen_,1>    escabofoaf(true);
-  BodyForce(ele,fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+  BodyForce(ele,ebofoaf,eprescpgaf,escabofoaf);
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero

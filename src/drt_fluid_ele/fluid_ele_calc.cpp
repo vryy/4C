@@ -203,7 +203,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   LINALG::Matrix<nsd_,nen_> ebofoaf(true);
   LINALG::Matrix<nsd_,nen_> eprescpgaf(true);
   LINALG::Matrix<nen_,1>    escabofoaf(true);
-  BodyForce(ele,fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+  BodyForce(ele,ebofoaf,eprescpgaf,escabofoaf);
   if (params.get("forcing",false))
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &ebofoaf, NULL, "forcing");
 
@@ -744,7 +744,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    double press(true);
+    double press = 0.0;
     if(fldpara_->IsGenalphaNP())
       press= funct_.Dot(eprenp);
     else
@@ -1145,7 +1145,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 9) PSPG term
     if (fldpara_->PSPG())
-    {
+      {
       PSPG(estif_q_u,
            ppmat,
            preforce,
@@ -1405,10 +1405,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
            DRT::ELEMENTS::Fluid*               ele,
-           Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter>&  f3Parameter,
-           LINALG::Matrix<nsd_,nen_>&           ebofoaf,
-           LINALG::Matrix<nsd_,nen_> &          eprescpgaf,
-           LINALG::Matrix<nen_,1>&              escabofoaf)
+           LINALG::Matrix<nsd_,nen_>&          ebofoaf,
+           LINALG::Matrix<nsd_,nen_> &         eprescpgaf,
+           LINALG::Matrix<nen_,1>&             escabofoaf)
 {
   std::vector<DRT::Condition*> myneumcond;
 

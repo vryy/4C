@@ -512,7 +512,6 @@ namespace ELEMENTS
 
     /// calculate body force from nodal conditions
     void BodyForce(DRT::ELEMENTS::Fluid*              ele,         //< pointer to element
-                   Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter>&  f3Parameter, //< pointer to fluid parameter
                    LINALG::Matrix<nsd_,nen_> &        ebofoaf,     //< body force at nodes
                    LINALG::Matrix<nsd_,nen_> &        eprescpgaf,  //< prescribed pressure gradient (required for turbulent channel flow!)
                    LINALG::Matrix<nen_,1> &           escabofoaf   //< scatra body force at nodes

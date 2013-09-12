@@ -193,7 +193,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
   LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
   LINALG::Matrix<my::nen_,1>    escabofoaf(true);
-  this->BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+  this->BodyForce(ele,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
@@ -338,7 +338,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
   LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
   LINALG::Matrix<my::nen_,1>    escabofoaf(true);
-  this->BodyForce(ele,my::fldpara_,ebofoaf,eprescpgaf,escabofoaf);
+  this->BodyForce(ele,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, acceleration
