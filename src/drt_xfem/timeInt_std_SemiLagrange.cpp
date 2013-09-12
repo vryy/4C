@@ -1482,14 +1482,15 @@ void XFEM::SemiLagrange::findNearProcs(TimeIntData* data)
   {
     if (data->searchedProcs_==2)
     {
-      DRT::Element** eles = data->node_.Elements();
+      std::vector<const DRT::Element*> eles;
+      addPBCelements(&data->node_,eles);
 
       if (!data->node_.Owner()==myrank_)
         dserror("something wrong");
 
-      for (int i=0;i<data->node_.NumElement();i++)
+      for (size_t i=0;i<eles.size();i++)
       {
-        DRT::Node** nodes = eles[i]->Nodes();
+        const DRT::Node* const* nodes = eles[i]->Nodes();
 
         for (int j=0;j<eles[i]->NumNode();j++)
         {
