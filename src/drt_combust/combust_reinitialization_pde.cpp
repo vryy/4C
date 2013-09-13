@@ -15,6 +15,7 @@ Maintainer: Benedikt Schott
 #include "combust_reinitialization_pde.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_scatra/scatra_ele_action.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -390,6 +391,21 @@ void COMBUST::ReinitializationPDE::SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi)
     dserror("vector phi does not exist");
   return;
 } //COMBUST::ReinitializationPDE::SetPhiReinit
+
+
+/*----------------------------------------------------------------------------------*
+  | redistribute reinitializer after redistribution of scatra field rasthofer 09/11 |
+ *----------------------------------------------------------------------------------*/
+void COMBUST::ReinitializationPDE::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+{
+  if(myrank_==0)
+    IO::cout << "Redistributing PDE Reinitializer                      ... " << IO::endl;
+
+  ScaTraReinitField().Redistribute(nodegraph);
+
+  if(myrank_==0)
+    IO::cout << "done" << IO::endl;
+}
 
 
 /*----------------------------------------------------------------------*

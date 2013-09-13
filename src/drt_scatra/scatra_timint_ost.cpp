@@ -47,10 +47,6 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // temporal solution derivative at time n
   phidtn_ = LINALG::CreateVector(*dofrowmap,true);
 
-  //solution at time n-1, for level set problems
-  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
-     phinm_  = LINALG::CreateVector(*dofrowmap,true);
-
   // ELCH with natural convection
   if (extraparams_->isSublist("ELCH CONTROL"))
   {
@@ -407,12 +403,6 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   // after the next command (time shift of solutions) do NOT call
   // ComputeTimeDerivative() anymore within the current time step!!!
 
-  // phinm is needed for restart of level set problems
-  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
-  {
-     phinm_ ->Update(1.0,*phin_,0.0);
-  }
-
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 
@@ -438,9 +428,6 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::UpdateReinit()
 {
-  //phinm is needed for restart of level set problems
-  phinm_ ->Update(1.0,*phin_,0.0);
-
   // solution of this step becomes most recent solution of the last step
   phin_ ->Update(1.0,*phinp_,0.0);
 
@@ -479,12 +466,6 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
-
-  // phinm is needed to reconstruct the interface
-  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
-  {
-     output_->WriteVector("phinm", phinm_);
-  }
 
   // for elch problems with moving boundary
   if (isale_)
@@ -575,12 +556,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   // for elch problems with moving boundary
   if(isale_)
     reader.ReadVector(trueresidual_, "trueresidual");
-
-  // phinm is needed for restart of level set problems
-  if (scatratype_ == INPAR::SCATRA::scatratype_levelset)
-  {
-     reader.ReadVector(phinm_,  "phinm");
-  }
 
   // restart for galvanostatic applications
   if (IsElch(scatratype_))
@@ -684,13 +659,6 @@ void SCATRA::TimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_CrsGraph
     old = fsphinp_;
     fsphinp_ = LINALG::CreateVector(*newdofrowmap,true);
     LINALG::Export(*old, *fsphinp_);
-  }
-
-  if (phinm_ != Teuchos::null)
-  {
-    old = phinm_;
-    phinm_ = LINALG::CreateVector(*newdofrowmap,true);
-    LINALG::Export(*old, *phinm_);
   }
 
   return;

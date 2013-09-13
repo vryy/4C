@@ -487,64 +487,62 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
     break;
     case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo:
     {
-      dserror("Adapt to fluid!");
       // E.Burman, M.A.Fernandez and P.Hansbo 2006
-      // "Edge stabilization for the incompressible Navier-Stokes equations: a continuous interior penalty finite element method"
+      // "Continuous interior penalty method for Oseen's equations"
       //
       // velocity:
-      //                              h_K^2 * rho
-      //             gamma_u *  -----------------------
-      //                           || u ||_0,inf_,K
+      //
+      //             gamma_u * xi * h_K^2 * || u * n ||_0,inf_,K
+      //
       //
       // divergence:
       //
-      //             gamma_div * h_K^2 * || u ||_0,inf_,K * rho
+      //             gamma_div * h_K^2 * || u ||_0,inf_,K * xi
       //
       // pressure:
       //
-      //                              h_K^2                                          || u ||_0,inf_,K   *   h_K
-      //  gamma_p * min(1,Re_K) * --------------------------       with    Re_K =  --------------------------------
-      //                           || u ||_0,inf_,K  * rho                                      nu
+      //                         h_K^2
+      //  gamma_p * xi * ---------------------
+      //                   || u ||_0,inf_,K
       //
+      //                    || u ||_0,inf_,K   *   h_K
+      //  with    Re_K =  --------------------------------   and  xi = min(1,Re_K)
+      //                                nu
 
-      // these values are taken from below (EOS_tau_burman_fernandez), since there seem not to be any other values
-      gamma_u = 0.05;
-      gamma_p = 0.05;
-      gamma_div = 0.05;
+      // values obtained by analyzing various test cases, i.e., Beltrami flow, lid-driven cavity flow, turbulent channel flow, ...
+      // for further details see upcoming paper
+      gamma_p = 3.0 / 100.0;
+      gamma_u = 5.0 / 100.0;
+      gamma_div = 5.0 / 10.0;
+
+      // original values
+      // gamma_p = 2.0 / 8.0;
+      // gamma_u = 2.0 / 8.0;
+      // gamma_div = 2.0 / 8.0;
 
       // element Reynold's number Re_K
-      double Re_K = vel_norm* hk * dens / dynvisc;
+      double Re_K = vel_norm*hk*dens/ dynvisc;
+      double xi = std::min(1.0,Re_K);
+      double xip = std::max(1.0,Re_K);
 
-      // streamline/velocity:
-      if(Re_K < 1.0)
-      {
-        tau_conv   = gamma_u * hk * hk * hk / dynvisc;
-      }
-      else
-      {
-        tau_conv   = gamma_u * hk * hk / vel_norm* dens;
-      }
+      //-----------------------------------------------
+      // streamline
+      tau_conv = dens * gamma_u * xi * hk*hk * normal_vel;
 
-      // divergence:
-      if(vel_norm> 1.0e-14)
-      {
-        tau_div = gamma_div  * hk* hk * vel_norm* dens;
-      }
-      else
-      {
-        tau_div = 0.0;
-      }
+      //-----------------------------------------------
+      // pressure
+      //    if (max_vel_L2_norm > 1.0e-9)
+      //      tau_p = gamma_p * xi/max_vel_L2_norm * hk*hk / density;
+      //    else
+      //      tau_p = gamma_p * hk * hk*hk/ kinvisc / density;
+      // this does the same, but avoids division by velocity
+      // note: this expression is closely related to the definition of
+      //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
+      tau_p = gamma_p * hk * hk*hk/ (dynvisc * xip);
 
-      // pressure stabilization
-      // switch between low and high Reynolds numbers
-      if(Re_K < 1.0)
-      {
-        tau_p   = gamma_p * hk* hk* hk/ dynvisc;
-      }
-      else
-      {
-        tau_p   = gamma_p * hk * hk / (vel_norm* dens);
-      }
+      //-----------------------------------------------
+      // divergence
+      tau_div= dens * gamma_div * xi * vel_norm * hk*hk;
     }
     break;
     case INPAR::FLUID::EOS_tau_burman_fernandez:

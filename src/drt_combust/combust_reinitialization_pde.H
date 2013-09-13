@@ -15,6 +15,7 @@ Maintainer: Benedikt Schott
 
 
 #include <Teuchos_RCP.hpp>
+#include <Epetra_CrsGraph.h>
 
 
 class Epetra_Vector;
@@ -73,6 +74,9 @@ public:
   void OutputReinit(const int globalstep,   //<! time step of global problem
                     const double globaltime //<! time of global problem
                     );
+
+  //! redistribute reinitializer after redistribution of scatra field
+  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
 private:
 

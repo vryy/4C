@@ -1124,6 +1124,11 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
   }
 
   // Surfaces be added to the faces_-map: (line_id) -> (surface).
+  // this clear is important to have here
+  // if the discretization has been redistributed (combustion module), we have to
+  // rebuild the faces and therfore we have to be sure that the map faces is clear
+  // therfore, the old faces are deleted and repaced by new ones
+  faces_.clear();
   AssignGlobalIDs( Comm(), faces, faces_ );
 
   if (verbose and comm_->MyPID()==0)

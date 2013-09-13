@@ -84,6 +84,10 @@ int DRT::ELEMENTS::Combust3IntFace::Evaluate(
     {
       // get combust type
       const INPAR::COMBUST::CombustionType combusttype   = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
+      const INPAR::COMBUST::SelectedEnrichment selected_enr = DRT::INPUT::get<INPAR::COMBUST::SelectedEnrichment>(params, "selectedenrichment");
+      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or (combusttype == INPAR::COMBUST::combusttype_twophaseflow_surf
+          and selected_enr != INPAR::COMBUST::selectedenrichment_pressure))
+        dserror("Face-based terms not supported for this problem");
 
       // get interface handler
       const COMBUST::InterfaceHandleCombust* ih = (params.get<Teuchos::RCP<COMBUST::InterfaceHandleCombust> >("interface handle")).get();

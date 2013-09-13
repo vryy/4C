@@ -316,8 +316,6 @@ namespace COMBUST
     ///  map holding pairs of nodes (master-slave) on periodic boundaries
     const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap_;
 
-    /// pointer to vector on fluid NodeColMap holding G-function values at n-1 originally stored in phinm
-    Teuchos::RCP<Epetra_Vector> phinm_;
     /// pointer to vector on fluid NodeColMap holding G-function values at n originally stored in phin
     Teuchos::RCP<Epetra_Vector> phin_;
     /// pointer to vector on fluid NodeColMap holding G-function values at n+1 originally stored in phinp

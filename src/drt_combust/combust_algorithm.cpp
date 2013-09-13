@@ -183,25 +183,28 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
           myflamefront,
           ScaTraField().Phinp(),
           true);
-
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
-      {
-        // reset phin vector in ScaTra time integration scheme to phinp vector
-        *ScaTraField().Phin() = *ScaTraField().Phinp();
-      }
-
-    // update flame front according to reinitialized G-function field
-    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-
-      // pointer not needed any more
-      stepreinit_ = false;
     }
     if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
     {
       reinit_pde_->CallReinitialization(ScaTraField().Phinp());
-      // update flame front according to reinitialized G-function field
-      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
     }
+
+    // usually we initialize phin and set phinp to phin as initial guess for the solution process
+    // here, we reinitialize phinp (since we always reinitialize phinp) and store the result also in
+    // phin (finally has the same consequence)
+    if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    {
+      // reset phin vector in ScaTra time integration scheme to phinp vector
+      *ScaTraField().Phin() = *ScaTraField().Phinp();
+    }
+
+    // update flame front according to reinitialized G-function field
+    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+
+    // compute current volume of minus domain
+    const double volume_current = ComputeVolume();
+    // print mass conservation check on screen
+    printMassConservationCheck(volume_start_, volume_current);
   }
 
   //---------------------------------------------------
@@ -1720,14 +1723,6 @@ void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double curr
   if (phinp != Teuchos::null)
     phinp->Update(thickness, *one, 1.0);
 
-  Teuchos::RCP<Epetra_Vector> phinm = ScaTraField().Phinm();
-  if (phinm != Teuchos::null)
-    phinm->Update(thickness, *one, 1.0);
-
-  // REMARK:
-  // after the reinitialization we update the flamefront in the usual sense
-  // this means that we modify phi-values if necessary -> default boolian modifyPhiVectors = true
-
   // update flame front according to reinitialized G-function field
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
 
@@ -2185,16 +2180,17 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   // read level-set field from input file instead of restart file
   Teuchos::RCP<Epetra_Vector> oldphidtn  = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> oldphin    = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> oldphinm   = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> oldphinp   = Teuchos::null;
   if (restartscatrainput)
   {
     oldphin  = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phin())));
     oldphinp = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
     if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    {
+      dserror("Check restart from scatra input for gen alpha!");
+      // do we have to keep it?
       oldphidtn= Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phidtn())));
-    else
-      oldphinm = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phinm())));
+    }
   }
 
   // restart of scalar transport (G-function) field
@@ -2230,13 +2226,17 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       ScaTraField().Phidtn() ->Update(1.0, *(oldphidtn),  0.0);
       ScaTraField().ComputeIntermediateValues();
     }
-    else
+    else if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_one_step_theta)
     {
       ScaTraField().Phidtn()->PutScalar(0.0);
-      ScaTraField().ComputeTimeDerivative();
-      ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
-      ScaTraField().Phinm() ->Update(1.0,*(ScaTraField().Phin()),   0.0);
+      // calls CalcInitialPhidt()
+      // ApplyDirichletBC() called within this function doesn't pose any problem since we
+      // don't have any DBCs for level-set problems
+      ScaTraField().PrepareFirstTimeStep();
+      // CalcInitialPhidt() copies phidtn to phidtnp
     }
+    else
+      dserror("Unknown time-integration scheme!");
     if (Comm().MyPID()==0)
       IO::cout << "done" << IO::endl;
 
@@ -2280,14 +2280,6 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
         IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
         gmshfilecontent << "};" << std::endl;
       }
-      else
-      {
-        // add 'View' to Gmsh postprocessing file
-        gmshfilecontent << "View \" " << "Phinm \" {" << std::endl;
-        // draw scalar field 'Phinm' for every element
-        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
-        gmshfilecontent << "};" << std::endl;
-      }
       {
         //    // add 'View' to Gmsh postprocessing file
         //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
@@ -2297,31 +2289,6 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       }
       gmshfilecontent.close();
       IO::cout << " done" << IO::endl;
-    }
-
-    if (!restartfromfluid) // default: restart from an XFEM problem, not from a standard fluid problem
-    {
-      // get my flame front (boundary integration cells)
-      std::map<int, GEO::BoundaryIntCells> myflamefront = flamefront_->InterfaceHandle()->BoundaryIntCells();
-#ifdef PARALLEL
-      // export flame front (boundary integration cells) to all processors
-      flamefront_->ExportFlameFront(myflamefront);
-#endif
-      // reinitialize G-function (level set) field
-      COMBUST::Reinitializer reinitializer(
-          combustdyn_,
-          ScaTraField(),
-          myflamefront,
-          ScaTraField().Phinp(),
-          true);
-
-      *ScaTraField().Phin() = *ScaTraField().Phinp();
-      if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_one_step_theta)
-        *ScaTraField().Phinm() = *ScaTraField().Phinp();
-      //TODO: what should be done for gen alpha and does not phidtx have to be updated too?
-
-      // update flame front according to reinitialized G-function field
-      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
     }
   }
 
@@ -2354,14 +2321,6 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
       // draw scalar field 'Phidtn' for every element
       IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
-      gmshfilecontent << "};" << std::endl;
-    }
-    else
-    {
-      // add 'View' to Gmsh postprocessing file
-      gmshfilecontent << "View \" " << "Phinm \" {" << std::endl;
-      // draw scalar field 'Phinm' for every element
-      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
       gmshfilecontent << "};" << std::endl;
     }
     {
@@ -2969,13 +2928,6 @@ void COMBUST::Algorithm::Redistribute()
 
       ScaTraField().Redistribute(newnodegraph);
 
-      if (reinitaction_ == INPAR::COMBUST::reinitaction_sussman)
-      {
-        if(Comm().MyPID()==0)
-          IO::cout << "done\nRedistributing ScaTra Reinit Discretization                         ... " << IO::endl;
-        dserror("Implement a reinit_pde_->Redistribute() method for pde_reinitialization class if necessary");
-      }
-
       if(Comm().MyPID()==0)
         IO::cout << "Redistributing Fluid Discretization                                 ... " << IO::endl;
 
@@ -3039,6 +2991,12 @@ void COMBUST::Algorithm::Redistribute()
         if(Comm().MyPID()==0)
           IO::cout << "done" << IO::endl;
       }
+
+      //-----------------------------------------------------------------------------
+      // redistibute PDE reinitializer
+      //-----------------------------------------------------------------------------
+      if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
+        reinit_pde_->Redistribute(nodegraph);
 
       if (Comm().MyPID() == 0)
         IO::cout << "----------------------------------------------------------------------------" << IO::endl;

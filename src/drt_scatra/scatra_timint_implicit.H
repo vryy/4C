@@ -127,6 +127,10 @@ public:
   //! setup the variables to do a new time step
   void PrepareTimeStep();
 
+  // TODO: Ursula: after reorganization of level-set handling, move to protected again
+  //! initialization procedure before the first time step is done
+  virtual void PrepareFirstTimeStep() = 0;
+
   //! preparations for solve
   void PrepareLinearSolve();
 
@@ -545,9 +549,6 @@ protected:
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
-
-  //! initialization procedure before the first time step is done
-  virtual void PrepareFirstTimeStep() = 0;
 
   //! Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside() = 0;

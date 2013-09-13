@@ -58,6 +58,10 @@ public:
   ///  compute time derivative of thermodynamic pressure
   void ComputeThermPressureTimeDerivative();
 
+  // TODO: Ursula: after reorganization of level-set handling, move to protected again
+  /// Initialization procedure before the first time step is done
+  void PrepareFirstTimeStep();
+
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update(const int num=0);
@@ -75,7 +79,7 @@ public:
   void ReadRestart(int step);
 
   // routine to return scalar field phi at time step n-1
-  Teuchos::RCP<Epetra_Vector> Phinm() { return phinm_; }
+  Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
 
   /// routine to return scalar field phi at time step n+alpha_F
   Teuchos::RCP<Epetra_Vector> Phiaf(){return Teuchos::null;}
@@ -132,9 +136,6 @@ protected:
   /// verify if given coefficients are in the admissable range;
   void VerifyCoeff();
 
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep();
-
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
 
@@ -175,9 +176,6 @@ private:
 
   /// fine-scale solution vector at time n+1
   Teuchos::RCP<Epetra_Vector>  fsphinp_;
-
-  /// solution vector phi at time n-1
-  Teuchos::RCP<Epetra_Vector>    phinm_;
 
 }; // class TimIntOneStepTheta
 

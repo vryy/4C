@@ -64,7 +64,7 @@ void FaceMatTwoPhase(
      const INPAR::FLUID::EOS_TauType            tau_def          ///< definition of stab parameter
 )
 {
-  dserror("Not yet adapted for two-phase flow with kinks or selected enrichments!");
+  // currently merely working for pressure enrichments only
 
   //--------------------------------------------------
   // get adjacent elements
@@ -105,9 +105,11 @@ void FaceMatTwoPhase(
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t m_numparamvelx = XFEM::NumParam<ms_numnode,M_ASSTYPE>::get(*(master_ele->GetEleDofManager()), XFEM::PHYSICS::Velx);
   const size_t m_numparampres = XFEM::NumParam<ms_numnode,M_ASSTYPE>::get(*(master_ele->GetEleDofManager()), XFEM::PHYSICS::Pres);
-  dsassert(m_numparamvelx == m_numparampres, "assumption violation");
   const size_t s_numparamvelx = XFEM::NumParam<ms_numnode,S_ASSTYPE>::get(*(slave_ele->GetEleDofManager()), XFEM::PHYSICS::Velx);
   const size_t s_numparampres = XFEM::NumParam<ms_numnode,S_ASSTYPE>::get(*(slave_ele->GetEleDofManager()), XFEM::PHYSICS::Pres);
+  // this check is only valid if both fields are enriched
+  // debug only
+  dsassert(m_numparamvelx == m_numparampres, "assumption violation");
   dsassert(s_numparamvelx == s_numparampres, "assumption violation");
 
   //--------------------------------------------------
@@ -470,17 +472,24 @@ void FaceMatTwoPhase(
     //-------------------------------------------------
 
     // (enriched) shape functions = approximation functions (P = N * \Psi)
-    static XFEM::ApproxFunc<2,m_shpVecSize> m_shp;
+    static XFEM::ApproxFunc<2,m_shpVecSize> m_shp_vel;
+    static XFEM::ApproxFunc<2,m_shpVecSize> m_shp_pres;
 
     if (M_ASSTYPE == XFEM::xfem_assembly)
     {
       // temporary arrays holding enriched shape functions (N * \Psi)
-      static LINALG::Matrix<m_shpVecSize,1> m_enr_funct;
-      m_enr_funct.Clear();
-      static LINALG::Matrix<3,m_shpVecSize> m_enr_derxy;
-      m_enr_derxy.Clear();
-      static LINALG::Matrix<6,m_shpVecSize> m_enr_derxy2;
-      m_enr_derxy2.Clear();
+      static LINALG::Matrix<m_shpVecSize,1> m_enr_funct_vel;
+      m_enr_funct_vel.Clear();
+      static LINALG::Matrix<3,m_shpVecSize> m_enr_derxy_vel;
+      m_enr_derxy_vel.Clear();
+      static LINALG::Matrix<6,m_shpVecSize> m_enr_derxy2_vel;
+      m_enr_derxy2_vel.Clear();
+      static LINALG::Matrix<m_shpVecSize,1> m_enr_funct_pres;
+      m_enr_funct_pres.Clear();
+      static LINALG::Matrix<3,m_shpVecSize> m_enr_derxy_pres;
+      m_enr_derxy_pres.Clear();
+      static LINALG::Matrix<6,m_shpVecSize> m_enr_derxy2_pres;
+      m_enr_derxy2_pres.Clear();
 
       // shape functions and derivatives for nodal parameters (dofs)
       master_enrvals.ComputeModifiedEnrichedNodalShapefunction(
@@ -488,26 +497,54 @@ void FaceMatTwoPhase(
           m_funct,
           m_derxy,
           m_derxy2,
-          m_enr_funct,
-          m_enr_derxy,
-          m_enr_derxy2);
+          m_enr_funct_vel,
+          m_enr_derxy_vel,
+          m_enr_derxy2_vel);
 
       // fill approximation functions for XFEM
       for (size_t iparam = 0; iparam != m_numparamvelx; ++iparam)
       {
-        m_shp.d0(iparam) = m_enr_funct(iparam);
-        m_shp.dx(iparam) = m_enr_derxy(0,iparam);
-        m_shp.dy(iparam) = m_enr_derxy(1,iparam);
-        m_shp.dz(iparam) = m_enr_derxy(2,iparam);
-        m_shp.dxdx(iparam) = m_enr_derxy2(0,iparam);
-        m_shp.dxdy(iparam) = m_enr_derxy2(3,iparam);
-        m_shp.dxdz(iparam) = m_enr_derxy2(4,iparam);
-        m_shp.dydx(iparam) = m_shp.dxdy(iparam);
-        m_shp.dydy(iparam) = m_enr_derxy2(1,iparam);
-        m_shp.dydz(iparam) = m_enr_derxy2(5,iparam);
-        m_shp.dzdx(iparam) = m_shp.dxdz(iparam);
-        m_shp.dzdy(iparam) = m_shp.dydz(iparam);
-        m_shp.dzdz(iparam) = m_enr_derxy2(2,iparam);
+        m_shp_vel.d0(iparam) = m_enr_funct_vel(iparam);
+        m_shp_vel.dx(iparam) = m_enr_derxy_vel(0,iparam);
+        m_shp_vel.dy(iparam) = m_enr_derxy_vel(1,iparam);
+        m_shp_vel.dz(iparam) = m_enr_derxy_vel(2,iparam);
+        m_shp_vel.dxdx(iparam) = m_enr_derxy2_vel(0,iparam);
+        m_shp_vel.dxdy(iparam) = m_enr_derxy2_vel(3,iparam);
+        m_shp_vel.dxdz(iparam) = m_enr_derxy2_vel(4,iparam);
+        m_shp_vel.dydx(iparam) = m_shp_vel.dxdy(iparam);
+        m_shp_vel.dydy(iparam) = m_enr_derxy2_vel(1,iparam);
+        m_shp_vel.dydz(iparam) = m_enr_derxy2_vel(5,iparam);
+        m_shp_vel.dzdx(iparam) = m_shp_vel.dxdz(iparam);
+        m_shp_vel.dzdy(iparam) = m_shp_vel.dydz(iparam);
+        m_shp_vel.dzdz(iparam) = m_enr_derxy2_vel(2,iparam);
+      }
+
+      // shape functions and derivatives for nodal parameters (dofs)
+      master_enrvals.ComputeModifiedEnrichedNodalShapefunction(
+          XFEM::PHYSICS::Pres,
+          m_funct,
+          m_derxy,
+          m_derxy2,
+          m_enr_funct_pres,
+          m_enr_derxy_pres,
+          m_enr_derxy2_pres);
+
+      // fill approximation functions for XFEM
+      for (size_t iparam = 0; iparam != m_numparampres; ++iparam)
+      {
+        m_shp_pres.d0(iparam) = m_enr_funct_pres(iparam);
+        m_shp_pres.dx(iparam) = m_enr_derxy_pres(0,iparam);
+        m_shp_pres.dy(iparam) = m_enr_derxy_pres(1,iparam);
+        m_shp_pres.dz(iparam) = m_enr_derxy_pres(2,iparam);
+        m_shp_pres.dxdx(iparam) = m_enr_derxy2_pres(0,iparam);
+        m_shp_pres.dxdy(iparam) = m_enr_derxy2_pres(3,iparam);
+        m_shp_pres.dxdz(iparam) = m_enr_derxy2_pres(4,iparam);
+        m_shp_pres.dydx(iparam) = m_shp_pres.dxdy(iparam);
+        m_shp_pres.dydy(iparam) = m_enr_derxy2_pres(1,iparam);
+        m_shp_pres.dydz(iparam) = m_enr_derxy2_pres(5,iparam);
+        m_shp_pres.dzdx(iparam) = m_shp_pres.dxdz(iparam);
+        m_shp_pres.dzdy(iparam) = m_shp_pres.dydz(iparam);
+        m_shp_pres.dzdz(iparam) = m_enr_derxy2_pres(2,iparam);
       }
     }
     else // not xfem_assembly i.e. standard assembly
@@ -516,19 +553,36 @@ void FaceMatTwoPhase(
       // remark: numparamvelx == numnode, for standard FEM
       for (size_t iparam = 0; iparam < ms_numnode; ++iparam)
       {
-        m_shp.d0(iparam) = m_funct(iparam);
-        m_shp.dx(iparam) = m_derxy(0,iparam);
-        m_shp.dy(iparam) = m_derxy(1,iparam);
-        m_shp.dz(iparam) = m_derxy(2,iparam);
-        m_shp.dxdx(iparam) = m_derxy2(0,iparam);
-        m_shp.dxdy(iparam) = m_derxy2(3,iparam);
-        m_shp.dxdz(iparam) = m_derxy2(4,iparam);
-        m_shp.dydx(iparam) = m_shp.dxdy(iparam);
-        m_shp.dydy(iparam) = m_derxy2(1,iparam);
-        m_shp.dydz(iparam) = m_derxy2(5,iparam);
-        m_shp.dzdx(iparam) = m_shp.dxdz(iparam);
-        m_shp.dzdy(iparam) = m_shp.dydz(iparam);
-        m_shp.dzdz(iparam) = m_derxy2(2,iparam);
+        m_shp_vel.d0(iparam) = m_funct(iparam);
+        m_shp_vel.dx(iparam) = m_derxy(0,iparam);
+        m_shp_vel.dy(iparam) = m_derxy(1,iparam);
+        m_shp_vel.dz(iparam) = m_derxy(2,iparam);
+        m_shp_vel.dxdx(iparam) = m_derxy2(0,iparam);
+        m_shp_vel.dxdy(iparam) = m_derxy2(3,iparam);
+        m_shp_vel.dxdz(iparam) = m_derxy2(4,iparam);
+        m_shp_vel.dydx(iparam) = m_shp_vel.dxdy(iparam);
+        m_shp_vel.dydy(iparam) = m_derxy2(1,iparam);
+        m_shp_vel.dydz(iparam) = m_derxy2(5,iparam);
+        m_shp_vel.dzdx(iparam) = m_shp_vel.dxdz(iparam);
+        m_shp_vel.dzdy(iparam) = m_shp_vel.dydz(iparam);
+        m_shp_vel.dzdz(iparam) = m_derxy2(2,iparam);
+      }
+
+      for (size_t iparam = 0; iparam < ms_numnode; ++iparam)
+      {
+        m_shp_pres.d0(iparam) = m_funct(iparam);
+        m_shp_pres.dx(iparam) = m_derxy(0,iparam);
+        m_shp_pres.dy(iparam) = m_derxy(1,iparam);
+        m_shp_pres.dz(iparam) = m_derxy(2,iparam);
+        m_shp_pres.dxdx(iparam) = m_derxy2(0,iparam);
+        m_shp_pres.dxdy(iparam) = m_derxy2(3,iparam);
+        m_shp_pres.dxdz(iparam) = m_derxy2(4,iparam);
+        m_shp_pres.dydx(iparam) = m_shp_pres.dxdy(iparam);
+        m_shp_pres.dydy(iparam) = m_derxy2(1,iparam);
+        m_shp_pres.dydz(iparam) = m_derxy2(5,iparam);
+        m_shp_pres.dzdx(iparam) = m_shp_pres.dxdz(iparam);
+        m_shp_pres.dzdy(iparam) = m_shp_pres.dydz(iparam);
+        m_shp_pres.dzdz(iparam) = m_derxy2(2,iparam);
       }
     }
 
@@ -537,17 +591,24 @@ void FaceMatTwoPhase(
     //-------------------------------------------------
 
     // (enriched) shape functions = approximation functions (P = N * \Psi)
-    static XFEM::ApproxFunc<2,s_shpVecSize> s_shp;
+    static XFEM::ApproxFunc<2,s_shpVecSize> s_shp_vel;
+    static XFEM::ApproxFunc<2,s_shpVecSize> s_shp_pres;
 
     if (S_ASSTYPE == XFEM::xfem_assembly)
     {
       // temporary arrays holding enriched shape functions (N * \Psi)
-      static LINALG::Matrix<s_shpVecSize,1> s_enr_funct;
-      s_enr_funct.Clear();
-      static LINALG::Matrix<3,s_shpVecSize> s_enr_derxy;
-      s_enr_derxy.Clear();
-      static LINALG::Matrix<6,s_shpVecSize> s_enr_derxy2;
-      s_enr_derxy2.Clear();
+      static LINALG::Matrix<s_shpVecSize,1> s_enr_funct_vel;
+      s_enr_funct_vel.Clear();
+      static LINALG::Matrix<3,s_shpVecSize> s_enr_derxy_vel;
+      s_enr_derxy_vel.Clear();
+      static LINALG::Matrix<6,s_shpVecSize> s_enr_derxy2_vel;
+      s_enr_derxy2_vel.Clear();
+      static LINALG::Matrix<s_shpVecSize,1> s_enr_funct_pres;
+      s_enr_funct_pres.Clear();
+      static LINALG::Matrix<3,s_shpVecSize> s_enr_derxy_pres;
+      s_enr_derxy_pres.Clear();
+      static LINALG::Matrix<6,s_shpVecSize> s_enr_derxy2_pres;
+      s_enr_derxy2_pres.Clear();
 
       // shape functions and derivatives for nodal parameters (dofs)
       slave_enrvals.ComputeModifiedEnrichedNodalShapefunction(
@@ -555,26 +616,54 @@ void FaceMatTwoPhase(
           s_funct,
           s_derxy,
           s_derxy2,
-          s_enr_funct,
-          s_enr_derxy,
-          s_enr_derxy2);
+          s_enr_funct_vel,
+          s_enr_derxy_vel,
+          s_enr_derxy2_vel);
 
       // fill approximation functions for XFEM
       for (size_t iparam = 0; iparam != s_numparamvelx; ++iparam)
       {
-        s_shp.d0(iparam) = s_enr_funct(iparam);
-        s_shp.dx(iparam) = s_enr_derxy(0,iparam);
-        s_shp.dy(iparam) = s_enr_derxy(1,iparam);
-        s_shp.dz(iparam) = s_enr_derxy(2,iparam);
-        s_shp.dxdx(iparam) = s_enr_derxy2(0,iparam);
-        s_shp.dxdy(iparam) = s_enr_derxy2(3,iparam);
-        s_shp.dxdz(iparam) = s_enr_derxy2(4,iparam);
-        s_shp.dydx(iparam) = s_shp.dxdy(iparam);
-        s_shp.dydy(iparam) = s_enr_derxy2(1,iparam);
-        s_shp.dydz(iparam) = s_enr_derxy2(5,iparam);
-        s_shp.dzdx(iparam) = s_shp.dxdz(iparam);
-        s_shp.dzdy(iparam) = s_shp.dydz(iparam);
-        s_shp.dzdz(iparam) = s_enr_derxy2(2,iparam);
+        s_shp_vel.d0(iparam) = s_enr_funct_vel(iparam);
+        s_shp_vel.dx(iparam) = s_enr_derxy_vel(0,iparam);
+        s_shp_vel.dy(iparam) = s_enr_derxy_vel(1,iparam);
+        s_shp_vel.dz(iparam) = s_enr_derxy_vel(2,iparam);
+        s_shp_vel.dxdx(iparam) = s_enr_derxy2_vel(0,iparam);
+        s_shp_vel.dxdy(iparam) = s_enr_derxy2_vel(3,iparam);
+        s_shp_vel.dxdz(iparam) = s_enr_derxy2_vel(4,iparam);
+        s_shp_vel.dydx(iparam) = s_shp_vel.dxdy(iparam);
+        s_shp_vel.dydy(iparam) = s_enr_derxy2_vel(1,iparam);
+        s_shp_vel.dydz(iparam) = s_enr_derxy2_vel(5,iparam);
+        s_shp_vel.dzdx(iparam) = s_shp_vel.dxdz(iparam);
+        s_shp_vel.dzdy(iparam) = s_shp_vel.dydz(iparam);
+        s_shp_vel.dzdz(iparam) = s_enr_derxy2_vel(2,iparam);
+      }
+
+      // shape functions and derivatives for nodal parameters (dofs)
+      slave_enrvals.ComputeModifiedEnrichedNodalShapefunction(
+          XFEM::PHYSICS::Pres,
+          s_funct,
+          s_derxy,
+          s_derxy2,
+          s_enr_funct_pres,
+          s_enr_derxy_pres,
+          s_enr_derxy2_pres);
+
+      // fill approximation functions for XFEM
+      for (size_t iparam = 0; iparam != s_numparampres; ++iparam)
+      {
+        s_shp_pres.d0(iparam) = s_enr_funct_pres(iparam);
+        s_shp_pres.dx(iparam) = s_enr_derxy_pres(0,iparam);
+        s_shp_pres.dy(iparam) = s_enr_derxy_pres(1,iparam);
+        s_shp_pres.dz(iparam) = s_enr_derxy_pres(2,iparam);
+        s_shp_pres.dxdx(iparam) = s_enr_derxy2_pres(0,iparam);
+        s_shp_pres.dxdy(iparam) = s_enr_derxy2_pres(3,iparam);
+        s_shp_pres.dxdz(iparam) = s_enr_derxy2_pres(4,iparam);
+        s_shp_pres.dydx(iparam) = s_shp_pres.dxdy(iparam);
+        s_shp_pres.dydy(iparam) = s_enr_derxy2_pres(1,iparam);
+        s_shp_pres.dydz(iparam) = s_enr_derxy2_pres(5,iparam);
+        s_shp_pres.dzdx(iparam) = s_shp_pres.dxdz(iparam);
+        s_shp_pres.dzdy(iparam) = s_shp_pres.dydz(iparam);
+        s_shp_pres.dzdz(iparam) = s_enr_derxy2_pres(2,iparam);
       }
     }
     else // not xfem_assembly i.e. standard assembly
@@ -583,19 +672,36 @@ void FaceMatTwoPhase(
       // remark: numparamvelx == numnode, for standard FEM
       for (size_t iparam = 0; iparam < ms_numnode; ++iparam)
       {
-        s_shp.d0(iparam) = s_funct(iparam);
-        s_shp.dx(iparam) = s_derxy(0,iparam);
-        s_shp.dy(iparam) = s_derxy(1,iparam);
-        s_shp.dz(iparam) = s_derxy(2,iparam);
-        s_shp.dxdx(iparam) = s_derxy2(0,iparam);
-        s_shp.dxdy(iparam) = s_derxy2(3,iparam);
-        s_shp.dxdz(iparam) = s_derxy2(4,iparam);
-        s_shp.dydx(iparam) = s_shp.dxdy(iparam);
-        s_shp.dydy(iparam) = s_derxy2(1,iparam);
-        s_shp.dydz(iparam) = s_derxy2(5,iparam);
-        s_shp.dzdx(iparam) = s_shp.dxdz(iparam);
-        s_shp.dzdy(iparam) = s_shp.dydz(iparam);
-        s_shp.dzdz(iparam) = s_derxy2(2,iparam);
+        s_shp_vel.d0(iparam) = s_funct(iparam);
+        s_shp_vel.dx(iparam) = s_derxy(0,iparam);
+        s_shp_vel.dy(iparam) = s_derxy(1,iparam);
+        s_shp_vel.dz(iparam) = s_derxy(2,iparam);
+        s_shp_vel.dxdx(iparam) = s_derxy2(0,iparam);
+        s_shp_vel.dxdy(iparam) = s_derxy2(3,iparam);
+        s_shp_vel.dxdz(iparam) = s_derxy2(4,iparam);
+        s_shp_vel.dydx(iparam) = s_shp_vel.dxdy(iparam);
+        s_shp_vel.dydy(iparam) = s_derxy2(1,iparam);
+        s_shp_vel.dydz(iparam) = s_derxy2(5,iparam);
+        s_shp_vel.dzdx(iparam) = s_shp_vel.dxdz(iparam);
+        s_shp_vel.dzdy(iparam) = s_shp_vel.dydz(iparam);
+        s_shp_vel.dzdz(iparam) = s_derxy2(2,iparam);
+      }
+
+      for (size_t iparam = 0; iparam < ms_numnode; ++iparam)
+      {
+        s_shp_pres.d0(iparam) = s_funct(iparam);
+        s_shp_pres.dx(iparam) = s_derxy(0,iparam);
+        s_shp_pres.dy(iparam) = s_derxy(1,iparam);
+        s_shp_pres.dz(iparam) = s_derxy(2,iparam);
+        s_shp_pres.dxdx(iparam) = s_derxy2(0,iparam);
+        s_shp_pres.dxdy(iparam) = s_derxy2(3,iparam);
+        s_shp_pres.dxdz(iparam) = s_derxy2(4,iparam);
+        s_shp_pres.dydx(iparam) = s_shp_pres.dxdy(iparam);
+        s_shp_pres.dydy(iparam) = s_derxy2(1,iparam);
+        s_shp_pres.dydz(iparam) = s_derxy2(5,iparam);
+        s_shp_pres.dzdx(iparam) = s_shp_pres.dxdz(iparam);
+        s_shp_pres.dzdy(iparam) = s_shp_pres.dydz(iparam);
+        s_shp_pres.dzdz(iparam) = s_derxy2(2,iparam);
       }
     }
 
@@ -605,8 +711,8 @@ void FaceMatTwoPhase(
     // since functions are continuous at element boundaries, one can
     // evaluate the velocity using the master element, the slave element or the face
     // TODO: what happens for touched elements: Averaging of both sides at interface
-    const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp_m, m_shp.d0, m_numparamvelx);
-    const double gppresnp = XFEM::interpolateScalarFieldToIntPoint(eprenp_m, m_shp.d0, m_numparampres);
+    const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp_m, m_shp_vel.d0, m_numparamvelx);
+    const double gppresnp = XFEM::interpolateScalarFieldToIntPoint(eprenp_m, m_shp_pres.d0, m_numparampres);
 
     //----------------------------------------------
     // get velocity derivatives at integration point
@@ -619,9 +725,9 @@ void FaceMatTwoPhase(
     {
       for (size_t isd = 0; isd < nsd; ++isd)
       {
-        m_vderxy(isd,0) += evelnp_m(isd,iparam) * m_shp.dx(iparam);
-        m_vderxy(isd,1) += evelnp_m(isd,iparam) * m_shp.dy(iparam);
-        m_vderxy(isd,2) += evelnp_m(isd,iparam) * m_shp.dz(iparam);
+        m_vderxy(isd,0) += evelnp_m(isd,iparam) * m_shp_vel.dx(iparam);
+        m_vderxy(isd,1) += evelnp_m(isd,iparam) * m_shp_vel.dy(iparam);
+        m_vderxy(isd,2) += evelnp_m(isd,iparam) * m_shp_vel.dz(iparam);
       }
     }
     // slave
@@ -632,9 +738,9 @@ void FaceMatTwoPhase(
     {
       for (size_t isd = 0; isd < nsd; ++isd)
       {
-        s_vderxy(isd,0) += evelnp_s(isd,iparam) * s_shp.dx(iparam);
-        s_vderxy(isd,1) += evelnp_s(isd,iparam) * s_shp.dy(iparam);
-        s_vderxy(isd,2) += evelnp_s(isd,iparam) * s_shp.dz(iparam);
+        s_vderxy(isd,0) += evelnp_s(isd,iparam) * s_shp_vel.dx(iparam);
+        s_vderxy(isd,1) += evelnp_s(isd,iparam) * s_shp_vel.dy(iparam);
+        s_vderxy(isd,2) += evelnp_s(isd,iparam) * s_shp_vel.dz(iparam);
       }
     }
 
@@ -674,12 +780,12 @@ void FaceMatTwoPhase(
       {
         for (size_t isd = 0; isd < nsd; ++isd)
         {
-          m_vderxy2(isd,0) += evelnp_m(isd,iparam) * m_shp.dxdx(iparam);
-          m_vderxy2(isd,1) += evelnp_m(isd,iparam) * m_shp.dydy(iparam);
-          m_vderxy2(isd,2) += evelnp_m(isd,iparam) * m_shp.dzdz(iparam);
-          m_vderxy2(isd,3) += evelnp_m(isd,iparam) * m_shp.dxdy(iparam);
-          m_vderxy2(isd,4) += evelnp_m(isd,iparam) * m_shp.dxdz(iparam);
-          m_vderxy2(isd,5) += evelnp_m(isd,iparam) * m_shp.dydz(iparam);
+          m_vderxy2(isd,0) += evelnp_m(isd,iparam) * m_shp_vel.dxdx(iparam);
+          m_vderxy2(isd,1) += evelnp_m(isd,iparam) * m_shp_vel.dydy(iparam);
+          m_vderxy2(isd,2) += evelnp_m(isd,iparam) * m_shp_vel.dzdz(iparam);
+          m_vderxy2(isd,3) += evelnp_m(isd,iparam) * m_shp_vel.dxdy(iparam);
+          m_vderxy2(isd,4) += evelnp_m(isd,iparam) * m_shp_vel.dxdz(iparam);
+          m_vderxy2(isd,5) += evelnp_m(isd,iparam) * m_shp_vel.dydz(iparam);
         }
       }
 
@@ -687,12 +793,12 @@ void FaceMatTwoPhase(
       {
         for (size_t isd = 0; isd < nsd; ++isd)
         {
-          s_vderxy2(isd,0) += evelnp_s(isd,iparam) * s_shp.dxdx(iparam);
-          s_vderxy2(isd,1) += evelnp_s(isd,iparam) * s_shp.dydy(iparam);
-          s_vderxy2(isd,2) += evelnp_s(isd,iparam) * s_shp.dzdz(iparam);
-          s_vderxy2(isd,3) += evelnp_s(isd,iparam) * s_shp.dxdy(iparam);
-          s_vderxy2(isd,4) += evelnp_s(isd,iparam) * s_shp.dxdz(iparam);
-          s_vderxy2(isd,5) += evelnp_s(isd,iparam) * s_shp.dydz(iparam);
+          s_vderxy2(isd,0) += evelnp_s(isd,iparam) * s_shp_vel.dxdx(iparam);
+          s_vderxy2(isd,1) += evelnp_s(isd,iparam) * s_shp_vel.dydy(iparam);
+          s_vderxy2(isd,2) += evelnp_s(isd,iparam) * s_shp_vel.dzdz(iparam);
+          s_vderxy2(isd,3) += evelnp_s(isd,iparam) * s_shp_vel.dxdy(iparam);
+          s_vderxy2(isd,4) += evelnp_s(isd,iparam) * s_shp_vel.dxdz(iparam);
+          s_vderxy2(isd,5) += evelnp_s(isd,iparam) * s_shp_vel.dydz(iparam);
         }
       }
     }
@@ -706,9 +812,9 @@ void FaceMatTwoPhase(
     // gradp = enr_derxy(i,j)*eprenp(j);
     for (size_t iparam = 0; iparam != m_numparampres; ++iparam)
     {
-      m_gradp(0) += eprenp_m(iparam) * m_shp.dx(iparam);
-      m_gradp(1) += eprenp_m(iparam) * m_shp.dy(iparam);
-      m_gradp(2) += eprenp_m(iparam) * m_shp.dz(iparam);
+      m_gradp(0) += eprenp_m(iparam) * m_shp_pres.dx(iparam);
+      m_gradp(1) += eprenp_m(iparam) * m_shp_pres.dy(iparam);
+      m_gradp(2) += eprenp_m(iparam) * m_shp_pres.dz(iparam);
     }
     // slave
     static LINALG::Matrix<nsd,1> s_gradp;
@@ -716,9 +822,9 @@ void FaceMatTwoPhase(
     // gradp = enr_derxy(i,j)*eprenp(j);
     for (size_t iparam = 0; iparam != s_numparampres; ++iparam)
     {
-      s_gradp(0) += eprenp_s(iparam) * s_shp.dx(iparam);
-      s_gradp(1) += eprenp_s(iparam) * s_shp.dy(iparam);
-      s_gradp(2) += eprenp_s(iparam) * s_shp.dz(iparam);
+      s_gradp(0) += eprenp_s(iparam) * s_shp_pres.dx(iparam);
+      s_gradp(1) += eprenp_s(iparam) * s_shp_pres.dy(iparam);
+      s_gradp(2) += eprenp_s(iparam) * s_shp_pres.dz(iparam);
     }
 
     //--------------------------------------------
@@ -747,7 +853,7 @@ void FaceMatTwoPhase(
     //----------------------------------------------
     // that is master-master, master-slave, slave-master and slave-slave block
     COMBUST::BuildStandardFaceIntegrals<M_DISTYPE, S_DISTYPE, M_ASSTYPE, S_ASSTYPE, NUMDOF, m_shpVecSize, s_shpVecSize>(
-            assembler, m_shp, s_shp, m_shp, s_shp,
+            assembler, m_shp_vel, s_shp_vel, m_shp_pres, s_shp_pres,
             fac, timefac, rhstimefac, genalpha, instationary, densaf, dynvisc,
             gpvelnp, m_vderxy, s_vderxy,
             gppresnp, s_gradp, s_gradp,

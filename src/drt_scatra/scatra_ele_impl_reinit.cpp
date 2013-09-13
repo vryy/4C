@@ -265,7 +265,9 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
         // split for each transported scalar, insert into element arrays
         ephinp_[k](i,0)                 = myphinp[k+(i*numdofpernode_)];
         // the phi reference vector contains information of pseudo time step tau=0
-        ephi0_Reinit_Reference_[k](i,0) = myphin[k+(i*numdofpernode_)];
+        ephi0_Reinit_Reference_[k](i,0) = myphin[k+(i*numdofpernode_)]; //TODO: Ursula: hier steht phin, das ist aber glaube ich falsch
+                                                                        // und muesste phin0 sein: das aendert aber die Ergebnisse aller Tests
+                                                                        // ich schau mir das dann im Zusammenhang mit dem ls-algo genau an
         ephin_[k](i,0)                  = myphin[k+(i*numdofpernode_)];
         ephi0_penalty_[k](i,0)          = myphi0[k+(i*numdofpernode_)];
       }

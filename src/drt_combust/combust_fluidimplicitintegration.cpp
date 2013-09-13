@@ -383,6 +383,20 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     xfemdiscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_, true);
   }
 
+  if (xfemtimeint_ == INPAR::COMBUST::xfemtimeint_semilagrange)
+  {
+      // get periodic surface boundary conditions
+      std::vector<DRT::Condition*> mysurfpbcs;
+      discret_->GetCondition("SurfacePeriodic",mysurfpbcs);
+      if(mysurfpbcs.empty())
+      {}
+      else
+      {
+        if (myrank_==0)
+          std::cout << "WARNING: Semi-Lagrange time integration does not entirely account for PBCS" << std::endl;
+      }
+  }
+
 
 #ifdef FLAME_VORTEX
   if (myrank_ == 0)
@@ -1210,6 +1224,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // computation and initialise the transfer if necessary
   // -------------------------------------------------------------------
   turbulent_inflow_condition_ = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
+
+  return;
 }
 
 
@@ -5230,6 +5246,25 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
 
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,*velpressplitterForOutput_);
+
+  // rebuid internal faces
+  if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" or
+     DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)
+  {
+    // do some checks first
+    if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" and
+       DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)
+       dserror("Combination of face-based stabilization and ghost-penalty stabilization for XFEM currently not supported!");
+
+    // if the definition of internal faces would be included
+    // in the standard discretization, these lines can be removed
+    // and CreateInternalFacesExtension() can be called once
+    // in the constructor of the fluid time integration
+    // since we want to keep the standard discretization as clean as
+    // possible, we create interal faces via an enhanced discretization
+    // including the faces between elements
+    xfemdiscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_, true);
+  }
 
   // remember that we did a redist
   redist_this_step_ = true;

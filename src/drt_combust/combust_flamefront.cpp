@@ -57,7 +57,6 @@ COMBUST::FlameFront::FlameFront(
 fluiddis_(fluiddis),
 gfuncdis_(gfuncdis),
 pbcmap_(pbcmap),
-phinm_(Teuchos::null),
 phin_(Teuchos::null),
 phinp_(Teuchos::null),
 gradphi_(Teuchos::null),
