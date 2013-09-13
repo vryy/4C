@@ -933,11 +933,13 @@ bool STR::TimIntImpl::Converged()
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
     if (stype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed) {
       bool convDispLagrIncr = false;
+      bool convDispWIncr = false;
 
       switch ( normtypeplagrincr_ )
       {
       case INPAR::STR::convnorm_abs:
         convDispLagrIncr = normlagr_ < tollagr_;
+        convDispWIncr = normw_ < 1e-14; // WEAR
         break;
       /*case INPAR::STR::convnorm_rel:
         convDispLagrIncr = normlagr_ < tollagr_;
@@ -949,7 +951,7 @@ bool STR::TimIntImpl::Converged()
 
       // switch between "and" and "or"
       if (combdisilagr_==INPAR::STR::bop_and)
-        convdis = convdis and convDispLagrIncr;
+        convdis = convdis and convDispLagrIncr and convDispWIncr;
       else if (combdisilagr_==INPAR::STR::bop_or)
         convdis = convdis or convDispLagrIncr;
       else
@@ -1251,9 +1253,30 @@ int STR::TimIntImpl::NewtonFull()
       // build residual constraint norm
       if(constrrhs!=Teuchos::null) normcontconstr_ = STR::AUX::CalculateVectorNorm(iternorm_, constrrhs);
       else normcontconstr_ = -1.0;
+
       // build lagrange multiplier increment norm
       if(lagrincr!=Teuchos::null) normlagr_ = STR::AUX::CalculateVectorNorm(iternorm_, lagrincr);
       else normlagr_ = -1.0;
+
+      // for wear discretization
+      INPAR::CONTACT::WearType wtype =
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtman_->GetStrategy().Params(),"WEARTYPE");
+      if(wtype==INPAR::CONTACT::wear_discr)
+      {
+        Teuchos::RCP<Epetra_Vector> wincr  = cmtman_->GetStrategy().WSolveIncr();
+        Teuchos::RCP<Epetra_Vector> wearrhs = cmtman_->GetStrategy().WearRhs();
+
+        if(wearrhs!=Teuchos::null) normwrhs_ = STR::AUX::CalculateVectorNorm(iternorm_, wearrhs);
+        else normwrhs_ = -1.0;
+
+        if(wincr!=Teuchos::null) normw_ = STR::AUX::CalculateVectorNorm(iternorm_, wincr);
+        else normw_ = -1.0;
+      }
+      else
+      {
+        normw_=0.0;
+        normwrhs_=0.0;
+      }
     }
 
     // print stuff
@@ -2398,6 +2421,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     // strategy and system setup types
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+    INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtman_->GetStrategy().Params(),"WEARTYPE");
 
     if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
     {
@@ -2420,8 +2444,15 @@ void STR::TimIntImpl::PrintNewtonIterHeader
         oss <<std::setw(20)<< "rel-lagrincr-norm";
         break;
       case INPAR::STR::convnorm_abs :
+      {
         oss <<std::setw(20)<< "abs-lagrincr-norm";
+        if (wtype == INPAR::CONTACT::wear_discr)
+        {
+          oss <<std::setw(20)<< "abs-wearincr-norm";
+          oss <<std::setw(20)<< "abs-wearcon-norm";
+        }
         break;
+      }
       default:
         dserror("You should not turn up here.");
         break;
@@ -2560,12 +2591,19 @@ void STR::TimIntImpl::PrintNewtonIterText
     // strategy and system setup types
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+    INPAR::CONTACT::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cmtman_->GetStrategy().Params(),"WEARTYPE");
 
     if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
     {
       // we only support abs norms
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normcontconstr_; // RHS for contact constraints
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normlagr_;    // norm Lagrange multipliers
+
+      if (wtype == INPAR::CONTACT::wear_discr)
+      {
+        oss << std::setw(20) << std::setprecision(5) << std::scientific << normw_;       // norm wear
+        oss << std::setw(20) << std::setprecision(5) << std::scientific << normwrhs_;    // norm wear rhs
+      }
     }
   }
 

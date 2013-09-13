@@ -275,6 +275,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     Teuchos::RCP<LINALG::SparseMatrix> tmatrix_; // global Matrix T containing active node tangents
     Teuchos::RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> smatrixW_;// global Matrix S containing W derivatives
     Teuchos::RCP<LINALG::SparseMatrix> pmatrix_; // global Matrix P containing tangent derivatives
 
 

@@ -178,6 +178,7 @@ CONTACT::FriNodeDataContainerPlus::FriNodeDataContainerPlus():
 wear_(0.0),
 deltawear_(0.0)
 {
+  wcurr_[0] = 0.0;
   return;
 }
 
@@ -458,6 +459,54 @@ void CONTACT::FriNode::AddMechDissValue(double& val)
 {
   // add given value to mechdiss_
   MechDiss()+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'T' map                               farah 09/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddTValue: function called for master node %i", Id());
+
+  // check if this has been called before
+  if ((int)FriDataPlus().GetT().size()==0)
+    FriDataPlus().GetT().resize(NumDof());
+
+  // check row index input
+  if ((int)FriDataPlus().GetT().size()<=row)
+    dserror("ERROR: AddTValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  std::map<int,double>& tmap = FriDataPlus().GetT()[row];
+  tmap[col] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'E' map                               farah 09/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddEValue(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddEValue: function called for master node %i", Id());
+
+  // check if this has been called before
+  if ((int)FriDataPlus().GetE().size()==0)
+    FriDataPlus().GetE().resize(NumDof());
+
+  // check row index input
+  if ((int)FriDataPlus().GetE().size()<=row)
+    dserror("ERROR: AddEValue: tried to access invalid row index!");
+
+  // add the pair (col,val) to the given row
+  std::map<int,double>& emap = FriDataPlus().GetE()[row];
+  emap[col] += val;
 
   return;
 }

@@ -575,35 +575,6 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
     mnode->InitializeDataContainer();
   }
 
-  //***********************************************************
-  // both-sided wear
-  // here we need a datacontainer for the masternodes too
-  // they have to know their involved nodes/dofs
-  //***********************************************************
-  if(DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
-  {
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
-    {
-      for (int i=0; i<MasterRowNodes()->NumMyElements(); ++i) //col //for (int i=0; i<MasterRowNodes()->NumMyElements(); ++i)
-      {
-        int gid = MasterRowNodes()->GID(i);
-        DRT::Node* node = Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
-        MortarNode* mnode = static_cast<MortarNode*>(node);
-
-        //********************************************************
-        // NOTE: depending on which kind of node this really is,
-        // i.e. mortar, contact or friction node, several derived
-        // versions of the InitializeDataContainer() methods will
-        // be called here, apart from the base class version.
-        //********************************************************
-
-        // initialize container if not yet initialized before
-        mnode->InitializeDataContainer();
-      }
-    }
-  }
-
   // initialize element data container
   for (int i=0; i<SlaveColElements()->NumMyElements(); ++i)
   {

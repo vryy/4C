@@ -103,6 +103,13 @@ public:
   INPAR::CONTACT::WearSide WearSide()
       { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
 
+  /*!
+  \brief Return type of wear surface definition
+
+  */
+  INPAR::CONTACT::WearType WearType()
+      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,"WEARTYPE"); }
+
   //@}
 
 

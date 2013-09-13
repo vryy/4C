@@ -2779,38 +2779,38 @@ bool MORTAR::MortarIntegrator::AssembleM_EleBased(const Epetra_Comm& comm,
       // loop over all slave nodes
       for (int slave=0;slave<sele.NumNode();++slave)
       {
-      MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
-      int sndof = snode->NumDof();
+        MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+        int sndof = snode->NumDof();
 
-      // only process slave node rows that belong to this proc
-      if (snode->Owner() != comm.MyPID())
-        continue;
+        // only process slave node rows that belong to this proc
+        if (snode->Owner() != comm.MyPID())
+          continue;
 
-      // do not process slave side boundary nodes
-      // (their row entries would be zero anyway!)
-      if (snode->IsOnBound())
-        continue;
+        // do not process slave side boundary nodes
+        // (their row entries would be zero anyway!)
+        if (snode->IsOnBound())
+          continue;
 
-      // loop over all dofs of the slave node
-      for (int sdof=0;sdof<sndof;++sdof)
-      {
-        // loop over all master nodes
-        for (int master=0;master<meles[nummasterele]->NumNode();++master)
+        // loop over all dofs of the slave node
+        for (int sdof=0;sdof<sndof;++sdof)
         {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
-        const int* mdofs = mnode->Dofs(); //global dofs
-        int mndof = mnode->NumDof();
+          // loop over all master nodes
+          for (int master=0;master<meles[nummasterele]->NumNode();++master)
+          {
+            MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+            const int* mdofs = mnode->Dofs(); //global dofs
+            int mndof = mnode->NumDof();
 
-        // loop over all dofs of the master node
-        for (int mdof=0;mdof<mndof;++mdof)
-        {
-          int col = mdofs[mdof];
+            // loop over all dofs of the master node
+            for (int mdof=0;mdof<mndof;++mdof)
+            {
+              int col = mdofs[mdof];
 
-          double val = mseg(slave*sndof+sdof,master*mndof+mdof+nummasterele*mndof*meles[nummasterele]->NumNode());
-          snode->AddMValue(sdof,col,val);
+              double val = mseg(slave*sndof+sdof,master*mndof+mdof+nummasterele*mndof*meles[nummasterele]->NumNode());
+              snode->AddMValue(sdof,col,val);
+            }
+          }
         }
-        }
-      }
       }
     }
   }

@@ -1591,22 +1591,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
         tuple<std::string>("No","no", "none" ,
-                           "Mapping","mapping", "map",
-                           "Ale_Mortar","ale_mortar", "ALE_Mortar"),
+                           "Mapping","mapping", "map"),
         tuple<int>(
                 INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave,
-                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map,
-                INPAR::CONTACT::wear_both_ale, INPAR::CONTACT::wear_both_ale, INPAR::CONTACT::wear_both_ale),
+                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map),
         &scontact);
 
   setStringToIntegralParameter<int>("WEARTYPE","explicit","Definition of wear algorithm",
         tuple<std::string>("impl","Impl", "implicit" ,
                            "expl","Expl", "explicit",
-                           "variable_partitioned","var_part", "VariablePartitioned"),
+                           "discrete","wear_discrete", "wd"),
         tuple<int>(
                 INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl,
                 INPAR::CONTACT::wear_expl, INPAR::CONTACT::wear_expl,INPAR::CONTACT::wear_expl,
-                INPAR::CONTACT::wear_varpart, INPAR::CONTACT::wear_varpart, INPAR::CONTACT::wear_varpart),
+                INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr),
         &scontact);
 
   setStringToIntegralParameter<int>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",

@@ -800,6 +800,8 @@ namespace STR
     double normpres_; //!< norm of residual pressures
     double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in saddlepoint formulation only)
     double normlagr_;     //!< norm of lagrange multipliers
+    double normw_;     //!< norm of wear
+    double normwrhs_;
 
     Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$

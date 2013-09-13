@@ -572,20 +572,6 @@ public:
   void FDCheckSlipIncrDerivTETA(); //- TETA
 
   /*!
-  \brief Check weighted wear ~w derivatives with finite differences
-         derivation w.r.t. displ.
-
-  */
-  void FDCheckWearDeriv();
-
-  /*!
-  \brief Check weighted wear ~w derivatives with finite differences
-         derivation w.r.t. lagr.-mult.
-
-  */
-  void FDCheckWearDerivLm();
-
-  /*!
   \brief Check tangential LM derivatives with finite differences
 
   */

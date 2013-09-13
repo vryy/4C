@@ -1392,11 +1392,6 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
 
-//#ifdef WEARIMPLICIT
-//		// wear as internal state variable --> additional gap
-//    gap += cnode->FriDataPlus().Wear();
-//#endif
-
     int dim = cnode->NumDof();
 
     // compute normal part of Lagrange multiplier
@@ -3384,7 +3379,6 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
 
 			LINALG::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
 		}
-
 	}
 }
 

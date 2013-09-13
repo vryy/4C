@@ -1176,6 +1176,11 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         vectorglobal = LagrMult();
         break;
       }
+      case MORTAR::StrategyBase::wupdate:
+      {
+        vectorglobal = WearVar();
+        break;
+      }
       case MORTAR::StrategyBase::lmuzawa:
       {
         vectorglobal = LagrMultUzawa();
@@ -1198,7 +1203,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     // columnmap for current or updated LM
     // rowmap for remaining cases 
     Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
-    if (type == MORTAR::StrategyBase::lmupdate or type == MORTAR::StrategyBase::lmcurrent)
+    if (type == MORTAR::StrategyBase::lmupdate or type == MORTAR::StrategyBase::lmcurrent or
+        type == MORTAR::StrategyBase::wupdate)
     {  
       sdofmap = interface_[i]->SlaveColDofs();
       snodemap = interface_[i]->SlaveColNodes();
@@ -1272,6 +1278,20 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 
           // store updated LM into node
           cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
+        }
+        case MORTAR::StrategyBase::wupdate:
+        {
+          // throw a dserror if node is Active and DBC
+          if (cnode->IsDbc() && cnode->Active())
+            dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+          // explicity set global Lag. Mult. to zero for D.B.C nodes
+          if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+
+          // store updated wcurr into node
+          FriNode* fnode = static_cast<FriNode*>(cnode);
+          fnode->FriDataPlus().wcurr()[(int)(dof/Dim())] = (*vectorinterface)[locindex[(int)(dof/Dim())]];
+          dof=dof+Dim()-1;
           break;
         }
         case MORTAR::StrategyBase::activeold:

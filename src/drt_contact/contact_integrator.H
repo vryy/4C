@@ -131,7 +131,9 @@ public:
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> useg,
       Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> wseg);
+      Teuchos::RCP<Epetra_SerialDenseVector> wseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> tseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> eseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -264,6 +266,33 @@ public:
                  MORTAR::MortarElement& sele,
                  Epetra_SerialDenseMatrix& D_seg);
 
+  /*!
+  \brief Assemble T contribution of current overlap into slave nodes
+
+  */
+  bool AssembleT(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseMatrix& T_seg);
+
+  /*!
+  \brief Assemble E contribution of current overlap into slave nodes
+
+  */
+  bool AssembleE(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseMatrix& E_seg);
+
+  /*!
+  \brief Assemble Ws contribution of current overlap into slave nodes
+
+  */
+  bool AssembleWS(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseMatrix& Ws_seg);
+  /*!
+  \brief Assemble D2 contribution of current overlap into master nodes
+
+  */
   bool AssembleD2(const Epetra_Comm& comm,
                  MORTAR::MortarElement& mele,
                  Epetra_SerialDenseMatrix& D2_seg);
@@ -373,7 +402,21 @@ public:
                     MORTAR::MortarElement& sele,
                     Epetra_SerialDenseVector& wseg);    
 
+  /*!
+  \brief Return type of wear surface definition
+
+  */
+  INPAR::CONTACT::WearSide WearSide()
+      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
+
+  /*!
+  \brief Return type of wear algorithm
+
+  */
+  INPAR::CONTACT::WearType WearType()
+      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,"WEARTYPE"); }
   //@}
+
    
 protected:
 

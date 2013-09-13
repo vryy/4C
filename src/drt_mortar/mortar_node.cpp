@@ -387,7 +387,7 @@ void MORTAR::MortarNode::AddScValue(double& val)
   if (IsOnBound()==true)
     dserror("ERROR: AddScValue: function called for boundary node %i", Id());
 
-  // add given value to grow_
+  // add given value to scalefac
   MoData().GetScale() += val;
   return;
 }

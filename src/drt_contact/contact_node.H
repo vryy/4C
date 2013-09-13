@@ -245,6 +245,12 @@ public:
   virtual std::map<int,double>& GetDerivG() { return derivg_; }
 
   /*!
+  \brief Return the 'DerivGlm' map of this node
+
+  */
+  virtual std::map<int,double>& GetDerivGW() { return derivgw_; }
+
+  /*!
   \brief Return the 'DerivW' map of this node
 
   This map contains the directional derivatives of the node's
@@ -313,6 +319,7 @@ protected:
   std::map<int,std::map<int,double> >     derivd_;        // directional derivative of nodal D-matrix value
   std::map<int,std::map<int,double> >     derivm_;        // directional derivative of nodal M-matrix values
   std::map<int,double>                    derivg_;        // directional derivative of nodal weighted gap value
+  std::map<int,double>                    derivgw_;        // directional derivative of nodal weighted gap value
   std::map<int,double>                    derivw_;        // directional derivative of nodal weighted wear value
   std::map<int,double>                    derivw_lm_;     // directional derivative of nodal weighted wear value  std::map<int,double>                    derivscalefac_; // direction derivative of nodal scale factor value
   std::map<int,double>                    derivscalefac_; // directional derivative of nodal scale factor value

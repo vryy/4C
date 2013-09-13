@@ -9,7 +9,7 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 2D wear contact ironing
 // - structure-ale approach -- ale: classic_lin
-// - implicit wear algorithm
+// - wear discretization --> 3 field problem
 // - first-order interpolation (quad4 elements)
 // - dual Lagrange multiplier interpolation
 // - solution check done by material displacements (wear)
@@ -57,7 +57,7 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
 WEARLAW                         Archard
-WEARTYPE                        implicit
+WEARTYPE                        wear_discrete
 BOTH_SIDED_WEAR                 none
 WEARCOEFF                       0.0003
 SEMI_SMOOTH_NEWTON              Yes
@@ -103,10 +103,10 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.85521635898111548e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.93302807603670523e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 2.87693140747458109e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.87758716915989443e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.76951990648754887e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.82610513392290064e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 2.73061928516082908e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.76260787950323905e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          16

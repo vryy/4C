@@ -115,13 +115,6 @@ public:
       { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
 
   /*!
-  \brief Return type of wear surface definition
-
-  */
-  INPAR::CONTACT::WearSide WearSide()
-      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
-
-  /*!
   \brief Return the LM interpolation / testing type for quadratic FE
 
   */

@@ -269,7 +269,29 @@ public:
   \brief Return the delta of the weighted wear per node without wear coefficient (length 1)
    */
    virtual double& DeltaWear() { return deltawear_; }
-  
+
+   /*!
+   \brief Return the 'T' map (vector) of this node
+   */
+   virtual std::vector<std::map<int,double> >& GetT() { return trows_; }
+
+   /*!
+   \brief Return the 'E' map (vector) of this node
+   */
+   virtual std::vector<std::map<int,double> >& GetE() { return erows_; }
+
+   /*!
+   \brief Deriv. w.r.t. displ. of E and T matrix entries for
+          this node. This matrices are required for the
+          discrete wear condition.
+   */
+   virtual std::map<int,std::map<int,double> >& GetDerivTw() { return derivt_; }
+   virtual std::map<int,std::map<int,double> >& GetDerivE() { return derive_; }
+
+   /*!
+   \brief Return current discrete wear in step n+1 (only for slave side!) (length 1)
+   */
+   virtual double* wcurr() { return wcurr_; }
   //@}
 
 protected:
@@ -279,13 +301,21 @@ protected:
   FriNodeDataContainerPlus(const FriNodeDataContainerPlus& old);
 
   // tsi with contact related quantities
-  std::vector<std::map<int,double> > arows_;        // nodal rows of matrix A
-  std::set<int>                      anodes_;       // nodal set of according slave nodes
+  std::vector<std::map<int,double> >      arows_;        // nodal rows of matrix A
+  std::set<int>                           anodes_;       // nodal set of according slave nodes
   
   // wear related quantities
-  double                             wear_;         // weighted wear
-  double                             deltawear_;    // deltawear
+  double                                  wear_;         // weighted wear
+  double                                  deltawear_;    // deltawear
+  double                                  wcurr_[1];        // current discrete wear value (n+1)
+
+  std::vector<std::map<int,double> >      trows_;        // nodal rows of T matrix
+  std::vector<std::map<int,double> >      erows_;        // nodal rows of E matrix
   
+  std::map<int,std::map<int,double> >     derivt_;        // directional derivative of nodal Tw-matrix values
+  std::map<int,std::map<int,double> >     derive_;        // directional derivative of nodal E-matrix values
+
+
 }; // class FriNodeDataContainerPlus
 
 /*!
@@ -424,6 +454,44 @@ public:
   void AddSNode (int node);
 
   /*!
+  \brief Add a value to the 'T' map of this node
+
+  The 'T' map is later assembled to the T matrix.
+  Note that drows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddTValue(int& row, int& col, double& val);
+
+  /*!
+  \brief Add a value to the 'E' map of this node
+
+  The 'E' map is later assembled to the E matrix.
+  Note that drows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddEValue(int& row, int& col, double& val);
+
+  /*!
+  \brief Add a value to the 'WS' map of this node
+
+  The 'WS' map is later assembled to the WS matrix.
+  Note that drows_ here is a vector.
+
+  \param row : local dof row id to add to (rowwise)
+  \param val : value to be added
+  \param col : global dof column id of the value added
+
+  */
+  void AddWSValue(int& row, int& col, double& val);
+  /*!
   \brief Add a value to the MNode set of this node
 
   */
@@ -521,7 +589,7 @@ public:
 
   */
   virtual void ResetDataContainer();
-  
+
   //@}
 
 protected:

@@ -93,7 +93,8 @@ class StrategyBase
       jump,
       dm,
       pentrac,
-      wear
+      wear,
+      wupdate
     };
     //@}
 
@@ -207,7 +208,9 @@ class StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WearRhs() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WSolveIncr() = 0;
     virtual void MeshInitialization() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;

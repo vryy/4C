@@ -82,6 +82,17 @@ public:
   void Initialize();
 
   /*!
+  \brief Recovery method
+
+  We only recover the Lagrange multipliers here, which had been
+  statically condensated during the setup of the global problem!
+  Optionally satisfaction or violation of the contact boundary
+  conditions can be checked, too.
+
+  */
+  void Recover(Teuchos::RCP<Epetra_Vector> disi);
+
+  /*!
   \brief Redistribute all contact interfaces in parallel
 
   We hand in the current global displacement state so that
@@ -206,11 +217,35 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> wlinmatrixsl_; // global Matrix Wsl containing wear-lm slip derivatives
   Teuchos::RCP<LINALG::SparseMatrix> wlinmatrixst_; // global Matrix Wst containing wear-lm stick derivatives
 
+  // both-sided wear weak dirich cond
+  Teuchos::RCP<LINALG::SparseMatrix> d2matrix_;     // global Mortar matrix D2
+
+  Teuchos::RCP<Epetra_Map> gminvolvednodes_;        // global involved master node row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gminvolveddofs_;         // global involved master dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gslipn_;                 // global row map of matrix N for slip dofs (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gwinact_;                // global row map of matrix N for slip dofs (of all interfaces)
+
+  Teuchos::RCP<Epetra_Map> gwdofrowmap_;            // global wear dof row map (of all interfaces) -active
+  Teuchos::RCP<Epetra_Map> gsdofnrowmap_;           // global wear dof row map (of all interfaces)
+
   Teuchos::RCP<Epetra_Vector> wearoutput_;          // vector of unweighted wear at t_n+1  -- slave
   Teuchos::RCP<Epetra_Vector> wearoutput2_;         // vector of unweighted wear at t_n+1  -- master
   Teuchos::RCP<Epetra_Vector> wearvector_;          // global weighted wear vector w
 
-  bool wearimpl_;   // weartype: implicit
+  int  maxdofwear_;                                 // highest dof number in problem discretization
+
+  bool wearimpl_;                                   // weartype: implicit
+  bool weardiscr_;                                  // bool for wear with own discretization
+
+  // discrete wear algorithm
+  Teuchos::RCP<LINALG::SparseMatrix> twmatrix_;     // global Mortar wear matrix T
+  Teuchos::RCP<LINALG::SparseMatrix> ematrix_;      // global Mortar wear matrix E
+  Teuchos::RCP<LINALG::SparseMatrix> lintdis_;      // Lin T w.r.t. displ: Lin(T*n*lm)
+  Teuchos::RCP<LINALG::SparseMatrix> lintlm_;       // Lin T w.r.t. lm: (T*n)
+  Teuchos::RCP<LINALG::SparseMatrix> linedis_;      // Lin E w.r.t. displ: Lin(E*w)
+  Teuchos::RCP<LINALG::SparseMatrix> linslipW_;     // global matrix containing derivatives (LM) of slip condition
+  Teuchos::RCP<Epetra_Vector> inactiveWearRhs_;     // inactive wear rhs: -w_i
+  Teuchos::RCP<Epetra_Vector> WearCondRhs_;         // rhs wear condition: -E*w_i + k*T*n*lm_i
 }; //class
 
 

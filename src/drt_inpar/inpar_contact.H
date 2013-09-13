@@ -82,17 +82,16 @@ namespace INPAR
     enum WearSide
     {
       wear_slave,     ///< wear on slave side
-      wear_both_map,  ///< map slave-side wear to master side
-      wear_both_ale   ///< compute wear on master side with ale strategy
+      wear_both_map  ///< map slave-side wear to master side
     };
 
-    /// Definition of contact wear algrithm
+    /// Definition of contact wear algorithm
     /// (this enum represents the input file parameter WEARTYPE)
     enum WearType
     {
       wear_impl,
       wear_expl,
-      wear_varpart
+      wear_discr
     };
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)

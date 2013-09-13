@@ -152,6 +152,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap );
 
     /*!
+    \brief Return discrete wear vector (t_n+1)
+
+    */
+    Teuchos::RCP<Epetra_Vector> WearVar() { return w_; }
+
+    /*!
     \brief Return Lagrange multiplier vector (t_n+1)
 
     */
@@ -176,10 +182,22 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> ConstrRhs() { return constrrhs_; }
 
     /*!
+    \brief Return wear rhs vector (only in saddle-point formulation
+
+    */
+    Teuchos::RCP<Epetra_Vector> WearRhs() { return wearrhs_; }
+
+    /*!
     \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
 
     */
     Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() { return zincr_; }
+
+    /*!
+    \brief Returns increment of W solution vector in SaddlePointSolve routine
+
+    */
+    Teuchos::RCP<Epetra_Vector> WSolveIncr() { return wincr_; }
 
     /*!
     \brief Return mortar matrix D
@@ -698,20 +716,16 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Map> gslipdofs_;            // global slip slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gslipt_;               // global row map of matrix T for slip dofs (of all interfaces)
 
-    Teuchos::RCP<Epetra_Map> gminvolvednodes_;      // global involved master node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gminvolveddofs_;       // global involved master dof row map (of all interfaces)
-
     Teuchos::RCP<Epetra_Map> pglmdofrowmap_;        // global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pgsdofrowmap_;         // global slave dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pgmdofrowmap_;         // global master dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;        // global slave and master dof row map (before parallel redistribution)
 
     Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> d2matrix_;   // global Mortar matrix D2
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
-    Teuchos::RCP<Epetra_Vector> tangrhs_;			// global tangential rhs vector (formulation with incremental z_)
-    Teuchos::RCP<Epetra_Vector> inactiverhs_;		// gloabl inactive rhs vectir	(formulation with incremental z_ and saddle point system)
+    Teuchos::RCP<Epetra_Vector> tangrhs_;			      // global tangential rhs vector (formulation with incremental z_)
+    Teuchos::RCP<Epetra_Vector> inactiverhs_;		    // gloabl inactive rhs vectir	(formulation with incremental z_ and saddle point system)
     Teuchos::RCP<Epetra_Vector> constrrhs_;         // global constraint rhs vector (only for saddlepoint problems)
 
     Teuchos::RCP<LINALG::SparseMatrix> lindmatrix_; // global Matrix LinD containing slave fc derivatives
@@ -747,6 +761,11 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
     // contact with wear
     bool wear_;                                           // flag for contact with wear
+    Teuchos::RCP<Epetra_Vector> w_;                       // current vector of discrete wear at t_n+1
+    Teuchos::RCP<Epetra_Vector> wincr_;               // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> wearrhs_;
+
+
     double inttime_;                                      // integration time
 
 }; // class CoAbstractStrategy

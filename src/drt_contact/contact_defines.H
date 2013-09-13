@@ -43,10 +43,18 @@ Maintainer: Alexander Popp
 /************************************************************************/
 /* Wear algorithm options                                               */
 /************************************************************************/
-
-//#define WEARIMPLICIT              /* flag for implicit wear algorithm including linearizations*/
+//                        IMPLICIT WEAR
 //#define WEARIMPLICITFD            /* flag for FD-check w.r.t. disp. */
 //#define WEARIMPLICITFDLM          /* flag for FD-check w.r.t. lm-mult. */
+
+//-----------------------------------------------------------------------
+
+//                        DISCRETE WEAR
+//#define CONTACTFDT_D              /* flag for FD check of mortar matrix T lin for wear cond */
+//#define CONTACTFDE_D              /* flag for FD check of mortar matrix E lin for wear cond */
+//#define CONTACTFDMORTART          /* flag for FD check of mortar matrix T */
+//#define CONTACTFDMORTARE          /* flag for FD check of mortar matrix E */
+
 
 /************************************************************************/
 /* Contact algorithm options                                            */
@@ -78,6 +86,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP              /* flag for FD check of weighted gap g */
 //#define CONTACTFDSLIPINCR         /* flag for FD check of weighted obj.-var. slip */
+
 
 // LAGRANGE DEBUGGING OPTIONS
 //#define CONTACTFDTANGLM           /* flag for FD check of (frictionless) tangential LM */

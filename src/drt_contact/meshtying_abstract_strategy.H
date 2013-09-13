@@ -451,7 +451,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void EvaluateRelMovPredict() {}
     const Teuchos::RCP<Epetra_Map> ActiveRowNodes() {return Teuchos::null;}
     const Teuchos::RCP<Epetra_Map> SlipRowNodes() {return Teuchos::null;}
-    
+    Teuchos::RCP<Epetra_Vector> WSolveIncr() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> WearRhs() {return Teuchos::null;}
+
     //@}
         
   protected:

@@ -437,7 +437,7 @@ discret_(discret)
 
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if (stype == INPAR::CONTACT::solution_lagmult && wlaw!=INPAR::CONTACT::wear_none &&
-      (wtype==INPAR::CONTACT::wear_expl || wtype==INPAR::CONTACT::wear_impl ))
+      (wtype==INPAR::CONTACT::wear_expl || wtype==INPAR::CONTACT::wear_impl || wtype==INPAR::CONTACT::wear_discr))
     strategy_ = Teuchos::rcp(new WearLagrangeStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_lagmult)
     strategy_ = Teuchos::rcp(new CoLagrangeStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));

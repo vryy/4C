@@ -294,7 +294,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> useg,
      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> wseg)
+     Teuchos::RCP<Epetra_SerialDenseVector> wseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> tseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> eseg)
 { 
   bool slip_gp=false;
 #ifdef OBJECTVARSLIPINCREMENT
@@ -331,7 +333,6 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     std::cout << "but since gap and wear are calculated within the same integral (internal state variable...)" << std::endl;
     std::cout << "and the wear bases on dual shape functions this is not consistent !!!" << std::endl;
   }
-
 
   // contact with wear
   bool wear = false;  
@@ -650,22 +651,32 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     } // shapefcn_ switch
     // compute segment D/M matrix ****************************************
 
-    // evaluate 2nd deriv of trace space shape functions (on slave element)
-    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
-    
+    // *******************************************************************
+    // Compute Mortar Wear Matrices T,E and W
+    // *******************************************************************
+
     // build interpolation of slave GP normal and coordinates
     double gpn[3] = {0.0,0.0,0.0};
     double sgpx[3] = {0.0, 0.0, 0.0};
     for (int i=0;i<nrow;++i)
     {
-      MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*> (mynodes[i]);
+      FriNode* mymrtrnode = static_cast<FriNode*> (mynodes[i]);
       gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
       gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
       gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
 
-      sgpx[0]+=sval[i]*scoord(0,i);
-      sgpx[1]+=sval[i]*scoord(1,i);
-      sgpx[2]+=sval[i]*scoord(2,i);
+      if (WearType() == INPAR::CONTACT::wear_discr)
+      {
+        sgpx[0]+=sval[i] * (scoord(0,i)-(mymrtrnode->MoData().n()[0]) * mymrtrnode->FriDataPlus().wcurr()[0]);
+        sgpx[1]+=sval[i] * (scoord(1,i)-(mymrtrnode->MoData().n()[1]) * mymrtrnode->FriDataPlus().wcurr()[0]);
+        sgpx[2]+=sval[i] * (scoord(2,i)-(mymrtrnode->MoData().n()[2]) * mymrtrnode->FriDataPlus().wcurr()[0]);
+      }
+      else
+      {
+        sgpx[0]+=sval[i] * scoord(0,i);
+        sgpx[1]+=sval[i] * scoord(1,i);
+        sgpx[2]+=sval[i] * scoord(2,i);
+      }
     }
 
     // normalize interpolated GP normal back to length 1.0 !!!
@@ -675,20 +686,102 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     for (int i=0;i<3;++i)
       gpn[i]/=lengthn;
 
-    // build interpolation of master GP coordinates
-    double mgpx[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<ncol;++i)
-    {
-      mgpx[0]+=mval[i]*mcoord(0,i);
-      mgpx[1]+=mval[i]*mcoord(1,i);
-      mgpx[2]+=mval[i]*mcoord(2,i);
-    }
 
-    // build gap function at current GP
-    double gap = 0.0;
-    for (int i=0;i<3;++i)
-      gap+=(mgpx[i]-sgpx[i])*gpn[i];
-    
+    //***********************************************************************
+    // Here, the tangential relative slip increment is used and NOT the
+    // nodal weighted tangential relative slip increment !!!
+    // The reason for that is the slip for wear calculation is written
+    // within the integral --> no double weighting allowed !
+    // The wearcoefficient is not included in this calculation
+    //***********************************************************************
+    double wearval = 0.0;
+
+    // for wearval
+    double gpt[3] = {0.0,0.0,0.0};
+    double gplm[3] = {0.0, 0.0, 0.0};
+    double sgpjump[3] = {0.0, 0.0, 0.0};
+    double mgpjump[3] = {0.0, 0.0, 0.0};
+    double jump[3] = {0.0, 0.0, 0.0};
+    double jumpval = 0.0;
+
+    // for linearization
+    double lm_lin = 0.0;
+    double jump_val_lin = 0.0;
+    double lengtht = 0.0;
+
+    if(wear)
+    {
+      for (int i=0;i<nrow;++i)
+      {
+         CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*> (mynodes[i]);
+
+         //nodal tangent interpolation
+         gpt[0]+=sval[i]*myconode->CoData().txi()[0];
+         gpt[1]+=sval[i]*myconode->CoData().txi()[1];
+         gpt[2]+=sval[i]*myconode->CoData().txi()[2];
+
+         // delta D
+         sgpjump[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
+         sgpjump[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
+         sgpjump[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
+
+         // LM interpolation
+         gplm[0]+=lmval[i]*(*lagmult)(0,i);
+         gplm[1]+=lmval[i]*(*lagmult)(1,i);
+         gplm[2]+=lmval[i]*(*lagmult)(2,i);
+      }
+
+      // normalize interpolated GP tangent back to length 1.0 !!!
+      lengtht = sqrt(gpt[0]*gpt[0]+gpt[1]*gpt[1]+gpt[2]*gpt[2]);
+      if (lengtht<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+
+      for (int i=0;i<3;i++)
+        gpt[i]/=lengtht;
+
+      // interpolation of master GP jumps (relative displacement increment)
+      for (int i=0;i<ncol;++i)
+      {
+        mgpjump[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
+        mgpjump[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
+        mgpjump[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
+      }
+
+      // jump
+      jump[0] = sgpjump[0] - mgpjump[0];
+      jump[1] = sgpjump[1] - mgpjump[1];
+      jump[2] = sgpjump[2] - mgpjump[2];
+
+      // evaluate wear
+      // normal contact stress -- normal LM value
+      for (int i=0;i<3;++i)
+      {
+        wearval       += gpn[i]*gplm[i];
+        lm_lin        += gpn[i]*gplm[i];  // required for linearization
+      }
+
+      // value of relative tangential jump
+      for (int i=0;i<3;++i)
+        jumpval+=gpt[i]*jump[i];
+
+      // product
+      // use non-abs value for implicit-wear algorithm
+      // just for simple linear. maybe we change this in future
+      if(wearimpl_)
+        wearval=(wearval)*abs(jumpval);
+      else
+        wearval=abs(wearval)*abs(jumpval);
+
+
+      //****************************************************************
+      //   lin
+      //****************************************************************
+      for (int i=0;i<3;++i)
+        jump_val_lin += gpt[i]*jump[i];
+
+      //****************************************************************
+      //   end lin
+      //****************************************************************
+    }
 
     //***********************************************************************
     // Creating the tangential relative slip increment (non-objective)
@@ -745,101 +838,49 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
 #endif
 
-    //***********************************************************************
-    // Here, the tangential relative slip increment is used and NOT the
-    // nodal weighted tangential relative slip increment !!!
-    // The reason for that is the slip for wear calculation is written
-    // within the integral --> no double weighting allowed !
-    // The wearcoefficient is not included in this calculation
-    //***********************************************************************
-    double wearval = 0.0;
-
-    // for wearval
-    double gpt[3] = {0.0,0.0,0.0};
-    double gplm[3] = {0.0, 0.0, 0.0};
-    double sgpjump[3] = {0.0, 0.0, 0.0};
-    double mgpjump[3] = {0.0, 0.0, 0.0};
-    double jump[3] = {0.0, 0.0, 0.0};
-
-    // for linearization
-    double lm_lin = 0.0;
-    double jump_val_lin = 0.0;
-    double lengtht = 0.0;
-
-    if(wear)
+    if (WearType() == INPAR::CONTACT::wear_discr)
     {
-      for (int i=0;i<nrow;++i)
+      for (int k=0; k<nrow; ++k)
       {
-         CONTACT::CoNode* myconode = static_cast<CONTACT::CoNode*> (mynodes[i]);
+        // integrate dseg
+        for (int j=0; j<nrow; ++j)
+        {
+          int jindex = (int)(j);
+          int kindex = (int)(k);
 
-         //nodal tangent interpolation
-         gpt[0]+=sval[i]*myconode->CoData().txi()[0];
-         gpt[1]+=sval[i]*myconode->CoData().txi()[1];
-         gpt[2]+=sval[i]*myconode->CoData().txi()[2];
+          // multiply the two shape functions
+          double prod1 = sval[kindex]*lmval[jindex]*abs(jumpval);
+          double prod2 = sval[kindex]*sval[jindex];
 
-         // delta D
-         sgpjump[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
-         sgpjump[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
-         sgpjump[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
-       
-         // LM interpolation
-         gplm[0]+=lmval[i]*(*lagmult)(0,i);
-         gplm[1]+=lmval[i]*(*lagmult)(1,i);
-         gplm[2]+=lmval[i]*(*lagmult)(2,i);
-      }
-      
-      // normalize interpolated GP tangent back to length 1.0 !!!
-      lengtht = sqrt(gpt[0]*gpt[0]+gpt[1]*gpt[1]+gpt[2]*gpt[2]);
-      if (lengtht<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
-      
-      for (int i=0;i<3;i++)
-        gpt[i]/=lengtht;
-      
-      // interpolation of master GP jumps (relative displacement increment)
-      for (int i=0;i<ncol;++i)
-      {
-        mgpjump[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
-        mgpjump[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
-        mgpjump[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
-      }
-        
-      // jump
-      jump[0] = sgpjump[0] - mgpjump[0]; 
-      jump[1] = sgpjump[1] - mgpjump[1]; 
-      jump[2] = sgpjump[2] - mgpjump[2]; 
-        
-      // evaluate wear   
-      // normal contact stress -- normal LM value
-      for (int i=0;i<3;++i)
-      {
-        wearval       += gpn[i]*gplm[i];
-        lm_lin        += gpn[i]*gplm[i];  // required for linearization
-      }
-
-      // value of relative tangential jump
-      double jumpval = 0.0;
-      for (int i=0;i<3;++i)
-        jumpval+=gpt[i]*jump[i];
-
-      // product
-      // use non-abs value for implicit-wear algorithm
-      // just for simple linear. maybe we change this in future
-      if(wearimpl_)
-        wearval=(wearval)*abs(jumpval);
-      else
-        wearval=abs(wearval)*abs(jumpval);
-
-
-      //****************************************************************
-      //   lin
-      //****************************************************************
-      for (int i=0;i<3;++i)
-        jump_val_lin += gpt[i]*jump[i];
-
-      //****************************************************************
-      //   end lin
-      //****************************************************************
+          (*tseg)(k,j) += prod1*dxdsxi*dsxideta*wgt;
+          (*eseg)(k,j) += prod2*dxdsxi*dsxideta*wgt;
+        }
+      } // nrow loop
     }
+    // *******************************************************************
+    // END Mortar Wear Matrices T,E and W
+    // *******************************************************************
+
+
+    // evaluate 2nd deriv of trace space shape functions (on slave element)
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+
+    // build interpolation of master GP coordinates
+    double mgpx[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<ncol;++i)
+    {
+      mgpx[0]+=mval[i]*mcoord(0,i);
+      mgpx[1]+=mval[i]*mcoord(1,i);
+      mgpx[2]+=mval[i]*mcoord(2,i);
+    }
+
+    // build gap function at current GP
+    double gap = 0.0;
+    for (int i=0;i<3;++i)
+      gap+=(mgpx[i]-sgpx[i])*gpn[i];
+
+
+
     
     // evaluate linearizations *******************************************
     // evaluate the derivative dxdsxidsxi = Jac,xi
@@ -944,14 +985,37 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
       dgapgp[p->first] += (mgpx[1]-sgpx[1]) * (p->second);
 
-    for (int z=0;z<nrow;++z)
-    {
-      for (int k=0;k<2;++k)
-      {
-        dgapgp[smrtrnodes[z]->Dofs()[k]] -= sval[z] * gpn[k];
 
-        for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * smrtrnodes[z]->xspatial()[k] * (p->second);
+    // for wear as own discretization
+    if (WearType() == INPAR::CONTACT::wear_discr)
+    {
+      for (int z=0;z<nrow;++z)
+      {
+        for (int k=0;k<2;++k)
+        {
+          FriNode* frinode = static_cast<FriNode*> (smrtrnodes[z]);
+
+          dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
+
+          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+            dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0])* (p->second);
+
+          for (CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
+            dgapgp[p->first] += gpn[k] * sval[z] * frinode->FriDataPlus().wcurr()[0] * (p->second);
+        }
+      }
+    }
+    else
+    {
+      for (int z=0;z<nrow;++z)
+      {
+        for (int k=0;k<2;++k)
+        {
+          dgapgp[smrtrnodes[z]->Dofs()[k]] -= sval[z] * gpn[k];
+
+          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+            dgapgp[p->first] -= gpn[k] * sderiv(z,0) * smrtrnodes[z]->xspatial()[k] * (p->second);
+        }
       }
     }
 
@@ -1053,7 +1117,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     // Linearization of wear without lm-weighting and Jacobi -- dweargp            *
     // *****************************************************************************
     std::map<int,double> dweargp;
-    if(wearimpl_)
+    std::map<int,double> dsliptmatrixgp;
+
+    if(wearimpl_ || WearType() == INPAR::CONTACT::wear_discr)
     {
       // evaluate the GP wear function derivatives
       std::map<int,double> ddualgp_x;
@@ -1062,178 +1128,192 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       std::map<int,double> ddualgp_x_sxi;
       std::map<int,double> ddualgp_y_sxi;
 
-
       // lin. abs(x) = x/abs(x) * lin x.
       double xabsx = (jump_val_lin/abs(jump_val_lin)) * lm_lin;
+      double xabsxT = (jump_val_lin/abs(jump_val_lin));
 
-      // only for implicit wear
-      if(wear)
+      // **********************************************************************
+      // (1) Lin of normal for LM -- deriv normal maps from weighted gap lin.
+      for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
+        dweargp[p->first] += abs(jump_val_lin) * gplm[0] * (p->second);
+
+      for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
+        dweargp[p->first] += abs(jump_val_lin) * gplm[1] * (p->second);
+
+      // **********************************************************************
+      // (2) Lin. of dual shape function of LM mult.
+      for (int i=0;i<nrow;++i)
       {
-        // **********************************************************************
-        // (1) Lin of normal for LM -- deriv normal maps from weighted gap lin.
-        for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
-          dweargp[p->first] += abs(jump_val_lin) * gplm[0] * (p->second);
-
-        for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
-          dweargp[p->first] += abs(jump_val_lin) * gplm[1] * (p->second);
-
-        // **********************************************************************
-        // (2) Lin. of dual shape function of LM mult.
-        for (int i=0;i<nrow;++i)
+        for (int m=0;m<nrow;++m)
         {
-          for (int m=0;m<nrow;++m)
+          for (CI p=dualmap[i][m].begin();p!=dualmap[i][m].end();++p)
           {
-            for (CI p=dualmap[i][m].begin();p!=dualmap[i][m].end();++p)
-            {
-              ddualgp_x[p->first] += (*lagmult)(0,m) *sval[m]*(p->second);
-              ddualgp_y[p->first] += (*lagmult)(1,m) *sval[m]*(p->second);
-              //ddualgp_z[p->first] += (*lagmult)(2,i) *sval[m]*(p->second);
-            }
+            ddualgp_x[p->first] += (*lagmult)(0,m) *sval[m]*(p->second);
+            ddualgp_y[p->first] += (*lagmult)(1,m) *sval[m]*(p->second);
+            //ddualgp_z[p->first] += (*lagmult)(2,i) *sval[m]*(p->second);
           }
         }
-        for (CI p=ddualgp_x.begin();p!=ddualgp_x.end();++p)
-          dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
-        for (CI p=ddualgp_y.begin();p!=ddualgp_y.end();++p)
-          dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
+      }
+      for (CI p=ddualgp_x.begin();p!=ddualgp_x.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
+      for (CI p=ddualgp_y.begin();p!=ddualgp_y.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
 
 
-        // LM deriv
-        for (int i=0;i<nrow;++i)
+      // LM deriv
+      for (int i=0;i<nrow;++i)
+      {
+        for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
         {
-          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          {
-            ddualgp_x_sxi[p->first] += (*lagmult)(0,i) *lmderiv(i,0)*(p->second);
-            ddualgp_y_sxi[p->first] += (*lagmult)(1,i) *lmderiv(i,0)*(p->second);
-          }
+          ddualgp_x_sxi[p->first] += (*lagmult)(0,i) *lmderiv(i,0)*(p->second);
+          ddualgp_y_sxi[p->first] += (*lagmult)(1,i) *lmderiv(i,0)*(p->second);
         }
-        for (CI p=ddualgp_x_sxi.begin();p!=ddualgp_x_sxi.end();++p)
-          dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
-        for (CI p=ddualgp_y_sxi.begin();p!=ddualgp_y_sxi.end();++p)
-          dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
+      }
+      for (CI p=ddualgp_x_sxi.begin();p!=ddualgp_x_sxi.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[0]*(p->second);
+      for (CI p=ddualgp_y_sxi.begin();p!=ddualgp_y_sxi.end();++p)
+        dweargp[p->first] += abs(jump_val_lin)*gpn[1]*(p->second);
 
 
-        // **********************************************************************
-        // (3) absolute incremental slip linearization:
-        // (a) build directional derivative of slave GP tagent (non-unit)
-        std::map<int,double> dmap_txsl_gp;
-        std::map<int,double> dmap_tysl_gp;
+      // **********************************************************************
+      // (3) absolute incremental slip linearization:
+      // (a) build directional derivative of slave GP tagent (non-unit)
+      std::map<int,double> dmap_txsl_gp;
+      std::map<int,double> dmap_tysl_gp;
 
-        for (int i=0;i<nrow;++i)
+      for (int i=0;i<nrow;++i)
+      {
+        std::map<int,double>& dmap_txsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivTxi()[0];
+        std::map<int,double>& dmap_tysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivTxi()[1];
+
+        for (CI p=dmap_txsl_i.begin();p!=dmap_txsl_i.end();++p)
+          dmap_txsl_gp[p->first] += sval[i]*(p->second);
+        for (CI p=dmap_tysl_i.begin();p!=dmap_tysl_i.end();++p)
+          dmap_tysl_gp[p->first] += sval[i]*(p->second);
+
+        for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
         {
-          std::map<int,double>& dmap_txsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivTxi()[0];
-          std::map<int,double>& dmap_tysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivTxi()[1];
-
-          for (CI p=dmap_txsl_i.begin();p!=dmap_txsl_i.end();++p)
-            dmap_txsl_gp[p->first] += sval[i]*(p->second);
-          for (CI p=dmap_tysl_i.begin();p!=dmap_tysl_i.end();++p)
-            dmap_tysl_gp[p->first] += sval[i]*(p->second);
-
-          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          {
-            double valx =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().txi()[0];
-            dmap_txsl_gp[p->first] += valx*(p->second);
-            double valy =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().txi()[1];
-            dmap_tysl_gp[p->first] += valy*(p->second);
-          }
+          double valx =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().txi()[0];
+          dmap_txsl_gp[p->first] += valx*(p->second);
+          double valy =  sderiv(i,0) * static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().txi()[1];
+          dmap_tysl_gp[p->first] += valy*(p->second);
         }
+      }
 
-        // build directional derivative of slave GP tagent (unit)
-        std::map<int,double> dmap_txsl_gp_unit;
-        std::map<int,double> dmap_tysl_gp_unit;
+      // (b) build directional derivative of slave GP tagent (unit)
+      std::map<int,double> dmap_txsl_gp_unit;
+      std::map<int,double> dmap_tysl_gp_unit;
 
-        double ll = lengtht*lengtht;
-        double sxsx = gpt[0]*gpt[0]*ll;
-        double sxsy = gpt[0]*gpt[1]*ll;
-        double sysy = gpt[1]*gpt[1]*ll;
+      double ll = lengtht*lengtht;
+      double sxsx = gpt[0]*gpt[0]*ll;
+      double sxsy = gpt[0]*gpt[1]*ll;
+      double sysy = gpt[1]*gpt[1]*ll;
 
-        for (CI p=dmap_txsl_gp.begin();p!=dmap_txsl_gp.end();++p)
+      for (CI p=dmap_txsl_gp.begin();p!=dmap_txsl_gp.end();++p)
+      {
+        dmap_txsl_gp_unit[p->first] += 1/lengtht*(p->second);
+        dmap_txsl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sxsx*(p->second);
+        dmap_tysl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sxsy*(p->second);
+      }
+
+      for (CI p=dmap_tysl_gp.begin();p!=dmap_tysl_gp.end();++p)
+      {
+        dmap_tysl_gp_unit[p->first] += 1/lengtht*(p->second);
+        dmap_tysl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sysy*(p->second);
+        dmap_txsl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sxsy*(p->second);
+      }
+
+      // add tangent lin. to dweargp
+      for (CI p=dmap_txsl_gp_unit.begin();p!=dmap_txsl_gp_unit.end();++p)
+        dweargp[p->first] += xabsx * jump[0] * (p->second);
+
+      for (CI p=dmap_tysl_gp_unit.begin();p!=dmap_tysl_gp_unit.end();++p)
+        dweargp[p->first] += xabsx * jump[1] * (p->second);
+
+
+      // add tangent lin. to slip linearization for wear Tmatrix
+      for (CI p=dmap_txsl_gp_unit.begin();p!=dmap_txsl_gp_unit.end();++p)
+        dsliptmatrixgp[p->first] += xabsxT * jump[0] * (p->second);
+
+      for (CI p=dmap_tysl_gp_unit.begin();p!=dmap_tysl_gp_unit.end();++p)
+        dsliptmatrixgp[p->first] += xabsxT * jump[1] * (p->second);
+
+
+      // **********************************************************************
+      // (c) build directional derivative of jump
+      std::map<int,double> dmap_slcoord_gp_x;
+      std::map<int,double> dmap_slcoord_gp_y;
+
+      std::map<int,double> dmap_mcoord_gp_x;
+      std::map<int,double> dmap_mcoord_gp_y;
+
+      std::map<int,double> dmap_coord_x;
+      std::map<int,double> dmap_coord_y;
+
+      // lin slave part -- sxi
+      for (int i=0;i<nrow;++i)
+      {
+        for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
         {
-          dmap_txsl_gp_unit[p->first] += 1/lengtht*(p->second);
-          dmap_txsl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sxsx*(p->second);
-          dmap_tysl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sxsy*(p->second);
+          double valx =  sderiv(i,0) * ( scoord(0,i) - (*scoordold)(0,i) );
+          dmap_slcoord_gp_x[p->first] += valx*(p->second);
+          double valy =  sderiv(i,0) * ( scoord(1,i) - (*scoordold)(1,i) );
+          dmap_slcoord_gp_y[p->first] += valy*(p->second);
         }
+      }
 
-        for (CI p=dmap_tysl_gp.begin();p!=dmap_tysl_gp.end();++p)
+      // lin master part -- mxi
+      for (int i=0;i<ncol;++i)
+      {
+        for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
         {
-          dmap_tysl_gp_unit[p->first] += 1/lengtht*(p->second);
-          dmap_tysl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sysy*(p->second);
-          dmap_txsl_gp_unit[p->first] -= 1/(lengtht*lengtht*lengtht)*sxsy*(p->second);
+          double valx =  mderiv(i,0) * ( mcoord(0,i)-(*mcoordold)(0,i) );
+          dmap_mcoord_gp_x[p->first] += valx*(p->second);
+          double valy =  mderiv(i,0) * ( mcoord(1,i)-(*mcoordold)(1,i) );
+          dmap_mcoord_gp_y[p->first] += valy*(p->second);
         }
+      }
 
-        // add tangent lin. to dweargp
-        for (CI p=dmap_txsl_gp_unit.begin();p!=dmap_txsl_gp_unit.end();++p)
-          dweargp[p->first] += xabsx * jump[0] * (p->second);
+      // deriv slave x-coords
+      for (int i=0;i<nrow;++i)
+      {
+        dmap_slcoord_gp_x[smrtrnodes[i]->Dofs()[0]]+=sval[i];
+        dmap_slcoord_gp_y[smrtrnodes[i]->Dofs()[1]]+=sval[i];
+      }
+      // deriv master x-coords
+      for (int i=0;i<ncol;++i)
+      {
+        dmap_mcoord_gp_x[mmrtrnodes[i]->Dofs()[0]]+=mval[i];
+        dmap_mcoord_gp_y[mmrtrnodes[i]->Dofs()[1]]+=mval[i];
+      }
 
-        for (CI p=dmap_tysl_gp_unit.begin();p!=dmap_tysl_gp_unit.end();++p)
-          dweargp[p->first] += xabsx * jump[1] * (p->second);
+      //slave: add to jumplin
+      for (CI p=dmap_slcoord_gp_x.begin();p!=dmap_slcoord_gp_x.end();++p)
+        dmap_coord_x[p->first] += (p->second);
+      for (CI p=dmap_slcoord_gp_y.begin();p!=dmap_slcoord_gp_y.end();++p)
+        dmap_coord_y[p->first] += (p->second);
 
-        // **********************************************************************
-        // (c) build directional derivative of jump
-        std::map<int,double> dmap_slcoord_gp_x;
-        std::map<int,double> dmap_slcoord_gp_y;
+      //master: add to jumplin
+      for (CI p=dmap_mcoord_gp_x.begin();p!=dmap_mcoord_gp_x.end();++p)
+        dmap_coord_x[p->first] -= (p->second);
+      for (CI p=dmap_mcoord_gp_y.begin();p!=dmap_mcoord_gp_y.end();++p)
+        dmap_coord_y[p->first] -= (p->second);
 
-        std::map<int,double> dmap_mcoord_gp_x;
-        std::map<int,double> dmap_mcoord_gp_y;
+      // add to dweargp
+      for (CI p=dmap_coord_x.begin();p!=dmap_coord_x.end();++p)
+        dweargp[p->first] += xabsx * gpt[0] * (p->second);
 
-        std::map<int,double> dmap_coord_x;
-        std::map<int,double> dmap_coord_y;
+      for (CI p=dmap_coord_y.begin();p!=dmap_coord_y.end();++p)
+        dweargp[p->first] += xabsx * gpt[1] * (p->second);
 
-        // lin slave part -- sxi
-        for (int i=0;i<nrow;++i)
-        {
-          for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          {
-            double valx =  sderiv(i,0) * ( scoord(0,i) - (*scoordold)(0,i) );
-            dmap_slcoord_gp_x[p->first] += valx*(p->second);
-            double valy =  sderiv(i,0) * ( scoord(1,i) - (*scoordold)(1,i) );
-            dmap_slcoord_gp_y[p->first] += valy*(p->second);
-          }
-        }
 
-        // lin master part -- mxi
-        for (int i=0;i<ncol;++i)
-        {
-          for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
-          {
-            double valx =  mderiv(i,0) * ( mcoord(0,i)-(*mcoordold)(0,i) );
-            dmap_mcoord_gp_x[p->first] += valx*(p->second);
-            double valy =  mderiv(i,0) * ( mcoord(1,i)-(*mcoordold)(1,i) );
-            dmap_mcoord_gp_y[p->first] += valy*(p->second);
-          }
-        }
+      // add tangent lin. to slip linearization for wear Tmatrix
+      for (CI p=dmap_coord_x.begin();p!=dmap_coord_x.end();++p)
+        dsliptmatrixgp[p->first] += xabsxT * gpt[0] * (p->second);
 
-        // deriv slave x-coords
-        for (int i=0;i<nrow;++i)
-        {
-          dmap_slcoord_gp_x[smrtrnodes[i]->Dofs()[0]]+=sval[i];
-          dmap_slcoord_gp_y[smrtrnodes[i]->Dofs()[1]]+=sval[i];
-        }
-        // deriv master x-coords
-        for (int i=0;i<ncol;++i)
-        {
-          dmap_mcoord_gp_x[mmrtrnodes[i]->Dofs()[0]]+=mval[i];
-          dmap_mcoord_gp_y[mmrtrnodes[i]->Dofs()[1]]+=mval[i];
-        }
+      for (CI p=dmap_coord_y.begin();p!=dmap_coord_y.end();++p)
+        dsliptmatrixgp[p->first] += xabsxT * gpt[1] * (p->second);
 
-        //slave: add to jumplin
-        for (CI p=dmap_slcoord_gp_x.begin();p!=dmap_slcoord_gp_x.end();++p)
-          dmap_coord_x[p->first] += (p->second);
-        for (CI p=dmap_slcoord_gp_y.begin();p!=dmap_slcoord_gp_y.end();++p)
-          dmap_coord_y[p->first] += (p->second);
-
-        //master: add to jumplin
-        for (CI p=dmap_mcoord_gp_x.begin();p!=dmap_mcoord_gp_x.end();++p)
-          dmap_coord_x[p->first] -= (p->second);
-        for (CI p=dmap_mcoord_gp_y.begin();p!=dmap_mcoord_gp_y.end();++p)
-          dmap_coord_y[p->first] -= (p->second);
-
-        // add to dweargp
-        for (CI p=dmap_coord_x.begin();p!=dmap_coord_x.end();++p)
-          dweargp[p->first] += xabsx * gpt[0] * (p->second);
-
-        for (CI p=dmap_coord_y.begin();p!=dmap_coord_y.end();++p)
-          dweargp[p->first] += xabsx * gpt[1] * (p->second);
-      }// end wear
     }
     // evaluate linearizations *******************************************
     
@@ -1835,6 +1915,18 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
         fac = wgt*lmval[j]*gap*dsxideta*dxdsxidsxi;
         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
           dgmap[p->first] += fac*(p->second);
+
+        //****************************************************************
+        // LIN WEAR W.R.T. LM
+        //****************************************************************
+        std::map<int,double>& dgwmmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
+
+        for (int bl=0;bl<nrow;++bl)
+        {
+          MORTAR::MortarNode* wearnode = static_cast<MORTAR::MortarNode*>(mynodes[bl]);
+          for (int iter=0;iter<2;++iter)
+            dgwmmap[wearnode->Dofs()[0]] += dxdsxi*dsxideta*wgt*lmval[j]*(gpn[iter]*sval[bl]*wearnode->MoData().n()[iter]);
+        }
       }
 
       /*******************************************************************
@@ -1967,6 +2059,110 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
           dscmap[p->first] += 0.5*wgt*sval[j]*(p->second)/sele.Nodes()[j]->NumElement();
       }
     // compute segment scaling factor linearization **********************
+
+    //********************************************************************
+    //LINEARIZATIONS FOR DISCRETE WEAR
+    //********************************************************************
+    if(WearType() == INPAR::CONTACT::wear_discr)
+    {
+      for (int k=0;k<nrow;++k)
+      {
+        MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+        if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+
+        // integrate LinT
+        for (int j=0; j<nrow; ++j)
+        {
+          // global master node ID
+          int mgid = sele.Nodes()[j]->Id();
+          double fac = 0.0;
+
+          // get the correct map as a reference
+          std::map<int,double>& tmmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+
+          // (1) Lin(Phi) - dual shape functions
+          for (int m=0; m<nrow; ++m)
+          {
+            fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi*abs(jumpval);
+            for (CI p=dualmap[k][m].begin(); p!=dualmap[k][m].end(); ++p)
+              tmmap_jk[p->first] += fac*(p->second);
+          }
+
+          // (2) Lin(Phi) - slave GP coordinates
+          fac = wgt*lmderiv(j, 0)*sval[k]*dsxideta*dxdsxi*abs(jumpval);
+          for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+            tmmap_jk[p->first] += fac*(p->second);
+
+          // (3) Lin(Phi) - slave GP coordinates
+          fac = wgt*lmval[j]*sderiv(k,0)*dsxideta*dxdsxi*abs(jumpval);
+          for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+            tmmap_jk[p->first] += fac*(p->second);
+
+          // (4) Lin(dsxideta) - segment end coordinates
+          fac = wgt*lmval[j]*sval[k]*dxdsxi*abs(jumpval);
+          for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
+            tmmap_jk[p->first] -= 0.5*fac*(p->second);
+          for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
+            tmmap_jk[p->first] += 0.5*fac*(p->second);
+
+          // (5) Lin(dxdsxi) - slave GP Jacobian
+          fac = wgt*lmval[j]*sval[k]*dsxideta*abs(jumpval);
+          for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+            tmmap_jk[p->first] += fac*(p->second);
+
+          // (6) Lin(dxdsxi) - slave GP coordinates
+          fac = wgt*lmval[j]*sval[k]*dsxideta*dxdsxidsxi*abs(jumpval);
+          for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+            tmmap_jk[p->first] += fac*(p->second);
+
+          // (7) Lin(wear)
+          fac = wgt*lmval[j]*sval[k]*dsxideta*dxdsxi;
+          for (CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
+          {
+            tmmap_jk[p->first] += fac*(p->second);
+          }
+        } // end integrate linT
+
+        //********************************************************************************
+        // integrate LinE
+        for (int j=0; j<nrow; ++j)
+        {
+          // global master node ID
+          int mgid = sele.Nodes()[j]->Id();
+          double fac = 0.0;
+
+          // get the correct map as a reference
+          std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+
+          // (1) Lin(Phi) - slave GP coordinates
+          fac = wgt*sderiv(k, 0)*sval[j]*dsxideta*dxdsxi;
+          for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+            emmap_jk[p->first] += fac*(p->second);
+
+          // (2) Lin(Phi) - slave GP coordinates
+          fac = wgt*sval[k]*sderiv(j,0)*dsxideta*dxdsxi;
+          for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+            emmap_jk[p->first] += fac*(p->second);
+
+          // (3) Lin(dsxideta) - segment end coordinates
+          fac = wgt*sval[k]*sval[j]*dxdsxi;
+          for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
+            emmap_jk[p->first] -= 0.5*fac*(p->second);
+          for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
+            emmap_jk[p->first] += 0.5*fac*(p->second);
+
+          // (4) Lin(dxdsxi) - slave GP Jacobian
+          fac = wgt*sval[k]*sval[j]*dsxideta;
+          for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+            emmap_jk[p->first] += fac*(p->second);
+
+          // (5) Lin(dxdsxi) - slave GP coordinates
+          fac = wgt*sval[k]*sval[j]*dsxideta*dxdsxidsxi;
+          for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+            emmap_jk[p->first] += fac*(p->second);
+        } // end integrate linE
+      }//nrow-loop
+    }
   }
   //**********************************************************************
 
@@ -8576,6 +8772,85 @@ bool CONTACT::CoIntegrator::AssembleD(const Epetra_Comm& comm,
     */
   }
 
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble T contribution (2D / 3D)                        farah 09/13|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleT(const Epetra_Comm& comm,
+                                    MORTAR::MortarElement& sele,
+                                    Epetra_SerialDenseMatrix& tseg)
+{
+  // get adjacent nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleT: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // loop over all slave nodes again ("master nodes")
+    for (int master=0;master<sele.NumNode();++master)
+    {
+      CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(snodes[master]);
+      const int* mdofs = mnode->Dofs();
+
+      int col = mdofs[0];
+      int row = 0;
+      double val = tseg(slave,master);
+
+      if(abs(val)>1e-12) snode->AddTValue(row,col,val);
+    }
+  }
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble E contribution (2D / 3D)                        farah 09/13|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleE(const Epetra_Comm& comm,
+                                    MORTAR::MortarElement& sele,
+                                    Epetra_SerialDenseMatrix& eseg)
+{
+  // get adjacent nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes)
+    dserror("ERROR: AssembleE: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[slave]);
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID())
+      continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+
+    // loop over all slave nodes again ("master nodes")
+    for (int master=0;master<sele.NumNode();++master)
+    {
+      CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(snodes[master]);
+      const int* mdofs = mnode->Dofs();
+
+      int row = 0;
+      int col = mdofs[0];
+      double val = eseg(slave,master);
+
+      if(abs(val)>1e-12) snode->AddEValue(row,col,val);
+    }
+  }
   return true;
 }
 

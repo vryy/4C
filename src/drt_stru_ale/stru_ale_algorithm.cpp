@@ -239,7 +239,7 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   
   // get vector of unweighted wear
   Teuchos::RCP<Epetra_Vector> realwear = cmtman_->GetStrategy().ContactWear();
-  if(realwear==Teuchos::null) dserror("realwear = Neuchos::null");
+  if(realwear==Teuchos::null) dserror("STRU_ALE::Algorithm::InterfaceDisp: realwear = Teuchos::null");
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
