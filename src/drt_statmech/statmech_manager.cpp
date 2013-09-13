@@ -16,6 +16,7 @@ Maintainer: Kei Müller
 #include <Teuchos_Time.hpp>
 
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_element.H"
@@ -338,8 +339,8 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   // set dbctimeindex_ (position in actiontime_ where DBCs start being applied
   dbctimeindex_ = statmechparams_.get<int>("DBCTIMEINDEX", -1);
 
-  // DBC sanity checks
-  DBCSanityCheck();
+  // BC sanity checks
+  BCSanityCheck();
 
   if(!discret_->Comm().MyPID())
   {
@@ -5398,7 +5399,7 @@ void STATMECH::StatMechManager::EvaluateDirichletStatMech(Teuchos::ParameterList
   return;
 }
 /*----------------------------------------------------------------------*
- |  Evaluate DBCs in case of periodic BCs (private         mueller 02/10|
+ |  Evaluate DBCs in case of periodic BCs (private)        mueller 02/10|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList& params,
                                                           Teuchos::RCP<Epetra_Vector> dis,
@@ -5424,15 +5425,7 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
   {
     // shear with a fixed Dirichlet node set
     case INPAR::STATMECH::dbctype_shearfixed:
-    {
-      // if point in time is reached at which the application of Dirichlet values starts
-      if(!DBCStart(params))
-        return;
-      DBCOscillatoryMotion(params,dis,deltadbc);
-      useinitdbcset_ = true;
-    }
-    break;
-    // shear with a fixed Dirichlet node set and setting axial stiffness of dirsupted elements close to zero
+    // shear with a fixed Dirichlet node set and setting axial stiffness of disrupted elements close to zero
     case INPAR::STATMECH::dbctype_shearfixeddel:
     {
       // if point in time is reached at which the application of Dirichlet values starts
@@ -5461,14 +5454,6 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
     break;
     // apply affine shear displacement to all nodes
     case INPAR::STATMECH::dbctype_affineshear:
-    {
-      if(!DBCStart(params))
-        return;
-      DBCAffineShear(params,dis,deltadbc);
-      // used here to store the node set that remains under DBCs after the initial affine displacement
-      useinitdbcset_ = true;
-    }
-    break;
     // apply affine shear displacement to all nodes
     case INPAR::STATMECH::dbctype_affinesheardel:
     {
@@ -5477,6 +5462,14 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
       DBCAffineShear(params,dis,deltadbc);
       // used here to store the node set that remains under DBCs after the initial affine displacement
       useinitdbcset_ = true;
+    }
+    break;
+    // apply movable support to all upper face nodes of cut elements
+    case INPAR::STATMECH::dbctype_movablesupport1d:
+    {
+      if(!DBCStart(params))
+        return;
+      DBCMovableSupport1D(params, dis);
     }
     break;
     default:
@@ -5518,7 +5511,7 @@ bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  | Some simple sanity checks                   (private)  mueller 01/13 |
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::DBCSanityCheck()
+void STATMECH::StatMechManager::BCSanityCheck()
 {
   if(dbctimeindex_<0) // default
     dbctimeindex_ = (int)actiontime_->size()-1;
@@ -5549,7 +5542,7 @@ void STATMECH::StatMechManager::DBCSanityCheck()
         dserror("PERIODLENGTH = %f! This method works only in conjunction with periodic boundary conditions!", periodlength_->at(0));
       if(periodlength_->at(0)!=periodlength_->at(1) || periodlength_->at(0)!=periodlength_->at(2) || periodlength_->at(1)!=periodlength_->at(2))
         dserror("Check PERIODLENGTH in your input file! This method only works for a cubic boundary volume");
-      if(displacementdir>2 || displacementdir<0 || curvenumber<0)
+      if(displacementdir>2 || displacementdir<0 || (curvenumber<0 && dbctype != INPAR::STATMECH::dbctype_movablesupport1d))
         dserror("In case of imposed DBC values, please define the StatMech parameters DBCDISPDIR={1,2,3} and/or CURVENUMBER correctly");
       if(dbctype==INPAR::STATMECH::dbctype_affineshear)
       {
@@ -5559,6 +5552,25 @@ void STATMECH::StatMechManager::DBCSanityCheck()
           dserror("DBCTIMEINDEX must be set to 2 for affine shear displacement!");
       }
     }
+  }
+  INPAR::STATMECH::NBCType nbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::NBCType>(statmechparams_, "NBCTYPE");
+  switch(nbctype)
+  {
+    case INPAR::STATMECH::nbctype_std:
+      break;
+    case INPAR::STATMECH::nbctype_constcreep:
+    {
+      if(dbctype != INPAR::STATMECH::dbctype_movablesupport1d)
+        dserror("If you intend to run a creep simulation, set NBCTYPE to constcreep and DBCTYPE to movablesupport1d!");
+      int displacementdir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
+      if(displacementdir>2 || displacementdir<0)
+        dserror("In case of of a Dirichlet-based movable support, please define DBCDISPDIR={1,2,3} as the direction which remains ->unconstrained<-!");
+      int nbccurvenumber = statmechparams_.get<int>("NBCCURVENUMBER",0)-1;
+      if(nbccurvenumber<0)
+        dserror("Please give a Neumann BC curve number >0");
+    }
+    default:
+      break;
   }
   return;
 }
@@ -5946,7 +5958,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
     }
     dbcnodesets_.push_back(sensornodes);
     dbcnodesets_.push_back(fixednodes);
-    // without if-statement, this node set might added again after restart beyond actiontime_->at(2)
+    // without if-statement, this node set might be added again after restart beyond actiontime_->at(2)
     if(time<=actiontime_->at(2))
       dbcnodesets_.push_back(affineshearnodes);
     //std::cout<<"A Proc "<<discret_->Comm().MyPID()<<": sizeosc = "<<dbcnodesets_[0].size()<<std::endl;
@@ -5982,6 +5994,91 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
         (*deltadbc)[discret_->DofRowMap()->LID(dofnode[displacementdir])] = znode/(*periodlength_)[2]*amp*tcincrement;
       }
     }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Dirichlet condition constrainint all but one translational           |
+ | direction                                    (private)  mueller 09/13|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DBCMovableSupport1D(Teuchos::ParameterList&     params,
+                                                    Teuchos::RCP<Epetra_Vector> dis)
+{
+  // note in analogy to DBCOscillatoryMotion()
+  int freedir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
+  if(!useinitdbcset_)
+  {
+    Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(), true));
+    LINALG::Export(*dis, *discol);
+
+    dbcnodesets_.clear();
+    std::vector<int> movablenodes;
+    std::vector<int> fixednodes;
+    movablenodes.clear();
+    fixednodes.clear();
+    std::vector<bool> nodedbcstatus(discret_->NumMyColNodes(), false);
+
+    for(int lid=0; lid<discret_->NumMyRowElements(); lid++)
+    {
+      DRT::Element* element = discret_->lRowElement(lid);
+      if(element->Id() <= basisnodes_ && element->Id() < statmechparams_.get<int>("NUM_EVAL_ELEMENTS", basiselements_))
+      {
+        int numdof = 3;
+        LINALG::SerialDenseMatrix coord(numdof,(int)discret_->lRowElement(lid)->NumNode(), true);
+        LINALG::SerialDenseMatrix cut(numdof,(int)discret_->lRowElement(lid)->NumNode()-1,true);
+        std::vector<int> doflids;
+        GetElementNodeCoords(element, discol, coord, &doflids);
+        if(CheckForBrokenElement(coord,cut))
+        {
+//          if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+//          {
+//            for(int n=0; n<cut.N(); n++)
+//            {
+//              if(cut(2,n)>0.0)
+//              {
+//                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-12);
+//                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-12);
+//                break;
+//              }
+//            }
+//          }
+          for(int n=0; n<cut.N(); n++)
+          {
+            int nodelidn = discret_->NodeColMap()->LID(element->Nodes()[n]->Id());
+            int nodelidnp = discret_->NodeColMap()->LID(element->Nodes()[n+1]->Id());
+            int noderowlidn = discret_->NodeRowMap()->LID(element->Nodes()[n]->Id());
+            int noderowlidnp = discret_->NodeRowMap()->LID(element->Nodes()[n+1]->Id());
+
+            if(nodedbcstatus.at(nodelidn)==false && nodedbcstatus.at(nodelidnp)==false)
+            {
+              if(cut(2,n)==1.0)
+              {
+                nodedbcstatus.at(nodelidn) = true;
+                nodedbcstatus.at(nodelidnp) = true;
+                if(noderowlidn>-1)
+                  fixednodes.push_back(element->Nodes()[n]->Id());
+                if(noderowlidnp>-1)
+                  movablenodes.push_back(element->Nodes()[n+1]->Id());
+              }
+              if(cut(2,n)==2.0)
+              {
+                nodedbcstatus.at(nodelidn) = true;
+                nodedbcstatus.at(nodelidnp) = true;
+                if(noderowlidnp>-1)
+                  fixednodes.push_back(element->Nodes()[n+1]->Id());
+                if(noderowlidn>-1)
+                  movablenodes.push_back(element->Nodes()[n]->Id());
+              }
+            }
+          }
+        }
+      }
+    }
+    dbcnodesets_.push_back(movablenodes);
+    dbcnodesets_.push_back(fixednodes);
+    UpdateForceSensors(dbcnodesets_[0], freedir);
+    useinitdbcset_ = true;
   }
   return;
 }
@@ -6236,7 +6333,7 @@ void STATMECH::StatMechManager::DBCSetValues(Teuchos::RCP<Epetra_Vector> dis,
   // number of DOFs per node and DOF toggle vectors
   int numdof = (int)discret_->Dof(discret_->gNode(discret_->NodeRowMap()->GID(0))).size();
   // DOF toggle vector
-  std::vector<int> onoff(numdof,0);
+  std::vector<std::vector<int> > onoff((int)dbcnodesets_.size(),std::vector<int>(numdof,0));
 
   // manipulation of onoff vectors according to the different DBC types
   INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE");
@@ -6244,34 +6341,57 @@ void STATMECH::StatMechManager::DBCSetValues(Teuchos::RCP<Epetra_Vector> dis,
   {
     case INPAR::STATMECH::dbctype_shearfixed:
       // inhibit translational degrees of freedom
-      for(int i=0; i<3; i++)
-        onoff.at(i) = 1;
+      for(int i=0; i<(int)dbcnodesets_.size(); i++)
+        for(int j=0; j<3; j++)
+          onoff[i].at(j) = 1;
     break;
     case INPAR::STATMECH::dbctype_shearfixeddel:
       // inhibit translational degrees of freedom
-      for(int i=0; i<3; i++)
-        onoff.at(i) = 1;
+      for(int i=0; i<(int)dbcnodesets_.size(); i++)
+        for(int j=0; j<3; j++)
+          onoff[i].at(j) = 1;
     break;
     case INPAR::STATMECH::dbctype_sheartrans:
     {
       int dbcdispdir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
-      onoff.at(dbcdispdir) = 1;
+      for(int i=0; i<(int)dbcnodesets_.size(); i++)
+        onoff[i].at(dbcdispdir) = 1;
     }
     break;
     case INPAR::STATMECH::dbctype_affineshear:
       // inhibit translational degrees of freedom
-      for(int i=0; i<3; i++)
-        onoff.at(i) = 1;
+      for(int i=0; i<(int)dbcnodesets_.size(); i++)
+        for(int j=0; j<3; j++)
+          onoff[i].at(j) = 1;
     break;
     case INPAR::STATMECH::dbctype_affinesheardel:
       // inhibit translational degrees of freedom
-      for(int i=0; i<3; i++)
-        onoff.at(i) = 1;
+      for(int i=0; i<(int)dbcnodesets_.size(); i++)
+        for(int j=0; j<3; j++)
+          onoff[i].at(j) = 1;
     break;
     case INPAR::STATMECH::dbctype_pinnodes:
       // DOF toggle vector for end nodes of the horizontal filament
-      for(int i=0; i<3; i++)
-        onoff.at(i) = 1;
+      for(int i=0; i<(int)dbcnodesets_.size(); i++)
+        for(int j=0; j<3; j++)
+          onoff[i].at(j) = 1;
+    break;
+    case INPAR::STATMECH::dbctype_movablesupport1d:
+    {
+      int freedir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
+      // inhibit translational degrees of freedom
+      for(int i=0; i<(int)dbcnodesets_.size(); i++)
+        for(int j=0; j<3; j++)
+        {
+          if(i==0) //movable set
+          {
+            if(j!=freedir)
+              onoff[i].at(j) = 1;
+          }
+          else // fixed set
+            onoff[i].at(j) = 1;
+        }
+    }
     break;
     default:
       dserror("DBC values cannot be imposed for this DBC type: %d", dbctype);
@@ -6281,7 +6401,7 @@ void STATMECH::StatMechManager::DBCSetValues(Teuchos::RCP<Epetra_Vector> dis,
   // Apply DBC values
   for(int i=0; i<(int)dbcnodesets_.size(); i++)
     if(!dbcnodesets_[i].empty())
-      DoDirichletConditionPeriodic(&dbcnodesets_[i], &onoff, dis, deltadbc, dbcgids);
+      DoDirichletConditionPeriodic(&dbcnodesets_[i], &onoff[i], dis, deltadbc, dbcgids);
 
   return;
 }
@@ -6312,3 +6432,105 @@ void STATMECH::StatMechManager::DBCCreateMap(Teuchos::RCP<std::set<int> > dbcgid
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Create Dirichlet DOF maps                    (private)  mueller 09/13|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::EvaluateNeumannStatMech(Teuchos::ParameterList&              params,
+                                                        Teuchos::RCP<Epetra_Vector>          disn,
+                                                        Teuchos::RCP<Epetra_Vector>          systemvector,
+                                                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
+{
+  // get load vector
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  bool loadlin = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "LOADLIN");
+  INPAR::STATMECH::NBCType nbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::NBCType>(statmechparams_,"NBCTYPE");
+  switch(nbctype)
+  {
+    case INPAR::STATMECH::nbctype_std:
+    {
+      if (!loadlin)
+        discret_->EvaluateNeumann(params, systemvector);
+      else
+      {
+        discret_->SetState(0,"displacement new", disn);
+        discret_->EvaluateNeumann(params, systemvector, systemmatrix);
+      }
+    }
+    break;
+    case INPAR::STATMECH::nbctype_constcreep:
+    {
+      if(NBCStart(params))
+      {
+        int freedir = statmechparams_.get<int>("DBCDISPDIR",0)-1;
+        int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
+        double nbcval = statmechparams_.get<double>("NBCCREEPFORCE",0.0);
+
+        // some checks
+        if (!discret_->Filled()) dserror("FillComplete() was not called");
+        if (!discret_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+        if(curvenum<0) dserror("Invalid NBC curve number %i! Check NBCCURVENUMBER", curvenum);
+        int numdbclocal = (int)dbcnodesets_[0].size();
+        int numdbcglobal = -1;
+        discret_->Comm().SumAll(&numdbclocal,&numdbcglobal,1);
+        if (!numdbcglobal) dserror("PointNeumann condition does not have nodal cloud");
+
+        // get the current time
+        const double time = params.get("total time",-1.0);
+
+        // construct Point Neumann BC definition vector
+        std::vector<int> curve(6,0);
+        std::vector<int> onoff(6,0);
+        std::vector<double> val(6,0.0);
+
+        curve.at(freedir) = 1;
+        for(int i=0; i<3; i++)
+          if(i!=freedir)
+            onoff.at(i) = 0;
+          else
+            onoff.at(i) = 1;
+        val.at(freedir) = nbcval;
+
+        double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        for (int i=0; i<(int)dbcnodesets_[0].size(); ++i)
+        {
+          if (!discret_->NodeRowMap()->MyGID(dbcnodesets_[0][i])) continue;
+          DRT::Node* actnode = discret_->gNode(dbcnodesets_[0][i]);
+          if (!actnode) dserror("Cannot find global node %d",dbcnodesets_[0][i]);
+          std::vector<int> dofs = discret_->Dof(0,actnode);
+          const unsigned numdf = dofs.size();
+          for (unsigned j=0; j<numdf; ++j)
+          {
+            if (onoff[j]==0) continue;
+            const int gid = dofs[j];
+            double value  = val[j];
+            value *= curvefac;
+            const int lid = systemvector->Map().LID(gid);
+            if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+            (*systemvector)[lid] += value;
+          }
+        }
+      }
+    }
+    break;
+    default: break;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Determine if application of NBCs starts at a given time  mueller 5/12|
+ *----------------------------------------------------------------------*/
+bool STATMECH::StatMechManager::NBCStart(Teuchos::ParameterList& params)
+{
+  double eps = 2.0e-11;
+  // get the current time
+  double time = params.get<double>("total time", 0.0);
+  double starttime = actiontime_->at(dbctimeindex_);
+  //double dt = params.get<double>("delta time", 0.01);
+  if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The absolute time should be positive!", time);
+
+  if(time < starttime && fabs(starttime-time)>eps)
+    return false;
+  else
+    return true;
+}

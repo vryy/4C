@@ -1824,6 +1824,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "endtoend_const",
                                                     "viscoelasticity",
                                                     "networkcreep",
+                                                    "networkrelax",
                                                     "structanaly",
                                                     "octree",
                                                     "loom",
@@ -1837,6 +1838,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_endtoendconst,
                                             INPAR::STATMECH::statout_viscoelasticity,
                                             INPAR::STATMECH::statout_networkcreep,
+                                            INPAR::STATMECH::statout_networkrelax,
                                             INPAR::STATMECH::statout_structanaly,
                                             INPAR::STATMECH::statout_octree,
                                             INPAR::STATMECH::statout_loom,
@@ -1856,7 +1858,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::frictionmodel_isotropicconsistent,
                                             INPAR::STATMECH::frictionmodel_anisotropicconsistent),
                                             &statmech);
-  //Reading which kind of friction model should be applied
+  //Reading which kind of Dirichlet boundary condition should be applied
   setStringToIntegralParameter<int>("DBCTYPE","std","Dirichlet BC type applied",
                                  //listing possible std::strings in input file in category DBCTYPE
                                  tuple<std::string>("none",
@@ -1866,7 +1868,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "sheartrans",
                                                     "pinnodes" ,
                                                     "affineshear",
-                                                    "affinesheardel"),
+                                                    "affinesheardel",
+                                                    "movablesupport1d"),
                                  //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::dbctype_none,
                                             INPAR::STATMECH::dbctype_std,
@@ -1875,7 +1878,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::dbctype_sheartrans,
                                             INPAR::STATMECH::dbctype_pinnodes,
                                             INPAR::STATMECH::dbctype_affineshear,
-                                            INPAR::STATMECH::dbctype_affinesheardel),
+                                            INPAR::STATMECH::dbctype_affinesheardel,
+                                            INPAR::STATMECH::dbctype_movablesupport1d),
+                                            &statmech);
+  //Reading which kind of Dirichlet boundary condition should be applied
+  setStringToIntegralParameter<int>("NBCTYPE","std","Neumann BC type applied",
+                                 //listing possible std::strings in input file in category DBCTYPE
+                                 tuple<std::string>("std",
+                                                    "constcreep"),
+                                 //translating input std::strings into BACI input parameters
+                                 tuple<int>(INPAR::STATMECH::nbctype_std,
+                                            INPAR::STATMECH::nbctype_constcreep),
                                             &statmech);
   //Reading which kind of biopolymer network will be simulated
   setStringToIntegralParameter<int>("NETWORKTYPE","std","Network type simulated",
@@ -2018,8 +2031,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("GMSHOUTINTERVALS",100,"Number of time steps between two gmsh outputs written",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
   IntParameter("DBCDISPDIR",0,"Global spatial direction of oscillatory motion by Dirichlet BCs",&statmech);
-  //Reading time curve number for oscillatory motion
-  IntParameter("CURVENUMBER",0,"Specifies Time Curve number of oscillatory motion",&statmech);
+  //Reading time curve number for Dirichlet boundary conditions
+  IntParameter("CURVENUMBER",0,"Specifies Time Curve number of imposed Dirichlet BCs",&statmech);
+  //Reading time curve number for Neumann boundary conditions
+  IntParameter("NBCCURVENUMBER",0,"Specifies Time Curve number of Neumann BCs",&statmech);
+  // absolute value of constant force in creeping experiments
+  DoubleParameter("NBCCREEPFORCE",0.0,"constant creep force in NBCs",&statmech);
   //Reading number of elements that are taken into account when applying Dirichlet Conditions (useful to avoid redundant evaluation)
   // when Crosslink elements are added or the bead-spring-model is used
   IntParameter("NUM_EVAL_ELEMENTS",-1,"number of elements that are taken into account when applying Dirichlet Conditions",&statmech);

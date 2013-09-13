@@ -440,7 +440,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
       linkernodepairs_ = Teuchos::null;
     }
       break;
-    case INPAR::STATMECH::statout_networkcreep:
+    case INPAR::STATMECH::statout_networkrelax:
     {
       if(!discret_->Comm().MyPID())
       {
@@ -462,9 +462,15 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         // move temporary std::stringstream to file and close it
         fprintf(fp, filecontent.str().c_str());
         fclose(fp);
+
+        std::ostringstream outpufilename2;
+        outpufilename2 << outputrootpath_ << "/StatMechOutput/StructCOGInertia.dat";
+        fp = fopen(outpufilename2.str().c_str(), "w");
+        fprintf(fp, filecontent.str().c_str());
+        fclose(fp);
       }
     }
-      break;
+    break;
     case INPAR::STATMECH::statout_none:
     default:
       break;
@@ -870,7 +876,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       }
     }
     break;
-    case INPAR::STATMECH::statout_networkcreep:
+    case INPAR::STATMECH::statout_networkrelax:
     {
       Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
       int numstep = sdyn.get<int>("NUMSTEP", -1);
@@ -885,6 +891,28 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         std::ostringstream filename2;
         filename2 << outputrootpath_ << "/StatMechOutput/StructCOGInertia.dat";
         StructureCOGInertiaTensorOutput(istep, time, dis, filename2);
+      }
+    }
+    break;
+    case INPAR::STATMECH::statout_networkcreep:
+    {
+      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+      int numstep = sdyn.get<int>("NUMSTEP", -1);
+      if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-10)
+      {
+        if(!dbcnodesets_.size())
+          dserror("No Dirichlet node sets have been found! Check DBCTYPE and SPECIAL_OUTPUT in your input file.");
+
+        Epetra_Vector discol(*(discret_->DofColMap()),true);
+        LINALG::Export(dis,discol);
+
+        if(!discret_->Comm().MyPID())
+        {
+          std::stringstream filecontent;
+          std::ostringstream outputfilename;
+          outputfilename << outputrootpath_ << "/StatMechOutput/CreepDisplacement_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          CreepDisplacementOutput(discol, outputfilename);
+        }
       }
     }
     break;
@@ -971,6 +999,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       filename2  << outputrootpath_ << "/StatMechOutput/linkerforce_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
       MotilityAssayOutput(dis,time,dt,filename,filename2);
     }
+    break;
     case INPAR::STATMECH::statout_none:
     default:
     break;
@@ -5132,6 +5161,33 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double&        time,
     fprintf(fp,filecontent.str().c_str());
     fclose(fp);
   }
+}
+
+/*------------------------------------------------------------------------------*
+ | Output of Creep displacement                           (public) mueller 05/13|
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::CreepDisplacementOutput(Epetra_Vector&      discol,
+                                                        std::ostringstream& filename)
+{
+  FILE* fp = NULL;
+  std::stringstream filecontent;
+  fp = fopen(filename.str().c_str(), "w");
+
+  int freedir = statmechparams_.get<int>("DBCDISPDIR", -1)-1;
+
+  // write only the reference position and the displacement of the unconstrained direction
+  for(int i=0; i<(int)dbcnodesets_[0].size(); i++)
+  {
+    DRT::Node* dbcnode = discret_->gNode(dbcnodesets_[0].at(i));
+    std::vector<int> dofnode = discret_->Dof(dbcnode);
+    int freedof = dofnode.at(freedir);
+    filecontent << dbcnode->Id() <<"\t"<<std::scientific<<std::setprecision(8)<<dbcnode->X()[freedir]<<"\t"<<discol[freedof]<<std::endl;
+  }
+
+  fprintf(fp,filecontent.str().c_str());
+  fclose(fp);
+
+  return;
 }
 
 /*------------------------------------------------------------------------------*

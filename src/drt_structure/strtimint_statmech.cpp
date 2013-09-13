@@ -63,7 +63,7 @@ isconverged_(false)
   ndim_= DRT::Problem::Instance()->NDim();
 
   // print dbc type for this simulation to screen
-  StatMechPrintDBCType();
+  StatMechPrintBCType();
 
   if(!discret_->Comm().MyPID())
   {
@@ -92,9 +92,9 @@ isconverged_(false)
 } // STR::TimIntStatMech::TimIntStatMech()
 
 /*----------------------------------------------------------------------*
- |  print Dirichlet type to screen               (public) mueller 03/12 |
+ |  print Boundary condition type to screen      (public) mueller 03/12 |
  *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::StatMechPrintDBCType()
+void STR::TimIntStatMech::StatMechPrintBCType()
 {
   if(!discret_->Comm().MyPID())
   {
@@ -127,6 +127,9 @@ void STR::TimIntStatMech::StatMechPrintDBCType()
       case INPAR::STATMECH::dbctype_affinesheardel:
         std::cout<<"- DBCs for affine shear deformation"<<std::endl;
       break;
+      case INPAR::STATMECH::dbctype_movablesupport1d:
+        std::cout<<"- DBCs 1D movable support"<<std::endl;
+      break;
       // no DBCs at all
       case INPAR::STATMECH::dbctype_none:
         std::cout<<"- No application of DBCs (i.e. also no DBCs by Input file)"<<std::endl;
@@ -135,6 +138,15 @@ void STR::TimIntStatMech::StatMechPrintDBCType()
       default:
         dserror("Check your DBC type! %i", dbctype);
       break;
+    }
+    INPAR::STATMECH::NBCType nbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::NBCType>(statmechman_->GetStatMechParams(), "NBCTYPE");
+    switch(nbctype)
+    {
+      case INPAR::STATMECH::nbctype_constcreep:
+        std::cout<<"- constant shear Neumann boundary condition on a nodal subset" << std::endl;
+        break;
+      default:
+        std::cout<<"- standard input file based definition of Neumann boundary conditions / no NBCs"<< std::endl;
     }
   }
   return;
@@ -572,6 +584,34 @@ void STR::TimIntStatMech::EvaluateMidState()
   //    A_{n+theta} := theta * A_{n+1} + (1-theta) * A_{n}
   // acct_->Update(theta_, *accn_, 1.0-theta_, *(*acc_)(0), 0.0);
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate external forces at t_{n+1} (public)            mueller 09/13|
+ *----------------------------------------------------------------------*/
+void STR::TimIntStatMech::ApplyForceExternal(const double                          time,
+                                             const Teuchos::RCP<Epetra_Vector>     dis,
+                                             const Teuchos::RCP<Epetra_Vector>     disn,
+                                             const Teuchos::RCP<Epetra_Vector>     vel,
+                                             Teuchos::RCP<Epetra_Vector>&          fext,
+                                             Teuchos::RCP<LINALG::SparseOperator>& fextlin)
+{
+  ParameterList p;
+  // other parameters needed by the elements
+  p.set("total time", time);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState(0,"displacement", dis);
+
+  if (damping_ == INPAR::STR::damp_material)
+    discret_->SetState(0,"velocity", vel);
+
+  statmechman_->EvaluateNeumannStatMech(p,disn, fext, fextlin);
+
+  // go away
   return;
 }
 

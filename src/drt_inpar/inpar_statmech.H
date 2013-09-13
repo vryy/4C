@@ -41,7 +41,8 @@ namespace INPAR
       statout_orientationcorrelation,  ///< measuring correlation of orientation between different elements
       statout_anisotropic,  ///< measuring anisotropic diffusion of filament
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
-      statout_networkcreep, ///< measuring creep stresses of the network
+      statout_networkcreep, ///< measuring displacements upon force application
+      statout_networkrelax, ///< measuring stress relaxation of a network
       statout_gmsh, ///< writing special output in order to generate a Gmsh movie
       statout_structanaly, ///< writing special output in order to determine network structure
       statout_octree, ///< writing output for octree visualization and checks
@@ -69,7 +70,15 @@ namespace INPAR
       dbctype_sheartrans,  ///< special DBC application in case of rheological measurements with transient set of nodes
       dbctype_pinnodes,    ///< pin down individual nodes when a linker is attached
       dbctype_affineshear,  ///< apply affine shear displacement to all nodes
-      dbctype_affinesheardel  ///< apply affine shear displacement to all nodes, delete cut elements
+      dbctype_affinesheardel,  ///< apply affine shear displacement to all nodes, delete cut elements
+      dbctype_movablesupport1d,  ///< constrain all displacement except for one direction
+    };
+
+    /// (this enum represents the input file parameter NBCTYPE)
+    enum NBCType
+    {
+      nbctype_std,          ///< standard Neumann Boundary conditions defined by input file
+      nbctype_constcreep    ///< constant Neumann Boundary condition
     };
 
     /// (this enum represents the input file parameter NETWORKTYPE

@@ -296,6 +296,19 @@ public:
                                  Teuchos::RCP<Epetra_Vector>        dis,
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
+  /*! \brief adjusted NBC evaluation for StatMech
+   *  \param params       (in) a parameter list
+   *  \param disn         (in) new displacement state
+   *  \param systemvector (in) force vector
+   *  \param systemmatrix (in) stiffness matrix
+   * */
+  void EvaluateNeumannStatMech(Teuchos::ParameterList&              params,
+                               Teuchos::RCP<Epetra_Vector>          disn,
+                               Teuchos::RCP<Epetra_Vector>          systemvector,
+                               Teuchos::RCP<LINALG::SparseOperator> systemmatrix);
+  //! \brief decision whether to start Neumann BC application or not
+  bool NBCStart(Teuchos::ParameterList& params);
+
   //! brief computes the internal energy of the network
   void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis,
                              std::vector<double>&              energy,
@@ -590,6 +603,10 @@ protected:
                              const Epetra_Vector& fint,
                              std::ostringstream&  filename);
 
+  //! \brief Output of creep displacements
+  void CreepDisplacementOutput(Epetra_Vector&      discol,
+                               std::ostringstream& filename);
+
   //! \brief Output of selected node positions
   void OutputSlidingMotion(const Epetra_Vector& disrow,
                            std::ostringstream&  filename);
@@ -722,6 +739,9 @@ protected:
                               bool                             zerofy=true,
                               bool                             exportinsert=false);
 
+  //! \brief some simple checks for correct setup of boundary conditions via input file
+  void BCSanityCheck();
+
   /*! \brief adjusted DBC evaluation for periodic case
    *  \param params          (in)     a parameter list
    *  \param disn            (in)     displacement vector
@@ -733,9 +753,6 @@ protected:
   /*! \brief signals whether or not to start DBC application according to given time
    * \param params  (in)  Paramter list*/
   bool DBCStart(Teuchos::ParameterList& params);
-
-  //! \brief some simple checks for correct setup via input file
-  void DBCSanityCheck();
 
   /* \brief evaluate Dirichlet conditions*/
   void DoDirichletConditionPredefined(DRT::Condition&              cond,
@@ -775,6 +792,12 @@ protected:
 
   /*! \brief pin down and release nodes at their location by Dirichlet Values*/
   void DBCPinNodes();
+
+  /*! \brief Dirichlet condition accompanying constant Neumann shear force
+   *  \param params (in)  parameter list
+   *  \param dis    (in)  row displacement vector*/
+  void DBCMovableSupport1D(Teuchos::ParameterList&     params,
+                           Teuchos::RCP<Epetra_Vector> dis);
 
   /*! \brief Get DBCs defined in Input file and ad the DBCs DOFs to dbcgids
    *  \param params   (in)  Parameter List

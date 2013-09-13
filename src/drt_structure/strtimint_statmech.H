@@ -67,8 +67,8 @@ namespace STR
     //! Return name
     enum INPAR::STR::DynamicType MethodName() const { return INPAR::STR::dyna_statmech;}
 
-    //! \brief print DBC type to screen
-    void StatMechPrintDBCType();
+    //! \brief print BC type to screen
+    void StatMechPrintBCType();
 
     //! \brief retrieve random numbers per element
     void RandomNumbersPerElement();
@@ -96,11 +96,13 @@ namespace STR
                           Teuchos::RCP<Epetra_Vector> dis,
                           Teuchos::RCP<Epetra_Vector> vel);
 
-//    //! \brief Apply external forces
-//    void ApplyForceExternal(const double time,  //!< evaluation time
-//                            const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-//                            const Teuchos::RCP<Epetra_Vector> vel,  //!< velocity state
-//                            Teuchos::RCP<Epetra_Vector>& fext);  //!< external force
+    //! \brief Apply external forces
+    void ApplyForceExternal(const double                          time,
+                            const Teuchos::RCP<Epetra_Vector>     dis,
+                            const Teuchos::RCP<Epetra_Vector>     disn,
+                            const Teuchos::RCP<Epetra_Vector>     vel,
+                            Teuchos::RCP<Epetra_Vector>&          fext,
+                            Teuchos::RCP<LINALG::SparseOperator>& fextlin);
 
     //! \brief internal forces and stiffness matrix
     void ApplyForceStiffInternal(const double                         time,
