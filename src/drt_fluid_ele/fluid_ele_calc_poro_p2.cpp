@@ -31,23 +31,36 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoroP2<distype> * DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance( bool create )
+DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance( bool create, int num )
 {
-  static FluidEleCalcPoroP2<distype> * instance;
   if ( create )
   {
-    if ( instance==NULL )
+    if(static_cast<int>(MY::instances_.count(num))==0)
     {
-      instance = new FluidEleCalcPoroP2<distype>();
+      std::map<int,MY* > * temp_ = new std::map<int,MY* >;
+      temp_->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcPoroP2<distype>(num)));
+      MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, temp_));
     }
+    else if ( MY::instances_.count(num) > 0 and MY::instances_.at(num)->count((int)distype) == 0 )
+    {
+      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype, new FluidEleCalcPoroP2<distype>(num)));
+    }
+
+    return static_cast<DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* >(MY::instances_.at(num)->at((int)distype));
   }
   else
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    if ( MY::instances_.find(num)->second != NULL )
+    {
+      delete MY::instances_.at(num)->find((int)distype)->second;
+      delete MY::instances_.find(num)->second;
+    }
+
+    MY::instances_.insert(std::pair<int,std::map<int,MY* > * >(num, NULL));
+    return NULL;
   }
-  return instance;
+
+  return NULL;
 }
 
 
@@ -58,15 +71,17 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance( false );
+  int numinstances = MY::instances_.size();
+  for(int i=0; i<numinstances; i++)
+    Instance( false, i );
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FluidEleCalcPoroP2()
-  : DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(),
+DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FluidEleCalcPoroP2(int num)
+  : DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(num),
     W_(0.0),
     dW_dJ_(0.0)
 {

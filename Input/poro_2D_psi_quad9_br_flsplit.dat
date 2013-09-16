@@ -29,7 +29,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -85,7 +85,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithicfluidsplit
+COUPALGO                        poro_monolithicporofluidsplit
 INCTOL                          1e-04
 ITEMAX                          50
 ITEMIN                          1
@@ -107,7 +107,7 @@ AZTOL                           1.0E-9
 AZPREC                          BGS2x2
 --------------------------------------------------------SOLVER 2 //structure
 SOLVER                          UMFPACK
-------------------------------------------------------------SOLVER 3 //fluid
+------------------------------------------------------------SOLVER 3 //porofluid
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
@@ -153,7 +153,7 @@ LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 //SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.8 BULKMODULUS 2.0e2 PENALTYPARAMETER 0.001
@@ -173,9 +173,9 @@ CURVE2 on EXPR FUNC  5.0                              t1 3.0 t2 8.0
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 4 QUANTITY velx VALUE  1.59003235281702626e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 34 QUANTITY vely VALUE -1.53839598591510085e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 65 QUANTITY pressure VALUE 1.21433763956598648e-01 TOLERANCE 1e-6
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE  1.59003235281702626e-01 TOLERANCE 1e-7
+FLUID DIS porofluid NODE 34 QUANTITY vely VALUE -1.53839598591510085e-01 TOLERANCE 1e-7
+FLUID DIS porofluid NODE 65 QUANTITY pressure VALUE 1.21433763956598648e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -7.20739791497626830e-03 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE -6.63040949433442960e-03 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -7.19103281585119648e-03 TOLERANCE 1e-7

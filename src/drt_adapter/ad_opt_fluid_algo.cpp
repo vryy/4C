@@ -14,6 +14,7 @@ Maintainer: Martin Winklmaier
 
 #include "ad_opt_fluid_algo.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -22,7 +23,7 @@ ADAPTER::FluidTopOptCouplingAlgorithm::FluidTopOptCouplingAlgorithm(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn
     )
-:  FluidBaseAlgorithm(prbdyn,false),
+:  FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false),
    TopOptBaseAlgorithm(prbdyn,"opti"),
    TopOptFluidAdjointAlgorithm(prbdyn),
    params_(prbdyn)

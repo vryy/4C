@@ -188,6 +188,9 @@ namespace ADAPTER {
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
+    /// direct access to merged system matrix
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix() = 0;
+
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
@@ -403,8 +406,11 @@ namespace ADAPTER {
     /// return time integration factor
     virtual double TimIntParam() const = 0;
 
-    /// communication object at the interface
+    /// communication object at the interface (neglecting pressure dofs)
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;
+
+    /// communication object at the interface (including pressure dofs)
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const = 0;
 
     /// return type of time integration scheme
     virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;

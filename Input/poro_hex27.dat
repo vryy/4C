@@ -36,7 +36,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -159,7 +159,7 @@ LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.2 BULKMODULUS 1.0e8 PENALTYPARAMETER 0.0001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
@@ -175,8 +175,8 @@ CURVE1 on EXPR FUNC -1e0*(1-exp(-t^2/0.5)) t1 0.0 t2 8.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 100 QUANTITY velx VALUE -2.62571803107445011e-02 TOLERANCE 1e-8
-FLUID DIS fluid NODE 115 QUANTITY pressure VALUE 4.81750690474684617e+00 TOLERANCE 1e-6
+FLUID DIS porofluid NODE 100 QUANTITY velx VALUE -2.62571803107445011e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 115 QUANTITY pressure VALUE 4.81750690474684617e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE -2.00527804320744955e-05 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE -8.33849663398646812e-05 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -4.30201537107331006e-04 TOLERANCE 1e-8

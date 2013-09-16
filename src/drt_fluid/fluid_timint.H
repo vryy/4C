@@ -95,6 +95,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Map>    DofRowMap()     { return DofRowMap(0); }
   virtual Teuchos::RCP<const Epetra_Map>    DofRowMap(unsigned nds);
   virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<LINALG::SparseMatrix>SystemSparseMatrix()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual const Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
@@ -151,8 +152,12 @@ public:
   /// return time integration factor
   virtual double TimIntParam() const = 0;
 
-  /// communication object at the interface
+  /// communication object at the interface (neglecting pressure dofs)
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes");
+    static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null; return ret; }
+
+  /// communication object at the interface needed for fpsi problems (including pressure dofs)
+  virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { dserror("Implemented in the fluid wrapper and derived classes");
     static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null; return ret; }
 
   virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) {dserror("Not implemented in the base class, may be overridden by a subclass."); }

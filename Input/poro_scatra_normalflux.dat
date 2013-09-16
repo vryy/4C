@@ -36,7 +36,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -224,7 +224,7 @@ ML_DAMPFINE                     0.67                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 4
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.5 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001

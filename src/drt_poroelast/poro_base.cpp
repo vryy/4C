@@ -58,8 +58,12 @@
  *----------------------------------------------------------------------*/
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
                               const Teuchos::ParameterList& timeparams) :
-      AlgorithmBase(comm, timeparams)
+      AlgorithmBase(comm, timeparams),
+      PartOfMultifieldProblem_(false)
 {
+  if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
+    PartOfMultifieldProblem_=true;
+
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   // access structural dynamic params list which will be possibly modified while creating the time integrator
@@ -74,8 +78,10 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   // ask base algorithm for the fluid time integrator
+  DRT::Problem* problem = DRT::Problem::Instance();
+  const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
+      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fluiddynparams,"porofluid",true));
   fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidFieldrcp());
 
   if(fluid_ == Teuchos::null)
@@ -185,7 +191,8 @@ void POROELAST::PoroBase::PrepareTimeStep()
 {
   // counter and print header
   IncrementTimeAndStep();
-  PrintHeader();
+  if(!PartOfMultifieldProblem_)
+    PrintHeader();
 
   //set fluid velocities and pressures onto the structure
   SetFluidSolution();

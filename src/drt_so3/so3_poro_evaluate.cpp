@@ -1256,7 +1256,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GetMaterials( )
   int id = Id();
   //access fluid discretization
   RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  fluiddis = DRT::Problem::Instance()->GetDis("porofluid");
   //get corresponding fluid element
   DRT::Element* fluidele = fluiddis->gElement(id);
   if (fluidele == NULL)

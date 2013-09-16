@@ -29,7 +29,7 @@ ALPHA_F                         0.5
 ALPHA_M                         0.5
 CONVFORM                        convective
 GAMMA                           0.5
-GRIDVEL                         2
+GRIDVEL                         BDF2
 LINEAR_SOLVER                   1
 NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible

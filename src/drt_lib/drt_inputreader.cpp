@@ -329,7 +329,7 @@ void DatFileReader::ReadKnots(
   // only the knotvector section of this discretisation
   // type is of interest
   std::string field;
-  if(name=="fluid" or name=="xfluid")
+  if(name=="fluid" or name=="xfluid" or name=="porofluid")
   {
     field = "FLUID";
   }

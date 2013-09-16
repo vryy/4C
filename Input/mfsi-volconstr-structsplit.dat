@@ -35,7 +35,7 @@ ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No

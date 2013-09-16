@@ -46,6 +46,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_mlmc.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_poroscatra.H"
+#include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_inpar/inpar_crack.H"
@@ -2769,6 +2770,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::FLUID::condensed_bmat_merged),
                                   &fdyn);
 
+  setStringToIntegralParameter<int>("GRIDVEL", "BE", "scheme for determination of gridvelocity from displacements",
+                                  tuple<std::string>(
+                                    "BE",
+                                    "BDF2",
+                                    "OST"),
+                                  tuple<int>(
+                                      INPAR::FLUID::BE,
+                                      INPAR::FLUID::BDF2,
+                                      INPAR::FLUID::OST),
+                                  &fdyn);
+
   BoolParameter("ALLDOFCOUPLED","Yes","all dof (incl. pressure) are coupled",&fdyn);
 
   {
@@ -2826,7 +2838,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&fdyn);
   IntParameter("ITEMAX",10,"max. number of nonlin. iterations",&fdyn);
   IntParameter("INITSTATITEMAX",5,"max number of nonlinear iterations for initial stationary solution",&fdyn);
-  IntParameter("GRIDVEL",1,"order of accuracy of mesh velocity determination",&fdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&fdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
   DoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);
@@ -3278,6 +3289,294 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     INPAR::FLUID::EOS_he_vol_eq_diameter) ,
                                     &fdyn_edge_based_stab);
 
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fdyn_porostab = fdyn.sublist("POROUS-FLOW STABILIZATION",false,"");
+
+  // this parameter defines various stabilized methods
+  setStringToIntegralParameter<int>("STABTYPE",
+                               "residual_based",
+                               "Apply (un)stabilized fluid formulation",
+                               tuple<std::string>(
+                                 "no_stabilization",
+                                 "residual_based",
+                                 "edge_based"),
+                               tuple<std::string>(
+                                 "Do not use any stabilization -> inf-sup stable elements required!",
+                                 "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input",
+                                 "Use an edge-based stabilization, especially for XFEM")  ,
+                               tuple<int>(
+                                   INPAR::FLUID::stabtype_nostab,
+                                   INPAR::FLUID::stabtype_residualbased,
+                                   INPAR::FLUID::stabtype_edgebased),
+                               &fdyn_porostab);
+
+  BoolParameter("INCONSISTENT","No","residual based without second derivatives (i.e. only consistent for tau->0, but faster)",&fdyn_porostab);
+
+  // the following parameters are necessary only if a residual based stabilized method is applied
+  setStringToIntegralParameter<int>("TDS",
+                               "quasistatic",
+                               "Flag to allow time dependency of subscales for residual-based stabilization.",
+                               tuple<std::string>(
+                                 "quasistatic",
+                                 "time_dependent"),
+                               tuple<std::string>(
+                                 "Use a quasi-static residual-based stabilization (standard case)",
+                                 "Residual-based stabilization including time evolution equations for subscales"),
+                                 tuple<int>(
+                                   INPAR::FLUID::subscales_quasistatic,
+                                   INPAR::FLUID::subscales_time_dependent),
+                               &fdyn_porostab);
+
+  setStringToIntegralParameter<int>("TRANSIENT",
+                               "no_transient",
+                               "Specify how to treat the transient term.",
+                               tuple<std::string>(
+                                 "no_transient",
+                                 "yes_transient",
+                                 "transient_complete"),
+                               tuple<std::string>(
+                                 "Do not use transient term (currently only opportunity for quasistatic stabilization)",
+                                 "Use transient term (recommended for time dependent subscales)",
+                                 "Use transient term including a linearisation of 1/tau"),
+                               tuple<int>(
+                                   INPAR::FLUID::inertia_stab_drop,
+                                   INPAR::FLUID::inertia_stab_keep,
+                                   INPAR::FLUID::inertia_stab_keep_complete),
+                               &fdyn_porostab);
+
+  BoolParameter("PSPG","Yes","Flag to (de)activate PSPG stabilization.",&fdyn_porostab);
+  BoolParameter("SUPG","Yes","Flag to (de)activate SUPG stabilization.",&fdyn_porostab);
+  BoolParameter("GRAD_DIV","Yes","Flag to (de)activate grad-div term.",&fdyn_porostab);
+
+  setStringToIntegralParameter<int>("VSTAB",
+                               "no_vstab",
+                               "Flag to (de)activate viscous term in residual-based stabilization.",
+                               tuple<std::string>(
+                                 "no_vstab",
+                                 "vstab_gls",
+                                 "vstab_gls_rhs",
+                                 "vstab_usfem",
+                                 "vstab_usfem_rhs"
+                                 ),
+                               tuple<std::string>(
+                                 "No viscous term in stabilization",
+                                 "Viscous stabilization of GLS type",
+                                 "Viscous stabilization of GLS type, included only on the right hand side",
+                                 "Viscous stabilization of USFEM type",
+                                 "Viscous stabilization of USFEM type, included only on the right hand side"
+                                 ),
+                                 tuple<int>(
+                                     INPAR::FLUID::viscous_stab_none,
+                                     INPAR::FLUID::viscous_stab_gls,
+                                     INPAR::FLUID::viscous_stab_gls_only_rhs,
+                                     INPAR::FLUID::viscous_stab_usfem,
+                                     INPAR::FLUID::viscous_stab_usfem_only_rhs
+                                   ),
+                               &fdyn_porostab);
+
+  setStringToIntegralParameter<int>("RSTAB",
+                               "no_rstab",
+                               "Flag to (de)activate reactive term in residual-based stabilization.",
+                               tuple<std::string>(
+                                 "no_rstab",
+                                 "rstab_gls",
+                                 "rstab_usfem"
+                                 ),
+                               tuple<std::string>(
+                                 "no reactive term in stabilization",
+                                 "reactive stabilization of GLS type",
+                                 "reactive stabilization of USFEM type"
+                                 ),
+                                 tuple<int>(
+                                     INPAR::FLUID::reactive_stab_none,
+                                     INPAR::FLUID::reactive_stab_gls,
+                                     INPAR::FLUID::reactive_stab_usfem
+                                   ),
+                               &fdyn_porostab);
+
+  setStringToIntegralParameter<int>("CROSS-STRESS",
+                               "no_cross",
+                               "Flag to (de)activate cross-stress term -> residual-based VMM.",
+                               tuple<std::string>(
+                                 "no_cross",
+                                 "yes_cross",
+                                 "cross_rhs"
+                                 //"cross_complete"
+                                 ),
+                               tuple<std::string>(
+                                 "No cross-stress term",
+                                 "Include the cross-stress term with a linearization of the convective part",
+                                 "Include cross-stress term, but only explicitly on right hand side"
+                                 //""
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::cross_stress_stab_none,
+                                   INPAR::FLUID::cross_stress_stab,
+                                   INPAR::FLUID::cross_stress_stab_only_rhs
+                                ),
+                               &fdyn_porostab);
+
+  setStringToIntegralParameter<int>("REYNOLDS-STRESS",
+                               "no_reynolds",
+                               "Flag to (de)activate Reynolds-stress term -> residual-based VMM.",
+                               tuple<std::string>(
+                                 "no_reynolds",
+                                 "yes_reynolds",
+                                 "reynolds_rhs"
+                                 //"reynolds_complete"
+                                 ),
+                               tuple<std::string>(
+                                 "No Reynolds-stress term",
+                                 "Include Reynolds-stress term with linearisation",
+                                 "Include Reynolds-stress term explicitly on right hand side"
+                                 //""
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::reynolds_stress_stab_none,
+                                   INPAR::FLUID::reynolds_stress_stab,
+                                   INPAR::FLUID::reynolds_stress_stab_only_rhs
+                               ),
+                               &fdyn_porostab);
+
+  // this parameter selects the tau definition applied
+  setStringToIntegralParameter<int>("DEFINITION_TAU",
+                               "Franca_Barrenechea_Valentin_Frey_Wall",
+                               "Definition of tau_M and Tau_C",
+                               tuple<std::string>(
+                                 "Taylor_Hughes_Zarins",
+                                 "Taylor_Hughes_Zarins_wo_dt",
+                                 "Taylor_Hughes_Zarins_Whiting_Jansen",
+                                 "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt",
+                                 "Taylor_Hughes_Zarins_scaled",
+                                 "Taylor_Hughes_Zarins_scaled_wo_dt",
+                                 "Franca_Barrenechea_Valentin_Frey_Wall",
+                                 "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt",
+                                 "Shakib_Hughes_Codina",
+                                 "Shakib_Hughes_Codina_wo_dt",
+                                 "Codina",
+                                 "Codina_wo_dt",
+                                 "Franca_Madureira_Valentin_Badia_Codina",
+                                 "Franca_Madureira_Valentin_Badia_Codina_wo_dt"),
+                               tuple<int>(
+                                   INPAR::FLUID::tau_taylor_hughes_zarins,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_scaled,
+                                   INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt,
+                                   INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall,
+                                   INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt,
+                                   INPAR::FLUID::tau_shakib_hughes_codina,
+                                   INPAR::FLUID::tau_shakib_hughes_codina_wo_dt,
+                                   INPAR::FLUID::tau_codina,
+                                   INPAR::FLUID::tau_codina_wo_dt,
+                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina,
+                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt),
+                               &fdyn_porostab);
+
+  // this parameter selects the characteristic element length for tau_Mu for all
+  // stabilization parameter definitions requiring such a length
+  setStringToIntegralParameter<int>("CHARELELENGTH_U",
+                               "streamlength",
+                               "Characteristic element length for tau_Mu",
+                               tuple<std::string>(
+                                 "streamlength",
+                                 "volume_equivalent_diameter",
+                                 "root_of_volume"),
+                               tuple<int>(
+                                   INPAR::FLUID::streamlength_u,
+                                   INPAR::FLUID::volume_equivalent_diameter_u,
+                                   INPAR::FLUID::root_of_volume_u),
+                               &fdyn_porostab);
+
+  // this parameter selects the characteristic element length for tau_Mp and tau_C for
+  // all stabilization parameter definitions requiring such a length
+  setStringToIntegralParameter<int>("CHARELELENGTH_PC",
+                               "volume_equivalent_diameter",
+                               "Characteristic element length for tau_Mp/tau_C",
+                               tuple<std::string>(
+                                 "streamlength",
+                                 "volume_equivalent_diameter",
+                                 "root_of_volume"),
+                               tuple<int>(
+                                   INPAR::FLUID::streamlength_pc,
+                                   INPAR::FLUID::volume_equivalent_diameter_pc,
+                                   INPAR::FLUID::root_of_volume_pc),
+                               &fdyn_porostab);
+
+  // this parameter selects the location where tau is evaluated
+  setStringToIntegralParameter<int>("EVALUATION_TAU",
+                               "element_center",
+                               "Location where tau is evaluated",
+                               tuple<std::string>(
+                                 "element_center",
+                                 "integration_point"),
+                               tuple<std::string>(
+                                 "evaluate tau at element center",
+                                 "evaluate tau at integration point")  ,
+                                tuple<int>(0,1),
+                               &fdyn_porostab);
+
+  // this parameter selects the location where the material law is evaluated
+  // (does not fit here very well, but parameter transfer is easier)
+  setStringToIntegralParameter<int>("EVALUATION_MAT",
+                               "element_center",
+                               "Location where material law is evaluated",
+                               tuple<std::string>(
+                                 "element_center",
+                                 "integration_point"),
+                               tuple<std::string>(
+                                 "evaluate material law at element center",
+                                 "evaluate material law at integration point")  ,
+                                tuple<int>(0,1),
+                               &fdyn_porostab);
+
+  // these parameters active additional terms in loma continuity equation
+  // which might be identified as SUPG-/cross- and Reynolds-stress term
+  BoolParameter("LOMA_CONTI_SUPG","No","Flag to (de)activate SUPG stabilization in loma continuity equation.",&fdyn_porostab);
+
+  setStringToIntegralParameter<int>("LOMA_CONTI_CROSS_STRESS",
+                               "no_cross",
+                               "Flag to (de)activate cross-stress term loma continuity equation-> residual-based VMM.",
+                               tuple<std::string>(
+                                 "no_cross",
+                                 "yes_cross",
+                                 "cross_rhs"
+                                 //"cross_complete"
+                                 ),
+                               tuple<std::string>(
+                                 "No cross-stress term",
+                                 "Include the cross-stress term with a linearization of the convective part",
+                                 "Include cross-stress term, but only explicitly on right hand side"
+                                 //""
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::cross_stress_stab_none,
+                                   INPAR::FLUID::cross_stress_stab,
+                                   INPAR::FLUID::cross_stress_stab_only_rhs
+                                ),
+                               &fdyn_porostab);
+
+  setStringToIntegralParameter<int>("LOMA_CONTI_REYNOLDS_STRESS",
+                               "no_reynolds",
+                               "Flag to (de)activate Reynolds-stress term loma continuity equation-> residual-based VMM.",
+                               tuple<std::string>(
+                                 "no_reynolds",
+                                 "yes_reynolds",
+                                 "reynolds_rhs"
+                                 ),
+                               tuple<std::string>(
+                                 "No Reynolds-stress term",
+                                 "Include Reynolds-stress term with linearisation",
+                                 "Include Reynolds-stress term explicitly on right hand side"
+                                 //""
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::reynolds_stress_stab_none,
+                                   INPAR::FLUID::reynolds_stress_stab,
+                                   INPAR::FLUID::reynolds_stress_stab_only_rhs
+                               ),
+                               &fdyn_porostab);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
@@ -5264,6 +5563,119 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::GEO::Quadtree3D,
                                      INPAR::GEO::Quadtree2D),
                                      &search_tree);
+
+  /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& fpsidyn = list->sublist(
+      "FPSI DYNAMIC",false,
+      "Fluid Porous Structure Interaction\n"
+      "FPSI solver with various coupling methods"
+      );
+
+    Teuchos::Tuple<std::string,1> fpsiname;
+    Teuchos::Tuple<int,1> fpsilabel;
+
+    name[0] = "fpsi_monolithic_plain"; label[0] = fpsi_monolithic_plain;
+    setStringToIntegralParameter<int>("COUPALGO","fpsi_monolithic_plain",
+                                      "Iteration Scheme over the fields",
+                                      name,
+                                      label,
+                                      &fpsidyn);
+
+    setStringToIntegralParameter<int>("SHAPEDERIVATIVES","No",
+                                 "Include linearization with respect to mesh movement in Navier Stokes equation.\n"
+                                 "Supported in monolithic FPSI for now.",
+                                 yesnotuple,yesnovalue,&fpsidyn);
+
+    setStringToIntegralParameter<int>("USESHAPEDERIVATIVES","No",
+                                 "Add linearization with respect to mesh movement in Navier Stokes equation to stiffness matrix.\n"
+                                 "Supported in monolithic FPSI for now.",
+                                 yesnotuple,yesnovalue,&fpsidyn);
+
+    setStringToIntegralParameter<int>(
+                                 "PARTITIONED","RobinNeumann",
+                                 "Coupling strategies for partitioned FPSI solvers.",
+                                 tuple<std::string>(
+                                   "RobinNeumann",
+                                   "DirichletNeumann",
+                                   "monolithic",
+                                   "nocoupling"),
+                                   tuple<int>(
+                                   INPAR::FPSI::RobinNeumann,
+                                   INPAR::FPSI::DirichletNeumann,
+                                   INPAR::FPSI::monolithic,
+                                   INPAR::FPSI::nocoupling),
+                                   &fpsidyn);
+
+    setStringToIntegralParameter<int>("SECONDORDER","No",
+                                 "Second order coupling at the interface.",
+                                 yesnotuple,yesnovalue,&fpsidyn);
+
+    // Iterationparameters
+    DoubleParameter("RESTOL",1e-8,"tolerance in the residual norm for the Newton iteration",&fpsidyn);
+    DoubleParameter("INCTOL",1e-8,"tolerance in the increment norm for the Newton iteration",&fpsidyn);
+
+    setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
+                                 tuple<std::string>(
+                                   "Abs"
+                                   ),
+                                 tuple<int>(
+                                   INPAR::FPSI::absoluteconvergencenorm
+                                   ),
+                                 &fpsidyn);
+
+    setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for residual convergence check",
+                                   tuple<std::string>(
+                                     "Abs"
+                                     ),
+                                   tuple<int>(
+                                     INPAR::FPSI::absoluteconvergencenorm
+                                     ),
+                                   &fpsidyn);
+
+    setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
+                                 tuple<std::string>(
+                                       "And",
+                                       "Or"),
+                                       tuple<int>(
+                                         INPAR::FPSI::bop_and,
+                                         INPAR::FPSI::bop_or),
+                                 &fpsidyn);
+
+    setStringToIntegralParameter<int>("LineSearch","No","adapt increment in case of non-monotonic residual convergence or residual oscillations",
+                                 tuple<std::string>(
+                                       "Yes",
+                                       "No"),
+                                       tuple<int>(
+                                         1,
+                                         0),
+                                 &fpsidyn);
+
+    setStringToIntegralParameter<int>("FDCheck","No","perform FPSIFDCheck() finite difference check",
+                                 tuple<std::string>(
+                                       "Yes",
+                                       "No"),
+                                       tuple<int>(
+                                         1,
+                                         0),
+                                 &fpsidyn);
+
+    // number of linear solver used for poroelasticity
+    IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for FPSI problems",&fpsidyn);
+
+    IntParameter("ITEMAX",10,"maximum number of iterations over fields",&fpsidyn);
+    IntParameter("ITEMIN",1,"minimal number of iterations over fields",&fpsidyn);
+    IntParameter("NUMSTEP",200,"Total number of Timesteps",&fpsidyn);
+    IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fpsidyn);
+    IntParameter("UPRES",1,"Increment for writing solution",&fpsidyn);
+    IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fpsidyn);
+
+    IntParameter("FDCheck_row",0,"print row value during FDCheck",&fpsidyn);
+    IntParameter("FDCheck_column",0,"print column value during FDCheck",&fpsidyn);
+
+    DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fpsidyn);
+    DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fpsidyn);
+    DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&fpsidyn);
+    DoubleParameter("ALPHABJ",1.0,"Beavers-Joseph-Coefficient for Slip-Boundary-Condition at Fluid-Porous-Interface (0.1-4)",&fpsidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");

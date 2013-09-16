@@ -22,6 +22,10 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc_poro_p2.H"
 #include "fluid_ele_calc_xfem.H"
 
+#include "../drt_inpar/inpar_fpsi.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
@@ -96,6 +100,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(DRT::
     // no 1D elements
     default:
       dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
+      break;
     }
   return NULL;
 }
@@ -107,11 +112,21 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(std::string problem)
 {
   if (problem == "std")
-    return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance();
+  {
+    if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
+      return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(true,INPAR::FPSI::fluid);
+    else
+      return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance();
+  }
   else if (problem == "loma")
     return DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
   else if (problem == "poro")
-    return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
+  {
+    if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
+      return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance(true,INPAR::FPSI::porofluid);
+    else
+      return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
+  }
   else if (problem == "poro_p1")
     return DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
   else if (problem == "poro_p2")
@@ -120,6 +135,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     dserror("Defined problem type does not exist!!");
 
   return NULL;
+
 }
 
 /*--------------------------------------------------------------------------*
@@ -147,6 +163,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
     //}
     default:
       dserror("Element shape %s not activated for XFEM problems. Just do it.",DRT::DistypeToString(distype).c_str());
+      break;
     }
   return NULL;
 }
@@ -194,6 +211,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplMeshfr
     }
     default:
       dserror("Element shape %s not activated for meshfree problems. ",DRT::DistypeToString(distype).c_str());
+      break;
     }
   return NULL;
 }

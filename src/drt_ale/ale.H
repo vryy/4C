@@ -100,7 +100,7 @@ public:
   void PrepareTimeStep();
 
   /// calculate linear system
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) = 0;
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::string incrementtype = std::string("step")) = 0;
 
   /// take the current solution to be the final one for this time step
   virtual void Update() = 0;

@@ -33,17 +33,18 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoro : public FluidEleCalc<distype>
 {
-    typedef FluidEleCalc<distype> my;
+    typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
+    typedef DRT::ELEMENTS::FluidEleInterface MY;
 
 protected:
     /// private Constructor since we are a Singleton.
-    FluidEleCalcPoro();
+    FluidEleCalcPoro(int num=0);
 
 public:
     virtual ~FluidEleCalcPoro() {}
 
     /// Singleton access method
-    static FluidEleCalcPoro<distype> * Instance( bool create=true );
+    static FluidEleCalcPoro<distype>* Instance( bool create=true, int num=0 );
 
     /// called upon destruction
     virtual void Done();
@@ -900,7 +901,6 @@ protected:
 
   //! corresponding solid element
   DRT::ELEMENTS::So_Poro_Interface* so_interface_;
-
 };
 }
 }

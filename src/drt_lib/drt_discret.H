@@ -988,6 +988,8 @@ public:
                                        present
   \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
                                        present.
+  \param extendedghosting       (in) : if true, build geometry of boundary conditions
+                                       present.
 
   \note Filled()==true is a prerequisite, Filled()==true on exit
   */
@@ -995,7 +997,8 @@ public:
                             const Epetra_Map& nodecolmap,
                             bool assigndegreesoffreedom=true,
                             bool initelements          =true,
-                            bool doboundaryconditions  =true);
+                            bool doboundaryconditions  =true,
+                            bool extendedghosting      =false);
 
 //-----------------------------------------------------------------------------------
 // this is temporary to hide away this method SetupGhosting and only give access to the
@@ -1052,6 +1055,7 @@ public:
   \param nodecolmap (in): overlapping nodal column map
   \param elerowmap (out): unique element row map
   \param elecolmap (out): overlapping element column map
+  \param ExtendedGhosting (in): allow for ghosting of elements on processors, which don't own any of the elements' nodes (default: false) // rauch 09/13
 
   \note The provided noderowmap and nodecolmap do not need to match the
   distribution of nodes in this discretization class. Also, the output
@@ -1065,7 +1069,8 @@ public:
   virtual void BuildElementRowColumn(const Epetra_Map& noderowmap,
                                      const Epetra_Map& nodecolmap,
                                      RCP<Epetra_Map>& elerowmap,
-                                     RCP<Epetra_Map>& elecolmap) const;
+                                     RCP<Epetra_Map>& elecolmap,
+                                     bool ExenedGhosting = false) const;
 
   /*!
   \brief Export the nodes to a different parallel layout
@@ -1089,7 +1094,7 @@ public:
 
   \note Sets Filled()=false and deletes noderowmap_ and nodecolmap_
   */
-  virtual void ExportRowNodes(const Epetra_Map& newmap);
+  virtual void ExportRowNodes(const Epetra_Map& newmap, bool killdofs = true, bool killcond = true);
 
 
   /*!
@@ -1117,7 +1122,7 @@ public:
 
   \note Sets Filled()=false and deletes noderowmap_ and nodecolmap_
   */
-  virtual void ExportColumnNodes(const Epetra_Map& newmap);
+  virtual void ExportColumnNodes(const Epetra_Map& newmap, bool killdofs = true, bool killcond = true);
 
   /*!
   \brief Export the elements from proc 0 to a different parallel row layout
@@ -1162,7 +1167,7 @@ public:
 
   \note Sets Filled()=false and deletes elerowmap_ and elecolmap_
   */
-  virtual void ExportRowElements(const Epetra_Map& newmap);
+  virtual void ExportRowElements(const Epetra_Map& newmap, bool killdofs = true, bool killcond = true);
 
 
   /*!
@@ -1189,7 +1194,7 @@ public:
 
   \note Sets Filled()=false and deletes elerowmap_ and elecolmap_
   */
-  virtual void ExportColumnElements(const Epetra_Map& newmap);
+  virtual void ExportColumnElements(const Epetra_Map& newmap, bool killdofs = true, bool killcond = true);
 
   /*!
   \brief Build nodal graph of discretization (Filled()==true prerequisite)
@@ -1912,7 +1917,7 @@ protected:
   \note This is a collective call
   */
   // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization (nis) Jan12
-  virtual void Reset(bool killdofs = true);
+  virtual void Reset(bool killdofs = true, bool killcond = true);
 
   // internal data
   std::string                                name_;              // name of this discretization

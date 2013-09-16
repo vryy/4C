@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                             std::string condname)
-  : fluid_(prbdyn,true),
+  : fluid_(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true),
     ale_(prbdyn)
 {
   const int ndim = DRT::Problem::Instance()->NDim();

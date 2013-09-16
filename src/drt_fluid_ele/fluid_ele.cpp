@@ -596,6 +596,7 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
     {
       case prb_poroelast:
       case prb_poroscatra:
+      case prb_fpsi:
       {
         const Teuchos::ParameterList& params= DRT::Problem::Instance()->FluidDynamicParams();
         INPAR::FLUID::PhysicalType physicaltype =
@@ -637,9 +638,33 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
         return 1;
         break;
       }
+      case prb_fpsi:
+      {
+        return DRT::Problem::Instance()->NDim()+1;
+        break;
+      }
       default:
       {
         dserror("invalid number of dofsets (3) for this problem type");
+        return -1;
+        break;
+      }
+    }
+  }
+  else if(nds == 3)
+  {
+    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+    switch (probtype)
+    {
+      case prb_fpsi:
+      {
+        // return 4 for ale field. otherwise assembly for block structure_ale not correct (evaluated on FluidField() and assembled in matrix with ale map)
+        return DRT::Problem::Instance()->NDim()+1;
+        break;
+      }
+      default:
+      {
+        dserror("invalid number of dofsets (4) for this problem type");
         return -1;
         break;
       }

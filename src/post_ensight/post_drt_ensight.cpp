@@ -468,6 +468,24 @@ int main(
 
       break;
     }
+    case prb_fpsi:
+    {
+      string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* porofluidfield = problem.get_discretization(1);
+      FluidEnsightWriter porofluidwriter(porofluidfield, basename);
+      porofluidwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(2);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      break;
+    }
     case prb_ssi:
     {
       std::string basename = problem.outname();

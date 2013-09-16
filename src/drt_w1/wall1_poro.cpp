@@ -207,7 +207,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
     // get global id of the structure element
     int id = Id();
     //access fluid discretization
-    Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("porofluid");
     if(fluiddis==Teuchos::null)
       dserror("no fluid discretization");
 

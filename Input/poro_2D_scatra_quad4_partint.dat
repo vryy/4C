@@ -32,7 +32,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -87,7 +87,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit 
+COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicporofluidsplit 
 INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
@@ -199,7 +199,7 @@ NUMSTEP                         100
 MAXTIME                         8.0
 TIMESTEP                        0.01
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.4 BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001

@@ -82,7 +82,7 @@ void POROELAST::PORO_SCATRA_Base::SetupDiscretizations(const Epetra_Comm& comm)
 
   //1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
   //1.2.-Set degrees of freedom in the str. discretization

@@ -29,6 +29,7 @@ Maintainer: Michael Gee
 #include "../drt_red_airways/red_airways_dyn_drt.H"
 #include "../drt_stru_ale/stru_ale_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
+#include "../drt_fpsi/fpsi_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
 #include "../drt_particle/particle_dyn.H"
 #include "../drt_stru_multi/microstatic_npsupport.H"
@@ -132,6 +133,9 @@ void ntacal()
       break;
     case prb_poroscatra:
       poro_scatra_drt();
+      break;
+    case prb_fpsi:
+      fpsi_drt();
       break;
     case prb_ssi:
       ssi_drt();

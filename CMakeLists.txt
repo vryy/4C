@@ -1308,6 +1308,7 @@ set(OBJS_DRT_B3_LIB
 )
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
+  src/drt_fluid_ele/fluid_ele_interface.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary_parent_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary.cpp
@@ -1519,6 +1520,16 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_scatra_monolithic.cpp
 )
 
+set(OBJS_DRT_FPSI
+  src/drt_fpsi/fpsi_utils.cpp
+  src/drt_fpsi/fpsi_dyn.cpp
+  src/drt_fpsi/fpsi_monolithic.cpp
+  src/drt_fpsi/fpsi_monolithic_plain.cpp
+  src/drt_fpsi/fpsi_partitioned.cpp
+  src/drt_fpsi/fpsi.cpp
+  src/drt_fpsi/fpsi_robinneumann.cpp
+)
+
 set(OBJS_DRT_SSI
 src/drt_ssi/ssi_dyn.cpp
 src/drt_ssi/ssi_base.cpp
@@ -1643,6 +1654,7 @@ add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
+add_library(alg_fpsi ${OBJS_DRT_FPSI})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
@@ -1656,6 +1668,7 @@ set(MULTIFIELD_LIBRARIES
   alg_tsi
   alg_stru_ale
   alg_poroelast
+  alg_fpsi
   alg_fs3i
   alg_topopt
   alg_ssi

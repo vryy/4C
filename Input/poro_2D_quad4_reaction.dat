@@ -29,7 +29,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -114,7 +114,7 @@ AZTOL                           1.0E-9
 AZPREC                          BGS2x2
 --------------------------------------------------------SOLVER 2 //structure
 SOLVER                          UMFPACK
-------------------------------------------------------------SOLVER 3 //fluid
+------------------------------------------------------------SOLVER 3 //porofluid
 SOLVER UMFPACK //UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Solver
@@ -222,7 +222,7 @@ EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoroReaction MATID 2 INITPOROSITY 0.3 BULKMODULUS 2.0e1 PENALTYPARAMETER 0.001
@@ -245,9 +245,9 @@ FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 4 QUANTITY velx VALUE 3.71349088601968805e-05 TOLERANCE 1e-8
-FLUID DIS fluid NODE 34 QUANTITY vely VALUE 8.80643290762610994e-06 TOLERANCE 1e-8
-FLUID DIS fluid NODE 65 QUANTITY pressure VALUE -1.16756369141385284e-02 TOLERANCE 1e-7
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE 3.71349088601968805e-05 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 34 QUANTITY vely VALUE 8.80643290762610994e-06 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 65 QUANTITY pressure VALUE -1.16756369141385284e-02 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -3.06983126603257683e-06 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -3.16862894521458765e-06 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -6.34032720879941329e-06 TOLERANCE 1e-8

@@ -38,7 +38,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -93,7 +93,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithicfluidsplit //poro_monolithicstructuresplit poro_monolithic 
+COUPALGO                        poro_monolithicporofluidsplit //poro_monolithicstructuresplit poro_monolithic 
 INCTOL                          1e-03
 ITEMAX                          20
 ITEMIN                          1
@@ -184,7 +184,7 @@ SIZERATIOSCALE                  0.9
 STEPSIZEMAX                     0
 STEPSIZEMIN                     0
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.2 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
@@ -202,8 +202,8 @@ CURVE3 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 4.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 124 QUANTITY velx VALUE -3.56957355248420982e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 124 QUANTITY pressure VALUE 3.90625529888260985e+01 TOLERANCE 1e-4
+FLUID DIS porofluid NODE 124 QUANTITY velx VALUE -3.56957355248420982e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 124 QUANTITY pressure VALUE 3.90625529888260985e+01 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -6.15582970243111482e-03 TOLERANCE 1e-8

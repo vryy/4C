@@ -47,6 +47,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   params_(params),
   output_(output),
   interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
+  fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
   meshmap_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
   // make sure
@@ -58,7 +59,13 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   if (fluidimpl_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
-  interface_->Setup(*dis);
+    interface_->Setup(*dis,false);
+    fpsiinterface_->Setup(*dis,true);
+
+    if(DRT::Problem::Instance()->ProblemType() != prb_fpsi)
+    {
+      fpsiinterface_=Teuchos::null;
+    }
   fluidimpl_->SetSurfaceSplitter(&(*interface_));
 
   // build inner velocity map

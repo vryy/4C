@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 #include "adapter_scatra_fluid_coupling_algorithm.H"
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../drt_io/io.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -29,7 +30,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     const Teuchos::ParameterList& solverparams
     )
 :  AlgorithmBase(comm,prbdyn),
-   FluidBaseAlgorithm(prbdyn,isale), // false -> no ALE in fluid algorithm
+   FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",isale), // false -> no ALE in fluid algorithm
    ScaTraBaseAlgorithm(prbdyn,isale,disname,solverparams), // false -> no ALE in scatra algorithm
    params_(prbdyn)
 {

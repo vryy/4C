@@ -34,16 +34,19 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoroP1 : public FluidEleCalcPoro<distype>
 {
+
+  typedef DRT::ELEMENTS::FluidEleInterface MY;
+
 public:
     /// private Constructor since we are a Singleton.
-    FluidEleCalcPoroP1();
+    FluidEleCalcPoroP1(int num);
 
     typedef FluidEleCalcPoro<distype> my;
 
     virtual ~FluidEleCalcPoroP1() {}
 
     /// Singleton access method
-    static FluidEleCalcPoroP1<distype> * Instance( bool create=true );
+    static FluidEleCalcPoroP1<distype>* Instance( bool create=true, int num=0 );
 
     /// called upon destruction
     virtual void Done();

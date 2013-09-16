@@ -30,7 +30,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -151,7 +151,7 @@ LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.1 BULKMODULUS 2.0e0 PENALTYPARAMETER 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.0e-3
@@ -172,12 +172,12 @@ CURVE3 on EXPR FUNC 5.0*t t1 0.0 t2 8.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1 QUANTITY velx VALUE -4.80368988999226240e-02 TOLERANCE 1e-8
-FLUID DIS fluid NODE 2 QUANTITY pressure VALUE -2.27043387988654297e-02 TOLERANCE 1e-5
-FLUID DIS fluid NODE 3 QUANTITY velx VALUE -5.03633889290576939e-02 TOLERANCE 1e-5
-FLUID DIS fluid NODE 4 QUANTITY velx VALUE -5.00447512653428503e-02 TOLERANCE 1e-5
-FLUID DIS fluid NODE 5 QUANTITY pressure VALUE 4.94499819749075198e-01 TOLERANCE 1e-5
-FLUID DIS fluid NODE 6 QUANTITY pressure VALUE 4.89498049049704842e-01 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 1 QUANTITY velx VALUE -4.80368988999226240e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 2 QUANTITY pressure VALUE -2.27043387988654297e-02 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 3 QUANTITY velx VALUE -5.03633889290576939e-02 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -5.00447512653428503e-02 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE 4.94499819749075198e-01 TOLERANCE 1e-5
+FLUID DIS porofluid NODE 6 QUANTITY pressure VALUE 4.89498049049704842e-01 TOLERANCE 1e-5
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -5.76858380300143236e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -8.47729397331160569e-04 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION

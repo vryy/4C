@@ -247,6 +247,14 @@ namespace INPAR
       condensed_bmat_merged
     };
 
+    /// scheme for gridvel
+    enum Gridvel
+    {
+      BE,   // first order
+      BDF2, // second order
+      OST   // one-step-theta
+    };
+
     //! physical turbulence models
     enum TurbModelAction
     {

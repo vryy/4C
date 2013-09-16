@@ -29,7 +29,7 @@ ADAPTCONV_BETTER                0.1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No

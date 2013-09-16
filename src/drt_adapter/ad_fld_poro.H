@@ -61,6 +61,7 @@ namespace ADAPTER {
 
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
+
   private:
 
     std::vector<DRT::Condition*> nopencond_; ///< vector containing no penetration conditions

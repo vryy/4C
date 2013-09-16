@@ -27,15 +27,16 @@ template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcStd : public FluidEleCalc<distype>
 {
     /// private constructor, since we are a Singleton.
-    FluidEleCalcStd();
+    FluidEleCalcStd(int num=0);
 
     typedef FluidEleCalc<distype> my;
+    typedef FluidEleInterface MY;
 
 public:
     virtual ~FluidEleCalcStd() {}
 
     /// Singleton access method
-    static FluidEleCalcStd<distype> * Instance( bool create=true );
+    static FluidEleCalcStd<distype>* Instance( bool create=true, int num=0 );
 
     /// called upon destruction
     virtual void Done();

@@ -47,9 +47,19 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, bool isale)
+ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, const std::string& disname, bool isale)
 {
-  SetupFluid(prbdyn, isale);
+  SetupFluid(prbdyn, fdyn, disname, isale);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, bool isale)
+{
+  if(DRT::Problem::Instance()->ProblemType()==prb_fluid_fluid_fsi)
+    SetupFluid(prbdyn, fdyn, "xfluid", isale);
+  else
+    SetupFluid(prbdyn, fdyn, "fluid", isale);
 }
 
 /*----------------------------------------------------------------------*/
@@ -72,7 +82,7 @@ ADAPTER::FluidBaseAlgorithm::~FluidBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale)
+void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, const std::string& disname, bool& isale)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
@@ -86,10 +96,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // access the discretization
   // -------------------------------------------------------------------
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  if (probtype == prb_fluid_fluid_fsi)
-    actdis = DRT::Problem::Instance()->GetDis("xfluid");
-  else
-    actdis = DRT::Problem::Instance()->GetDis("fluid");
+    actdis = DRT::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -153,7 +160,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   //const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   //const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(IO::cout, fdyn);
@@ -356,7 +362,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
-  if ( (probtype == prb_poroelast or probtype == prb_poroscatra ) and
+  if ( (probtype == prb_poroelast or probtype == prb_poroscatra or (probtype == prb_fpsi and disname == "porofluid") ) and
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")!= INPAR::FLUID::poro and
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")!= INPAR::FLUID::poro_p1 and
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")!= INPAR::FLUID::poro_p2 )
@@ -532,14 +538,24 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
   }
 
-  if (probtype == prb_poroelast or
-      probtype == prb_poroscatra)
+  if ( probtype == prb_poroelast or
+       probtype == prb_poroscatra or
+      (probtype == prb_fpsi and disname == "porofluid")
+     )
   {
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     fluidtimeparams->set<bool>("poroelast",true);
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(porodyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",false);
     fluidtimeparams->set<bool>("conti partial integration", DRT::INPUT::IntegralValue<int>(porodyn,"CONTIPARTINT"));
+  }
+  else if (probtype == prb_fpsi and disname == "fluid")
+  {
+	  if (timeint == INPAR::FLUID::timeint_stationary)
+		  dserror("Stationary fluid solver not allowed for FPSI.");
+
+	  fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(prbdyn,"SECONDORDER"));
+	  fluidtimeparams->set<bool>("shape derivatives", DRT::INPUT::IntegralValue<int>(prbdyn,"SHAPEDERIVATIVES"));
   }
 
   // -------------------------------------------------------------------
@@ -566,7 +582,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // parameter theta for potential start algorithm
     fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
     // parameter for grid velocity interpolation
-    fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
+    fluidtimeparams->set<int>              ("order gridvel"            ,DRT::INPUT::IntegralValue<int>(fdyn,"GRIDVEL"));
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
@@ -596,7 +612,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
     }
 
-    if (probtype == prb_poroelast or probtype == prb_poroscatra)
+    if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi)
     {
       dirichletcond = false;
     }
@@ -667,9 +683,20 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     break;
     case prb_poroelast:
     case prb_poroscatra:
+    case prb_fpsi:
     {
-      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
-      fluid_ = Teuchos::rcp(new FluidPoro(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+      if(disname == "porofluid")
+      {
+        Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
+        fluid_ = Teuchos::rcp(new FluidPoro(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+      }
+      else if(disname == "fluid")
+      {
+        fluidtimeparams->set<int>("Physical Type",INPAR::FLUID::incompressible);
+        Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis,solver,fluidtimeparams,output,isale));
+        fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+
+      }
     }
     break;
     case prb_elch:
@@ -981,6 +1008,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION") =fdyn.sublist("RESIDUAL-BASED STABILIZATION");
   fluidtimeparams->sublist("EDGE-BASED STABILIZATION")     =fdyn.sublist("EDGE-BASED STABILIZATION");
+  fluidtimeparams->sublist("POROUS-FLOW STABILIZATION")    =fdyn.sublist("POROUS-FLOW STABILIZATION");
 
   // -----------------------------get also scatra stabilization sublist
   const Teuchos::ParameterList& scatradyn =

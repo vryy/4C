@@ -79,6 +79,19 @@ namespace POROELAST
       /// setup composed system matrix from field solvers
       virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
 
+      //! setup newton solver
+      void SetupNewton();
+
+      //! @name Access methods for subclasses
+
+      //! extractor to communicate between full monolithic map and block maps
+      const LINALG::MultiMapExtractor& Extractor() const
+      {
+        return blockrowdofmap_;
+      }
+
+      //@}
+
       //! @name Access methods
 
       //! composed system matrix
@@ -93,6 +106,18 @@ namespace POROELAST
       //! right hand side vector
       Teuchos::RCP<Epetra_Vector> RHS()
           {return rhs_;};
+
+      //! composed merged system matrix needed for monolithic coupling of poroelast problem
+      Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix();
+
+      //! zero all entries in iterinc vector
+      void ClearPoroIterinc();
+
+      //! replaces the iterinc with poroinc
+      void UpdatePoroIterinc(Teuchos::RCP<const Epetra_Vector> poroinc);
+
+      // iter_ += 1
+      void IncrementPoroIter();
 
       //@}
 
@@ -156,6 +181,11 @@ namespace POROELAST
       //Setup solver for monolithic system
       virtual bool SetupSolver();
 
+      const LINALG::MultiMapExtractor& Interface() const
+      {
+        return porointerfacedofmap_;
+      }
+
     protected:
 
       void Aitken();
@@ -176,9 +206,6 @@ namespace POROELAST
       //! velocity calculation given the displacements (like in FSI)
       Teuchos::RCP<Epetra_Vector> CalcVelocity(
           Teuchos::RCP<const Epetra_Vector> dispnp);
-
-      //! setup newton solver
-      void SetupNewton();
 
       //! convergence check for Newton solver
       virtual void BuildCovergenceNorms();
@@ -204,18 +231,11 @@ namespace POROELAST
       void SetDofRowMaps(
           const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
+      void SetInterfaceDofRowMaps(
+          const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+
       //! build map of global dofs with DBC
       virtual void BuildCombinedDBCMap();
-
-      //! @name Access methods for subclasses
-
-      //! extractor to communicate between full monolithic map and block maps
-      const LINALG::MultiMapExtractor& Extractor() const
-      {
-        return blockrowdofmap_;
-      }
-
-      //@}
 
       //! @name General purpose algorithm members
       //@{
@@ -252,6 +272,10 @@ namespace POROELAST
 
       //! dof row map splitted in (field) blocks
       LINALG::MultiMapExtractor blockrowdofmap_;
+
+      //! dof row map splitted in inner structure (0), struct interface (1)
+      //! inner porofluid (0) and porofluidinterface (1)
+      LINALG::MultiMapExtractor porointerfacedofmap_;
 
       //! dirichlet map of monolithic system
       Teuchos::RCP<Epetra_Map> combinedDBCMap_;

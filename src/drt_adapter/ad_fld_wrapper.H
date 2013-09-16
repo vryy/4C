@@ -72,6 +72,8 @@ namespace ADAPTER
     { return fluid_->DofRowMap(nds); };
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
     { return fluid_->SystemMatrix(); }
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
+    { return fluid_->SystemSparseMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     { return fluid_->BlockSystemMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()
@@ -202,6 +204,12 @@ namespace ADAPTER
     { return fluid_->TimIntParam(); }
 
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const
+    { dserror("Not implemented in the base class, may be overridden by a subclass.");
+      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      return ret;
+    }
+
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const
     { dserror("Not implemented in the base class, may be overridden by a subclass.");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
       return ret;

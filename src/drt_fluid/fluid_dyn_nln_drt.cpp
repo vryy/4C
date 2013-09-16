@@ -91,7 +91,7 @@ void dyn_fluid_drt(const int restart)
   else
   {
     // create instance of fluid basis algorithm
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
 
     // read the restart information, set vectors and variables
     if (restart) fluidalgo->FluidField().ReadRestart(restart);
@@ -302,7 +302,7 @@ void fluid_fluid_drt(const int restart)
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   // create instance of fluid basis algorithm
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
 
   // read the restart information, set vectors and variables
   if (restart)

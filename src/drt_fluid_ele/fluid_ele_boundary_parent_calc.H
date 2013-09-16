@@ -92,7 +92,10 @@ namespace DRT
         Epetra_SerialDenseVector&      elevec1) = 0;
 
       /// Internal implementation class for FluidBoundaryParent elements
-      static FluidBoundaryParentInterface* Impl(const DRT::Element* ele);
+      static FluidBoundaryParentInterface* Impl(DRT::ELEMENTS::FluidBoundary* ele);
+
+    protected:
+      static std::map<int,std::map<int,FluidBoundaryParentInterface*> * > instances_;
 
     };
 
@@ -108,17 +111,18 @@ namespace DRT
     class FluidBoundaryParent: public FluidBoundaryParentInterface
     {
       friend class FluidEleParameter;
+      typedef FluidBoundaryParentInterface my;
 
     public:
 
       //! Singleton access method
-      static FluidBoundaryParent<distype> * Instance(bool create=true);
+      static FluidBoundaryParentInterface* Instance(bool create=true, int num=0);
 
       /// called upon destruction
       virtual void Done();
 
       /// Constructor with number of nodes
-      FluidBoundaryParent();
+      FluidBoundaryParent(int num);
 
       void  FlowDepPressureBC(
         DRT::ELEMENTS::FluidBoundary*  surfele,

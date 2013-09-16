@@ -46,7 +46,7 @@ GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
 CONVTOL                         1e-10
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field                      // field_by_function
 INITSTATITEMAX                  5
 ITEMAX                          10

@@ -84,7 +84,8 @@ enum BoundaryAction {
     no_penetrationIDs,
     poro_boundary,
     poro_prescoupl,
-    ba_calc_adjoint_neumann
+    ba_calc_adjoint_neumann,
+    fpsi_coupling
 }; // enum BoundaryAction
 
 /*--------------------------------------------------------------------------

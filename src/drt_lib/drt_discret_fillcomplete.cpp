@@ -52,7 +52,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Reset(bool killdofs)
+void DRT::Discretization::Reset(bool killdofs, bool killcond)
 {
   filled_ = false;
   if (killdofs)
@@ -73,10 +73,13 @@ void DRT::Discretization::Reset(bool killdofs)
 
   // delete all old geometries that are attached to any conditions
   // as early as possible
-  std::multimap<std::string,RCP<DRT::Condition> >::iterator fool;
-  for (fool=condition_.begin(); fool != condition_.end(); ++fool)
+  if (killcond)
   {
-    fool->second->ClearGeometry();
+    std::multimap<std::string,RCP<DRT::Condition> >::iterator fool;
+    for (fool=condition_.begin(); fool != condition_.end(); ++fool)
+    {
+      fool->second->ClearGeometry();
+    }
   }
 
   return;
@@ -91,7 +94,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
                                       bool doboundaryconditions)
 {
   // set all maps to Teuchos::null
-  Reset(assigndegreesoffreedom);
+  Reset(assigndegreesoffreedom,doboundaryconditions);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
   BuildNodeRowMap();

@@ -3524,6 +3524,33 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(poropresint_line);
 
   /*--------------------------------------------------------------------*/
+   // condition for evaluation of boundary terms in fpsi problems
+
+   Teuchos::RCP<ConditionDefinition> neumannintegration_surf =
+     Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NEUMANN INTEGRATION",
+                                          "NeumannIntegration",
+                                          "Neumann Integration",
+                                          DRT::Condition::NeumannIntegration,
+                                          true,
+                                          DRT::Condition::Surface));
+
+   condlist.push_back(neumannintegration_surf);
+
+   /*--------------------------------------------------------------------*/
+   // condition for evaluation of boundary terms in fpsi problems
+
+   Teuchos::RCP<ConditionDefinition> neumannintegration_line =
+     Teuchos::rcp(new ConditionDefinition("DESIGN LINE NEUMANN INTEGRATION",
+                                          "NeumannIntegration",
+                                          "Neumann Integration",
+                                          DRT::Condition::NeumannIntegration,
+                                          true,
+                                          DRT::Condition::Line));
+
+   condlist.push_back(neumannintegration_line);
+
+
+  /*--------------------------------------------------------------------*/
   // particle inflow condition
 
   std::vector<Teuchos::RCP<ConditionComponent> > particleinflowcomponents;

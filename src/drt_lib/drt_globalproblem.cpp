@@ -229,6 +229,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/EDGE-BASED STABILIZATION", *list);
+  reader.ReadGidSection("--FLUID DYNAMIC/POROUS-FLOW STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/SUBGRID VISCOSITY", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
@@ -244,6 +245,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC/CONSTRAINT", *list);
+  reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
   reader.ReadGidSection("--COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", *list);
@@ -790,6 +792,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> airwaydis       = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> optidis         = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> particledis     = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> porofluiddis    = Teuchos::null; // fpsi, poroelast
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1232,26 +1235,48 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_poroelast:
   {
     // create empty discretizations
-    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
+    structdis     = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
 
     AddDis("structure", structdis);
-    AddDis("fluid", fluiddis);
+    AddDis("porofluid", porofluiddis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
   }
+  case prb_fpsi:
+    {
+      // create empty discretizations
+      structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+      porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm()));
+      fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid", 	reader.Comm()));
+      aledis        = Teuchos::rcp(new DRT::Discretization("ale", 		reader.Comm()));
 
+      AddDis("structure", structdis);
+      AddDis("porofluid", porofluiddis);
+      AddDis("fluid",     fluiddis);
+      AddDis("ale", 	  aledis);
+
+      std::set<std::string> fluidelementtypes;
+      fluidelementtypes.insert("FLUID");
+      fluidelementtypes.insert("FLUID2");
+      fluidelementtypes.insert("FLUID3");
+
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
+      break;
+    }
   case prb_poroscatra:
   {
     // create empty discretizations
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid"   ,reader.Comm()));
+    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
     scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
 
     AddDis("structure", structdis);
-    AddDis("fluid", fluiddis);
+    AddDis("porofluid", porofluiddis);
     AddDis("scatra", scatradis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));

@@ -43,7 +43,7 @@ step_(0)
   }
   // initialize fluid algorithm
   // this is the first and main fluid algorithm
-  fluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+  fluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
 
   // get the compete fluid discretization
   fluiddis_ = fluidalgo_->FluidField().Discretization();

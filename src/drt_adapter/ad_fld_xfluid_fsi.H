@@ -70,6 +70,13 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
+    /// communication object at the interface (dummy)
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const
+    { dserror("Not implemented in the base class, may be overridden by a subclass.");
+      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      return ret;
+    }
+
     /// Velocity-displacement conversion at the fsi interface
     virtual double TimeScaling() const;
 

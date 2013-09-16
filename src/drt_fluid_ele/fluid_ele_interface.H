@@ -237,6 +237,9 @@ namespace ELEMENTS
                                          const std::vector<int> &   lm,
                                          Epetra_SerialDenseVector&  elevec1_epetra) = 0;
 
+    protected:
+      static std::map<int,std::map<int,DRT::ELEMENTS::FluidEleInterface* >* > instances_;
+
   };
 
 } //namespace Elements

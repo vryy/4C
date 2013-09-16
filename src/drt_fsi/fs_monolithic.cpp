@@ -32,7 +32,7 @@
 FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
                                         const Teuchos::ParameterList& timeparams)
   : AlgorithmBase(comm,timeparams),
-    FluidBaseAlgorithm(timeparams,true),
+    FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true),
     AleBaseAlgorithm(timeparams)
 {
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());

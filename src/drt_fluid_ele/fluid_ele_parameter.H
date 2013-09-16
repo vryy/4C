@@ -37,7 +37,7 @@ class FluidEleParameter
 public:
 
   //! Singleton access method
-  static Teuchos::RCP<FluidEleParameter> Instance();
+  static Teuchos::RCP<FluidEleParameter> Instance(int num=0);
 
   //! general fluid parameter are set
   void SetElementGeneralFluidParameter(Teuchos::ParameterList& params,   //> parameter list
@@ -389,7 +389,7 @@ private:
   FluidEleParameter& operator=(const FluidEleParameter&);
 
   /// the single instance
-  static Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> instance_;
+  static std::map<int,Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> > instances_;
 };
 
 }

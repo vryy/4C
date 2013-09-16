@@ -64,7 +64,7 @@ ALPHA_M                         1
 GAMMA                           1
 CONVCHECK                       L_2_norm                      // No,L_infinity_norm,L_1_norm,L_2_norm,L_2_norm_without_residual_at_itemax
 CONVTOL                         1e-04
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          20
 LIFTDRAG                        No                            // No,no,Yes,yes,Nodeforce,NODEFORCE,nodeforce

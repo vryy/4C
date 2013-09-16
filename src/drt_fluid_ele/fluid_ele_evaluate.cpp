@@ -26,8 +26,10 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_geometry/position_array.H"
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_fpsi.H"
 
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
@@ -67,34 +69,48 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
 {
   const FLD::Action action = DRT::INPUT::get<FLD::Action>(p,"action");
 
+  int num=0;
+  if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
+  {
+    if(dis.Name()=="fluid")
+    {
+      num=INPAR::FPSI::fluid;
+    }
+    else if(dis.Name()=="porofluid")
+    {
+      num=INPAR::FPSI::porofluid;
+    }
+   }
+  p.set<int>("numfield",num);
+
   if (action == FLD::set_general_fluid_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
     fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
   }
   else if (action == FLD::set_time_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
     fldpara->SetElementTimeParameter(p);
   }
   else if (action == FLD::set_turbulence_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
     fldpara->SetElementTurbulenceParameter(p);
   }
   else if (action == FLD::set_loma_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
     fldpara->SetElementLomaParameter(p);
   }
   else if (action == FLD::set_poro_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
     fldpara->SetElementPoroParameter(p);
   }
   else if (action == FLD::set_topopt_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
     fldpara->SetElementTopoptParameter(p);
   }
   else if (action == FLD::set_general_adjoint_parameter)

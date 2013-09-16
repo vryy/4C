@@ -32,7 +32,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    zero_field
 INITSTATITEMAX                  5
 ITEMAX                          10
@@ -131,7 +131,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit 
+COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicporofluidsplit 
 INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
@@ -280,7 +280,7 @@ UZAWAPARAM                      1
 UZAWATOL                        1e-08
 LINEAR_SOLVER                   1
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 -------------------------------------------------------------------MATERIALS
@@ -298,8 +298,8 @@ CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 4 QUANTITY velx VALUE 4.73012191202632992e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 2.55924190227540649e+00 TOLERANCE 1e-6
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE 4.73012191202632992e-01 TOLERANCE 1e-7
+FLUID DIS porofluid NODE 1 QUANTITY pressure VALUE 2.55924190227540649e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 1.46446609406726325e-01 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE 6.98581291651952790e-02 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION

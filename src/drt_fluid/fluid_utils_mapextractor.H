@@ -30,7 +30,7 @@ namespace UTILS
     };
 
     /// setup the whole thing
-    void Setup(const DRT::Discretization& dis);
+    void Setup(const DRT::Discretization& dis, bool withpressure = false);
 
     /// get all element gids those nodes are touched by any condition
     Teuchos::RCP<std::set<int> > ConditionedElementMap(const DRT::Discretization& dis) const;

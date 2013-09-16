@@ -46,6 +46,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
 
   // ask base algorithm for the structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
@@ -56,7 +57,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,false));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",false));
   fluid_ = fluid->FluidFieldrcp();
 
 

@@ -39,7 +39,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 INITIALFIELD                    field_by_function
 ITEMAX                          9
 LIFTDRAG                        No

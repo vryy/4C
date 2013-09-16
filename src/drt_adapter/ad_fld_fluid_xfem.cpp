@@ -24,7 +24,7 @@ Maintainer:  Benedikt Schott
 ADAPTER::FluidXFEM::FluidXFEM(
         const Teuchos::ParameterList& prbdyn,
         std::string condname)
-  : fluid_(prbdyn,false)
+  : fluid_(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false)
 {
   icoupsf_ = Teuchos::rcp(new Coupling());
   return;

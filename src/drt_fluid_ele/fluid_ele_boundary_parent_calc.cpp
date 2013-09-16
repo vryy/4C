@@ -39,16 +39,21 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
 
+#include "../drt_inpar/inpar_fpsi.H"
+#include "../drt_inpar/inpar_material.H"
 
+std::map<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*> * > DRT::ELEMENTS::FluidBoundaryParentInterface::instances_;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(const DRT::Element* ele)
+DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(DRT::ELEMENTS::FluidBoundary* ele)
 {
+  int num=0; // no specification needed so far; compare to FluidBoundaryImplInterface::Impl()
+
   switch (ele->Shape())
   {
   case DRT::Element::line2:
   {
-    return FluidBoundaryParent<DRT::Element::line2>::Instance();
+    return FluidBoundaryParent<DRT::Element::line2>::Instance(true,num);
   }
   /*case DRT::Element::line3:
   {
@@ -64,7 +69,7 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
   }*/
   case DRT::Element::quad4:
   {
-    return FluidBoundaryParent<DRT::Element::quad4>::Instance();
+    return FluidBoundaryParent<DRT::Element::quad4>::Instance(true,num);
   }
   /*case DRT::Element::quad8:
   {
@@ -100,21 +105,39 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidBoundaryParent<distype> * DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(bool create)
+DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(bool create, int num)
 {
-  static FluidBoundaryParent<distype> * instance;
-  if (create)
+  if ( create )
   {
-    if (instance==NULL)
-      instance = new FluidBoundaryParent<distype>();
+    if(static_cast<int>(my::instances_.count(num))==0)
+    {
+      std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*> * temp = new std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>;
+      temp->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryParent<distype>* >((int)distype,new FluidBoundaryParent<distype>(num)));
+      my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface* > * >(num, temp));
+    }
+    else if ( my::instances_.count(num) > 0 and my::instances_.at(num)->count((int)distype) == 0 )
+    {
+      my::instances_.at(num)->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>((int)distype, new FluidBoundaryParent<distype>(num)));
+    }
+
+    return my::instances_.at(num)->at((int)distype);
   }
   else
   {
-    if (instance!=NULL)
-      delete instance;
-    instance = NULL;
+    if ( my::instances_.find(num)->second != NULL )
+    {
+      for (std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>::iterator it=my::instances_.find(num)->second->begin(); it!=my::instances_.find(num)->second->end(); ++it)
+      {
+        if(it->first == (int)distype)
+          delete it->second;
+      }
+
+      delete my::instances_.find(num)->second;
+    }
+
+    my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface* > * >(num, NULL));
+    return NULL;
   }
-  return instance;
 }
 
 
@@ -125,21 +148,24 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance( false );
+  int numinstances = my::instances_.size();
+  for(int i=0; i<numinstances; i++)
+    Instance( false, i );
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
-  : drs_(0.0),
+DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent(int num)
+  : DRT::ELEMENTS::FluidBoundaryParentInterface(),
+    drs_(0.0),
     fac_(0.0),
     visc_(0.0),
     densaf_(1.0)
 {
   // pointer to class FluidParentParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance(num);
 
   return;
 }

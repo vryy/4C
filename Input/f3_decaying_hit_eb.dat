@@ -31,7 +31,7 @@ GAMMA                           0.66666666666666
 CONVCHECK                       L_2_norm
 CONVFORM                        convective 
 CONVTOL                         1e-08
-GRIDVEL                         1
+GRIDVEL                         BE
 ITEMAX                          15
 MAXTIME                         100000
 NONLINITER                      fixed_point_like

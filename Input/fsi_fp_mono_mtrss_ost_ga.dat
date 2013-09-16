@@ -26,7 +26,7 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
 CONVFORM                        convective
-GRIDVEL                         1
+GRIDVEL                         BE
 LINEAR_SOLVER                   1
 NONLINITER                      fixed_point_like
 PHYSICAL_TYPE                   Incompressible

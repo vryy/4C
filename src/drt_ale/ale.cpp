@@ -39,6 +39,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_inpar/inpar_ale.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
 
@@ -333,6 +334,21 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
     {
         dirichletcond = false;
+    }
+  }
+
+  if (probtype == prb_fpsi)
+  {
+    // FPSI input parameters
+    const Teuchos::ParameterList&  fpsidyn = DRT::Problem::Instance()->FPSIDynamicParams();
+    int coupling = DRT::INPUT::IntegralValue<int>(fpsidyn,"COUPALGO");
+    if (coupling == fpsi_monolithic_plain)
+    {
+      dirichletcond = false;
+    }
+    else if (coupling == partitioned)
+    {
+      dserror("partitioned fpsi solution scheme has not been implemented yet.");
     }
   }
 

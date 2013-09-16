@@ -216,7 +216,7 @@ void POROELAST::UTILS::SetupPoro()
 
   // access the fluid discretization
   Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-  fluiddis = problem->GetDis("fluid");
+  fluiddis = problem->GetDis("porofluid");
   if (!fluiddis->Filled())
     fluiddis->FillComplete();
 

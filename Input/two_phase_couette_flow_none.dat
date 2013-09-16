@@ -54,7 +54,7 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 CONVFORM                        convective
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 PREDICTOR                       steady_state
 MAXTIME                         1
 NUMSTEP                         1

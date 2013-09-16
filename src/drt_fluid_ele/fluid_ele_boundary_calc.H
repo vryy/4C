@@ -215,10 +215,22 @@ public:
       std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseVector&       elevec1
-  )=0;
+  ) = 0;
+
+  virtual void FPSICoupling(
+      DRT::ELEMENTS::FluidBoundary*  ele1,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
 
     /// Internal implementation class for FluidBoundary elements
-  static FluidBoundaryImplInterface* Impl(const DRT::Element* ele);
+  static FluidBoundaryImplInterface* Impl(DRT::ELEMENTS::FluidBoundary* ele);
+
+protected:
+  static std::map<int,std::map<int,FluidBoundaryImplInterface*> * > instances_;
 
 };
 
@@ -262,17 +274,18 @@ template<DRT::Element::DiscretizationType distype>
 class FluidBoundaryImpl: public FluidBoundaryImplInterface
 {
   friend class FluidEleParameter;
+  typedef FluidBoundaryImplInterface my;
 
 public:
 
   /// Singleton access method
-  static FluidBoundaryImpl<distype> * Instance(bool create=true);
+  static FluidBoundaryImplInterface* Instance(bool create=true, int num=0);
 
   /// called upon destruction
   virtual void Done();
 
   /// Constructor
-  FluidBoundaryImpl();
+  FluidBoundaryImpl(int num);
 
   //! number of element nodes
   static const int bdrynen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -584,11 +597,11 @@ public:
   */
   void PoroBoundary(
       DRT::ELEMENTS::FluidBoundary*  ele,
-      Teuchos::ParameterList&    params,
-      DRT::Discretization&       discretization,
-      std::vector<int>&          lm,
-      Epetra_SerialDenseMatrix&  elemat1,
-      Epetra_SerialDenseVector&  elevec1);
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm,
+      Epetra_SerialDenseMatrix&      elemat1,
+      Epetra_SerialDenseVector&      elevec1);
 
   void PressureCoupling(
       DRT::ELEMENTS::FluidBoundary*   ele1,
@@ -596,8 +609,15 @@ public:
       DRT::Discretization&            discretization,
       std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
-      Epetra_SerialDenseVector&       elevec1
-  );
+      Epetra_SerialDenseVector&       elevec1);
+
+  virtual void FPSICoupling(
+      DRT::ELEMENTS::FluidBoundary*   ele1,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1);
 
 private:
 
@@ -634,17 +654,26 @@ private:
       Epetra_SerialDenseVector&  elevec1);
 
     /*!
-    \brief apply no penetration boundary condition
+    \brief apply FPSI coupling conditions and further boundary integrals
 
     \param params (in)        : ParameterList for communication between control routine
     \param discretization (in): A reference to the underlying discretization
     \param lm (in)            : location vector of this element
     \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
                                 the controling method does not epxect the element to fill
-                                this matrix.                          and elements
+                                this matrix.
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
     */
+  template <DRT::Element::DiscretizationType pdistype>
+  void FPSICoupling(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseVector&  elevec1);
+
       //! evaluate shape functions/derivatives, metric tensor and
   //! optionally, the infinitesimal area element and the normalized normal vector the at integration point
   void EvalShapeFuncAtBouIntPoint(
@@ -674,6 +703,8 @@ private:
 
   //! node coordinates for boundary element
   LINALG::Matrix<nsd_,bdrynen_> xyze_;
+  //! node coordinates for boundary element at timestep n
+  LINALG::Matrix<nsd_,bdrynen_> xyze_n_;
   //! coordinates of current integration point in reference coordinates
   LINALG::Matrix<bdrynsd_,1> xsi_;
   //! array for shape functions for boundary element
@@ -682,8 +713,12 @@ private:
   LINALG::Matrix<bdrynsd_,bdrynen_> deriv_;
   //! normal vector pointing out of the domain
   LINALG::Matrix<nsd_,1> unitnormal_;
+  //! normal vector pointing out of the domain at timestep n
+  LINALG::Matrix<nsd_,1> unitnormal_n_;
   //! velocity vector at integration point
   LINALG::Matrix<nsd_,1> velint_;
+  //! velocity vector at integration point at timestep n
+  LINALG::Matrix<nsd_,1> velint_n_;
   //! infinitesimal area element drs
   double drs_;
   //! integration factor

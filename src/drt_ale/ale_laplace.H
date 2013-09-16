@@ -42,7 +42,7 @@ public:
   virtual void BuildSystemMatrix(bool full=true);
 
   //! @name Algorithm core methods
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp);
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::string incrementtype = std::string("step"));
   virtual void Solve();
   virtual void Update();
   virtual void Output();

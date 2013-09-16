@@ -190,6 +190,9 @@ namespace POROELAST
 
       Teuchos::RCP<LINALG::MapExtractor>  porositysplitter_;
 
+      //! true if the poroelast problem is only part of a larger problem (like e.g. in FPSI)
+      bool PartOfMultifieldProblem_;
+
     private:
 
       //! setup of everything, that is needed for the volumetric coupling

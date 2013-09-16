@@ -44,7 +44,9 @@
 #include "../drt_adapter/ad_fld_poro.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_structure/stru_aux.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  | monolithic                                              vuong 01/12  |
@@ -286,6 +288,7 @@ void POROELAST::Monolithic::SetupSystem()
 {
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces2;
 
   // use its own DofRowMap, that is the 0th map of the discretization
   //
@@ -307,6 +310,16 @@ void POROELAST::Monolithic::SetupSystem()
     dserror("No fluid equation. Panic.");
 
   SetDofRowMaps(vecSpaces);
+
+  if(PoroBase::PartOfMultifieldProblem_)
+  {
+    vecSpaces2.push_back(StructureField()->Interface()->Map(0));
+    vecSpaces2.push_back(StructureField()->Interface()->Map(1));
+    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(0));
+    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(1));
+
+    SetInterfaceDofRowMaps(vecSpaces2);
+  }
 
   BuildCombinedDBCMap();
 
@@ -340,6 +353,19 @@ void POROELAST::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<
 
   // full Poroelasticity-blockmap
   blockrowdofmap_.Setup(*fullmap_, maps);
+}
+
+/*----------------------------------------------------------------------*
+ | put the single maps to one full                                      |
+ | Poroelasticity map together                              vuong 01/12 |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::SetInterfaceDofRowMaps(const std::vector<Teuchos::RCP<
+    const Epetra_Map> >& maps)
+{
+  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
+
+  // full Poroelasticity-blockmap
+  porointerfacedofmap_.Setup(*fullmap_, maps);
 }
 
 /*----------------------------------------------------------------------*
@@ -1580,6 +1606,35 @@ bool POROELAST::Monolithic::SetupSolver()
 Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemMatrix()
 {
   return systemmatrix_->Merge();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+  Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemSparseMatrix()
+  {
+    return systemmatrix_->Merge();
+  }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::IncrementPoroIter()
+{
+  iter_ += 1;
+}
+
+  /*----------------------------------------------------------------------*
+   *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::UpdatePoroIterinc(Teuchos::RCP<const Epetra_Vector> poroinc)
+{
+  iterinc_->PutScalar(0.0);
+  iterinc_->Update(1.0,*poroinc,0.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::ClearPoroIterinc()
+{
+  iterinc_->PutScalar(0.0);
 }
 
 /*----------------------------------------------------------------------*

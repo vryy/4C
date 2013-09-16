@@ -83,6 +83,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 // allows for dealing with edged-based stabilization
 #include "../drt_lib/drt_discret_faces.H"
 
+#include <Teuchos_StrUtils.hpp>
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
@@ -715,9 +717,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   SetElementTurbulenceParameter();
   if (physicaltype_ == INPAR::FLUID::loma)
     SetElementLomaParameter();
-  if (   physicaltype_ == INPAR::FLUID::poro
+  if (  (physicaltype_ == INPAR::FLUID::poro
       or physicaltype_ == INPAR::FLUID::poro_p1
       or physicaltype_ == INPAR::FLUID::poro_p2)
+      and discret_->Name()=="porofluid")
     SetElementPoroParameter();
   if (physicaltype_ == INPAR::FLUID::topopt)
     SetElementTopoptParameter();
@@ -2709,7 +2712,26 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
   // set action type
   eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-  eleparams.set<int>("physical type",physicaltype_);
+
+  if (discret_->Name()=="porofluid")
+  {
+      std::string ptype = DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("PHYSICAL_TYPE");
+      if(ptype == (std::string)"Poro_P1")
+        physicaltype_=INPAR::FLUID::poro_p1;
+      else if(ptype == (std::string)"Poro_P2")
+        physicaltype_=INPAR::FLUID::poro_p2;
+      else if(ptype == (std::string)"Poro")
+        physicaltype_=INPAR::FLUID::poro;
+
+    eleparams.set<int>("physical type",physicaltype_);
+  }
+  else if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType() == prb_fpsi)
+  {
+    physicaltype_ = INPAR::FLUID::incompressible;
+    eleparams.set<int>("physical type",physicaltype_);
+  }
+  else
+    eleparams.set<int>("physical type",physicaltype_);
 
   // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -2880,7 +2902,13 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
 
-  Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  Teuchos::ParameterList *  stabparams;
+  if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType()==prb_fpsi)
+    stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  else if (discret_->Name()=="porofluid")
+    stabparams=&(params_->sublist("POROUS-FLOW STABILIZATION"));
+  else
+    stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
   if(stabparams->get<std::string>("STABTYPE")=="residual_based"){
   if(stabparams->get<std::string>("TDS") == "time_dependent")
@@ -3908,11 +3936,14 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
-  const int order  = params_->get<int>("order gridvel");
+  const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
+  const int order = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+
+  double theta = fluiddynparams.get<double>("THETA");
 
   switch (order)
   {
-    case 1:
+    case INPAR::FLUID::BE:
       /* get gridvelocity from BE time discretisation of mesh motion:
            -> cheap
            -> easy
@@ -3923,13 +3954,19 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
                     Delta t                        */
       gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
     break;
-    case 2:
+    case INPAR::FLUID::BDF2:
       /* get gridvelocity from BDF2 time discretisation of mesh motion:
            -> requires one more previous mesh position or displacement
            -> somewhat more complicated
            -> allows second order accuracy for the overall flow solution  */
       gridv_->Update(1.5/dta_, *dispnp_, -2.0/dta_, *dispn_, 0.0);
       gridv_->Update(0.5/dta_, *dispnm_, 1.0);
+    break;
+    case INPAR::FLUID::OST:
+      /* get gridvelocity from OST time discretisation of mesh motion:
+         -> needed to allow consistent linearization of FPSI problem  */
+      gridv_->Update(1/(theta*dta_), *dispnp_, -1/(theta*dta_), *dispn_, 0.0);
+      gridv_->Update(-((1.0/theta)-1.0),*veln_,1.0);
     break;
   }
 }
@@ -5958,11 +5995,24 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   // set general element parameters
   eleparams.set("form of convective term",convform_);
   eleparams.set<int>("Linearisation",newton_);
-  eleparams.set<int>("Physical Type", physicaltype_);
+
+  if (discret_->Name()=="porofluid")
+    {
+      physicaltype_ = INPAR::FLUID::poro;
+      eleparams.set<int>("Physical Type",physicaltype_);
+    }
+    else if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType()==prb_fpsi)
+    {
+      physicaltype_ = INPAR::FLUID::incompressible;
+      eleparams.set<int>("Physical Type",physicaltype_);
+    }
+    else
+      eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
   eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
+  eleparams.sublist("POROUS-FLOW STABILIZATION") = params_->sublist("POROUS-FLOW STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);

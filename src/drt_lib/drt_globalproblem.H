@@ -301,6 +301,7 @@ public:
   const Teuchos::ParameterList& CombustionDynamicParams() const { return getParameterList()->sublist("COMBUSTION CONTROL"); }
   const Teuchos::ParameterList& AleDynamicParams() const { return getParameterList()->sublist("ALE DYNAMIC"); }
   const Teuchos::ParameterList& FSIDynamicParams() const { return getParameterList()->sublist("FSI DYNAMIC"); }
+  const Teuchos::ParameterList& FPSIDynamicParams() const { return getParameterList()->sublist("FPSI DYNAMIC"); }
   const Teuchos::ParameterList& XFEMGeneralParams() const { return getParameterList()->sublist("XFEM GENERAL"); }
   const Teuchos::ParameterList& XFluidDynamicParams() const { return getParameterList()->sublist("XFLUID DYNAMIC"); }
   const Teuchos::ParameterList& LOMAControlParams() const { return getParameterList()->sublist("LOMA CONTROL"); }

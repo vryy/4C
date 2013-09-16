@@ -49,7 +49,8 @@ public:
 
   //! @name Algorithm core methods
   virtual void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> ddisp ///< step increment
+      Teuchos::RCP<const Epetra_Vector> ddisp, ///< step increment or iteration increment
+      std::string incrementtype = std::string("step")
       );
   virtual void Solve();
   virtual void Update();

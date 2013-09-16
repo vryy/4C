@@ -161,8 +161,8 @@ void fluid_xfem_drt()
     // no restart required, no moving interface
 
     // create instance of fluid basis algorithm
-    const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
 
     // run the simulation, calls the xfluid-"integrate()" routine
     fluidalgo->FluidField().Integrate();

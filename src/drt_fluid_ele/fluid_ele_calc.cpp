@@ -51,7 +51,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
  * Constructor
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
+DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(int num):
     rotsymmpbc_(NULL),
     eid_(-1.0),
     is_higher_order_ele_(false),
@@ -140,7 +140,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
   rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance(num);
 
   // Nurbs
   isNurbs_ = IsNurbs<distype>::isnurbs;

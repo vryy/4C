@@ -27,18 +27,21 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> DRT::ELEMENTS::FluidEleParameter::instance_;
+std::map<int,Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> > DRT::ELEMENTS::FluidEleParameter::instances_;
 
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> DRT::ELEMENTS::FluidEleParameter::Instance()
+Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> DRT::ELEMENTS::FluidEleParameter::Instance(int num)
 {
-  if (instance_==Teuchos::null)
-    instance_ = Teuchos::rcp(new FluidEleParameter());
-  return instance_;
+  if (static_cast<int>(instances_.count(num))==0)
+  {
+    instances_.insert(std::pair<int,Teuchos::RCP<FluidEleParameter> >(num,Teuchos::rcp(new FluidEleParameter())));
+  }
+  return instances_.find(num)->second;
 }
+
 
 
 //----------------------------------------------------------------------*/
@@ -140,6 +143,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     if (myrank == 0)
       std::cout << std::endl << (" Warning: general fluid parameters should be set only once!!\n "
         "If you run a turbulent inflow generation, calling this function twice is ok!\n "
+        "If you run a FPSI problem, calling this function twice is ok, too!\n"
         "Otherwise: Check, why you enter this function a second time!!!") << std::endl << std::endl;
   }
 
@@ -219,25 +223,16 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     if (myrank == 0)
      std::cout << std::endl << "Warning: missing time derivative terms in conservative formulation for variable density flows!" << std::endl;
   }
-  // set further parameters which are specific for a physical type
-  if (physicaltype_ == INPAR::FLUID::topopt)
-  {
-    reaction_= true;
-    reaction_topopt_= true;
-    darcy_= false;
-  }
-  else if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
-  {
-    reaction_= true;
-    reaction_topopt_= false;
-    darcy_= true;
-  }
-
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
-  Teuchos::ParameterList& stablist               = params.sublist("RESIDUAL-BASED STABILIZATION");
+  Teuchos::ParameterList stablist;
+  if(params.get<int>("numfield")==0)
+    stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
+  else if (params.get<int>("numfield")==1)
+    stablist = params.sublist("POROUS-FLOW STABILIZATION");
+
   Teuchos::ParameterList& stablist_edgebased     = params.sublist("EDGE-BASED STABILIZATION");
 
   stabtype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
@@ -753,6 +748,10 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::Paramet
 void DRT::ELEMENTS::FluidEleParameter::SetElementPoroParameter( Teuchos::ParameterList& params )
 {
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);
+  reaction_= true;
+  reaction_topopt_= false;
+  darcy_= true;
+  graddiv_=false;
 
   return;
 }
@@ -766,6 +765,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTopoptParameter( Teuchos::Param
   topopt_params_[0] = params.get<double>("MIN_PORO");
   topopt_params_[1] = params.get<double>("MAX_PORO");
   topopt_params_[2] = params.get<double>("SMEAR_FAC");
+  reaction_= true;
+  reaction_topopt_= true;
+  darcy_= false;
 
   return;
 }

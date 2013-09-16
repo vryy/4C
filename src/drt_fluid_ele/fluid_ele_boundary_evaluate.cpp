@@ -367,8 +367,20 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
     );
     break;
   }
+  case FLD::fpsi_coupling:
+  {
+    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->FPSICoupling(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+    break;
+  }
   default:
     dserror("Unknown type of action for Fluid_Boundary!");
+    break;
   } // end of switch(act)
 
   return 0;
@@ -416,6 +428,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
   case FLD::poro_boundary:
   case FLD::mixed_hybrid_dbc:
   case FLD::flow_dep_pressure_bc:
+  case FLD::fpsi_coupling:
     // special cases: the boundary element assembles also into
     // the inner dofs of its parent element
     // note: using these actions, the element will get the parent location vector

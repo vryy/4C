@@ -392,6 +392,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     break;
     case prb_poroelast:
     case prb_poroscatra:
+    case prb_fpsi:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =

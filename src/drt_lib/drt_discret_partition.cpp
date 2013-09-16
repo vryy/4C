@@ -51,7 +51,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  Export nodes owned by a proc (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
+void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // test whether newmap is non-overlapping
   if (!newmap.UniqueGIDs()) dserror("new map not unique");
@@ -82,7 +82,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
     curr->second->SetOwner(myrank);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset();
+  Reset(killdofs,killcond);
 
   return;
 }
@@ -90,7 +90,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
 /*----------------------------------------------------------------------*
  |  Export nodes owned by a proc (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
+void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
@@ -125,7 +125,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
   exporter.Export(node_);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset();
+  Reset(killdofs,killcond);
 
   return;
 }
@@ -403,7 +403,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 /*----------------------------------------------------------------------*
  |  Export elements (public)                                 mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
+void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
@@ -434,7 +434,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
     curr->second->SetOwner(myrank);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset();
+  Reset(killdofs,killcond);
 
   return;
 }
@@ -442,7 +442,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
 /*----------------------------------------------------------------------*
  |  Export elements (public)                                 mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
+void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap, bool killdofs, bool killcond)
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
@@ -476,7 +476,7 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
   exporter.Export(element_);
 
   // maps and pointers are no longer correct and need rebuilding
-  Reset();
+  Reset(killdofs,killcond);
 
   return;
 }
@@ -532,7 +532,8 @@ void DRT::Discretization::BuildElementRowColumn(
                                     const Epetra_Map& noderowmap,
                                     const Epetra_Map& nodecolmap,
                                     RCP<Epetra_Map>& elerowmap,
-                                    RCP<Epetra_Map>& elecolmap) const
+                                    RCP<Epetra_Map>& elecolmap,
+                                    bool ExtendedGhosting) const
 {
   const int myrank = Comm().MyPID();
   const int numproc = Comm().NumProc();
@@ -613,8 +614,22 @@ void DRT::Discretization::BuildElementRowColumn(
           ++nummine;
 
       // if I do not own any of the nodes, it is definitely not my element
-      // and I do not ghost it
-      if (!nummine)
+      // and I do not ghost it, except ExtendedGhosting is switched to true // rauch 09/13
+      bool skipflag = false;
+      if (!nummine and ExtendedGhosting == false)
+        skipflag = true;
+      else if (ExtendedGhosting == true)
+      {
+        for (int j=0; j<numnode; ++j)
+        {
+          if (nodecolmap.LID(nodeids[j]) == -1)
+          { // this processor has not all nodes of the element in its colmap and does thus not ghost it
+            skipflag = true;
+          }
+        }
+      }
+
+      if(skipflag)
         continue;
 
       // check whether I ghost all nodes of this element
@@ -696,18 +711,19 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
                                        const Epetra_Map& nodecolmap,
                                        bool assigndegreesoffreedom ,
                                        bool initelements           ,
-                                       bool doboundaryconditions   )
+                                       bool doboundaryconditions,
+                                       bool extendedghosting)
 {
   // build the overlapping and non-overlapping element maps
   RCP<Epetra_Map> elerowmap;
   RCP<Epetra_Map> elecolmap;
-  BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap);
+  BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap,extendedghosting);
 
   // export nodes and elements to the new maps
-  ExportRowNodes(noderowmap);
-  ExportColumnNodes(nodecolmap);
-  ExportRowElements(*elerowmap);
-  ExportColumnElements(*elecolmap);
+  ExportRowNodes(noderowmap,assigndegreesoffreedom,doboundaryconditions);
+  ExportColumnNodes(nodecolmap,assigndegreesoffreedom,doboundaryconditions);
+  ExportRowElements(*elerowmap,assigndegreesoffreedom,doboundaryconditions);
+  ExportColumnElements(*elecolmap,assigndegreesoffreedom,doboundaryconditions);
 
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom,initelements,doboundaryconditions);

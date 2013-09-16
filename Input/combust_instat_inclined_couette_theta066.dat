@@ -84,7 +84,7 @@ SIMPLER                         No
 PHYSICAL_TYPE                   Incompressible
 CONVFORM                        convective
 GAMMA                           1
-GRIDVEL                         1
+GRIDVEL                         BE
 PREDICTOR                       steady_state
 MAXTIME                         3333
 NUMSTEP                         33

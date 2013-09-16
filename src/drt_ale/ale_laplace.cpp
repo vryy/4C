@@ -104,7 +104,7 @@ void ALE::AleLaplace::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ALE::AleLaplace::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
+void ALE::AleLaplace::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::string incrementtype)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -113,12 +113,23 @@ void ALE::AleLaplace::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
   // Note: What we get here is the sum of all increments in this time
   // step, not just the latest increment. Be careful.
 
-  if (ddisp!=Teuchos::null)
+  if (ddisp!=Teuchos::null and incrementtype == "step")
   {
-    // Dirichlet boundaries != 0 are not supported.
-
+    // Dirichlet -boundaries != 0 are not supported.
     dispnp_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
   }
+  else if (ddisp!=Teuchos::null and incrementtype == "iter")
+  {
+    if(dispnp_->Update(1.0,*ddisp,1.0))
+    {
+      dserror("Update of ale displacements not correct");
+    }
+  }
+  else if (ddisp!=Teuchos::null and !(incrementtype=="step") and !(incrementtype=="iter"))
+    dserror("Type of increment for ale evaluated not specified correctly. "
+            "Choose either 'step' (default) for step increments d^{n+1}_{i+1} = d^n + increment "
+            "or choose 'iter' for iteration increments  d^{n+1}_{i+1} = d^{n+1}_{i} + increment "
+           );
 
   if (incremental_)
   {

@@ -35,26 +35,42 @@ Maintainer: Anh-Tu Vuong
 //#include "Sacado.hpp"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_inpar/inpar_fpsi.H"
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoro<distype> * DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance( bool create )
+DRT::ELEMENTS::FluidEleCalcPoro<distype> * DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance( bool create, int num )
 {
-  static FluidEleCalcPoro<distype> * instance;
   if ( create )
   {
-    if ( instance==NULL )
+    if(static_cast<int>(MY::instances_.count(num))==0)
     {
-      instance = new FluidEleCalcPoro<distype>();
+      std::map<int,MY* > * temp_ = new std::map<int,MY* >;
+      temp_->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcPoro<distype>(num)));
+      MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, temp_));
     }
+    else if ( MY::instances_.count(num) > 0 and MY::instances_.at(num)->count((int)distype) == 0 )
+    {
+      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype, new FluidEleCalcPoro<distype>(num)));
+    }
+
+    return static_cast<DRT::ELEMENTS::FluidEleCalcPoro<distype>* >(MY::instances_.at(num)->at((int)distype));
   }
   else
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    if ( MY::instances_.find(num)->second != NULL )
+    {
+      delete MY::instances_.at(num)->find((int)distype)->second;
+      delete MY::instances_.find(num)->second;
+    }
+
+    MY::instances_.insert(std::pair<int,std::map<int,MY* > * >(num, NULL));
+    return NULL;
   }
-  return instance;
+
+  return NULL;
 }
 
 
@@ -65,15 +81,17 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance( false );
+  int numinstances = MY::instances_.size();
+  for(int i=0; i<numinstances; i++)
+    Instance( false, i );
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
-  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
+DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(int num)
+  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(num),
     visceff_(0.0),
     N_XYZ_(true),
     N_XYZ2_(true),
@@ -82,14 +100,11 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
     histcon_(true),
     porosity_(0.0),
     grad_porosity_(true),
-    refgrad_porosity_(true),
     gridvelint_(true),
-    gridvelderiv_(true),
     gridvdiv_(0.0),
     J_(0.0),
     press_(0.0),
     pressdot_(0.0),
-    refgradp_(true),
     so_interface_(NULL)
 {
 
@@ -4998,7 +5013,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // Ursula is responsible for this comment!
@@ -5016,6 +5030,3 @@ template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::tri3>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::tri6>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::nurbs9>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::nurbs27>;
-
-
-

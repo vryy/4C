@@ -40,7 +40,7 @@ GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
 CONVTOL                         1e-06
-GRIDVEL                         1
+GRIDVEL                         BE
 ITEMAX                          10
 MAXTIME                         0.5
 NONLINITER Newton //fixed_point_like

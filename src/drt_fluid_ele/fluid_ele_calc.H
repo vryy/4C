@@ -389,7 +389,7 @@ namespace ELEMENTS
 
   protected:
     /// private Constructor since we are a Singleton.
-    FluidEleCalc();
+    FluidEleCalc(int num=0);
 
     /*!
       \brief evaluate function for fluid element
@@ -1173,7 +1173,11 @@ namespace ELEMENTS
     //! time-dependent subgrid-scales (pointer to element-specific data)
     Teuchos::RCP<FLD::TDSEleData> tds_;
 
+  //protected:
+    //static std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > instances_;
+
   };
+  //template<DRT::Element::DiscretizationType distype> std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > FluidEleCalc<distype>::instances_;
 }
 }
 
