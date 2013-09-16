@@ -161,6 +161,9 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     //                   Integrate stuff !!!                    //
     // ***********************************************************
     integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,d2seg,mseg,gseg,useg,scseg,wseg,tseg,eseg);
+    // ***********************************************************
+    //                   END INTEGRATION !!!                    //
+    // ***********************************************************
 
     // do the two mortar assemblies and weighted gap into the slave nodes
     integrator.AssembleD(Comm(),SlaveElement(),*dseg);

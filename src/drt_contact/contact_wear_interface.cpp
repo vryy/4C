@@ -145,10 +145,6 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
 
     }
   }
-
-  //std::cout << "Tmatrix= " << tglobal << std::endl;
-  //std::cout << "Ematrix= " << eglobal << std::endl;
-
   return;
 }
 
@@ -199,14 +195,19 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
 
       // current Lagrange multipliers
       double lmn = 0.0;
-      lmn=(csnode->MoData().lm()[0]) * (csnode->MoData().n()[0]) + (csnode->MoData().lm()[1]) * (csnode->MoData().n()[1]);
+      if (Dim()==2)
+        lmn=(csnode->MoData().lm()[0]) * (csnode->MoData().n()[0]) + (csnode->MoData().lm()[1]) * (csnode->MoData().n()[1]);
+      else if (Dim()==3)
+        lmn=(csnode->MoData().lm()[0]) * (csnode->MoData().n()[0]) + (csnode->MoData().lm()[1]) * (csnode->MoData().n()[1]) + (csnode->MoData().lm()[2]) * (csnode->MoData().n()[2]);
+      else
+        dserror("False Dimension!");
 
       // Mortar matrix T derivatives
       std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivTw()[sgid];
       int mapsize = (int)(thisdderive.size());
 
       // we choose the first node dof as wear dof
-      int row = fnode->Dofs()[0];//csnode->Dofs()[0];
+      int row = fnode->Dofs()[0];
       std::map<int,double>::iterator scolcurr = thisdderive.begin();
 
       // loop over all directional derivative entries
@@ -419,44 +420,6 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
         }
       }
     }
-
-
-
-
-//    for (int iter=0;iter<Dim();++iter)
-//    {
-//      n=fnode->MoData().n()[iter];
-//
-//      for (int k=0;k<snoderowmap_->NumMyElements();++k)
-//      {
-//        int gid2 = snoderowmap_->GID(k);
-//        DRT::Node* node2 = idiscret_->gNode(gid2);
-//        if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
-//        FriNode* fnode2 = static_cast<FriNode*>(node2);
-//
-//        // Mortar matrix T
-//        if ((fnode2->FriDataPlus().GetT()).size()>0)
-//        {
-//          std::map<int,double>& thisT = fnode2->FriDataPlus().GetT()[0];
-//
-//          for (CI p=thisT.begin(); p!=thisT.end(); ++p)
-//          {
-//            if ((p->first) == fnode->Dofs()[0])
-//            {
-//              int row= fnode2->Dofs()[0];
-//              int col = fnode->Dofs()[iter];
-//              double val = n * (p->second);
-//
-//              // owner of LM slave node can do the assembly, although it actually
-//              // might not own the corresponding rows in lindglobal (DISP slave node)
-//              // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
-//              //std::cout << "Assemble LinT: " << row << " " << col << " " << val << std::endl;
-//              if (abs(val)>1.0e-12) lintglobal.FEAssemble(val,row,col);
-//            }
-//          }
-//        }
-//      }
-//    }
   }
 
   return;
@@ -588,10 +551,6 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
                                           LINALG::SparseMatrix& linstickDISglobal,
                                           Epetra_Vector& linstickRHSglobal)
 {
-  // FIXGIT: Assemble LinStick is containing a matrix for the de-
-  // rivatives of the Lagrange multipliers. This is according to Hüeber.
-  // Because of worse convergence, this is not implemented, but the
-  // code is commented after the algorithm.
 
   // get out of here if not participating in interface
   if (!lComm())
@@ -2793,13 +2752,16 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
 
 /*----------------------------------------------------------------------*
  |  Assemble matrix W_lm containing wear w~ derivatives      farah 07/13|
- |  w.r.t. lm                                                           |
+ |  w.r.t. lm       -- impl wear                                                     |
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::AssembleLinWLm(LINALG::SparseMatrix& sglobal)
 {
   // get out of here if not participating in interface
   if (!lComm())
     return;
+
+  if (!wearimpl_)
+    dserror("This matrix deriv. is only required for implicit wear algorithm!");
 
   // nothing to do if no active nodes
   if (activenodes_==Teuchos::null)
@@ -2844,6 +2806,9 @@ void CONTACT::WearInterface::AssembleLinWLmSt(LINALG::SparseMatrix& sglobal)
   // get out of here if not participating in interface
   if (!lComm())
     return;
+
+  if (!wearimpl_)
+    dserror("This matrix deriv. is only required for implicit wear algorithm!");
 
   // create map of stick nodes
   Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_,*slipnodes_);
@@ -2944,6 +2909,9 @@ void CONTACT::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements()==0)
     return;
+
+  if (!wearimpl_)
+    dserror("This matrix deriv. is only required for implicit wear algorithm!");
 
   // get input params
   double ct = IParams().get<double>("SEMI_SMOOTH_CT");

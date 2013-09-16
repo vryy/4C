@@ -9,7 +9,7 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 3D wear contact
 // - structure-ale approach -- ale: classic_lin
-// - implicit wear algorithm
+// - discrete wear algorithm
 // - first-order interpolation (Hex8 elements)
 // - dual Lagrange multiplier interpolation
 // - solution check done by material displacements (wear)
@@ -58,7 +58,7 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
 WEARLAW                         Archard
-WEARTYPE                        implicit
+WEARTYPE                        discrete
 BOTH_SIDED_WEAR                 no
 WEARCOEFF                       0.003
 SEMI_SMOOTH_NEWTON              Yes
@@ -104,9 +104,9 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR -1.0 -1.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -2.05269772839088427e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -2.05269772839302700e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE 2.33329510955309849e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -2.07177277704062579e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -2.07177277704242435e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE 2.35707251346848223e-01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2

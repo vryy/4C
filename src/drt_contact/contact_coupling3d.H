@@ -39,7 +39,7 @@ Maintainer: Alexander Popp
 #define CONTACT_COUPLING3D_H
 
 #include "../drt_mortar/mortar_coupling3d.H"
-
+#include "../drt_inpar/inpar_contact.H"
 
 /*!
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
@@ -196,6 +196,13 @@ public:
   virtual bool CenterLinearization(const std::vector<std::vector<std::map<int,double> > >& linvertex,
                                    std::vector<std::map<int,double> >& lincenter);
   
+  /*!
+  \brief Return type of wear surface definition
+
+  */
+  INPAR::CONTACT::WearType WearType()
+      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,"WEARTYPE"); }
+
   //@}
 
 protected:

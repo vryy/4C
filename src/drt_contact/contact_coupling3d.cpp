@@ -172,17 +172,20 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       int ncol = MasterElement().NumNode();
       int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
       if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
-        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg      = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg      = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg      = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg     = Teuchos::null;
       Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs = Teuchos::null;
       Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm = Teuchos::null;
-      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg = Teuchos::null;
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bseg = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg      = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseMatrix> bseg      = Teuchos::null;
+      Teuchos::RCP<Epetra_SerialDenseMatrix> tseg      = Teuchos::null; // wear slip matrix
+      Teuchos::RCP<Epetra_SerialDenseMatrix> eseg      = Teuchos::null; // wear define matrix
+      Teuchos::RCP<Epetra_SerialDenseMatrix> useg      = Teuchos::null;  // gp-slip increment
+
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
       if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
       {
         mdisssegs = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
@@ -190,22 +193,31 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
         aseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
         bseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
       }
-
       Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
       if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
         wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+      if (WearType() == INPAR::CONTACT::wear_discr)
+      {
+        tseg  = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow,nrow));
+        eseg  = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow,nrow));
+      }
 
       // slip increment built at gp
-      Teuchos::RCP<Epetra_SerialDenseMatrix> useg = Teuchos::null;
   #ifdef OBJECTVARSLIPINCREMENT
       useg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow,2));
   #endif
       
+      // ***********************************************************
+      //                   Integrate stuff !!!                    //
+      // ***********************************************************
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,useg,scseg,mdisssegs,mdisssegm,aseg,bseg,wseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,useg,scseg,mdisssegs,mdisssegm,aseg,bseg,wseg,tseg,eseg);
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg,scseg);
-  
+      // ***********************************************************
+      //                   END INTEGRATION !!!                    //
+      // ***********************************************************
+
       // do the assembly into the slave nodes
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
       integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
@@ -239,6 +251,17 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
         // dserror 
         if (!CouplingInAuxPlane()) 
           dserror("Contact with wear only implemented for CouplingInAuxPlane");        
+      }
+
+      // discrete wear matrices
+      if (WearType() == INPAR::CONTACT::wear_discr)
+      {
+        integrator.AssembleT(Comm(),SlaveElement(),*tseg);
+        integrator.AssembleE(Comm(),SlaveElement(),*eseg);
+
+        // dserror
+        if (!CouplingInAuxPlane())
+          dserror("Contact with wear only implemented for CouplingInAuxPlane");
       }
 
       // assemble slip

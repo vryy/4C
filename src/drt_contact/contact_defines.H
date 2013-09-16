@@ -87,7 +87,6 @@ Maintainer: Alexander Popp
 //#define CONTACTFDGAP              /* flag for FD check of weighted gap g */
 //#define CONTACTFDSLIPINCR         /* flag for FD check of weighted obj.-var. slip */
 
-
 // LAGRANGE DEBUGGING OPTIONS
 //#define CONTACTFDTANGLM           /* flag for FD check of (frictionless) tangential LM */
 //#define CONTACTFDSTICK            /* flag for FD check of (frictional) stick condition */

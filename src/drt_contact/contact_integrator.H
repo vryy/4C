@@ -181,7 +181,9 @@ public:
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> bseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> wseg);
+     Teuchos::RCP<Epetra_SerialDenseVector> wseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> tseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> eseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
