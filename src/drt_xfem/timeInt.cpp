@@ -627,10 +627,7 @@ void XFEM::STD::elementSearch(
     // if ele != NULL and so initialized,
     // first it should be checked if it is fitting
     if (ieleid == -1)
-    {
       currele = ele;
-      ele = NULL; // ele will be set if an element is found finally
-    }
     else
       currele = discret_->lColElement(ieleid);
 

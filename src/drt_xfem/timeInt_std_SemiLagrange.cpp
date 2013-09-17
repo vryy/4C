@@ -99,11 +99,10 @@ void XFEM::SemiLagrange::compute(
       for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
           data!=timeIntData_->end(); data++)
       {
-        //std::cout << std::endl << "on proc " << myrank_ << " iteration starts for " <<
-        //    data->node_ << " with initial startpoint " << data->startpoint_;
-
         if (data->state_ == TimeIntData::currSL_)
         {
+          //cout << endl << "on proc " << myrank_ << " iter " << data->counter_ <<
+          //    " starts for " << data->node_ << " and init startpoint " << data->startpoint_;
           // Initialization
           DRT::Element* ele = NULL; // pointer to the element where start point lies in
           LINALG::Matrix<nsd,1> xi(true); // local transformed coordinates of x
@@ -165,12 +164,11 @@ void XFEM::SemiLagrange::compute(
             }
           } // end if over nodes which changed interface
 
-          findNearProcs(&*data);
-        }
-
+          findNearProcs(&*data,ele);
           //std::cout << "on proc " << myrank_ << " after " << data->counter_ << " iterations "
           //    << data->node_ << " has startpoint " << data->startpoint_ <<
           //    " and state " << data->stateToString() << std::endl;
+        }
       } // end loop over all nodes with changed interface side
     } // end if movenodes is empty or max. iter reached
     else //
@@ -1474,7 +1472,10 @@ double XFEM::SemiLagrange::Theta(TimeIntData* data) const
 /*------------------------------------------------------------------------------------------------*
  * ind processors around the current startpoint                                  winklmaier 09/13 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::SemiLagrange::findNearProcs(TimeIntData* data)
+void XFEM::SemiLagrange::findNearProcs(
+    TimeIntData* data,
+    const DRT::Element* const & ele
+)
 {
   switch (data->state_)
   {
@@ -1483,9 +1484,43 @@ void XFEM::SemiLagrange::findNearProcs(TimeIntData* data)
     if (data->searchedProcs_==2)
     {
       std::vector<const DRT::Element*> eles;
-      addPBCelements(&data->node_,eles);
 
-      if (!data->node_.Owner()==myrank_)
+      // in this initial case currently procs are searched as follows:
+      // initial node -> surrounding elements -> procs of their nodes
+      if (data->counter_==0)
+      {
+        addPBCelements(&data->node_,eles);
+      }
+      else // counter>0 -> new iter was on curr_proc -> point in ele of curr_proc
+      {
+        // in this case procs are searched as follows:
+        // (Lagrangian) point -> it's element -> proc's nodes -> their elements -> procs of their nodes
+        eles.push_back(ele);
+
+        for (int i=0;i<ele->NumNode();i++)
+        {
+          if (ele->Nodes()[i]->Owner()==myrank_)
+          {
+            const DRT::Node* node = ele->Nodes()[i];
+
+            for (int j=0;j<node->NumElement();j++)
+            {
+              bool newproc = true;
+              for (size_t k=0;k<eles.size();k++)
+              {
+                if (eles[k]->Owner()==node->Elements()[j]->Owner())
+                {
+                  newproc=false;
+                  break;
+                }
+              }
+              if (newproc) eles.push_back(node->Elements()[j]);
+            }
+          }
+        }
+      }
+
+      if (!data->node_.Owner()==myrank_ and data->counter_==0)
         dserror("something wrong");
 
       for (size_t i=0;i<eles.size();i++)
@@ -1498,7 +1533,13 @@ void XFEM::SemiLagrange::findNearProcs(TimeIntData* data)
           {
             bool newproc = true;
             for (std::vector<int>::iterator it=data->near_procs_.begin();it!=data->near_procs_.end();it++)
-              if ((*nodes)->Owner()==(*it)) {newproc=false;break;}
+            {
+              if ((*nodes)->Owner()==(*it))
+              {
+                newproc=false;
+                break;
+              }
+            }
 
             if (newproc) data->near_procs_.push_back((*nodes)->Owner());
           }
@@ -1952,10 +1993,7 @@ void XFEM::SemiLagrange::exportIterDataNew(
     {
       int targetproc = -1;
       if (data->near_procs_.size()!=0)
-      {
-        targetproc = *(data->near_procs_.end()-1);
-        data->near_procs_.pop_back();
-      }
+        targetproc = data->near_procs_[data->near_procs_.size()-1];
       else
       {
         targetproc = myrank_+1;
@@ -2011,7 +2049,7 @@ void XFEM::SemiLagrange::exportIterDataNew(
         int targetproc = -1;
         if (data->near_procs_.size()!=0)
         {
-          targetproc = *(data->near_procs_.end()-1);
+          targetproc = data->near_procs_[data->near_procs_.size()-1];
           data->near_procs_.pop_back();
         }
         else

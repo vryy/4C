@@ -135,7 +135,10 @@ private:
   double Theta(TimeIntData* data) const;
 
   //! find processors around the current startpoint
-  void findNearProcs(TimeIntData* data);
+  void findNearProcs(
+      TimeIntData* data,
+      const DRT::Element* const & ele
+  );
 
   //! check if newton iteration has finished
   bool globalNewtonFinished(
