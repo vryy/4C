@@ -132,7 +132,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicporofluidsplit 
+COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit 
 INCTOL                          1e-08
 ITEMAX                          20
 ITEMIN                          1

@@ -3538,7 +3538,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
    int currparenteleid = pele->Id();
 
   // get submatrix to fill
-  const std::string block = params.get<string>("fillblock");
+  const std::string block = params.get<std::string>("fillblock");
 
   // get map containing parent element facing current interface element
   const std::string tempstring("InterfaceFacingElementMap");
@@ -3868,12 +3868,12 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
     eye.Multiply(xji,xjm);
     if(abs(eye(0,0)-1.0) > 1e-11 or abs(eye(1,1)-1.0) > 1e-11 or abs(eye(2,2)-1.0) > 1e-11)
     {
-      std::cout<<eye<<endl;
+      std::cout<<eye<<std::endl;
       dserror("matrix times its inverse is not equal identity ... that sucks !!!");
     }
     if(abs(eye(0,1)) > 1e-11 or abs(eye(0,2)) > 1e-11 or abs(eye(1,0)) > 1e-11 or abs(eye(1,2)) > 1e-11  or abs(eye(2,0)) > 1e-11  or abs(eye(2,1)) > 1e-11 )
     {
-      std::cout<<eye<<endl;
+      std::cout<<eye<<std::endl;
       dserror("matrix times its inverse is not equal identity ... that sucks !!!");
     }
 
@@ -3953,11 +3953,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
 
 
     if(porosityint < 0.00001)
-    { std::cout<<"Discretization: "<<discretization.Name()<<endl;
-      std::cout<<"SurfaceNumber:  "<<ele->SurfaceNumber()<<endl;
-      std::cout<<"Porosity:       "<<porosityint<<"  at gp: "<<gpid<<endl;
-      std::cout<<"Pressure at gp: "<<pressint(0,0)<<endl;
-      std::cout<<"Jacobian:       "<<J<<endl;
+    { std::cout<<"Discretization: "<<discretization.Name()<<std::endl;
+      std::cout<<"SurfaceNumber:  "<<ele->SurfaceNumber()<<std::endl;
+      std::cout<<"Porosity:       "<<porosityint<<"  at gp: "<<gpid<<std::endl;
+      std::cout<<"Pressure at gp: "<<pressint(0,0)<<std::endl;
+      std::cout<<"Jacobian:       "<<J<<std::endl;
       dserror("unreasonably low porosity for poro problem");
     }
     // dxyzdrs vector -> normal which is not normalized built from cross product of columns
