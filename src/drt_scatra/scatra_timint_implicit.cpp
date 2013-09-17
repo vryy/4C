@@ -1082,7 +1082,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
 
     // do the redistribution
-    discret_->Redistribute(newnoderowmap,newnodecolmap, false, false, false);
+    discret_->Redistribute(newnoderowmap,newnodecolmap, true, false, true,false);
 
     // update the PBCs and PBCDofSet
     pbc_->PutAllSlavesToMastersProc();
