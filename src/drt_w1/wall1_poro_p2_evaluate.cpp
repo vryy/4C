@@ -575,9 +575,9 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::GaussPointLoopPoroScatraOD(
   for (int gp=0; gp<my::numgpt_; ++gp)
   {
     //evaluate shape functions and derivatives at integration point
-    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
+    this->ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
+    const double J = this->ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
@@ -659,7 +659,7 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::GaussPointLoopPoroScatraOD(
 
       // non-linear B-operator
       LINALG::Matrix<my::numstr_,numdof_> bop;
-      ComputeBOperator(bop,defgrd,N_XYZ);
+      this->ComputeBOperator(bop,defgrd,N_XYZ);
 
       // material fluid velocity gradient at integration point
       LINALG::Matrix<my::numdim_,my::numdim_>              fvelder;
