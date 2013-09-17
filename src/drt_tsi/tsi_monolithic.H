@@ -337,6 +337,11 @@ namespace TSI
     bool printerrfile_;  //!< print infos to error file #errfile_
     FILE* errfile_;  //!< error file handle
 
+    //! calculate nodal values (displacements, temperatures, reaction forces) at
+    //! specific nodes used for validation of implementation with literature
+    //! here: validation of thermoplasticity with e.g. Simo and Miehe (1992)
+    void CalculateNeckingTSIResults();
+
     //@}
 
     //! @name Global vectors

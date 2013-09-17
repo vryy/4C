@@ -2399,6 +2399,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // number of linear solver used for monolithic TSI
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for monolithic TSI problems",&tsidyn);
 
+  // in case of monolithic TSI nodal values (displacements, temperatures and
+  // reaction forces) at fix points of the body can be calculated
+  // default: "No", i.e. nothing is calculated
+  BoolParameter("CALC_NECKING_TSI_VALUES","No","Calculate nodal values for evaluation and validation of necking",&tsidyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& poroelastdyn = list->sublist(
    "POROELASTICITY DYNAMIC",false,

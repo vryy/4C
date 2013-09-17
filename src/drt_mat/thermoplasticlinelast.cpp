@@ -410,11 +410,11 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // REMARK: stress-like 6-Voigt vector
   LINALG::Matrix<NUM_STRESS_3D,1> strain(*linstrain);
 
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // elastic predictor (trial values)
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
-  // --------------------------------------------- old plastic strain
+  // ------------------------------------------------------- old plastic strain
   // strain^{p,trial}_{n+1} = strain^p_n
   LINALG::Matrix<NUM_STRESS_3D,1> strain_p(true);
   for (int i=0; i<6; i++)
@@ -428,13 +428,13 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   if (strainbarpllast_->at(gp) < 0.0)
     dserror("accumulated plastic strain has to be equal to or greater than 0!");
 
-  // ------------------------------------------------ old back stress
+  // ---------------------------------------------------------- old back stress
   // beta^{trial}_{n+1} = beta_n
   LINALG::Matrix<NUM_STRESS_3D,1> beta(true);
   for (int i=0; i<6; i++)
     beta(i,0) = backstresslast_->at(gp)(i,0);
 
-  // ----------------------------------------------- physical strains
+  // --------------------------------------------------------- physical strains
   // convert engineering shear components into physical components
   // input strain is given in Voigt-notation
 
@@ -442,7 +442,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   for (int i=3; i<6; ++i) strain(i) /= 2.0;
   for (int i=3; i<6; ++i) strain_p(i) /= 2.0;
 
-  // ----------------------------------------------- elastic trial strain
+  // ----------------------------------------------------- elastic trial strain
   // assume load step is elastic
   // strain^e_{n+1}
   LINALG::Matrix<NUM_STRESS_3D,1> strain_e(true);
@@ -460,12 +460,12 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   volumetricstrain.Update( (tracestrain/3.0), id2, 0.0 );
 
   // deviatoric strain
-  // dev^e = strain^e - volstrain^e
+  // devstrain^e = strain^e - volstrain^e
   LINALG::Matrix<NUM_STRESS_3D,1> devstrain(false);
   devstrain.Update( 1.0, trialstrain_e, 0.0 );
   devstrain.Update( -1.0, volumetricstrain, 1.0 );
 
-  // ------------------------------------------------------- trial stress
+  // ------------------------------------------------------------- trial stress
   // pressure = kappa . tr( strain ): saved as scalar
   double p = kappa * tracestrain;
 
@@ -476,7 +476,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // in Voigt-notation the shear strains have to be scaled with 1/2
   // normally done in the material tangent (cf. id4sharp)
 
-  // --------------------------------------  relative effective stress
+  // -----------------------------------------------  relative effective stress
   // eta^{trial}_{n+1} = s^{trial}_{n+1} - beta^{trial}_{n+1}
   LINALG::Matrix<NUM_STRESS_3D,1> eta(true);
   RelDevStress( devstress, beta, eta);
@@ -503,7 +503,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // check plastic admissibility, Phi<=0 is admissble
   //---------------------------------------------------------------------------
 
-  // ----------------------------------------------- trial yield function
+  // ----------------------------------------------------- trial yield function
 
   // calculate the yield stress
   // sigma_y = sigma_y0 + kappa(strainbar^p)
@@ -521,7 +521,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   double Phi_trial = 0.0;
   Phi_trial = qbar - sigma_y;
 
-  // --------------------------------------------------------- initialise
+  // --------------------------------------------------------------- initialise
 
   // if trial state is violated, i.e. it's a plastic load step, there are 2
   // possible states: plastic loading: heaviside = 1, elastic unloading = 0)
@@ -546,10 +546,10 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   //   = sqrt{3/2} . Nbar
   LINALG::Matrix<NUM_STRESS_3D,1> N(true);
 
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // IF consistency condition is violated, i.e. plastic load step
   // ( Phi^{trial} > 0.0, Dgamma >= 0.0 )
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   if (Phi_trial > 1.0e-08)  // if (Phi^{trial} > 0.0)
   {
     // only first plastic call is output at screen for every processor
@@ -568,7 +568,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     // beta_{n} = Hkin * astrain^p_{n} = Hkin * strainbar^p, trial}_{n+1}
     betabarold = Hkin * strainbar_p;
 
-    // -------------------------------------------------- return-mapping
+    // --------------------------------------------------------- return-mapping
 
     // local Newton-Raphson
 
@@ -576,9 +576,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     const int itermax = 50;  // max. number of iterations
     int itnum = 0;  // iteration counter
 
-    // Res:= residual of Newton iteration == yield function
+    // Res:= residual of Newton iteration == yield function Phi
     double Res = 0.0;
-    // calculate residual derivative/tangent
+    // calculate derivative of residual or tangent
     // ResTan = Phi' = d(Phi)/d(Dgamma)
     double ResTan = 0.0;
     // safety check: set to zero
@@ -594,11 +594,16 @@ void MAT::ThermoPlasticLinElast::Evaluate(
       // if not converged m > m_max
       if (itnum > itermax)
       {
-        dserror("local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",itnum,itermax,Res);
+        dserror(
+          "local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",
+          itnum,
+          itermax,
+          Res
+          );
       }
-      // else: continue loop m <= m_max
+      // else: continue loop, i.e. m <= m_max
 
-      // Res:= Phi = qbar^{trial}_{n+1}
+      // Res := Phi = qbar^{trial}_{n+1}
       //             - Delta gamma (3 . G + Hkin(strainbar_p + Dgamma) )
       //             - sigma_y(strainbar_p + Dgamma)
       // - Hiso is introduced in residual via sigma_y(strainbar_p + Dgamma)
@@ -663,9 +668,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
     }  // end of local Newton iteration
 
-    // --------------------------------------------------- plastic update
+    // --------------------------------------------------------- plastic update
 
-    // ---------------------------------------------- update flow vectors
+    // ---------------------------------------------------- update flow vectors
     // unit flow vector Nbar = eta_{n+1}^{trial} / || eta_{n+1}^{trial} ||
     Nbar.Update( 1.0, eta, 0.0);
     const double facNbar = 1 /  etanorm ;
@@ -712,7 +717,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     // pass the current plastic strains to the element (for visualisation)
     plstrain.Update(1.0, strain_p, 0.0);
 
-    // --------------------------------------------------- update history
+    // --------------------------------------------------------- update history
     // plastic strain
     strainplcurr_->at(gp) = strain_p;
 
@@ -729,9 +734,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
   }  // plastic corrector
 
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // ELSE: elastic step (Phi_trial <= 0.0, Dgamma = 0.0)
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   else  // (Phi_trial <= 0.0)
   {
     // trial state vectors = result vectors of time step n+1
@@ -805,34 +810,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // build the elasto-plastic tangent modulus
   LINALG::Matrix<6,6> cmatFD(true);
 
-  // build a finite difference check
-  FDCheck(
-    *stress,  // updated stress sigma_{n+1}
-    cmatFD, // material tangent calculated with FD of stresses
-    beta,  // updated back stresses
-    p,  // volumetric stress
-    trialstrain_e,  // elastic strain vector
-    Dgamma,  // plastic multiplier
-    G,  // shear modulus
-    qbar,  // elastic trial von Mises effective stress
-    kappa, // bulk modulus
-    N, //  flow vector
-    heaviside  // Heaviside function
-    );
-
   std::cout << "cmat " << *cmat << std::endl;
-  std::cout << "cmatFD " << cmatFD << std::endl;
-//  // error: cmat - cmatFD
-//  LINALG::Matrix<6,6> cmatdiff;
-//  cmatdiff.Update(1.0, cmat, 0.0);
-//  cmatdiff.Update(-1.0, cmatFD, 1.0);
-//  std::cout << "error between two material tangents" << cmatdiff << std::endl;
-//  printf("c_11 %+12.5e   ",cmat(0,0)-cmatFD(0,0));
-//  printf("c_12 %+12.5e   ",cmat(0,1)-cmatFD(0,1));
-//  printf("cmat_11 %12.8f\n   ",cmat(0,0));
-//  printf("cmatFD_11 %12.8f\n   ",cmatFD(0,0));
-//  printf("error c_11 %12.8f\n   ",cmat(0,0)-cmatFD(0,0));
-//  printf("error c_12 %12.5f\n   ",cmat(0,1)-cmatFD(0,1));
 #endif // #ifdef DEBUGMATERIAL
 
   //---------------------------------------------------------------------------
@@ -1406,7 +1384,7 @@ double MAT::ThermoPlasticLinElast::STModulus()
   //            (1+nu)*(1-2*nu)
   //
   //  \f \mu =  \frac{E}{2(1+\nu)} \f
-  const double mu = 0.5*c1;
+  const double mu = 0.5 * c1;
   // lambda
   // \f \frac{E\,\nu}{(1-2\nu)(1+\nu)} \f
   const double lambda = b1;

@@ -321,6 +321,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractAccn()
     { return structure_->ExtractAccn(); }
 
+    /// extract rhs (used to calculate reaction force for post-processing)
+    virtual Teuchos::RCP<Epetra_Vector> Freact()
+    { return structure_->Freact(); }
+
     //@}
 
     //! @name Structure with ale specific methods

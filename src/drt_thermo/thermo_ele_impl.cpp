@@ -1884,7 +1884,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // build the rate of C: C'= F^T . F' + (F')^T . F
     // OR: C' = F^T . F' if applied to symmetric tensor
     // save C' as rate vector Crate
-    // C' = { C11', C22', C33', C12', C23', C31 }
+    // C' = { C11', C22', C33', C12', C23', C31' }
     LINALG::Matrix<6,1> Cratevct(false);
     // build the inverse C: C^{-1} = F^{-1} . F^{-T}
     LINALG::Matrix<nsd_,nsd_> invC(false);

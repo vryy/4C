@@ -105,7 +105,7 @@ TSI::Monolithic::Monolithic(
     = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
 
   // use the same time integrator for both fields
-  if ( ( (structtimealgo!=INPAR::STR::dyna_statics) or (thermotimealgo!=INPAR::THR::dyna_statics) )
+  if ( ( (structtimealgo != INPAR::STR::dyna_statics) or (thermotimealgo != INPAR::THR::dyna_statics) )
        and
        ( (structtimealgo != INPAR::STR::dyna_onesteptheta) or (thermotimealgo != INPAR::THR::dyna_onesteptheta) )
        and
@@ -133,18 +133,18 @@ TSI::Monolithic::Monolithic(
   {
 #ifndef TFSI
   if (Comm().MyPID() == 0)
-    cout << "Merged TSI block matrix is used!\n" << endl;
+    std::cout << "Merged TSI block matrix is used!\n" << std::endl;
 #endif
 
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     solverparams->set("solver","umfpack");
 
     solver_ = Teuchos::rcp(new LINALG::Solver(
-                        solverparams,
-                        Comm(),
-                        DRT::Problem::Instance()->ErrorFile()->Handle()
-                        )
-                  );
+                                 solverparams,
+                                 Comm(),
+                                 DRT::Problem::Instance()->ErrorFile()->Handle()
+                                 )
+                );
   }  // end BlockMatrixMerge
 
   // structural and thermal contact
@@ -175,6 +175,16 @@ TSI::Monolithic::Monolithic(
       locsysman_ = StructureField()->LocsysManager();
     }
   }
+
+#ifndef TFSI
+  if ( (DRT::INPUT::IntegralValue<bool>(tsidyn_,"CALC_NECKING_TSI_VALUES") == true)
+    and (Comm().MyPID() == 0) )
+    std::cout
+    << "CAUTION: calculation ONLY valid for necking of a cylindrical body!"
+    << "\n Due to symmetry only 1/8 of the cylinder is simulated, i.e r/l = 6.413mm/53.334mm."
+    << "\n The body is located between x: [0,6.413mm], y: [0,6.413mm], z: [-13.3335mm,13.3335mm]\n"
+    << std::endl;
+#endif  // TFSI
 
 }  // Monolithic()
 
@@ -497,6 +507,11 @@ void TSI::Monolithic::NewtonFull()
   }
   else if (iter_ >= itermax_)
     dserror("Newton unconverged in %d iterations", iter_);
+
+  // for validation with literature calculate nodal TSI values
+
+  if ((DRT::INPUT::IntegralValue<bool>(tsidyn_,"CALC_NECKING_TSI_VALUES")) == true)
+    CalculateNeckingTSIResults();
 
 }  // NewtonFull()
 
@@ -2888,6 +2903,301 @@ void TSI::Monolithic::SetDefaultParameters()
   return;
 
 }  // SetDefaultParameter()
+
+
+/*----------------------------------------------------------------------*
+ | calculate nodal TSI results for evaluation                dano 09/13 |
+ | used for thermoplasticity and necking to calculate displacements,    |
+ | temperatures, and reaction forces at different points                |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::CalculateNeckingTSIResults()
+{
+  //---------------------------------------------------------------------------
+  // -------------- get the nodes with STRUCTURAL Dirichlet boundary conditions
+  //---------------------------------------------------------------------------
+
+  // initialise a vector containing all structural DBC
+  std::vector<DRT::Condition*> dbc(0);
+  StructureField()->Discretization()->GetCondition("Dirichlet", dbc);
+
+  // initialise a vector contatining all DBC in a special direction (here: in z)
+  std::vector<int> one_dof_in_dbc(1);
+  one_dof_in_dbc.at(0) = -1;
+
+  // local list of found structural DOF IDs that have a DBC
+  // in this special case DBC are applied at the nodes which are interested for
+  // evaluation
+  std::vector<int> sdata(0);
+
+  // loop over Dirichlet boundary conditions
+  for (int i=0; i<(int) dbc.size(); ++i)
+  {
+    // get nodes which have DBCs
+    const std::vector<int>* nodeids = dbc[i]->Nodes();
+    if (!nodeids)
+      dserror("Condition does not have Node Ids");
+
+    // loop over DBC nodes
+    for (int k=0; k<(int) (*nodeids).size(); ++k)
+    {
+      int gid = (*nodeids)[k];
+      // do only nodes which are in my discretisation
+      if (StructureField()->Discretization()->NodeRowMap()->MyGID(gid) == false)
+        continue;
+
+      // get node with global id gid
+      DRT::Node* node = StructureField()->Discretization()->gNode(gid);
+      if (!node)
+        dserror("Cannot find node with gid %", gid);
+      // check coordinates in z-direction, i.e. third value of X()
+      double zcoord = node->X()[2];
+
+      // possible push-back
+      bool this_is_new_gid = true;
+      // get the z-displacement DOFS located at the top surface (z=13.3335mm)
+      if (abs(zcoord - 13.3335) < 1.0e-8)  // change here value for different geometries
+      {
+        for (unsigned j=0; j<sdata.size(); j++)
+        {
+          if (sdata.at(j) == StructureField()->Discretization()->Dof(node,2))
+            this_is_new_gid = false;
+        }
+        if (this_is_new_gid)
+          sdata.push_back(StructureField()->Discretization()->Dof(node,2));
+        one_dof_in_dbc.at(0) = StructureField()->Discretization()->Dof(node,2);
+      }  // top surface
+    }  // loop over DBC nodes
+  }  // loop over all STRUCTURAL DBC conditions
+
+  // map containing all z-displacement DOFs which have a DBC
+  Teuchos::RCP<Epetra_Map> newdofmap = Teuchos::rcp(
+                                         new Epetra_Map(
+                                               -1,
+                                               (int) sdata.size(),
+                                               &sdata[0],
+                                               0,
+                                               StructureField()->Discretization()->Comm()
+                                               )
+                                         );
+
+  //---------------------------------------------------------------------------
+  // ------------------------------------ initialse STRUCTURAL output variables
+  //---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------- top force
+  // nodal reaction force at outer edge for whole support area
+  Teuchos::RCP<Epetra_Vector> tension = Teuchos::rcp(
+                                          new Epetra_Vector(
+                                                *newdofmap,
+                                                false
+                                                )
+                                          );
+  // copy the structural reaction force to tension
+  LINALG::Export(*(StructureField()->Freact()), *tension);
+  double top_force_local = 0.0;  // local force
+  for (int i=0; i<tension->MyLength(); i++)
+    top_force_local -= (*tension)[i];
+
+  // complete force pointing in axial direction
+  double top_force_global = 0.0;
+
+  // sum all nodal forces (top_force_local) in one global vector (top_force_global)
+  StructureField()->Discretization()->Comm().SumAll(
+    &top_force_local,
+    &top_force_global,
+    StructureField()->Discretization()->Comm().NumProc()
+    );
+
+  // --------------------------------------------- reaction force of whole body
+  // due to symmetry only 1/8 is simulated, i.e. only 1/4 of the surface is considered
+  // whole reaction force distributed over 360°, i.e. 2 * PI results in:
+  // R = force_top * 4 / (2 * PI)
+  double top_reaction_force = 4 * top_force_global / (2 * M_PI);
+
+  // --------------------------------------------------------- top displacement
+  // top displacement, i.e. displacement at outer edge in axial-direction
+  // (here: in z-direction)
+
+  // get the DOFs corresponding to z-displacements and located at the top surface
+  std::vector<double> top_disp_local(1);
+  top_disp_local.at(0) = 0.0;
+
+  std::vector<int> one_dof_in_dbc_global(1);
+  one_dof_in_dbc_global.at(0) = -1;
+
+  StructureField()->Discretization()->Comm().MaxAll(
+    &one_dof_in_dbc.at(0),
+    &one_dof_in_dbc_global.at(0),
+    StructureField()->Discretization()->Comm().NumProc()
+    );
+
+  // extract axial displacements (here z-displacements) of top surface
+  if (StructureField()->Discretization()->DofRowMap()->MyGID(one_dof_in_dbc_global.at(0)))
+  {
+    DRT::UTILS::ExtractMyValues(
+      *(StructureField()->Dispnp()),
+      top_disp_local,
+      one_dof_in_dbc_global
+      );
+  }
+
+  // initialse the top displacement
+  double top_disp_global = 0.0;
+  // sum all nodal displacements (top_disp_local) in one global vector (top_disp_global)
+  StructureField()->Discretization()->Comm().SumAll(
+    &top_disp_local.at(0),
+    &top_disp_global,
+    StructureField()->Discretization()->Comm().NumProc()
+    );
+
+  // ------------------------------------------------ necking radius at point A
+  // necking, i.e. radial displacements in centre plane (here: xy-plane)
+
+  // get the necking DOFs
+  // i.e. displacement-DOFs of the xy-plane in the middle of the body
+  std::vector<int> necking_radius_dof(1);
+  necking_radius_dof.at(0) = -1.;
+  for (int k=0; k<(int) StructureField()->Discretization()->NodeRowMap()->NumMyElements(); k++)
+  {
+    DRT::Node* node = StructureField()->Discretization()->lRowNode(k);
+    // change here value for different geometries
+    if ( (abs(node->X()[0] - 6.413) < 1.e-8)  // x-direction
+         and (abs(node->X()[1] - 0.00000) < 1.e-8)  // y-direction
+         and (abs(node->X()[2] + 13.3335) < 1.e-8)  // z-direction
+       )
+    {
+      // we choose point A (6.413mm / 0mm / -13.3335mm)
+      necking_radius_dof.at(0) = StructureField()->Discretization()->Dof(node,0);
+      break;  // we only look for one specific node, if we have found it: stop
+      // --> An alternative to the break-statement is, e.g.
+      // k = StructureField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
+      // i.e. set the index k to a value higher than available so that the loop stops
+
+    }  // end point A(6.413/0/-13.3335)
+  }  //
+  std::vector<double> necking_radius(1);
+  necking_radius.at(0) = 0.0;
+  if (necking_radius_dof.at(0) != -1)
+  {
+    DRT::UTILS::ExtractMyValues(
+      *(StructureField()->Dispnp()),
+      necking_radius,
+      necking_radius_dof
+      );
+  }
+
+  // sum necking deformations in the global variable necking_radius_global
+  double necking_radius_global = 0.0;
+  StructureField()->Discretization()->Comm().SumAll(
+    &necking_radius.at(0),
+    &necking_radius_global,
+    StructureField()->Discretization()->Comm().NumProc()
+    );
+
+  //---------------------------------------------------------------------------
+  // -------------------------------------------------- initialise TEMPERATURES
+  //---------------------------------------------------------------------------
+
+  // ------------------------------------------- necking temperature at point A
+
+  // necking temperature at point A, i.e. temperature at the outer side in the middle
+  // A (6.413mm / 0.0mm / 13.3335mm)
+  std::vector<int> neck_temperature_dof(1);
+  neck_temperature_dof.at(0) = -1.0;
+  for (int k=0; k<(int) ThermoField()->Discretization()->NodeRowMap()->NumMyElements(); k++)
+  {
+    DRT::Node* node = ThermoField()->Discretization()->lRowNode(k);
+    // change here value for different geometries
+    if ( (abs(node->X()[0] - 6.413) < 1.e-8)  // x-direction
+         and (abs(node->X()[1] - 0.00000) < 1.e-8)  // y-direction
+         and (abs(node->X()[2] + 13.3335) < 1.e-8)  // z-direction
+       )
+    {
+      neck_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(node,0);
+      break;  // we only look for one specific node, if we have found it: stop
+      // --> An alternative to the break-statement is, e.g.
+      // k = ThermoField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
+      // i.e. set the index k to a value higher than available so that the loop stops
+    }
+  }
+  std::vector<double> temperature(1);
+  temperature.at(0) = 0.0;
+  if (neck_temperature_dof.at(0) != -1)
+  {
+    DRT::UTILS::ExtractMyValues(
+      *(ThermoField()->Tempnp()),  // global (i)
+      temperature,  // local (o)
+      neck_temperature_dof  // global ids to be extracted
+      );
+  }
+  // sum necking temperatures in the variable temperature_global
+  double necking_temperature_global = 0.0;
+  ThermoField()->Discretization()->Comm().SumAll(
+    &temperature.at(0),
+    &necking_temperature_global,
+    ThermoField()->Discretization()->Comm().NumProc()
+    );
+
+  // -----------------------------------------temperatures at top, i.e. point B
+
+  // necking temperature at point B, i.e. temperature at the outer side at top
+  // B (6.413mm / 0.0mm / -13.3335mm)
+  std::vector<int> top_temperature_dof(1);
+  top_temperature_dof.at(0) = -1.0;
+  for (int k=0; k<(int) ThermoField()->Discretization()->NodeRowMap()->NumMyElements(); k++)
+  {
+    DRT::Node* node = ThermoField()->Discretization()->lRowNode(k);
+    // change here value for different geometries
+    if ( (abs(node->X()[0] - 6.413) < 1.e-8)  // x-direction
+         and (abs(node->X()[1] - 0.00000) < 1.e-8)  // y-direction
+         and (abs(node->X()[2] - 13.3335) < 1.e-8)  // z-direction
+       )
+    {
+      top_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(node,0);
+      break;  // we only look for one specific node, if we have found it: stop
+      // --> An alternative to the break-statement is, e.g.
+      // k = ThermoField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
+      // i.e. set the index k to a value higher than available so that the loop stops
+    }
+  }  // loop over thermal nodes
+
+  // extract top-temperatures of top surface out of global temperature vector
+  std::vector<double> top_temperature_local(1);
+  top_temperature_local.at(0) = 0.0;
+  if (top_temperature_dof.at(0) != -1)
+  {
+    DRT::UTILS::ExtractMyValues(
+      *(ThermoField()->Tempnp()),  // global vector (i)
+      top_temperature_local,  // local, i.e. at specific position (o)
+      top_temperature_dof  // global ids to be extracted
+      );
+  }
+
+  // sum top-temperatures in the variable top_temperature_global
+  double top_temperature_global = 0.0;
+  ThermoField()->Discretization()->Comm().SumAll(
+    &top_temperature_local.at(0),
+    &top_temperature_global,
+    ThermoField()->Discretization()->Comm().NumProc()
+    );
+
+  // -------------------------------------------------- print results to screen
+  std::cout.precision(7);
+  std::cout << scientific;
+  std::cout << fixed;
+  if (ThermoField()->Discretization()->Comm().MyPID() == 0)
+  {
+    std::cout << "OUTPUT:\ttop-disp \ttop-Freact \tneck-disp \tneck-tempi \ttop-tempi \ttop-force\n"
+      << "\t" << top_disp_global
+      << "\t" << top_reaction_force
+      << "\t" << necking_radius_global
+      << "\t" << (necking_temperature_global - 293.0)
+      << "\t" << (top_temperature_global - 293.0)
+      << "\t" << top_force_global
+      << std::endl;
+  }
+
+}  // CalculateNeckingTSIResults()
 
 
 /*----------------------------------------------------------------------*/

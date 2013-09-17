@@ -275,7 +275,7 @@ namespace ADAPTER {
     virtual void GetRestartData
     (
       Teuchos::RCP<int> step,
-     Teuchos::RCP<double> time,
+      Teuchos::RCP<double> time,
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
       Teuchos::RCP<Epetra_Vector> accn,
@@ -350,6 +350,9 @@ namespace ADAPTER {
 
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractAccn() = 0;
+
+    /// extract rhs (used to calculate reaction force for post-processing)
+    virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
     //@}
 

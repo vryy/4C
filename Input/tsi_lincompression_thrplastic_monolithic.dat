@@ -110,6 +110,7 @@ THETA                           1.0
 -----------------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
 TOLINC                          1e-07
+CALC_NECKING_TSI_VALUES         Yes // No
 COUPALGO                        tsi_monolithic                // tsi_{iterstagg{,_aitken,_aitkenirons,_fixedrelax},sequstagg,oneway}
 COUPVARIABLE                    Displacement                  // Displacement,Temperature
 ITEMAX                          10                            // 100
