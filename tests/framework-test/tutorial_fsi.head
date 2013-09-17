@@ -122,7 +122,7 @@ GAMMA                           1
 GMSH_OUTPUT                     No
 //
 // order of accuracy of mesh velocity determination
-GRIDVEL                         2
+GRIDVEL                         BDF2
 //
 // Scale blocks of matrix with row infnorm?
 //                              Yes,No,yes,no,YES,NO

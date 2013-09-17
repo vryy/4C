@@ -3581,12 +3581,15 @@ void FLD::XFluidFluid::ReadRestartEmb(int step)
 void FLD::XFluidFluid::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
-  // from input file data
-  const int order  = params_->get<int>("order gridvel");
+  // from input file data (updated to BE, BDF2 inpars rauch 09/13)
+  const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
+  const int order = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+
+  double theta = fluiddynparams.get<double>("THETA");
 
   switch (order)
   {
-    case 1:
+    case INPAR::FLUID::BE:
       /* get gridvelocity from BE time discretisation of mesh motion:
            -> cheap
            -> easy
@@ -3597,13 +3600,18 @@ void FLD::XFluidFluid::UpdateGridv()
                     Delta t                        */
       gridv_->Update(1/dta_, *aledispnp_, -1/dta_, *aledispn_, 0.0);
     break;
-    case 2:
+    case INPAR::FLUID::BDF2:
       /* get gridvelocity from BDF2 time discretisation of mesh motion:
            -> requires one more previous mesh position or displacement
            -> somewhat more complicated
            -> allows second order accuracy for the overall flow solution  */
       gridv_->Update(1.5/dta_, *aledispnp_, -2.0/dta_, *aledispn_, 0.0);
       gridv_->Update(0.5/dta_, *aledispnm_, 1.0);
+    break;
+    case INPAR::FLUID::OST:
+      /* get gridvelocity from OST time discretisation of mesh motion:
+         -> needed to allow consistent linearization of FPSI problem  */
+      dserror("One-Step-Theta gridvelocity determination not implemented for xfluids. fix your input file! GRIDVEL = BE or BDF2 ");
     break;
   }
 

@@ -861,7 +861,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     // parameter theta for potential start algorithm
     fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
     // parameter for grid velocity interpolation
-    fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
+    fluidtimeparams->set<int>              ("order gridvel"            ,DRT::INPUT::IntegralValue<int>(fdyn,"GRIDVEL"));
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
