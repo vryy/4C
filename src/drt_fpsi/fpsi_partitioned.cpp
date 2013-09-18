@@ -156,7 +156,7 @@ void FPSI::Partitioned::OuterLoop()
 
   if (comm.MyPID()==0)
   {
-    cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  STEP = %4d/%4d\n",
            poroelast_subproblem_->FluidField()->Time(),timemax_,dt_,poroelast_subproblem_->FluidField()->Step(),numstep_);
@@ -168,12 +168,12 @@ void FPSI::Partitioned::OuterLoop()
     itnum++;
 
     // solve FSI system
-    if (comm.MyPID()==0) cout<<"\n****************************************\n     FLUID SOLVER     \n****************************************\n";
+    if (comm.MyPID()==0) std::cout<<"\n****************************************\n     FLUID SOLVER     \n****************************************\n";
     {
       fluid_subproblem_ -> NonlinearSolve();
     }
 
-    if (comm.MyPID()==0) cout<<"\n****************************************\n   POROELAST SOLVER   \n****************************************\n";
+    if (comm.MyPID()==0) std::cout<<"\n****************************************\n   POROELAST SOLVER   \n****************************************\n";
     {
       poroelast_subproblem_ -> Solve();
     }

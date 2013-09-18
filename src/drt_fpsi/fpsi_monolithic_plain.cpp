@@ -214,7 +214,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic_Plain::SetupSystemMatrix");
 
-  PoroField()->SetupSystemMatrix();
+  //PoroField()->SetupSystemMatrix();
 
   const ADAPTER::Coupling& coupsa  = StructureAleCoupling();
   const ADAPTER::Coupling& coupsf  = StructureFluidCoupling();

@@ -828,7 +828,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
   (*couplingrowcoltransform2_)(*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_pf_porofluid_),
       1.0,
       ADAPTER::CouplingSlaveConverter(couppff), // row converter: important to use slave converter
-      ADAPTER::CouplingSlaveConverter(coupsf), // col converter: important to use slave converter
+      ADAPTER::CouplingSlaveConverter(coupsf), //  col converter: important to use slave converter
       *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(temp51),
       false); // bool exactmatch = true (default)
 
@@ -1318,7 +1318,7 @@ bool FPSI::Monolithic::Converged()
 
 void FPSI::Monolithic::BuildConvergenceNorms()
 {
-  // std::cout<<"Full Monolithic Residual: \n"<<*rhs_<<std::endl;
+  std::cout<<"Full Monolithic Residual: \n"<<*rhs_<<std::endl;
   // std::cout<<"Full Monolithic Increment Vector: \n"<<*iterinc_<<std::endl;
 
   rhs_->Norm2(&normofrhs_);
@@ -1682,7 +1682,7 @@ void FPSI::Monolithic::FPSIFDCheck()
   Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(new LINALG::SparseMatrix(*(sparse->EpetraMatrix())));
 
 
-  cout << "\n****************** FPSI finite difference check ******************" << std::endl;
+  std::cout << "\n****************** FPSI finite difference check ******************" << std::endl;
 
   int dof_poro_struct = (PoroField()->StructureField()->Discretization()->NumGlobalNodes()) * 3;
   int dof_poro_fluid  = (PoroField()->FluidField()-> Discretization()->NumGlobalNodes()) * 4;
