@@ -470,7 +470,7 @@ int main(
     }
     case prb_fpsi:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
