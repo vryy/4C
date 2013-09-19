@@ -860,8 +860,10 @@ void STR::TimInt::ApplyDirichletBC
   if (locsysman_ != Teuchos::null)
   {
     locsysman_->RotateGlobalToLocal(dis,true);
-    locsysman_->RotateGlobalToLocal(vel);
-    locsysman_->RotateGlobalToLocal(acc);
+    if (vel != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(vel);
+    if (acc != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(acc);
   }
 
 
@@ -889,8 +891,10 @@ void STR::TimInt::ApplyDirichletBC
   if (locsysman_ != Teuchos::null)
   {
     locsysman_->RotateLocalToGlobal(dis,true);
-    locsysman_->RotateLocalToGlobal(vel);
-    locsysman_->RotateLocalToGlobal(acc);
+    if (vel != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(vel);
+    if (acc != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(acc);
   }
 
   // ciao
