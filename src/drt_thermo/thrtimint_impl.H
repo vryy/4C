@@ -116,6 +116,9 @@ namespace THR
     //! prepare time step
     virtual void PrepareTimeStep();
 
+    // finite difference check for the tangent K_TT
+    void FDCheck();
+
     //@}
 
     //! @name Forces and tangents

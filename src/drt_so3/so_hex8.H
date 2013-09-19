@@ -585,7 +585,6 @@ protected:
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* cauchystress
     );
 
-
   //! push forward of Green-Lagrange strain to Euler-Almansi strains
   void GLtoEA(
     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
@@ -635,6 +634,19 @@ protected:
    * \brief Read restart on the microscale
    * */
   void soh8_read_restart_multi();
+
+  //@}
+
+  //! @name TSI related stuff
+  //@{
+  /*!
+   * \brief Determine a homogenized material density for multi-scale
+   * analyses by averaging over the initial volume
+   * */
+  void GetTemperatureForStructuralMaterial(
+    const LINALG::Matrix<NUMNOD_SOH8,1>& shapefcts,  ///< shape functions of current Gauss point
+    Teuchos::ParameterList& params  ///< special material parameters e.g. scalar-valued temperature
+    );
 
   //@}
 

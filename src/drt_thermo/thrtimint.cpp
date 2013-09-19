@@ -56,7 +56,7 @@ THR::TimInt::TimInt(
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
-  solveradapttol_(DRT::INPUT::IntegralValue<int>(tdynparams,"ADAPTCONV")==1),
+  solveradapttol_(DRT::INPUT::IntegralValue<int>(tdynparams,"ADAPTCONV") == 1),
   solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   output_(output),
@@ -80,8 +80,8 @@ THR::TimInt::TimInt(
   step_(0),
   stepn_(0),
   firstoutputofrun_(true),
-  lumpcapa_(DRT::INPUT::IntegralValue<int>(tdynparams,"LUMPCAPA")==1),
-  young_temp_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"YOUNG_IS_TEMP_DEPENDENT")==1),
+  lumpcapa_(DRT::INPUT::IntegralValue<int>(tdynparams,"LUMPCAPA") == 1),
+  young_temp_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"YOUNG_IS_TEMP_DEPENDENT") == 1),
   zeros_(Teuchos::null),
   temp_(Teuchos::null),
   rate_(Teuchos::null),
@@ -91,7 +91,6 @@ THR::TimInt::TimInt(
   veln_(Teuchos::null),  // needed for TSI
   fifc_(Teuchos::null),
   tang_(Teuchos::null)
-//  capa_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -156,6 +155,7 @@ THR::TimInt::TimInt(
 
   // stay with us
   return;
+
 }  // cstr
 
 
@@ -239,6 +239,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 
   // leave this hell
   return;
+
 }  // DetermineCapaConsistTempRate()
 
 
@@ -274,6 +275,7 @@ void THR::TimInt::ApplyDirichletBC(
 
   // ciao
   return;
+
 }  // ApplyDirichletBC()
 
 
@@ -306,6 +308,7 @@ void THR::TimInt::UpdateStepTime()
 
   // new deal
   return;
+
 }  // UpdateStepTime()
 
 
@@ -416,6 +419,7 @@ void THR::TimInt::OutputStep()
 
   // what's next?
   return;
+
 }  // OutputStep()
 
 
@@ -976,7 +980,7 @@ void THR::TimInt::SetInitialField(
 
     for (unsigned i=0; i<cond.size(); ++i)
     {
-      cout<<"Applied InitialField Condition "<<i<<endl;
+      std::cout << "Applied InitialField Condition " << i << std::endl;
 
       // loop all nodes on the processor
       for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
@@ -1020,6 +1024,7 @@ void THR::TimInt::SetInitialField(
     dserror("Unknown option for initial field: %d", init);
   } // switch(init)
 
+  // and back
   return;
 
 }  // SetInitialField()

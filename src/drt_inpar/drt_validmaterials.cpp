@@ -516,9 +516,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"CTE","coefficient of thermal expansion");
+    AddNamedReal(m,"INITTEMP","initial, reference temperature");
+    AddNamedReal(m,"YIELD","initial yield stress");
     AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
-    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
+    AddNamedReal(m,"SATHARDENING","saturation hardening");
+    AddNamedReal(m,"HARDEXPO","hardening exponent");
+    AddNamedReal(m,"YIELDSOFT","yield stress softening");
+    AddNamedReal(m,"HARDSOFT","hardening softening");
 
     AppendMaterialDefinition(matlist,m);
   }

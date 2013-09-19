@@ -493,6 +493,11 @@ void THR::TimIntImpl::NewtonFull()
    // make negative residual
     fres_->Scale(-1.0);
 
+#ifdef THRASOUTPUT
+    // finite difference check
+    FDCheck();
+#endif
+    
     // apply Dirichlet BCs to system of equations
     tempi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(tang_, tempi_, fres_,
@@ -576,7 +581,10 @@ int THR::TimIntImpl::NewtonFullErrorCheck()
     return 0;
   }
   return 0; // make compiler happy
-}
+
+}  // NewtonFull()
+
+
 /*----------------------------------------------------------------------*
  | Prepare system for solving with Newton's method          bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -601,7 +609,8 @@ void THR::TimIntImpl::PrepareSystemForNewtonSolve()
 
   // final sip
   return;
-}
+}  // PrepareSystemForNewtonSolve()
+
 
 /*----------------------------------------------------------------------*
  | Update iteration                                         bborn 08/09 |
@@ -626,7 +635,8 @@ void THR::TimIntImpl::UpdateIter(
 
   // morning is broken
   return;
-}
+}  // UpdateIter()
+
 
 /*----------------------------------------------------------------------*
  | Update iteration incrementally with prescribed           bborn 08/09 |
@@ -893,7 +903,6 @@ void THR::TimIntImpl::PrintNewtonConv()
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintStep()
 {
-
   // print out (only on master CPU)
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
@@ -934,6 +943,231 @@ void THR::TimIntImpl::PrintStepText(FILE* ofile)
   // fall asleep
   return;
 }  // PrintStepText()
+
+
+/*----------------------------------------------------------------------*
+ | finite difference check of thermal tangent                dano 09/13 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::FDCheck()
+{
+  // value of disturbance
+  const double delta = 1.0e-8;
+  // disturb the current temperature increment
+
+  // ------------------------------------------ initialise matrices and vectors
+
+  // initialise discurbed increment vector
+  Teuchos::RCP<Epetra_Vector> disturbtempi = LINALG::CreateVector(*DofRowMap(), true);
+  const int dofs = disturbtempi->GlobalLength();
+  disturbtempi->PutScalar(0.0);
+  disturbtempi->ReplaceGlobalValue(0, 0, delta);
+
+  // initialise rhs
+  Teuchos::RCP<Epetra_Vector> rhs_old
+    = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+  rhs_old->Update(1.0, *fres_, 0.0);
+  Teuchos::RCP<Epetra_Vector> rhs_copy
+    = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+
+  // initialise approximation of tangent
+  Teuchos::RCP<Epetra_CrsMatrix> tang_approx
+    = LINALG::CreateMatrix((tang_->RowMap()), 81);
+
+  Teuchos::RCP<LINALG::SparseMatrix> tang_copy
+    = Teuchos::rcp(new LINALG::SparseMatrix(*(tang_->EpetraMatrix())));
+  std::cout << "\n****************** THR finite difference check ******************" << endl;
+  std::cout << "thermo field has " << dofs << " DOFs"<< endl;
+
+  // loop over columns
+  // in case of pure thermal problem, start at 0,
+  // BUT in case of TSI vector is filled first with STR DOFs followed by THR
+  // i.e. insert maximal value of i=STR_DOFs+dofs
+  for (int i=0; i<dofs; ++i)  // TSI: j=STR_DOFs+dofs
+  {
+    // DOFs that have DBC are not disturbed, i.e. set to zero
+    if (dbcmaps_->CondMap()->MyGID(i))
+    {
+      disturbtempi->ReplaceGlobalValue(i, 0, 0.0);
+    }
+    // evaluate the element with disturb temperature increment
+    Evaluate(disturbtempi);
+    rhs_copy->Update(1.0, *fres_, 0.0);
+    tempi_->PutScalar(0.0);
+    LINALG::ApplyDirichlettoSystem(
+      tang_copy,
+      disturbtempi,
+      rhs_copy,
+      Teuchos::null,
+      zeros_,
+      *(dbcmaps_->CondMap())
+      );
+    // finite difference approximation of partial derivative
+    // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
+    rhs_copy->Update(-1.0, *rhs_old, 1.0);
+    rhs_copy->Scale(-1.0 / delta);
+
+    int* index = &i;
+    // loop over rows
+    for (int j=0; j<dofs; ++j)  // TSI: j=STR_DOFs+dofs
+    {
+      // insert approximate values using FD into tang_approx
+      double value = (*rhs_copy)[j];
+      tang_approx->InsertGlobalValues(j, 1, &value, index);
+    }  // loop over rows
+
+    // free DOFs (no DBC) get the value (-delta)
+    if (not dbcmaps_->CondMap()->MyGID(i))
+      disturbtempi->ReplaceGlobalValue(i, 0, -delta);  // row: i, vector index: 0, value: -delta
+
+    // TODO 2013-09-18 was machen diese drei Zeilen??
+    disturbtempi->ReplaceGlobalValue(i-1, 0, 0.0);
+    if (i != dofs-1)
+      disturbtempi->ReplaceGlobalValue(i+1, 0, delta);
+  }  // loop over columns
+
+  // evaluate the element with changed disturbed incremental vector
+  Evaluate(disturbtempi);
+  tang_approx->FillComplete();
+  // copy tang_approx
+  Teuchos::RCP<LINALG::SparseMatrix> tang_approx_sparse
+    = Teuchos::rcp(new LINALG::SparseMatrix(*tang_approx));
+  // tang_approx_sparse = tang_approx_sparse - tang_copy
+  tang_approx_sparse->Add(*tang_copy, false, -1.0, 1.0);
+
+  // initialise CRSMatrices for the two tangents
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = tang_copy->EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> error_crs = tang_approx_sparse->EpetraMatrix();
+  error_crs ->FillComplete();
+  sparse_crs ->FillComplete();
+
+  // ------------------------------------- initialise values for actual FDCheck
+  bool success = true;
+  double error_max = 0.0;
+  for (int i=0; i<dofs; ++i)
+  {
+    // only do the check for DOFs which have NO Dirichlet boundary condition
+    if (not dbcmaps_->CondMap()->MyGID(i))
+    {
+      for (int j=0; j<dofs; ++j)
+      {
+        if (not dbcmaps_->CondMap()->MyGID(j))
+        {
+          double tang_approx_ij = 0.0;
+          double sparse_ij = 0.0;
+          double error_ij = 0.0;
+
+          // --------------------------------- get errors of tangent difference
+          int errornumentries = 0;
+          int errorlength = error_crs->NumMyEntries(i);
+          std::vector<double> errorvalues(errorlength);
+          std::vector<int> errorindices(errorlength);
+          error_crs->ExtractGlobalRowCopy(
+            i,
+            errorlength,
+            errornumentries,
+            &errorvalues[0],
+            &errorindices[0]
+            );
+          for (int k=0; k<errorlength; ++k)
+          {
+            if (errorindices[k] == j)
+            {
+              error_ij = errorvalues[k];
+              break;
+            }
+          }
+
+          // -------------------------------------- get exact values of tangent
+          // get errors of exact tangent
+          int sparsenumentries = 0;
+          int sparselength = sparse_crs->NumMyEntries(i);
+          std::vector<double> sparsevalues(sparselength);
+          std::vector<int> sparseindices(sparselength);
+          sparse_crs->ExtractGlobalRowCopy(
+            i,
+            sparselength,
+            sparsenumentries,
+            &sparsevalues[0],
+            &sparseindices[0]
+            );
+          for (int k=0; k < sparselength; ++k)
+          {
+            if (sparseindices[k] == j)
+            {
+              sparse_ij = sparsevalues[k];
+              break;
+            }
+            // else sparse_ij = 0.0;
+          }
+
+          // ---------------------------- get approximate values of tang_approx
+          int approxnumentries = 0;
+          int approxlength = tang_approx->NumMyEntries(i);
+          std::vector<double> approxvalues(approxlength);
+          std::vector<int> approxindices(approxlength);
+          tang_approx->ExtractGlobalRowCopy(
+            i,
+            approxlength,
+            approxnumentries,
+            &approxvalues[0],
+            &approxindices[0]
+            );
+          for (int k=0; k<approxlength; ++k)
+          {
+            if (approxindices[k] == j)
+            {
+              tang_approx_ij = approxvalues[k];
+              break;
+            }
+            // else tang_approx_ij = 0.0;
+          }
+
+          // check value of
+          double error = 0.0;
+          if (abs(tang_approx_ij) > 1e-7)
+            error = error_ij / tang_approx_ij;
+          else if (abs(sparse_ij) > 1e-7)
+            error = error_ij / sparse_ij;
+          // in case current error is higher than maximal, permitted one
+          // --> set error_max to current error
+          if (abs(error) > abs(error_max))
+            error_max = abs(error);
+
+          // ---------------------------------------- control values of FDCheck
+          if ( (abs(error) > 1e-6) and (abs(error_ij) > 1e-7) )
+          {
+            // FDCheck of tangent was NOT successful
+            success = false;
+
+            std::cout << "finite difference check failed!\n"
+              << "entry (" << i << "," << j << ") of tang = " << sparse_ij
+              << " and of approx. tang = " << tang_approx_ij
+              << ".\nAbsolute error = " << error_ij
+              << ", relative error = " << error
+              << std::endl;
+          }  // control the error values
+
+        }
+      }
+    }  // FDCheck only for DOFs which have NO DBC
+  } // loop over dofs of successful FD check
+
+  // --------------------------------------------------- FDCheck was successful
+  // i.e. tang and its approxiamation are equal w.r.t. given tolerance
+  if (success == true)
+  {
+    std::cout.precision(12);
+    std::cout << "finite difference check successful! Maximal relative error = "
+      << error_max << std::endl;
+    std::cout << "****************** finite difference check done ***************\n\n"
+      << std::endl;
+  }
+  else
+    dserror("FDCheck of thermal tangent failed!");
+
+  return;
+
+}  // FDCheck()
 
 
 /*----------------------------------------------------------------------*/

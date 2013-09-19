@@ -33,6 +33,7 @@ Maintainer: Caroline Danowski
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplasticlinelast.H"
+#include "../drt_mat/thermoplastichyperelast.H"
 
 #include "thermo_element.H" // only for visualization of element data
 #include "thermo_ele_impl.H"
@@ -260,8 +261,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     Teuchos::RCP<MAT::Material> structmat = structele->Material();
     if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
       plasticmat_ = true;
-      
-    // TODO 2013-04-30 consider dissipation for geo nln analysis
   }  // la.Size>1
   
   // if ele is a thermo element --> the THR element method KinType() exists
@@ -365,7 +364,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
     {
-      CalculateNlnCouplFintCondCapa(
+      CalculateCouplNlnFintCondCapa(
         ele,
         time,
         mydisp,
@@ -379,6 +378,15 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,
         params
         );
+        
+      if (plasticmat_)
+        CalculateCouplNlnDissipation(
+          ele,
+          mydisp,
+          &etang,
+          &efint,
+          params
+          );
     }  // TSI: (kintype_ == geo_nonlinear)
 #endif // MonTSIwithoutSTR
 
@@ -473,7 +481,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
     {
-      CalculateNlnCouplFintCondCapa(
+      CalculateCouplNlnFintCondCapa(
         ele,  // current element
         time,  // current time
         mydisp,  // current displacements
@@ -487,6 +495,15 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,  // output option for grad T
         params
         );
+        
+      if (plasticmat_)
+        CalculateCouplNlnDissipation(
+          ele,
+          mydisp,
+          NULL,
+          &efint,
+          params
+          );
     }  // TSI: (kintype_ == geo_nonlinear)
 
 #endif // MonTSIwithoutSTR
@@ -584,7 +601,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
     {
-      CalculateNlnCouplFintCondCapa(
+      CalculateCouplNlnFintCondCapa(
         ele,
         time,
         mydisp,
@@ -598,6 +615,16 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,
         params
         );
+        
+
+      if (plasticmat_)
+        CalculateCouplNlnDissipation(
+          ele,
+          mydisp,
+          NULL,
+          &efint,
+          params
+          );
     }  // TSI: (kintype_ == geo_nonlinear)
 
     // lumping
@@ -730,7 +757,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // geometrically nonlinear TSI problem
     else if (kintype == 1)
     {
-      CalculateNlnCouplFintCondCapa(
+      CalculateCouplNlnFintCondCapa(
         ele,  // current element
         time,  // current time
         mydisp,  // current displacements
@@ -744,7 +771,16 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         INPAR::THR::tempgrad_none,  // output option for grad T
         params
         );
-    }  // TSI: (kintype_ == geo_linear)
+
+      if (plasticmat_)
+        CalculateCouplNlnDissipation(
+          ele,
+          mydisp,
+          &etang,
+          &efint,
+          params
+          );
+    }  // TSI: (kintype_ == geo_nonlinear)
     
 #endif // MonTSIwithoutSTR
 
@@ -892,7 +928,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             dserror("Cannot get state vectors 'velocity'");
           DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
 
-          CalculateNlnCouplFintCondCapa(
+          CalculateCouplNlnFintCondCapa(
             ele,  // current element
             time,  // current time
             mydisp,  // current displacements
@@ -908,7 +944,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             );
         }  // disp!=0 & vel!=0
       }  // la.Size>1
-    }  // TSI: (kintype_ == geo_linear)
+    }  // TSI: (kintype_ == geo_nonlinear)
 
     // scale the heatflux with (-1)
     // for the calculation the heatflux enters as positive value, but
@@ -1132,13 +1168,23 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // geometrically nonlinear TSI problem
         if (kintype == 1)
         {
-          CalculateNlnCouplCond(
+          CalculateCouplNlnCond(
             ele,
             mydisp,
             myvel,
-            params,
-            &etangcoupl
+            &etangcoupl,
+            params
             );
+            
+          // calculate Dmech_d
+          if (plasticmat_)
+            CalculateCouplNlnDissipationCond(
+              ele,
+              mydisp,
+              myvel,
+              &etangcoupl,
+              params
+              );
         }  // TSI: (kintype_ == geo_nonlinear)
       }   // disp!=0 & vel!=0
     }  // la.Size>1
@@ -1763,7 +1809,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
  | and rhs: r_T(T,d), k_TT(T,d) (public)                                |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
+void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
   DRT::Element* ele,  // the element whose matrix is calculated
   const double& time,  // current time
   std::vector<double>& disp,  // current displacements
@@ -1978,9 +2024,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
 
 #ifdef THRASOUTPUT
     if (etempgrad != NULL)
-      std::cout << "CalculateNlnCouplFintCondCapa Nln etempgrad = " << *etempgrad << std::endl;
+      std::cout << "CalculateCouplNlnFintCondCapa Nln etempgrad = " << *etempgrad << std::endl;
     if (eheatflux != NULL)
-      std::cout << "CalculateNlnCouplFintCondCapa Nln eheatflux = " << *eheatflux << std::endl;
+      std::cout << "CalculateCouplNlnFintCondCapa Nln eheatflux = " << *eheatflux << std::endl;
 #endif  // THRASOUTPUT
 
     // ------------------------------------------------ call the material
@@ -2101,16 +2147,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       std::cout << "Cratevct\n" << Cratevct << std::endl;
       std::cout << "defgrd\n" << defgrd << std::endl;
     }
-    std::cout << "heatflux_ CalculateNlnCouplFintCondCapa"<< heatflux_ << std::endl;
-    std::cout << "etemp_ CalculateNlnCouplFintCondCapa\n" << etemp_  << std::endl;
+    std::cout << "heatflux_ CalculateCouplNlnFintCondCapa"<< heatflux_ << std::endl;
+    std::cout << "etemp_ CalculateCouplNlnFintCondCapa\n" << etemp_  << std::endl;
 
-    if (efint != NULL) std::cout << "element No. = " << ele->Id() << " efint f_Td CalculateNlnCouplFintCondCapa"<< *efint << std::endl;
-    if (econd != NULL) std::cout << "element No. = " << ele->Id() << " econd nach CalculateNlnCouplFintCondCapa"<< *econd << std::endl;
+    if (efint != NULL) std::cout << "element No. = " << ele->Id() << " efint f_Td CalculateCouplNlnFintCondCapa"<< *efint << std::endl;
+    if (econd != NULL) std::cout << "element No. = " << ele->Id() << " econd nach CalculateCouplNlnFintCondCapa"<< *econd << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
   }  // ---------------------------------- end loop over Gauss Points
 
-}  // CalculateNlnCouplFintCondCapa()
+}  // CalculateCouplNlnFintCondCapa()
 
 
 /*----------------------------------------------------------------------*
@@ -2118,12 +2164,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
  | needed in monolithic TSI (private)                                   |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
+void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   DRT::Element* ele,  // the element whose matrix is calculated
   std::vector<double>& disp,  // current displacements
   std::vector<double>& vel,  // current velocities
-  Teuchos::ParameterList& params,  // parameter list
-  LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl
+  LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,
+  Teuchos::ParameterList& params  // parameter list
   )
 {
   // get node coordinates
@@ -2417,7 +2463,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
     etangcoupl->Scale(timefac);
   }
 
-}  // CalculateNlnCouplCond()
+}  // CalculateCouplNlnCond()
 
 
 /*----------------------------------------------------------------------*
@@ -2460,7 +2506,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
   if (intpoints.IP().nquad != nquad_)
     dserror("Trouble with number of Gauss points");
 
-  // --------------------------------------------- loop over Gauss Points
+  // --------------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     // compute inverse Jacobian matrix and derivatives at GP w.r.t material
@@ -2473,29 +2519,29 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
     LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin;
     CalculateBoplin(&boplin,&derxy_);
 
-    // ------------------------------------------------------ dissipation
+    // ------------------------------------------------------------ dissipation
   
     // D_mech = - N_T^T . (sigma_{d,T} - beta) . strain^p'
     //          + N_T^T Hiso strainbar^p . strainbar^p'
     // with eta = sigma_d - beta
     // --> consider sigma_T separately
 
-    // --------------------------------- Dmech due to kinematic hardening
+    // --------------------------------------- Dmech due to kinematic hardening
     // Dmech_kin = N_T^T . (sigma_{d,T} - beta) . strain^p'
 
     // for a thermo-elasto-plastic solid material: strainvel == total strain e'
     // split strainvel into elastic and plastic terms
     // additive split of strains: e' = (e^e)' + (e^p)'
 
-    // ------------------------------------------ mechanical contribution
+    // ------------------------------------------------ mechanical contribution
     // Dmech_kin = (sigma_d - beta) : strain^p_{n+1}'
 
-    // --------------------------------- Dmech due to isotropic hardening
+    // --------------------------------------- Dmech due to isotropic hardening
     // N_T^T . kappa . strainbar^p' = N_T^T . Hiso . strainbar^p . Dgamma/dt
     // kappa = kappa(strainbar^p): isotropic work hardening von Mises stress
 
     // Dmech += Hiso . strainbar^p . Dgamma
-    double Dmech = thrpllinelast->MechanicalKinematicDissipation(iquad);
+    double Dmech = thrpllinelast->MechanicalKinematicDissipation(iquad)/stepsize;
 
     // CAUTION: (tr(strain^p) == 0) and sigma_T(i,i)=const.
     // --> neglect: Dmech = -sigma_{T,n+1} : strain^p_{n+1}' == 0: (vol:dev == 0)
@@ -2506,7 +2552,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
     {
       // update of the internal "force" vector
       // fint += N_T^T . 1/Dt . Dmech . detJ . w(gp)
-      efint->Update((fac_*Dmech/stepsize), funct_, 1.0);
+      efint->Update((fac_*Dmech), funct_, 1.0);
     }
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -2518,7 +2564,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
       }
 #endif  // TSIMONOLITHASOUTPUT
 
-  }  // ---------------------------------- end loop over Gauss Points
+  }  // -------------------------------------------- end loop over Gauss Points
 
 } // CalculateCouplDissipation()
 
@@ -2681,6 +2727,269 @@ std::cout << "edisp\n" << edisp << std::endl;
 #endif  // THRASOUTPUT
 
 }  // CalculateCouplDissipationCond()
+
+
+/*----------------------------------------------------------------------*
+ | calculate internal dissipation term, used in case of      dano 08/11 |
+ | plastic material and geometrically nonlinear deformation (private)   |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
+  DRT::Element* ele,  // the element whose matrix is calculated
+  std::vector<double>& disp,  // current displacements
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
+  Teuchos::ParameterList& params
+  )
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // update element geometry
+  LINALG::Matrix<nen_,nsd_> xrefe;  // material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr;  // current  coord. of element
+
+  // now get current element displacements and velocities
+  DRT::Node** nodes = ele->Nodes();
+  for (int i=0; i<nen_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    // (8x3) = (nen_xnsd_)
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*nsd_+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*nsd_+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*nsd_+2];
+  }
+
+  // --------------------------------------------------------------- initialise
+  // thermal material tangent
+  LINALG::Matrix<6,1> ctemp(true);
+
+  // ------------------------------------------------------ structural material
+  Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
+
+  if (structmat->MaterialType() != INPAR::MAT::m_thermoplhyperelast)
+  {
+    dserror("So far dissipation only for ThermoPlasticHyperElast material!");
+  }
+  Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
+    = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(structmat,true);
+  // true: error if cast fails
+
+  // --------------------------------------------------------- time integration
+  // get step size dt
+  const double stepsize = params.get<double>("delta time");
+
+  // ----------------------------------------- integration loop for one element
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_)
+    dserror("Trouble with number of Gauss points");
+
+  // initialise the deformation gradient w.r.t material configuration
+  LINALG::Matrix<nsd_,nsd_> defgrd(false);
+
+  // --------------------------------------------------- loop over Gauss Points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // coordinates
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    // (material) deformation gradient F
+    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,derxy_);
+    // ------------------------------------------------------------ dissipation
+    // plastic contribution thermoplastichyperelastic material
+    double mechdiss_kTT = 0.0;
+    // mechanical Dissipation
+
+//    TODO 2013-09-17 nur damit keine Fehlermeldung kommt, da stepsize nicht gerufen wird
+//    double Dmech = 0.0;
+    double Dmech = 0.0/stepsize;
+
+//    // TODO 2013-09-17
+//    mechdiss_kTT = - thrplhyperelast->MechDiss_kTT(iquad)/stepsize;
+//    Dmech = - thrplhyperelast->MechDiss(iquad)/stepsize;
+
+    // TODO 2013-09-17 check comment
+    // CAUTION: (tr(strain^p) == 0) and sigma_T(i,i)=const.
+    // --> neglect: Dmech = -sigma_{T,n+1} : strain^p_{n+1}' == 0: (vol:dev == 0)
+    // --> no additional terms for fint, nor for econd!
+
+    // update/integrate internal force vector (coupling fraction towards displacements)
+    if (efint != NULL)
+    {
+      // update of the internal "force" vector
+      // fint += N_T^T . Dmech . detJ . w(gp)
+      efint->Update((fac_*Dmech),funct_,1.0);
+    }
+
+    if (econd != NULL)
+    {
+      // Contribution of dissipation to cond matirx
+      // econd += N_T^T . C^p_TT N_T
+      econd->MultiplyNT((fac_*mechdiss_kTT),funct_,funct_,1.0);
+    }
+
+#ifdef TSIMONOLITHASOUTPUT
+      if (ele->Id()==0)
+      {
+        std::cout << "CouplFint\n" << std::endl;
+        std::cout << "boplin\n" << boplin << std::endl;
+        std::cout << "etemp_ Ende InternalDiss\n" << etemp_  << std::endl;
+      }
+#endif  // TSIMONOLITHASOUTPUT
+
+  }  // ---------------------------------- end loop over Gauss Points
+
+} // CalculateCouplNlnDissipation()
+
+
+/*----------------------------------------------------------------------*
+ | calculate dissipation terms used in case of nonlinear     dano 09/13 |
+ | analysis and plastic material (private)                              |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
+  DRT::Element* ele,  // the element whose matrix is calculated
+  std::vector<double>& disp,  //!< current displacements
+  std::vector<double>& vel,  //!< current velocities
+  LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
+  Teuchos::ParameterList& params
+  )
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // update element geometry
+  LINALG::Matrix<nen_,nsd_> xrefe;  // material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr;  // current  coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurrrate;  // current  velocity of element
+
+  // now get current element displacements and velocities
+  DRT::Node** nodes = ele->Nodes();
+  for (int i=0; i<nen_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    // (8x3) = (nen_xnsd_)
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*nsd_+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*nsd_+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*nsd_+2];
+
+    xcurrrate(i,0) = vel[i*nsd_+0];
+    xcurrrate(i,1) = vel[i*nsd_+1];
+    xcurrrate(i,2) = vel[i*nsd_+2];
+  }
+
+#ifdef THRASOUTPUT
+  std::cout << "xrefe" << xrefe << std::endl;
+  std::cout << "xcurr" << xcurr << std::endl;
+  std::cout << "xcurrrate" << xcurrrate << std::endl;
+  std::cout << "derxy_" << derxy_ << std::endl;
+#endif // THRASOUTPUT
+
+  // build the deformation gradient w.r.t material configuration
+  LINALG::Matrix<nsd_,nsd_> defgrd(false);
+  // ------------------------------------------------ structural material
+  Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
+  Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
+    = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(structmat,true);
+  // true: error if cast fails
+
+  // --------------------------------------------------- time integration
+  // get step size dt
+  const double stepsize = params.get<double>("delta time");
+
+  // check the time integrator and add correct time factor
+  const INPAR::THR::DynamicType timint
+   = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
+  // initialise time_fac of velocity discretisation w.r.t. displacements
+  double timefac = 0.0;
+  switch (timint)
+  {
+  case INPAR::THR::dyna_statics :
+  {
+    // evolution equation of plastic material use implicit Euler
+    // put str_timefac = 1.0
+    timefac = 1.0 / stepsize;
+    break;
+  }
+  case INPAR::THR::dyna_onesteptheta :
+  {
+    // k_Td = theta . k_Td^e . timefac_Dgamma = theta . k_Td / Dt
+    double theta = params.get<double>("theta");
+    timefac = theta / stepsize;
+    break;
+  }
+  case INPAR::THR::dyna_genalpha :
+  {
+    // k_Td = alphaf . k_Td^e . timefac_Dgamma = alphaf . k_Td / Dt
+    double alphaf = params.get<double>("alphaf");
+    timefac = alphaf / stepsize;
+    break;
+  }
+  case INPAR::THR::dyna_undefined :
+  default :
+  {
+    dserror("Add correct temporal coefficent here!");
+    break;
+  }
+  }  // end of switch(timint)
+
+  // ----------------------------------------- integration loop for one element
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+  if (intpoints.IP().nquad != nquad_)
+    dserror("Trouble with number of Gauss points");
+
+  // --------------------------------------------------- loop over Gauss Points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // coordinates
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    // (material) deformation gradient F
+    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,derxy_);
+    // calculate the linear B-operator
+    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> bop;
+    CalculateBop(&bop,&defgrd,&derxy_);
+
+    // ----------------------------------------------linearisation of Dmech_iso
+    LINALG::Matrix<6,1> Dmech_d(false);
+// TODO 2013-09-17    Dmech_d.Update(-1.0,thrplhyperelast->MechDiss_kTd(iquad),0.0);
+    LINALG::Matrix<1,nsd_*nen_*numdofpernode_> DBop(true);
+    DBop.MultiplyTN(Dmech_d,bop);
+
+    // coupling stiffness matrix
+    if (etangcoupl != NULL)
+    {
+      // k_Td^e += N_T^T . 1/Dt . Dmech_d . B_L . detJ . w(gp)
+      // (8x24) = (8x1) . (1x24)
+      etangcoupl->MultiplyNN(fac_*timefac,funct_,DBop,1.0);
+    }  // (etangcoupl != NULL)
+
+  }  //--------------------------------------------- end loop over Gauss Points
+
+#ifdef THRASOUTPUT
+  if (etangcoupl != NULL && ele->Id()==0)
+    std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"<< *etangcoupl << std::endl;
+#endif  // THRASOUTPUT
+
+}  // CalculateCouplNlnDissipationCond()
 
 
 /*----------------------------------------------------------------------*
@@ -2911,6 +3220,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(
 
   return;
 } //TemperImpl<distype>::IntegrateShapeFunction
+
 
 /*----------------------------------------------------------------------*
  | extrapolateFromGaussPointsToNodes                         dano 11/09 |

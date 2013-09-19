@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermoplastichyperelast.H"
 #include "../drt_mat/robinson.H"
 
 #include "../drt_contact/contact_analytical.H"
@@ -1649,41 +1650,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
 
-    // in case of temperature-dependent Young's modulus, i.e. E(T), current
-    // element temperature T_{n+1} required for stress and cmat
-    if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+    // in case of temperature-dependent material parameters, e.g. Young's modulus,
+    // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
+    if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+         or (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+       )
     {
-      bool young_temp = (params.get<int>("young_temp") == 1);
-      if (young_temp == true)
-      {
-        Teuchos::RCP<std::vector<double> > temperature_vector
-          = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
-        double scalartemp = 0.0;
-
-        // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-        if (temperature_vector == Teuchos::null)
-        {
-          Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
-            = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
-          // initialise the temperature field
-          scalartemp = thrstvk->InitTemp();
-        }
-        // current temperature vector is available
-        else  // (temperature_vector!=Teuchos::null)
-        {
-          // get the temperature vector by extraction from parameter list
-          LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
-          for (int i=0; i<NUMNOD_SOH8; ++i)
-          {
-            etemp(i,0) = (*temperature_vector)[i];
-          }
-          // identical shapefunctions for displacements and temperatures
-          scalartemp = (shapefcts[gp]).Dot(etemp);
-        }
-        // insert current element temperature T_{n+1} into parameter list
-        params.set<double>("scalartemp",scalartemp);
-      }  // E = E(T)
-    }  // m_thermostvenant
+      GetTemperatureForStructuralMaterial(shapefcts[gp],params);
+    }
 
     params.set<int>("gp",gp);
     params.set<int>("eleID",Id());
@@ -2460,81 +2434,19 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
 
-    // default: material call in structural function is purely deformation dependent
-    bool young_temp = (params.get<int>("young_temp") == 1);
-    if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant) && (young_temp == true) )
+    // default: material call in structural function is purely deformation-dependent
+    // --- temperature-dependent material parameters, e.g. Young's modulus,
+    // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
+    if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+         or (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
+       )
     {
-      Teuchos::RCP<std::vector<double> > temperature_vector
-        = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
-
-      // initialise scalar-valued element temperature
-      double scalartemp = 0.0;
-      // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-      if (temperature_vector == Teuchos::null)
-      {
-        Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
-          = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
-        // initialise the temperature field
-        scalartemp = thrstvk->InitTemp();
-      }
-      // temperature vector is available
-      else  // (temperature_vector!=Teuchos::null)
-      {
-        // get the temperature vector by extraction from parameter list
-        LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
-        for (int i=0; i<NUMNOD_SOH8; ++i)
-        {
-          etemp(i,0) = (*temperature_vector)[i];
-        }
-        // identical shapefunctions for displacements and temperatures
-        scalartemp = (shapefcts[gp]).Dot(etemp);
-      }
-      // insert current element temperature T_{n+1} into parameter list
-      params.set<double>("scalartemp",scalartemp);
-    }  // m_thermostvenant && E = E(T)
-    
-    // if Robinson's material --> pass the current temperature to the material
-    else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
-    {
-      // scalar-valued temperature: T = shapefunctions . element temperatures
-      // T = N_T^(e) . T^(e)
-      // get the temperature vector by extraction from parameter list
-      LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> ctemp(true);
-      double scalartemp = 0.0;
-
-      Teuchos::RCP<std::vector<double> > temperature_vector
-        = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
-      // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
-      if (temperature_vector == Teuchos::null)
-      {
-        Teuchos::RCP<MAT::Robinson> robinson
-          = Teuchos::rcp_dynamic_cast <MAT::Robinson>(Material(),true);
-        // initialise the temperature field
-        scalartemp = robinson->InitTemp();
-      }
-      // temperature vector is available
-      else  // (temperature_vector!=Teuchos::null)
-      {
-        for (int i=0; i<NUMNOD_SOH8; ++i)
-        {
-          etemp(i,0) = (*temperature_vector)[i];
-        }
-        // copy structural shape functions needed for the thermo field
-        // identical shapefunctions for the displacements and the temperatures
-        scalartemp  = (shapefcts[gp]).Dot(etemp);
-      }
-      // insert current element temperature T_{n+1} into parameter list
-      params.set<double>("scalartemp",scalartemp);
-
-      // robinson material is solved using incremental strains
-      // calculate incremental strains: Delta strain = B . Delta disp
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> straininc(true);
-      straininc.Multiply(boplin,res_d);
       // insert strain increment into parameter list
-      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
-    } // end Robinson's material
-
+      params.set<LINALG::Matrix<NUMDOF_SOH8,1> >("res_d", res_d);
+      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> >("boplin", boplin);
+      GetTemperatureForStructuralMaterial(shapefcts[gp],params);
+    }
+    // --- end temperature-dependent material
     // default: material call in structural function is purely deformation dependent
     params.set<int>("gp",gp);
     params.set<int>("eleID",Id());
@@ -3238,4 +3150,95 @@ void DRT::ELEMENTS::So_hex8::AdvectionMapElement(double* XMat1,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Evaluates Material coordinates from spatial coordinates   farah 05/13|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
+  const LINALG::Matrix<NUMNOD_SOH8,1>& shapefctsGP,  // shape function of current Gauss-point
+  Teuchos::ParameterList& params  // special material parameter e.g. scalartemp
+  )
+{
+  // initialise the temperature
+  Teuchos::RCP<std::vector<double> > temperature_vector
+    = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
+  double scalartemp = 0.0;
+
+  if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
+  {
+    bool young_temp = (params.get<int>("young_temp") == 1);
+    if (young_temp == true)
+    {
+      // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
+      if (temperature_vector == Teuchos::null)
+      {
+        Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+          = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
+        // initialise the temperature field
+        scalartemp = thrstvk->InitTemp();
+      }
+    }  // young_temp
+  }  // m_thermostvenant
+
+  // in this case the yield stress is temperature-dependent
+  else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+  {
+    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
+    if (temperature_vector == Teuchos::null)
+    {
+      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
+        = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
+      // initialise the temperature field
+      scalartemp = thrstvk->InitTemp();
+    }
+  }  // m_thermoplhyperelast
+
+  // if Robinson's material --> pass the current temperature to the material
+  else if (Material()->MaterialType() == INPAR::MAT::m_vp_robinson)
+  {
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> ctemp(true);
+
+    // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
+    if (temperature_vector == Teuchos::null)
+    {
+      Teuchos::RCP<MAT::Robinson> robinson
+        = Teuchos::rcp_dynamic_cast <MAT::Robinson>(Material(),true);
+      // initialise the temperature field
+      scalartemp = robinson->InitTemp();
+    }
+    // robinson material is solved using incremental strains
+    // calculate incremental strains: Delta strain = B . Delta disp
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> straininc(true);
+    // extract values from the parameter list
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> boplin
+      = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> >("boplin");
+    LINALG::Matrix<NUMDOF_SOH8,1> res_d
+      = params.get<LINALG::Matrix<NUMDOF_SOH8,1> >("res_d");
+    // calculate the linear strain increment
+    straininc.Multiply(boplin,res_d);
+    // insert strain increment into parameter list
+    params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
+  } // end Robinson's material
+
+  // current temperature vector is available
+  if (temperature_vector!=Teuchos::null)
+  {
+    // scalar-valued temperature: T = shapefunctions . element temperatures
+    // T = N_T^(e) . T^(e)
+    // get the temperature vector by extraction from parameter list
+    LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
+    for (int i=0; i<NUMNOD_SOH8; ++i)
+    {
+      etemp(i,0) = (*temperature_vector)[i];
+    }
+    // identical shapefunctions for displacements and temperatures
+    scalartemp = shapefctsGP.Dot(etemp);
+  }
+
+  // insert current element temperature T_{n+1} into parameter list
+  params.set<double>("scalartemp",scalartemp);
+
+}  // GetTemperatureForStructuralMaterial()
+
+
+/*----------------------------------------------------------------------*/
 

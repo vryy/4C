@@ -246,6 +246,24 @@ namespace ELEMENTS
       Teuchos::ParameterList& params
       );
       
+    //! build linear B-operator
+    void CalculateBoplin(
+      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* boplin,  //!< linear B-operator
+      LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
+      );
+    
+    //! get corresponding structural material
+    Teuchos::RCP<MAT::Material> GetSTRMaterial(
+      DRT::Element* ele  //!< the element whose matrix is calculated
+      );
+
+    //! calculate reactive term
+    void CalculateReactiveTerm(
+      LINALG::Matrix<6,1>* ctemp,  //!< temperature-dependent material tangent
+      LINALG::Matrix<6,1>* strainvel  //!< strain rate
+      );
+
+      
     //@}
 
     //! @name thermoplasticity solved with TSI
@@ -267,6 +285,28 @@ namespace ELEMENTS
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
       Teuchos::ParameterList& params
       );
+    
+    //! calculate internal dissipation arising when a thermo-elasto-plastic
+    //! material is used within geometrically nonlinear analysis
+    //! Clausius-Duhem inequality is no longer = 0, but > 0:
+    //! mechanical energy dissipates as heat
+    void CalculateCouplNlnDissipation(
+      DRT::Element* ele,  //!< the element whose matrix is calculated
+      std::vector<double>& disp,  // current displacements
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
+      Teuchos::ParameterList& params
+      );
+      
+    //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
+    //! used in case of plastic material within geometrically nonlinear analysis
+    void CalculateCouplNlnDissipationCond(
+      DRT::Element* ele,  // the element whose matrix is calculated
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  //!< current velocities
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
+      Teuchos::ParameterList& params
+      );
 
     //@}
 
@@ -277,7 +317,7 @@ namespace ELEMENTS
     //! no routine CalculateNlnFintCondCapa(): only capacity matrix is independent
     //! of the displacments
     //! --> all terms are coupled to the displacements/velocities
-    void CalculateNlnCouplFintCondCapa(
+    void CalculateCouplNlnFintCondCapa(
       DRT::Element* ele,  //!< the element whose matrix is calculated
       const double& time,  //!< current time
       std::vector<double>& disp,  //!< current displacements
@@ -293,18 +333,12 @@ namespace ELEMENTS
       );
 
     //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
-    void CalculateNlnCouplCond(
+    void CalculateCouplNlnCond(
       DRT::Element* ele,  //!< current element whose terms are calculated
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
-      Teuchos::ParameterList& params,  //!< parameter list, containing e.g., dt,theta
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  //!< k_Tu matrix
-      );
-
-    //! build nonlinear B-operator
-    void CalculateBoplin(
-      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* boplin,  //!< linear B-operator
-      LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  //!< k_Tu matrix
+      Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
       );
 
     //! build nonlinear B-operator
@@ -323,17 +357,6 @@ namespace ELEMENTS
       LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< deformation gradient tensor
       LINALG::Matrix<nsd_,nsd_>* defgrdrate,  //!< velocity gradient tensor
       LINALG::Matrix<nsd_,nsd_>* invdefgrd  //!< inverse deformation gradient tensor
-      );
-
-    //! get corresponding structural material
-    Teuchos::RCP<MAT::Material> GetSTRMaterial(
-      DRT::Element* ele  //!< the element whose matrix is calculated
-      );
-
-    //! calculate reactive term
-    void CalculateReactiveTerm(
-      LINALG::Matrix<6,1>* ctemp,  //!< temperature-dependent material tangent
-      LINALG::Matrix<6,1>* strainvel  //!< strain rate
       );
 
     //@}

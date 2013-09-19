@@ -23,6 +23,7 @@
 // headers of thermo-materials
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplasticlinelast.H"
+#include "../drt_mat/thermoplastichyperelast.H"
 #include "../drt_mat/robinson.H"
 
 
@@ -2002,6 +2003,15 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
     return;
     break;
   }
+  case INPAR::MAT::m_thermoplhyperelast: /*-- thermo-plastic hyperelastic material */
+  {
+    Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
+      = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
+    thrplastichyperelast->Evaluate(*Ntemp,*ctemp,*couplstress,*defgrd,params);
+    return;
+    break;
+  }
+
   default:
     dserror("Unknown type of temperature dependent material");
     break;
