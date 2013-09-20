@@ -28,6 +28,7 @@ Maintainer: Alexander Seitz
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
+#include "Epetra_SerialDenseSolver.h"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -44,7 +45,14 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   infyield_(matdata->GetDouble("INFYIELD")),
   kinhard_(matdata->GetDouble("KINHARD")),
   cpl_(matdata->GetDouble("CPL")),
-  stab_s_(matdata->GetDouble("STAB_S"))
+  stab_s_(matdata->GetDouble("STAB_S")),
+  rY_11_(matdata->GetDouble("rY_11")),
+  rY_22_(matdata->GetDouble("rY_22")),
+  rY_33_(matdata->GetDouble("rY_33")),
+  rY_12_(matdata->GetDouble("rY_12")),
+  rY_23_(matdata->GetDouble("rY_23")),
+  rY_13_(matdata->GetDouble("rY_13")),
+  plspin_eta_(matdata->GetDouble("PL_SPIN_ETA"))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
@@ -55,12 +63,18 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
     dserror("initial yield stress must be positive");
   if (infyield_<inityield_)
     dserror("saturation yield stress must not be less than initial yield stress");
-  if (expisohard_<=0.)
+  if (expisohard_<0.)
     dserror("Nonlinear hardening exponent must be non-negative");
   if (cpl_<=0.)
     dserror("Complementarity parameter must be positive (approx 2 times shear modulus)");
   if (stab_s_<0.)
     dserror("stabilization parameter must be non-negative (approx 0-2)");
+
+  if (rY_11_!=0. || rY_22_!=0. || rY_33_!=0. || rY_12_!=0. || rY_23_!=0. || rY_13_!=0.)
+    if (rY_11_<=0. || rY_22_<=0. || rY_33_<=0. || rY_12_<=0. || rY_23_<=0. || rY_13_<=0.)
+      dserror("Hill parameters all must be positive (incomplete set?)");
+
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -103,7 +117,9 @@ const int MAT::PlasticElastHyper::VOIGT3X3_[3][3] = {{0,3,5},{6,1,4},{8,7,2}};
 /*----------------------------------------------------------------------*/
 MAT::PlasticElastHyper::PlasticElastHyper()
   : params_(NULL),
-    potsum_(0)
+    potsum_(0),
+    PlAniso_(Teuchos::null),
+    InvPlAniso_(Teuchos::null)
 
 {
 }
@@ -113,7 +129,9 @@ MAT::PlasticElastHyper::PlasticElastHyper()
 /*----------------------------------------------------------------------*/
 MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
   : params_(params),
-    potsum_(0)
+    potsum_(0),
+    PlAniso_(Teuchos::null),
+    InvPlAniso_(Teuchos::null)
 
 {
   // make sure the referenced materials in material list have quick access parameters
@@ -146,6 +164,15 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,isomod_);
   AddtoPack(data,anisoprinc_);
   AddtoPack(data,anisomod_);
+
+  // hill plasticity
+  bool Hill=(bool)(PlAniso_!=Teuchos::null);
+  AddtoPack(data,(int)Hill);
+  if (Hill)
+  {
+    AddtoPack(data,*PlAniso_);
+    AddtoPack(data,*InvPlAniso_);
+  }
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -207,6 +234,22 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   if (isomod != 0) isomod_ = true;
   if (anisoprinc != 0) anisoprinc_ = true;
   if (anisomod != 0) anisomod_ = true;
+
+  // hill plasticity information
+  bool Hill=(bool)ExtractInt(position,data);
+  if (Hill)
+  {
+    LINALG::Matrix<5,5> tmp55;
+    ExtractfromPack(position,data,tmp55);
+    PlAniso_=Teuchos::rcp( new LINALG::Matrix<5,5>(tmp55));
+    ExtractfromPack(position,data,tmp55);
+    InvPlAniso_=Teuchos::rcp( new LINALG::Matrix<5,5>(tmp55));
+  }
+  else
+  {
+    PlAniso_=Teuchos::null;
+    InvPlAniso_=Teuchos::null;
+  }
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -301,6 +344,161 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   if (isomod_==true)
     dserror("PlasticElastHyper only for isotropic elastic material without volumetric split!"
         "\n(Extension without major changes possilble.)");
+
+    // check if either zero or three fiber directions are given
+    if (linedef->HaveNamed("FIBER1") || linedef->HaveNamed("FIBER2") || linedef->HaveNamed("FIBER3"))
+      if (!linedef->HaveNamed("FIBER1") || !linedef->HaveNamed("FIBER2") || !linedef->HaveNamed("FIBER3"))
+        dserror("so3 expects no fibers or 3 fiber directions");
+
+    if (HaveHillPlasticity())
+      SetupHillPlasticity(linedef);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::PlasticElastHyper::SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef)
+{
+  PlAniso_=Teuchos::rcp( new LINALG::Matrix<5,5>);
+  InvPlAniso_=Teuchos::rcp( new LINALG::Matrix<5,5>);
+
+  // anisotropy directions
+  std::vector<LINALG::Matrix<3,1> > directions(3);
+
+  // first anisotropy direction
+  if (linedef->HaveNamed("FIBER1"))
+  {
+    std::vector<double> fiber;
+     linedef->ExtractDoubleVector("FIBER1",fiber);
+     double fnorm=0.;
+     //normalization
+     for (int i = 0; i < 3; ++i)
+       fnorm += fiber[i]*fiber[i];
+     fnorm = sqrt(fnorm);
+     if (fnorm==0.)
+       dserror("Fiber vector has norm zero");
+
+     // fill final fiber vector
+     for (int i = 0; i < 3; ++i)
+       directions.at(0)(i) = fiber[i]/fnorm;
+  }
+  // second anisotropy direction
+  if (linedef->HaveNamed("FIBER2"))
+  {
+    std::vector<double> fiber;
+     linedef->ExtractDoubleVector("FIBER2",fiber);
+     double fnorm=0.;
+     //normalization
+     for (int i = 0; i < 3; ++i)
+       fnorm += fiber[i]*fiber[i];
+     fnorm = sqrt(fnorm);
+     if (fnorm==0.)
+       dserror("Fiber vector has norm zero");
+
+     // fill final fiber vector
+     for (int i = 0; i < 3; ++i)
+       directions.at(1)(i) = fiber[i]/fnorm;
+  }
+  // third anisotropy direction
+  if (linedef->HaveNamed("FIBER3"))
+  {
+    std::vector<double> fiber;
+     linedef->ExtractDoubleVector("FIBER3",fiber);
+     double fnorm=0.;
+     //normalization
+     for (int i = 0; i < 3; ++i)
+       fnorm += fiber[i]*fiber[i];
+     fnorm = sqrt(fnorm);
+     if (fnorm==0.)
+       dserror("Fiber vector has norm zero");
+
+     // fill final fiber vector
+     for (int i = 0; i < 3; ++i)
+       directions.at(2)(i) = fiber[i]/fnorm;
+  }
+
+//    std::cout << "fiber1: " << directions.at(0) << "fiber2: " << directions.at(1) << "fiber3: " << directions.at(2) << std::endl;
+
+  // check orthogonality
+  LINALG::Matrix<1,1> matrix1;
+  matrix1.MultiplyTN(directions.at(0),directions.at(1));
+  if (std::abs(matrix1(0,0))>1.e-16)
+    dserror("fiber directions not orthogonal");
+  matrix1.MultiplyTN(directions.at(0),directions.at(2));
+  if (std::abs(matrix1(0,0))>1.e-16)
+    dserror("fiber directions not orthogonal");
+  matrix1.MultiplyTN(directions.at(2),directions.at(1));
+  if (std::abs(matrix1(0,0))>1.e-16)
+    dserror("fiber directions not orthogonal");
+
+  // check right-handed trihedron
+  LINALG::Matrix<3,1> A0xA1;
+  A0xA1(0) = (directions.at(0)(1)*directions.at(1)(2)-directions.at(0)(2)*directions.at(1)(1));
+  A0xA1(1) = (directions.at(0)(2)*directions.at(1)(0)-directions.at(0)(0)*directions.at(1)(2));
+  A0xA1(2) = (directions.at(0)(0)*directions.at(1)(1)-directions.at(0)(1)*directions.at(1)(0));
+  A0xA1.Update(-1.,directions.at(2),1.);
+  if (A0xA1.Norm2()>1.e-8)
+
+    dserror("fibers don't form right-handed trihedron");
+
+  // setup anisotropy tensor
+  LINALG::Matrix<6,6> PlAnisoFull(true);
+
+  // setup structural tensor for first and second direction
+  // (as the directions are orthogonal, 2 structural tensors are sufficient)
+  LINALG::Matrix<3,3> M0;
+  M0.MultiplyNT(directions.at(0),directions.at(0));
+  LINALG::Matrix<3,3> M1;
+  M1.MultiplyNT(directions.at(1),directions.at(1));
+  LINALG::Matrix<3,3> M2;
+  M2.MultiplyNT(directions.at(2),directions.at(2));
+
+  double alpha1 = 2./3./params_->rY_11_/params_->rY_11_;
+  double alpha2 = 2./3./params_->rY_22_/params_->rY_22_;
+  double alpha3 = 2./3./params_->rY_33_/params_->rY_33_;
+  double alpha4 = 1./3./params_->rY_12_/params_->rY_12_;
+  double alpha5 = 1./3./params_->rY_23_/params_->rY_23_;
+  double alpha6 = 1./3./params_->rY_13_/params_->rY_13_;
+
+
+  ElastSymTensorMultiply(PlAnisoFull,alpha1,M0,M0,1.);
+  ElastSymTensorMultiply(PlAnisoFull,alpha2,M1,M1,1.);
+  ElastSymTensorMultiply(PlAnisoFull,alpha3,M2,M2,1.);
+  ElastSymTensorMultiplyAddSym(PlAnisoFull,0.5*(alpha3-alpha1-alpha2),M0,M1,1.);
+  ElastSymTensorMultiplyAddSym(PlAnisoFull,0.5*(alpha1-alpha2-alpha3),M1,M2,1.);
+  ElastSymTensorMultiplyAddSym(PlAnisoFull,0.5*(alpha2-alpha3-alpha1),M0,M2,1.);
+  AddtodMdC_gamma2(PlAnisoFull,M0,M1,alpha4*2.);
+  AddtodMdC_gamma2(PlAnisoFull,M1,M2,alpha5*2.);
+  AddtodMdC_gamma2(PlAnisoFull,M0,M2,alpha6*2.);
+
+  LINALG::Matrix<6,5> red(true);
+  red(0,0) = 1.;
+  red(1,1) = 1.;
+  red(2,0) = -1.;
+  red(2,1) = -1.;
+  red(3,2) = 1.;
+  red(4,3) = 1.;
+  red(5,4) = 1.;
+  LINALG::Matrix<6,5> tmp;
+  tmp.Multiply(PlAnisoFull,red);
+  PlAniso_->MultiplyTN(red,tmp);
+  Epetra_SerialDenseMatrix PlAniso_epetra(5,5);
+  for (int i=0; i<5; i++)
+    for (int j=0; j<5; j++)
+      PlAniso_epetra(i,j) = (*PlAniso_)(i,j);
+    Epetra_SerialDenseSolver solver;
+    solver.SetMatrix(PlAniso_epetra);
+    solver.Invert();
+    for (int i=0; i<5; i++)
+      for (int j=0; j<5; j++)
+        (*InvPlAniso_)(i,j) = PlAniso_epetra(i,j);
+
+    LINALG::Matrix<5,6> tmp56;
+    tmp56.MultiplyNT(*InvPlAniso_,red);
+    InvPlAniso_->Multiply(tmp56,red);
+    for (int i=2; i<5; i++) (*InvPlAniso_)(i,i)*=2.;
 
   return;
 }

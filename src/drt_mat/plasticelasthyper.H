@@ -76,19 +76,27 @@ namespace MAT
 
       // plastic material parameters ************************************
       // initial yield stress
-      double inityield_;
+      const double inityield_;
       // linear isotropic hardening parameter
-      double isohard_;
+      const double isohard_;
       // exponent for nonlinear isotropic hardening
-      double expisohard_;
+      const double expisohard_;
       // saturation yield stress for nonlinear isotropic hardening
-      double infyield_;
+      const double infyield_;
       // linear kinematic hardening parameter
-      double kinhard_;
+      const double kinhard_;
       // complementarity parameter
-      double cpl_;
+      const double cpl_;
       // stabilization parameter "s"
-      double stab_s_;
+      const double stab_s_;
+      // parameters F,G,H,L,M,N of Hill yield criterion
+      const double rY_11_;
+      const double rY_22_;
+      const double rY_33_;
+      const double rY_12_;
+      const double rY_23_;
+      const double rY_13_;
+      const double plspin_eta_;
       // plastic material parameters ************************************
 
       /// create material instance of matching type with my parameters
@@ -206,6 +214,18 @@ private:
     /// a shear modulus equivalent
     virtual double ShearMod() const;
 
+    /// a shear modulus equivalent
+    virtual bool HaveHillPlasticity() const {return (params_->rY_11_!=0.); }
+
+    /// plastic anisotropy tensor
+    virtual LINALG::Matrix<5,5> PlAniso() const {return *PlAniso_; }
+
+    /// inverse plastic anisotropy tensor
+    virtual LINALG::Matrix<5,5> InvPlAniso() const {return *InvPlAniso_; }
+
+    /// plastic spin eta
+    virtual double PlSpinEta() const {return params_->plspin_eta_; }
+
     /// hyperelastic stress response plus elasticity tensor
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
                           const LINALG::Matrix<3,3>* invpldefgrd, ///< inverse plastic deformation gradient
@@ -227,6 +247,8 @@ private:
     {dserror("PlasticHyperElast cannot be called by standard evaluate routine"); return;}
 
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+
+    virtual void SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef);
 
     virtual void Update();
 
@@ -316,6 +338,7 @@ private:
     /// in index notation this does:
     /// dMdC_abCD += fac*( A_Ca*B_Db + A_Da*B_Cb + A_Db*B_Ca + A_Cb*B_Da )
     /// result has minor symmetries but no major symmetry
+    // Symmetric w.r.t. A,B
     void AddtodMdC_gamma2(LINALG::Matrix<6,6>& dMdC,
         LINALG::Matrix<3,3> A, LINALG::Matrix<3,3> B, double fac);
 
@@ -464,6 +487,7 @@ private:
     static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
                                      ///< by [3*i+j] for any i,j=0,1,2
     static const int VOIGT3X3_[3][3];
+
     //@}
 
     /// my material parameters
@@ -471,6 +495,12 @@ private:
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
+
+    // plastic anisotropy tensor for Hill-plasticity
+    // as there is only a dependency on the deviatoric stress, we use the reduced matrix
+    // notation S=[S_11 S_22 S_12 S_23 S_13]
+    Teuchos::RCP<LINALG::Matrix<5,5> > PlAniso_;
+    Teuchos::RCP<LINALG::Matrix<5,5> > InvPlAniso_;
 
   };
 

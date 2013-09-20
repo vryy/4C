@@ -289,9 +289,42 @@ namespace ELEMENTS
         const int MyPID  // processor id
         );
 
+    //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
+    virtual void nln_stiffmass_hill(
+        std::vector<int>&              lm,             // location matrix
+        std::vector<double>&           disp,           // current displacements
+        std::vector<double>&           residual,       // current residual displ
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+        const INPAR::STR::StressType   iostress,  // stress output option
+        const INPAR::STR::StrainType   iostrain,  // strain output option
+        const int MyPID  // processor id
+        );
+
     //! Calculate nonlinear stiffness and mass matrix
     //! implementation for hex8fbar elements differs from standard implementation
     virtual void nln_stiffmass_fbar(
+        std::vector<int>&              lm,             // location matrix
+        std::vector<double>&           disp,           // current displacements
+        std::vector<double>&           residual,       // current residual displ
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
+        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
+        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
+        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
+        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
+        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
+        const INPAR::STR::StressType   iostress,  // stress output option
+        const INPAR::STR::StrainType   iostrain,  // strain output option
+        const int MyPID  // processor id
+        );
+
+    //! Calculate nonlinear stiffness and mass matrix for Hill plasticity
+    //! implementation for hex8fbar elements differs from standard implementation
+    virtual void nln_stiffmassHill_fbar(
         std::vector<int>&              lm,             // location matrix
         std::vector<double>&           disp,           // current displacements
         std::vector<double>&           residual,       // current residual displ
@@ -322,11 +355,14 @@ namespace ELEMENTS
         const int MyPID  // processor id
         );
 
-    //! calculate the exponential of a symmetric 3x3 matrix
+    //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
     void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
 
     //! calculate the derivative of the exponential of a symmetric 3x3 matrix
     void MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv);
+
+    //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
+    void MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv);
 
     // index notation:
     // Dexp_ijkl += 0.5*fac* (A_ik*B_lj + B_ik*A_lj + A_jk*B_li + B_jk*A_li)
@@ -334,21 +370,17 @@ namespace ELEMENTS
     void AddToSymMatrixExponentialDeriv(const double fac,
         const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp);
 
-    // convert indices
-    int TensorToVoigt(int i, int j)
-    {
-      if      (i==0 && j==0)                     return 0;
-      else if (i==1 && j==1)                     return 1;
-      else if (i==2 && j==2)                     return 2;
-      else if ((i==0 && j==1) || (i==1 && j==0)) return 3;
-      else if ((i==2 && j==1) || (i==1 && j==2)) return 4;
-      else if ((i==0 && j==2) || (i==2 && j==0)) return 5;
-      else dserror("you should not be here");
-      return -1;
-    }
+    // index notation:
+    // Dexp_ijkl += fac*( A_ik * B_lj )
+    // A and B non-symmetric!
+    void AddToMatrixExponentialDeriv(const double fac,
+        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp);
 
     // Add plastic increment of converged state to plastic history for nonlinear kinematics
     void UpdatePlasticDeformation_nln();
+
+    // Add plastic increment of converged state to plastic history for nonlinear kinematics and Hill plasticity
+    void UpdatePlasticDeformationHill_nln();
 
     // Add plastic increment of converged state to plastic history for nonlinear kinematics
     void UpdatePlasticDeformation_lin();
@@ -371,6 +403,9 @@ namespace ELEMENTS
     // return the accumulated plastic strain at given gp
     double AccumulatedStrain(int gp) {return sqrt(2./3.)*last_alpha_isotropic_->at(gp)(0);}
 
+    bool HaveHillPlasticity() ;
+
+
     //! @name plasticity related stuff
 
     //@}
@@ -382,12 +417,15 @@ namespace ELEMENTS
 
     int Id() const;
 
+    static const int VOIGT3X3SYM_[3][3];
+    static const int VOIGT3X3NONSYM_[3][3];
+
     // plastic history variables ******************************************
     // inverse plastic deformation gradient for each Gauss point at last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_plastic_defgrd_inverse_;
 
     // plastic increment at each Gauss point at last Newton iteration
-    // for a slightly simpler implementation, we use Delta alpha^k=-Delta L^p instead of Delta L^p
+    // for a slightly simpler implementation, we use Delta alpha^k=-Delta D^p instead of Delta D^p
     Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_iter_;
 
     // accumulated plastic strain for each Gauss point at last converged state
@@ -407,6 +445,23 @@ namespace ELEMENTS
 
     // f_b at each Gauss point for recovery of inner variables
     Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > fbeta_;
+
+
+
+    // Hill plasticity ********************************************
+    // here we have 8 scalar plastic variables at each time step
+    // (non-symmetric, traceless 3x3 matrix)
+    // Kbb^-1 at each Gauss point for recovery of inner variables
+    Teuchos::RCP<std::vector<LINALG::Matrix<8,8> > > KbbInvHill_;
+
+    // Kbd at each Gauss point for recovery of inner variables
+    Teuchos::RCP<std::vector<LINALG::Matrix<8,numdofperelement_> > > KbdHill_;
+
+    // f_b at each Gauss point for recovery of inner variables
+    Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > fbetaHill_;
+
+    //
+    Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > mDLp_last_iter_;
 
   };  // class So3_Plast
 

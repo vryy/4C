@@ -550,23 +550,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
-  // Plastic semi-smooth / von Mises
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticSemiSmooth",
-                                            "some other hyperleastic / plastic von Mises material",
-                                            INPAR::MAT::m_plsemismooth));
-
-    AddNamedReal(m,"YIELD","initial yield strength");
-    AddNamedReal(m,"ISOHARD","linear isotropic hardening");
-    AddNamedReal(m,"EXPISOHARD","exponent for nonlinear isotropic hardening");
-    AddNamedReal(m,"INFYIELD","inf yield stress for nonlinear isotropic hardening");
-    AddNamedReal(m,"KINHARD","linear kinematic hardening");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
   // Hyperelasticity / finite strain von-Mises plasticity
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -838,6 +821,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"KINHARD","linear kinematic hardening modulus");
     AddNamedReal(m,"CPL","plastic complementarity parameter");
     AddNamedReal(m,"STAB_S","active set stabilization parameter 's'");
+
+    // optional Hill yield parameters
+    AddNamedReal(m,"rY_11","relative yield stress in fiber1-direction (Y_11/Y_0)",true);
+    AddNamedReal(m,"rY_22","relative yield stress in fiber2-direction (Y_22/Y_0)",true);
+    AddNamedReal(m,"rY_33","relative yield stress in fiber2-direction (Y_33/Y_0)",true);
+    AddNamedReal(m,"rY_12","relative shear yield stress in 12-direction (Y_12/Y_0)",true);
+    AddNamedReal(m,"rY_23","relative shear yield stress in 23-direction (Y_23/Y_0)",true);
+    AddNamedReal(m,"rY_13","relative shear yield stress in 13-direction (Y_13/Y_0)",true);
+    AddNamedReal(m,"PL_SPIN_ETA","Plastic spin coupling parameter eta",true);
 
     AppendMaterialDefinition(matlist,m);
   }
