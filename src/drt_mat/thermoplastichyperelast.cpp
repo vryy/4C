@@ -725,7 +725,7 @@ void MAT::ThermoPlasticHyperElast::VisNames(std::map<std::string, int>& names)
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
   
-  string mechdiss = "mechdiss";
+  std::string mechdiss = "mechdiss";
   names[mechdiss] = 1;  // scalar
 }  // VisNames()
 
