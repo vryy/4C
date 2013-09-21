@@ -16,18 +16,19 @@ Maintainer: Markus Gitterle
  | headers                                                   mgit 04/11 |
  *----------------------------------------------------------------------*/
 #include "stru_ale_algorithm.H"
-#include "../drt_lib/drt_discret.H"
 
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_elementtype.H"
+
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
 
 #include "../drt_mortar/mortar_manager_base.H"
 
 #include "../drt_w1/wall1.H"
+
 #include "../drt_so3/so_hex8.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_ale/ale.H"
 
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_abstract_strategy.H"
@@ -35,19 +36,21 @@ Maintainer: Markus Gitterle
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_manager.H"
+#include "../drt_contact/contact_wear_lagrange_strategy.H"
+#include "../drt_contact/contact_wear_interface.H"
 
 #include "../drt_structure/stru_aux.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
 #include "Epetra_SerialComm.h"
+
 #include "../linalg/linalg_utils.H"
+
 #include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale/ale.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_contact/contact_wear_lagrange_strategy.H"
-#include "../drt_contact/contact_wear_interface.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                     farah 05/13 |
@@ -208,7 +211,6 @@ void STRU_ALE::Algorithm::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s 
                                     Teuchos::RCP<Epetra_Vector>& disinterface_m,
                                     Teuchos::RCP<Epetra_Vector>& disinterface_g)
 {
-
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
   std::vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
@@ -382,13 +384,13 @@ void STRU_ALE::Algorithm::ApplyMeshDisplacement()
   RCP<Epetra_Vector> disale = coupalestru_->MasterToSlave(aledisp);
 
   // vector of current spatial displacements
-  RCP<Epetra_Vector> dispn = StructureField()->ExtractDispn();
+  RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();  // change to ExtractDispn() for overlap
 
   // material displacements
-  RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispn->Map()),true);
+  RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispnp->Map()),true);
   
   // set state
-  (StructureField()->Discretization())->SetState(0,"displacement",dispn);
+  (StructureField()->Discretization())->SetState(0,"displacement",dispnp);
 
   // set state
   (StructureField()->Discretization())->SetState(0,"material_displacement",StructureField()->DispMat());
@@ -421,20 +423,20 @@ void STRU_ALE::Algorithm::ApplyMeshDisplacement()
     // get local id
     if (ndim==2)
     {
-      locid=(dispn->Map()).LID(2*gid);
+      locid=(dispnp->Map()).LID(2*gid);
       if (locid==-1) dserror("LID not found on this proc");
     }
     else
     {
-      locid=(dispn->Map()).LID(3*gid);
+      locid=(dispnp->Map()).LID(3*gid);
       if (locid==-1) dserror("LID not found on this proc");
     }
     // reference node position + displacement t_n + delta displacement t_n+1
-    XMesh[0]=node->X()[0]+(*dispn)[locid]+(*disale)[locid];
-    XMesh[1]=node->X()[1]+(*dispn)[locid+1]+(*disale)[locid+1];
+    XMesh[0]=node->X()[0]+(*dispnp)[locid]+(*disale)[locid];
+    XMesh[1]=node->X()[1]+(*dispnp)[locid+1]+(*disale)[locid+1];
 
     if (ndim==3)
-      XMesh[2]=node->X()[2]+(*dispn)[locid+2]+(*disale)[locid+2];
+      XMesh[2]=node->X()[2]+(*dispnp)[locid+2]+(*disale)[locid+2];
 
     // create updated  XMat --> via nonlinear interpolation between nodes (like gp projection)
     //if (ndim==2)
@@ -448,7 +450,7 @@ void STRU_ALE::Algorithm::ApplyMeshDisplacement()
   }
 
   // update spatial displacements
-  dispn->Update(1.0,*disale,1.0);
+  dispnp->Update(1.0,*disale,1.0);
 
   // apply material displacements to structural field
   // if advection map is not succesful --> use old xmat

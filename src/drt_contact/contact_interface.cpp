@@ -49,13 +49,13 @@ Maintainer: Alexander Popp
 #include "contact_coupling2d.H"
 #include "contact_coupling3d.H"
 #include "contact_defines.H"
+#include "contact_manager.H"
 #include "friction_node.H"
 #include "selfcontact_binarytree.H"
 #include "../drt_mortar/mortar_binarytree.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../linalg/linalg_utils.H"
 
@@ -85,7 +85,7 @@ tsi_(false)
     wear_ = true;
 
   // set thermo-structure-interaction with contact  
-  if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
+  if (icontact.get<int>("PROBTYPE")==tsi)
     tsi_ = true;
   
   // check for redundant slave storage
@@ -1163,44 +1163,6 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     // search for contact with a combined algorithm
     //binarytree_->SearchCombined();
   }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Integrate Mortar matrix D on slave element (public)       popp 01/08|
- *----------------------------------------------------------------------*/
-bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
-{
-  //**********************************************************************
-  dserror("ERROR: IntegrateSlave method is outdated!");
-  //**********************************************************************
-
-  // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(imortar_,sele.Shape());
-
-  // create correct integration limits
-  double sxia[2] = {0.0, 0.0};
-  double sxib[2] = {0.0, 0.0};
-  if (sele.Shape()==DRT::Element::tri3 || sele.Shape()==DRT::Element::tri6)
-  {
-    // parameter space is [0,1] for triangles
-    sxib[0] = 1.0; sxib[1] = 1.0;
-  }
-  else
-  {
-    // parameter space is [-1,1] for quadrilaterals
-    sxia[0] = -1.0; sxia[1] = -1.0;
-    sxib[0] =  1.0; sxib[1] =  1.0;
-  }
-
-  // do the element integration (integrate and linearize D)
-  int nrow = sele.NumNode();
-  Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-  integrator.IntegrateDerivSlave2D3D(sele,sxia,sxib,dseg);
-
-  // do the assembly into the slave nodes
-  integrator.AssembleD(Comm(),sele,*dseg);
 
   return true;
 }

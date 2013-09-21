@@ -1379,6 +1379,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_coupling2d.cpp
   src/drt_contact/contact_coupling3d.cpp
   src/drt_contact/contact_integrator.cpp
+  src/drt_contact/contact_integrator_assemble.cpp
   src/drt_contact/contact_interface.cpp
   src/drt_contact/contact_interface_tools.cpp
   src/drt_contact/contact_lagrange_strategy.cpp

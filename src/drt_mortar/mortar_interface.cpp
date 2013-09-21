@@ -55,7 +55,6 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_utils.H"
 #include <Teuchos_Time.hpp>
@@ -2474,7 +2473,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
       mglobal.Assemble(-1,Mnode,lmrow,lmrowowner,lmcol);
     }
   }
-  
+
   return;
 }
 

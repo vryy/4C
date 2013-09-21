@@ -44,10 +44,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_ana.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_mortar.H"
-#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*

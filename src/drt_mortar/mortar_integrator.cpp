@@ -44,7 +44,6 @@ Maintainer: Alexander Popp
 #include "mortar_projector.H"
 #include "mortar_coupling3d_classes.H"
 #include "mortar_defines.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -76,11 +75,10 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
   //**********************************************************************
 
   // get input
-  const Teuchos::ParameterList& smortar  = DRT::Problem::Instance()->MortarCouplingParams();
-  int numgp = smortar.get<int>("NUMGP_PER_DIM");
+  int numgp = imortar_.get<int>("NUMGP_PER_DIM");
 
   INPAR::MORTAR::IntType integrationtype =
-    DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(smortar,"INTTYPE");
+    DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE");
 
   switch(eletype)
   {

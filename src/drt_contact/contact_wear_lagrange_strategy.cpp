@@ -1,18 +1,43 @@
-/*----------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
 \file contact_wear_lagrange_srategy.cpp
 
-\brief  ...
+<pre>
+-------------------------------------------------------------------------
+                        BACI Contact library
+            Copyright (2008) Technical University of Munich
+
+Under terms of contract T004.008.000 there is a non-exclusive license for use
+of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library is proprietary software. It must not be published, distributed,
+copied or altered in any form or any media without written permission
+of the copyright holder. It may be used under terms and conditions of the
+above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library contains and makes use of software copyrighted by Sandia Corporation
+and distributed under LGPL licence. Licensing does not apply to this or any
+other third party software used here.
+
+Questions? Contact Prof. Dr. Michael W. Gee (gee@lnm.mw.tum.de)
+                   or
+                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
+
+http://www.lnm.mw.tum.de
+
+-------------------------------------------------------------------------
+</pre>
+
 <pre>
 Maintainer: Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
 </pre>
-*/
+
+*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- | headers                                                  farah 09/13 |
+ | Header                                                   farah 09/13 |
  *----------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
@@ -23,15 +48,17 @@ Maintainer: Philipp Farah
 #include "contact_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_defines.H"
+#include "contact_manager.H"
 
 #include "friction_node.H"
 
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
@@ -81,12 +108,14 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
 
   // make sure to remove all existing maps first
   // (do NOT remove map of non-interface dofs after redistribution)
-  gminvolvednodes_  = Teuchos::null;
-  gminvolveddofs_   = Teuchos::null;
+  gminvolvednodes_  = Teuchos::null;  // all involved master nodes
+  gminvolveddofs_   = Teuchos::null;  // all involved master dofs
   gwdofrowmap_      = Teuchos::null;
-  gslipn_           = Teuchos::null;  //vector dummy for wear
-  gsdofnrowmap_     = Teuchos::null;  //vector dummy for wear
-  gwinact_          = Teuchos::null;  //vector dummy for inactive wear
+  gslipn_           = Teuchos::null;  // vector dummy for wear - slave slip dofs
+  gsdofnrowmap_     = Teuchos::null;  // vector dummy for wear - slave all dofs
+  gwinact_          = Teuchos::null;  // vector dummy for wear - slave inactive dofss
+
+
 
   // make numbering of LM dofs consecutive and unique across N interfaces
   int offset_if = 0;
@@ -297,7 +326,7 @@ void CONTACT::WearLagrangeStrategy::InitEvalMortar()
   // wearvector_ only updated at the end of a time step --> this newton-step-wise
   // update is not elegant!
   // *********************************************************************************
-  if (wear_ and DRT::Problem::Instance()->ProblemType()!=prb_struct_ale)
+  if (wear_ and Params().get<int>("PROBTYPE")!=structalewear and !wearimpl_)
     g_->Update(1.0,*wearvector_,1.0);
   else
   {
@@ -1727,7 +1756,7 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // initialize transformed constraint matrices
   Teuchos::RCP<LINALG::SparseMatrix> trkwd, trkwz, trkww, trkzw, trkdw;
 
-  double wcoeff = (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF");
+  double wcoeff = Params().get<double>("WEARCOEFF");
 
   //**********************************************************************
   // build matrix and vector blocks

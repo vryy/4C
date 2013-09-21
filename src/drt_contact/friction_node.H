@@ -354,7 +354,7 @@ public:
   */
   FriNode(int id, const double* coords, const int owner,
          const int numdof, const std::vector<int>& dofs, const bool isslave,
-         const bool initactive);
+         const bool initactive, const bool friplus);
 
   /*!
   \brief Copy Constructor
@@ -602,6 +602,7 @@ protected:
   Teuchos::RCP<CONTACT::FriNodeDataContainer>     fridata_;       // additional information of proc's friction nodes
   Teuchos::RCP<CONTACT::FriNodeDataContainerPlus> fridataplus_;   // additional information to proc's data container
 
+  bool friplus_;                                      // bool for tsi || wear
 }; // class FriNode
 
 } // namespace CONTACT

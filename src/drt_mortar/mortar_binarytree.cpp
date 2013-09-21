@@ -42,7 +42,6 @@ Maintainer: Alexander Popp
 #include "mortar_element.H"
 #include "mortar_defines.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 

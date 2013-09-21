@@ -1,5 +1,31 @@
 /*!----------------------------------------------------------------------
-\file contact_interface_wear_tools.cpp
+\file contact_wear_interface_tools.cpp
+
+<pre>
+-------------------------------------------------------------------------
+                        BACI Contact library
+            Copyright (2008) Technical University of Munich
+
+Under terms of contract T004.008.000 there is a non-exclusive license for use
+of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library is proprietary software. It must not be published, distributed,
+copied or altered in any form or any media without written permission
+of the copyright holder. It may be used under terms and conditions of the
+above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+
+This library contains and makes use of software copyrighted by Sandia Corporation
+and distributed under LGPL licence. Licensing does not apply to this or any
+other third party software used here.
+
+Questions? Contact Prof. Dr. Michael W. Gee (gee@lnm.mw.tum.de)
+                   or
+                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
+
+http://www.lnm.mw.tum.de
+
+-------------------------------------------------------------------------
+</pre>
 
 <pre>
 Maintainer: Philipp Farah
@@ -23,7 +49,6 @@ Maintainer: Philipp Farah
 #include "../drt_mortar/mortar_integrator.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_io/io_control.H"
 
@@ -2301,7 +2326,7 @@ void CONTACT::WearInterface::FDCheckMortarEDeriv()
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::FDCheckWearDerivLm()
 {
-  double wcoeff = (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF");
+  double wcoeff = IParams().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
@@ -2453,8 +2478,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::FDCheckWearDeriv()
 {
-
-  double wcoeff = (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF");
+  double wcoeff = IParams().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);

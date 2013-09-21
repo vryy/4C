@@ -41,15 +41,18 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_integrator.H"
 
 
+// forward declarations
+namespace LINALG
+{
+class SerialDenseVector;
+}
+
 /*!
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
 */
 namespace CONTACT
 {
-
-// forward declarations
-
 /*!
 \brief A class to perform Gaussian integration and assembly of Mortar
        matrices on the overlap of two MortarElements (1 Slave, 1 Master)
@@ -91,6 +94,451 @@ public:
   //! @name 2D and 3D integration methods
 
   /*!
+  \brief evaluate D2-matrix entries at GP
+
+  */
+  void inline GP_D2(
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& lm2val,
+       LINALG::SerialDenseVector& m2val,
+       double& dmxideta, double& dxdmxi,
+       double& wgt);
+
+  /*!
+  \brief evaluate D/M-matrix entries at GP
+
+  */
+  void inline GP_DM(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       double& jac,
+       double& wgt, int& nrow, int& ncol,
+       int& ndof, bool& bound);
+
+  /*!
+  \brief lin D/M-matrix entries at GP for bound case
+
+  */
+  void inline GP_DM_Lin_bound(
+       int& iter, bool& duallin,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& dsxideta, double& dxdsxi,
+       double& dxdsxidsxi,
+       double& wgt, double& sxi,
+       const std::map<int,double>& dsxigp,
+       const std::map<int,double>& derivjac,
+       const std::vector<std::map<int,double> >& ximaps,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief lin D/M-matrix entries at GP for bound case
+
+  */
+  void inline GP_2D_DM_Lin(
+      int& iter,
+      bool& bound, bool& linlm,
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmval,
+      LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseMatrix& mderiv,
+      LINALG::SerialDenseMatrix& lmderiv,
+      double& dsxideta, double& dxdsxi,
+      double& dxdsxidsxi,
+      double& wgt,
+      const std::map<int,double>& dsxigp,
+      const std::map<int,double>& dmxigp,
+      const std::map<int,double>& derivjac,
+      const std::vector<std::map<int,double> >& ximaps,
+      const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief lin D/M-matrix entries at GP for bound case
+
+  */
+  void inline GP_3D_DM_Lin(
+       int& iter,bool& duallin,
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& mderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& wgt, double& jac,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::map<int,double> >& dmxigp,
+       const std::map<int,double>& jacintcellmap,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief evaluate weighted Gap entries at GP
+
+  */
+  void inline GP_2D_G(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& scoord,
+       LINALG::SerialDenseMatrix& mcoord,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& mderiv,
+       double* gap, double* gpn, double* lengthn,
+       double& dsxideta, double& dxdsxi,
+       double& wgt,
+       const std::map<int,double> & dsxigp,
+       const std::map<int,double> & dmxigp,
+       std::map<int,double> & dgapgp,
+       std::vector<std::map<int,double> >& dnmap_unit);
+
+  /*!
+  \brief evaluate weighted Gap entries at GP
+
+  */
+  void inline GP_3D_G(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& scoord,
+       LINALG::SerialDenseMatrix& mcoord,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& mderiv,
+       double* gap, double* gpn, double* lengthn,
+       double& jac,
+       double& wgt,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::map<int,double> >& dmxigp,
+       std::map<int,double> & dgapgp,
+       std::vector<std::map<int,double> >& dnmap_unit);
+  /*!
+  \brief evaluate weighted Gap entries at GP
+
+  */
+  void inline GP_2D_G_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& gap, double* gpn,
+       double& dsxideta, double& dxdsxi,
+       double& dxdsxidsxi,
+       double& wgt,
+       const std::map<int,double>& dgapgp,
+       const std::map<int,double>& dsxigp,
+       const std::map<int,double>& dmxigp,
+       const std::map<int,double>& derivjac,
+       const std::vector<std::map<int,double> >& ximaps,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief evaluate weighted Gap entries at GP
+
+  */
+  void inline GP_3D_G_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& gap, double *gpn, double& jac,
+       double& wgt, bool& duallin,
+       const std::map<int,double>& dgapgp,
+       const std::map<int,double>& jacintcellmap,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::map<int,double> >& dmxigp,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief evaluate scaling at GP
+
+  */
+  void inline GP_2D_Scaling(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       double& dsxideta, double& wgt);
+
+  /*!
+  \brief evaluate scaling at GP
+
+  */
+  void inline GP_3D_Scaling(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       double& jac, double& wgt,
+       double* sxi);
+
+  /*!
+  \brief evaluate and lin scaling at GP
+
+  */
+  void inline GP_2D_Scaling_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseMatrix& sderiv,
+       double& dsxideta, double& wgt,
+       const std::map<int,double>& dsxigp,
+       const std::vector<std::map<int,double> >& ximaps);
+
+  /*!
+  \brief evaluate and lin scaling at GP
+
+  */
+  void inline GP_3D_Scaling_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseMatrix& sderiv,
+       double& jac, double& wgt,
+       double& jacsele,
+       const std::map<int,double>& derivjacsele,
+       const std::map<int,double>& jacintcellmap,
+       const std::vector<std::map<int,double> >& dsxigp,
+       double* derivjacselexi);
+
+  /*!
+  \brief evaluate and lin slipincr at GP
+
+  */
+  void inline GP_2D_SlipIncr(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& scoord,
+       LINALG::SerialDenseMatrix& mcoord,
+       Teuchos::RCP<LINALG::SerialDenseMatrix>  scoordold,
+       Teuchos::RCP<LINALG::SerialDenseMatrix>  mcoordold,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& mderiv,
+       double& dsxideta, double& dxdsxi,
+       double& wgt, double* jumpvalv,
+       const std::map<int,double>& dsxigp,
+       const std::map<int,double>& dmxigp,
+       std::map<int,double>& dslipgp);
+
+  /*!
+  \brief evaluate and lin slipincr at GP
+
+  */
+  void inline GP_3D_SlipIncr(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& scoord,
+       LINALG::SerialDenseMatrix& mcoord,
+       Teuchos::RCP<LINALG::SerialDenseMatrix>  scoordold,
+       Teuchos::RCP<LINALG::SerialDenseMatrix>  mcoordold,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& mderiv,
+       double& jac,
+       double& wgt, double* jumpvalv,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::map<int,double> >& dmxigp,
+       std::vector<std::map<int,double> >& dslipgp);
+
+  /*!
+  \brief evaluate and lin slipincr at GP at node
+
+  */
+  void inline GP_2D_SlipIncr_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& dsxideta, double& dxdsxi,
+       double& dxdsxidsxi,
+       double& wgt, double* jumpvalv,
+       const std::map<int,double>& dsxigp,
+       const std::map<int,double>& dslipgp,
+       const std::vector<std::map<int,double> >& ximaps,
+       const std::map<int,double>& derivjac,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  void inline GP_3D_SlipIncr_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& jac,
+       double& wgt, double* jumpvalv,
+       const std::map<int,double>& jacintcellmap,
+       const std::vector<std::map<int,double> >& dslipgp,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+  /*!
+  \brief evaluate  T and E matrix
+
+  */
+  void inline GP_TE(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& sval,
+       double& jac,
+       double& wgt, double* jumpval);
+
+  /*!
+  \brief evaluate Lin T and E matrix
+
+  */
+  void inline GP_2D_TE_Lin(
+       int& iter,                                //like k
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& dsxideta, double& dxdsxi,
+       double& dxdsxidsxi,
+       double& wgt, double* jumpval,
+       const std::map<int,double>& dsxigp,
+       const std::map<int,double>& derivjac,
+       const std::map<int,double>& dsliptmatrixgp,
+       const std::vector<std::map<int,double> >& ximaps,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief evaluate Lin T and E matrix
+
+  */
+  void inline GP_3D_TE_Lin(
+       int& iter, bool& duallin,                //like k
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& jac,
+       double& wgt, double* jumpval,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::map<int,double>& jacintcellmap,
+       const std::map<int,double>& dsliptmatrixgp,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief evaluate wear + lin at GP
+
+  */
+  void inline GP_2D_Wear(
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseMatrix& mderiv,
+      LINALG::SerialDenseVector& lmval,
+      LINALG::SerialDenseMatrix& lmderiv,
+      LINALG::SerialDenseMatrix& scoord,
+      Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
+      LINALG::SerialDenseMatrix& mcoord,
+      Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold,
+      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult,
+      double* gpn,
+      double& dsxideta, double& dxdsxi,
+      double& dxdsxidsxi,double& wgt,
+      double* jumpval, double* wearval,
+      const std::map<int,double>& dsxigp,
+      const std::map<int,double>& dmxigp,
+      const std::vector<std::vector<std::map<int,double> > >& dualmap,
+      const std::vector<std::map<int,double> >& ximaps,
+      const std::vector<std::map<int,double> >& dnmap_unit,
+      std::map<int,double> & dsliptmatrixgp,
+      std::map<int,double> & dweargp);
+
+  /*!
+  \brief evaluate wear + lin at GP
+
+  */
+  void inline GP_3D_Wear(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseMatrix& mderiv,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& lmderiv,
+       LINALG::SerialDenseMatrix& scoord,
+       Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
+       LINALG::SerialDenseMatrix& mcoord,
+       Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold,
+       Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult,
+       double* gpn,
+       double& jac,double& wgt,
+       double* jumpval, double* wearval,
+       std::map<int,double> & dsliptmatrixgp,
+       std::map<int,double> & dweargp,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::map<int,double> >& dmxigp,
+       const std::vector<std::map<int,double> >& dnmap_unit,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap,
+       double& mechdiss);
+
+  /*!
+  \brief lin weighted wear at GP
+
+  */
+  void inline GP_2D_Wear_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& dsxideta, double& dxdsxi,
+       double& dxdsxidsxi, double* gpn,
+       double& wgt, double& wearval,
+       double* jumpval,
+       const std::map<int,double>& dsxigp,
+       const std::map<int,double>& dweargp,
+       const std::vector<std::map<int,double> >& ximaps,
+       const std::map<int,double>& derivjac,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief lin weighted wear at GP
+
+  */
+  void inline GP_3D_Wear_Lin(
+       int& iter,
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& jac, double* gpn,
+       double& wgt, double& wearval,
+       double* jumpval,
+       const std::map<int,double>& dweargp,
+       const std::map<int,double>& jacintcellmap,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
   \brief Build all integrals and linearizations on a 1D or 2D
          slave element (i.e. onl D, LinD possible).
 
@@ -124,16 +572,7 @@ public:
   */
   void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
-      MORTAR::MortarElement& mele, double& mxia, double& mxib,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> d2seg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> useg,
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> wseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> tseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> eseg);
+      MORTAR::MortarElement& mele, double& mxia, double& mxib);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -172,18 +611,10 @@ public:
   void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> useg,
-     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs,
      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> bseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> wseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> tseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> eseg);
+     Teuchos::RCP<Epetra_SerialDenseMatrix> bseg);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /

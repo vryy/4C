@@ -40,7 +40,6 @@ Maintainer: Alexander Popp
 #include "friction_node.H"
 #include "contact_element.H"
 #include "contact_defines.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 
 CONTACT::FriNodeType CONTACT::FriNodeType::instance_;
@@ -50,7 +49,9 @@ DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
 {
   double x[3];
   std::vector<int> dofs(0);
-  CONTACT::FriNode* node = new CONTACT::FriNode(0,x,0,0,dofs,false,false);
+
+  // TODO: friplus = true for all nodes!!! change this with pack/unpack
+  CONTACT::FriNode* node = new CONTACT::FriNode(0,x,0,0,dofs,false,false,true);
   node->Unpack(data);
   return node;
 }
@@ -187,9 +188,11 @@ deltawear_(0.0)
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
                           const int numdof, const std::vector<int>& dofs,
-                          const bool isslave, const bool initactive) :
+                          const bool isslave, const bool initactive,
+                          const bool friplus) :
 CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive),
-mechdiss_(0.0)
+mechdiss_(0.0),
+friplus_(friplus)
 {
   return;
 }
@@ -576,8 +579,7 @@ void CONTACT::FriNode::InitializeDataContainer()
   }
   
   // initialize data container for wear and tsi problems 
-  if (DRT::Problem::Instance()->ProblemType()==prb_tsi or
-     (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+  if (friplus_==true)
   {
      if (fridataplus_==Teuchos::null)
       fridataplus_=Teuchos::rcp(new CONTACT::FriNodeDataContainerPlus());

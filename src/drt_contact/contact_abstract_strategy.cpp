@@ -39,14 +39,15 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #include "contact_abstract_strategy.H"
 #include "contact_defines.H"
+#include "contact_manager.H"
 #include "contact_interface.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_colors.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_solver.H"
@@ -91,7 +92,7 @@ wear_(false)
     wear_ = true;
 
   // set thermo-structure-interaction with contact  
-  if (DRT::Problem::Instance()->ProblemType()==prb_tsi)
+  if (params.get<int>("PROBTYPE")==tsi)
     tsi_ = true;
 
   // call setup method with flag redistributed=FALSE, init=TRUE
@@ -1312,7 +1313,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
               FriNode* frinode = static_cast<FriNode*>(cnode);
               double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
               
-              if(DRT::Problem::Instance()->ProblemType()!=prb_struct_ale)
+              if (Params().get<int>("PROBTYPE")!=structalewear)
                 frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear(); // amount of wear
               else
                 frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear(); // wear for each ale step
