@@ -366,6 +366,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra
   )
 {
+  // cout << "TEST CRISTOBAL Evaluate scatra_ele_impl.cpp" << endl;
+
   // --------mandatory are performed here at first ------------
   // get node coordinates (we do this for all actions!)
   if(nsd_ == 1 && nen_ == 2){ // Rotates line element in order to perform computations in 3D
@@ -1168,7 +1170,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       if( material->MaterialType() == INPAR::MAT::m_myocard)
       {
         Teuchos::RCP<MAT::Myocard> material = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
-        for (int k = 0; k< material->GetNumberOfInternalStateVariables(); ++k)
+        for (int k = 0; k< material_internal_state->NumVectors(); ++k)
         {
           int err = material_internal_state->ReplaceGlobalValue(ele->Id(),k, material->GetInternalState(k));
           if(err != 0) dserror("%i",err);
@@ -1376,6 +1378,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     }
     else // conductivity = diffusivity for a electric potential field
     {
+     // cout << "TEST CRISTOBAL evaluate calc_elch_conductivity" << endl;
+
       GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
       elevec1_epetra(0)=diffus_[0];
       elevec1_epetra(1)=diffus_[0];
@@ -1647,6 +1651,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
         // get material
+        // cout << "TEST CRISTOBAL evaluate calc_mean_Cai" << endl;
+
         GetMaterialParams(ele,scatratype,0);
 
         // get velocity at integration point
@@ -1708,6 +1714,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       {
         for (int k = 0; k< numscal_; ++k)
         {
+          // cout << "TEST CRISTOBAL calc_integr_reaction" << endl;
           GetMaterialParams(ele,scatratype,dt);
 
           const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
@@ -1771,6 +1778,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
   )
 {
+  // cout << "TEST CRISTOBAL SysMat" << endl;
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -1787,7 +1795,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
-  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele,scatratype,dt);
+  if (not mat_gp_ or not tau_gp_) {
+  //  cout << "TEST CRISTOBAL  im here 1" << endl;
+    GetMaterialParams(ele,scatratype,dt);
+  }
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -1923,7 +1934,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele, scatratype,dt);
+
+      if (mat_gp_) { cout << "  if (mat_gp_) iselch " << endl; GetMaterialParams(ele, scatratype,dt); }
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
@@ -2041,7 +2053,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele,scatratype,dt);
+      if (mat_gp_)  {
+      //  cout << "  if (mat_gp_) standard " << endl;
+        GetMaterialParams(ele, scatratype,dt);
+      }
 
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
@@ -3312,6 +3327,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // get reaction coeff. and set temperature rhs for reactive equation system to zero
     double csnp = funct_.Dot(ephinp_[0]);
+    //cout << "Calling reaction coefficients" << endl;
     reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp, dt);
     reacterm_[0] = actmat->ComputeReactionCoeff(csnp, dt);
     reatemprhs_[0] = 0.0;

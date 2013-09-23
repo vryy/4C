@@ -229,6 +229,7 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
 
 double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
 {
+  //cout << "ComputeReactionCoeff" << endl;
   double reacoeff = 0.0;
   reacoeff = myocard_mat_->ComputeReactionCoeff(phi, dt);
   return reacoeff;
@@ -240,9 +241,12 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
  *----------------------------------------------------------------------*/
 double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt)
 {
+  // cout << "ComputeReactionCoeffDeriv Out" << endl;
+
   double ReaCoeffDeriv=0.0;
   if(params_->dt_deriv != 0.0)
   {
+    // cout << "ComputeReactionCoeffDeriv In" << endl;
     double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv), dt);
     double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt);
     ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);

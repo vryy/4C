@@ -170,7 +170,6 @@ double Myocard_Minimal::GetInternalState(const int k) const
     case 0: {val=v_; break;}
     case 1: {val=w_; break;}
     case 2: {val=s_; break;}
-    default: {dserror("There are only 3 internal variables in this material!"); break;}
   }
   return val;
 }

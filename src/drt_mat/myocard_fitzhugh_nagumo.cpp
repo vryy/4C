@@ -74,7 +74,6 @@ double Myocard_Fitzhugh_Nagumo::GetInternalState(const int k) const
   double val=0.0;
   switch(k){
     case 0: {val=r_; break;}
-    default: {dserror("There are only 1 internal variables in this material!"); break;}
   }
   return val;
 }

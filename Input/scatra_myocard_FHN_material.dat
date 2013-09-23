@@ -1,0 +1,103 @@
+==================================================================
+General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+10 line elements for test of Myocard material
+Maintainter: Cristobal Bertoglio
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        10
+NODES                           11
+DIM                             2
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Scalar_Transport
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     0
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+--------------------------------------------------------------------------IO
+OUTPUT_GID                      No
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     No
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
+UPRES                           1
+RESTARTEVRY                     10
+NUMSTEP                         100000
+MAXTIME                         10.0
+TIMESTEP                        0.1
+THETA                           0.5
+VELOCITYFIELD                   zero
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+FSSUGRDIFF                      No
+WRITEFLUX                       No
+MATID                           1
+SKIPINITDER                     yes
+SCATRATYPE                      Cardio_Monodomain
+------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+ITEMAX                          10
+ABSTOLRES                       1e-10
+CONVTOL                         1e-05
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  integration_point               // element_center //
+--------------------------------------------------------------------SOLVER 1
+NAME                            Sca_Tra_Solver
+SOLVER                          UMFPACK//Aztec_MSR              // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_myocard MAIN_DIFFUSIVITY 0.001171 OFF_DIFFUSIVITY 0.001171 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC 0.02 t1 0.0 t2 2.0      //2ms activation
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT 1
+// left end
+E 1 - 1 1 0 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1 DNODE 1
+----------------------------------------------------------------------FUNCT1
+FUNCT1 EXPR 1 0 0 FUNCTION 0.0 // -86.2
+----------------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.61583345749268825e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  1.41843977883288774e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.30073022449625175e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  1.23290097522970465e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 1.20161773408003625e+00  TOLERANCE 1e-4
+-----------------------------------------------------------------NODE COORDS
+NODE  1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
+NODE  2 COORD 1.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE  3 COORD 2.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE  4 COORD 3.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE  5 COORD 4.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE  6 COORD 5.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE  7 COORD 6.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE  8 COORD 7.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE  9 COORD 8.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 10 COORD 9.00000000e-02 0.00000000e+00 0.00000000e+00
+NODE 11 COORD 1.00000000e-01 0.00000000e+00 0.00000000e+00
+----------------------------------------------------------TRANSPORT ELEMENTS
+1 TRANSP LINE2 1 2 MAT 1 FIBER1 1.0 0.0 0.0
+2 TRANSP LINE2 2 3 MAT 1 FIBER1 1.0 0.0 0.0
+3 TRANSP LINE2 3 4 MAT 1 FIBER1 1.0 0.0 0.0
+4 TRANSP LINE2 4 5 MAT 1 FIBER1 1.0 0.0 0.0
+5 TRANSP LINE2 5 6 MAT 1 FIBER1 1.0 0.0 0.0
+6 TRANSP LINE2 6 7 MAT 1 FIBER1 1.0 0.0 0.0
+7 TRANSP LINE2 7 8 MAT 1 FIBER1 1.0 0.0 0.0
+8 TRANSP LINE2 8 9 MAT 1 FIBER1 1.0 0.0 0.0
+9 TRANSP LINE2 9 10 MAT 1 FIBER1 1.0 0.0 0.0
+10 TRANSP LINE2 10 11 MAT 1 FIBER1 1.0 0.0 0.0
+-------------------------------------------------------------------------END
+//                              END
