@@ -966,6 +966,9 @@ protected:
   //! activation_time at times n+1
   Teuchos::RCP<Epetra_Vector> activation_time_np_;
 
+  //! activation threshold for postprocessing
+  double activation_threshold_;
+
   //! maximum expected number of material internal state variables
   int nb_max_mat_int_state_vars_;
 

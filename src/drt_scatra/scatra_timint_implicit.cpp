@@ -273,10 +273,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   {
     // Activation time at time n+1
     activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
+    activation_threshold_ = params->get<double>("ACTTHRES");
     // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
-    nb_max_mat_int_state_vars_ = 3;
-    material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
-    material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+    nb_max_mat_int_state_vars_=params->get<int>("WRITEMAXINTSTATE"); // number of maximal internal state variables to be postprocessed
+    if(nb_max_mat_int_state_vars_)
+    {
+      material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
+      material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+    }
 
   }
 
@@ -1171,14 +1175,14 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     LINALG::Export(*old, *activation_time_np_);
   }
 
-  if (material_internal_state_np_ != Teuchos::null)
+  if (material_internal_state_np_ != Teuchos::null and  nb_max_mat_int_state_vars_)
   {
     oldMulti = material_internal_state_np_;
     material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
     LINALG::Export(*oldMulti, *material_internal_state_np_);
   }
 
-  if (material_internal_state_np_component_ != Teuchos::null)
+  if (material_internal_state_np_component_ != Teuchos::null and nb_max_mat_int_state_vars_)
     {
       old = material_internal_state_np_component_;
       material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
@@ -3165,14 +3169,15 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   // Compute and write activation time (for electrophysiology)
   if (activation_time_np_ != Teuchos::null){
     for(int k=0;k<phinp_->MyLength();k++){
-      if( (*phinp_)[k] >= 0.98 && (*activation_time_np_)[k] <= dta_*0.9)
+      if( (*phinp_)[k] >= activation_threshold_ && (*activation_time_np_)[k] <= dta_*0.9)
         (*activation_time_np_)[k] =  time_;
     }
     output_->WriteVector("activation_time_np", activation_time_np_);
   }
 
   // Recover internal state of the material (for electrophysiology)
-  if (material_internal_state_np_ != Teuchos::null){
+  if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
+  {
     Teuchos::ParameterList params;
     params.set<int>("scatratype", scatratype_);
     params.set<int>("action", SCATRA::get_material_internal_state);
