@@ -1778,7 +1778,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
   )
 {
-  // cout << "TEST CRISTOBAL SysMat" << endl;
+//  std::cout << "TEST CRISTOBAL SysMat" << std::endl;
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -1935,7 +1935,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
 
-      if (mat_gp_) { cout << "  if (mat_gp_) iselch " << endl; GetMaterialParams(ele, scatratype,dt); }
+      if (mat_gp_) GetMaterialParams(ele, scatratype,dt);
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
