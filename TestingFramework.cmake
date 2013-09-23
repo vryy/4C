@@ -1302,10 +1302,10 @@ baci_framework_test(tutorial_fsi 2)
 # cut test 
 cut_test(2)
 
-codetesting( check_unused_input_params )
-codetesting( check_unused_inpar_params )
-codetesting( check_unused_inpar_materials )
-codetesting( check_nightly_testcases )
+# codetesting( check_unused_input_params )
+# codetesting( check_unused_inpar_params )
+# codetesting( check_unused_inpar_materials )
+# codetesting( check_nightly_testcases )
 
 if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")

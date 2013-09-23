@@ -33,13 +33,12 @@ if __name__=='__main__':
       sys.exit(1)    
     
     # collect source files of src
-    files_to_search = []
     name = sys.argv[2]
     
     if name[-1] == '/':
-	global_src_path = sys.argv[2] + 'src/'
+	global_src_path = name + 'src/'
     else:	
-	global_src_path = sys.argv[2] + '/' + 'src/'
+	global_src_path = name + '/' + 'src/'
     
     # search for *.H and *.cpp files in the given src path	
     baci_heads = subprocess.check_output('find ' + global_src_path + ' -name *.H', shell=True)
@@ -61,6 +60,8 @@ if __name__=='__main__':
     
     # Read in of default header
     section_names, sections = read_ccarat('xxx_default.head')
+    
+    subprocess.call('svn praise ' + global_src_path +  'drt_inpar/drt_validparameters.cpp > praise.txt' , shell=True )    
     
     print 'Start to search params'
     
@@ -110,7 +111,12 @@ if __name__=='__main__':
     else:
 	for failsection, failvalues in fail.iteritems():
 	    print 'Section', failsection, 'has the following input parameter, which only exists in drt_validparameters.cpp'
-	    print "\n".join(failvalues)
-	    print "\n"
-	    
+	    for ff in failvalues:
+		owner = subprocess.check_output('grep ' + ff + ' ./praise.txt', shell=True)
+		owner = owner.strip(' )(\n,')
+		owner = owner[owner.index(' '):]
+		owner = (owner).strip()
+		owner = (owner.split(' '))
+		print ff, " ".join( ['' for i in range(55-len(ff))]),'last changed from: ', owner[0]		
+    
 	sys.exit(1)    

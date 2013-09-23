@@ -12,7 +12,7 @@ from sets        import Set
 
 import sys, subprocess, re
 
-# Dictionary of unused parameters we want to keep in the code
+# Dictionary of unused inpar materials we want to keep in the code
 UNUSED_MAT_TO_KEEP = []
 
 
@@ -22,9 +22,7 @@ if __name__=='__main__':
       print "usage: %s source-path" % sys.argv[0]
       sys.exit(1)    
     
-    # collect source files of src
-    files_to_search = []
-    
+    # global src path
     name = sys.argv[1]
     if name[-1] == '/':
 	global_src_path = name + 'src/'
@@ -49,42 +47,48 @@ if __name__=='__main__':
 		
     inpar_materials = subprocess.check_output('grep INPAR ' + global_src_path +  'drt_inpar/drt_validmaterials.cpp', shell=True )
     inpar_materials = inpar_materials.split()
-    
-    # Grep for value in code. If the value doesn't appear than the input parameter might be unused
-    # Check first part of files and if this failes check second part
-    # If both fail than the argument doesn't exists  
+        
+    subprocess.call('svn praise ' + global_src_path +  'drt_inpar/drt_validmaterials.cpp > praise.txt' , shell=True )	    
 	    
     for inpa_mat in progress('Searching inpar materials', inpar_materials):
 	
-	# special treatment of lines which include tuple<int> before the parameter
-	# i.e. tuple<int>(INPAR::CAVIATION::TwoWayFull
-	# method is to substitute the brackets ( with an ,
-	inpa_mat = re.sub(r'\(',',', inpa_mat)
-	inpa_mat = (inpa_mat.split(','))
+	# Exclude commentary parts
+	if not inpa_mat.strip(' ')[:2] == '//':
+    
+	    # Get rid of leading and following brackets and of semicolons
+	    inpa_mat = re.sub(r'\(',',', inpa_mat)
+	    inpa_mat = re.sub(r'\)',',', inpa_mat)
+	    inpa_mat = re.sub(r'\;',',', inpa_mat)
+	    
+	    # Search for keyword INPAR, if not found continue with loop
+	    result_search = re.search('INPAR', inpa_mat)
+	    if result_search:
+		inpa_mat = inpa_mat[result_search.start():]
+		inpa_mat = inpa_mat.split(',')[0]
+	    else:
+	        continue
 	
-	# search for desired inpar value
-	for im in inpa_mat:
-	    im = im.strip(' \n,;()')
-	    if im[:5]== 'INPAR':
-		inpa_mat = im
-		break	
 	# else path necessary, since the INPAR parameter values could be in comments
 	else:
-	    continue		
-			  
+	    continue
+  
+	# Exclued parameter values which are in the UNUSED_PARAMS_TO_KEEP list
 	try:
 	    if inpa_mat in UNUSED_MAT_TO_KEEP:
 		continue
 	except KeyError:
 	    pass
-	  
-	try:
+	
+	# Grep for value in code. If the value doesn't appear than the input parameter might be unused
+	# Check first part of files and if this failes check second part
+	# If both fail than the argument doesn't exists  
+	try:    
 	    test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(baci_heads), shell=True)
 	except subprocess.CalledProcessError: 
 	    try:
 		test = subprocess.check_output( '/bin/grep ' +  inpa_mat + " " + " ".join(baci_cpp), shell=True)
 	    except subprocess.CalledProcessError: 
-		fail.update([inpa_mat])	    
+		fail.update([inpa_mat])
 
     if not fail:
 	print "Found no unused input material in code"		
@@ -92,6 +96,12 @@ if __name__=='__main__':
 	# Retype to list in order to be able to sort
 	final_fail_printout = [f for f in fail]
 	final_fail_printout.sort()
-	print "The following input material only exist in drt_validmaterials.cpp"
-	print "\n".join(final_fail_printout)
+	for ff in final_fail_printout:
+	    print "The following inpar parameter only exists in drt_validmaterials.cpp"
+	    owner = subprocess.check_output('grep ' + ff + ' ./praise.txt', shell=True)
+	    owner = owner.strip(' )(\n,')
+	    owner = owner[owner.index(' '):]
+	    owner = (owner).strip()
+	    owner = (owner.split(' '))
+	    print ff, " ".join( ['' for i in range(55-len(ff))]),'last changed from: ', owner[0]
 	sys.exit(1)	

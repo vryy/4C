@@ -9,7 +9,6 @@ from read_ccarat_NIGHTLYTESTCASES import read_ccarat, write_ccarat
 from elements    		  import bcdictionary, surfaces
 from progress    		  import progress
 from sets        		  import Set
-from copy 			  import copy
 
 import sys, subprocess, re
 
@@ -85,26 +84,30 @@ if __name__=='__main__':
     inpar_parameters = inpar_parameters.split()
     
     subprocess.call('svn praise ' + global_src_path +  'drt_inpar/drt_validparameters.cpp > praise.txt' , shell=True )
-    
-    for inpa_para in progress('Searching inpar params', inpar_parameters):
 
-	# special treatment of lines which include tuple<int> before the parameter
-	# i.e. tuple<int>(INPAR::CAVIATION::TwoWayFull
-	# method is to substitute the brackets ( with an ,
-	inpa_para = re.sub(r'\(',',', inpa_para)
-	inpa_para = inpa_para.split(',')
-	
-	# search for desired inpar value
-	for ip in inpa_para:
-	    ip = ip.strip(' \n,;()')
-	    if ip[:5]== 'INPAR':
-		inpa_para = ip
-		break
+    for inpa_para in progress('Searching inpar params', inpar_parameters):
+    
+	# Exclude commentary parts
+	if not inpa_para.strip(' ')[:2] == '//':
+    
+	    # Get rid of leading and following brackets and of semicolons
+	    inpa_para = re.sub(r'\(',',', inpa_para)
+	    inpa_para = re.sub(r'\)',',', inpa_para)
+	    inpa_para = re.sub(r'\;',',', inpa_para)
+	    
+	    # Search for keyword INPAR, if not found continue with loop
+	    result_search = re.search('INPAR', inpa_para)
+	    if result_search:
+		inpa_para = inpa_para[result_search.start():]
+		inpa_para = inpa_para.split(',')[0]
+	    else:
+	        continue
 	
 	# else path necessary, since the INPAR parameter values could be in comments
 	else:
 	    continue
   
+	# Exclued parameter values which are in the UNUSED_PARAMS_TO_KEEP list
 	try:
 	    if inpa_para in UNUSED_PARAMS_TO_KEEP:
 		continue
@@ -114,7 +117,7 @@ if __name__=='__main__':
 	# Grep for value in code. If the value doesn't appear than the input parameter might be unused
 	# Check first part of files and if this failes check second part
 	# If both fail than the argument doesn't exists  
-	try:
+	try:    
 	    test = subprocess.check_output( '/bin/grep ' +  inpa_para + " " + " ".join(baci_heads), shell=True)
 	except subprocess.CalledProcessError: 
 	    try:
