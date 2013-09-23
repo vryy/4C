@@ -45,7 +45,8 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
   KbbInvHill_(Teuchos::null),
   KbdHill_(Teuchos::null),
   fbetaHill_(Teuchos::null),
-  mDLp_last_iter_(Teuchos::null)
+  mDLp_last_iter_(Teuchos::null),
+  deltaAlphaI_(Teuchos::null)
 {
   numgpt_ = intpoints_.NumPoints();
   kintype_ = geo_nonlinear;
@@ -206,6 +207,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
       KbdHill_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<8,numdofperelement_> >);
       fbetaHill_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >);
       mDLp_last_iter_                  = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >);
+      deltaAlphaI_                     = Teuchos::rcp( new std::vector<double>);
       LINALG::Matrix<8,8> tmp88(true);
       LINALG::Matrix<8,numdofperelement_> tmp8x(true);
       LINALG::Matrix<8,1> tmp81(true);
@@ -213,6 +215,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
       KbdHill_                         ->resize(numgpt_,tmp8x);
       fbetaHill_                       ->resize(numgpt_,tmp81);
       mDLp_last_iter_                  ->resize(numgpt_,tmp81);
+      deltaAlphaI_                     ->resize(numgpt_,0.);
       DalphaK_last_iter_ = Teuchos::null;
       KbbInv_            = Teuchos::null;
       Kbd_               = Teuchos::null;
@@ -232,6 +235,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
       fbeta_                       ->resize(numgpt_,tmp51);
       DalphaK_last_iter_           ->resize(numgpt_,tmp51);
       mDLp_last_iter_        = Teuchos::null;
+      deltaAlphaI_           = Teuchos::null;
       KbbInvHill_            = Teuchos::null;
       KbdHill_               = Teuchos::null;
       fbetaHill_             = Teuchos::null;
@@ -301,6 +305,7 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     KbdHill_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<8,numdofperelement_> >);
     fbetaHill_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >);
     mDLp_last_iter_                  = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >);
+    deltaAlphaI_                     = Teuchos::rcp( new std::vector<double>);
     LINALG::Matrix<8,8> tmp88(true);
     LINALG::Matrix<8,numdofperelement_> tmp8x(true);
     LINALG::Matrix<8,1> tmp81(true);
@@ -308,6 +313,7 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     KbdHill_                         ->resize(numgpt_,tmp8x);
     fbetaHill_                       ->resize(numgpt_,tmp81);
     mDLp_last_iter_                  ->resize(numgpt_,tmp81);
+    deltaAlphaI_                     ->resize(numgpt_,0.);
 
     // don't need
     DalphaK_last_iter_ = Teuchos::null;
@@ -331,6 +337,7 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
 
     // don't need
     mDLp_last_iter_        = Teuchos::null;
+    deltaAlphaI_           = Teuchos::null;
     KbbInvHill_            = Teuchos::null;
     KbdHill_               = Teuchos::null;
     fbetaHill_             = Teuchos::null;

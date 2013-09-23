@@ -463,6 +463,9 @@ namespace ELEMENTS
     //
     Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > mDLp_last_iter_;
 
+    // accumulated plastic strain increment for each Gauss point
+    Teuchos::RCP<std::vector<double> > deltaAlphaI_;
+
   };  // class So3_Plast
 
 }  // namespace ELEMENTS

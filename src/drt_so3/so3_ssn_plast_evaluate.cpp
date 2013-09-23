@@ -1567,8 +1567,19 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     double AnormEtatrial=0.; // sqrt( eta_tr : A : eta_tr )
     LINALG::Matrix<1,1> tmp11;
     LINALG::Matrix<5,1> tmp51;
-    tmp51.Multiply(PlAniso,eta_trial_vec);
-    tmp11.MultiplyTN(eta_trial_vec,tmp51);
+    LINALG::Matrix<5,1> Aetatr;
+    Aetatr.Multiply(PlAniso,eta_trial_vec);
+    tmp1(0,0) = 2./3.*Aetatr(0)-1./3.*Aetatr(1);
+    tmp1(1,1) =-1./3.*Aetatr(0)+2./3.*Aetatr(1);
+    tmp1(2,2) = -tmp1(0,0)-tmp1(1,1);
+    tmp1(0,1) = Aetatr(2)/2.;
+    tmp1(1,0) = Aetatr(2)/2.;
+    tmp1(1,2) = Aetatr(3)/2.;
+    tmp1(2,1) = Aetatr(3)/2.;
+    tmp1(0,2) = Aetatr(4)/2.;
+    tmp1(2,0) = Aetatr(4)/2.;
+    double EucNormAetaTrial = tmp1.Norm2();
+    tmp11.MultiplyTN(eta_trial_vec,Aetatr);
     AnormEtatrial=sqrt(tmp11(0,0));
     double AnormEta=0.;      // sqrt( eta : A : eta )
     tmp51.Multiply(PlAniso,eta_vec);
@@ -1580,14 +1591,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
       for (int j=0; j<3; j++)
         Dissipation -=eta(i,j)*DeltaAlphaK(i,j);
 
-      // current yield stress equivalent (yield stress scaled by sqrt(2/3))
-      double Ypl=0.;
-      if (Dissipation>0.)
-        Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)))
-                           + isohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK) +inityield);
-      else
-        Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0))))
-                                   + isohard*(last_alpha_isotropic_->at(gp)(0,0)) +inityield);
+
+    if (Dissipation>0.)
+      deltaAlphaI_->at(gp) = sqrt(2./3.)*absDeltaAlphaK/EucNormAetaTrial*AnormEtatrial;
+
+    double Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+  deltaAlphaI_->at(gp))))
+        + isohard*(last_alpha_isotropic_->at(gp)(0,0)+  deltaAlphaI_->at(gp)) +inityield);
 
 
       // check activity state
@@ -1794,7 +1803,37 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
                 detadd(i,j) = dSigmadd(i+1,j);
             }
 
-            LINALG::Matrix<8,1> dAnormEtaTrialDbeta(true);
+          LINALG::Matrix<8,1> dAnormEtaTrialDbeta(true);
+           dAnormEtaTrialDbeta.MultiplyTN(1./AnormEtatrial,detatrialdbeta,Aetatr);
+
+          LINALG::Matrix<8,1> dYpl_dbeta(true);
+          if (Dissipation>0.)
+          {
+            for (int i=0; i<8; i++)
+            {
+              LINALG::Matrix<5,8> dAetaTrialDbeta;
+              dAetaTrialDbeta.Multiply(PlAniso,detatrialdbeta);
+              dYpl_dbeta(i) += 4./3.*Aetatr(0)*dAetaTrialDbeta(0,i);
+              dYpl_dbeta(i) -= 2./3.*Aetatr(1)*dAetaTrialDbeta(0,i);
+              dYpl_dbeta(i) -= 2./3.*Aetatr(0)*dAetaTrialDbeta(1,i);
+              dYpl_dbeta(i) += 4./3.*Aetatr(1)*dAetaTrialDbeta(1,i);
+              dYpl_dbeta(i) += Aetatr(2)*dAetaTrialDbeta(2,i);
+              dYpl_dbeta(i) += Aetatr(3)*dAetaTrialDbeta(3,i);
+              dYpl_dbeta(i) += Aetatr(4)*dAetaTrialDbeta(4,i);
+
+            }
+            dYpl_dbeta.Scale(-sqrt(2./3.)*absDeltaAlphaK*AnormEtatrial/EucNormAetaTrial/EucNormAetaTrial*.5/EucNormAetaTrial);
+
+            for (int i=0; i<5; i++)
+              dYpl_dbeta(i) += sqrt(2./3.) /EucNormAetaTrial*AnormEtatrial /absDeltaAlphaK * 2.*DeltaAlphaK_vec(i);
+            dYpl_dbeta(0) += sqrt(2./3.) /EucNormAetaTrial*AnormEtatrial /absDeltaAlphaK * DeltaAlphaK_vec(1);
+            dYpl_dbeta(1) += sqrt(2./3.) /EucNormAetaTrial*AnormEtatrial /absDeltaAlphaK * DeltaAlphaK_vec(0);
+
+            dYpl_dbeta.Update(sqrt(2./3.)*absDeltaAlphaK/EucNormAetaTrial,dAnormEtaTrialDbeta,1.);
+
+            dYpl_dbeta.Scale(sqrt(2./3.)*(isohard+(infyield-inityield)*expisohard*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ deltaAlphaI_->at(gp)))));
+          }
+
           if (activity_state_->at(gp)==true)
           {
             // communicate number of active plastic gauss points back to time integration
@@ -1810,19 +1849,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
             // linearization of the complementarity function
             // **************************************************************
 
-            LINALG::Matrix<8,1> dYpl_dbeta(true);
-            for (int j=0;j<2; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * (2.*mDLp_last_iter_->at(gp)(j) + mDLp_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
-            }
-            for (int j=2; j<5; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * 2.*mDLp_last_iter_->at(gp)(j)/absDeltaAlphaK;
-            }
-            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
-
             LINALG::Matrix<5,1> Aetatr;
             Aetatr.Multiply(PlAniso,eta_trial_vec);
+            LINALG::Matrix<8,1> dAnormEtaTrialDbeta(true);
             dAnormEtaTrialDbeta.MultiplyTN(1./AnormEtatrial,detatrialdbeta,Aetatr);
 
             DcplSymDbeta.Update(1.-Ypl/AnormEtatrial,detadbeta,1.);
@@ -1839,29 +1868,42 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
             // stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
             // linearization of the complementarity function
             // **************************************************************
-
             LINALG::Matrix<numdofperelement_,1> dAnormEtatrialDd(true);
             dAnormEtatrialDd.MultiplyTN(1./AnormEtatrial,detadd,Aetatr,1.);
+
+            LINALG::Matrix<numdofperelement_,1> dYpl_dd(true);
+
+            if (Dissipation>0.)
+            {
+              LINALG::Matrix<5,numdofperelement_> dAetaTrialDd;
+              dAetaTrialDd.Multiply(PlAniso,detadd);
+              for (int i=0; i<numdofperelement_; i++)
+              {
+                dYpl_dd(i) += 4./3.*Aetatr(0)*dAetaTrialDd(0,i);
+                dYpl_dd(i) -= 2./3.*Aetatr(1)*dAetaTrialDd(0,i);
+                dYpl_dd(i) -= 2./3.*Aetatr(0)*dAetaTrialDd(1,i);
+                dYpl_dd(i) += 4./3.*Aetatr(1)*dAetaTrialDd(1,i);
+                dYpl_dd(i) += Aetatr(2)*dAetaTrialDd(2,i);
+                dYpl_dd(i) += Aetatr(3)*dAetaTrialDd(3,i);
+                dYpl_dd(i) += Aetatr(4)*dAetaTrialDd(4,i);
+
+              }
+              dYpl_dd.Scale(-sqrt(2./3.)*absDeltaAlphaK*AnormEtatrial/EucNormAetaTrial/EucNormAetaTrial*.5/EucNormAetaTrial);
+
+              dYpl_dd.Update(sqrt(2./3.)*absDeltaAlphaK/EucNormAetaTrial,dAnormEtatrialDd,1.);
+
+              dYpl_dd.Scale(-sqrt(2./3.)*(isohard+(infyield-inityield)*expisohard*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ deltaAlphaI_->at(gp)))));
+            }
 
             DcplSymDd.Update(1.-Ypl/AnormEtatrial,detadd,1.);
             DcplSymDd.MultiplyNT((1.-stab_s)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtatrialDd,1.);
             DcplSymDd.MultiplyNT(stab_s*apl/AnormEtatrial,eta_vec,dAnormEtatrialDd,1.);
+            DcplSymDd.MultiplyNT(1./AnormEtatrial,eta_trial_vec,dYpl_dd,1.);
 
           } // acrtive Gauss points
 
           else // inactive Gauss points
           {
-            LINALG::Matrix<8,1> dYpl_dbeta(true);
-            for (int j=0;j<2; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * (2.*mDLp_last_iter_->at(gp)(j) + mDLp_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
-            }
-            for (int j=2; j<5; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * 2.*mDLp_last_iter_->at(gp)(j)/absDeltaAlphaK;
-            }
-            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
-
             LINALG::Matrix<5,1> AiDalphak;
             AiDalphak.Multiply(InvPlAniso,DeltaAlphaK_vec);
 
@@ -3314,8 +3356,22 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
      double AnormEtatrial=0.; // sqrt( eta_tr : A : eta_tr )
      LINALG::Matrix<1,1> tmp11;
      LINALG::Matrix<5,1> tmp51;
-     tmp51.Multiply(PlAniso,eta_trial_vec);
-     tmp11.MultiplyTN(eta_trial_vec,tmp51);
+     LINALG::Matrix<5,1> Aetatr;
+     Aetatr.Multiply(PlAniso,eta_trial_vec);
+
+     tmp1.Clear();
+     tmp1(0,0) = 2./3.*Aetatr(0)-1./3.*Aetatr(1);
+     tmp1(1,1) =-1./3.*Aetatr(0)+2./3.*Aetatr(1);
+     tmp1(2,2) =-1./3.*Aetatr(0)-1./3.*Aetatr(1);
+     tmp1(0,1) = Aetatr(2)/2.;
+     tmp1(1,0) = Aetatr(2)/2.;
+     tmp1(1,2) = Aetatr(3)/2.;
+     tmp1(2,1) = Aetatr(3)/2.;
+     tmp1(0,2) = Aetatr(4)/2.;
+     tmp1(2,0) = Aetatr(4)/2.;
+     double EucNormAetaTrial = tmp1.Norm2();
+
+     tmp11.MultiplyTN(eta_trial_vec,Aetatr);
      AnormEtatrial=sqrt(tmp11(0,0));
      double AnormEta=0.;      // sqrt( eta : A : eta )
      tmp51.Multiply(PlAniso,eta_vec);
@@ -3327,14 +3383,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
        for (int j=0; j<3; j++)
          Dissipation -=eta(i,j)*DeltaAlphaK(i,j);
 
-     // current yield stress equivalent (yield stress scaled by sqrt(2/3))
-     double Ypl=0.;
      if (Dissipation>0.)
-       Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)))
-                          + isohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK) +inityield);
-     else
-       Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0))))
-                                  + isohard*(last_alpha_isotropic_->at(gp)(0,0)) +inityield);
+       deltaAlphaI_->at(gp) = sqrt(2./3.)*absDeltaAlphaK/EucNormAetaTrial*AnormEtatrial;
+
+     double Ypl = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+  deltaAlphaI_->at(gp))))
+         + isohard*(last_alpha_isotropic_->at(gp)(0,0)+  deltaAlphaI_->at(gp)) +inityield);
 
      // check activity state
      // inactive
@@ -3506,38 +3559,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
           // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
           // **************************************************************
 
-          // derivative of Mandel stress w.r.t. beta
-          //                      d bar Sigma_ab
-          // dSigmaDbeta_abj = --------------------
-          //                         d beta_j
-          LINALG::Matrix<6,8> dsigmadbeta;
-          dsigmadbeta.Multiply(dmdfpinv,DFpiDbeta);
-
-          //                    d eta_ab
-          // detadbeta_abj = ---------------
-          //                    d beta_j
-          // in Voigt notation
-          // as eta is traceless, there are only 5 components
-          LINALG::Matrix<5,8> detadbeta;
-          LINALG::Matrix<5,8> detatrialdbeta;
-          for (int i=0; i<5; i++)
-            for (int j=0; j<8; j++)
-            {
-              // diagonal entries
-              if (i==0 || i==1)
-              {
-                detadbeta(i,j) = dsigmadbeta(i,j)
-                                         - 1./3.* ( dsigmadbeta(0,j) + dsigmadbeta(1,j) + dsigmadbeta(2,j)) + (2./3.*kinhard*(i==j));
-              }
-              else
-              {
-                detadbeta(i,j) = dsigmadbeta(i+1,j) + (2./3.*kinhard*(i==j));
-              }
-              detatrialdbeta(i,j) = detadbeta(i,j);
-              if (j<5)
-                detatrialdbeta(i,j) -= cpl*InvPlAniso(i,j);
-            }
-
           // calculate derivative detadd
            //             d eta_ab
            // detadd = --------------
@@ -3562,12 +3583,76 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
                  detadd(i,j) = dSigmadd(i+1,j);
              }
 
-           LINALG::Matrix<8,1> dAnormEtaTrialDbeta(true);
+            // derivative of Mandel stress w.r.t. beta
+            //                      d bar Sigma_ab
+            // dSigmaDbeta_abj = --------------------
+            //                         d beta_j
+            LINALG::Matrix<6,8> dsigmadbeta;
+            dsigmadbeta.Multiply(dmdfpinv,DFpiDbeta);
+
+            //                    d eta_ab
+            // detadbeta_abj = ---------------
+            //                    d beta_j
+            // in Voigt notation
+            // as eta is traceless, there are only 5 components
+            LINALG::Matrix<5,8> detadbeta;
+            LINALG::Matrix<5,8> detatrialdbeta;
+            for (int i=0; i<5; i++)
+              for (int j=0; j<8; j++)
+              {
+                // diagonal entries
+                if (i==0 || i==1)
+                {
+                  detadbeta(i,j) = dsigmadbeta(i,j)
+                                           - 1./3.* ( dsigmadbeta(0,j) + dsigmadbeta(1,j) + dsigmadbeta(2,j)) + (2./3.*kinhard*(i==j));
+                }
+                else
+                {
+                  detadbeta(i,j) = dsigmadbeta(i+1,j) + (2./3.*kinhard*(i==j));
+                }
+                detatrialdbeta(i,j) = detadbeta(i,j);
+                if (j<5)
+                  detatrialdbeta(i,j) -= cpl*InvPlAniso(i,j);
+              }
+
+            LINALG::Matrix<8,1> dAnormEtaTrialDbeta(true);
+             dAnormEtaTrialDbeta.MultiplyTN(1./AnormEtatrial,detatrialdbeta,Aetatr);
+
+            LINALG::Matrix<8,1> dYpl_dbeta(true);
+            if (Dissipation>0.)
+            {
+              for (int i=0; i<8; i++)
+              {
+                LINALG::Matrix<5,8> dAetaTrialDbeta;
+                dAetaTrialDbeta.Multiply(PlAniso,detatrialdbeta);
+                dYpl_dbeta(i) += 4./3.*Aetatr(0)*dAetaTrialDbeta(0,i);
+                dYpl_dbeta(i) -= 2./3.*Aetatr(1)*dAetaTrialDbeta(0,i);
+                dYpl_dbeta(i) -= 2./3.*Aetatr(0)*dAetaTrialDbeta(1,i);
+                dYpl_dbeta(i) += 4./3.*Aetatr(1)*dAetaTrialDbeta(1,i);
+                dYpl_dbeta(i) += Aetatr(2)*dAetaTrialDbeta(2,i);
+                dYpl_dbeta(i) += Aetatr(3)*dAetaTrialDbeta(3,i);
+                dYpl_dbeta(i) += Aetatr(4)*dAetaTrialDbeta(4,i);
+
+              }
+              dYpl_dbeta.Scale(-sqrt(2./3.)*absDeltaAlphaK*AnormEtatrial/EucNormAetaTrial/EucNormAetaTrial*.5/EucNormAetaTrial);
+
+              for (int i=0; i<5; i++)
+                dYpl_dbeta(i) += sqrt(2./3.) /EucNormAetaTrial*AnormEtatrial /absDeltaAlphaK * 2.*DeltaAlphaK_vec(i);
+              dYpl_dbeta(0) += sqrt(2./3.) /EucNormAetaTrial*AnormEtatrial /absDeltaAlphaK * DeltaAlphaK_vec(1);
+              dYpl_dbeta(1) += sqrt(2./3.) /EucNormAetaTrial*AnormEtatrial /absDeltaAlphaK * DeltaAlphaK_vec(0);
+
+              dYpl_dbeta.Update(sqrt(2./3.)*absDeltaAlphaK/EucNormAetaTrial,dAnormEtaTrialDbeta,1.);
+
+              dYpl_dbeta.Scale(sqrt(2./3.)*(isohard+(infyield-inityield)*expisohard*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ deltaAlphaI_->at(gp)))));
+            }
+
           if (activity_state_->at(gp)==true)
           {
             // communicate number of active plastic gauss points back to time integration
             // don't sum up for ghost elements
             if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
+
+
 
             // Symmetric complementarity function
             CplSym.Update(1.,eta_vec,0.);
@@ -3577,21 +3662,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
             // stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
             // linearization of the complementarity function
             // **************************************************************
-
-            LINALG::Matrix<8,1> dYpl_dbeta(true);
-            for (int j=0;j<2; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * (2.*mDLp_last_iter_->at(gp)(j) + mDLp_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
-            }
-            for (int j=2; j<5; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * 2.*mDLp_last_iter_->at(gp)(j)/absDeltaAlphaK;
-            }
-            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
-
-            LINALG::Matrix<5,1> Aetatr;
-            Aetatr.Multiply(PlAniso,eta_trial_vec);
-            dAnormEtaTrialDbeta.MultiplyTN(1./AnormEtatrial,detatrialdbeta,Aetatr);
 
             DcplSymDbeta.Update(1.-Ypl/AnormEtatrial,detadbeta,1.);
             DcplSymDbeta.Multiply(cpl*Ypl/AnormEtatrial,InvPlAniso,DalphaKdbeta,1.);
@@ -3610,9 +3680,34 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
             LINALG::Matrix<numdofperelement_,1> dAnormEtatrialDd(true);
             dAnormEtatrialDd.MultiplyTN(1./AnormEtatrial,detadd,Aetatr,1.);
 
+            LINALG::Matrix<numdofperelement_,1> dYpl_dd(true);
+
+            if (Dissipation>0.)
+            {
+              LINALG::Matrix<5,numdofperelement_> dAetaTrialDd;
+              dAetaTrialDd.Multiply(PlAniso,detadd);
+              for (int i=0; i<numdofperelement_; i++)
+              {
+                dYpl_dd(i) += 4./3.*Aetatr(0)*dAetaTrialDd(0,i);
+                dYpl_dd(i) -= 2./3.*Aetatr(1)*dAetaTrialDd(0,i);
+                dYpl_dd(i) -= 2./3.*Aetatr(0)*dAetaTrialDd(1,i);
+                dYpl_dd(i) += 4./3.*Aetatr(1)*dAetaTrialDd(1,i);
+                dYpl_dd(i) += Aetatr(2)*dAetaTrialDd(2,i);
+                dYpl_dd(i) += Aetatr(3)*dAetaTrialDd(3,i);
+                dYpl_dd(i) += Aetatr(4)*dAetaTrialDd(4,i);
+
+              }
+              dYpl_dd.Scale(-sqrt(2./3.)*absDeltaAlphaK*AnormEtatrial/EucNormAetaTrial/EucNormAetaTrial*.5/EucNormAetaTrial);
+
+              dYpl_dd.Update(sqrt(2./3.)*absDeltaAlphaK/EucNormAetaTrial,dAnormEtatrialDd,1.);
+
+              dYpl_dd.Scale(-sqrt(2./3.)*(isohard+(infyield-inityield)*expisohard*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ deltaAlphaI_->at(gp)))));
+            }
+
             DcplSymDd.Update(1.-Ypl/AnormEtatrial,detadd,1.);
             DcplSymDd.MultiplyNT((1.-stab_s)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtatrialDd,1.);
             DcplSymDd.MultiplyNT(stab_s*apl/AnormEtatrial,eta_vec,dAnormEtatrialDd,1.);
+            DcplSymDd.MultiplyNT(1./AnormEtatrial,eta_trial_vec,dYpl_dd,1.);
             // **************************************************************
             // end of stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
             // **************************************************************
@@ -3622,17 +3717,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
           // inactive Gauss point with plastic history within this load/time step
           else
           {
-            LINALG::Matrix<8,1> dYpl_dbeta(true);
-            for (int j=0;j<2; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * (2.*mDLp_last_iter_->at(gp)(j) + mDLp_last_iter_->at(gp)((j+1)%2))/absDeltaAlphaK;
-            }
-            for (int j=2; j<5; j++)
-            {
-              if (Dissipation>0.) dYpl_dbeta(j) += 2./3. * 2.*mDLp_last_iter_->at(gp)(j)/absDeltaAlphaK;
-            }
-            dYpl_dbeta.Scale(isohard + expisohard*(infyield-inityield)*exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK)));
-
             LINALG::Matrix<5,1> AiDalphak;
             AiDalphak.Multiply(InvPlAniso,DeltaAlphaK_vec);
 
@@ -3822,6 +3906,26 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 //            tmp11.MultiplyTN(eta_trial_vec_new,tmp51);
 //            AnormEtatrial_new=sqrt(tmp11(0,0));
 //
+//
+//            LINALG::Matrix<5,1> Aetatrial_new;
+//            Aetatrial_new.Multiply(PlAniso,eta_trial_vec_new);
+//            tmp1.Clear();
+//            tmp1(0,0) = 2./3.*Aetatrial_new(0) -1./3.*Aetatrial_new(1);
+//            tmp1(1,1) =-1./3.*Aetatrial_new(0) +2./3.*Aetatrial_new(1);
+//            tmp1(2,2) =-1./3.*Aetatrial_new(0) -1./3.*Aetatrial_new(1);
+//            tmp1(0,1) = Aetatrial_new(2)/2.;
+//            tmp1(1,0) = Aetatrial_new(2)/2.;
+//            tmp1(1,2) = Aetatrial_new(3)/2.;
+//            tmp1(2,1) = Aetatrial_new(3)/2.;
+//            tmp1(0,2) = Aetatrial_new(4)/2.;
+//            tmp1(2,0) = Aetatrial_new(4)/2.;
+//            double EucNormAetaTrial_new = tmp1.Norm2();
+//
+//            double deltaAlphaI_new=0.;
+//            if (Dissipation>0.)
+//              deltaAlphaI_new = sqrt(2./3.)*absDeltaAlphaK_new/EucNormAetaTrial_new*AnormEtatrial_new;
+//
+//
 //            double Ypl_new=0.;
 //            if (Dissipation>0.)
 //              Ypl_new = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ sqrt(2./3.)*absDeltaAlphaK_new)))
@@ -3865,18 +3969,18 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 //
 //            std::cout << std::scientific;
 //            std::cout.precision(8);
-//            for (int a=0; a<6; a++)
+////            for (int a=0; a<5; a++)
 ////              for (int A=0; A<3; A++)
 //              {
-//                double ref=dSdbeta(a,i);
-//                double FD=(pk2_stress_new(a)-pk2_stress_bar(a))/epsilon;
+//                double ref=dalphaidbeta(i);
+//                double FD=(deltaAlphaI_new-deltaAlphaI)/epsilon;
 //                double relE=abs((FD-ref)/ref);
-//                std::cout << "ai:"<<a<<i<< "\tFD: " << FD << "\tref: " << ref
+//                std::cout << "ai:"<<i<< "\tFD: " << FD << "\tref: " << ref
 //                    << "\trelE: " << relE << std::endl;
 //              }
 //              mDLp_last_iter_->at(gp)(i) -= epsilon;
 //          }
-//          std::cout << std::endl;
+////          std::cout << std::endl;
 //          //dserror("stop");
 
           // build matrices kbb and kbd
@@ -4579,12 +4683,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformationHill_nln
       Wp(0,2) -= mDLp_last_iter_->at(gp)(7);
       Wp(2,0) += mDLp_last_iter_->at(gp)(7);
       mDLp.Update(-1.,Wp,1.);
-      double absDalphak=DeltaAlphaK.Norm2();
 
       //cout << "at gp: " << gp << ": delta alpha isotropic: " << absDalphak << endl;
       // evolution equation for isotropic hardening variable
       // alpha^i,n+1 = alpha^i,n + || delta alpha^k ||
-      last_alpha_isotropic_->at(gp)(0) = last_alpha_isotropic_->at(gp)(0) + sqrt(2./3.)*absDalphak;
+      last_alpha_isotropic_->at(gp)(0) = last_alpha_isotropic_->at(gp)(0) + deltaAlphaI_->at(gp);
 
       // evolution equation for kinematic hardening variable
       // alpha^k,n+1 = alpha^k,n + delta alpha^k
@@ -4604,6 +4707,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformationHill_nln
     KbbInvHill_->at(gp).Clear();
     KbdHill_->at(gp).Clear();
     fbetaHill_->at(gp).Clear();
+    deltaAlphaI_->at(gp)=0.;
   }
 
   return;
