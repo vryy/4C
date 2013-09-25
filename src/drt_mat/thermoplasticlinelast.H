@@ -90,7 +90,7 @@ namespace MAT
       const double isohard_;
       //! kinematic hardening modulus \f$ H_k \f$
       const double kinhard_;
-      // tolerance for local Newton iteration
+      //! tolerance for local Newton iteration
       const double abstol_;
 
       //@}

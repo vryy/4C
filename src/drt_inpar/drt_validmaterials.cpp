@@ -524,6 +524,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"HARDEXPO","hardening exponent");
     AddNamedReal(m,"YIELDSOFT","yield stress softening");
     AddNamedReal(m,"HARDSOFT","hardening softening");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
   }

@@ -842,7 +842,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
   LINALG::Matrix<nsd_,nen_> N_XYZ;
-  // build deformation gradient wrt to material configuration
+  // build deformation gradient w.r.t. to material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(true);
   // shape functions and their first derivatives
   LINALG::Matrix<nen_,1> shapefunct;
@@ -1084,8 +1084,15 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
     }  // m_thermostvenant && (young_temp == true)
     // get thermal material tangent
     else
-      Ctemp(&ctemp,params);
-
+    {
+      // geometrically linear, i.e. reference == current state, i.e. F == I
+      // set to initial state (defgrd == identity)
+      LINALG::Matrix<nsd_,nsd_> defgrd(true);
+      for (int i=0; i<3; ++i)
+        defgrd(i,i) = 1.0;
+        
+      Ctemp(&ctemp,&defgrd,params);
+    }
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ * intpoints_.Weight(gp);
@@ -1168,7 +1175,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
   LINALG::Matrix<nsd_,nen_> N_XYZ;
-  // build deformation gradient wrt to material configuration
+  // build deformation gradient w.r.t. to material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
   // shape functions and their first derivatives
   LINALG::Matrix<nen_,1> shapefunct;
@@ -1293,7 +1300,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
       // Neo-Hookean type: Cmat_T = m . Delta T . (-1) . ( Cinv boeppel Cinv )_{abcd}
       // St.Venant Kirchhoff: Cmat_T == 0
       // with ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
-      LINALG::Matrix<numstr_,numdofperelement_> cb;
+      LINALG::Matrix<numstr_,numdofperelement_> cb;  // cb(6x24) // cmattemp (6x6)
       cb.Multiply(cmattemp,bop);
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
@@ -1405,7 +1412,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
   LINALG::Matrix<nsd_,nen_> N_XYZ(false);
-  // build deformation gradient wrt to material configuration
+  // build deformation gradient w.r.t. to material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
 
   /* =========================================================================*/
@@ -1484,9 +1491,10 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
       thrstvk->SetupCthermo(ctemp,params);
       Bcouplstress_T.MultiplyTN(bop,couplstress_T);  // (24x6)(6x1)
     }  // m_thermostvenant  &&  (young_temp == true)
+    
     // get thermal material tangent
     else
-      Ctemp(&ctemp,params);
+      Ctemp(&ctemp,&defgrd,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1570,7 +1578,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     LINALG::Matrix<nsd_,nen_> N_XYZ;
-    // build deformation gradient wrt to material configuration
+    // build deformation gradient w.r.t. to material configuration
     LINALG::Matrix<nsd_,nsd_> defgrd(false);
     // shape functions and their first derivatives
     LINALG::Matrix<nen_,1> shapefunct;
@@ -1628,7 +1636,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       cauchygreen.MultiplyTN(defgrd,defgrd);
 
       // -------------------------------------------- F_bar modifications
-      // F_bar deformation gradient = (detF_0 / detF)^1/3 . F
+      // F_bar deformation gradient: F_bar := (detF_0 / detF)^1/3 . F
       LINALG::Matrix<nsd_,nsd_> defgrd_bar(defgrd);
       double f_bar_factor = pow(detF_0/detF,1.0/3.0);
       defgrd_bar.Scale(f_bar_factor);
@@ -1870,10 +1878,10 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     LINALG::Matrix<nsd_,nen_> N_XYZ(false);
-    // build deformation gradient wrt to material configuration
+    // build deformation gradient w.r.t. to material configuration
     LINALG::Matrix<nsd_,nsd_> defgrd(false);
 
-    // ---------------------- deformation gradient at centroid of element
+    // ---------------------------- deformation gradient at centroid of element
     double detF_0 = -1.0;
     LINALG::Matrix<nsd_,nen_> N_XYZ_0(false);
     //element coordinate derivatives at centroid
@@ -1927,7 +1935,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
       // get the thermal material tangent
       LINALG::Matrix<numstr_,1> ctemp(true);
-      Ctemp(&ctemp,params);
+      Ctemp(&ctemp,&defgrd,params);
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
       double detJ_w = detJ * intpoints_.Weight(gp);
@@ -1959,13 +1967,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
-  LINALG::Matrix<numstr_,1>* couplstress,
-  LINALG::Matrix<numstr_,1>* ctemp,
+  LINALG::Matrix<numstr_,1>* couplstress,  // temperature-dependent stress part
+  LINALG::Matrix<numstr_,1>* ctemp,  // temperature-dependent material tangent
   LINALG::Matrix<1,1>* Ntemp,  // temperature of element
-  LINALG::Matrix<numstr_,numstr_>* cmat,
-  LINALG::Matrix<nsd_,nsd_>* defgrd,
-  LINALG::Matrix<numstr_,1>* glstrain,
-  Teuchos::ParameterList& params
+  LINALG::Matrix<numstr_,numstr_>* cmat,  // (mechanical) material tangent
+  LINALG::Matrix<nsd_,nsd_>* defgrd,  // deformation gradient
+  LINALG::Matrix<numstr_,1>* glstrain,  // Green-Lagrange strain tensor
+  Teuchos::ParameterList& params  // parameter
   )
 {
 #ifdef DEBUG
@@ -1991,7 +1999,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   case INPAR::MAT::m_thermopllinelast:
   {
     Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast
-      = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticLinElast>(Material(),true);
+      = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(Material(),true);
     thrpllinelast->Evaluate(*Ntemp,*ctemp,*couplstress);
     return;
     break;
@@ -2003,7 +2011,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
     return;
     break;
   }
-  case INPAR::MAT::m_thermoplhyperelast: /*-- thermo-plastic hyperelastic material */
+  // thermo-hyperelasto-plastic material
+  case INPAR::MAT::m_thermoplhyperelast:
   {
     Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
       = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
@@ -2027,6 +2036,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   LINALG::Matrix<numstr_,1>* ctemp,
+  LINALG::Matrix<nsd_,nsd_>* defgrd,
   Teuchos::ParameterList& params
   )
 {
@@ -2036,7 +2046,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   case INPAR::MAT::m_thermostvenant:
   {
     Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
-      = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
+      = Teuchos::rcp_dynamic_cast<MAT::ThermoStVenantKirchhoff>(Material(),true);
     return thrstvk->SetupCthermo(*ctemp,params);
     break;
   }
@@ -2044,7 +2054,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   case INPAR::MAT::m_thermopllinelast:
   {
     Teuchos::RCP<MAT::ThermoPlasticLinElast> thrpllinelast
-      = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticLinElast>(Material());
+      = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticLinElast>(Material(),true);
     return thrpllinelast->SetupCthermo(*ctemp);
     break;
   }
@@ -2056,6 +2066,16 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
     return;
     break;
   }
+  // thermo-hyperelasto-plastic material
+  case INPAR::MAT::m_thermoplhyperelast:
+  {
+    Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
+      = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
+    thrplastichyperelast->SetupCthermo(*ctemp,*defgrd,params);
+    return;
+    break;
+  }
+  
   default:
     dserror("Cannot ask material for the temperature-dependent material tangent");
     break;

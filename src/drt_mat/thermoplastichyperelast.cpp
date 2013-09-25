@@ -16,7 +16,7 @@
        example input line:
        MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.8e-6
        CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715
-       HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9
+       HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06
 
 <pre>
 Maintainer: Caroline Danowski
@@ -52,7 +52,8 @@ MAT::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
   sathardening_(matdata->GetDouble("SATHARDENING")),
   hardexpo_(matdata->GetDouble("HARDEXPO")),
   yieldsoft_(matdata->GetDouble("YIELDSOFT")),
-  hardsoft_(matdata->GetDouble("HARDSOFT"))
+  hardsoft_(matdata->GetDouble("HARDSOFT")),
+  abstol_(matdata->GetDouble("TOL"))
 {
 }
 
@@ -72,7 +73,7 @@ MAT::ThermoPlasticHyperElastType MAT::ThermoPlasticHyperElastType::instance_;
  | is called in Material::Factory from ReadMaterials()       dano 03/13 |
  *----------------------------------------------------------------------*/
 DRT::ParObject* MAT::ThermoPlasticHyperElastType::Create(
-  const std::vector<char>& data 
+  const std::vector<char>& data
   )
 {
   MAT::ThermoPlasticHyperElast* thrplhyper = new MAT::ThermoPlasticHyperElast();
@@ -85,7 +86,7 @@ DRT::ParObject* MAT::ThermoPlasticHyperElastType::Create(
  | constructor (public)                                      dano 03/13 |
  *----------------------------------------------------------------------*/
 MAT::ThermoPlasticHyperElast::ThermoPlasticHyperElast()
-  : params_(NULL)
+: params_(NULL)
 {
 }
 
@@ -96,7 +97,8 @@ MAT::ThermoPlasticHyperElast::ThermoPlasticHyperElast()
 MAT::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
   MAT::PAR::ThermoPlasticHyperElast* params
   )
-  : params_(params)
+: params_(params),
+  plastic_step_(false)
 {
 }
 
@@ -145,6 +147,9 @@ void MAT::ThermoPlasticHyperElast::Pack(DRT::PackBuffer& data) const
     AddtoPack(data, Cmat_kdT_->at(var));
     AddtoPack(data, mechdiss_kTT_curr_->at(var));
   }
+
+  AddtoPack(data,plastic_step_);
+
   return;
 }  // Pack()
 
@@ -200,41 +205,50 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
 
   // neu
   mechdisscurr_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_kTd_ = Teuchos::rcp(new std::vector<LINALG::Matrix<6, 1> >);
-  Cmat_kdT_ = Teuchos::rcp(new std::vector<LINALG::Matrix<6, 1> >);
+  mechdiss_kTd_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  Cmat_kdT_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   mechdiss_kTT_curr_ = Teuchos::rcp(new std::vector<double>);
   
   for (int var=0; var<histsize; ++var)
   {
-    LINALG::Matrix<3,3> tmp(true);
-    ExtractfromPack(position,data,tmp);
-    defgrdlast_->push_back(tmp);
+    // initialise
+    LINALG::Matrix<3,3> tmp_matrix(true);
+    LINALG::Matrix<NUM_STRESS_3D,1> tmp_vect(true);
+    double tmp_scalar = 0.0;
+
+    ExtractfromPack(position,data,tmp_matrix);
+    defgrdlast_->push_back(tmp_matrix);
     
-    ExtractfromPack(position,data,tmp);
-    bebarlast_->push_back(tmp);
+    ExtractfromPack(position,data,tmp_matrix);
+    bebarlast_->push_back(tmp_matrix);
     
-    double tmp1 = 0.0;
-    ExtractfromPack(position,data,tmp1);
-    accplstrainlast_->push_back(tmp1);
+    ExtractfromPack(position,data,tmp_scalar);
+    accplstrainlast_->push_back(tmp_scalar);
 
-    ExtractfromPack(position, data, tmp1);
-    mechdisscurr_->push_back(tmp1);
+    ExtractfromPack(position, data, tmp_scalar);
+    mechdisscurr_->push_back(tmp_scalar);
 
-    LINALG::Matrix<6, 1> tmp2(true);
-    ExtractfromPack(position, data, tmp2);
-    mechdiss_kTd_->push_back(tmp2);
+    ExtractfromPack(position, data, tmp_vect);
+    mechdiss_kTd_->push_back(tmp_vect);
 
-    ExtractfromPack(position, data, tmp2);
-    Cmat_kdT_->push_back(tmp2);
+    ExtractfromPack(position, data, tmp_vect);
+    Cmat_kdT_->push_back(tmp_vect);
 
-    ExtractfromPack(position, data, tmp1);
-    mechdiss_kTT_curr_->push_back(tmp1);
+    ExtractfromPack(position, data, tmp_scalar);
+    mechdiss_kTT_curr_->push_back(tmp_scalar);
 
     // current vectors have to be initialized
-    defgrdcurr_->push_back(tmp);
-    bebarcurr_->push_back(tmp);
-    accplstraincurr_->push_back(tmp1);
+    defgrdcurr_->push_back(tmp_matrix);
+    bebarcurr_->push_back(tmp_matrix);
+    accplstraincurr_->push_back(tmp_scalar);
   }
+
+  plastic_step_ = false;
+  int plastic_step;
+  ExtractfromPack(position,data,plastic_step);
+
+  // if it was already plastic before
+  if (plastic_step != 0) plastic_step_ = true;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
@@ -287,7 +301,7 @@ void MAT::ThermoPlasticHyperElast::Setup(
   LINALG::Matrix<3,3> emptymat(true);
   for (int i=0; i<3; i++)
     emptymat(i,i) = 1.0;
-  LINALG::Matrix<6,1> emptymat2(true);
+  LINALG::Matrix<6,1> emptyvect(true);
 
   for (int i=0; i<numgp; i++)
   {
@@ -303,8 +317,8 @@ void MAT::ThermoPlasticHyperElast::Setup(
     // neu: Überprüfe die Größen der Matrizen
     mechdisscurr_->at(i) = 0.0;
 
-    mechdiss_kTd_->at(i) = emptymat2;
-    Cmat_kdT_->at(i) = emptymat2;
+    mechdiss_kTd_->at(i) = emptyvect;
+    Cmat_kdT_->at(i) = emptyvect;
     mechdiss_kTT_curr_->at(i) = 0.0;
   }
 
@@ -362,6 +376,8 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   // extract the gauss points from the parameter list
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
+  const int eleID = params.get<int>("eleID",-1);
+  if (eleID == -1) dserror("no element provided in material");
 
   // elastic material data
   // -------------------------------------------------- get material parameters
@@ -396,6 +412,10 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   defgrdcurr_->at(gp) = *defgrd;
   // calculate the Jacobi-determinant J = det(F_{n+1})
   double J = defgrd->Determinant();
+  // determinant has to be >= 0
+  // in case of too large dt, determinant is often negative --> reduce dt
+  if (J < 0)
+    dserror("Jacobi determinant is not allowed to be less than zero!");
 
   // ------------------------------------------------ multiplicative split of F
   // split deformation gradient in elastic and plastic part
@@ -412,7 +432,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   // fbar_{n+1} = Fbar_{n+1} . Fbar_n^{-1} = (J_{n+1}/J_n)^{-1/3} . f_{n+1}
   // with J_{n+1}/J_n = det(fbar_)
   LINALG::Matrix<3,3> defgrddeltabar(defgrddelta);
-  defgrddeltabar.Scale(pow(defgrddelta.Determinant(),-1.0/3.0));
+  defgrddeltabar.Scale(pow(defgrddelta.Determinant(), -1.0/3.0));
 
   // --------------------------------------------------------------------------
   // elastic predictor (trial values)
@@ -429,10 +449,11 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   tmp.Multiply(defgrddeltabar, bebarlast_->at(gp));
   bebar_trial.MultiplyNT(tmp, defgrddeltabar);
   // trace of strain vector
-  double tracebebar = ( bebar_trial(0,0) + bebar_trial(1,1) + bebar_trial(2,2) );
+  double tracebebar = bebar_trial(0,0) + bebar_trial(1,1) + bebar_trial(2,2);
 
+  // ------------------------------------------------------------- trial stress
   // trial Kirchhoff stress deviator (9.3.9)
-  // s_{n+1)^{trial} = G . dev(bbar_{n+1}^{e,trial}
+  // s_{n+1)^{trial} = G . dev_bebar_{n+1}^{e,trial}
   // dev_bebar_trial = bebar_trial - volstrain^e
   //                 = bebar_trial - 1/3 . tr( bebar_trial ) . id2
   LINALG::Matrix<3,3> devtau_trial(bebar_trial);
@@ -448,13 +469,57 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       q_trial += devtau_trial(i,j) * devtau_trial(i,j);
   q_trial = sqrt(q_trial);
 
+  // extract scalar-valued element temperature
+  double scalartemp = 0.0;
+  if (params.getEntryPtr("scalartemp") != NULL)
+  {
+    // TSI, i.e. temperature is available --> use this temperature
+    scalartemp = params.get<double>("scalartemp",-1.0);
+    if (scalartemp < 0.0) dserror("No temperature available in ThrHypPlast material");
+  }
+  // in case of purely structural analysis, i.e. isothermal: T = T_0, DeltaT = 0
+  else
+    scalartemp = inittemp;
+
+  // ------------------------------ temperature-dependent yield stress function
+
+  // temperature-dependent isotropic hardening modulus
+  double Hiso_temp = 0.0;
+  Hiso_temp = Hiso * (1.0 - omega_h * (scalartemp - inittemp) );
+
+  // temperature-dependent yield stress
+  double sigma_y0_temp = 0.0;
+  sigma_y0_temp = sigma_y0 * (1.0 - omega_0 * (scalartemp - inittemp) );
+
+  // temperature-dependent saturation hardening
+  double sigma_y0infty_temp = 0.0;
+  sigma_y0infty_temp = sigma_y0infty * (1.0 - omega_h * (scalartemp - inittemp) );
+
+    // get old accumulated or equivalent plastic strain accplstrainlast
+  double alpha = 0.0;
+  alpha = accplstrainlast_->at(gp);
+  if (accplstrainlast_->at(gp) < 0.0)
+    dserror("accumulated plastic strain has to be equal to or greater than 0!");
+
+  // thermodynamic force / hardening flux describing nonlinear isotropic hardening
+  // sigma_iso = rho (d psi^_p) / (d accplstrain)
+  // rho psi^_p = 1/2 . h(T) . alpha^2 
+  //              + [sigma_y0infty(T) - sigma_y(T)] . (alpha - (1- exp(-delta . alpha))
+  // --> sigma_iso = h(T) . alpha + [sigma_y0infty(T) - sigma_y0(T)] . (1 - exp(-delta . alpha)
+  double sigma_iso =  Hiso_temp * alpha + (sigma_y0infty_temp - sigma_y0_temp)
+                                          * (1.0 - exp(-hardexpo *  alpha) );
+  
+  // complete yield stress
+  // sigma_y = sigma_y0_temp + sigma_iso
+  double sigma_y = sigma_y0_temp + sigma_iso;
+  
   // calculate yield function at trial state
   // Phi = || s_{n+1}^{trial} || - sqrt(2/3) . sigma_y
   double Phi_trial = 0.0;
-  Phi_trial = q_trial - sqrt(2.0/3.0) * (sigma_y0 + Hiso * (accplstrainlast_->at(gp)));
+  Phi_trial = q_trial - sqrt(2.0/3.0) * sigma_y;
 
   // stress variables tau = J_{n+1} . p_{n+1} . I + s_{n+1}
-  LINALG::Matrix<3,3> devtau;
+  LINALG::Matrix<3,3> devtau(false);
 
   // some computations
   // mubar = 1/3 mu tr(bebar_{n+1}^{e,trial})
@@ -474,11 +539,11 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   {
     // trial state vectors = result vectors of time step n+1
 
-    // *_n^{trial} --> *_{n+1}
+    // _n^{trial} --> _{n+1}
     bebarcurr_->at(gp) = bebar_trial;
     accplstraincurr_->at(gp) = accplstrainlast_->at(gp);
     devtau = devtau_trial;
-
+    Dgamma = 0.0;
   }  // end if (Phi_trial <= 0.0), i.e. elastic step
 
   //-------------------------------------------------------------------
@@ -487,17 +552,87 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   //-------------------------------------------------------------------
   else
   {
+    // only first plastic call is output at screen for every processor
+    // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
+    if (plastic_step_ == false)
+    {
+      plastic_eleID_ = eleID;
+
+      if ( (plastic_step_ == false) && (eleID == plastic_eleID_) && (gp == 0) )
+        std::cout << "plasticity starts in element = " << plastic_eleID_ << std::endl;
+
+      plastic_step_ = true;
+    }
+
     // ------------ local Newton Raphson to determine plastic multiplier Dgamma
     
-    // actual return map
-    Dgamma = (Phi_trial / (2.0 * mubar)) / ( 1 + (IsoHard() / (3.0 * mubar)) );
+    // initialise
+    const int itermax = 50;  // max. number of iterations
+    int itnum = 0;  // iteration counter
+    
+    // Res:= residual of Newton iteration == yield function Phi
+    double Res = 0.0;
+    // calculate derivative of residual or tangent
+    // ResTan = Phi' = d(Phi)/d(Dgamma)
+    double ResTan = 0.0;
 
-    // update stress
-    // s_{n+1} = s_{n+1}^{trial} - 2 . G . Delta gamma . n
+    // start iteration with index m for local Newton
+    while (true)
+    {
+      itnum++;
+      // check for convergence
+      if (itnum > itermax)
+      {
+        dserror(
+          "local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",
+          itnum,
+          itermax,
+          Res
+          );
+      }  // itnum > itermax
+      // else: continue loop, i.e. m <= m_max
+     
+      // Res := Phi = qbar^{trial}_{n+1} - sqrt{2/3} (sigma_y0 + sigma_iso(alpha^{trial} )
+      //      = qbar^{trial}_{n+1} - sqrt{2/3} (sigma_y0 + sigma_iso(alpha_n )
+      Res = q_trial - 2.0 * mubar * Dgamma
+            - sqrt(2.0 / 3.0) * (sigma_y0_temp + Hiso_temp * alpha
+                                + (sigma_y0infty_temp - sigma_y0_temp)
+                                  * (1.0 - exp(-hardexpo * alpha)) );
+
+      // check for convergence
+      double norm = abs(Res);
+
+      // check: absolute value of Res has to be smaller than given tolerance
+      if (norm < (params_->abstol_))
+      {
+        break;
+      }
+
+      // tangent
+      // ResTan =
+      ResTan = -2.0 * mubar - (2.0 / 3.0) * Hiso_temp
+               - 2.0 / 3.0 * hardexpo * (sigma_y0infty_temp - sigma_y0_temp)
+                                         * exp(-hardexpo * alpha);
+
+      // incremental plastic multiplier Dgamma
+      // Dgamma^{m} = Dgamma^{m-1} - Phi / Phi'
+      Dgamma += (-Res) / ResTan;
+      // update accumulated plastic strain
+      // alpha_{n+1} = alpha_n + sqrt{2/3} . Dgamma 
+      alpha = accplstrainlast_->at(gp) + (sqrt(2.0 / 3.0) * Dgamma);
+      
+      // q_trial and bebar (mubar) maintain constant during iteration
+
+    }  // end of local Newton Raphson iteration
+
+    // ------------------------------------------------ update Kirchhoff stress
+
+    // update deviatoric Kirchhoff stress
+    // s_{n+1} = s_{n+1}^{trial} - 2 . mubar . Delta gamma . n
     devtau.Update(1.0, devtau_trial, 0.0);
     devtau.Update(-2.0 * mubar * Dgamma, n, 1.0);
 
-    // --------------------------------------------------- update history
+    // --------------------------------------------------------- update history
 
     // update accumulated plastic strain
     accplstraincurr_->at(gp) = accplstrainlast_->at(gp) + (sqrt(2.0/3.0) * Dgamma);
@@ -506,14 +641,19 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     // bbar_{n+1}^e = bbar_{n+1}^{e,trial} - 2/3 . Dgamma . tr(bbar_{n+1}^{e,trial}) . n
     bebarcurr_->at(gp) = (bebar_trial);
     bebarcurr_->at(gp).Update((-2.0/3.0 * Dgamma * tracebebar), n, 1.0);
+
+//TODO 2013-09-25 new update according to Simo et. Miehe
+//    // update isochoric part of elastic LCG
+//    // bbar_{n+1}^e = s_{n+1} / mu + 1/3 . Ibar^e . id2
+//    CalculateCurrentBebar(devtau, G, id2, gp);
   }
 
   // addition of mean stress to gain Kirchhoff stress tau (9.2.6)
-  // tau = J^e . p . I + devtau
-  // with p := U'(J^e) = kappa/2 ( (J^e)^2 -1 ) / J^e
-  // --> tau = kappa/2 ( (J^e)^2 -1 ) . I + devtau
+  // tau = J . p . I + devtau
+  // with p := U'(J) = kappa * (J^2 -1 ) / J
+  // --> tau = kappa ( (J^2 -1 ) . I + devtau
   // different to Miehe (2.37): p = kappa (J^2 - 1) / J
-  double p = kappa/2.0 * (J * J - 1.0) / J;
+  double p = kappa * (J * J - 1.0) / J;
   LINALG::Matrix<3,3> tau(devtau);
   for (int i=0; i<3; i++)
     tau(i,i) += J * p;
@@ -527,8 +667,6 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   PK2.MultiplyNT(tmp,invdefgrdcurr);
 
   // output PK2-stress in Voigt-notation
-  // stresses are correct compared with other constitutive laws in domain of
-  // linear elasticity
   (*stress)(0) = PK2(0,0);
   (*stress)(1) = PK2(1,1);
   (*stress)(2) = PK2(2,2);
@@ -539,10 +677,56 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   //---------------------------------------------------------------------------
   // ----------------------- consistent elastoplastic tangent modulus (Box 9.2)
   //---------------------------------------------------------------------------
+  
+  SetupCmatElastoPlastic(
+    *cmat,  // (o) elasto-plastic tangent modulus
+    Dgamma,  // plastic multiplier
+    Hiso_temp,  // H(T)
+    sigma_y0infty_temp,  // trial value of saturation yield stress
+    sigma_y0_temp,  // trial value of initial yield stress
+    mubar,
+    q_trial,
+    *defgrd,  // F
+    invdefgrdcurr,  // F^{-1}_{n+1}
+    n,  // flow vector
+    kappa,
+    gp  // current Gauss point
+    );
+  
+  return;
 
-  // C_ep = C_{n+1}^{trial} - beta1 Cbar_{n+1}^{trial} - 2 mubar beta3 n \otimes n
-  //        - 2 mubar beta4 sym[ n \otimes dev[n^2] ]^s
-  // with C_{n+1}^{trial} =  TODO
+}  // Evaluate()
+
+
+/*----------------------------------------------------------------------*
+ | Calculation of consistent elastoplastic tangent modulus   dano 09/13 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
+  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,  // elasto-plastic tangent modulus (out)
+  double Dgamma,
+  double Hiso_temp,
+  double sigma_y0infty_temp,
+  double sigma_y0_temp,
+  double mubar,
+  double q_trial,
+  const LINALG::Matrix<3,3>& defgrd,
+  LINALG::Matrix<3,3> invdefgrdcurr,
+  LINALG::Matrix<3,3> n,
+  double kappa,
+  int gp
+  )
+{
+  // Cbar_ep = (1 - beta1) . Cbar_{n+1}^{trial} - 2 mubar beta3 n \otimes n
+  //           - 2 mubar beta4 sym[ n \otimes dev[n^2] ]^s
+  // with Cbar_{n+1}^{trial} = 2 mubar I_d
+  //              - 2/3 (I \otimes s_{n+1}^{trial} + s_{n+1}^{trial} \otimes I)
+
+  // initialise some variables
+  LINALG::Matrix<3,3> tmp(false);
+  // hardening exponent
+  double hardexpo = params_->hardexpo_;
+  // determinant of the deformation gradient
+  double J = defgrd.Determinant();
 
   // dev (n^2)
   LINALG::Matrix<3,3> devnsquare(true);
@@ -553,10 +737,19 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
 
   // scaling factors for spatial tangent
   double beta0, beta1, beta2, beta3, beta4;
-  beta0 = 1 + Hiso / 3.0 / mubar;
+  // beta0 = 1 + 1/(3 . mubar) . (d sigma_iso)/(d alpha_{n+1})
+  // (d sigma_iso)/(d alpha_{n+1}) = Hiso_temp + (sigma_y0infty - sigma_y0)
+  //                                             * exp(-delta alpha_{n+1})
+  beta0 = 1 + ( Hiso_temp + hardexpo * (sigma_y0infty_temp - sigma_y0_temp)
+                  * exp(-hardexpo * accplstraincurr_->at(gp)) )
+              / (3.0 * mubar);
+  // beta1 = 2 . mubar . Dgamma / || s_n+1^{trial} ||
   beta1 = 2.0 * mubar * Dgamma / q_trial;
-  beta2 = (1.0 - 1.0 / beta0) * 2.0 / 3.0 * q_trial / mubar * Dgamma;
+  // beta2 = (1 - 1/beta0) * 2/3 . Dgamma/mubar . || s_n+1^{trial} ||
+  beta2 = (1.0 - 1.0 / beta0) * 2.0 / 3.0 * Dgamma / mubar * q_trial;
+
   beta3 = 1.0 / beta0 - beta1 + beta2;
+  // beta4 = (1/beta0 - beta1) . || s_n+1^{trial} || / mubar
   beta4 = (1.0 / beta0 - beta1) * q_trial / mubar;
 
   // calculate material deformation gradient right away
@@ -565,19 +758,19 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   LINALG::Matrix<6,6> Cbar_trialMaterial(true);
 
   // calculate the right Cauchy Green (RCG) deformation tensor and its inverse
-  LINALG::Matrix<3,3> RCG;
-  RCG.MultiplyTN(*defgrd,*defgrd);
+  LINALG::Matrix<3,3> RCG(false);
+  RCG.MultiplyTN(defgrd,defgrd);
   LINALG::Matrix<3,3> invRCG;
   invRCG.Invert(RCG);
 
   // pull-back of the spatial flow vector n to N
   // N = F^{-1} n F^{-T}
-  LINALG::Matrix<3,3> N;
+  LINALG::Matrix<3,3> N(false);
   tmp.Multiply(invdefgrdcurr, n);
   N.MultiplyNT(tmp, invdefgrdcurr);
 
   // pull-back of dev(n^2)
-  LINALG::Matrix<3,3> devNsquare;
+  LINALG::Matrix<3,3> devNsquare(false);
   tmp.Multiply(invdefgrdcurr, devnsquare);
   devNsquare.MultiplyNT(tmp, invdefgrdcurr);
 
@@ -589,12 +782,12 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   ElastSymTensorMultiply(Cbar_trialMaterial, -2.0/3.0 * mubar, invRCG, invRCG, 1.0);
   ElastSymTensorMultiplyAddSym(Cbar_trialMaterial, -2.0/3.0 * q_trial, N, invRCG, 1.0);
 
-  // C_trial
+  // C_e
   // spatial c_trial = (J . U')' . J . I \otimes I - 2 J U' I4
   // with U'(J^e) = kappa/2 ( (J^e)^2 -1 ) / J^e
   // C_trial = kappa/2 (J^e)^2 C^{-1} \otimes C^{-1} - kappa ( (J^e)^2 -1 ) C^{-1} \otimes C^{-1}
-  ElastSymTensorMultiply(Cmat, kappa * J * J, invRCG, invRCG, 1.0);
-  ElastSymTensor_o_Multiply(Cmat,-1.0 * kappa * (J * J - 1.0), invRCG, invRCG, 1.0);
+  ElastSymTensorMultiply(Cmat, 2 * kappa * J * J, invRCG, invRCG, 1.0);
+  ElastSymTensor_o_Multiply(Cmat, -2.0 * kappa * (J * J - 1.0), invRCG, invRCG, 1.0);
   Cmat.Update(1.0, Cbar_trialMaterial, 1.0);
 
   // plastic step update
@@ -607,12 +800,65 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   }
 
   // update material tangent
-  // cmat = C_ep = C_trial + Cbar_trial + C_p
-  *cmat = Cmat;
+  // cmat = C_ep = C_e + Cbar_trial + Cbar_p
+  cmat = Cmat;
 
-  return;
+}  // SetupCmatElastoPlastic()
 
-}  // Evaluate()
+
+/*----------------------------------------------------------------------*
+ | calculate final isochoric elastic LCG bbar^e_{n+1}        dano 09/13 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoPlasticHyperElast::CalculateCurrentBebar(
+  const LINALG::Matrix<3,3>& devtau,  // s_{n+1}
+  double G,  // shear modulus
+  const LINALG::Matrix<3,3>& id2,  // second-order identity
+  int gp  // current Gauss-point
+  )
+{
+  // calculate equivalent von Mises stress || s_{n+1} ||
+  double q = 0.0;
+  for (int i=0; i<3; i++)
+  {
+    for (int j=0; j<3; j++)
+    {
+      q += devtau(i,j) * devtau(i,j);
+    }
+  }
+
+  // ------------------------------------------- calculate isochoric invariants
+  // calculate isochoric second invariant of dev[bebar] J2_bar
+  double J2_bar = 0.0;
+  J2_bar = 1.0/2.0 * q * q / (G * G);
+
+  // calculate isochoric third invariant of dev[bebar] (i.e. determinant) J3_bar
+  double J3_bar = 0.0;
+  J3_bar = 1.0 / (G * G * G) * devtau.Determinant();
+
+  // --------------------------------------------------- calculate coefficients
+  // coefficient q
+  // q = (1 - J3_bar) / 2
+  double q_coeff = 0.0;
+  q_coeff = 1.0/2.0 * (1.0 - J3_bar);
+
+  // coefficient d
+  // d = - J2_bar^3 / 27 + q^2
+  double d_coeff = 0.0;
+  d_coeff = - pow(J2_bar, 3.0) / 27.0 + pow(q_coeff, 2.0);
+
+  // -------------------------------------------------- calculate updated bebar
+
+  // calculate scaling factor for updated bebar
+  // 1/3 tr(bebar) = 1/3 * Ibar_1
+  double const third_Ibar_1 = pow( (q_coeff + sqrt(d_coeff) ), 1.0/3.0)
+                              + pow( (q_coeff - sqrt(d_coeff) ), 1.0/3.0);
+
+  // bebar_{n+1} = s_{n+1}/mu + 1/3 Ibar_1 . id2
+  bebarcurr_->at(gp) = (devtau);
+  bebarcurr_->at(gp).Scale(1/G);
+  bebarcurr_->at(gp).Update( third_Ibar_1, id2, 1.0);
+
+}  // CalculateCurrentBebar()
 
 
 /*----------------------------------------------------------------------*
@@ -723,8 +969,8 @@ double MAT::ThermoPlasticHyperElast::STModulus()
 void MAT::ThermoPlasticHyperElast::VisNames(std::map<std::string, int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
-  names[accumulatedstrain] = 1; // scalar
-  
+  names[accumulatedstrain] = 1;  // scalar
+
   std::string mechdiss = "mechdiss";
   names[mechdiss] = 1;  // scalar
 }  // VisNames()
@@ -739,6 +985,7 @@ bool MAT::ThermoPlasticHyperElast::VisData(
   int numgp
   )
 {
+  // accumulated strain
   if (name == "accumulatedstrain")
   {
     if ((int) data.size() != 1) dserror("size mismatch");
@@ -747,7 +994,7 @@ bool MAT::ThermoPlasticHyperElast::VisData(
       temp += AccumulatedStrain(iter);
     data[0] = temp / numgp;
   }
-  
+
   // mechanical dissipation
   if (name == "mechdiss")
   {
@@ -758,7 +1005,7 @@ bool MAT::ThermoPlasticHyperElast::VisData(
       temp += MechDiss(iter);
     data[0] = temp / numgp;
   }
-  
+
   return true;
 }  // VisData()
 

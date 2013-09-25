@@ -17,7 +17,7 @@
        [mm,ms,kg,K]
        MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.8e-6
        CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715
-       HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9
+       HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06 
 
 <pre>
 Maintainer: Caroline Danowski
@@ -82,6 +82,8 @@ namespace MAT
       const double yieldsoft_;
       //! hardening softening
       const double hardsoft_;
+      //! tolerance for local Newton iteration
+      const double abstol_;
 
       //@}
 
@@ -180,7 +182,7 @@ namespace MAT
     virtual double Density() const { return params_->density_; }
 
     //! shear modulus
-    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->poissonratio_); }
+    double ShearMod() const { return 0.5 * params_->youngs_/(1.0 + params_->poissonratio_); }
 
     //! yield stress
     virtual double Yield() const { return params_->yield_; }
@@ -223,12 +225,11 @@ namespace MAT
     const { return ( mechdisscurr_->at(gp) ); }
 
     //! linearisation of the mechanical dissipation w.r.t. displacements d_{n+1}
-    LINALG::Matrix<6,1> MechDiss_kTd(int gp)
+    LINALG::Matrix<NUM_STRESS_3D,1> MechDiss_kTd(int gp)
     const { return ( mechdiss_kTd_->at(gp) ); }
 
-    // TODO wo ist in cmat die Temperatur enthalten??
     //! linearisation of material tangent w.r.t. temperatures T_{n+1}
-    LINALG::Matrix<6,1> CMat_kdT(int gp)
+    LINALG::Matrix<NUM_STRESS_3D,1> CMat_kdT(int gp)
     const { return ( Cmat_kdT_->at(gp) ); }
 
     // Couple Dissipation K
@@ -238,7 +239,7 @@ namespace MAT
     //! check if history variables are already initialized
     bool Initialized() const
     {
-      return ( isinit_ and (defgrdcurr_!=Teuchos::null) );
+      return ( isinit_ and (defgrdcurr_ != Teuchos::null) );
     }
 
     //! return names of visualization data
@@ -260,32 +261,37 @@ namespace MAT
     //! evaluate material law
     virtual void Evaluate(
       const LINALG::Matrix<3,3>* defgrd,  //!< input deformation gradient for multiplicative sp
-      const LINALG::Matrix<6,1>* glstrain,  //!< input Green-Lagrange strain (redundant with defo
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  //!< input Green-Lagrange strain (redundant with defo
                                             //   but used for neo-hooke evaluation; maybe remove
       Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
-      LINALG::Matrix<6,1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
-      LINALG::Matrix<6,6>* cmat  //!< output (mandatory) material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  //!< output (mandatory) material stiffness matrix
       );
 
-    //! TODO
+    //! evaluate the elasto-plastic tangent
     void SetupCmatElastoPlastic(
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  // elasto-plastic tangent modulus (out)
-      double Dgamma,  // plastic multiplier
-      double Hiso_temp,  // shear modulus
-      double sigma_y0infty_temp,  // elastic trial von Mises effective stress
-      double sigma_y0_temp,
-      double mubar,
-      double hardexpo,
-      double alphanew,
-      double q_trial,
-      const LINALG::Matrix<3,3>& defgrd,
-      LINALG::Matrix<3,3> invdefgrdcurr,
-      LINALG::Matrix<3,3> n,
-      double J,
-      double kappa,
-      LINALG::Matrix<3,3> tmp,
-      int gp
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< elasto-plastic tangent modulus (out)
+      double Dgamma,  //!< plastic multiplier
+      double Hiso_temp,  //!< temperature-dependent linear isotropic hardening modulus
+      double sigma_y0infty_temp,  //!< temperature-dependent saturation hardening stress
+      double sigma_y0_temp,  //!< temperature-dependent flow/yield stress
+      double mubar,  //!< deformation-dependent shear modulus
+      double q_trial,  //!< trial von Mises equivalent stress
+      const LINALG::Matrix<3,3>& defgrd,  //!< F_{n+1}
+      LINALG::Matrix<3,3> invdefgrdcurr,  //!< inverse of F_{n+1}
+      LINALG::Matrix<3,3> n,  //!< spatial flow vector
+      double kappa,  //!< bulk modulus
+      int gp  //!< current Gauss-point
       );
+    
+    //! calculate updated value of bebar_{n+1}
+    void CalculateCurrentBebar(
+      const LINALG::Matrix<3,3>& devtau,  //!< s_{n+1}
+      double G,  //!< shear modulus
+      const LINALG::Matrix<3,3>& id2,  //!< second-order identity
+      int gp  //!< current Gauss-point
+      );
+      
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
@@ -293,16 +299,16 @@ namespace MAT
       const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element
       LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature dependent material tangent
       LINALG::Matrix<NUM_STRESS_3D,1>& stresstemp,  //!< temperature dependent stress term
-      const LINALG::Matrix<3,3>& defgrd,
-      Teuchos::ParameterList& params
+      const LINALG::Matrix<3,3>& defgrd,  //!< F_{n+1}
+      Teuchos::ParameterList& params  //!< parameter list
       );
       
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
     void SetupCthermo(
-      LINALG::Matrix<6,1>& ctemp,  //!< temperature dependent material tangent
-      const LINALG::Matrix<3,3>& defgrd,
-      Teuchos::ParameterList& params
+      LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature dependent material tangent
+      const LINALG::Matrix<3,3>& defgrd,  //!< F_{n+1}
+      Teuchos::ParameterList& params  //!< parameter list
       );
     
 
@@ -347,6 +353,10 @@ namespace MAT
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
+    //! indicator if material has started to be plastic
+    bool plastic_step_;
+    //! element ID, in which first plasticity occurs
+    int plastic_eleID_;
 
   };  // class ThermoPlasticHyperElast
 

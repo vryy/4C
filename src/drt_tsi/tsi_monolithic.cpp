@@ -3010,9 +3010,8 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
 
   // --------------------------------------------- reaction force of whole body
   // due to symmetry only 1/8 is simulated, i.e. only 1/4 of the surface is considered
-  // whole reaction force distributed over 360°, i.e. 2 * PI results in:
-  // R = force_top * 4 / (2 * PI)
-  double top_reaction_force = 4 * top_force_global / (2 * M_PI);
+  // R = force_top * 4
+  double top_reaction_force = 4 * top_force_global;
 
   // --------------------------------------------------------- top displacement
   // top displacement, i.e. displacement at outer edge in axial-direction
