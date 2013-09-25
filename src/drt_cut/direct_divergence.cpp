@@ -381,7 +381,7 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
 
       return;
     }
-    dserror("negative volume predicted by the DirectDivergence integration rule");
+    dserror("negative volume predicted by the DirectDivergence integration rule; volume = %lf",volGlobal);
   }
 
 #ifdef DEBUGCUTLIBRARY //check the volume with the moment fitting and check the values

@@ -233,6 +233,7 @@ public:
     ParticleWall,
     CrackMastersurface,
     CrackSlavesurface,
+    CrackInitPoints,
     BioPointDirichlet,
     BioLineDirichlet,
     BioSurfaceDirichlet,

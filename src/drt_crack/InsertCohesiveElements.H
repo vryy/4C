@@ -47,6 +47,19 @@ public:
    */
   ~InsertCohesiveElements(){};
 
+  //std::map<int,int> CohesiveIds() { return dcohEleIds_; }
+
+  /*struct dcohDetails_
+  {
+    int masNodId;
+    int slaNodId;
+    int dcohId;
+  };
+
+  std::vector<dcohDetails_> getAllDcohesiveDetails(){ return allDcoh_; }
+
+  std::map<int,int> masterSlaveMap() { return MasSlaMap_; }*/
+
 private:
 
   /*!
@@ -91,6 +104,22 @@ private:
 
   //!slave nodes for predefined crack propagation
   std::vector<int>*  slave_;
+
+/*  //! discretization constructed for master crack nodes
+  Teuchos::RCP<DRT::Discretization> masterCrackDis_;
+
+  //! discretization constructed for slave crack nodes
+  Teuchos::RCP<DRT::Discretization> slaveCrackDis_;*/
+
+  //! map<masterNodeId,CohEleId> for further use
+  //std::map<int,int> dcohEleIds_;
+
+
+
+  //std::vector<dcohDetails_> allDcoh_;
+
+  //! map of master and slave nodal ids
+  //std::map<int,int> MasSlaMap_;
 };
 
 } /* namespace CRACK */

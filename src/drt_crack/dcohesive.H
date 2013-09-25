@@ -69,8 +69,6 @@ public:
 
   //! @name Friends
   friend class DcohesiveType;
-  //friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
-
 
   //! @name Constructors and destructors and related methods
 
@@ -275,6 +273,8 @@ public:
 
   virtual void setCohesiveLaw( enum INPAR::CRACK::tractionSeparation tracLaw ){ tracSepLaw_ = tracLaw; }
 
+  bool isFailed() {return failNorm_ or failTang_;}
+
 private:
   void InitializeElement();
 
@@ -365,6 +365,9 @@ private:
 
   //! fracture energy of material in normal and shear
   std::vector<double> fracEnergy_;
+
+  //! critical displacements of the spring -- displacement when traction=cohesive_strength
+  std::vector<double> critDisp_;
 
   enum INPAR::CRACK::tractionSeparation model_;
 

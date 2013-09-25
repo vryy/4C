@@ -77,6 +77,9 @@ namespace ADAPTER
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
 
+		//! rebuild FSI interface from structure side
+    virtual void RebuildInterface();
+
 
   private:
 

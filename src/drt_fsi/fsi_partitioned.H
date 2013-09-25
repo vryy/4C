@@ -171,6 +171,8 @@ private:
   /// setup list with default parameters
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
+  void modifyCutInterfaceXFEM();
+
   /// coupling of structure and fluid at the interface, with mortar.
   Teuchos::RCP<ADAPTER::CouplingMortar>         coupsfm_;
 
@@ -206,6 +208,9 @@ private:
 
 protected:
   int mfresitemax_;
+
+  //! whether crack update is necessary at this time step
+  bool crackUpdate_;
 private:
 
   /// nodes at the fluid-structure interface match

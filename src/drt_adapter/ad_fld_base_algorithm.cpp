@@ -131,7 +131,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     if (probtype == prb_fsi_xfem or
         probtype == prb_fluid_xfem or
-        probtype == prb_combust)
+        probtype == prb_combust or
+        probtype == prb_fsi_crack)
     {
       actdis->FillComplete(false,false,false);
     }
@@ -298,7 +299,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       probtype != prb_combust and
       probtype != prb_fluid_fluid and
       probtype != prb_fluid_fluid_ale and
-      probtype != prb_fluid_fluid_fsi)
+      probtype != prb_fluid_fluid_fsi and
+      probtype != prb_fsi_crack )
   {
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
     {
@@ -384,7 +386,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       or probtype == prb_fsi_xfem
       or probtype == prb_fluid_fluid
       or probtype == prb_fluid_fluid_ale
-      or probtype == prb_fluid_fluid_fsi )
+      or probtype == prb_fluid_fluid_fsi
+      or probtype == prb_fsi_crack )
   {
     // get also scatra stabilization sublist
     const Teuchos::ParameterList& xdyn =
@@ -408,7 +411,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       or probtype == prb_fsi_xfem
       or probtype == prb_fluid_fluid
       or probtype == prb_fluid_fluid_ale
-      or probtype == prb_fluid_fluid_fsi )
+      or probtype == prb_fluid_fluid_fsi
+      or probtype == prb_fsi_crack )
   {
 
     const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
@@ -447,7 +451,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       probtype == prb_biofilm_fsi or
       probtype == prb_thermo_fsi or
       probtype == prb_fluid_fluid_fsi or
-      probtype == prb_fsi_xfem)
+      probtype == prb_fsi_xfem or
+      probtype == prb_fsi_crack )
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
@@ -510,7 +515,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
 
   // sanity checks and default flags
-  if ( probtype == prb_fsi_xfem )
+  if ( probtype == prb_fsi_xfem or probtype == prb_fsi_crack )
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -525,7 +530,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // sanity checks and default flags
-  if ( probtype == prb_fluid_xfem or probtype == prb_fsi_xfem)
+  if ( probtype == prb_fluid_xfem or probtype == prb_fsi_xfem or probtype == prb_fsi_crack )
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
@@ -627,6 +632,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
     case prb_fsi_xfem:
     case prb_fluid_xfem:
+    case prb_fsi_crack:
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));

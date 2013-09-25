@@ -20,6 +20,12 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
+#include "../drt_adapter/ad_str_fsi_crack.H"
+#include "../drt_adapter/ad_fld_fluid_xfem.H"
+#include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+
+#include "../drt_fluid_xfluid/xfluid.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -454,6 +460,14 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
       Remeshing();
     }
 
+    // Add newly created crack surfaces to cut discretization in XFEM
+    // This is for FSI with cracking structure simulations
+    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+    {
+      modifyCutInterfaceXFEM();
+      StructureField()->RebuildInterface();
+    }
+
     // calculate stresses, strains, energies
     PrepareOutput();
 
@@ -468,6 +482,23 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     // write current solution
     Output();
   }
+}
+
+void FSI::Partitioned::modifyCutInterfaceXFEM()
+{
+  const Teuchos::RCP<ADAPTER::FSICrackingStructure>& structfield =
+                                Teuchos::rcp_dynamic_cast<ADAPTER::FSICrackingStructure>(StructureField());
+
+  ADAPTER::FluidXFEM& ad_xfem = dynamic_cast<ADAPTER::FluidXFEM&>(MBFluidField());
+  ADAPTER::Fluid& ad_flui = ad_xfem.FluidField();
+
+  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
+  ad_flui.BoundaryDis( boundary_dis );
+
+  std::map<int, Teuchos::RCP<DRT::Element> > tipele;
+  ad_flui.GetCrackTipElements( tipele );
+
+  structfield->addCrackSurfacesToCutSides( boundary_dis, tipele );
 }
 
 

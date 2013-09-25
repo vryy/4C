@@ -206,6 +206,9 @@ public:
 
   virtual void CutAndSetStateVectors(bool isnewNewtonIncrement){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
+  virtual void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void GetCrackTipElements( std::map<int, Teuchos::RCP<DRT::Element> >& tip ){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+
   /*!
   \brief return type of time integration scheme
 

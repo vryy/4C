@@ -53,6 +53,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_cut/cut_integrationcell.H"
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_meshintersection.H"
+#include "../drt_cut/cut_kernel.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
@@ -88,7 +89,7 @@ Maintainer:  Benedikt Schott
  *----------------------------------------------------------------------*/
 FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol  )
   : xfluid_( xfluid ),
-    wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis_)) )
+    wizard_( Teuchos::rcp( new XFEM::FluidWizard(*xfluid.discret_, *xfluid.boundarydis2_)) )
 {
   // increase the state-class counter
   xfluid_.state_it_++;
@@ -333,6 +334,19 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
   // set general vector values of boundarydis needed by elements
   cutdiscret.ClearState();
+
+  if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  {
+    const Epetra_Map * boundarydofrowmap = xfluid_.boundarydis2_->DofRowMap();
+    xfluid_.ivelnp_ = LINALG::CreateVector(*boundarydofrowmap,true);
+    xfluid_.iveln_  = LINALG::CreateVector(*boundarydofrowmap,true);
+    xfluid_.ivelnm_ = LINALG::CreateVector(*boundarydofrowmap,true);
+
+    xfluid_.idispnp_ = LINALG::CreateVector(*boundarydofrowmap,true);
+    xfluid_.idispn_ = LINALG::CreateVector(*boundarydofrowmap,true);
+
+    xfluid_.itrueresidual_ = LINALG::CreateVector(*boundarydofrowmap,true);
+  }
 
   cutdiscret.SetState("ivelnp",xfluid_.ivelnp_);
   cutdiscret.SetState("idispnp",xfluid_.idispnp_);
@@ -2207,16 +2221,38 @@ FLD::XFluid::XFluid(
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis_, "FSICoupling", "boundary", element_name, conditions_to_copy);
+  boundarydis2_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis_, "FSICoupling", "boundary", element_name, conditions_to_copy);
   if (boundarydis_->NumGlobalNodes() == 0)
   {
     dserror("Empty boundary discretization detected. No FSI coupling will be performed...");
   }
+
+
 
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
   RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 
+  boundarydis2_->ReplaceDofSet(newdofset);//do not call this with true!!
+  boundarydis2_->FillComplete();
+
+  if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  {
+    DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
+
+    const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
+
+    if( tipnodes->size() == 0 )
+      dserror("crack initiation points unspecified\n");
+
+    addCrackTipElements( tipnodes );
+  }
+
+/*  RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
+
+  boundarydis2_->ReplaceDofSet(newdofset1);//do not call this with true!!
+  boundarydis2_->FillComplete();*/
 
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
@@ -2230,8 +2266,20 @@ FLD::XFluid::XFluid(
   boundarydis_->ExportColumnNodes(nodecolmap);
   boundarydis_->ExportColumnElements(elemcolmap);
 
+  const Epetra_Map noderowmap2 = *boundarydis2_->NodeRowMap();
+  const Epetra_Map elemrowmap2 = *boundarydis2_->ElementRowMap();
+
+  // put all boundary nodes and elements onto all processors
+  const Epetra_Map nodecolmap2 = *LINALG::AllreduceEMap(noderowmap2);
+  const Epetra_Map elemcolmap2 = *LINALG::AllreduceEMap(elemrowmap2);
+
+  // redistribute nodes and elements to column (ghost) map
+  boundarydis2_->ExportColumnNodes(nodecolmap2);
+  boundarydis2_->ExportColumnElements(elemcolmap2);
+
 
   boundarydis_->FillComplete();
+  boundarydis2_->FillComplete();
 
 
   // -------------------------------------------------------------------
@@ -2517,7 +2565,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                       la[0].lm_,
                       mat,
                       ele_interf_norms,
-                      *boundarydis_,
+                      *boundarydis2_,
                       bcells,
                       bintpoints,
                       side_coupling,
@@ -2789,20 +2837,21 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
     PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
 
     if( probtype == prb_fluid_xfem or
-        probtype == prb_fsi_xfem      )
+        probtype == prb_fsi_xfem  or
+        probtype == prb_fsi_crack )
     {
       // check some input configurations
       INPAR::XFEM::MovingBoundary xfluid_mov_bound    = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_xf_gen, "XFLUID_BOUNDARY");
 
-      if(probtype == prb_fsi_xfem    and xfluid_mov_bound != INPAR::XFEM::XFSIMovingBoundary)
+      if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack)   and xfluid_mov_bound != INPAR::XFEM::XFSIMovingBoundary)
         dserror("INPUT CHECK: choose xfsi_moving_boundary!!! for prb_fsi_xfem");
-      if(probtype == prb_fluid_xfem  and xfluid_mov_bound == INPAR::XFEM::XFSIMovingBoundary)
+      if( probtype == prb_fluid_xfem  and xfluid_mov_bound == INPAR::XFEM::XFSIMovingBoundary)
         dserror("INPUT CHECK: do not choose xfsi_moving_boundary!!! for prb_fluid_xfem");
-      if(probtype == prb_fsi_xfem    and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
+      if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack)    and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
         dserror("INPUT CHECK: choose interface_disp_by_fsi for prb_fsi_xfem");
-      if(probtype == prb_fluid_xfem  and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
+      if( probtype == prb_fluid_xfem  and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
         dserror("INPUT CHECK: do not choose interface_disp_by_fsi for prb_fluid_xfem");
-      if(probtype == prb_fsi_xfem    and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
+      if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack)    and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
         dserror("INPUT CHECK: do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
     }
 
@@ -2810,7 +2859,7 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
     if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC and coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
       dserror("no non-xfluid sided COUPLING_STRATEGY possible");
 
-    if( probtype == prb_fsi_xfem and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
+    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
     {
       if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
         dserror("INPUT CHECK: please choose XFLUID_SIDED_COUPLING for monolithic XFSI problems!");
@@ -3355,7 +3404,7 @@ void FLD::XFluid::Solve()
       eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
       eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-      state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );
+      state_->Evaluate( eleparams, *discret_, *boundarydis2_, itnum );
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -3373,7 +3422,7 @@ void FLD::XFluid::Solve()
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
       LINALG::Export(*state_->residual_,*output_col_residual);
-      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+      state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
     }
 
     // apply Dirichlet conditions to the residual vector by setting zeros into the residual
@@ -3385,7 +3434,7 @@ void FLD::XFluid::Solve()
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
       LINALG::Export(*state_->residual_,*output_col_residual);
-      state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, output_col_residual );
+      state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_residual", step_, itnum, output_col_residual );
     }
 
     if (updateprojection_)
@@ -3598,7 +3647,7 @@ void FLD::XFluid::Solve()
 
         LINALG::Export(*state_->incvel_,*output_col_incvel);
 
-        state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_icnr", step_, itnum, output_col_incvel );
+        state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_icnr", step_, itnum, output_col_incvel );
       }
 
       // unscale solution
@@ -3958,7 +4007,7 @@ void FLD::XFluid::Evaluate(
     eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
     eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-    state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );
+    state_->Evaluate( eleparams, *discret_, *boundarydis2_, itnum );
 
     // end time measurement for element
     dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -3976,7 +4025,7 @@ void FLD::XFluid::Evaluate(
     Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
     LINALG::Export(*state_->residual_,*output_col_residual);
-    state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+    state_->GmshOutput( *discret_, *boundarydis2_, "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
   }
 
 }
@@ -4147,7 +4196,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     //------------  NEW STATE CLASS including CUT  ------------------
 
     // new cut at current time step at current partitioned XFSI iteration
-    Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+    Epetra_Vector idispcol( *boundarydis2_->DofColMap() );
     idispcol.PutScalar( 0. );
 
     LINALG::Export(*idispnp_,idispcol);
@@ -4288,6 +4337,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     //------------------------------------------------------------------------------------
     //                      SEMILAGRANGE RECONSTRUCTION of std values
     //------------------------------------------------------------------------------------
+    //return;
     if(timint_semi_lagrangean)
     {
 
@@ -4326,7 +4376,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
 
         timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(
             discret_,
-            boundarydis_,
+            boundarydis2_,
             wizard_Intn_,
             state_->Wizard(),
             dofset_Intn_,
@@ -4449,7 +4499,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
         LINALG::Export(*state_->veln_,*output_col_vel);
         LINALG::Export(*state_->accn_,*output_col_acc);
 
-        state_->GmshOutput( *discret_, *boundarydis_, "TIMINT", step_, count , output_col_vel, output_col_acc );
+        state_->GmshOutput( *discret_, *boundarydis2_, "TIMINT", step_, count , output_col_vel, output_col_acc );
       }
 
       if(myrank_==0) std::cout << "finished CutAndSetStateVectors()" << endl;
@@ -4589,7 +4639,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
       Teuchos::ParameterList eleparams;
 
       // evaluate routine
-      state_->GradientPenalty(eleparams, *discret_, *boundarydis_, vec, itnum);
+      state_->GradientPenalty(eleparams, *discret_, *boundarydis2_, vec, itnum);
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -4936,7 +4986,7 @@ void FLD::XFluid::OutputDiscret()
   if(gmsh_discret_out_)
   {
     ExtractNodeVectors(*soliddis_, soliddispnp_, currsolidpositions);
-    ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
+    ExtractNodeVectors(*boundarydis2_, idispnp_, currinterfacepositions);
     //TODO: fill the soliddispnp in the XFSI case!
 
     // cast to DiscretizationXFEM
@@ -4954,7 +5004,7 @@ void FLD::XFluid::OutputDiscret()
 
     disToStream(discret_,     "fld",     true, false, true, false, xdis_faces,  false, gmshfilecontent);
     disToStream(soliddis_,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
-    disToStream(boundarydis_, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
+    disToStream(boundarydis2_, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
 
     gmshfilecontent.close();
 
@@ -4997,7 +5047,7 @@ void FLD::XFluid::Output()
     Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
     LINALG::Export(*state_->accnp_,*output_col_acc);
 
-    state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , output_col_vel, output_col_acc );
+    state_->GmshOutput( *discret_, *boundarydis2_, "SOL", step_, count , output_col_vel, output_col_acc );
 
 
     //--------------------------------------------------------------------
@@ -5596,7 +5646,7 @@ void FLD::XFluid::SetInitialFlowField(
       LINALG::Export(*state_->veln_,*output_col_vel);
       LINALG::Export(*state_->accn_,*output_col_acc);
 
-      state_->GmshOutput( *discret_, *boundarydis_, "START", step_, count , output_col_vel, output_col_acc );
+      state_->GmshOutput( *discret_, *boundarydis2_, "START", step_, count , output_col_vel, output_col_acc );
 
   }
 
@@ -5615,12 +5665,12 @@ void FLD::XFluid::SetInitialInterfaceField()
     if(myrank_ == 0) cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << endl;
 
     // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
+    for(int lnodeid=0;lnodeid<boundarydis2_->NumMyRowNodes();lnodeid++)
     {
       // get the processor local node
-      DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
+      DRT::Node*  lnode      = boundarydis2_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
+      const std::vector<int> nodedofset = boundarydis2_->Dof(lnode);
 
       if (nodedofset.size()!=0)
       {
@@ -6129,7 +6179,7 @@ void FLD::XFluid::ReadRestart(int step)
     LINALG::Export(*state_->veln_,*output_col_vel);
     LINALG::Export(*state_->accn_,*output_col_acc);
 
-    state_->GmshOutput( *discret_, *boundarydis_, "RESTART", step_, count , output_col_vel, output_col_acc );
+    state_->GmshOutput( *discret_, *boundarydis2_, "RESTART", step_, count , output_col_vel, output_col_acc );
 
   }
 
@@ -6172,6 +6222,199 @@ void FLD::XFluid::ReadRestartBound(int step)
   if (not (boundarydis_->DofRowMap())->SameAs(iveln_->Map()))
     dserror("Global dof numbering in maps does not match");
 
+}
+
+/*---------------------------------------------------------------------------------------------*
+ * Define crack tip elements from given nodes                                 sudhakar 09/13
+ * Add them to boundary discretization
+ *---------------------------------------------------------------------------------------------*/
+void FLD::XFluid::addCrackTipElements( const std::vector<int>* tipNodes )
+{
+  if( not tipNodes->size() == 4 )
+    dserror( "at the moment handle only one element in z-direction -- pseudo-2D" );
+
+  int nodeids[4]={0.,0.,0.,0.};
+  std::vector<double> eqn_plane(4), eqn_ref(4);
+
+  std::cout<<"number of points = "<<tipNodes->size()<<"\n";//blockkk
+
+  if ( tipNodes->size() == 3 )
+    dserror("at the moment handling triangular elements is not possible\n");
+
+  else if( tipNodes->size() == 4 )
+  {
+    std::vector<int>::const_iterator it = tipNodes->begin();
+
+    DRT::Node * n1 = soliddis_->gNode(*it);
+    DRT::Node * n2 = soliddis_->gNode(*++it);
+    DRT::Node * n3 = soliddis_->gNode(*++it);
+    DRT::Node * n4 = soliddis_->gNode(*++it);
+
+    const double * x1 = n1->X();
+    const double * x2 = n2->X();
+    const double * x3 = n3->X();
+    const double * x4 = n4->X();
+
+    // Find equation of plane and project the QUAD which is in x-y-z space
+    // into appropriate coordinate plane
+
+    eqn_plane[0] = x1[1]*(x2[2]-x3[2])+x2[1]*(x3[2]-x1[2])+x3[1]*(x1[2]-x2[2]);
+    eqn_plane[1] = x1[2]*(x2[0]-x3[0])+x2[2]*(x3[0]-x1[0])+x3[2]*(x1[0]-x2[0]);
+    eqn_plane[2] = x1[0]*(x2[1]-x3[1])+x2[0]*(x3[1]-x1[1])+x3[0]*(x1[1]-x2[1]);
+    eqn_plane[3] = x1[0]*(x2[1]*x3[2]-x3[1]*x2[2])+x2[0]*(x3[1]*x1[2]-x1[1]*x3[2])+x3[0]*(x1[1]*x2[2]-x2[1]*x1[2]);
+
+    std::string projPlane = "";
+    GEO::CUT::KERNEL::FindProjectionPlane( projPlane, eqn_plane );
+
+    int ind1=0,ind2=0;
+    if( projPlane=="x" )
+    {
+      ind1 = 1;
+      ind2 = 2;
+    }
+    else if( projPlane=="y" )
+    {
+      ind1 = 2;
+      ind2 = 0;
+    }
+    else if( projPlane=="z" )
+    {
+      ind1 = 0;
+      ind2 = 1;
+    }
+
+    // Now we should decide the correct ordering of these  vertices to form
+    // non-intersecting QUAD element
+    // This is very simple in our case because the QUAD is always convex
+    // We first decide the middle point of QUAD (xm,ym)
+    // Decide the sign of ((xi-xm), (yi-ym)) at each point
+    // Choose any one as a starting point. The next point in correct order
+    // should change sign only in one coordinate : either in (xi-xm) or in (yi-ym)
+    //
+    //         (-,+)                              (+,+)
+    //            *---------------------------------*
+    //            |                                 |
+    //            |                                 |
+    //            |             o                   |
+    //            |           (xm,ym)               |
+    //            |                                 |
+    //            |                                 |
+    //            |                                 |
+    //            *---------------------------------*
+    //          (-,-)                             (+,-)
+    //
+    //
+
+    double xm=0.0, ym=0.0;
+    xm = 0.25*( x1[ind1] + x2[ind1] + x3[ind1] + x4[ind1] );
+    ym = 0.25*( x1[ind2] + x2[ind2] + x3[ind2] + x4[ind2] );
+
+
+    for(std::vector<int>::const_iterator i=tipNodes->begin(); i!=tipNodes->end(); i++ )
+    {
+      const int m = *i;
+      const double *x = soliddis_->gNode( m )->X();
+
+      if( (x[ind1] - xm) < 0.0 and (x[ind2] - ym) > 0.0 )
+        nodeids[0] = m;
+      else if( (x[ind1] - xm) > 0.0 and (x[ind2] - ym) > 0.0 )
+        nodeids[1] = m;
+      else if( (x[ind1] - xm) > 0.0 and (x[ind2] - ym) < 0.0 )
+        nodeids[2] = m;
+      else if( (x[ind1] - xm) < 0.0 and (x[ind2] - ym) < 0.0 )
+        nodeids[3] = m;
+      else
+        dserror("can centre point of Quad be inline with one of the vertices for convex Quad?");
+    }
+  }
+
+  else
+    dserror("interface element should be either Tri or Quad\n");
+
+  // Now that we have formed a non-intersecting Quad shape
+  // It is mandatory to check whether the normal from this element is pointing in the right direction
+  // To do this, we take the element which shares one of the nodes of the tip element
+  // and check whether the normals are consistent
+  bool reverse = false, check=false;
+
+  const int numrowele = boundarydis2_->NumMyRowElements();
+  for (int i=0; i<numrowele; ++i)
+  {
+    DRT::Element* actele = boundarydis2_->lRowElement(i);
+
+    const int* idnodes = actele->NodeIds();
+    for( int j=0; j<actele->NumNode(); j++ )
+    {
+      const int id = idnodes[j];
+      if( id == *tipNodes->begin() )
+      {
+        check = true;
+        break;
+      }
+    }
+
+    if( check )
+    {
+      const double * x1 = boundarydis2_->gNode( idnodes[0] )->X();
+      const double * x2 = boundarydis2_->gNode( idnodes[1] )->X();
+      const double * x3 = boundarydis2_->gNode( idnodes[2] )->X();
+
+      eqn_ref[0] = x1[1]*(x2[2]-x3[2])+x2[1]*(x3[2]-x1[2])+x3[1]*(x1[2]-x2[2]);
+      eqn_ref[1] = x1[2]*(x2[0]-x3[0])+x2[2]*(x3[0]-x1[0])+x3[2]*(x1[0]-x2[0]);
+      eqn_ref[2] = x1[0]*(x2[1]-x3[1])+x2[0]*(x3[1]-x1[1])+x3[0]*(x1[1]-x2[1]);
+      eqn_ref[3] = x1[0]*(x2[1]*x3[2]-x3[1]*x2[2])+x2[0]*(x3[1]*x1[2]-x1[1]*x3[2])+x3[0]*(x1[1]*x2[2]-x2[1]*x1[2]);
+
+      if( ((eqn_plane[0] * eqn_ref[0]) > 1e-8 and (eqn_plane[0] * eqn_ref[0]) < 0.0) or
+          ((eqn_plane[1] * eqn_ref[1]) > 1e-8 and (eqn_plane[1] * eqn_ref[1]) < 0.0) or
+          ((eqn_plane[2] * eqn_ref[2]) > 1e-8 and (eqn_plane[2] * eqn_ref[2]) < 0.0) )
+      {
+        reverse = true;
+        break;
+      }
+    }
+  }
+
+  if( not check )
+    dserror("no element in boundary discretization that shares a node in crack tip?");
+
+  std::cout<<"ref eqn = "<<eqn_ref[0]<<"\t"<<eqn_ref[1]<<"\t"<<eqn_ref[2]<<"\t"<<eqn_ref[3]<<"\n";//blockkk
+
+  // Add proper tip element to the boundary discretization
+  if ( tipNodes->size() == 3 )          // add Tri3 element
+  {
+    int finalids[3] = { nodeids[0], nodeids[1], nodeids[2] };
+    if( reverse )
+    { finalids[0] = nodeids[2]; finalids[2] = nodeids[0]; }
+
+    int neweleid = boundarydis2_->NumGlobalElements();
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","tri3", neweleid, boundarydis2_->gNode(nodeids[0])->Owner() );
+    spr->SetNodeIds( 3, finalids );
+    //spr->Print(std::cout);
+    boundarydis2_->AddElement( spr );
+    boundarydis2_->FillComplete();
+
+    crackTip_[neweleid] = spr;
+  }
+
+  else if ( tipNodes->size() == 4 )   // add Quad4 element
+  {
+    int finalids[4] = { nodeids[0], nodeids[1], nodeids[2], nodeids[3] };
+
+    if( reverse )
+    { finalids[0] = nodeids[3]; finalids[1] = nodeids[2]; finalids[2] = nodeids[1]; finalids[3] = nodeids[0]; }
+
+    int neweleid = boundarydis2_->NumGlobalElements();
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","quad4", neweleid, boundarydis2_->gNode(nodeids[0])->Owner() );
+    spr->SetNodeIds( 4, finalids );
+    spr->Print(std::cout); //blockkk
+    boundarydis2_->AddElement( spr );
+    boundarydis2_->FillComplete();
+
+    crackTip_[neweleid] = spr;
+
+  }
+  else
+    dserror("Tip element should be either Tri or Quad\n");
 }
 
 /*------------------------------------------------------------------------------------------------*

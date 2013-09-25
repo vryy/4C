@@ -284,6 +284,7 @@ int main(
         break;
     }
     case prb_fsi_xfem:
+    case prb_fsi_crack:
     {
       std::cout << "Output FSI-XFEM Problem" << std::endl;
 

@@ -1541,14 +1541,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                              true,
                                              DRT::Condition::Surface));
 
+  Teuchos::RCP<ConditionDefinition> initialCrack =
+          Teuchos::rcp(new ConditionDefinition("DESIGN CRACK INITIATION POINTS",
+                                               "CrackInitiationPoints",
+                                               "Points at which crack initiates",
+                                               DRT::Condition::CrackInitPoints,
+                                               true,
+                                               DRT::Condition::Point));
+
   for (unsigned i=0; i<crackdef.size(); ++i)
   {
     crmaster->AddComponent(crackdef[i]);
     crslave->AddComponent(crackdef[i]);
+    initialCrack->AddComponent(crackdef[i]);
   }
 
   condlist.push_back(crmaster);
   condlist.push_back(crslave);
+  condlist.push_back(initialCrack);
 
   /*--------------------------------------------------------------------*/
 

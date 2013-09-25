@@ -17,10 +17,13 @@ Maintainer: Sudhakar
 
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_cut/cut_boundarycell.H"
+
+#include "../linalg/linalg_utils.H"
 
 
 /*------------------------------------------------------------------------------------*
@@ -52,7 +55,7 @@ DRT::CRACK::InsertCohesiveElements::InsertCohesiveElements( Teuchos::RCP<DRT::Di
  * Insert spring (discrete cohesive) elements over the specified surfaces
  * given in the input files                                                   sudhakar 04/13
  * Just inserting elements is sufficient because in this case the crack
- * already has two separate surfaces --> no need to modify existing elements
+ * already has two separate surfaces --> no need to modify existing elements or add new nodes
  *------------------------------------------------------------------------------------*/
 void DRT::CRACK::InsertCohesiveElements::specifiedSurfaces()
 {
@@ -73,18 +76,18 @@ void DRT::CRACK::InsertCohesiveElements::specifiedSurfaces()
   /****************************************************/
 
   /*---------------------------------------------------------------------------------*/
-  /*std::cout<<"master nodes = "<<master->size()<<"\n";
-  std::cout<<"slave nodes = "<<slave->size()<<"\n";
+  /*std::cout<<"master nodes = "<<master_->size()<<"\n";
+  std::cout<<"slave nodes = "<<slave_->size()<<"\n";
 
   std::cout<<"master nodes\n";
-  for(std::vector<int>::const_iterator i=master->begin(); i!=master->end();i++ )
+  for(std::vector<int>::const_iterator i=master_->begin(); i!=master_->end();i++ )
   {
     const int k = *i;
     std::cout<<k<<"\n";
   }
 
   std::cout<<"slave nodes\n";
-  for(std::vector<int>::const_iterator i=slave->begin(); i!=slave->end();i++ )
+  for(std::vector<int>::const_iterator i=slave_->begin(); i!=slave_->end();i++ )
   {
     const int k = *i;
     std::cout<<k<<"\n";
@@ -108,19 +111,33 @@ void DRT::CRACK::InsertCohesiveElements::specifiedSurfaces()
     for(std::vector<int>::const_iterator j=slave_->begin(); j!=slave_->end();j++ )
     {
       const int s = *j;
+
+      // this means we have the same node as both master and slave
+      // at the moment, this exists so that we can apply Dirichlet boundary condition on these nodes
+      // In future --> we should find a proper way of doing this
+      if( m==s )
+      {
+        std::cout<<"----WARNING:::Same node as both master and slave side of crack-----\n";
+        continue;
+      }
+
       const DRT::Node* nSla = discret_->gNode( s );
 
       found = AreAtSameLocation( nMas, nSla );
+
       // if master-slave pair found, add spring element
+      // it is very important that the first parameter is master, and second is slave nodes
+      // this ordering is used in FSI-crack problems
       if( found )
       {
         AddSpringWithThisNodes( m, s );
+        //MasSlaMap_[m] = s;
         break;
       }
     }
 
-    if( not found )
-      dserror("All master crack nodes should have a corresponding slave node\n");
+    /*if( not found )
+      dserror("All master crack nodes should have a corresponding slave node\n");*/
   }
 
   // only after fill complete, discretization know the new elements
@@ -171,7 +188,7 @@ bool DRT::CRACK::InsertCohesiveElements::AreAtSameLocation( const DRT::Node* n1,
   const double* masco = n1->X();
   const double* slaco = n2->X();
 
-  if( fabs(masco[0]-slaco[0]) > 1e-14 or
+  if( //fabs(masco[0]-slaco[0]) > 1e-14 or
       fabs(masco[1]-slaco[1]) > 1e-14 or
       fabs(masco[2]-slaco[2]) > 1e-14 )
   {
@@ -190,6 +207,13 @@ void DRT::CRACK::InsertCohesiveElements::AddSpringWithThisNodes( const int id1,
   // defined as static because once we add an element NumGlobalElements()
   // is no more available
   static int idele = discret_->NumGlobalElements();
+
+  /*std::pair<int,int> masSlaPair = std::make_pair( id1, id2 );
+  dcohEleIds_[masSlaPair] = idele;*/
+
+  //dcohDetails_ dcoh11 = {id1, id2, idele};
+  //allDcoh_.push_back( dcoh11 );
+
   Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("DCOHESIVE","line2", idele,
                                                         discret_->gNode(id1)->Owner() );
   idele++;
@@ -218,8 +242,6 @@ void DRT::CRACK::InsertCohesiveElements::AddSpringWithThisNodes( const int id1,
     std::cout<<"area of spring element = "<<area<<"\n";
     dserror("zero or negative area found for a spring element\n");
   }
-  //std::cout<<area<<"\n";//blockkk
-
 }
 
 /*----------------------------------------------------------------------------------------------*

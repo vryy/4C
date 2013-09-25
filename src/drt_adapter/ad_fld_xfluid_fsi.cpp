@@ -172,3 +172,18 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
   return xfluid_->RHS_Struct_Vec();
 }
 
+/*--------------------------------------------------------------------------*
+ * Rebuild FSI interface for XFEM FSI with cracking structures					sudhakar 09/13
+ * This is necessary when elements are added/deleted from interfaces
+ *--------------------------------------------------------------------------*/
+void ADAPTER::XFluidFSI::RebuildFluidInterface()
+{
+  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
+
+  xfluid_->BoundaryDis( boundary_dis );
+
+  interface_->Setup(*boundary_dis);
+  xfluid_->SetSurfaceSplitter(&(*interface_));
+
+}
+

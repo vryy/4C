@@ -967,6 +967,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
   case prb_fsi_xfem:
   case prb_fluid_xfem:
+  case prb_fsi_crack:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));

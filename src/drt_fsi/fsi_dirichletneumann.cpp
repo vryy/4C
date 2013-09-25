@@ -6,6 +6,10 @@
 #include "fsi_debugwriter.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_adapter/ad_fld_fluid_xfem.H"
+#include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
@@ -86,6 +90,15 @@ FSI::DirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
     MBFluidField().NonlinearSolve(StructToFluid(idisp),StructToFluid(ivel));
 
     MBFluidField().SetItemax(itemax);
+
+    // in case of FSI with cracking structures, rebuild the fluid interface
+    // because we added new elements as interface
+    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack ) // and crackUpdate_ == true)
+    {
+      ADAPTER::FluidXFEM& ad_xfem = dynamic_cast<ADAPTER::FluidXFEM&>(MBFluidField());
+      ADAPTER::XFluidFSI& ad_flui = dynamic_cast<ADAPTER::XFluidFSI&>(ad_xfem.FluidField());
+      ad_flui.RebuildFluidInterface();
+    }
 
     return FluidToStruct(MBFluidField().ExtractInterfaceForces());
   }

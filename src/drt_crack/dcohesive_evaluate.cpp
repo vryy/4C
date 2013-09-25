@@ -17,7 +17,7 @@ int DRT::ELEMENTS::Dcohesive::Evaluate(Teuchos::ParameterList&    params,
   // the spring is already failed which means there should be no connectivity
   // between the two crack surfaces
   // no need to do any calculation
-  if( failNorm_ and failTang_ )
+  if( failNorm_ or failTang_ )
     return 0;
 
   /*******************************************************************/ //blockkk
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::Dcohesive::EvaluateNeumann(Teuchos::ParameterList& params,
  * calculate the deflection of spring in local coordinate of this element         sudhakar 04/13
  *------------------------------------------------------------------------------------------*/
 std::vector<double> DRT::ELEMENTS::Dcohesive::calculateDeflections( DRT::Discretization& discret,
-                                                                    std::vector<int>& lm  )
+                                                                    std::vector<int>& lm )
 {
   LINALG::Matrix<3,1> xyzDef;
 
@@ -210,7 +210,7 @@ std::vector<double> DRT::ELEMENTS::Dcohesive::calculateDeflections( DRT::Discret
   }
 
   // project them in local coordinates of this element
-  //TO DO : coordinate transformation is not yet implemented
+  //TODO: coordinate transformation is not yet implemented
   std::vector<double>deflec(3);
 
   //normal deflection = xyzDef.refNormal_
@@ -338,16 +338,38 @@ void DRT::ELEMENTS::Dcohesive::InitializeElement()
   fracEnergy_.push_back(params.get<double>("G_I"));
   fracEnergy_.push_back(params.get<double>("G_II"));
 
+  iniSlop_.push_back(params.get<double>("SLOPE_NORMAL"));
+  iniSlop_.push_back(params.get<double>("SLOPE_SHEAR"));
+
   tracSepLaw_ = DRT::INPUT::IntegralValue<INPAR::CRACK::tractionSeparation>(params,"TRACTION_SEPARATION_LAW");
   model_ = DRT::INPUT::IntegralValue<INPAR::CRACK::tractionSeparation>(params,"CRACK_MODEL");
 
-  if( tracSepLaw_ == INPAR::CRACK::ppr )
+  switch( tracSepLaw_ )
+  {
+
+  // linear traction-separation law
+  case INPAR::CRACK::linear:
+  {
+    // area under traction separation law is equivalent to G
+    // G = 0.5*maxDisp*cohestrength
+    maxDisp_.resize(2);
+    maxDisp_[0] = 2.0*fracEnergy_[0]/coheStrength_[0];
+    maxDisp_[1] = 2.0*fracEnergy_[1]/coheStrength_[1];
+
+    critDisp_.resize(2);
+    critDisp_[0] = coheStrength_[0]/iniSlop_[0];
+    critDisp_[1] = coheStrength_[1]/iniSlop_[1];
+    break;
+  }
+
+  // park-paulino-roesler traction-separation law
+  case INPAR::CRACK::ppr:
   {
     alfa_ppr_ = params.get<double>("ALFA_PPR");
     beta_ppr_ = params.get<double>("BETA_PPR");
 
-    iniSlop_.push_back(params.get<double>("SLOPE_NORMAL"));
-    iniSlop_.push_back(params.get<double>("SLOPE_SHEAR"));
+    //TODO: Find proper definition of initial slope
+    iniSlop_[0] = iniSlop_[1] = 0.02;
 
     // evalute non-dimensional exponenets
     mn_.resize(2);
@@ -375,7 +397,15 @@ void DRT::ELEMENTS::Dcohesive::InitializeElement()
       powfac = Macaulay( fracEnergy_[1], fracEnergy_[0] )/(fracEnergy_[1] - fracEnergy_[0]);
       gamma_[1] = pow(-fracEnergy_[1],powfac)*pow((beta_ppr_/mn_[1]),mn_[1]);
     }
+    break;
   }
+  default:
+  {
+    dserror( "Initialization is not implemented for this type of Traction-Separation-Law" );
+    break;
+  }
+  }
+
 
   /***********************************************************************************/ //blockkk
   //std::cout<<"cohesive strengths = "<<coheStrength_[0]<<"\t"<<coheStrength_[1]<<"\n";
@@ -383,7 +413,8 @@ void DRT::ELEMENTS::Dcohesive::InitializeElement()
   //std::cout<<"alfa = "<<alfa_ppr_<<"\tbeta = "<<beta_ppr_<<"\n";
   //std::cout<<"lambda = "<<iniSlop_[0]<<"\t"<<iniSlop_[1]<<"\n";
   //std::cout<<"values of m = "<<mn_[0]<<"\n"<<mn_[1]<<"\n";
-  std::cout<<"max disp = "<<maxDisp_[0]<<"\t"<<maxDisp_[1]<<"\n";
+  //std::cout<<"max disp = "<<maxDisp_[0]<<"\t"<<maxDisp_[1]<<"\n";
+  //std::cout<<"crit disp = "<<critDisp_[0]<<"\t"<<critDisp_[1]<<"\n";
   //std::cout<<"gamma = "<<gamma_[0]<<"\t"<<gamma_[1]<<"\n";
   //dserror("check\n");
   /***********************************************************************************/ //blockkk
@@ -423,6 +454,41 @@ void DRT::ELEMENTS::Dcohesive::ForceStiffnessSpring( const std::vector<double>& 
   switch( tracSepLaw_ )
   {
   case INPAR::CRACK::linear:
+  {
+    double trac_nor=0.0,trac_shear=0.0;
+
+    if( fabs( deflec[0] - critDisp_[0]) < 1e-8  )       // spring deflection equals critical value
+      trac_nor = coheStrength_[0];
+    else if( deflec[0] < critDisp_[0] )                 // spring loading regime
+      trac_nor = coheStrength_[0]*deflec[0]/critDisp_[0];
+    else if( deflec[0] < maxDisp_[0] )                  // spring softening regime
+      trac_nor = coheStrength_[0] - coheStrength_[0]* ( deflec[0] - critDisp_[0] ) / ( maxDisp_[0] - critDisp_[0] );
+    else                                                // spring already failed
+    {
+      trac_nor = 0.0;
+      failNorm_ = true;
+    }
+
+    if( fabs( deflec[1] - critDisp_[1]) < 1e-8  )       // spring deflection equals critical value
+      trac_shear = coheStrength_[1];
+    else if( deflec[1] < critDisp_[1] )                 // spring loading regime
+      trac_shear = coheStrength_[1]*deflec[1]/critDisp_[1];
+    else if( deflec[1] < maxDisp_[1] )                  // spring softening regime
+      trac_shear = coheStrength_[1] - coheStrength_[1]* ( deflec[1] - critDisp_[1] ) / ( maxDisp_[1] - critDisp_[1] );
+    else                                                // spring already failed
+    {
+      trac_shear = 0.0;
+      failTang_ = true;
+    }
+
+    forcSpr[0] = trac_nor * area_;
+    forcSpr[1] = trac_shear * area_;
+
+    stifSpr[0] = forcSpr[0] / deflec[0];
+    stifSpr[1] = forcSpr[1] / deflec[1];
+
+    break;
+  }
   case INPAR::CRACK::trapezoidal:
   case INPAR::CRACK::sinusoidal:
   case INPAR::CRACK::exponential:
@@ -445,11 +511,11 @@ void DRT::ELEMENTS::Dcohesive::ForceStiffnessSpring( const std::vector<double>& 
     double term1 = gamma_[0]*pow(temp11,alfa_ppr_)*pow(temp21,mn_[0])+Macaulay( fracEnergy_[0], fracEnergy_[1] );
     double term2 = gamma_[1]*pow(temp12,beta_ppr_)*pow(temp22,mn_[1])+Macaulay( fracEnergy_[1], fracEnergy_[0] );
 
-    double tracN = gamma_[0]/maxDisp_[0]*(mn_[0]*pow(temp11,alfa_ppr_)*pow(temp21,(mn_[0]-1))
-                                         -alfa_ppr_*pow(temp11,(alfa_ppr_-1))*pow(temp21,mn_[0]))*term2;
+    double tracN = gamma_[0]/maxDisp_[0];/**(mn_[0]*pow(temp11,alfa_ppr_)*pow(temp21,(mn_[0]-1))
+                                         -alfa_ppr_*pow(temp11,(alfa_ppr_-1))*pow(temp21,mn_[0]))*term2;*/
 
-    double tracS = gamma_[1]/maxDisp_[1]*(mn_[1]*pow(temp12,beta_ppr_)*pow(temp22,(mn_[1]-1))
-                                         -beta_ppr_*pow(temp12,(beta_ppr_-1))*pow(temp22,mn_[1]))*term1*deflec[1]/fabs(deflec[1]);
+    double tracS = gamma_[1]/maxDisp_[1];/**(mn_[1]*pow(temp12,beta_ppr_)*pow(temp22,(mn_[1]-1))
+                                         -beta_ppr_*pow(temp12,(beta_ppr_-1))*pow(temp22,mn_[1]))*term1*deflec[1]/fabs(deflec[1]);*/
 
     // either spring reaches normal max. displacements
     // or it reached conjugate tangential disp.

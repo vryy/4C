@@ -549,38 +549,7 @@ bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints,
   }
 
   // projection on the plane which has max normal component - reduce round off error
-  if( fabs(eqn[0])>fabs(eqn[1]) && fabs(eqn[0])>fabs(eqn[2]) )
-    projPlane = "x";
-  else if( fabs(eqn[1])>fabs(eqn[2]) && fabs(eqn[1])>fabs(eqn[0]) )
-    projPlane = "y";
-  else
-  {
-    if( fabs(eqn[0])==fabs(eqn[1]) )
-    {
-      if( fabs(eqn[0]) > fabs(eqn[2]) )
-        projPlane = "x";
-      else
-        projPlane = "z";
-    }
-    else if( fabs(eqn[1])==fabs(eqn[2]) )
-    {
-      if( fabs(eqn[1]) > fabs(eqn[0]) )
-        projPlane = "y";
-      else
-        projPlane = "x";
-    }
-    else if( fabs(eqn[0])==fabs(eqn[2]) )
-    {
-      if( fabs(eqn[0]) > fabs(eqn[1]) )
-        projPlane = "z";
-      else
-        projPlane = "y";
-    }
-    else
-    {
-      projPlane = "z";
-    }
-  }
+  FindProjectionPlane( projPlane, eqn );
 
   int ind1=0,ind2=0;
   if( projPlane=="x" )
@@ -614,6 +583,48 @@ bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints,
   if( crossProd>0.0 )
     return true;
   return false;
+}
+
+/*----------------------------------------------------------------------------------------------*
+    In several cases, it is appropriate to project the surface in 3D space into appropriate
+    coordinate plane. It is better to project over the plane which is max normal component
+    because this will reduce the round-off error in further calculations
+                                                                                          Sudhakar 06/12
+*------------------------------------------------------------------------------------------------*/
+void GEO::CUT::KERNEL::FindProjectionPlane( std::string& projPlane, const std::vector<double>& eqn )
+{
+  if( fabs(eqn[0])>fabs(eqn[1]) && fabs(eqn[0])>fabs(eqn[2]) )
+    projPlane = "x";
+  else if( fabs(eqn[1])>fabs(eqn[2]) && fabs(eqn[1])>fabs(eqn[0]) )
+    projPlane = "y";
+  else
+  {
+    if( fabs(eqn[0])==fabs(eqn[1]) )
+    {
+      if( fabs(eqn[0]) > fabs(eqn[2]) )
+        projPlane = "x";
+      else
+        projPlane = "z";
+    }
+    else if( fabs(eqn[1])==fabs(eqn[2]) )
+    {
+      if( fabs(eqn[1]) > fabs(eqn[0]) )
+        projPlane = "y";
+      else
+        projPlane = "x";
+    }
+    else if( fabs(eqn[0])==fabs(eqn[2]) )
+    {
+      if( fabs(eqn[0]) > fabs(eqn[1]) )
+        projPlane = "z";
+      else
+        projPlane = "y";
+    }
+    else
+    {
+      projPlane = "z";
+    }
+  }
 }
 
 /*--------------------------------------------------------------------------------------*

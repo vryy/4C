@@ -19,6 +19,7 @@ Maintainer: Georg Hammerl
 #include "ad_str_wrapper.H"
 #include "ad_str_lung.H"
 #include "ad_str_redairway.H"
+#include "ad_str_fsi_crack.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -314,7 +315,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     if (DRT::INPUT::IntegralValue<INPAR::CRACK::CrackModel>(crackparam,"CRACK_MODEL")
           != INPAR::CRACK::crack_none)
     {
-      if( not DRT::Problem::Instance()->Restart() )
+      //if( (not DRT::Problem::Instance()->Restart()) and DRT::Problem::Instance()->ProblemType() == prb_structure )
       {
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         DRT::CRACK::InsertCohesiveElements isp( structdis );
@@ -383,6 +384,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
         else
           structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
       }
+    }
+    break;
+    case prb_fsi_crack:
+    {
+      structure_ = Teuchos::rcp(new FSICrackingStructure(Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))))));
     }
     break;
     case prb_redairways_tissue:

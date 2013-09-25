@@ -37,6 +37,15 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 
 }
 
+/*------------------------------------------------------------------------------------*
+ * Rebuild FSI interface on structure side																			sudhakar 09/13
+ * This is necessary if elements are added/deleted from interface 
+ *------------------------------------------------------------------------------------*/
+void ADAPTER::FSIStructureWrapper::RebuildInterface()
+{
+  interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
+  interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

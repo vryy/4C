@@ -198,6 +198,12 @@ namespace GEO
       */
       std::vector<Point*> PreparePoints( std::vector<Point*> & polyPoints );
 
+      /*!
+       \brief Find the appropriate coordinate plane to which the given geometry can be
+       projected given the equation of plane containing this geometry
+       */
+      void FindProjectionPlane( std::string& projPlane, const std::vector<double>& eqn );
+
       /// generic Newton algorithm
       template <class Strategy, int maxiter=20>
       class NewtonSolve : public Strategy

@@ -488,6 +488,8 @@ namespace FLD
     /// return boundary discretization
     Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
 
+    void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) { boun = boundarydis2_; }
+
     /// provide access to the Dirichlet maps
     //const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->dbcmaps_;}
 
@@ -542,6 +544,12 @@ namespace FLD
 
     /// read restart data for boundary discretization
     void ReadRestartBound(int step);
+
+    /// Get elemets of boundary discretization that defines the tip of propagating crack
+    void GetCrackTipElements( std::map<int, Teuchos::RCP<DRT::Element> >& tip ) { tip = crackTip_; }
+
+    /// Given the nodes that defines crack tip, this function builds proper crack tip elements and add to boundary discretization
+    void addCrackTipElements( const std::vector<int>* tipNodes );
 
 
   private:
@@ -622,6 +630,7 @@ namespace FLD
     //! @name general algorithm parameters
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
+    Teuchos::RCP<DRT::Discretization>      boundarydis2_;  //! boundary discretization
 
     //---------------------------------input parameters------------------
 
@@ -819,6 +828,11 @@ namespace FLD
     Teuchos::RCP<Epetra_Map> dofrowmap_Intn_;
     Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
     //@}
+
+    //-----------------------------FSI with cracking structure ------------------------
+
+    /// crack tip elements in case of FSI with cracking structure
+    std::map<int, Teuchos::RCP<DRT::Element> > crackTip_;
 
 
   };

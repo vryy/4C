@@ -41,6 +41,7 @@ namespace DRT
   class Discretization;
   class DofSet;
   class ResultTest;
+  class Element;
 }
 
 namespace IO
@@ -541,6 +542,12 @@ namespace ADAPTER {
 
     /// return physical type of fluid algorithm
     virtual const INPAR::FLUID::PhysicalType PhysicalType() const =0;
+
+    /// return the boundary discretization of XFEM problems
+    virtual void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) = 0;
+
+		/// Get crack tip elements from boundary discretization of XFEM
+    virtual void GetCrackTipElements( std::map<int, Teuchos::RCP<DRT::Element> >& tip ) = 0;
   };
 }
 
