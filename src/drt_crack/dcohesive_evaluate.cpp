@@ -502,14 +502,14 @@ void DRT::ELEMENTS::Dcohesive::ForceStiffnessSpring( const std::vector<double>& 
   //------------------------------------------------------------------------------//
   case INPAR::CRACK::ppr:
   {
-    double temp11 = (1.0-deflec[0]/maxDisp_[0]);
-    double temp12 = (1.0-fabs(deflec[1])/maxDisp_[1]);
+    //double temp11 = (1.0-deflec[0]/maxDisp_[0]);
+    //double temp12 = (1.0-fabs(deflec[1])/maxDisp_[1]);
 
-    double temp21 = mn_[0]/alfa_ppr_+deflec[0]/maxDisp_[0];
-    double temp22 = mn_[1]/beta_ppr_+fabs(deflec[1])/maxDisp_[1];
+    //double temp21 = mn_[0]/alfa_ppr_+deflec[0]/maxDisp_[0];
+    //double temp22 = mn_[1]/beta_ppr_+fabs(deflec[1])/maxDisp_[1];
 
-    double term1 = gamma_[0]*pow(temp11,alfa_ppr_)*pow(temp21,mn_[0])+Macaulay( fracEnergy_[0], fracEnergy_[1] );
-    double term2 = gamma_[1]*pow(temp12,beta_ppr_)*pow(temp22,mn_[1])+Macaulay( fracEnergy_[1], fracEnergy_[0] );
+    //double term1 = gamma_[0]*pow(temp11,alfa_ppr_)*pow(temp21,mn_[0])+Macaulay( fracEnergy_[0], fracEnergy_[1] );
+    //double term2 = gamma_[1]*pow(temp12,beta_ppr_)*pow(temp22,mn_[1])+Macaulay( fracEnergy_[1], fracEnergy_[0] );
 
     double tracN = gamma_[0]/maxDisp_[0];/**(mn_[0]*pow(temp11,alfa_ppr_)*pow(temp21,(mn_[0]-1))
                                          -alfa_ppr_*pow(temp11,(alfa_ppr_-1))*pow(temp21,mn_[0]))*term2;*/

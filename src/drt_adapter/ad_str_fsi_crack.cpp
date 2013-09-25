@@ -79,7 +79,7 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
 
   // construct master and slave crack nodes discretization
   std::vector<std::string> conditions_to_copy;
-  string element_name = "BELE3";
+  std::string element_name = "BELE3";
   masterCrackDis_ = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "masterCrackSurface", "boundary",
                                                                                                   element_name, conditions_to_copy);
   slaveCrackDis_ = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "slaveCrackSurface", "boundary",
@@ -148,16 +148,16 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
     }
 
     /*--------------------------------------------------------------*/ //blockkk
-    std::cout<<"found nodes\n";
+    /*std::cout<<"found nodes\n";
     for( int ik=0;ik<tempMas.size();ik++ )
       std::cout<<tempMas[ik]<<"\t";
-    std::cout<<"\n";
+    std::cout<<"\n";*/
     /*--------------------------------------------------------------*/
 
     // For elements that share Dirichlet boundary conditions,
     // all nodes of master (or slave) crack has a dcohesive elements
     // attached to it
-    if( mSurEle->NumNode() != reqdSlaNod.size() )
+    if( mSurEle->NumNode() != (int)reqdSlaNod.size() )
     {
       for( int mnod=0; mnod<mSurEle->NumNode(); mnod++ )
       {
