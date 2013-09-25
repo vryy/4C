@@ -20,9 +20,6 @@ Maintainer: Kei Müller
 #include "Epetra_Map.h"
 #include "../linalg/linalg_fixedsizematrix.H"
 
-using namespace std;
-using namespace Teuchos;
-
 namespace DRT
 {
   class Discretization;
@@ -44,8 +41,8 @@ class StatMechOctree
 	//! \brief constructor
   StatMechOctree(Teuchos::RCP<std::vector<double> > periodlength,
                  Teuchos::RCP<DRT::Discretization> discret,
-                 RCP<Epetra_Map> bspotrowmap,
-                 RCP<Epetra_Map> bspotcolmap,
+                 Teuchos::RCP<Epetra_Map> bspotrowmap,
+                 Teuchos::RCP<Epetra_Map> bspotcolmap,
                  int maxtreedepth,
                  int minbboxesperoct,
                  double bindingradius);
@@ -129,9 +126,9 @@ private:
   //!\brief flag indicating the use of periodic boundary conditions
   bool periodicBC_;
   //!\brief mapping bounding boxes to octants they lie in (not needed for the search algorithm as it is implemented in statmechmanager atm)
-  RCP<Epetra_MultiVector> bbox2octant_;
+  Teuchos::RCP<Epetra_MultiVector> bbox2octant_;
   //!\brief listing all crosslinkers in each oktant
-  RCP<Epetra_MultiVector> crosslinkerinoctants_;
+  Teuchos::RCP<Epetra_MultiVector> crosslinkerinoctants_;
   //! \brief vector holding the dimensions of the periodic box
   Teuchos::RCP<std::vector<double> > periodlength_;
   //! \brief rootnode of the tree of RCP pointers that allow to reconstruct thedimensions of the octree. This is crucial in order to determine the Octant that belongs to a position (e.g. a crosslinker position)

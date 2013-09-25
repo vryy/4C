@@ -17,7 +17,13 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   mueller 09/13|
  *----------------------------------------------------------------------*/
-STATMECH::SEARCH::StatMechOctree::StatMechOctree(Teuchos::RCP<std::vector<double> > periodlength, Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Map> bspotrowmap, Teuchos::RCP<Epetra_Map> bspotcolmap, int treedepth, int minbboxesperoct, double bindingradius)
+STATMECH::SEARCH::StatMechOctree::StatMechOctree(Teuchos::RCP<std::vector<double> > periodlength,
+                                                 Teuchos::RCP<DRT::Discretization>  discret,
+                                                 Teuchos::RCP<Epetra_Map>           bspotrowmap,
+                                                 Teuchos::RCP<Epetra_Map>           bspotcolmap,
+                                                 int                                treedepth,
+                                                 int                                minbboxesperoct,
+                                                 double                             bindingradius)
 {
 	this->bsr_=bindingradius;
 	this->bspotrowmap_=bspotrowmap;
@@ -324,7 +330,8 @@ void STATMECH::SEARCH::StatMechOctree::LocateBoundingBox(std::vector<std::vector
 /*----------------------------------------------------------------------*
  |  Locate positions in an octree already built (public)   mueller 09/13|
  *----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::LocatePositions(Teuchos::RCP<Epetra_MultiVector>& positions,Teuchos::RCP<Epetra_Map> CLmap)
+void STATMECH::SEARCH::StatMechOctree::LocatePositions(Teuchos::RCP<Epetra_MultiVector>& positions,
+                                                       Teuchos::RCP<Epetra_Map>          CLmap)
 {
   std::vector<std::vector<int> > clinoctants((int)bboxesinoctants_->MyLength());
 	LINALG::Matrix<6,1> lim;
