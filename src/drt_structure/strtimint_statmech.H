@@ -195,9 +195,6 @@ namespace STR
     //! \brief set PTC status to unconverged
     void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
 
-    //! \brief manager for administration of statistical mechanics stuff
-    Teuchos::RCP<STATMECH::StatMechManager> statmechmanager_;
-
     //! \brief spatial dimension
     int ndim_;
 

@@ -2034,12 +2034,12 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
  | wedge output for two-noded beams                        cyron   11/10|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::GmshWedge(const int& n,
-                                  const Epetra_SerialDenseMatrix& coord,
-                                  DRT::Element* thisele,
-                                  std::stringstream& gmshfilecontent,
-                                  const double color,
-                                  bool ignoreeleid,
-                                  bool drawsphere)
+                                          const Epetra_SerialDenseMatrix& coord,
+                                          DRT::Element* thisele,
+                                          std::stringstream& gmshfilecontent,
+                                          const double color,
+                                          bool ignoreeleid,
+                                          bool drawsphere)
 {
   //if this element is a line element capable of providing its radius get that radius
   double radius = 0.0;

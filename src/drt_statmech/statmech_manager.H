@@ -481,13 +481,18 @@ protected:
    *  \param bspottriadscol       (in) nodal triads as quaternions in column map format (fully overlapping)
    *  \param neighboursLID        (in/out) vector holding the LIDs of the nodes close to crosslink molecules
    *  */
-  void DetectNeighbourNodes(const Epetra_MultiVector&                           bspotpositions,
-                            const std::vector<std::vector<std::vector<int> > >& nodeinpartition,
-                            const Epetra_Vector&                                numbond,
-                            const Epetra_MultiVector&                           crosslinkerpositions,
-                            const Epetra_MultiVector&                           crosslinkpartitions,
-                            const Epetra_MultiVector&                           bspottriadscol,
-                            Teuchos::RCP<Epetra_MultiVector>&                   neighboursLID);
+  void DetectBindingSpots(const Teuchos::RCP<Epetra_MultiVector>              bspotpositions,
+                          const std::vector<std::vector<std::vector<int> > >& nodeinpartition,
+                          const Teuchos::RCP<Epetra_Vector>                   numbond,
+                          const Teuchos::RCP<Epetra_MultiVector>              crosslinkerpositions,
+                          const Teuchos::RCP<Epetra_MultiVector>              crosslinkpartitions,
+                          const Teuchos::RCP<Epetra_MultiVector>              bspottriadscol,
+                          Teuchos::RCP<Epetra_MultiVector>&                   neighboursLID);
+
+  //! \brief rotation of a vector around a given fixed axis by angle phirot
+  void DetectBindingSpotsOctree(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                Teuchos::RCP<Epetra_MultiVector>       bspottriadscol,
+                                Teuchos::RCP<Epetra_MultiVector>&      neighbourslid);
 
   //! \brief rotation of a vector around a given fixed axis by angle phirot
   void RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis,
@@ -708,9 +713,9 @@ protected:
    *  \param currentpositions     (in)      column map node positions (fully overlapping)
    *  \param bspottriadscol      (in)      nodal triads as quaternions in column map format (fully overlapping)
    *  \param neighbourslid        (in/out)  vector holding the node lids within search proximity of crosslink molecules*/
-  void PartitioningAndSearch(const Epetra_MultiVector&         bspotpositions,
-                             Epetra_MultiVector&               bspottriadscol,
-                             Teuchos::RCP<Epetra_MultiVector>& neighbourslid);
+  void PartitioningAndSearch(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                             const Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
+                             Teuchos::RCP<Epetra_MultiVector>&      neighbourslid);
 
   /*! \brief comunicate Vector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -895,9 +900,6 @@ protected:
   //! \brief vector holding the spatial resolution of the search algorithm binding spots x crosslinkers
   Teuchos::RCP<std::vector<int> > searchres_;
 
-  //! \brief octree
-  Teuchos::RCP<Beam3ContactOctree> octree_;
-
   //! \brief number of nodes which are part of the discretization already before starting adding crosslinkers
   int basisnodes_;
 
@@ -941,7 +943,7 @@ protected:
   double sumsquareincrot_;
 
   //store displacement of midpoint compared to initial state as a 3-vector
-  LINALG::Matrix<3,1>sumdispmiddle_;
+  LINALG::Matrix<3,1> sumdispmiddle_;
 
   //! \brief rotation matrix for transformation from global to local coordinates
   Teuchos::RCP<LINALG::SerialDenseMatrix> trafo_;

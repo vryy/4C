@@ -12,6 +12,7 @@ Maintainer: Kei Müller
 *----------------------------------------------------------------------*/
 
 #include "statmech_manager.H"
+#include "statmech_search.H"
 
 #include <Teuchos_Time.hpp>
 
@@ -1531,9 +1532,9 @@ void STATMECH::StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element
  | Assign crosslink molecules and nodes to volume partitions            |
  |                                                (public) mueller 08/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector&         bspotpositions,
-                                                      Epetra_MultiVector&               bspottriadscol,
-                                                      Teuchos::RCP<Epetra_MultiVector>& neighbourslid)
+void STATMECH::StatMechManager::PartitioningAndSearch(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                                      const Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
+                                                      Teuchos::RCP<Epetra_MultiVector>&      neighbourslid)
 {
   std::vector<double> limit(6,0.0);
   if(periodlength_->at(0)==0.0)
@@ -1548,16 +1549,16 @@ void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector& 
     }
     // extreme values
     // binding spots
-    for(int i=0; i<(int)bspotpositions.NumVectors(); i++)
+    for(int i=0; i<(int)bspotpositions->NumVectors(); i++)
     {
-      for(int j=0; j<(int)bspotpositions.MyLength(); j++)
+      for(int j=0; j<(int)bspotpositions->MyLength(); j++)
       {
         // max
-        if(limit[2*i+1]<bspotpositions[i][j])
-          limit[2*i+1] = bspotpositions[i][j];
+        if(limit[2*i+1]<(*bspotpositions)[i][j])
+          limit[2*i+1] = (*bspotpositions)[i][j];
         // min
-        if(limit[2*i]>bspotpositions[i][j])
-          limit[2*i] = bspotpositions[i][j];
+        if(limit[2*i]>(*bspotpositions)[i][j])
+          limit[2*i] = (*bspotpositions)[i][j];
       }
     }
     // linker positions
@@ -1592,9 +1593,9 @@ void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector& 
   // loop over node positions to map their column map LIDs to partitions
   for(int i=0; i<(int)bspotinpartition.size(); i++) // note: bspotinpartition.size==3
   {
-    for(int j=0;j<bspotpositions.MyLength();j++)
+    for(int j=0;j<bspotpositions->MyLength();j++)
     {
-      int partition = (int)std::floor((bspotpositions[i][j]-limit[2*i])/(limit[2*i+1]-limit[2*i])*(double)(*searchres_)[i]);
+      int partition = (int)std::floor(((*bspotpositions)[i][j]-limit[2*i])/(limit[2*i+1]-limit[2*i])*(double)(*searchres_)[i]);
       if(partition==(int)(*searchres_)[i])
         partition--;
       bspotinpartition[i][partition].push_back(bspotcolmap_->LID(j)); //column lid
@@ -1630,67 +1631,46 @@ void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector& 
   }
 
   // detection of nodes within search proximity of the crosslink molecules
-  DetectNeighbourNodes(bspotpositions, bspotinpartition, *numbondtrans, *crosslinkerpositionstrans, *crosslinkpartitiontrans, bspottriadscol, neighbourslid);
+  DetectBindingSpots(bspotpositions, bspotinpartition, numbondtrans, crosslinkerpositionstrans, crosslinkpartitiontrans, bspottriadscol, neighbourslid);
   return;
 }//void StatMechManager::PartitioningAndSearch
 
 /*----------------------------------------------------------------------*
  | detect neighbour nodes to crosslink molecules (public) mueller (7/10)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&                           bspotpositions,
-                                                     const std::vector<std::vector<std::vector<int> > >& bspotinpartition,
-                                                     const Epetra_Vector&                                numbond,
-                                                     const Epetra_MultiVector&                           crosslinkerpositions,
-                                                     const Epetra_MultiVector&                           crosslinkpartitions,
-                                                     const Epetra_MultiVector&                           bspottriadscol,
-                                                     Teuchos::RCP<Epetra_MultiVector>&                   neighbourslid)
+void STATMECH::StatMechManager::DetectBindingSpots(const Teuchos::RCP<Epetra_MultiVector>              bspotpositions,
+                                                   const std::vector<std::vector<std::vector<int> > >& bspotinpartition,
+                                                   const Teuchos::RCP<Epetra_Vector>                   numbond,
+                                                   const Teuchos::RCP<Epetra_MultiVector>              crosslinkerpositions,
+                                                   const Teuchos::RCP<Epetra_MultiVector>              crosslinkpartitions,
+                                                   const Teuchos::RCP<Epetra_MultiVector>              bspottriadscol,
+                                                   Teuchos::RCP<Epetra_MultiVector>&                   neighbourslid)
   {
-  /* Description:
-   * A vector containing the volume partitions of the crosslink molecules is handed over to this method. We loop over the partition
-   * number of the first (x) component and its two neighbouring partition numbers, hence gathering information on all nodes
-   * within these three layers.
-   *
-   * Now, we check, whether or not an LID of the first component matches one of the LIDs in the second component's partition layers
-   * (once again, we check the given partition number and its immediate neighbours).
-   * If so, we head to the third component and repeat this procedure.
-   * If a match is found for all components, we can be sure that the crosslink molecule in question lies within
-   * the 27 partitions encompassing the crosslink molecule partition.
-   *
-   * Eventually, the distance between the crosslink molecule and the filament node is calculated.
-   * If the distance lies beneath the boundaries given by the crosslinker lengths rmin and rmax,
-   * the node's LID is added to a storage vector for further use.
-   *
-   * After having found a match in the next component, we exit the loop to avoid unnecessary computational cost
-   */
   // distribute information of crosslinkerbond_ to processorspecific maps
   Teuchos::RCP<Epetra_MultiVector> crosslinkerbondtrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_, 2, true));
   CommunicateMultiVector(crosslinkerbondtrans, crosslinkerbond_,true,false,false,true);
 
-  std::vector<std::vector<int> > neighbournodes(crosslinkpartitions.MyLength(), std::vector<int>());
+  std::vector<std::vector<int> > neighbournodes(crosslinkpartitions->MyLength(), std::vector<int>());
 
   int maxneighbourslocal = 0;
   int maxneighboursglobal = 0;
 
-  for(int part=0; part<crosslinkpartitions.MyLength(); part++)
+  for(int part=0; part<crosslinkpartitions->MyLength(); part++)
   {
     // i.e. numbond!=2.0
-    if(crosslinkpartitions[0][part]>-0.9)
+    if((*crosslinkpartitions)[0][part]>-0.9)
     {
       double rmin = (statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
       double rmax = (statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
-      // determine search radius in accordance to bonding status (only without helical binding structure)
-      // reason for this: we set the crosslinker position of molecules with numbond>0 on a node, i.e. on a binding spot of a filement/linker
-      // So, the maximal radius is now R_LINK-DeltaR_LINK assuming the linker can bond in any direction.
-      // When numbond==0 -> crosslinker position is thought to be in the center of a sphere with the adjusted search radii rmin and rmax.
       // In case of a helical binding spot structure, we exactly know the position of the singly bound linker. Therefore, no multiplication with 2.
-      if ((int)numbond[part]>0.9)
+      if ((int)(*numbond)[part]>0.9)
       {
         rmin *= 2.0;
         rmax *= 2.0;
       }
 
       // first component
-      for(int ilayer=(int)crosslinkpartitions[0][part]-1; ilayer<(int)crosslinkpartitions[0][part]+2; ilayer++)
+      for(int ilayer=(int)(*crosslinkpartitions)[0][part]-1; ilayer<(int)(*crosslinkpartitions)[0][part]+2; ilayer++)
       {
         if(ilayer>-1 && ilayer<(*searchres_)[0])
         {
@@ -1698,7 +1678,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
           {
             int tmplid = (int)bspotinpartition[0][ilayer][i];
             // second component
-            for(int jlayer=(int)crosslinkpartitions[1][part]-1; jlayer<(int)crosslinkpartitions[1][part]+2; jlayer++)
+            for(int jlayer=(int)(*crosslinkpartitions)[1][part]-1; jlayer<(int)(*crosslinkpartitions)[1][part]+2; jlayer++)
             {
               if(jlayer>-1 && jlayer<(*searchres_)[1])
               {
@@ -1707,7 +1687,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                   if(bspotinpartition[1][jlayer][j]==tmplid)
                   {
                     //third component
-                    for(int klayer=(int)crosslinkpartitions[2][part]-1; klayer<(int)crosslinkpartitions[2][part]+2; klayer++)
+                    for(int klayer=(int)(*crosslinkpartitions)[2][part]-1; klayer<(int)(*crosslinkpartitions)[2][part]+2; klayer++)
                     {
                       if(klayer>-1 && klayer<(*searchres_)[2])
                       {
@@ -1718,7 +1698,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                             // calculate distance crosslinker-node
                             LINALG::Matrix<3, 1> difference;
                             for (int l=0; l<(int)difference.M(); l++)
-                              difference(l) = crosslinkerpositions[l][part]-bspotpositions[l][bspotcolmap_->GID(tmplid)];
+                              difference(l) = (*crosslinkerpositions)[l][part]-(*bspotpositions)[l][bspotcolmap_->GID(tmplid)];
                             // 1. criterion: distance between linker and binding spot within given interval
                             if(difference.Norm2()<rmax && difference.Norm2()>rmin)
                             {
@@ -1737,7 +1717,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                                   LINALG::Matrix<4, 1> qnode;
                                   // triad of node on first filament which is affected by the new crosslinker
                                   for (int l=0; l<4; l++)
-                                    qnode(l) = bspottriadscol[l][bspotcolmap_->GID(tmplid)];
+                                    qnode(l) = (*bspottriadscol)[l][bspotcolmap_->GID(tmplid)];
                                   LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
                                   for (int l=0; l<(int)bspottriad.M(); l++)
                                   {
@@ -1751,7 +1731,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                                 // linker position
                                 LINALG::Matrix<3,1> crossbspotdiff;
                                 for(int l=0; l<(int)crossbspotdiff.M(); l++)
-                                  crossbspotdiff(l) = crosslinkerpositions[l][part]-bspotpositions[l][bspotcolmap_->GID(tmplid)];
+                                  crossbspotdiff(l) = (*crosslinkerpositions)[l][part]-(*bspotpositions)[l][bspotcolmap_->GID(tmplid)];
                                 // line parameter of the intersection point of the line through the binding spot with the orientation of the binding spot.
                                 // a)lambda must be larger than zero in order to lie within the cone
                                 double lambda = (crossbspotdiff.Dot(bspotvec))/(bspotvec.Dot(bspotvec));
@@ -1762,7 +1742,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                                   //    Only then does the crosslinker lie within the cone
                                   if(acos(fabs(bspotvec.Dot(difference))) < statmechparams_.get<double>("PHIBSPOT", 0.524))
                                     bspot1=true;
-                                  if((int)numbond[part]<0.1)
+                                  if((int)(*numbond)[part]<0.1)
                                     bspot2=true;
                                   else //check wether first Bspot lies fullfills orientation criterium
                                   {       //id of bindingspot that was bound ealier
@@ -1778,7 +1758,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                                      crossbspotdiff(l) = -crossbspotdiff(l);
 
                                     for (int l=0; l<4; l++)
-                                       qnode(l) = bspottriadscol[l][bspotID];
+                                       qnode(l) = (*bspottriadscol)[l][bspotID];
                                     LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
                                     for (int l=0; l<(int)bspottriad.M(); l++)
                                     {
@@ -1821,7 +1801,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
         }
       }
       // "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
-      if((int)numbond[part]==1)
+      if((int)(*numbond)[part]==1)
         neighbournodes[part].push_back(-1);
       // store local maximal number of LIDs per molecule in order to determine neighbourslid->NumVectors()
       maxneighbourslocal = std::max(maxneighbourslocal, (int)neighbournodes[part].size());
@@ -1850,6 +1830,194 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
 }// StatMechManager::DetectNeighbourNodes
 
 /*----------------------------------------------------------------------*
+ | Binding spot / linker search by Octree                mueller (09/13)|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::DetectBindingSpotsOctree(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                                         Teuchos::RCP<Epetra_MultiVector>       bspottriadscol,
+                                                         Teuchos::RCP<Epetra_MultiVector>&      neighbourslid)
+{
+  std::vector<std::vector<int> > neighbournodes((*crosslinkerpositions_).MyLength(), std::vector<int>());
+  int maxneighbourslocal = 0;
+  int maxneighboursglobal = 0;
+
+  //Create and build BspotOctree
+  //length of bounding boxes arund binding spots (should be larger or equal the crosslinker length + deviation)
+  double bindingradius =(statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0));
+  //Constructor
+  Teuchos::RCP<STATMECH::SEARCH::StatMechOctree> bspottree = Teuchos::rcp(new STATMECH::SEARCH::StatMechOctree(periodlength_,discret_ ,bspotrowmap_,bspotcolmap_, statmechparams_.get<int> ("MAXBSPOTOCTREEDEPTH", 5), statmechparams_.get<int> ("MINBSPOTSINOCT", 5), bindingradius));
+  //Build Octree based on the location of the binding spot positions
+  bspottree->BuildOctree(bspotpositions);
+  //Locate crosslinker positions (i.e. build a vector that maps each crosslinker to one octant)
+  bspottree->LocatePositions(crosslinkerpositions_,crosslinkermap_);
+
+ //loop over all octants (this is done in parallel)
+  for(int octLID=0;octLID<bspottree->BBoxesInOctRow()->MyLength(); octLID++)
+  {
+    //retrieve GID of octant from octreemap
+    int octGID = (int)bspottree->BBoxesInOctRow()->Map().GID(octLID);
+    //loop over all crosslinker in this octant
+    for(int i=0; i< bspottree->CrosslinkerInOctants()->NumVectors();i++)
+    {
+      //break i loop if entry is -9. This means no further crosslinker molecules in this octant
+      if((*bspottree->CrosslinkerInOctants())[i][octGID]<-1)
+        break;
+      // only consider crosslinkers that are unbound (i.e. numbond<2.0)
+      if((*numbond_)[bspotcolmap_->LID((int)(*bspottree->CrosslinkerInOctants())[i][octGID])]>1.9)
+        continue;
+      //temporarily store Crosslinker ID
+      int clID=(int)(*bspottree->CrosslinkerInOctants())[i][octGID];
+      /*adjust length of linker in case of singly bound crosslinker (not in case of helical bstruct).
+       * This is because freely diffusing crosslinkers (numbond=-1) are modelled as point in space located at the center of a crosslinker molecule.
+       * If a crosslinker has bound to a binding spot its position is set to the position of this binding spot, i.e. on one of the ends of the crosslinker molecule.
+       * Hence the search-radius has to be set to the full crosslinker length*/
+      double rmin = (statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
+      double rmax = (statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
+      if ((*numbond_)[clID]>0.9)
+      {
+        rmin *= 2.0;
+        rmax *= 2.0;
+      }
+
+      //loop over all binding spots within this octant (i.e. possible neighbours)
+      for(int k=0; k<bspottree->BBoxesInOctRow()->NumVectors();k++)
+      {
+        //skip if entry is -9 meaning there are nor further bspots
+        if((*bspottree->BBoxesInOctRow())[k][octLID]<-1)
+          continue;
+        //store binding spot id temporarily
+        int tmplid = (int)(*bspottree->BBoxesInOctRow())[k][octLID];
+        //Now perform Orientation checks to identify possible binding partners
+
+        // calculate distance crosslinker-node
+        LINALG::Matrix<3, 1> difference;
+        for (int l=0; l<(int)difference.M(); l++)
+          difference(l) = (*crosslinkerpositions_)[l][clID]-(*bspotpositions)[l][bspotcolmap_->GID(tmplid)];
+        //difference(l) = (*crosslinkerpositions_)[l][clID]-(*bspotpositions)[l][bspotcolmap_->LID(bspotrowmap_->GID(tmplid))];
+        // 1. criterion: distance between linker and binding spot within given interval
+        if(difference.Norm2()<rmax && difference.Norm2()>rmin)
+        {
+          // further calculations in case of helical binding spot geometry and singly bound crosslinkers
+          if(filamentmodel_ == statmech_filament_helical)
+          {
+            bool bspot1=false;
+            bool bspot2=false;
+            // 2. criterion: linker has to lie in the oriented cone with peak "binding spot location"
+            // first and second tria(d vectors (tangent and normal)
+            LINALG::Matrix<3,1> firstdir;
+            LINALG::Matrix<3,1> bspotvec;
+            // retrieve tangential and normal vector from binding spot quaternions
+            LINALG::Matrix<3,3> bspottriad;
+            // auxiliary variable for storing a triad in quaternion form
+            LINALG::Matrix<4, 1> qnode;
+            // triad of node on first filament which is affected by the new crosslinker
+            for (int l=0; l<4; l++)
+              qnode(l) = (*bspottriadscol)[l][bspotcolmap_->GID(tmplid)];
+            LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+            for (int l=0; l<(int)bspottriad.M(); l++)
+            {
+              firstdir(l) = bspottriad(l,0);
+              bspotvec(l) = bspottriad(l,1);
+            }
+
+            // rotation matrix around tangential vector by given angle
+            RotationAroundFixedAxis(firstdir,bspotvec,(*bspotorientations_)[bspotcolmap_->GID(tmplid)]);
+
+            // linker position
+            LINALG::Matrix<3,1> crossbspotdiff;
+            for(int l=0; l<(int)crossbspotdiff.M(); l++)
+              crossbspotdiff(l) = (*crosslinkerpositions_)[l][clID]-(*bspotpositions)[l][bspotcolmap_->GID(tmplid)];
+            // line parameter of the intersection point of the line through the binding spot with the orientation of the binding spot.
+            // a)lambda must be larger than zero in order to lie within the cone
+            double lambda = (crossbspotdiff.Dot(bspotvec))/(bspotvec.Dot(bspotvec));
+            if(lambda>0)
+            {
+              difference.Scale(1.0/difference.Norm2()); // normalized vector
+              // b) the angle between the binding spot orientation and the vector between bspot and crosslinker must be smaller than PHIBSPOT
+              //    Only then does the crosslinker lie within the cone
+              if(acos(fabs(bspotvec.Dot(difference))) < statmechparams_.get<double>("PHIBSPOT", 0.524))
+                bspot1=true;
+              if((int)(*numbond_)[clID]<0.1)
+                bspot2=true;
+              else //check wether first Bspot lies fullfills orientation criterium
+              {       //id of bindingspot that was bound ealier
+                int bspotID=0;
+                if((int)(*crosslinkerbond_)[0][clID] < -0.9)
+                  bspotID=(int)(*crosslinkerbond_)[1][clID];
+                else if((int)(*crosslinkerbond_)[1][clID] < -0.9)
+                  bspotID=(int)(*crosslinkerbond_)[0][clID];
+                else //
+                  dserror("Error in crosslinker management and/or search!");
+                  //turn difference Vectors direction
+                for(int l=0; l<(int)crossbspotdiff.M(); l++)
+                 crossbspotdiff(l) = -crossbspotdiff(l);
+
+                for (int l=0; l<4; l++)
+                   qnode(l) = (*bspottriadscol)[l][bspotID];
+                LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+                for (int l=0; l<(int)bspottriad.M(); l++)
+                {
+                  firstdir(l) = bspottriad(l,0);
+                  bspotvec(l) = bspottriad(l,1);
+                }
+
+                RotationAroundFixedAxis(firstdir,bspotvec,(*bspotorientations_)[bspotID]);
+
+                lambda = (crossbspotdiff.Dot(bspotvec))/(bspotvec.Dot(bspotvec));
+                if(lambda>0)
+                {
+                 difference.Scale(1.0/difference.Norm2()); // normalized vector
+                // b) the angle between the binding spot orientation and the vector between bspot and crosslinker must be smaller than PHIBSPOT
+                //    Only then does the crosslinker lie within the cone
+                if(acos(fabs(bspotvec.Dot(difference))) < statmechparams_.get<double>("PHIBSPOT", 0.524))
+                 bspot2=true;
+                }
+              }
+              if(bspot1 && bspot2)
+                neighbournodes[clID].push_back(tmplid);
+            }
+          }
+          else // only difference criterion applied
+            neighbournodes[clID].push_back(tmplid);
+        }//end orientation & distance check
+      }//end loop over all bspots in octant
+      // "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
+      if((int)(*numbond_)[clID]==1)
+        neighbournodes[clID].push_back(-1);
+      // store local maximal number of LIDs per molecule in order to determine neighbourslid->NumVectors()
+      maxneighbourslocal = std::max(maxneighbourslocal, (int)neighbournodes[clID].size());
+    }//end loop over all crosslinker in octant
+  }//end loop over all octants
+
+  // get global maximal number of LIDs per molecule
+  discret_->Comm().MaxAll(&maxneighbourslocal, &maxneighboursglobal, 1);
+  if(maxneighboursglobal==0)
+    maxneighboursglobal = 1;
+
+  // copy information to Epetra_MultiVector for communication
+  Teuchos::RCP<Epetra_MultiVector> neighbourslidtrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,maxneighboursglobal, false));
+  /* assign "-2" (also to distinguish between 'empty' and passive crosslink molecule "-1"
+   * to be able to determine entries which remain "empty" due to number of LIDs < maxneighboursglobal*/
+  neighbourslidtrans->PutScalar(0);
+  neighbourslid = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,maxneighboursglobal,true));
+  /* here we add 2.0 to every ID that enters neighbourslid avoiding zero-entries resulting from neighboursID=0.
+   * Later, after communication we substract 2.0*/
+  for(int i=0; i<neighbourslid->MyLength(); i++)
+    for(int j=0; j<(int)neighbournodes[i].size(); j++)
+      (*neighbourslid)[j][i] = (double)neighbournodes[i][j]+2.0;
+
+  // make information redundant on all Procs
+  CommunicateMultiVector(neighbourslidtrans, neighbourslid, true,false,false);
+  CommunicateMultiVector(neighbourslidtrans, neighbourslid, false,true);
+
+  //substract 2.0 from all entries in neighbourslid to retrieve right value of ID's.
+  //Now, entry=-2 means no neighbour, entry=-1 means passive crosslinker, entry>=0 stands for the neighbour ID' s
+  for(int i=0; i<neighbourslid->MyLength(); i++)
+    for(int j=0; j<(int)neighbourslid->NumVectors(); j++)
+      (*neighbourslid)[j][i]=(*neighbourslid)[j][i]-2.0;
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | rotation around a fixed axis by angle phirot          mueller (11/11)|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>& vector, const double& phirot)
@@ -1874,7 +2042,6 @@ void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axi
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | Searches for crosslink molecule-filament node pairs and adds actual  |
@@ -1914,8 +2081,24 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
   // map filament (column map, i.e. entire node set on each proc) node positions to volume partitions every SEARCHINTERVAL timesteps
 
   Teuchos::RCP<Epetra_MultiVector> neighbourslid;
-  if(statmechparams_.get<int>("SEARCHRES",1)>0)
-    PartitioningAndSearch(*bspotpositions,*bspottriadscol, neighbourslid);
+
+  INPAR::STATMECH::BSSearchType searchtype = DRT::INPUT::IntegralValue<INPAR::STATMECH::BSSearchType>(statmechparams_,"BINDINGSITESEARCH");
+
+  switch(searchtype)
+  {
+    case INPAR::STATMECH::bsstype_volpart:
+    {
+      if(statmechparams_.get<int>("SEARCHRES",1)>0)
+        PartitioningAndSearch(bspotpositions,bspottriadscol, neighbourslid);
+    }
+    break;
+    case INPAR::STATMECH::bsstype_octree:
+      DetectBindingSpotsOctree(bspotpositions, bspottriadscol,neighbourslid);
+    break;
+    case INPAR::STATMECH::bsstype_binning:
+    break;
+    default: dserror("Unknown binding site search method %d !", searchtype);
+  }
 
 #ifdef MEASURETIME
   double t1 = Teuchos::Time::wallTime();
@@ -5059,7 +5242,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     // 2. Now, parallely search for neighbour nodes
     Teuchos::RCP<Epetra_MultiVector> neighbourslid = Teuchos::null;
     if(statmechparams_.get<int>("SEARCHRES",1)>0)
-      PartitioningAndSearch(*bspotpositions,*bspottriadscol, neighbourslid);
+      PartitioningAndSearch(bspotpositions,bspottriadscol, neighbourslid);
 
     // 3. create double bonds
     // a vector indicating the crosslink molecule which is going to constitute a crosslinker element

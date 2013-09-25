@@ -1928,6 +1928,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<int>(INPAR::STATMECH::filamentmodel_std,
                                             INPAR::STATMECH::filamentmodel_helical),
                                             &statmech);
+  //Reading which kind of search routine is used
+  setStringToIntegralParameter<int>("BINDINGSITESEARCH","volpart","binding site search method",
+                                 //listing possible std::strings in input file in category DBCTYPE
+                                 tuple<std::string>("volpart",
+                                                    "binning",
+                                                    "octree"),
+                                 //translating input std::strings into BACI input parameters
+                                 tuple<int>(INPAR::STATMECH::bsstype_volpart,
+                                            INPAR::STATMECH::bsstype_binning,
+                                            INPAR::STATMECH::bsstype_octree),
+                                            &statmech);
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
   // Time values at which certain actions are carried out

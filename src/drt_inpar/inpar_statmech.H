@@ -81,6 +81,14 @@ namespace INPAR
       nbctype_constcreep    ///< constant Neumann Boundary condition
     };
 
+    /// (this enum represents the input file parameter BINDINGSITESEARCH)
+    enum BSSearchType
+    {
+      bsstype_volpart, ///< volume partitioning
+      bsstype_binning, ///< binning
+      bsstype_octree   ///< octree
+    };
+
     /// (this enum represents the input file parameter NETWORKTYPE
     enum NetworkType
     {

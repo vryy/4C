@@ -490,6 +490,7 @@ set(OBJS_DRT_MAT_LIB
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp
   src/drt_statmech/statmech_output.cpp
+  src/drt_statmech/statmech_search_octree.cpp
 )
 set(OBJS_DRT_PLASTIC_SSN
   src/drt_plastic_ssn/plastic_ssn_manager.cpp
