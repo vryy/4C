@@ -1318,9 +1318,6 @@ bool FPSI::Monolithic::Converged()
 
 void FPSI::Monolithic::BuildConvergenceNorms()
 {
-  std::cout<<"Full Monolithic Residual: \n"<<*rhs_<<std::endl;
-  // std::cout<<"Full Monolithic Increment Vector: \n"<<*iterinc_<<std::endl;
-
   rhs_->Norm2(&normofrhs_);
   Teuchos::RCP<const Epetra_Vector> rhs_poro;
   Teuchos::RCP<const Epetra_Vector> rhs_fluid;

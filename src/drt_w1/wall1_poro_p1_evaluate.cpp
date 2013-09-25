@@ -687,8 +687,8 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     if(my::fluidmat_->Type() == "Darcy-Brinkman")
     {
       double visc = my::fluidmat_->Viscosity();
-      LINALG::Matrix<my::numdim_,my::numdim_> CinvFvel;
-      LINALG::Matrix<my::numdim_,my::numdim_> visctress1;
+      LINALG::Matrix<my::numdim_,my::numdim_> CinvFvel(true);
+      LINALG::Matrix<my::numdim_,my::numdim_> visctress1(true);
       CinvFvel.Multiply(C_inv,fvelder);
       visctress1.MultiplyNT(CinvFvel,defgrd_inv);
       LINALG::Matrix<my::numdim_,my::numdim_> visctress2(visctress1);
@@ -696,10 +696,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
 
       fstress(0) = visctress1(0,0);
       fstress(1) = visctress1(1,1);
-      fstress(2) = visctress1(2,2);
-      fstress(3) = visctress1(0,1);
-      fstress(4) = visctress1(1,2);
-      fstress(5) = visctress1(2,0);
+      fstress(2) = visctress1(0,1);
 
       fstress.Scale(detJ_w * visc * J);
 
