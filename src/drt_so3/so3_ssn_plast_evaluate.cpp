@@ -1921,97 +1921,98 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
           // This equation is apriori skew-symmetric so it reduces to 3 independent
           // scalar-valued equations.
           SpEq(0) = -mDLp_last_iter_->at(gp)(5) -PlSpinEta/inityield *
-              ( DeltaAlphaK_vec(0)*eta_vec(2)
-                  +DeltaAlphaK_vec(2)*eta_vec(1)
-                  +DeltaAlphaK_vec(4)*eta_vec(3)
-                  -DeltaAlphaK_vec(2)*eta_vec(0)
-                  -DeltaAlphaK_vec(1)*eta_vec(2)
-                  -DeltaAlphaK_vec(3)*eta_vec(4) );
+              ( DeltaAlphaK_vec(0)*mandelstress(0,1)
+                  +DeltaAlphaK_vec(2)*mandelstress(1,1)
+                  +DeltaAlphaK_vec(4)*mandelstress(1,2)
+                  -DeltaAlphaK_vec(2)*mandelstress(0,0)
+                  -DeltaAlphaK_vec(1)*mandelstress(0,1)
+                  -DeltaAlphaK_vec(3)*mandelstress(0,2) );
           SpEq(1) = -mDLp_last_iter_->at(gp)(6) -PlSpinEta/inityield *
-              ( DeltaAlphaK_vec(2)*eta_vec(4)
-                  +DeltaAlphaK_vec(1)*eta_vec(3)*2.
-                  -DeltaAlphaK_vec(3)*eta_vec(0)
-                  -DeltaAlphaK_vec(3)*eta_vec(1)*2.
-                  -DeltaAlphaK_vec(4)*eta_vec(2)
-                  +DeltaAlphaK_vec(0)*eta_vec(3) );
+              ( DeltaAlphaK_vec(2)*mandelstress(0,2)
+                  +DeltaAlphaK_vec(1)*mandelstress(1,2)*2.
+                  +DeltaAlphaK_vec(3)*mandelstress(2,2)
+                  -DeltaAlphaK_vec(4)*mandelstress(0,1)
+                  -DeltaAlphaK_vec(3)*mandelstress(1,1)
+                  +DeltaAlphaK_vec(0)*mandelstress(1,2) );
           SpEq(2) = -mDLp_last_iter_->at(gp)(7) -PlSpinEta/inityield *
-              ( DeltaAlphaK_vec(0)*eta_vec(4)*2.
-                  +DeltaAlphaK_vec(2)*eta_vec(3)
-                  -DeltaAlphaK_vec(4)*eta_vec(0)*2.
-                  -DeltaAlphaK_vec(4)*eta_vec(1)
-                  -DeltaAlphaK_vec(3)*eta_vec(2)
-                  +DeltaAlphaK_vec(1)*eta_vec(4) );
+              ( DeltaAlphaK_vec(0)*mandelstress(0,2)*2.
+                  +DeltaAlphaK_vec(2)*mandelstress(1,2)
+                  +DeltaAlphaK_vec(4)*mandelstress(2,2)
+                  -DeltaAlphaK_vec(4)*mandelstress(0,0)
+                  -DeltaAlphaK_vec(3)*mandelstress(0,1)
+                  +DeltaAlphaK_vec(1)*mandelstress(0,2) );
 
           // derivative of SpEq w.r.t. beta
           for (int i=0; i<8; i++)
           {
-            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(0)*detadbeta(2,i);
-            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(2)*detadbeta(1,i);
-            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(4)*detadbeta(3,i);
-            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(2)*detadbeta(0,i);
-            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(1)*detadbeta(2,i);
-            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(3)*detadbeta(4,i);
+            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(0)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[1][1],i);
+            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[1][2],i);
+            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[0][0],i);
+            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(1)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[0][2],i);
 
-            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadbeta(4,i);
-            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadbeta(3,i)*2.;
-            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadbeta(0,i);
-            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadbeta(1,i)*2.;
-            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadbeta(2,i);
-            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadbeta(3,i);
+            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[0][2],i);
+            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dsigmadbeta(VOIGT3X3SYM_[1][2],i)*2.;
+            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[2][2],i);
+            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[1][1],i);
+            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dsigmadbeta(VOIGT3X3SYM_[1][2],i);
 
-            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadbeta(4,i)*2.;
-            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadbeta(3,i);
-            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadbeta(0,i)*2.;
-            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadbeta(1,i);
-            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadbeta(2,i);
-            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadbeta(4,i);
+            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dsigmadbeta(VOIGT3X3SYM_[0][2],i)*2.;
+            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[1][2],i);
+            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[2][2],i);
+            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[0][0],i);
+            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dsigmadbeta(VOIGT3X3SYM_[0][2],i);
           }
           dSpEqDbeta(0,5) -=1.;
-          dSpEqDbeta(0,0) -=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(0,2) -=PlSpinEta/inityield*eta_vec(1);
-          dSpEqDbeta(0,4) -=PlSpinEta/inityield*eta_vec(3);
-          dSpEqDbeta(0,2) +=PlSpinEta/inityield*eta_vec(0);
-          dSpEqDbeta(0,1) +=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(0,3) +=PlSpinEta/inityield*eta_vec(4);
+          dSpEqDbeta(0,0) -=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(0,2) -=PlSpinEta/inityield*mandelstress(1,1);
+          dSpEqDbeta(0,4) -=PlSpinEta/inityield*mandelstress(1,2);
+          dSpEqDbeta(0,2) +=PlSpinEta/inityield*mandelstress(0,0);
+          dSpEqDbeta(0,1) +=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(0,3) +=PlSpinEta/inityield*mandelstress(0,2);
 
           dSpEqDbeta(1,6) -=1.;
-          dSpEqDbeta(1,2) -=PlSpinEta/inityield*eta_vec(4);
-          dSpEqDbeta(1,1) -=PlSpinEta/inityield*eta_vec(3)*2.;
-          dSpEqDbeta(1,3) +=PlSpinEta/inityield*eta_vec(0);
-          dSpEqDbeta(1,3) +=PlSpinEta/inityield*eta_vec(1)*2.;
-          dSpEqDbeta(1,4) +=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(1,0) -=PlSpinEta/inityield*eta_vec(3);
+          dSpEqDbeta(1,2) -=PlSpinEta/inityield*mandelstress(0,2);
+          dSpEqDbeta(1,1) -=PlSpinEta/inityield*mandelstress(1,2)*2.;
+          dSpEqDbeta(1,3) -=PlSpinEta/inityield*mandelstress(2,2);
+          dSpEqDbeta(1,4) +=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(1,3) +=PlSpinEta/inityield*mandelstress(1,1);
+          dSpEqDbeta(1,0) +=PlSpinEta/inityield*mandelstress(1,2);
 
           dSpEqDbeta(2,7) -=1.;
-          dSpEqDbeta(2,0) -=PlSpinEta/inityield*eta_vec(4)*2.;
-          dSpEqDbeta(2,2) -=PlSpinEta/inityield*eta_vec(3);
-          dSpEqDbeta(2,4) +=PlSpinEta/inityield*eta_vec(0)*2.;
-          dSpEqDbeta(2,4) +=PlSpinEta/inityield*eta_vec(1);
-          dSpEqDbeta(2,3) +=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(2,1) -=PlSpinEta/inityield*eta_vec(4);
+          dSpEqDbeta(2,0) -=PlSpinEta/inityield*mandelstress(0,2)*2.;
+          dSpEqDbeta(2,2) -=PlSpinEta/inityield*mandelstress(1,2);
+          dSpEqDbeta(2,4) -=PlSpinEta/inityield*mandelstress(2,2);
+          dSpEqDbeta(2,4) +=PlSpinEta/inityield*mandelstress(0,0);
+          dSpEqDbeta(2,3) +=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(2,1) -=PlSpinEta/inityield*mandelstress(0,2);
 
           // derivative of SpEq w.r.t. displacements
           for (int i=0; i<numdofperelement_; i++)
           {
-            dSpEqDd(0,i) += PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(0,i);
-            dSpEqDd(0,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(1,i);
-            dSpEqDd(0,i) -= PlSpinEta/inityield *(DeltaAlphaK_vec(0)-DeltaAlphaK_vec(1))*detadd(2,i);
-            dSpEqDd(0,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(3,i);
-            dSpEqDd(0,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(4,i);
+            dSpEqDd(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(0)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[1][1],i);
+            dSpEqDd(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[1][2],i);
+            dSpEqDd(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[0][0],i);
+            dSpEqDd(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(1)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[0][2],i);
 
-            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(4,i);
-            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadd(3,i)*2.;
-            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(0,i);
-            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(1,i)*2.;
-            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(2,i);
-            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadd(3,i);
+            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[0][2],i);
+            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dSigmadd(VOIGT3X3SYM_[1][2],i)*2.;
+            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[2][2],i);
+            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[1][1],i);
+            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dSigmadd(VOIGT3X3SYM_[1][2],i);
 
-            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadd(4,i)*2.;
-            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(3,i);
-            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(0,i)*2.;
-            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(1,i);
-            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(2,i);
-            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadd(4,i);
+            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dSigmadd(VOIGT3X3SYM_[0][2],i)*2.;
+            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[1][2],i);
+            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[2][2],i);
+            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[0][0],i);
+            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dSigmadd(VOIGT3X3SYM_[0][2],i);
           }
 
 //          // FD check beta
@@ -3735,97 +3736,98 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
           // This equation is apriori skew-symmetric so it reduces to 3 independent
           // scalar-valued equations.
           SpEq(0) = -mDLp_last_iter_->at(gp)(5) -PlSpinEta/inityield *
-              ( DeltaAlphaK_vec(0)*eta_vec(2)
-                  +DeltaAlphaK_vec(2)*eta_vec(1)
-                  +DeltaAlphaK_vec(4)*eta_vec(3)
-                  -DeltaAlphaK_vec(2)*eta_vec(0)
-                  -DeltaAlphaK_vec(1)*eta_vec(2)
-                  -DeltaAlphaK_vec(3)*eta_vec(4) );
+              ( DeltaAlphaK_vec(0)*mandelstress(0,1)
+                  +DeltaAlphaK_vec(2)*mandelstress(1,1)
+                  +DeltaAlphaK_vec(4)*mandelstress(1,2)
+                  -DeltaAlphaK_vec(2)*mandelstress(0,0)
+                  -DeltaAlphaK_vec(1)*mandelstress(0,1)
+                  -DeltaAlphaK_vec(3)*mandelstress(0,2) );
           SpEq(1) = -mDLp_last_iter_->at(gp)(6) -PlSpinEta/inityield *
-              ( DeltaAlphaK_vec(2)*eta_vec(4)
-                  +DeltaAlphaK_vec(1)*eta_vec(3)*2.
-                  -DeltaAlphaK_vec(3)*eta_vec(0)
-                  -DeltaAlphaK_vec(3)*eta_vec(1)*2.
-                  -DeltaAlphaK_vec(4)*eta_vec(2)
-                  +DeltaAlphaK_vec(0)*eta_vec(3) );
+              ( DeltaAlphaK_vec(2)*mandelstress(0,2)
+                  +DeltaAlphaK_vec(1)*mandelstress(1,2)*2.
+                  +DeltaAlphaK_vec(3)*mandelstress(2,2)
+                  -DeltaAlphaK_vec(4)*mandelstress(0,1)
+                  -DeltaAlphaK_vec(3)*mandelstress(1,1)
+                  +DeltaAlphaK_vec(0)*mandelstress(1,2) );
           SpEq(2) = -mDLp_last_iter_->at(gp)(7) -PlSpinEta/inityield *
-              ( DeltaAlphaK_vec(0)*eta_vec(4)*2.
-                  +DeltaAlphaK_vec(2)*eta_vec(3)
-                  -DeltaAlphaK_vec(4)*eta_vec(0)*2.
-                  -DeltaAlphaK_vec(4)*eta_vec(1)
-                  -DeltaAlphaK_vec(3)*eta_vec(2)
-                  +DeltaAlphaK_vec(1)*eta_vec(4) );
+              ( DeltaAlphaK_vec(0)*mandelstress(0,2)*2.
+                  +DeltaAlphaK_vec(2)*mandelstress(1,2)
+                  +DeltaAlphaK_vec(4)*mandelstress(2,2)
+                  -DeltaAlphaK_vec(4)*mandelstress(0,0)
+                  -DeltaAlphaK_vec(3)*mandelstress(0,1)
+                  +DeltaAlphaK_vec(1)*mandelstress(0,2) );
 
           // derivative of SpEq w.r.t. beta
           for (int i=0; i<8; i++)
           {
-            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(0)*detadbeta(2,i);
-            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(2)*detadbeta(1,i);
-            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(4)*detadbeta(3,i);
-            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(2)*detadbeta(0,i);
-            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(1)*detadbeta(2,i);
-            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(3)*detadbeta(4,i);
+            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(0)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[1][1],i);
+            dSpEqDbeta(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[1][2],i);
+            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[0][0],i);
+            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(1)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[0][2],i);
 
-            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadbeta(4,i);
-            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadbeta(3,i)*2.;
-            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadbeta(0,i);
-            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadbeta(1,i)*2.;
-            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadbeta(2,i);
-            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadbeta(3,i);
+            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[0][2],i);
+            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dsigmadbeta(VOIGT3X3SYM_[1][2],i)*2.;
+            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[2][2],i);
+            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[1][1],i);
+            dSpEqDbeta(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dsigmadbeta(VOIGT3X3SYM_[1][2],i);
 
-            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadbeta(4,i)*2.;
-            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadbeta(3,i);
-            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadbeta(0,i)*2.;
-            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadbeta(1,i);
-            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadbeta(2,i);
-            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadbeta(4,i);
+            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dsigmadbeta(VOIGT3X3SYM_[0][2],i)*2.;
+            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dsigmadbeta(VOIGT3X3SYM_[1][2],i);
+            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[2][2],i);
+            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dsigmadbeta(VOIGT3X3SYM_[0][0],i);
+            dSpEqDbeta(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dsigmadbeta(VOIGT3X3SYM_[0][1],i);
+            dSpEqDbeta(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dsigmadbeta(VOIGT3X3SYM_[0][2],i);
           }
           dSpEqDbeta(0,5) -=1.;
-          dSpEqDbeta(0,0) -=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(0,2) -=PlSpinEta/inityield*eta_vec(1);
-          dSpEqDbeta(0,4) -=PlSpinEta/inityield*eta_vec(3);
-          dSpEqDbeta(0,2) +=PlSpinEta/inityield*eta_vec(0);
-          dSpEqDbeta(0,1) +=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(0,3) +=PlSpinEta/inityield*eta_vec(4);
+          dSpEqDbeta(0,0) -=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(0,2) -=PlSpinEta/inityield*mandelstress(1,1);
+          dSpEqDbeta(0,4) -=PlSpinEta/inityield*mandelstress(1,2);
+          dSpEqDbeta(0,2) +=PlSpinEta/inityield*mandelstress(0,0);
+          dSpEqDbeta(0,1) +=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(0,3) +=PlSpinEta/inityield*mandelstress(0,2);
 
           dSpEqDbeta(1,6) -=1.;
-          dSpEqDbeta(1,2) -=PlSpinEta/inityield*eta_vec(4);
-          dSpEqDbeta(1,1) -=PlSpinEta/inityield*eta_vec(3)*2.;
-          dSpEqDbeta(1,3) +=PlSpinEta/inityield*eta_vec(0);
-          dSpEqDbeta(1,3) +=PlSpinEta/inityield*eta_vec(1)*2.;
-          dSpEqDbeta(1,4) +=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(1,0) -=PlSpinEta/inityield*eta_vec(3);
+          dSpEqDbeta(1,2) -=PlSpinEta/inityield*mandelstress(0,2);
+          dSpEqDbeta(1,1) -=PlSpinEta/inityield*mandelstress(1,2)*2.;
+          dSpEqDbeta(1,3) -=PlSpinEta/inityield*mandelstress(2,2);
+          dSpEqDbeta(1,4) +=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(1,3) +=PlSpinEta/inityield*mandelstress(1,1);
+          dSpEqDbeta(1,0) +=PlSpinEta/inityield*mandelstress(1,2);
 
           dSpEqDbeta(2,7) -=1.;
-          dSpEqDbeta(2,0) -=PlSpinEta/inityield*eta_vec(4)*2.;
-          dSpEqDbeta(2,2) -=PlSpinEta/inityield*eta_vec(3);
-          dSpEqDbeta(2,4) +=PlSpinEta/inityield*eta_vec(0)*2.;
-          dSpEqDbeta(2,4) +=PlSpinEta/inityield*eta_vec(1);
-          dSpEqDbeta(2,3) +=PlSpinEta/inityield*eta_vec(2);
-          dSpEqDbeta(2,1) -=PlSpinEta/inityield*eta_vec(4);
+          dSpEqDbeta(2,0) -=PlSpinEta/inityield*mandelstress(0,2)*2.;
+          dSpEqDbeta(2,2) -=PlSpinEta/inityield*mandelstress(1,2);
+          dSpEqDbeta(2,4) -=PlSpinEta/inityield*mandelstress(2,2);
+          dSpEqDbeta(2,4) +=PlSpinEta/inityield*mandelstress(0,0);
+          dSpEqDbeta(2,3) +=PlSpinEta/inityield*mandelstress(0,1);
+          dSpEqDbeta(2,1) -=PlSpinEta/inityield*mandelstress(0,2);
 
           // derivative of SpEq w.r.t. displacements
           for (int i=0; i<numdofperelement_; i++)
           {
-            dSpEqDd(0,i) += PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(0,i);
-            dSpEqDd(0,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(1,i);
-            dSpEqDd(0,i) -= PlSpinEta/inityield *(DeltaAlphaK_vec(0)-DeltaAlphaK_vec(1))*detadd(2,i);
-            dSpEqDd(0,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(3,i);
-            dSpEqDd(0,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(4,i);
+            dSpEqDd(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(0)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[1][1],i);
+            dSpEqDd(0,i) -= PlSpinEta/inityield*DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[1][2],i);
+            dSpEqDd(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[0][0],i);
+            dSpEqDd(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(1)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(0,i) += PlSpinEta/inityield*DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[0][2],i);
 
-            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(4,i);
-            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadd(3,i)*2.;
-            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(0,i);
-            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(1,i)*2.;
-            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(2,i);
-            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadd(3,i);
+            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[0][2],i);
+            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dSigmadd(VOIGT3X3SYM_[1][2],i)*2.;
+            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[2][2],i);
+            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(1,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[1][1],i);
+            dSpEqDd(1,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dSigmadd(VOIGT3X3SYM_[1][2],i);
 
-            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*detadd(4,i)*2.;
-            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*detadd(3,i);
-            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(0,i)*2.;
-            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*detadd(1,i);
-            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*detadd(2,i);
-            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*detadd(4,i);
+            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(0)*dSigmadd(VOIGT3X3SYM_[0][2],i)*2.;
+            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(2)*dSigmadd(VOIGT3X3SYM_[1][2],i);
+            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[2][2],i);
+            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(4)*dSigmadd(VOIGT3X3SYM_[0][0],i);
+            dSpEqDd(2,i) += PlSpinEta/inityield *DeltaAlphaK_vec(3)*dSigmadd(VOIGT3X3SYM_[0][1],i);
+            dSpEqDd(2,i) -= PlSpinEta/inityield *DeltaAlphaK_vec(1)*dSigmadd(VOIGT3X3SYM_[0][2],i);
           }
 
 //          // FD check beta
