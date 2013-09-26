@@ -209,8 +209,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MAIN_DIFFUSIVITY","conductivity in fiber direction");
     AddNamedReal(m,"OFF_DIFFUSIVITY","conductivity perpendicular to fiber direction");
     AddNamedReal(m,"PERTUBATION_DERIV","pertubation for calculation of reaction coefficient derivative");
-    AddNamedString(m,"MODEL","Model type: MV or TNNP", "MV");
-    AddNamedString(m,"TISSUE","Tissue type: M, ENDO or EPI", "M");
+    AddNamedString(m,"MODEL","Model type: MV, FHN, TNNP, SAN or INADA", "MV");
+    AddNamedString(m,"TISSUE","Tissue type: M, ENDO, EPI, AN, N or NH", "M");
+    AddNamedReal(m, "TIME_SCALE","Scale factor for time units of Model");
 
     AppendMaterialDefinition(matlist,m);
   }
