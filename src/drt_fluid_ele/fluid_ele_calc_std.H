@@ -41,6 +41,8 @@ public:
     /// called upon destruction
     virtual void Done();
 
+    int num_;
+
 private:
 
 };

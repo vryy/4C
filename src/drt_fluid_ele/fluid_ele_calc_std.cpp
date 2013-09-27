@@ -44,10 +44,11 @@ DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>
      if ( MY::instances_.find(num)->second != NULL )
      {
        delete MY::instances_.at(num)->find((int)distype)->second;
-       delete MY::instances_.find(num)->second;
+       MY::instances_.at(num)->erase((int)distype);
+       if (MY::instances_.at(num)->size() == 0)
+         delete MY::instances_.find(num)->second;
      }
 
-     MY::instances_.insert(std::pair<int,std::map<int,MY* > * >(num, NULL));
      return NULL;
    }
 
@@ -62,9 +63,9 @@ void DRT::ELEMENTS::FluidEleCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  int numinstances = MY::instances_.size();
-  for(int i=0; i<numinstances; i++)
-    Instance( false, i );
+  //std::cout<<"deleting fluid "<<num_<<" instance of FluidEleCalcStd for distype "<<(int)distype<<std::endl;
+
+    Instance( false, num_ );
 }
 
 
@@ -72,7 +73,8 @@ void DRT::ELEMENTS::FluidEleCalcStd<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd(int num)
-  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(num)
+  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(num),
+    num_(num)
 {
 
 }
