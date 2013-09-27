@@ -649,6 +649,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 /* calculate stresses and strains on micro-scale */
 void STR::TimInt::PrepareSemiSmoothPlasticity()
 {
+  int HavePlasticity_local=0;
+  int HavePlasticity_global=0;
   for (int i=0; i<discret_->NumMyColElements(); i++)
   {
     DRT::Element* actele = discret_->lColElement(i);
@@ -657,10 +659,13 @@ void STR::TimInt::PrepareSemiSmoothPlasticity()
         || actele->ElementType() == DRT::ELEMENTS::So_hex8fbarPlastType::Instance()
        )
     {
-      plastman_=Teuchos::rcp(new UTILS::PlastSsnManager(discret_));
-      return;
+      HavePlasticity_local=1;
+      break;
     }
   }
+  discret_->Comm().MaxAll(&HavePlasticity_local,&HavePlasticity_global,1);
+  if (HavePlasticity_global)
+    plastman_=Teuchos::rcp(new UTILS::PlastSsnManager(discret_));
   return;
 }
 
