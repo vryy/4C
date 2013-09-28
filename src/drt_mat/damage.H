@@ -2,15 +2,15 @@
 /*!
 \file damage.H
 \brief TODO Contains the functions to establish local material law /
-       stress-strain law for isotropic material for a 3D hex element
-       following ideal von Mises plasticity and a linear elastic material law
+       stress-strain law for isotropic material following nonlinear isotropic
+       von Mises plasticity and a linear elastic material law
        (St.Venant Kirchhoff).
 
-       TODO plastic materail with kinematic hardening
-        - independent yield stress level of degree of plastification
-        - constant uniaxial yield stress sigma_y = const.
-
-       TODO geometric linear, for small strains
+       geometric linear, for small strains
+       
+       example input line:
+       MAT 1 MAT_Struct_Damage YOUNG 206.9 NUE 0.29 DENS 0.0 SAMPLENUM 2
+         SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 TOL 1.0e-6
 
 <pre>
 Maintainer: Caroline Danowski
@@ -19,13 +19,19 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | definitions                                               dano 09/13 |
+ *----------------------------------------------------------------------*/
 #ifndef DAMAGE_H_
 #define DAMAGE_H_
 
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 09/13 |
+ *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+
 
 namespace MAT
 {
@@ -34,7 +40,7 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    //! material parameters for lasto-plastic material
+    //! material parameters for small strain elasto-plastic material with damage
     class Damage : public Parameter
     {
     public:
@@ -54,11 +60,11 @@ namespace MAT
       const double poissonratio_;
       //! mass density
       const double density_;
-      //! initial yield stress (constant)
-      const double yield_;
-      //! linear kinematic hardening modulus
-      const double kinhard_;
-      // tolerance for local Newton iteration
+      //! isotropic hardening curve
+      const std::vector<double> sigma_y_;
+      //! accumulated plastic strain
+      const std::vector<double> strainbar_p_ref_;
+      //! tolerance for local Newton iteration
       const double abstol_;
 
       //@}
@@ -157,14 +163,7 @@ private:
     void Stress(
       const double p,  //!< volumetric stress tensor
       const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  //!< deviatoric stress tensor
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
-      );
-
-    //! calculate relative/over strees
-    void RelStress(
-      const LINALG::Matrix<NUM_STRESS_3D,1>& devstrain,  //!< deviatoric stress tensor
-      const LINALG::Matrix<NUM_STRESS_3D,1>& beta,  //!< back stress tensor
-      LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
       );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
@@ -178,12 +177,25 @@ private:
       double Dgamma,  //!< plastic multiplier
       double G,  //!< shear modulus
       double q,  //!< effective stress
-      const LINALG::Matrix<NUM_STRESS_3D,1> flowvector,  //!< flow vector
-      const LINALG::Matrix<NUM_STRESS_3D,1> devstress,  //!< relative stress
+      const LINALG::Matrix<NUM_STRESS_3D,1> Nbar,  //!< unit flow vector
+      double Hiso,  // isotropic hardening modulus
       double heaviside  //!< heaviside function: decide if loading/unloading
       );
 
-    //! Return density
+    //! calculates the derivative of GetSigmaYAtStrainbarnp() w.r.t. astrain_{n+1}
+    //! and returns the isotropic hardening modulus
+    double GetIsoHardAtStrainbarnp(
+      const double strainbar_p //!< current accumulated strain
+      );
+
+    //! calculates current yield stress from (sigma_y-astrain)-samples which
+    //! describe a piecewise constant function
+    double GetSigmaYAtStrainbarnp(
+      const double strainbar_p,  // current accumulated strain, in case of dependent hardening
+      const double R  // isotropic hardening internal variable
+      );
+
+    //! return density
     virtual double Density() const { return params_->density_; }
 
     //! Return accumulated strain at Gauss points
@@ -191,28 +203,25 @@ private:
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
-    LINALG::Matrix<1,1> AccumulatedStrain(
+    double AccumulatedStrain(
       int gp
       )
     const { return ( strainbarpllast_->at(gp) ); }
 
-    //! Check if history variables are already initialized
+    //! check if history variables are already initialised
     bool Initialized() const
     {
-      return ( isinit_ and (strainplcurr_!=Teuchos::null) );
+      return ( isinit_ and (strainplcurr_ != Teuchos::null) );
     }
 
-    //! Return quick accessible material parameter data
+    //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    /// Return names of visualization data
+    //! return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);
 
-    /// Return visualization data
+    //! return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp);
-
-    //! Flag plastic step was called
-    bool plastic_step;
 
   private:
 
@@ -225,17 +234,14 @@ private:
     // current plastic strain at t_n+1
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     // old accumulated plastic strain at t_n
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    Teuchos::RCP<std::vector<double> > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current accumulated plastic strain at t_n+1
-    Teuchos::RCP<std::vector< LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
-    // old back stress at t_n
-    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
-    // current back stress at t_n+1
-    Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
-
+    Teuchos::RCP<std::vector<double> > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
+    //! indicator if material has started to be plastic
+    bool plastic_step_;
 
   };  // class Damage : public Material
 }  // namespace MAT

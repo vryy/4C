@@ -624,14 +624,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Damage",
-                                            "elasto-plastic von Mises material with damage",
+                                            "elasto-plastic von Mises material with ductile damage",
                                             INPAR::MAT::m_elpldamage));
 
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"YIELD","yield stress");
-    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
+    AddNamedInt(m,"SAMPLENUM","number of stress-strain pairs in list");
+    AddNamedRealVector(m,"SIGMA_Y","yield stress", "SAMPLENUM");
+    AddNamedRealVector(m,"EPSBAR_P","accumulated plastic strain corresponding to SIGMA_Y", "SAMPLENUM");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);

@@ -150,7 +150,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1                    
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_Damage YOUNG 2.1e8 NUE 0.3 DENS 0.0 YIELD 2.4e5 KINHARD 0.0 TOL 1.0e-06
+MAT 1 MAT_Struct_Damage YOUNG 2.1e8 NUE 0.3 DENS 0.0 SAMPLENUM 2 SIGMA_Y 2.4e5 2.4e5 EPSBAR_P 0 1 TOL 1.0e-06
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0 // Tmax=5
 ----------------------------------------------------------------------CURVE2

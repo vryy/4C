@@ -558,7 +558,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     {
       plastic_eleID_ = eleID;
 
-      if ( (plastic_step_ == false) && (eleID == plastic_eleID_) && (gp == 0) )
+      if ( (plastic_step_ == false) and (eleID == plastic_eleID_) and (gp == 0) )
         std::cout << "plasticity starts in element = " << plastic_eleID_ << std::endl;
 
       plastic_step_ = true;

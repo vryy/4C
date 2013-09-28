@@ -88,8 +88,8 @@ DRT::ParObject* MAT::PlasticLinElastType::Create(const std::vector<char> & data)
  | constructor (public)                                      dano 04/11 |
  *----------------------------------------------------------------------*/
 MAT::PlasticLinElast::PlasticLinElast()
-  : params_(NULL),
-    plastic_step_(false)
+: params_(NULL),
+  plastic_step_(false)
 {
 }
 
@@ -184,7 +184,7 @@ void MAT::PlasticLinElast::Unpack(const std::vector<char>& data)
   if (histsize == 0)
     isinit_ = false;
 
-  // unpack strain vectors
+  // unpack plastic strain vectors
   strainpllast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
   strainplcurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
 
@@ -376,7 +376,7 @@ void MAT::PlasticLinElast::Evaluate(
   // astrain^{p,trial}_{n+1} = astrain^p_n
   strainbar_p = strainbarpllast_->at(gp);
   if (strainbarpllast_->at(gp) < 0.0)
-    dserror("accumulated plastic strain has to be equal to or greater than 0!");
+    dserror("accumulated plastic strain has to be equal to or greater than zero!");
 
   // ------------------------------------------------ old back stress
   // beta^{trial}_{n+1} = beta_n
@@ -404,7 +404,7 @@ void MAT::PlasticLinElast::Evaluate(
 
   // volumetric strain
   // trace of strain vector
-  double tracestrain = ( trialstrain_e(0) + trialstrain_e(1) + trialstrain_e(2) );
+  double tracestrain = trialstrain_e(0) + trialstrain_e(1) + trialstrain_e(2);
   // volstrain = 1/3 . tr( strain ) . Id
   LINALG::Matrix<NUM_STRESS_3D,1> volumetricstrain(false);
   volumetricstrain.Update( (tracestrain/3.0), id2, 0.0 );
@@ -558,7 +558,7 @@ void MAT::PlasticLinElast::Evaluate(
       // plasticity with linear kinematic hardening
       // ResTan = -3G - Hkin(strainbar_p + Dgamma^{m-1}) - Hiso(strainbar_p + Dgamma^{m-1})
       // with Hiso = const. when considering LINEAR isotropic hardening
-      ResTan = - 3 * G - Hkin -Hiso;
+      ResTan = - 3 * G - Hkin - Hiso;
 
       // incremental plastic multiplier Dgamma
       // Dgamma^{m} = Dgamma^{m-1} - Phi / Phi'
@@ -599,17 +599,18 @@ void MAT::PlasticLinElast::Evaluate(
     // --------------------------------------------------- plastic update
 
     // ---------------------------------------------- update flow vectors
-    Nbar.Update( 1.0, eta, 0.0);
+    
     // relative stress norm || eta_{n+1}^{trial} ||
     double etanorm = 0.0;
     etanorm = sqrt( eta(0)*eta(0) + eta(1)*eta(1) + eta(2)*eta(2) +
                     2 * ( eta(3)*eta(3) + eta(4)*eta(4) + eta(5)*eta(5) ) );
-    const double facNbar = 1 /  etanorm ;
+        
     // unit flow vector Nbar = eta_{n+1}^{trial} / || eta_{n+1}^{trial} ||
-    Nbar.Scale(facNbar);
+    Nbar.Update(1.0, eta, 0.0);
+    Nbar.Scale(1 / etanorm);
 
     // flow vector N = sqrt(3/2) eta_{n+1}^{trial} / || eta_{n+1}^{trial} ||
-    N.Update(( sqrt( 3.0/2.0 ) ), Nbar, 0.0);
+    N.Update(( sqrt(3.0 / 2.0) ), Nbar, 0.0);
 
     // update relative stress eta_{n+1}, cf. (7.193)
     // eta = ( 1 - (Delta gamma / qbar_{n+1}^{trial}) . [ 3 . G + Hkin] ) eta_{n+1}^{trial}
@@ -629,7 +630,7 @@ void MAT::PlasticLinElast::Evaluate(
     devstress.Update( facdevstress, N, 1.0);
 
     // total stress
-    // sigma_{n+1} = s_{n+1} + p_{n+1} . Id
+    // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
     // pressure/volumetric stress no influence due to plasticity
     Stress( p, devstress, *stress );
 
@@ -672,7 +673,7 @@ void MAT::PlasticLinElast::Evaluate(
   else  // (Phi_trial <= 0.0)
   {
     // trial state vectors = result vectors of time step n+1
-    // sigma^e_n+1 = sigma^(e,trial)_n+1 = s^{trial}_{n+1} + p. I
+    // sigma^e_n+1 = sigma^(e,trial)_n+1 = s^{trial}_{n+1} + p . id2
     Stress( p, devstress, *stress );
 
     // total strains
@@ -708,7 +709,7 @@ void MAT::PlasticLinElast::Evaluate(
 
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
-  // if Phi^trial=0: two tangent stress-strain relations exist
+  // if Phi^trial = 0: two tangent stress-strain relations exist
   // plastic loading --> C == C_ep
   if (Dgamma > 0.0)
     heaviside = 1.0;
@@ -771,6 +772,7 @@ void MAT::PlasticLinElast::Evaluate(
 //  printf("error c_12 %12.5f\n   ",cmat(0,1)-cmatFD(0,1));
 #endif // #ifdef DEBUGMATERIAL
 
+  // ------------------------------- return plastic strains for post-processing
   params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain",plstrain);
 
   return;
@@ -951,21 +953,24 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
         epfac3 =  heaviside * 6 * G * G * ( Dgamma / q - 1.0 / (3*G + Hkin + Hiso) );
         cmat(i,k) += epfac3 * Nbar(i) * Nbar(k);
       }  // (q != 0.0)
-    } // end rows, loop i
+    }  // end rows, loop i
   }  // end columns, loop k
 
   // complete material tangent C_ep available
 
 #ifdef DEBUGMATERIAL
-//  std::cout << "Ende SetupCmatElastPlast" << std::endl;
-//  std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
-//  std::cout << " G " << G << std::endl;
-//  std::cout << " q " << q << std::endl;
-//  std::cout << " flowvector " << flowvector << std::endl;
-//  std::cout << " heaviside " << heaviside << std::endl;
-//  std::cout << " epfac " << epfac << std::endl;
-//  std::cout << " epfac1 " << epfac1 << std::endl;
-//  std::cout << " cmat " << cmat << std::endl;
+  if (Dgamma != 0)
+  {
+    std::cout << "Ende SetupCmatElastPlast" << std::endl;
+    std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
+    std::cout << " G " << G << std::endl;
+    std::cout << " q " << q << std::endl;
+    std::cout << " Nbar " << Nbar << std::endl;
+    std::cout << " heaviside " << heaviside << std::endl;
+    std::cout << " epfac " << epfac << std::endl;
+    std::cout << " epfac1 " << epfac1 << std::endl;
+    std::cout << " cmat " << cmat << std::endl;
+  }
 #endif // #ifdef DEBUGMATERIAL
 
 }  // SetupCmatElastoPlastic()
@@ -1124,7 +1129,7 @@ void MAT::PlasticLinElast::VisNames(std::map<std::string,int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
-}
+}  // VisNames()
 
 
 /*---------------------------------------------------------------------*
@@ -1141,7 +1146,7 @@ bool MAT::PlasticLinElast::VisData(const std::string& name, std::vector<double>&
     data[0] = temp/numgp;
   }
   return true;
-}
+}  // VisData()
 
 
 /*----------------------------------------------------------------------*/

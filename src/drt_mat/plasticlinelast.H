@@ -246,7 +246,7 @@ private:
     //! check if history variables are already initialized
     bool Initialized() const
     {
-      return ( isinit_ and (strainplcurr_!=Teuchos::null) );
+      return ( isinit_ and (strainplcurr_ != Teuchos::null) );
     }
 
     //! return quick accessible material parameter data
