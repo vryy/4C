@@ -400,8 +400,9 @@ template <DRT::Element::DiscretizationType bdistype,
      Epetra_SerialDenseMatrix&      elemat_epetra,
      Epetra_SerialDenseVector&      elevec_epetra)
 {
-  // initialize pressure value at boundary
+  // initialize pressure value and pressure derivative at boundary
   double pressure = 0.0;
+  double pressder = 0.0;
 
   //---------------------------------------------------------------------
   // get condition information and ID
@@ -423,6 +424,7 @@ template <DRT::Element::DiscretizationType bdistype,
     const double const_coeff = (*fdp_cond).GetDouble("ConstCoeff");
     const double lin_coeff   = (*fdp_cond).GetDouble("LinCoeff");
     pressure = const_coeff + lin_coeff*flowrate(fdp_cond_id);
+    pressder = lin_coeff;
   }
   // flow-volume-based condition
   else if (*condtype == "flow_volume")
@@ -688,7 +690,28 @@ template <DRT::Element::DiscretizationType bdistype,
     //---------------------------------------------------------------------
     if (nsd == 3)
     {
-    // contribution to element matrix on left-hand side
+    // contributions to element matrix on left-hand side
+    /*
+    //             /                           \
+    //            |                             |
+    //          + |  v , n * pressder * n * Du  |
+    //            |                             |
+    //             \                           / boundaryele
+    //
+    */
+    const double timefacfacnpredern = timefac*fac_*1.0*pressder;
+
+    for (int ui=0; ui<piel; ++ui)
+    {
+      for (int vi=0; vi<piel; ++vi)
+      {
+        const double temp = timefacfacnpredern*pfunct(ui)*pfunct(vi);
+        elemat(vi*4  ,ui*4  ) += temp;
+        elemat(vi*4+1,ui*4+1) += temp;
+        elemat(vi*4+2,ui*4+2) += temp;
+      }
+    }
+
     /*
     //    /                   \
     //   |           s         |
@@ -768,7 +791,27 @@ template <DRT::Element::DiscretizationType bdistype,
     }
     else if (nsd == 2)
     {
-    // contribution to element matrix on left-hand side
+    // contributions to element matrix on left-hand side
+    /*
+    //             /                           \
+    //            |                             |
+    //          + |  v , n * pressder * n * Du  |
+    //            |                             |
+    //             \                           / boundaryele
+    //
+    */
+    const double timefacfacnpredern = timefac*fac_*1.0*pressder;
+
+    for (int ui=0; ui<piel; ++ui)
+    {
+      for (int vi=0; vi<piel; ++vi)
+      {
+        const double temp = timefacfacnpredern*pfunct(ui)*pfunct(vi);
+        elemat(vi*3  ,ui*3  ) += temp;
+        elemat(vi*3+1,ui*3+1) += temp;
+      }
+    }
+
     /*
     //    /                   \
     //   |           s         |

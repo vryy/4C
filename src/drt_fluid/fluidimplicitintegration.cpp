@@ -1632,10 +1632,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     // define vectors for flow rate and volume for actual evaluation of boundary 
     // conditions according to time-integration scheme and potential relaxation 
     // within nonlinear iteration loop
-    // (relaxation parameter 0.5, for the time being)
+    // (relaxation parameter 1.0, for the time being, that is, no relaxation)
     LINALG::Matrix<4,1> flowraterel(true);
     LINALG::Matrix<4,1> flowvolumerel(true);
-    const double relaxpara = 0.5;
+    const double relaxpara = 1.0;
     double timefac = 1.0;
     if (is_genalpha_) timefac = alphaF_;
 
