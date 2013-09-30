@@ -51,7 +51,7 @@ namespace MueLu {
     FactoryMonitor m(*this, "Build", level);
     level.print(GetOStream(Statistics0,0));
     // extract blocked operator A from current level
-    RCP<Matrix>      A                                      = Get< RCP<Matrix> >     (level, "A");
+    RCP<Matrix> A = Get< RCP<Matrix> >     (level, "A");
     RCP<const Teuchos::Comm< int > > comm = A->getRowMap()->getComm();
     const int myRank = comm->getRank();
 
