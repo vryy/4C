@@ -6296,7 +6296,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   
   setStringToIntegralParameter<int>(
     "MueLu_REBALANCE","No","activate rebalancing using Zoltan/Isorropia",
-    tuple<std::string>("NO", "No"," no","YES","Yes","yes"),
+    tuple<std::string>("NO", "No","no","YES","Yes","yes"),
     tuple<int>(0,1,2,3,4,5),
     &list);
   DoubleParameter("MueLu_REBALANCE_NONZEROIMBALANCE",1.2,"maximum allowed nonzero imbalance factor",&list);
