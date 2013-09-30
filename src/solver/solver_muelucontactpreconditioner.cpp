@@ -218,6 +218,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // fill hierarchy
   Teuchos::RCP<Hierarchy> hierarchy = Teuchos::rcp(new Hierarchy(A));
+  hierarchy->setlib(Xpetra::UseEpetra);
   hierarchy->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
   hierarchy->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize)+nSlaveDofs);
   //hierarchy->SetDebug(true);
@@ -232,7 +233,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   // set fine level nullspace
   // use given fine level null space or extract pre-computed nullspace from ML parameter list
  Teuchos::RCP<MueLu::Level> Finest = hierarchy->GetLevel();  // get finest level
-
+ Finest->setlib(Xpetra::UseEpetra);
  Finest->Set("A",A);
 
  //Finest->Set("ActiveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xActiveDofMap));  // set map with active dofs

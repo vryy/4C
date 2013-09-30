@@ -251,7 +251,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // set fine level nullspace
   // use given fine level null space or extract pre-computed nullspace from ML parameter list
  Teuchos::RCP<MueLu::Level> Finest = hierarchy->GetLevel();  // get finest level
-
+ Finest->setlib(Xpetra::UseEpetra);
  Finest->Set("A",A); // not necessary
 
 

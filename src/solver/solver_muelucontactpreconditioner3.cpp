@@ -129,6 +129,7 @@ void LINALG::SOLVER::MueLuContactPreconditioner3::Setup( bool create,
 
     AdaptiveSaMLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
     Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+    H->setlib(Xpetra::UseEpetra);
     H->GetLevel(0)->Set("A", mueluOp);
     mueLuFactory.SetupHierarchy(*H);
 

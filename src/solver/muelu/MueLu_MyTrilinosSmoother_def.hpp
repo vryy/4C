@@ -75,26 +75,6 @@ namespace MueLu {
     : mapName_(mapName), mapFact_(mapFact), type_(type), paramList_(paramList), overlap_(overlap), AFact_(AFact)
   {
     TEUCHOS_TEST_FOR_EXCEPTION(overlap_ < 0, Exceptions::RuntimeError, "overlap_ < 0");
-  }
-
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
-    currentLevel.DeclareInput(mapName_, mapFact_.get());
-  }
-
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Setup(Level &currentLevel) {
-    //FactoryMonitor m(*this, "Setup Smoother");
-    Monitor m(*this, "Setup MyTrilinosSmoother");
-
-    if (SmootherPrototype::IsSetup() == true) VerboseObject::GetOStream(Warnings0, 0) << "Warning: MueLu::MyTrilinosSmoother::Setup(): Setup() has already been called";
-    TEUCHOS_TEST_FOR_EXCEPTION(s_ != Teuchos::null, Exceptions::RuntimeError, "IsSetup() == false but s_ != Teuchos::null. This does not make sense");
-
-    if(currentLevel.IsAvailable(mapName_,mapFact_.get())) {
-      map_ = currentLevel.Get<RCP<const Map> >(mapName_,mapFact_.get());
-      TEUCHOS_TEST_FOR_EXCEPTION(map_ == Teuchos::null, Exceptions::RuntimeError, "MueLu::MyTrilinosSmoother::Setup: map is Teuchos::null.");
-    }
-    else map_ = Teuchos::null; // no map with artificial Dirichlet boundaries available.
 
     if(type_ == "ILU") {
       s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_);
@@ -104,8 +84,28 @@ namespace MueLu {
       s_->SetFactory("A", AFact_);
     }
 
+    TEUCHOS_TEST_FOR_EXCEPTION(s_ == Teuchos::null, Exceptions::RuntimeError, "MueLu::MyTrilinosSmoother: failed to create TrilinosSmoother.");
+  }
 
-    TEUCHOS_TEST_FOR_EXCEPTION(s_ == Teuchos::null, Exceptions::RuntimeError, "");
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
+    currentLevel.DeclareInput(mapName_, mapFact_.get());
+    s_->DeclareInput(currentLevel); // call explicitely DeclareInput
+  }
+
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Setup(Level &currentLevel) {
+    //FactoryMonitor m(*this, "Setup Smoother");
+    Monitor m(*this, "Setup MyTrilinosSmoother");
+
+    if (SmootherPrototype::IsSetup() == true) VerboseObject::GetOStream(Warnings0, 0) << "Warning: MueLu::MyTrilinosSmoother::Setup(): Setup() has already been called";
+    //TEUCHOS_TEST_FOR_EXCEPTION(s_ != Teuchos::null, Exceptions::RuntimeError, "IsSetup() == false but s_ != Teuchos::null. This does not make sense");
+
+    if(currentLevel.IsAvailable(mapName_,mapFact_.get())) {
+      map_ = currentLevel.Get<RCP<const Map> >(mapName_,mapFact_.get());
+      TEUCHOS_TEST_FOR_EXCEPTION(map_ == Teuchos::null, Exceptions::RuntimeError, "MueLu::MyTrilinosSmoother::Setup: map is Teuchos::null.");
+    }
+    else map_ = Teuchos::null; // no map with artificial Dirichlet boundaries available.
 
     s_->Setup(currentLevel);
 
