@@ -140,7 +140,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
@@ -156,7 +156,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
     else if ( Params().isSublist("MueLu (Contact2) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
@@ -170,7 +170,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
     else if ( Params().isSublist("MueLu (Contact3) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
@@ -262,7 +262,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));

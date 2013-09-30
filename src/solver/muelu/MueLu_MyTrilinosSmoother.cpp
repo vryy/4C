@@ -51,7 +51,7 @@
  */
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
 
 #include "MueLu_ExplicitInstantiation.hpp"
 

@@ -54,7 +54,7 @@
 #define MUELU_MYTRILINOSSMOOTHER_DECL_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
 
 #include <Teuchos_ParameterList.hpp>
 

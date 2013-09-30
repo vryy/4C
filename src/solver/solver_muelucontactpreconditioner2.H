@@ -9,7 +9,7 @@
 #define SOLVER_MUELUCONTACTPRECONDITIONER2_H_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
 
 #include "solver_preconditionertype.H"
 
