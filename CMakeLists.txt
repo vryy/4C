@@ -1259,6 +1259,7 @@ set(OBJS_SOLVER
   src/solver/muelu/MueLu_IterationAFactory.cpp
   src/solver/muelu/MueLu_SelectiveSaPFactory.cpp
   src/solver/muelu/MueLu_MeshtyingSPAmalgamationFactory.cpp
+  src/solver/muelu/MueLu_ContactSPRepartitionInterface.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

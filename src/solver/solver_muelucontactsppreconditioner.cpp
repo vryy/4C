@@ -6,7 +6,7 @@
  */
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
+#ifdef HAVE_Trilinos_Q3_2013
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -65,6 +65,16 @@
 
 #include <MueLu_MLParameterListInterpreter.hpp>
 
+#ifdef HAVE_MUELU_ISORROPIA
+#include "MueLu_IsorropiaInterface.hpp"
+#include "MueLu_RepartitionInterface.hpp"
+#include "MueLu_RepartitionFactory.hpp"
+#include "MueLu_RebalanceBlockInterpolationFactory.hpp"
+#include "MueLu_RebalanceBlockRestrictionFactory.hpp"
+#include "MueLu_RebalanceBlockAcFactory.hpp"
+#include "MueLu_RebalanceMapFactory.hpp"
+#endif
+
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 
@@ -78,6 +88,7 @@
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 #include "muelu/MueLu_MeshtyingSPAmalgamationFactory_decl.hpp"
 #include "muelu/MueLu_SelectiveSaPFactory_decl.hpp"
+#include "muelu/MueLu_ContactSPRepartitionInterface_decl.hpp"
 
 #include "solver_muelucontactsppreconditioner.H"
 
@@ -355,6 +366,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     M11->SetFactory("Aggregates", UCAggFact11);
     M11->SetFactory("Nullspace", nspFact11);
     M11->SetFactory("Ptent", P11Fact);
+    M11->SetFactory("Graph",dropFact11);
+    M11->SetFactory("DofsPerNode",dropFact11);
     M11->SetFactory("CoarseMap", coarseMapFact11);
     M11->SetFactory("UnAmalgamationInfo", amalgFact11);
     M11->SetIgnoreUserData(true);               // always use data from factories defined in factory manager
@@ -439,6 +452,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // define RAPFactory
     ///////////////////////////////////////////////////////////////////////
     Teuchos::RCP<BlockedRAPFactory> AcFact = Teuchos::rcp(new BlockedRAPFactory());
+    AcFact->SetFactory("A",MueLu::NoFactory::getRCP()); // check me!
     AcFact->SetFactory("P",PFact);
     AcFact->SetFactory("R",RFact);
     AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
@@ -451,9 +465,107 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     AcFact->AddTransferFactory(cmTransFact3);
 
     ///////////////////////////////////////////////////////////////////////
+    // introduce rebalancing operators
+    ///////////////////////////////////////////////////////////////////////
+#ifdef HAVE_MUELU_ISORROPIA
+    // extract subblocks from coarse unbalanced matrix
+    Teuchos::RCP<SubBlockAFactory> rebA11Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,0,0));
+    Teuchos::RCP<SubBlockAFactory> rebA22Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,1,1));
+
+    // define rebalancing factory for coarse block matrix A(1,1)
+    Teuchos::RCP<AmalgamationFactory> rebAmalgFact11 = Teuchos::rcp(new AmalgamationFactory());
+    rebAmalgFact11->SetFactory("A", rebA11Fact);
+    Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface1 =
+        Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
+    isoInterface1->SetFactory("A", rebA11Fact);
+    isoInterface1->SetFactory("UnAmalgamationInfo", rebAmalgFact11);
+    Teuchos::RCP<MueLu::RepartitionInterface<LO, GO, NO, LMO> > repInterface1 =
+        Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO, LMO>());
+    repInterface1->SetFactory("A", rebA11Fact);
+    repInterface1->SetFactory("AmalgamatedPartition", isoInterface1);
+    repInterface1->SetFactory("UnAmalgamationInfo", rebAmalgFact11);
+
+    // Repartitioning (creates "Importer" from "Partition")
+    Teuchos::RCP<Factory> RepartitionFact1 = Teuchos::rcp(new RepartitionFactory());
+    {
+      Teuchos::ParameterList paramList;
+      paramList.set("minRowsPerProcessor", 3000);
+      paramList.set("nonzeroImbalance", 1.05);
+      paramList.set("startLevel",1);
+      RepartitionFact1->SetParameterList(paramList);
+    }
+    RepartitionFact1->SetFactory("A", rebA11Fact);
+    RepartitionFact1->SetFactory("Partition", repInterface1);
+
+    // define rebalancing factory for coarse block matrix A(1,1)
+    Teuchos::RCP<AmalgamationFactory> rebAmalgFact22 = Teuchos::rcp(new AmalgamationFactory());
+    rebAmalgFact22->SetFactory("A", rebA22Fact);
+
+
+    Teuchos::RCP<MueLu::ContactSPRepartitionInterface<LO, GO, NO, LMO> > repInterface2 =
+        Teuchos::rcp(new MueLu::ContactSPRepartitionInterface<LO,GO,NO,LMO>());
+    repInterface2->SetFactory("A", rebA22Fact);  // use blocked matrix A as input
+    repInterface2->SetFactory("AmalgamatedPartition", isoInterface1);
+
+    // second repartition factory
+    Teuchos::RCP<Factory> RepartitionFact2 = Teuchos::rcp(new RepartitionFactory());
+    {
+      Teuchos::ParameterList paramList;
+      paramList.set("minRowsPerProcessor", 1); // turn off repartitioning
+      paramList.set("nonzeroImbalance", 1.0);
+      paramList.set("startLevel",100);
+
+      RepartitionFact2->SetParameterList(paramList);
+    }
+    RepartitionFact2->SetFactory("A", rebA22Fact);
+    RepartitionFact2->SetFactory("Partition", repInterface2);
+    RepartitionFact2->SetFactory("number of partitions", RepartitionFact1); // use the same number of partitions as repart fact 1
+
+    ///////////////////////////////////////////////////////////////////////
+    // define rebalanced factory managers
+    ///////////////////////////////////////////////////////////////////////
+
+    Teuchos::RCP<FactoryManager> rebM11 = Teuchos::rcp(new FactoryManager());
+    rebM11->SetFactory("A", AcFact); // coarse level non-rebalanced block matrix
+    rebM11->SetFactory("Importer", RepartitionFact1);
+    rebM11->SetFactory("Nullspace", nspFact11); // needed for rebalancing
+
+    Teuchos::RCP<FactoryManager> rebM22 = Teuchos::rcp(new FactoryManager());
+    rebM22->SetFactory("A", AcFact); // coarse level non-rebalanced block matrix
+    rebM22->SetFactory("Importer", RepartitionFact2);
+    rebM22->SetFactory("Nullspace", nspFact22);
+
+    // reorder transfer operators
+    Teuchos::RCP<RebalanceBlockInterpolationFactory> RebalancedBlockPFact =
+        Teuchos::rcp(new RebalanceBlockInterpolationFactory());
+    RebalancedBlockPFact->SetFactory("P",PFact);
+    RebalancedBlockPFact->AddFactoryManager(rebM11);
+    RebalancedBlockPFact->AddFactoryManager(rebM22);
+
+    Teuchos::RCP<RebalanceBlockRestrictionFactory> RebalancedBlockRFact =
+        Teuchos::rcp(new RebalanceBlockRestrictionFactory());
+    RebalancedBlockRFact->SetFactory("R", RFact);
+    RebalancedBlockRFact->AddFactoryManager(rebM11);
+    RebalancedBlockRFact->AddFactoryManager(rebM22);
+
+    // rebalanced coarse level matrix
+    Teuchos::RCP<RebalanceBlockAcFactory> RebalancedAcFact =
+        Teuchos::rcp(new RebalanceBlockAcFactory());
+    RebalancedAcFact->SetFactory("A", AcFact);
+    RebalancedAcFact->AddFactoryManager(rebM11);
+    RebalancedAcFact->AddFactoryManager(rebM22);
+
+    // rebalance slave dof map
+    Teuchos::RCP<RebalanceMapFactory> rebFact = Teuchos::rcp(new RebalanceMapFactory());
+    rebFact->SetParameter("Map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+    rebFact->SetFactory("Importer", RepartitionFact1);
+    RebalancedAcFact->AddRebalanceFactory(rebFact);
+#endif
+
+    ///////////////////////////////////////////////////////////////////////
     // create Braess-Sarazin smoother
     ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<SmootherFactory> SmooFactCoarsest = GetCoarsestBlockSmootherFactory(mllist_,Teuchos::null /* AFact*/);
+    Teuchos::RCP<SmootherFactory> SmooFactCoarsest = GetCoarsestBlockSmootherFactory(mllist_);
 
     ///////////////////////////////////////////////////////////////////////
     // prepare factory managers
@@ -466,15 +578,21 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       Teuchos::ParameterList pp(mllist_);
 
       // fine/intermedium level smoother
-      Teuchos::RCP<SmootherFactory> SmooFactFine = GetBlockSmootherFactory(pp, i, Teuchos::null /* AFact*/); //GetBraessSarazinSmootherFactory(pp, i, Teuchos::null /* AFact*/);
+      Teuchos::RCP<SmootherFactory> SmooFactFine = GetBlockSmootherFactory(pp, i); //GetBraessSarazinSmootherFactory(pp, i, Teuchos::null /* AFact*/);
 
       vecManager[i] = Teuchos::rcp(new FactoryManager());
       if(SmooFactFine != Teuchos::null)
           vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
       vecManager[i]->SetFactory("CoarseSolver", SmooFactCoarsest);
+#ifdef HAVE_MUELU_ISORROPIA
+      vecManager[i]->SetFactory("A", RebalancedAcFact);       // same RAP factory for all levels
+      vecManager[i]->SetFactory("P", RebalancedBlockPFact);        // same prolongator and restrictor factories for all levels
+      vecManager[i]->SetFactory("R", RebalancedBlockRFact);        // same prolongator and restrictor factories for all levels
+#else
       vecManager[i]->SetFactory("A", AcFact);       // same RAP factory for all levels
       vecManager[i]->SetFactory("P", PFact);        // same prolongator and restrictor factories for all levels
       vecManager[i]->SetFactory("R", RFact);        // same prolongator and restrictor factories for all levels
+#endif
     }
 
     // use new Hierarchy::Setup routine
@@ -515,7 +633,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetBlockSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetBlockSmootherFactory(const Teuchos::ParameterList & paramList, int level) {
   char levelchar[11];
   sprintf(levelchar,"(level %d)",level);
   std::string levelstr(levelchar);
@@ -531,10 +649,10 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   if (type == "SIMPLE" || type == "SIMPLEC") {
     //return GetSIMPLESmootherFactory(paramList, level, AFact);
-    return GetSIMPLESmootherFactory(smolevelsublist, AFact);
+    return GetSIMPLESmootherFactory(smolevelsublist);
   } else if(type == "Braess-Sarazin") {
     //return GetBraessSarazinSmootherFactory(paramList, level, AFact);
-    return GetBraessSarazinSmootherFactory(smolevelsublist, AFact);
+    return GetBraessSarazinSmootherFactory(smolevelsublist);
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to SIMPLE(C) or BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
@@ -543,16 +661,16 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList) {
   std::string type = paramList.get<std::string>("coarse: type");
   TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
 
   if (type == "SIMPLE" || type == "SIMPLEC") {
     //return GetCoarsestSIMPLESmootherFactory(paramList, AFact);
-    return GetSIMPLESmootherFactory(paramList, AFact, true); // build coarsest smoother
+    return GetSIMPLESmootherFactory(paramList, true); // build coarsest smoother
   } else if(type == "Braess-Sarazin") {
     //return GetCoarsestBraessSarazinSmootherFactory(paramList, AFact);
-    return GetBraessSarazinSmootherFactory(paramList, AFact, true);  // build coarsest smoother
+    return GetBraessSarazinSmootherFactory(paramList, true);  // build coarsest smoother
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE parameter to SIMPLE(C) or BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
@@ -562,7 +680,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 // new version
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact, bool bCoarse) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse) {
 
   std::string strCoarse = "coarse";
   if(bCoarse == false)
@@ -613,6 +731,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(bSimpleC));
+  SFact->SetFactory("A", MueLu::NoFactory::getRCP());  /*XXX*/ // new, explicitely set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)
 
   // define SchurComplement solver
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
@@ -642,6 +761,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
   MB->SetIgnoreUserData(true);
   smootherPrototype->SetSchurCompFactoryManager(MB);  // add SC smoother information
+  smootherPrototype->SetFactory("A", MueLu::NoFactory::getRCP()); /* XXX */
 
   // create smoother factory
   Teuchos::RCP<SmootherFactory>   SmooFact;
@@ -663,7 +783,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 // new version
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact, bool bCoarse) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse) {
 
   std::string strCoarse = "coarse";
   if(bCoarse == false)
@@ -684,7 +804,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(false));
-  SFact->SetFactory("A",MueLu::NoFactory::getRCP());
+  SFact->SetFactory("A",MueLu::NoFactory::getRCP()); /* XXX check me */
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver
@@ -717,6 +837,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
   MB->SetIgnoreUserData(true);
   smootherPrototype->SetFactoryManager(MB);  // add SC smoother information
+  smootherPrototype->SetFactory("A", MueLu::NoFactory::getRCP()); /* XXX */
 
   // create smoother factory
   Teuchos::RCP<SmootherFactory>   SmooFact;
