@@ -483,7 +483,12 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // introduce rebalancing operators
     ///////////////////////////////////////////////////////////////////////
 #ifdef HAVE_MUELU_ISORROPIA
+
+#if 0
+    Teuchos::RCP<BlockedRAPFactory> RebalancedAcFact = Teuchos::null;
+#else
     Teuchos::RCP<RebalanceBlockAcFactory> RebalancedAcFact = Teuchos::null;
+#endif
     Teuchos::RCP<RebalanceBlockInterpolationFactory> RebalancedBlockPFact = Teuchos::null;
     Teuchos::RCP<RebalanceBlockRestrictionFactory> RebalancedBlockRFact = Teuchos::null;
     if(bDoRepartition == true) {
@@ -532,7 +537,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
         Teuchos::ParameterList paramList;
         paramList.set("minRowsPerProcessor", 1); // turn off repartitioning
         paramList.set("nonzeroImbalance", 1.0);
-        paramList.set("startLevel",1000);
+        paramList.set("startLevel",10000);
 
         RepartitionFact2->SetParameterList(paramList);
       }
@@ -565,6 +570,18 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       RebalancedBlockRFact->AddFactoryManager(rebM11);
       RebalancedBlockRFact->AddFactoryManager(rebM22);
 
+#if 0
+      ///////////////////////////////////////////////////////////////////////
+      // define RAPFactory
+      ///////////////////////////////////////////////////////////////////////
+      // this is not working. don't know why, gives wrong results
+      RebalancedAcFact = Teuchos::rcp(new BlockedRAPFactory());
+      RebalancedAcFact->SetFactory("A",MueLu::NoFactory::getRCP()); // check me!
+      RebalancedAcFact->SetFactory("P",RebalancedBlockPFact);
+      RebalancedAcFact->SetFactory("R",RebalancedBlockRFact);
+      //RebalancedAcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
+
+#else
       // rebalanced coarse level matrix
       RebalancedAcFact = Teuchos::rcp(new RebalanceBlockAcFactory());
       RebalancedAcFact->SetFactory("A", AcFact);
@@ -576,6 +593,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       rebFact->SetParameter("Map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
       rebFact->SetFactory("Importer", RepartitionFact1);
       RebalancedAcFact->AddRebalanceFactory(rebFact);
+#endif
     } // end if doRepartitioning
 #endif
 
@@ -603,14 +621,13 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       vecManager[i]->SetFactory("CoarseSolver", SmooFactCoarsest);
 #ifdef HAVE_MUELU_ISORROPIA
       if(bDoRepartition) {
-        vecManager[i]->SetFactory("A", RebalancedAcFact);       // same RAP factory for all levels
+        vecManager[i]->SetFactory("A", RebalancedAcFact);            // same RAP factory for all levels
         vecManager[i]->SetFactory("P", RebalancedBlockPFact);        // same prolongator and restrictor factories for all levels
         vecManager[i]->SetFactory("R", RebalancedBlockRFact);        // same prolongator and restrictor factories for all levels
       } else {
         vecManager[i]->SetFactory("A", AcFact);       // same RAP factory for all levels
         vecManager[i]->SetFactory("P", PFact);        // same prolongator and restrictor factories for all levels
         vecManager[i]->SetFactory("R", RFact);        // same prolongator and restrictor factories for all levels
-
       }
 #else
       vecManager[i]->SetFactory("A", AcFact);       // same RAP factory for all levels
@@ -646,9 +663,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
       }
       std::cout << "END FINAL CONTENT of multigrid levels" << std::endl;
     } // end debug output
+    Write(H);
 #endif
-
-    //Write(H);
 
     // set multigrid preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
