@@ -3585,8 +3585,6 @@ void FLD::XFluidFluid::UpdateGridv()
   const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
   const int order = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
-  double theta = fluiddynparams.get<double>("THETA");
-
   switch (order)
   {
     case INPAR::FLUID::BE:
