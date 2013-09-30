@@ -139,7 +139,21 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     if(mllist_.isParameter("aggregation: nodes per aggregate"))minPerAgg           = mllist_.get<int>("aggregation: nodes per aggregate");
 
     if(mllist_.isParameter("aggregation: damping factor"))     agg_damping          = mllist_.get<double>("aggregation: damping factor");
-    std::cout << "agg_damping=" << agg_damping << std::endl;
+
+#ifdef HAVE_MUELU_ISORROPIA
+    // parameters for repartitioning
+    bool bDoRepartition = false;
+    double optNnzImbalance = 1.3;
+    int optMinRowsPerProc = 3000;
+
+    if(mllist_.isParameter("muelu repartition: enable")) {
+      if(mllist_.get<int>("muelu repartition: enable") == 1)      bDoRepartition = true;
+    }
+    if(mllist_.isParameter("muelu repartition: max min ratio"))      optNnzImbalance     = mllist_.get<double>("muelu repartition: max min ratio");
+    if(mllist_.isParameter("muelu repartition: min per proc"))       optMinRowsPerProc   = mllist_.get<int>("muelu repartition: min per proc");
+#else
+    dserror("Isorropia has not been compiled with Trilinos. Repartitioning is not working.");
+#endif
 
     // translate verbosity parameter
     Teuchos::EVerbosityLevel eVerbLevel = Teuchos::VERB_NONE;
@@ -468,98 +482,100 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // introduce rebalancing operators
     ///////////////////////////////////////////////////////////////////////
 #ifdef HAVE_MUELU_ISORROPIA
-    // extract subblocks from coarse unbalanced matrix
-    Teuchos::RCP<SubBlockAFactory> rebA11Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,0,0));
-    Teuchos::RCP<SubBlockAFactory> rebA22Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,1,1));
+    Teuchos::RCP<RebalanceBlockAcFactory> RebalancedAcFact = Teuchos::null;
+    Teuchos::RCP<RebalanceBlockInterpolationFactory> RebalancedBlockPFact = Teuchos::null;
+    Teuchos::RCP<RebalanceBlockRestrictionFactory> RebalancedBlockRFact = Teuchos::null;
+    if(bDoRepartition == true) {
+      // extract subblocks from coarse unbalanced matrix
+      Teuchos::RCP<SubBlockAFactory> rebA11Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,0,0));
+      Teuchos::RCP<SubBlockAFactory> rebA22Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,1,1));
 
-    // define rebalancing factory for coarse block matrix A(1,1)
-    Teuchos::RCP<AmalgamationFactory> rebAmalgFact11 = Teuchos::rcp(new AmalgamationFactory());
-    rebAmalgFact11->SetFactory("A", rebA11Fact);
-    Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface1 =
-        Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
-    isoInterface1->SetFactory("A", rebA11Fact);
-    isoInterface1->SetFactory("UnAmalgamationInfo", rebAmalgFact11);
-    Teuchos::RCP<MueLu::RepartitionInterface<LO, GO, NO, LMO> > repInterface1 =
-        Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO, LMO>());
-    repInterface1->SetFactory("A", rebA11Fact);
-    repInterface1->SetFactory("AmalgamatedPartition", isoInterface1);
-    repInterface1->SetFactory("UnAmalgamationInfo", rebAmalgFact11);
+      // define rebalancing factory for coarse block matrix A(1,1)
+      Teuchos::RCP<AmalgamationFactory> rebAmalgFact11 = Teuchos::rcp(new AmalgamationFactory());
+      rebAmalgFact11->SetFactory("A", rebA11Fact);
+      Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface1 =
+          Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
+      isoInterface1->SetFactory("A", rebA11Fact);
+      isoInterface1->SetFactory("UnAmalgamationInfo", rebAmalgFact11);
+      Teuchos::RCP<MueLu::RepartitionInterface<LO, GO, NO, LMO> > repInterface1 =
+          Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO, LMO>());
+      repInterface1->SetFactory("A", rebA11Fact);
+      repInterface1->SetFactory("AmalgamatedPartition", isoInterface1);
+      repInterface1->SetFactory("UnAmalgamationInfo", rebAmalgFact11);
 
-    // Repartitioning (creates "Importer" from "Partition")
-    Teuchos::RCP<Factory> RepartitionFact1 = Teuchos::rcp(new RepartitionFactory());
-    {
-      Teuchos::ParameterList paramList;
-      paramList.set("minRowsPerProcessor", 3000);
-      paramList.set("nonzeroImbalance", 1.05);
-      paramList.set("startLevel",1);
-      RepartitionFact1->SetParameterList(paramList);
-    }
-    RepartitionFact1->SetFactory("A", rebA11Fact);
-    RepartitionFact1->SetFactory("Partition", repInterface1);
+      // Repartitioning (creates "Importer" from "Partition")
+      Teuchos::RCP<Factory> RepartitionFact1 = Teuchos::rcp(new RepartitionFactory());
+      {
+        Teuchos::ParameterList paramList;
+        paramList.set("minRowsPerProcessor", optMinRowsPerProc);
+        paramList.set("nonzeroImbalance", optNnzImbalance);
+        paramList.set("startLevel",1);
+        RepartitionFact1->SetParameterList(paramList);
+      }
+      RepartitionFact1->SetFactory("A", rebA11Fact);
+      RepartitionFact1->SetFactory("Partition", repInterface1);
 
-    // define rebalancing factory for coarse block matrix A(1,1)
-    Teuchos::RCP<AmalgamationFactory> rebAmalgFact22 = Teuchos::rcp(new AmalgamationFactory());
-    rebAmalgFact22->SetFactory("A", rebA22Fact);
+      // define rebalancing factory for coarse block matrix A(1,1)
+      Teuchos::RCP<AmalgamationFactory> rebAmalgFact22 = Teuchos::rcp(new AmalgamationFactory());
+      rebAmalgFact22->SetFactory("A", rebA22Fact);
 
 
-    Teuchos::RCP<MueLu::ContactSPRepartitionInterface<LO, GO, NO, LMO> > repInterface2 =
-        Teuchos::rcp(new MueLu::ContactSPRepartitionInterface<LO,GO,NO,LMO>());
-    repInterface2->SetFactory("A", rebA22Fact);  // use blocked matrix A as input
-    repInterface2->SetFactory("AmalgamatedPartition", isoInterface1);
+      Teuchos::RCP<MueLu::ContactSPRepartitionInterface<LO, GO, NO, LMO> > repInterface2 =
+          Teuchos::rcp(new MueLu::ContactSPRepartitionInterface<LO,GO,NO,LMO>());
+      repInterface2->SetFactory("A", rebA22Fact);  // use blocked matrix A as input
+      repInterface2->SetFactory("AmalgamatedPartition", isoInterface1);
 
-    // second repartition factory
-    Teuchos::RCP<Factory> RepartitionFact2 = Teuchos::rcp(new RepartitionFactory());
-    {
-      Teuchos::ParameterList paramList;
-      paramList.set("minRowsPerProcessor", 1); // turn off repartitioning
-      paramList.set("nonzeroImbalance", 1.0);
-      paramList.set("startLevel",100);
+      // second repartition factory
+      Teuchos::RCP<Factory> RepartitionFact2 = Teuchos::rcp(new RepartitionFactory());
+      {
+        Teuchos::ParameterList paramList;
+        paramList.set("minRowsPerProcessor", 1); // turn off repartitioning
+        paramList.set("nonzeroImbalance", 1.0);
+        paramList.set("startLevel",1000);
 
-      RepartitionFact2->SetParameterList(paramList);
-    }
-    RepartitionFact2->SetFactory("A", rebA22Fact);
-    RepartitionFact2->SetFactory("Partition", repInterface2);
-    RepartitionFact2->SetFactory("number of partitions", RepartitionFact1); // use the same number of partitions as repart fact 1
+        RepartitionFact2->SetParameterList(paramList);
+      }
+      RepartitionFact2->SetFactory("A", rebA22Fact);
+      RepartitionFact2->SetFactory("Partition", repInterface2);
+      RepartitionFact2->SetFactory("number of partitions", RepartitionFact1); // use the same number of partitions as repart fact 1
 
-    ///////////////////////////////////////////////////////////////////////
-    // define rebalanced factory managers
-    ///////////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////////
+      // define rebalanced factory managers
+      ///////////////////////////////////////////////////////////////////////
 
-    Teuchos::RCP<FactoryManager> rebM11 = Teuchos::rcp(new FactoryManager());
-    rebM11->SetFactory("A", AcFact); // coarse level non-rebalanced block matrix
-    rebM11->SetFactory("Importer", RepartitionFact1);
-    rebM11->SetFactory("Nullspace", nspFact11); // needed for rebalancing
+      Teuchos::RCP<FactoryManager> rebM11 = Teuchos::rcp(new FactoryManager());
+      rebM11->SetFactory("A", AcFact); // coarse level non-rebalanced block matrix
+      rebM11->SetFactory("Importer", RepartitionFact1);
+      rebM11->SetFactory("Nullspace", nspFact11); // needed for rebalancing
 
-    Teuchos::RCP<FactoryManager> rebM22 = Teuchos::rcp(new FactoryManager());
-    rebM22->SetFactory("A", AcFact); // coarse level non-rebalanced block matrix
-    rebM22->SetFactory("Importer", RepartitionFact2);
-    rebM22->SetFactory("Nullspace", nspFact22);
+      Teuchos::RCP<FactoryManager> rebM22 = Teuchos::rcp(new FactoryManager());
+      rebM22->SetFactory("A", AcFact); // coarse level non-rebalanced block matrix
+      rebM22->SetFactory("Importer", RepartitionFact2);
+      rebM22->SetFactory("Nullspace", nspFact22);
 
-    // reorder transfer operators
-    Teuchos::RCP<RebalanceBlockInterpolationFactory> RebalancedBlockPFact =
-        Teuchos::rcp(new RebalanceBlockInterpolationFactory());
-    RebalancedBlockPFact->SetFactory("P",PFact);
-    RebalancedBlockPFact->AddFactoryManager(rebM11);
-    RebalancedBlockPFact->AddFactoryManager(rebM22);
+      // reorder transfer operators
+      RebalancedBlockPFact = Teuchos::rcp(new RebalanceBlockInterpolationFactory());
+      RebalancedBlockPFact->SetFactory("P",PFact);
+      RebalancedBlockPFact->AddFactoryManager(rebM11);
+      RebalancedBlockPFact->AddFactoryManager(rebM22);
 
-    Teuchos::RCP<RebalanceBlockRestrictionFactory> RebalancedBlockRFact =
-        Teuchos::rcp(new RebalanceBlockRestrictionFactory());
-    RebalancedBlockRFact->SetFactory("R", RFact);
-    RebalancedBlockRFact->AddFactoryManager(rebM11);
-    RebalancedBlockRFact->AddFactoryManager(rebM22);
+      RebalancedBlockRFact = Teuchos::rcp(new RebalanceBlockRestrictionFactory());
+      RebalancedBlockRFact->SetFactory("R", RFact);
+      RebalancedBlockRFact->AddFactoryManager(rebM11);
+      RebalancedBlockRFact->AddFactoryManager(rebM22);
 
-    // rebalanced coarse level matrix
-    Teuchos::RCP<RebalanceBlockAcFactory> RebalancedAcFact =
-        Teuchos::rcp(new RebalanceBlockAcFactory());
-    RebalancedAcFact->SetFactory("A", AcFact);
-    RebalancedAcFact->AddFactoryManager(rebM11);
-    RebalancedAcFact->AddFactoryManager(rebM22);
+      // rebalanced coarse level matrix
+      RebalancedAcFact = Teuchos::rcp(new RebalanceBlockAcFactory());
+      RebalancedAcFact->SetFactory("A", AcFact);
+      RebalancedAcFact->AddFactoryManager(rebM11);
+      RebalancedAcFact->AddFactoryManager(rebM22);
 
-    // rebalance slave dof map
-    Teuchos::RCP<RebalanceMapFactory> rebFact = Teuchos::rcp(new RebalanceMapFactory());
-    rebFact->SetParameter("Map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
-    rebFact->SetFactory("Importer", RepartitionFact1);
-    RebalancedAcFact->AddRebalanceFactory(rebFact);
+      // rebalance slave dof map
+      Teuchos::RCP<RebalanceMapFactory> rebFact = Teuchos::rcp(new RebalanceMapFactory());
+      rebFact->SetParameter("Map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+      rebFact->SetFactory("Importer", RepartitionFact1);
+      RebalancedAcFact->AddRebalanceFactory(rebFact);
+    } // end if doRepartitioning
 #endif
 
     ///////////////////////////////////////////////////////////////////////
@@ -585,9 +601,16 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
           vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
       vecManager[i]->SetFactory("CoarseSolver", SmooFactCoarsest);
 #ifdef HAVE_MUELU_ISORROPIA
-      vecManager[i]->SetFactory("A", RebalancedAcFact);       // same RAP factory for all levels
-      vecManager[i]->SetFactory("P", RebalancedBlockPFact);        // same prolongator and restrictor factories for all levels
-      vecManager[i]->SetFactory("R", RebalancedBlockRFact);        // same prolongator and restrictor factories for all levels
+      if(bDoRepartition) {
+        vecManager[i]->SetFactory("A", RebalancedAcFact);       // same RAP factory for all levels
+        vecManager[i]->SetFactory("P", RebalancedBlockPFact);        // same prolongator and restrictor factories for all levels
+        vecManager[i]->SetFactory("R", RebalancedBlockRFact);        // same prolongator and restrictor factories for all levels
+      } else {
+        vecManager[i]->SetFactory("A", AcFact);       // same RAP factory for all levels
+        vecManager[i]->SetFactory("P", PFact);        // same prolongator and restrictor factories for all levels
+        vecManager[i]->SetFactory("R", RFact);        // same prolongator and restrictor factories for all levels
+
+      }
 #else
       vecManager[i]->SetFactory("A", AcFact);       // same RAP factory for all levels
       vecManager[i]->SetFactory("P", PFact);        // same prolongator and restrictor factories for all levels

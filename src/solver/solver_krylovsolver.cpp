@@ -267,7 +267,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
       //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
       ////////////////////////////// EXPERIMENTAL
-      std::cout << "found MueLu (Contact) Parameters -> MueLuContactSpPreconditioner" << std::endl;
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactSpPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
 #else
       dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
