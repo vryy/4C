@@ -712,7 +712,9 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
                                        bool assigndegreesoffreedom ,
                                        bool initelements           ,
                                        bool doboundaryconditions,
-                                       bool extendedghosting)
+                                       bool extendedghosting,
+                                       bool killdofs,
+                                       bool killcond)
 {
   // build the overlapping and non-overlapping element maps
   RCP<Epetra_Map> elerowmap;
@@ -720,10 +722,10 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
   BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap,extendedghosting);
 
   // export nodes and elements to the new maps
-  ExportRowNodes(noderowmap,assigndegreesoffreedom,doboundaryconditions);
-  ExportColumnNodes(nodecolmap,assigndegreesoffreedom,doboundaryconditions);
-  ExportRowElements(*elerowmap,assigndegreesoffreedom,doboundaryconditions);
-  ExportColumnElements(*elecolmap,assigndegreesoffreedom,doboundaryconditions);
+  ExportRowNodes(noderowmap,killdofs,killcond);
+  ExportColumnNodes(nodecolmap,killdofs,killcond);
+  ExportRowElements(*elerowmap,killdofs,killcond);
+  ExportColumnElements(*elecolmap,killdofs,killcond);
 
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete(assigndegreesoffreedom,initelements,doboundaryconditions);

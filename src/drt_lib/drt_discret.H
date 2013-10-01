@@ -998,7 +998,9 @@ public:
                             bool assigndegreesoffreedom=true,
                             bool initelements          =true,
                             bool doboundaryconditions  =true,
-                            bool extendedghosting      =false);
+                            bool extendedghosting      =false,
+                            bool killdofs              =true,
+                            bool killcond              =true);
 
 //-----------------------------------------------------------------------------------
 // this is temporary to hide away this method SetupGhosting and only give access to the
