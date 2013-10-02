@@ -45,8 +45,15 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
   }
   else dserror ("Reading SO_HEX27 element failed KINEM unknown");
 
+  // only for linear SVK materials
+  bool admissibl_mat = false;
+  if (mat->MaterialType()!=INPAR::MAT::m_stvenant)
+    admissibl_mat = true;
+  else if (mat->MaterialType()!=INPAR::MAT::m_thermostvenant)
+    admissibl_mat = true;
+
   // check for SVK material if geometrically linear
-  if (kintype_==soh27_linear && mat->MaterialType()!=INPAR::MAT::m_stvenant)
+  if (kintype_==soh27_linear && admissibl_mat==false)
     dserror("ERROR: Only linear elasticity (SVK) for geometrically linear hex27 element");
 
   return true;

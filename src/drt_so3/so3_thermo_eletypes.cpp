@@ -78,9 +78,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(
   Teuchos::RCP<DRT::Element> ele
     = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(
-          id,
-          owner
-          )
+              id,
+              owner
+              )
         );
   return ele;
 
@@ -377,6 +377,126 @@ int DRT::ELEMENTS::So_tet4ThermoType::Initialize(DRT::Discretization& dis)
  }  // Initialize()
 /*----------------------------------------------------------------------------*
  | ENDE TET4 Element
+ *----------------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*
+ |  HEX 27 Element
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | build an instance of thermo type                          dano 10/13 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_hex27ThermoType DRT::ELEMENTS::So_hex27ThermoType::instance_;
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                      dano 10/13 |
+ | is called in ElementRegisterType                                     |
+ *----------------------------------------------------------------------*/
+DRT::ParObject* DRT::ELEMENTS::So_hex27ThermoType::Create(
+  const std::vector<char> & data
+  )
+{
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* object
+    = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1,-1);
+  object->Unpack(data);
+  return object;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                      dano 10/13 |
+ | is called from ParObjectFactory                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ThermoType::Create(
+  const std::string eletype,
+  const std::string eledistype,
+  const int id,
+  const int owner
+  )
+{
+  if (eletype=="SOLIDH27THERMO")
+  {
+    Teuchos::RCP<DRT::Element> ele
+      = Teuchos::rcp(
+          new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(
+            id,
+            owner
+            )
+          );
+    return ele;
+  }
+  return Teuchos::null;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                      dano 10/13 |
+ | virtual method of ElementType                                        |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ThermoType::Create(
+  const int id,
+  const int owner
+  )
+{
+  Teuchos::RCP<DRT::Element> ele
+    = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(
+              id,
+              owner
+              )
+        );
+  return ele;
+}  // Create ()
+
+
+/*----------------------------------------------------------------------*
+ | setup the element definition (public)                     dano 10/13 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex27ThermoType::SetupElementDefinition(
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+  )
+{
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_hex27;
+  So_hex27Type::SetupElementDefinition(definitions_hex27);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27
+    = definitions_hex27["SOLIDH27"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs
+    = definitions["SOLIDH27THERMO"];
+
+  defs["HEX27"]=defs_hex27["HEX27"];
+
+}  // SetupElementDefinition()
+
+
+/*----------------------------------------------------------------------*
+ | initialise the element (public)                           dano 10/13 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_hex27ThermoType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* actele
+      = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27> * >(
+        dis.lColElement(i)
+        );
+    if (!actele)
+      dserror("cast to So_hex27_thermo* failed");
+
+    actele->So_hex27::InitJacobianMapping();
+    // as an alternative we can call: So_hex27Type::Initialize(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>::InitJacobianMapping();
+  }
+
+  return 0;
+}  // Initialize()
+/*----------------------------------------------------------------------------*
+ | ENDE HEX27 Element
  *----------------------------------------------------------------------------*/
 
 

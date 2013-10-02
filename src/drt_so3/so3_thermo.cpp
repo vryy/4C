@@ -209,6 +209,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::UniqueParObjectId() const
   case DRT::Element::tet4:
     return So_tet4ThermoType::Instance().UniqueParObjectId();
     break;
+  case DRT::Element::hex27:
+    return So_hex27ThermoType::Instance().UniqueParObjectId();
+    break;
   default:
     dserror("unknown element type!");
     break;
@@ -241,6 +244,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ElementType() cons
   }
   case DRT::Element::tet4:
     return So_tet4ThermoType::Instance();
+    break;
+  case DRT::Element::hex27:
+    return So_hex27ThermoType::Instance();
     break;
   default:
     dserror("unknown element type!");

@@ -86,14 +86,14 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
   {
     return TemperImpl<DRT::Element::quad4>::Instance();
   }
-/*  case DRT::Element::quad8 :
+  case DRT::Element::quad8 :
   {
     return TemperImpl<DRT::Element::quad8>::Instance();
   }
   case DRT::Element::quad9 :
   {
     return TemperImpl<DRT::Element::quad9>::Instance();
-  }*/
+  }
   case DRT::Element::tri3 :
   {
     return TemperImpl<DRT::Element::tri3>::Instance();
@@ -3234,9 +3234,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   LINALG::Matrix<nen_*numdofpernode_,1>& efluxz
   )
 {
-  // this quick'n'dirty hack functions only for hex8
-  // (number of gauss points equals number of nodes)
+  // this quick'n'dirty hack functions only for elements which has the same
+  // number of gauss points AND same number of nodes
   if ( not ( (distype == DRT::Element::hex8)
+             or (distype == DRT::Element::hex27)
              or (distype == DRT::Element::tet4)
              or (distype == DRT::Element::quad4)
              or (distype == DRT::Element::line2) 

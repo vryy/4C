@@ -2912,6 +2912,23 @@ void TSI::Monolithic::SetDefaultParameters()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::CalculateNeckingTSIResults()
 {
+  // --------------------------------------------- initialise/ define constants
+
+  // initialise initial temperature required to calculate temperature increase
+  const double inittemp = 293.0;
+
+  // necking point A
+  const double necking_x = 6.413;
+  const double necking_y = 0.0;
+  const double necking_z = -13.3335;
+  // --> point A is extracted via restriction of coordinates
+
+  // top point B
+  const double top_x = 6.413;
+  const double top_y = 0.0;
+  const double top_z = 13.3335;
+  // --> point B is extracted via DBC
+
   //---------------------------------------------------------------------------
   // -------------- get the nodes with STRUCTURAL Dirichlet boundary conditions
   //---------------------------------------------------------------------------
@@ -2955,7 +2972,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
       // possible push-back
       bool this_is_new_gid = true;
       // get the z-displacement DOFS located at the top surface (z=13.3335mm)
-      if (abs(zcoord - 13.3335) < 1.0e-8)  // change here value for different geometries
+      if (abs(zcoord - top_z) < 1.0e-8)  // change here value for different geometries
       {
         for (unsigned j=0; j<sdata.size(); j++)
         {
@@ -3060,9 +3077,9 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   {
     DRT::Node* node = StructureField()->Discretization()->lRowNode(k);
     // change here value for different geometries
-    if ( (abs(node->X()[0] - 6.413) < 1.e-8)  // x-direction
-         and (abs(node->X()[1] - 0.00000) < 1.e-8)  // y-direction
-         and (abs(node->X()[2] + 13.3335) < 1.e-8)  // z-direction
+    if ( (abs(node->X()[0] - necking_x) < 1.e-8)  // x-direction
+         and (abs(node->X()[1] - necking_y) < 1.e-8)  // y-direction
+         and (abs(node->X()[2] - necking_z) < 1.e-8)  // z-direction
        )
     {
       // we choose point A (6.413mm / 0mm / -13.3335mm)
@@ -3107,9 +3124,9 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   {
     DRT::Node* node = ThermoField()->Discretization()->lRowNode(k);
     // change here value for different geometries
-    if ( (abs(node->X()[0] - 6.413) < 1.e-8)  // x-direction
-         and (abs(node->X()[1] - 0.00000) < 1.e-8)  // y-direction
-         and (abs(node->X()[2] + 13.3335) < 1.e-8)  // z-direction
+    if ( (abs(node->X()[0] - necking_x) < 1.e-8)  // x-direction
+         and (abs(node->X()[1] - necking_y) < 1.e-8)  // y-direction
+         and (abs(node->X()[2] - necking_z) < 1.e-8)  // z-direction
        )
     {
       neck_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(node,0);
@@ -3147,9 +3164,9 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   {
     DRT::Node* node = ThermoField()->Discretization()->lRowNode(k);
     // change here value for different geometries
-    if ( (abs(node->X()[0] - 6.413) < 1.e-8)  // x-direction
-         and (abs(node->X()[1] - 0.00000) < 1.e-8)  // y-direction
-         and (abs(node->X()[2] - 13.3335) < 1.e-8)  // z-direction
+    if ( (abs(node->X()[0] - top_x) < 1.e-8)  // x-direction
+         and (abs(node->X()[1] - top_y) < 1.e-8)  // y-direction
+         and (abs(node->X()[2] - top_z) < 1.e-8)  // z-direction
        )
     {
       top_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(node,0);
@@ -3190,8 +3207,8 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
       << "\t" << top_disp_global
       << "\t" << top_reaction_force
       << "\t" << necking_radius_global
-      << "\t" << (necking_temperature_global - 293.0)
-      << "\t" << (top_temperature_global - 293.0)
+      << "\t" << (necking_temperature_global - inittemp)
+      << "\t" << (top_temperature_global - inittemp)
       << "\t" << top_force_global
       << std::endl;
   }

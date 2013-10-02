@@ -49,28 +49,29 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
     static TemperBoundaryImpl<DRT::Element::quad4>* cp4;
     if (cp4 == NULL)
       cp4 = new TemperBoundaryImpl<DRT::Element::quad4>(numdofpernode);
-      return cp4;
+    return cp4;
   }
-  /*  case DRT::Element::quad8:
+  case DRT::Element::quad8:
   {
     static TemperBoundaryImpl<DRT::Element::quad8>* cp8;
     if (cp8 == NULL)
-      cp8 = new TemperImpl<DRT::Element::quad8>(numdofpernode);
+      cp8 = new TemperBoundaryImpl<DRT::Element::quad8>(numdofpernode);
     return cp8;
   }
+
   case DRT::Element::quad9:
   {
     static TemperBoundaryImpl<DRT::Element::quad9>* cp9;
     if (cp9 == NULL)
-      cp9 = new TemperImpl<DRT::Element::quad9>(numdofpernode);
+      cp9 = new TemperBoundaryImpl<DRT::Element::quad9>(numdofpernode);
     return cp9;
-  }*/
+  }
   case DRT::Element::tri3:
   {
     static TemperBoundaryImpl<DRT::Element::tri3>* cp3;
     if (cp3 == NULL)
       cp3 = new TemperBoundaryImpl<DRT::Element::tri3>(numdofpernode);
-      return cp3;
+    return cp3;
   }
   /*  case DRT::Element::tri6:
   {

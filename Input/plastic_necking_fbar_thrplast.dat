@@ -13,21 +13,23 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 
-plastic necking of a cylindrical bar using a finite strain plastic
-von Mises material with linear isotropic hardening
+plastic necking of a cylindrical bar induced by an imperfect geometry 
+(cone: z= -13.335: 0.0 <= x/y <= 6.105, z= +13.335: 0.0 <= x/y <= 6.413) 
+using a finite strain plastic von Mises material with linear isotropic hardening
+
+evaluation point
+- necking: NODE 82 (6.105/0.0/-13.3335)
+- top force out: NODE 115 (6.413/0.0/13.3335)
 
 nightly test case uses reduced end time MAXTIME = 1.0
 
 // original numerical example: MAXTIME = 2.0
-//STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-13 NAME ux_top_in
-//STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_top_in
-//STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 7.0 TOLERANCE 1.0e-13 NAME uz_top_in
-//STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -4.22043365198264755e-02 TOLERANCE 1.0e-13 NAME ux_top_out
-//STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_top_out
-//STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 7.0 TOLERANCE 1.0e-13 NAME uz_top_out
-//STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE -2.33761984933541145e+00 TOLERANCE 1.0e-13 NAME ux_neck
-//STRUCTURE DIS structure NODE 80 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_neck
-//STRUCTURE DIS structure NODE 80 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13 NAME uz_neck
+//STRUCTURE DIS structure NODE 115 QUANTITY dispx VALUE-1.55021930258186502e-01 TOLERANCE 1.0e-13 NAME ux_top_out
+//STRUCTURE DIS structure NODE 115 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_top_out
+//STRUCTURE DIS structure NODE 115 QUANTITY dispz VALUE 7.0 TOLERANCE 1.0e-13 NAME uz_top_out
+//STRUCTURE DIS structure NODE 82 QUANTITY dispx VALUE -4.00500167993254230e+00 TOLERANCE 1.0e-13 NAME ux_neck
+//STRUCTURE DIS structure NODE 82 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_neck
+//STRUCTURE DIS structure NODE 82 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13 NAME uz_neck
 
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      96
@@ -53,6 +55,7 @@ FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
+CALC_NECKING_VALUES             Yes
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     5
@@ -604,14 +607,11 @@ NODE 171 COORD 1.9770744258786601e+00 4.5874197209974401e+00 1.3333500000000001e
 95 SOLIDH8FBAR HEX8 163 167 12 24 130 132 18 27 MAT 1 KINEM nonlinear
 96 SOLIDH8FBAR HEX8 167 171 10 12 132 134 17 18 MAT 1 KINEM nonlinear
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-13 NAME ux_top_in
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_top_in
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 1.5 TOLERANCE 1.0e-13 NAME uz_top_in
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -3.34938087824116770e-02 TOLERANCE 1.0e-13 NAME ux_top_out
-STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_top_out
-STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 1.5 TOLERANCE 1.0e-13 NAME uz_top_out
-STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE -1.26210341612843752e-01 TOLERANCE 1.0e-13 NAME ux_neck
-STRUCTURE DIS structure NODE 80 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_neck
-STRUCTURE DIS structure NODE 80 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13 NAME uz_neck
+STRUCTURE DIS structure NODE 115 QUANTITY dispx VALUE -1.22806680138233551e-01 TOLERANCE 1.0e-13 NAME ux_top_out
+STRUCTURE DIS structure NODE 115 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_top_out
+STRUCTURE DIS structure NODE 115 QUANTITY dispz VALUE 1.5 TOLERANCE 1.0e-13 NAME uz_top_out
+STRUCTURE DIS structure NODE 82 QUANTITY dispx VALUE -2.20537526846610987e-01 TOLERANCE 1.0e-13 NAME ux_neck
+STRUCTURE DIS structure NODE 82 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13 NAME uy_neck
+STRUCTURE DIS structure NODE 82 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13 NAME uz_neck
 -------------------------------------------------------------------------END
 //                              END
