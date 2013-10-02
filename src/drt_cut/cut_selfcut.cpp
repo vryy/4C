@@ -45,6 +45,7 @@ void GEO::CUT::SelfCut::CollisionDetection()
 {
 
   FindCuttingSides();
+  MergeCoincidingNodes();
   FindSelfCutPoints();
   GetSelfCutObjects();
 
@@ -113,6 +114,9 @@ void GEO::CUT::SelfCut::Debug(const std::string & viewname)
 
 /*-------------------------------------------------------------------------------------*
  * finds cutsides which possibly cuts the considered side                   wirtz 05/13
+ * we construct bounding box over each side and collect all cut sides that intersect
+ * this bounding box. Hence possible self cut sides that we collect here may not
+ * actually produce self-cut --> we check this in subsequent procedure
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::FindCuttingSides()
 {
@@ -138,8 +142,15 @@ void GEO::CUT::SelfCut::FindCuttingSides()
         cutsides.begin(); i != cutsides.end(); ++i)
     {
       Side* side = &*i->second;
+
+      if( side->Id() == cutside->Id() )
+        continue;
+
       BoundingBox sidebox;
       sidebox.Assign(*side);
+
+      // Two sides falling on the bounding box has common nodes means
+      // both sides are connected in the mesh
       if (sidebox.Within(1.0, cutsidebox)
           and not cutside->HaveCommonNode(*side))
       {
@@ -151,6 +162,170 @@ void GEO::CUT::SelfCut::FindCuttingSides()
   Debug("FindCuttingSides");
 #endif
 
+}
+
+/*-------------------------------------------------------------------------------------*
+ * If two nodes are at the same position, then this function will carry out
+ * equivalent operations such that only one node is available at this place
+ * Connectivity informations are incorporated accordingly                       sudhakar 10/13
+ *
+ * In the following, nodes 4-5 and 3-6 are at the same position, and the two
+ * Quads are not connected. In order to avoid many complicated routines of handling such
+ * coinciding nodes in self-cut libraries, we delete one corresponding node and ensure
+ * connectivity betweent the Quads. The cut library can easily handle this modified confi.
+ *
+ *   1     4,5     8               1      4      8
+ *    +-----+-----+                 +-----+-----+
+ *    |     |     |                 |     |     |
+ *    |     |     |     ===>        |     |     |
+ *    |     |     |                 |     |     |
+ *    +-----+-----+                 +-----+-----+
+ *   2     3,6     7               2      6     7
+ *
+ *   Rememeber : Which one of the nodes is considered among the coinciding nodes is
+ *   not reproducible (just like many operations in cut libraries)
+*-------------------------------------------------------------------------------------*/
+void GEO::CUT::SelfCut::MergeCoincidingNodes()
+{
+  std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
+
+  // for each side in the cut mesh
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
+      cutsides.begin(); i != cutsides.end(); ++i)
+  {
+    Side * cutside = &*i->second;
+    const std::vector<Node*> cutnodes = cutside->Nodes();
+
+    // get all possible selfcut sides that is already available
+    plain_side_set scsides = cutside->CuttingSides();
+
+    // check whether any of the nodes in cut side and any of the nodes
+    // in self-cut sides are in the same position, AND not the same node
+    for (plain_side_set::iterator j = scsides.begin(); j != scsides.end(); ++j)
+    {
+      Side * scside = *j;
+      const std::vector<Node*> scnodes = scside->Nodes();
+
+      // store the nodeids that should be replaced with other ids
+      std::vector<std::pair<const Node*,const Node*> > ids_replace;
+
+      for( std::vector<Node*>::const_iterator noit = scnodes.begin(); noit != scnodes.end(); noit++ )
+      {
+        const Node* scnod = *noit;
+
+        for( std::vector<Node*>::const_iterator cutit = cutnodes.begin(); cutit != cutnodes.end(); cutit++ )
+        {
+          const Node* cutnod = *cutit;
+
+          // if both nodes are the same - no need to do anything
+          if( scnod->Id() == cutnod->Id() )
+            continue;
+
+          // Two nodes are at the same location in the initial mesh
+          if( scnod->point()->Id() == cutnod->point()->Id() )
+          {
+            std::pair<const Node*,const Node*> nodpair;
+            nodpair.first = scnod;
+            nodpair.second = cutnod;
+
+            ids_replace.push_back( nodpair );
+          }
+
+          // In moving boundary simulation, two nodes from different discretizations
+          // move such that two nodes reached to the same position
+          // if we implement this, the previous loop (two nodes at the same position in initial mesh)
+          // can be erased
+          // I am not even sure whether this special check is necessary (Sudhakar)
+          // because we always works with a copy of cut mesh, and only one point is
+          // created for two coinciding nodes ---> need to be checked
+          else if( cutnod->isAtSameLocation( scnod ) )
+          {
+            dserror("not implemented yet");
+          }
+        }
+      }
+
+      // now that we have all the informations about coinciding nodes
+      // Do the necessary operations in the mesh to consider only one node
+      operationsForNodeMerging( ids_replace, scside, true );
+
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------------------*
+ * After all informations about coinciding nodes are available, perform the       sudhakar 10/13
+ * operations in our data structure such that only one node is available and
+ * ensure connectivity between the corresponding elements
+ *-----------------------------------------------------------------------------------------*/
+void GEO::CUT::SelfCut::operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl,
+                                                  Side* side, bool initial )
+{
+
+  // this is an important "edge" data structure we use to to connect nodenumbers-edge information
+  // the node numbers has to be set accordingly
+  std::map<plain_int_set, Teuchos::RCP<Edge> > & edges = const_cast<std::map<plain_int_set, Teuchos::RCP<Edge> > &>(mesh_.Edges());
+
+  // consider each node that needs to be replaced
+  for( std::vector<std::pair<const Node*,const Node*> >::iterator it = repl.begin();
+                                                                  it != repl.end(); it++ )
+  {
+    std::pair<const Node*,const Node*> pai = *it;
+    Node* nod      = const_cast<Node*>( pai.first );
+    Node* replwith = const_cast<Node*>( pai.second );
+
+    const plain_side_set & sideset = nod->Sides();
+
+    // consider each side that are associated with this node
+    // and replace it with correct node
+    // Within this, internally edge information gets modified correspondingly
+    for ( plain_side_set::const_iterator i=sideset.begin(); i!=sideset.end(); ++i )
+    {
+      Side * s = *i;
+      s->replaceNodes( nod, replwith );
+    }
+
+    // modify the "edge" data structure for edges in the mesh correspondingly
+    // this is a bit tricky because we need to modify the "key" of this std::map
+    // "Key" of a std::map cannot be modified directly. A new element with
+    // correct information is added, and old element is deleted
+    //
+    // Edge information is already modified when calling the side information
+    //
+    typedef std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator ittype;
+    std::vector<ittype> eraseThese;
+
+    for( ittype itmap = edges.begin();itmap!=edges.end(); itmap++ )
+    {
+      plain_int_set idset = itmap->first;
+      plain_int_set newids;
+      bool modi = false;
+      for( unsigned ii=0; ii<idset.size(); ii++ )
+      {
+        if( idset[ii] == nod->Id() )
+        {
+          newids.insert( replwith->Id() );
+          modi = true;
+        }
+        else
+          newids.insert( idset[ii] );
+      }
+
+      // insert correct elements
+      if( modi )
+      {
+        edges[newids] = edges[idset];
+        eraseThese.push_back( itmap );
+      }
+    }
+
+    // delete the old elements for which we already added correspoding new elements
+    for( std::vector<ittype>::iterator ite = eraseThese.begin(); ite != eraseThese.end(); ite++ )
+    {
+      ittype era = *ite;
+      edges.erase( era );
+    }
+  }
 }
 
 /*-------------------------------------------------------------------------------------*
@@ -175,6 +350,9 @@ void GEO::CUT::SelfCut::FindSelfCutPoints()
       PerformSelfCut(*cutside, *possiblecuttingside, selfcutpoints);
       PerformSelfCut(*possiblecuttingside, *cutside, selfcutpoints);
       cutside->GetSelfCutPoints(selfcutpoints);
+
+      // possible cut sides that are intersecting the bounding box of "this" side
+      // but not actually cutting, are stored for deletion
       if (selfcutpoints.size() == 0)
       {
         nocuttingsides.insert(possiblecuttingside);
@@ -211,6 +389,7 @@ void GEO::CUT::SelfCut::GetSelfCutObjects()
       selfcut_sides_[cutsidenodeids] = cutside;
     }
   }
+
   for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
       selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
@@ -250,6 +429,7 @@ void GEO::CUT::SelfCut::CreateSelfCutNodes()
     Node * cuttedsidesnode = &*i->second;
     cuttedsidesnodes.push_back(cuttedsidesnode);
   }
+
   for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
       selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
@@ -371,34 +551,36 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
   {
     Side * cutside = &*i->second;
     std::vector<Node*> cutsidenodes = cutside->Nodes();
+
+    // find the equation of plane of this SIDE
+    // this eqn is used to make sure that the axillary sides that resulting from
+    // the triangulation preserve the normal direction of SIDE
     std::vector<Point*> cutsidepoints(3);
     cutsidepoints[0] = cutsidenodes[0]->point();
     cutsidepoints[1] = cutsidenodes[1]->point();
     cutsidepoints[2] = cutsidenodes[2]->point();
     std::vector<double> cutsideplane = KERNEL::EqnPlane(cutsidepoints[0],
         cutsidepoints[1], cutsidepoints[2]);
+
+    // create facets on cut side by taking into account the self-cut points
     IMPL::PointGraph pointgraph(cutside);
     Cycle * maincycle = &*(pointgraph.fbegin());
-    bool mainnormalconservation = CheckNormal(cutsideplane, *maincycle);
+    bool IsCorrectNormal = CheckNormal(cutsideplane, *maincycle);
     std::vector<Cycle*> maincycles;
     std::vector<Teuchos::RCP<Cycle> > newmaincyclercp;
     for (IMPL::PointGraph::facet_iterator i = pointgraph.fbegin();
         i != pointgraph.fend(); ++i)
     {
       Cycle *maincycle = &*i;
-      if (mainnormalconservation)
+      if ( not IsCorrectNormal)
       {
-        maincycles.push_back(maincycle);
+        // normal is not in correct direction
+        // we reverse the ordering of points to correct this
+        maincycle->reverse();
       }
-      else
-      {
-        std::vector<Point*> maincyclepoints = (*maincycle)();
-        std::reverse(maincyclepoints.begin(), maincyclepoints.end());
-        Cycle * newmaincycle = new Cycle(maincyclepoints);
-        newmaincyclercp.push_back(Teuchos::rcp(newmaincycle));
-        maincycles.push_back(newmaincycle);
-      }
+      maincycles.push_back(maincycle);
     }
+
     std::vector<Cycle*> holecycles;
     bool holenormalconservation = true;
     for (IMPL::PointGraph::hole_iterator i = pointgraph.hbegin();
@@ -500,14 +682,16 @@ void GEO::CUT::SelfCut::CreateSelfCutSides()
     Side * cutside = &*i->second;
     plain_node_set allcutsidenodes = cutside->SelfCutNodes();
     std::vector<Node*> cutsidenodes = cutside->Nodes();
+
+    // store all the nodes (self-cut nodes + side nodes)
+    // this is used to check we really have a node at each point of triangle
     for (std::vector<GEO::CUT::Node*>::iterator i = cutsidenodes.begin();
         i != cutsidenodes.end(); ++i)
     {
       Node * cutsidenode = *i;
       allcutsidenodes.insert(cutsidenode);
     }
-    int cutsideid = cutside->Id();
-    DRT::Element::DiscretizationType distype = DRT::Element::tri3;
+
     std::vector<std::vector<Point*> > selfcuttriangles =
         cutside->SelfCutTriangles();
     for (std::vector<std::vector<Point*> >::iterator i =
@@ -563,8 +747,8 @@ void GEO::CUT::SelfCut::CreateSelfCutSides()
         throw std::runtime_error(
             "SelfCut: triangulation unsuccessful; triangle with two identical points");
       }
-      Side * selfcutside = mesh_.CreateSide(cutsideid, selfcutsidenodeids,
-          distype);
+      Side * selfcutside = mesh_.CreateSide(cutside->Id(), selfcutsidenodeids,
+          DRT::Element::tri3);
       std::map<plain_int_set, Teuchos::RCP<Side> > cutsideedgercp =
           mesh_.Sides();
       std::map<plain_int_set, Teuchos::RCP<Side> >::iterator sideiterator =
@@ -2119,6 +2303,7 @@ void GEO::CUT::SelfCut::GetSelfCutEdges(Side & cutside)
       int cutsideedgenodeid = cutsideedgenode->Id();
       cutsideedgenodeids.insert(cutsideedgenodeid);
     }
+
     std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator edgeiterator =
         selfcut_edges_.find(cutsideedgenodeids);
     if (edgeiterator == selfcut_edges_.end())

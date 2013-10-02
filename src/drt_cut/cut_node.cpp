@@ -623,3 +623,22 @@ void GEO::CUT::Node::SelfCutPosition( Point::PointPosition pos )
     }
   }
 }
+
+/*-----------------------------------------------------------------------------------------*
+ *  Returns true if the given node is exactly at the same position as this node     sudhakar 09/13
+ *-----------------------------------------------------------------------------------------*/
+bool GEO::CUT::Node::isAtSameLocation( const Node * nod ) const
+{
+  LINALG::Matrix<3,1> nx1, nx2;
+
+  point_->Coordinates( nx1.A() );
+  Coordinates( nx1.A() );
+  nod->Coordinates( nx2.A() );
+
+  nx1.Update( -1, nx2, 1 );
+
+  if ( nx1.Norm2() < MINIMALTOL )
+    return true;
+
+  return false;
+}

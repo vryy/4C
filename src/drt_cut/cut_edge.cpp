@@ -491,3 +491,20 @@ void GEO::CUT::Edge::SelfCutPosition( Point::PointPosition pos )
     }
   }
 }
+
+/*------------------------------------------------------------------------*
+ *  Replaces the node "nod" of the edge with given node "replwith"
+ *                                                              sudhakar 09/13
+ *------------------------------------------------------------------------*/
+void GEO::CUT::Edge::replaceNode( Node* nod, Node* replwith )
+{
+  for( unsigned i=0; i < nodes_.size(); i++ )
+  {
+    Node* orig = nodes_[i];
+
+    if( orig->Id() == nod->Id() )
+    {
+      nodes_[i] = replwith;
+    }
+  }
+}

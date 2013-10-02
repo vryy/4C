@@ -121,6 +121,11 @@ namespace GEO
         */
       unsigned size() const { return points_.size(); }
 
+      /*!
+      \brief Reverse the order of storing the points
+       */
+      void reverse();
+
       void swap( Cycle & other ) { std::swap( points_, other.points_ ); }
 
       friend std::ostream & ::operator<<( std::ostream & stream, const Cycle & cycle );

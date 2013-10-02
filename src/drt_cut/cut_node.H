@@ -79,16 +79,19 @@ public:
   const plain_edge_set & Edges() { return edges_; }
 
   /// Get the coordinates of the node from its point's information
-  void Coordinates( double * x ){ point_->Coordinates( x ); }
+  void Coordinates( double * x ) const { point_->Coordinates( x ); }
 
   /// Get the position of the node whether it is in fluid, structure or on the cut face
   Point::PointPosition Position() const { return point_->Position(); }
 
   /// Returns the point that defines the node
-  Point * point() { return point_; }
+  Point * point() const { return point_; }
 
   /// Returns the levelset value at this node (if it is a levelset node)
   double LSV() const { return lsv_; }
+
+  /// Returns sides that are connected at this node
+  const plain_side_set & Sides () const { return point_->CutSides(); }
 
   /// get all elements adjacent to this node's point
   const plain_element_set & Elements() const { return point_->Elements(); }
@@ -149,6 +152,9 @@ public:
 
   /// Erase the cutsideedge from this node because it is deleted in the selfcut
   void EraseCutSideEdge( Edge * cutsideedge ){ edges_.erase( cutsideedge ); }
+
+  /// Return true is the given node has same position coordinates as this node
+  bool isAtSameLocation ( const Node* nod1 ) const;
 
 
 

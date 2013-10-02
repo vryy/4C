@@ -9,15 +9,7 @@
 #include "cut_mesh.H"
 #include "cut_find_cycles.H"
 
-//#include <boost/graph/copy.hpp>
-//#include <boost/graph/adjacency_list.hpp>
-//#include <boost/graph/breadth_first_search.hpp>
-//#include <boost/graph/graph_utility.hpp>
-//#include <boost/graph/planar_face_traversal.hpp>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
-//#include <boost/graph/connected_components.hpp>
-//#include <boost/graph/subgraph.hpp>
-//#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphviz.hpp>
 
 /*-------------------------------------------------------------------------------------*

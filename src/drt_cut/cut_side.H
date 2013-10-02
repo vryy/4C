@@ -275,6 +275,9 @@ public:
   /// Returns the selfcutposition of this cutside
   Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
 
+	/// replace "nod" associated with this side by the new node "replwith"
+  void replaceNodes( Node* nod, Node* replwith );
+
 protected:
 
   bool AllOnNodes( const PointSet & points );

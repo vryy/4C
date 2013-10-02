@@ -230,3 +230,9 @@ void GEO::CUT::Cycle::GnuplotDump( std::ostream & stream ) const
     stream << "\n\n";
   }
 }
+
+void GEO::CUT::Cycle::reverse()
+{
+  std::reverse( points_.begin(), points_.end() );
+}
+

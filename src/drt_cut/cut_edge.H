@@ -84,6 +84,12 @@ public:
   { return ( ( BeginNode()->point()==begin and EndNode()->point()==end ) or
              ( BeginNode()->point()==end   and EndNode()->point()==begin ) ); }
 
+  /*!
+  \brief In some cases, we need to check whether a cut line coincide with any edge.
+  Even if they coincide the point ids are different, only coordinates match
+   */
+  bool MatchWithCoordinates( Point *begin, Point *end );
+
   //virtual bool HasPoint( Point * p ) = 0;
 
   /*!
@@ -218,6 +224,10 @@ public:
   /// Erase the cutside from this edge because it is deleted in the selfcut
   void EraseCutSide( Side * cutside ){ sides_.erase( cutside ); }
 
+  /*!
+  \brief Replace the node "nod" of this edge with given node "replwith"
+   */
+  void replaceNode( Node* nod, Node* replwith );
 
 
 private:

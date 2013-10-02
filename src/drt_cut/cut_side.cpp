@@ -1233,3 +1233,33 @@ bool GEO::CUT::Side::HoleOfFacet( Facet & facet, const std::vector<Cycle> & hole
   }
 
 }
+
+/*--------------------------------------------------------------------------*
+ * replace the Node "nod" with the new node "replwith"            sudhakar 10/13
+ * Modify also the edge informations correspondingly
+ *--------------------------------------------------------------------------*/
+void GEO::CUT::Side::replaceNodes( Node* nod, Node* replwith )
+{
+  bool replaced = false;
+
+  for( unsigned i=0; i < nodes_.size(); i++ )
+  {
+    Node* orig = nodes_[i];
+
+    if( orig->Id() == nod->Id() )
+    {
+      nodes_[i] = replwith;
+      replaced = true;
+    }
+  }
+
+  if( not replaced )
+    return;
+
+  // also modify the corresponding edge information
+  for( std::vector<Edge*>::iterator it = edges_.begin(); it != edges_.end(); it++ )
+  {
+    Edge* ed = *it;
+    ed->replaceNode( nod, replwith );
+  }
+}

@@ -49,6 +49,12 @@ public:
   /// finds cutsides which possibly cuts the considered side
   void FindCuttingSides();
 
+  /// if there are two nodes from cut sides are at the same position, we merge it into one node
+  void MergeCoincidingNodes();
+
+  /// opearations to modify the nodal ids of sides and corresponding edges are performed
+  void operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl, Side* side, bool initial );
+
   /// finds cutpoints by searching the intersection between the edges of one side with the other side and vice versa
   void FindSelfCutPoints();
 
