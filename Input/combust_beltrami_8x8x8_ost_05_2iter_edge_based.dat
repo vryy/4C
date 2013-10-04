@@ -35,7 +35,6 @@ ITEMAX                          1
 MAXTIME                         0.5
 NUMSTEP                         8
 RESTARTEVRY                     2
-TIMEINT                         One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
@@ -78,7 +77,6 @@ NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
-STARTINGALGO                    One_Step_Theta
 START_THETA                     0.5 //0.66
 THETA                           0.5 //0.66
 TIMEINTEGR                      One_Step_Theta

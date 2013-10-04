@@ -44,7 +44,6 @@ NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-7
-STARTINGALGO                    One_Step_Theta
 NUMSTASTEPS                     0
 START_THETA                     0.67
 INITIALFIELD                    zero_field
@@ -7902,9 +7901,9 @@ NODE 2002 COORD 0.000000000000000e+000 0.000000000000000e+000 4.100000000000000e
 1512 FLUID3 HEX8 2002 1953 1951 2001 2000 1952 1948 1997 MAT 1 NA Euler
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 173 QUANTITY velx VALUE 2.919562290e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 173 QUANTITY vely VALUE 3.627588967e-08 TOLERANCE 1e-9
-FLUID DIS fluid NODE 173 QUANTITY velz VALUE 2.273331207e-07 TOLERANCE 1e-9
-FLUID DIS fluid NODE 173 QUANTITY pressure VALUE 2.347463432e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY velx VALUE 2.92169245903553597e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY vely VALUE 4.75717000073227332e-08 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY velz VALUE 2.16423504703532867e-07 TOLERANCE 1e-9
+FLUID DIS fluid NODE 173 QUANTITY pressure VALUE 2.34497323334615163e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

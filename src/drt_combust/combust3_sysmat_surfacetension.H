@@ -912,6 +912,7 @@ void RHS_SurfaceTension2DIntegrals(
 
       for(size_t i=0; i<numnode; i++)
         curvature -= ecurv(i) * funct_gp(i); // Do not ask me why ecurv contains the negative surface tension...
+                                             // ... answer curvature is multiplied by -1 in flamefront
     }
     else
     {

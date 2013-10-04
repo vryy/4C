@@ -45,7 +45,6 @@ PHYSICAL_TYPE                   Loma
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     2
 TIMEINTEGR                      Af_Gen_Alpha
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          1
 CONVCHECK                       L_2_norm

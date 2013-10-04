@@ -70,7 +70,6 @@ ITEMAX                          1
 MAXTIME                         1.0
 NUMSTEP                         4
 RESTARTEVRY                     20
-TIMEINT                         Stationary
 TIMESTEP                        1.0
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID

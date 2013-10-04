@@ -48,7 +48,6 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     1
 THETA                           0.5
 TIMEINTEGR                      Af_Gen_Alpha
-STARTINGALGO     		One_Step_Theta
 START_THETA      		1.0
 ALPHA_M          		0.83333333333333
 ALPHA_F          		0.66666666666666

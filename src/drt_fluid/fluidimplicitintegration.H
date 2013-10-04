@@ -745,7 +745,6 @@ protected:
 
   //! @name time-integration-scheme factors
   double theta_;
-  double omtheta_;
   double alphaM_;
   double alphaF_;
   double gamma_;

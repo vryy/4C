@@ -34,7 +34,6 @@ ITEMAX                          1
 MAXTIME                         0.5
 NUMSTEP                         8
 RESTARTEVRY                     10
-TIMEINT                         Gen_Alpha
 TIMESTEP                        0.05
 UPRES                           8
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID

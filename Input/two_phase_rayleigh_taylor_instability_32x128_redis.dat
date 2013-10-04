@@ -37,7 +37,6 @@ ITEMAX                          1
 MAXTIME                         9
 NUMSTEP                         5
 RESTARTEVRY                     2
-TIMEINT                         One_Step_Theta
 TIMESTEP                        0.02
 UPRES                           1
 PARALLEL_REDIST_RATIO_FAC       1.000001
@@ -62,7 +61,6 @@ LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
 TIMEINTEGR                      One_Step_Theta
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm

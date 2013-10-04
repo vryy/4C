@@ -50,7 +50,6 @@ NUMSTEP                         5
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     -1
-STARTINGALGO                    One_Step_Theta
 START_THETA                     1
 THETA                           1.00
 TIMEINTEGR                      One_Step_Theta

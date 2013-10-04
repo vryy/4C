@@ -84,7 +84,6 @@ NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
-STARTINGALGO                    One_Step_Theta
 START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta

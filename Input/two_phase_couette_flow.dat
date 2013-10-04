@@ -35,7 +35,6 @@ LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
 TIMEINTEGR                      Stationary
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
@@ -100,7 +99,6 @@ ITEMAX                          1
 MAXTIME                         1
 NUMSTEP                         1
 RESTARTEVRY                     1000
-TIMEINT                         Stationary
 TIMESTEP                        0.01
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID

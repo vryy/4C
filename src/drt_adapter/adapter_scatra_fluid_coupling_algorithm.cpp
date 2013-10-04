@@ -58,13 +58,13 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   case INPAR::SCATRA::timeint_one_step_theta:
   {
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
-      dserror("Fluid and Scatra time integration schemes do not match");
+      std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
     break;
   }
   case INPAR::SCATRA::timeint_bdf2:
   {
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_bdf2)
-      dserror("Fluid and Scatra time integration schemes do not match");
+      std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
     break;
   }
   case INPAR::SCATRA::timeint_gen_alpha:

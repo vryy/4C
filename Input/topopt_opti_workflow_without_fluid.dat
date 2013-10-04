@@ -56,7 +56,6 @@ PHYSICAL_TYPE                   Topology_optimization
 PREDICTOR                       steady_state
 SIMPLER                         no
 STARTFUNCNO                     1
-STARTINGALGO                    One_Step_Theta
 START_THETA                     1.0
 STEADYSTEP                      -1
 STEADYTOL                       1e-6

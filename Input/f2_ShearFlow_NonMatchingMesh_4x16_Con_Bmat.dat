@@ -54,7 +54,6 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     10
 SIMPLER                         no
 STARTFUNCNO                     2
-STARTINGALGO                    One_Step_Theta
 START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta

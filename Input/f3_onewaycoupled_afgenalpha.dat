@@ -44,7 +44,6 @@ LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     2
 TIMEINTEGR                      Af_Gen_Alpha //One_Step_Theta  // GenAlpha
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm

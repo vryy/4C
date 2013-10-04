@@ -39,7 +39,6 @@ THETA                           0.50
 ITEMAX                          5
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-STARTINGALGO                    One_Step_Theta
 NUMSTASTEPS                     0
 INITIALFIELD                    zero_field
 ADAPTCONV                       no

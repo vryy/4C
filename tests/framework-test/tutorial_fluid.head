@@ -117,9 +117,6 @@ SIMPLER                         no
 // Function for Initial Starting Field
 STARTFUNCNO                     -1
 //
-//                              One_Step_Theta
-STARTINGALGO                    One_Step_Theta
-//
 // Time integration factor for starting scheme
 START_THETA                     1
 //

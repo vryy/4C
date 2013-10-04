@@ -45,7 +45,6 @@ ITEMAX                          1
 MAXTIME                         0.5
 NUMSTEP                         5
 RESTARTEVRY                     1
-TIMEINT                         One_Step_Theta
 TIMESTEP                        0.1
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
@@ -70,7 +69,6 @@ LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field                      // field_by_function
 STARTFUNCNO                     -1
 TIMEINTEGR                      One_Step_Theta
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      Newton                          // fixed_point_like
 ITEMAX                          20
 CONVCHECK                       L_2_norm

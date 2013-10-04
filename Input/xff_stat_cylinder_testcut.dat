@@ -46,7 +46,6 @@ NUMSTEP                         1
 RESTARTEVRY                     30
 SIMPLER                         no
 STARTFUNCNO                     2
-STARTINGALGO                    One_Step_Theta
 START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06

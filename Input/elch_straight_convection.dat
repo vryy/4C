@@ -47,7 +47,6 @@ LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
 TIMEINTEGR                      Stationary
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm

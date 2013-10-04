@@ -43,7 +43,6 @@ ITEMAX                          1
 MAXTIME                         5.0
 NUMSTEP                         20
 RESTARTEVRY                     20
-TIMEINT                         One_Step_Theta
 TIMESTEP                        0.25
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID

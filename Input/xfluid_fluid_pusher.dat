@@ -53,7 +53,6 @@ MAXTIME                         2.0                             // 2.0 * (T=1.0)
 TIMESTEP                        0.025                           // 80 timesteps with 0.025
 THETA 1.0 //0.5
 START_THETA                     1.0                             // start theta = 1.0
-STARTINGALGO                    One_Step_Theta
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        yes

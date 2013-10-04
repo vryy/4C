@@ -26,7 +26,6 @@ NUMSTEP 15 //250
 RESTARTEVRY                     35
 RESTART_FROM_FLUID              No
 RESTART_SCATRA_INPUT            No
-TIMEINT                         One_Step_Theta
 TIMESTEP                        0.001
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
@@ -72,7 +71,6 @@ NUMSTEP                         250
 PHYSICAL_TYPE                   Incompressible
 RESTARTEVRY                     35
 STARTFUNCNO                     -1
-STARTINGALGO                    One_Step_Theta
 START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-05

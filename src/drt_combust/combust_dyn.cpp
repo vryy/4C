@@ -26,7 +26,7 @@ Maintainer: Ursula Rasthofer
 
 
 /*------------------------------------------------------------------------------------------------*
- | main  control routine for dynamic combustion analysis                              henke 06/08 |
+ | main control routine for dynamic combustion analysis                               henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
 void combust_dyn()
 {
@@ -111,19 +111,14 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   // call one of the available time integration schemes
   //------------------------------------------------------------------------------------------------
-  INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT");
+  INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
   if (timeintscheme == INPAR::FLUID::timeint_one_step_theta or
-      timeintscheme == INPAR::FLUID::timeint_afgenalpha)
+      timeintscheme == INPAR::FLUID::timeint_afgenalpha or
+      timeintscheme == INPAR::FLUID::timeint_bdf2)
   {
     // solve a dynamic combustion problem
     combust_->TimeLoop();
-    /* remark: Hier kann auch z.B. Genalpha mit combust->TimeLoop() gerufen werden, weil der
-     * combustion Algorithmus ja schon weiss welche Zeitintegration er hat. Es muss dann eine Klasse
-     * "GenalphaTimeInt" existieren, die eine Funktion TimeLoop() hat. Dann muss allerdings auch
-     * das ADAPTER::FluidCombust ein entsprechendes Object GenalphaTimeInt haben. Momentan hat ein
-     * FluidCombust immer ein CombustFluidImplicitTimeInt!
-     */
   }
   else if (timeintscheme == INPAR::FLUID::timeint_stationary)
   {

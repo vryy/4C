@@ -60,7 +60,6 @@ LINEAR_SOLVER                   3
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 TIMEINTEGR                      BDF2
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm

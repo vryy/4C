@@ -30,7 +30,6 @@ ITEMAX                          1
 MAXTIME                         30
 NUMSTEP                         10//30
 RESTARTEVRY                     2000
-TIMEINT                         One_Step_Theta                  // Stationary
 TIMESTEP 1.0 //0.699751188 //CFL=1
 UPRES                           1
 PARALLEL_REDIST_RATIO_FAC       1.0001
@@ -69,7 +68,6 @@ LINEAR_SOLVER                   1
 INITIALFIELD                    zero_field                      // field_by_function
 STARTFUNCNO                     -1
 TIMEINTEGR One_Step_Theta //Stationary
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm

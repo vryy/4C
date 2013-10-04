@@ -10,10 +10,10 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-f3_beltrami_8x8x8_ost_2iter_conv
+f3_beltrami_8x8x8_bdf2_2iter_conv
 
-results must be identical with results from test case 'combust_beltrami_8x8x8_ost_2iter'
-One-Step-Theta time integration scheme of combustion and standard fluid have to compute identical results
+results must be identical with results from test case 'combust_beltrami_8x8x8_bdf2_2iter'
+BDF2 time integration scheme of combustion and standard fluid have to compute identical results
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        320
 NODES                           125
@@ -40,7 +40,6 @@ GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
 CONVTOL                         1e-06
-GRIDVEL                         BE
 ITEMAX                          1
 MAXTIME                         0.5
 NONLINITER Newton //fixed_point_like
@@ -48,9 +47,10 @@ NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
-START_THETA                     0.66
-THETA                           0.66
-TIMEINTEGR                      One_Step_Theta
+NUMSTASTEPS                     0 //1
+START_THETA                     1.0 //0.66
+THETA                           1.0 //0.66
+TIMEINTEGR                      BDF2 //One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           8
 MESHTYING                       no
@@ -115,22 +115,22 @@ CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
 FUNCT1                          BELTRAMI
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.30443286055423194e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.43139508522601422e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY velz VALUE 3.10339297469455044e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -4.97839491988245619e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velx VALUE -2.92016203815932740e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY vely VALUE -2.92016203815932796e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velz VALUE -2.92016203815932796e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -1.29319126942526397e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 453 QUANTITY velx VALUE -6.56146383161794522e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY vely VALUE -4.49168257384873371e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY velz VALUE -4.92214503794568436e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -4.43389050603276547e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.41774498632087159e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.90309237449059099e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.66977191120825674e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.62315145247776926e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.33900563439094061e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.40944932498359143e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY velz VALUE 3.09961833079965332e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -6.40097280451410594e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velx VALUE -2.91037540733762312e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY vely VALUE -2.91037540733762423e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velz VALUE -2.91037540733762423e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -1.29109438183187764e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 453 QUANTITY velx VALUE -6.54349959712877460e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY vely VALUE -4.48455843226260253e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY velz VALUE -4.91019001014207979e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -4.24949970076899386e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.41624854780344339e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.89452731063745894e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.67147532713445091e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.47218404055443419e-01 TOLERANCE 1e-9
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0

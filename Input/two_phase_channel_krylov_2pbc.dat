@@ -27,7 +27,6 @@ ITEMAX                          1
 MAXTIME                         1000000
 NUMSTEP                         5
 RESTARTEVRY                     3
-TIMEINT                         One_Step_Theta
 TIMESTEP                        0.06
 UPRES                           3
 PARALLEL_REDIST_RATIO_FAC       1.2

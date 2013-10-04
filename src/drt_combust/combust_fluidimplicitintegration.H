@@ -400,14 +400,15 @@ public:
 
   double ResidualScaling() const
   {
-    if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)
+    if (timealgo_ == INPAR::FLUID::timeint_one_step_theta or
+        timealgo_ == INPAR::FLUID::timeint_bdf2)
       return 1.0/(theta_ * dta_);
     else if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
       return alphaM_/(gamma_*dta_);
     else if (timealgo_ == INPAR::FLUID::timeint_stationary)
       return 1.0;
     else
-      dserror("Only implemented for One Step Theta so far.");
+      dserror("Not implemented so far.");
     return 0.0;
   }
 

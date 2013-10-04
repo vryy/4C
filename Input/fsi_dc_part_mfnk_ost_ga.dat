@@ -51,7 +51,6 @@ NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-8
-STARTINGALGO                    One_Step_Theta
 NUMSTASTEPS                     0
 START_THETA                     1.00
 INITIALFIELD                    zero_field

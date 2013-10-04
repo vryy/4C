@@ -2650,14 +2650,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           INPAR::FLUID::timeint_bdf2),
           &fdyn);
 
-  setStringToIntegralParameter<int>("STARTINGALGO","One_Step_Theta","",
-                               tuple<std::string>(
-                                 "One_Step_Theta"
-                                 ),
-                               tuple<int>(
-                                 INPAR::FLUID::timeint_one_step_theta
-                                 ),
-                               &fdyn);
   setStringToIntegralParameter<int>("NONLINITER","fixed_point_like",
                                "Nonlinear iteration scheme",
                                tuple<std::string>(
@@ -4888,17 +4880,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
+
   DoubleParameter("PARALLEL_REDIST_RATIO_FAC",0.0,"Factor by which the max to min element evaluation time has to increase to trigger a redistribution",&combustcontrol);
-  setStringToIntegralParameter<int>("TIMEINT","One_Step_Theta","Time Integration Scheme",
-      tuple<std::string>(
-          "Stationary",
-          "One_Step_Theta",
-          "Gen_Alpha"),
-          tuple<int>(
-              INPAR::FLUID::timeint_stationary,
-              INPAR::FLUID::timeint_one_step_theta,
-              INPAR::FLUID::timeint_afgenalpha),
-              &combustcontrol);
 
   BoolParameter("GENERATE_FLOW_FIELD","No","Do not solve g-function, since we merely want to set up a fluid field",&combustcontrol);
 

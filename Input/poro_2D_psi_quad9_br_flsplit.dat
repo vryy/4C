@@ -45,7 +45,6 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     -1
-STARTINGALGO                    One_Step_Theta
 START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06

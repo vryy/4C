@@ -98,44 +98,11 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
   }
 
-  // TODO: scatra and fluid/combustion time-integration methods do not have to fit, or shall they? - winklmaier
-  const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT");
-  switch(timealgo)
-  {
-  case INPAR::FLUID::timeint_stationary:
-  {
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
-      dserror("fluid time integration scheme does not match");
-    if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
-      IO::cout << "WARNING: combustion and scatra time integration scheme do not match" << IO::endl;
-    break;
-  }
-  case INPAR::FLUID::timeint_one_step_theta:
-  {
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
-      dserror("fluid time integration scheme does not match");
-    if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_one_step_theta)
-      IO::cout << "WARNING: combustion and scatra time integration scheme do not match" << IO::endl;
-    break;
-  }
-  case INPAR::FLUID::timeint_afgenalpha:
-  {
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
-      dserror("fluid time integration scheme does not match");
-    if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_gen_alpha)
-      IO::cout << "WARNING: combustion and scatra time integration scheme do not match" << IO::endl;
-    break;
-  }
-  default:
-    dserror("unknown time integration scheme for combustion problem");
-  }
-
   // get pointers to the discretizations from the time integration scheme of each field
   // remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
   // class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"              henke 01/09
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
-
 
   // FGI vectors are initialized
   velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);//*fluiddis->DofRowMap()),true);
@@ -192,10 +159,11 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     // usually we initialize phin and set phinp to phin as initial guess for the solution process
     // here, we reinitialize phinp (since we always reinitialize phinp) and store the result also in
     // phin (finally has the same consequence)
-    if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
     {
       // reset phin vector in ScaTra time integration scheme to phinp vector
       *ScaTraField().Phin() = *ScaTraField().Phinp();
+      // remark: for BDF2, we do not have to set phinm, since it is not used for the first time step as a backward Euler step is performed
     }
 
     // update flame front according to reinitialized G-function field
@@ -228,7 +196,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // update fluid interface with flamefront
   FluidField().ImportFlameFront(flamefront_,true);
   // output fluid initial state
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary
+  if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary
       and DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false)
     FluidField().Output();
   // clear fluid's memory to flamefront
@@ -263,7 +231,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   }
 
   // output G-function initial state
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary and
+  if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary and
       DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false )
     ScaTraField().Output();
 
@@ -569,7 +537,7 @@ void COMBUST::Algorithm::ReinitializeGfunc()
   // reinitialize what will later be 'phinp'
   if (stepreinit_)
   {
-    if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") == INPAR::FLUID::timeint_afgenalpha)
+    if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
       flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phiaf());
     else
       flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
@@ -583,7 +551,7 @@ void COMBUST::Algorithm::ReinitializeGfunc()
     flamefront_->ExportFlameFront(myflamefront);
 #endif
 
-    if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") == INPAR::FLUID::timeint_afgenalpha)
+    if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
     {
       // reinitialize G-function (level set) field
       COMBUST::Reinitializer reinitializer(
@@ -1567,7 +1535,7 @@ void COMBUST::Algorithm::UpdateInterface()
 
   // update flame front according to evolved G-function field
   // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") == INPAR::FLUID::timeint_afgenalpha)
+  if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
     flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phiaf());
   else
     flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
@@ -1952,8 +1920,6 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
       // which then eliminate all but their row nodes
       {
         Teuchos::RCP<std::set<int> > globalcollectednodes = Teuchos::rcp(new std::set<int>);
-        //TODO Ursula: patch gfunctionConvelManipulation
-        //             linalg_utils.H, drt_exporter.H
         LINALG::Gather<int>(*allcollectednodes,*globalcollectednodes,numproc,allproc,fluiddis->Comm());
 
         allcollectednodes->clear();

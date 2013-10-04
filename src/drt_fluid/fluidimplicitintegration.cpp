@@ -127,9 +127,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   dtp_ = params_->get<double>("time step size");
   // parameter theta for time-integration schemes
   theta_    = params_->get<double>("theta");
-  // compute or set 1.0 - theta for time-integration schemes
-  if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
-  else                                      omtheta_ = 0.0;
   // af-generalized-alpha parameters: gamma_ = 0.5 + alphaM_ - alphaF_
   // (may be reset below when starting algorithm is used)
   alphaM_   = params_->get<double>("alpha_M");
@@ -915,7 +912,17 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   IncrementTimeAndStep();
 
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-  if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+  if (timealgo_==INPAR::FLUID::timeint_bdf2)
+  {
+    if (step_ > 1)
+      theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+    else
+    {
+      // use backward Euler for the first time step
+      velnm_->Update(1.0,*veln_,0.0); // results in hist_ = veln_
+      theta_ = 1.0;
+    }
+  }
 
   // -------------------------------------------------------------------
   // set part(s) of the rhs vector(s) belonging to the old timestep
@@ -6036,7 +6043,10 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   // set general element parameters
   eleparams.set("dt",dta_);
   eleparams.set("theta",theta_);
-  eleparams.set("omtheta",omtheta_);
+  if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)
+   eleparams.set("omtheta",1.0-theta_);
+  else
+   eleparams.set("omtheta",0.0);
 
   // set scheme-specific element parameters and vector values
   if (timealgo_==INPAR::FLUID::timeint_stationary)

@@ -202,7 +202,7 @@ void FaceMatNitsche(
   // time integration constant
   double timefac = 1.0; // stationary
   double rhstimefac = 1.0; // stationary
-  if (instationary) // ost
+  if (instationary) // ost and bdf2
   {
     timefac = dt;
     rhstimefac = timefac;

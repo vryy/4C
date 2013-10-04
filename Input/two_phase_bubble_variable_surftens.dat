@@ -23,7 +23,6 @@ ITEMAX                          1
 MAXTIME                         20
 NUMSTEP                         1
 RESTARTEVRY                     10
-TIMEINT                         Stationary
 TIMESTEP                        1.0
 UPRES                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
@@ -60,7 +59,6 @@ STATIONARY_CHECK                Integrated_L1_Norm
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
 TIMEINTEGR                      Stationary
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm

@@ -32,7 +32,6 @@ ITEMAX                          1
 MAXTIME                         1000.0
 NUMSTEP                         5
 RESTARTEVRY                     10
-TIMEINT                         One_Step_Theta
 TIMESTEP                        0.1
 UPRES                           20
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
@@ -62,7 +61,6 @@ LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
-STARTINGALGO                    One_Step_Theta
 START_THETA                     0.66
 THETA                           0.66
 ITEMAX                          10
