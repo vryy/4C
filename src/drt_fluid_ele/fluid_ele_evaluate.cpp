@@ -587,7 +587,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           // get thermodynamic pressure
           thermpress = params.get<double>("thermpress");
         }
-
         // initialize the contribution of this element to the patch volume to zero
         double volume_contribution = 0.0;
 
@@ -599,7 +598,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
         RCP<std::vector<std::vector<double> > > reynoldsstress_hat = params.get<RCP<std::vector<std::vector<double> > > >("reynoldsstress_hat");
         RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = params.get<RCP<std::vector<std::vector<double> > > >("modeled_subgrid_stress");
-
+        //Vreman
+        double expression_hat=0.0;
+        double alpha2_hat=0.0;
+        RCP<std::vector<std::vector<double> > > strainrate_hat = params.get<RCP<std::vector<std::vector<double> > > >("strainrate_hat");
+        RCP<std::vector<std::vector<double> > > alphaij_hat = params.get<RCP<std::vector<std::vector<double> > > >("alphaij_hat");
         // integrate the convolution with the box filter function for this element
         // the results are assembled onto the *_hat arrays
         switch (distype)
@@ -618,7 +621,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
               modeled_subgrid_stress,
               volume_contribution,
               dens_hat,
-              dens_strainrate_hat);
+              dens_strainrate_hat,
+              expression_hat,
+              alpha2_hat,
+              strainrate_hat,
+              alphaij_hat);
           break;
         }
         case DRT::Element::tet4:
@@ -635,7 +642,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
               modeled_subgrid_stress,
               volume_contribution,
               dens_hat,
-              dens_strainrate_hat);
+              dens_strainrate_hat,
+              expression_hat,
+              alpha2_hat,
+              strainrate_hat,
+              alphaij_hat);
           break;
         }
         default:
@@ -649,6 +660,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         // as well as the filtered scalar quantities
         params.set<double>("dens_hat",dens_hat);
         params.set<double>("dens_strainrate_hat",dens_strainrate_hat);
+
+        params.set<double>("expression_hat",expression_hat);
+        params.set<double>("alpha2_hat",alpha2_hat);
 
       } // end if (nsd == 3)
       else dserror("action 'calc_fluid_box_filter' is 3D specific action");
@@ -768,6 +782,70 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         params.set<double>("zcenter",zcenter);
       } // end if(nsd == 3)
       else dserror("action 'calc_smagorinsky_const' is a 3D specific action");
+    }
+    break;
+    case FLD::calc_vreman_const:
+    {
+      if(nsd == 3)
+      {
+        RCP<Epetra_MultiVector> col_filtered_strainrate         =
+            params.get<RCP<Epetra_MultiVector> >("col_filtered_strainrate");
+        RCP<Epetra_MultiVector> col_filtered_alphaij =
+            params.get<RCP<Epetra_MultiVector> >("col_filtered_alphaij");
+        // pointer to class FluidEleParameter (access to the general parameter)
+        // required? Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+        RCP<Epetra_Vector> col_filtered_expression = Teuchos::null;
+        RCP<Epetra_Vector> col_filtered_alpha2 = Teuchos::null;
+        col_filtered_expression = params.get<RCP<Epetra_Vector> >("col_filtered_expression");
+        col_filtered_alpha2 = params.get<RCP<Epetra_Vector> >("col_filtered_alpha2");
+
+        double cv_numerator   = 0.0;
+        double cv_denominator   = 0.0;
+        double volume = 0.0;
+        const DiscretizationType distype = this->Shape();
+        switch (distype)
+        {
+        case DRT::Element::hex8:
+        {
+          FLD::f3_calc_vreman_const<8>(
+              this,
+              col_filtered_strainrate                   ,
+              col_filtered_alphaij        ,
+              col_filtered_expression,
+              col_filtered_alpha2              ,
+              cv_numerator                  ,
+              cv_denominator       ,
+              volume                             );
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          FLD::f3_calc_vreman_const<4>(
+              this,
+              col_filtered_strainrate                   ,
+              col_filtered_alphaij        ,
+              col_filtered_expression,
+              col_filtered_alpha2              ,
+              cv_numerator                  ,
+              cv_denominator       ,
+              volume                             );
+          break;
+        }
+        default:
+        {
+          dserror("Unknown element type for dynamic vreman application\n");
+        }
+        }
+
+
+        // set all values in parameter list
+        //params.set<double>("ele_Cv_numerator",cv_numerator);
+        //params.set<double>("ele_Cv_denominator",cv_denominator);
+        //params.set<double>("ele_Cv_volume",volume);
+        elevec1(0)=cv_numerator;
+        elevec1(1)=cv_denominator;
+      } // end if(nsd == 3)
+      else dserror("action 'calc_vreman_const' is a 3D specific action");
     }
     break;
     case FLD::calc_fluid_genalpha_update_for_subscales:

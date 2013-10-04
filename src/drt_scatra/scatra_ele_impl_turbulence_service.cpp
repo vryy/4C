@@ -19,7 +19,6 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
-
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland.H"
 
@@ -33,16 +32,22 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
   double&                    dens_hat,
   double&                    temp_hat,
   double&                    dens_temp_hat,
+  double&                    phi2_hat,
+  double&                    phiexpression_hat,
   Teuchos::RCP<std::vector<double> >       vel_hat,
   Teuchos::RCP<std::vector<double> >       densvel_hat,
   Teuchos::RCP<std::vector<double> >       densveltemp_hat,
   Teuchos::RCP<std::vector<double> >       densstraintemp_hat,
+  Teuchos::RCP<std::vector<double> >       phi_hat,
+  Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat,
   double&                    volume,
   const DRT::Element*        ele)
 {
+
   // do preparations first
   // ---------------------------------------------
-
+  LINALG::Matrix<nsd_,nsd_> vderxy;
+  double alpha2 = 0.0;
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
@@ -62,7 +67,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
     DRT::Element* fluidele = fluiddis->gElement(ele->Id());
     if (fluidele == NULL)
       dserror("Fluid element %i not on local processor", ele->Id());
-
     // get fluid material
     RCP<MAT::Material> fluidmat = fluidele->Material();
     if(fluidmat->MaterialType() != INPAR::MAT::m_fluid)
@@ -96,7 +100,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
 
   // perform integrations, i.e., convolution
   // ---------------------------------------------
-
   for (int rr=0;rr<nsd_;++rr)
   {
     double tmp=convelint_(rr)*volume;
@@ -116,14 +119,65 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
     double tmp=gradphi_(rr)*volume;
     // add contribution to integral over dens times rate of strain times phi gradient
     (*densstraintemp_hat)[rr] += densnp_[0]*rateofstrain*tmp;
+    (*phi_hat)[rr] = tmp;
+    phi2_hat += tmp*gradphi_(rr);
   }
+  //calculate vreman part
+  if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
+  {
+    double beta00;
+    double beta11;
+    double beta22;
+    double beta01;
+    double beta02;
+    double beta12;
+    double bbeta;
+    double hk2=pow(volume,(2.0/3.0));
 
+
+    for (int nn=0;nn<nsd_;++nn)
+    {
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        vderxy(nn,rr)=derxy_(rr,0)*evelnp_(nn,0);
+        for (int mm=1;mm<8;++mm)
+        {
+          vderxy(nn,rr)+=derxy_(rr,mm)*evelnp_(nn,mm);
+        }
+        (*alphaijsc_hat)[rr][nn]=vderxy(nn,rr);
+        alpha2 += vderxy(nn,rr)*vderxy(nn,rr);
+      }
+    }
+
+    beta00=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][0] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][0] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][0];
+    beta11=hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][1] + hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][1] + hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][1];
+    beta22=hk2 * (*alphaijsc_hat)[0][2] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][2] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][2] * (*alphaijsc_hat)[2][2];
+    beta01=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][1] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][1] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][1];
+    beta02=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][2];
+    beta12=hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][2];
+
+    bbeta = beta00 * beta11 - beta01 * beta01
+          + beta00 * beta22 - beta02 * beta02
+          + beta11 * beta22 - beta12 * beta12;
+    if (alpha2 < 1.0e-15)
+      (phiexpression_hat)=0.0;
+    else
+      (phiexpression_hat) = (phi2_hat) * sqrt(bbeta/alpha2);
+
+    for (int nn=0;nn<nsd_;++nn)
+    {
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        (*alphaijsc_hat)[rr][nn]*=volume;
+      }
+    }
+
+  }
   // add additional scalar quantities
   // i.e., filtered density, filtered density times scalar (i.e., temperature) and scalar
   dens_hat = densnp_[0]*volume;
   dens_temp_hat = densnp_[0]*phi_[0]*volume;
   temp_hat = phi_[0]*volume;
-
   return;
 } //ScaTraImpl::scatra_apply_box_filter
 
@@ -281,6 +335,104 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_calc_smag_const_LkMk_and_MkMk(
 
   return;
 }//ScaTraImpl::scatra_calc_smag_const_LkMk_and_MkMk
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::        scatra_calc_vreman_dt(
+  RCP<Epetra_MultiVector>& col_filtered_phi,
+  RCP<Epetra_Vector>& col_filtered_phi2              ,
+  RCP<Epetra_Vector>&   col_filtered_phiexpression         ,
+  RCP<Epetra_MultiVector>& col_filtered_alphaijsc,
+  double& dt_numerator,
+  double& dt_denominator,
+  const DRT::Element*       ele)
+  {
+  double phi_hat2=0.0;
+  LINALG::Matrix<9,nen_> ealphaijsc_hat(true)                 ;
+  LINALG::Matrix<nsd_,nen_> ephi_hat                            ;
+  LINALG::Matrix<1,nen_> ephi2_hat(true)                           ;
+  LINALG::Matrix<1,nen_> ephiexpression_hat(true)                 ;
+  LINALG::Matrix<nsd_,nsd_> alphaijsc_hat(true);
+  LINALG::Matrix<nsd_,1> phi_hat(true);
+  LINALG::Matrix<1,1> phi2_hat(true);
+  LINALG::Matrix<1,1> phiexpression_hat(true);
+
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,ephi_hat,col_filtered_phi,nsd_);
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,ephi2_hat,col_filtered_phi2,1);
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,ephiexpression_hat,col_filtered_phiexpression,1);
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,ealphaijsc_hat,col_filtered_alphaijsc,nsd_*nsd_);
+
+  phi_hat.Multiply(ephi_hat,funct_);
+  phi2_hat.Multiply(ephi2_hat,funct_);
+  phiexpression_hat.Multiply(ephiexpression_hat,funct_);
+  for (int nn=0;nn<3;++nn)
+  {
+    for (int rr=0;rr<3;++rr)
+    {
+      int index = 3*nn+rr;
+      alphaijsc_hat(nn,rr)=funct_(0)*ealphaijsc_hat(index,0);
+
+      for (int mm=1;mm<nen_;++mm)
+      {
+        alphaijsc_hat(nn,rr)+=funct_(mm)*ealphaijsc_hat(index,mm);
+      }
+    }
+  }
+
+
+  for (int rr=0;rr<nsd_;++rr)
+  {
+    phi_hat2+=phi_hat(rr,0)*phi_hat(rr,0);
+  }
+
+  dt_denominator=phi2_hat(0,0)-phi_hat2;
+
+  //calculate vreman part
+  {
+    // use one-point Gauss rule to do calculations at the element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+    double volume = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0,0);
+
+    double beta00;
+    double beta11;
+    double beta22;
+    double beta01;
+    double beta02;
+    double beta12;
+    double bbeta;
+    double hk2=3*pow(volume,(2.0/3.0));
+    double alpha2=0.0;
+    double phiexpressionf_hat=0.0;
+
+    for (int nn=0;nn<nsd_;++nn)
+    {
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        alpha2 += alphaijsc_hat(nn,rr)*alphaijsc_hat(nn,rr);
+      }
+    }
+
+    beta00=hk2 * alphaijsc_hat(0,0) * alphaijsc_hat(0,0) + hk2 * alphaijsc_hat(1,0) * alphaijsc_hat(1,0) + hk2 * alphaijsc_hat(2,0) * alphaijsc_hat(2,0);
+    beta11=hk2 * alphaijsc_hat(0,1) * alphaijsc_hat(0,1) + hk2 * alphaijsc_hat(1,1) * alphaijsc_hat(1,1) + hk2 * alphaijsc_hat(2,1) * alphaijsc_hat(2,1);
+    beta22=hk2 * alphaijsc_hat(0,2) * alphaijsc_hat(0,2) + hk2 * alphaijsc_hat(1,2) * alphaijsc_hat(1,2) + hk2 * alphaijsc_hat(2,2) * alphaijsc_hat(2,2);
+    beta01=hk2 * alphaijsc_hat(0,0) * alphaijsc_hat(0,1) + hk2 * alphaijsc_hat(1,0) * alphaijsc_hat(1,1) + hk2 * alphaijsc_hat(2,0) * alphaijsc_hat(2,1);
+    beta02=hk2 * alphaijsc_hat(0,0) * alphaijsc_hat(0,2) + hk2 * alphaijsc_hat(1,0) * alphaijsc_hat(1,2) + hk2 * alphaijsc_hat(2,0) * alphaijsc_hat(2,2);
+    beta12=hk2 * alphaijsc_hat(0,1) * alphaijsc_hat(0,2) + hk2 * alphaijsc_hat(1,1) * alphaijsc_hat(1,2) + hk2 * alphaijsc_hat(2,1) * alphaijsc_hat(2,2);
+
+    bbeta = beta00 * beta11 - beta01 * beta01
+          + beta00 * beta22 - beta02 * beta02
+          + beta11 * beta22 - beta12 * beta12;
+    if (alpha2 < 1.0e-15)
+      phiexpressionf_hat=0.0;
+    else
+      phiexpressionf_hat = (phi_hat2) * sqrt(bbeta/alpha2);
+
+    dt_numerator=phiexpressionf_hat-phiexpression_hat(0,0);
+  }
+
+
+    return;
+  }
 
 
 /*----------------------------------------------------------------------------------*
@@ -669,9 +821,69 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
     // remark: for dynamic estimation, tpn corresponds to (Cs*h)^2 / Pr_t
     sgdiff_[k] = densnp_[k] * rateofstrain * tpn;
   }
+  else if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
+  {
+    double beta00;
+    double beta11;
+    double beta22;
+    double beta01;
+    double beta02;
+    double beta12;
+    double bbeta;
+    double alphavreman;
+    double hkxpow2;
+    double hkypow2;
+    double hkzpow2;
+    double sgviscwocv=0.0;
+    double Dt=Cs;
 
-  // compute sum of physical and all-scale subgrid diffusivity
-  // -> set internal variable for use when calculating matrix and rhs
+    LINALG::Matrix<nsd_,nsd_> velderxy;
+
+    velderxy.MultiplyNT(econvelnp_,derxy_);
+
+    //- cube root of element volume
+
+    hkxpow2=pow(vol,(2.0/3.0));
+    hkypow2=hkxpow2;
+    hkzpow2=hkxpow2;
+
+    beta00=hkxpow2 * velderxy(0,0) * velderxy(0,0) + hkypow2 * velderxy(0,1) * velderxy(0,1) + hkzpow2 * velderxy(0,2) * velderxy(0,2);
+    beta11=hkxpow2 * velderxy(1,0) * velderxy(1,0) + hkypow2 * velderxy(1,1) * velderxy(1,1) + hkzpow2 * velderxy(1,2) * velderxy(1,2);
+    beta22=hkxpow2 * velderxy(2,0) * velderxy(2,0) + hkypow2 * velderxy(2,1) * velderxy(2,1) + hkzpow2 * velderxy(2,2) * velderxy(2,2);
+    beta01=hkxpow2 * velderxy(0,0) * velderxy(1,0) + hkypow2 * velderxy(0,1) * velderxy(1,1) + hkzpow2 * velderxy(0,2) * velderxy(1,2);
+    beta02=hkxpow2 * velderxy(0,0) * velderxy(2,0) + hkypow2 * velderxy(0,1) * velderxy(2,1) + hkzpow2 * velderxy(0,2) * velderxy(2,2);
+    beta12=hkxpow2 * velderxy(1,0) * velderxy(2,0) + hkypow2 * velderxy(1,1) * velderxy(2,1) + hkzpow2 * velderxy(1,2) * velderxy(2,2);
+
+    bbeta = beta00 * beta11 - beta01 * beta01
+          + beta00 * beta22 - beta02 * beta02
+          + beta11 * beta22 - beta12 * beta12;
+
+    alphavreman = velderxy(0,0) * velderxy(0,0)
+                + velderxy(0,1) * velderxy(0,1)
+                + velderxy(0,2) * velderxy(0,2)
+                + velderxy(1,0) * velderxy(1,0)
+                + velderxy(1,1) * velderxy(1,1)
+                + velderxy(1,2) * velderxy(1,2)
+                + velderxy(2,0) * velderxy(2,0)
+                + velderxy(2,1) * velderxy(2,1)
+                + velderxy(2,2) * velderxy(2,2);
+
+    if(alphavreman<1.0E-15)
+      sgviscwocv=0.0;
+    else
+      sgviscwocv=   sqrt(bbeta / alphavreman);
+
+
+    //remark: Cs corresponds to Dt, calculated in the vreman class
+    //        The vreman constant Cv is not required here, since it cancelles out with the
+    //        vreman constant omitted during the calculation of D_t
+    if (Dt<=1.0E-15) sgdiff_[k]=0.0;
+    else
+      sgdiff_[k] = densnp_[k] * sgviscwocv / (Dt);
+
+  }
+
+
   diffus_[k] += sgdiff_[k];
   if (update_mat_)
     dserror("Material update will overwrite effective diffusivity due to eddy-diffusivity model");
@@ -1340,6 +1552,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcDissipation(
       turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
     if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+    if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
+      turbmodel_ = INPAR::FLUID::dynamic_vreman;
     // as the scalar field is constant in the turbulent inflow section
     // we do not need any turbulence model
     if (params.get<bool>("turbulent inflow",false))
@@ -1693,7 +1907,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcDissipation(
 
     // calculation of all-scale subgrid diffusivity (artificial or due to
     // constant-coefficient Smagorinsky model) at element center
-    if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+    if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_vreman)
       CalcSubgrDiff(dt,timefac,whichassgd,assgd,Cs,tpn,vol,0);
 
     // calculation of fine-scale artificial subgrid diffusivity at element center

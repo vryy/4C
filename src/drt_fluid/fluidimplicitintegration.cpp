@@ -30,6 +30,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "fluidimpedancecondition.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_vreman.H"
+#include "../drt_fluid_turbulence/boxfilter.H"
 #include "../drt_fluid_turbulence/scale_sep_gmo.H"
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
@@ -508,8 +510,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       if (scale_sep == "box_filter")
       {
         scale_sep_ = INPAR::FLUID::box_filter;
-        // get one instance of the dynamic Smagorinsky class
-        DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
+        // get one instance of the Boxfilter class
+        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
                                             row_pbcmapmastertoslave_,
                                             *params_             ));
       }
@@ -546,8 +548,12 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       {
         scale_sep_ = INPAR::FLUID::box_filter;
 
-        // get one instance of the dynamic Smagorinsky class
-        DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
+//        // get one instance of the dynamic Smagorinsky class
+//        DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
+//                                            row_pbcmapmastertoslave_,
+//                                            *params_             ));
+        // get one instance of the Boxfilter class
+        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
                                             row_pbcmapmastertoslave_,
                                             *params_             ));
 
@@ -574,6 +580,17 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       // fine-scale scalar at time n+alpha_F/n+1 and n+alpha_M/n
       // (only required for low-Mach-number case)
       fsscaaf_ = LINALG::CreateVector(*dofrowmap,true);
+    }
+    else if (physmodel == "Vreman")
+    {
+      turbmodel_ = INPAR::FLUID::vreman;
+    }
+    else if (physmodel == "Dynamic_Vreman")
+    {
+      turbmodel_ = INPAR::FLUID::dynamic_vreman;
+      Vrem_=Teuchos::rcp(new FLD::Vreman(discret_            ,
+                                          row_pbcmapmastertoslave_,
+                                          *params_             ));
     }
     else if (physmodel == "no_model")
       dserror("Turbulence model for LES expected!");
@@ -1436,6 +1453,10 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     this->ApplyScaleSeparationForLES();
     dtfilter_=Teuchos::Time::wallTime()-tcpufilter;
   }
+   else if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
+   {
+     this->ApplyScaleSeparationForLES();
+   }
 
    //----------------------------------------------------------------------
    // evaluate elements
@@ -1456,6 +1477,12 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     eleparams.set("Fine scale velocity",finescalevel_);
     eleparams.set("Filtered reynoldsstress",filteredreystr_);
   }
+   if (turbmodel_==INPAR::FLUID::dynamic_vreman)
+   {
+     double cv=0.0;
+     cv=params_->get<double>("C_vreman");
+     eleparams.set<double>("C_vreman", cv );
+   }
 
   // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
@@ -3407,8 +3434,8 @@ void FLD::FluidImplicitTimeInt::Output()
       }
       if (scale_sep_ == INPAR::FLUID::box_filter)
       {
-        DynSmag_->OutputofAveragedVel(filteredvel);
-        DynSmag_->OutputofFineScaleVel(fsvel);
+        Boxf_->OutputofAveragedVel(filteredvel);
+        Boxf_->OutputofFineScaleVel(fsvel);
       }
       output_->WriteVector("filteredvel",filteredvel);
       output_->WriteVector("fsvelaf",fsvel);
@@ -5275,23 +5302,22 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       // call only filtering
       if (is_genalpha_)
       {
-        DynSmag_->ApplyFilter(velaf_,scaaf_,thermpressaf_,dirichtoggle);
+        Boxf_->ApplyFilter(velaf_,scaaf_,thermpressaf_,dirichtoggle);
       }
       else
       {
-        DynSmag_->ApplyFilter(velnp_,scaaf_,thermpressaf_,dirichtoggle);
+        Boxf_->ApplyFilter(velnp_,scaaf_,thermpressaf_,dirichtoggle);
       }
       // get filtered fields
       filteredvel_->PutScalar(0.0);
       filteredreystr_->PutScalar(0.0);
 
-      DynSmag_->GetFilteredVelocity(filteredvel_);
-      DynSmag_->GetFilteredReynoldsStress(filteredreystr_);
-      DynSmag_->GetFineScaleVelocity(finescalevel_);
+      Boxf_->GetFilteredVelocity(filteredvel_);
+      Boxf_->GetFilteredReynoldsStress(filteredreystr_);
+      Boxf_->GetFineScaleVelocity(finescalevel_);
 
       // store fine-scale velocity
-      DynSmag_->OutputofFineScaleVel(fsvelaf_);
-
+      Boxf_->OutputofFineScaleVel(fsvelaf_);
       break;
     }
     case INPAR::FLUID::algebraic_multigrid_operator:
@@ -5516,11 +5542,11 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
       // call only filtering
       if (is_genalpha_)
-        DynSmag_->ApplyFilter(velaf_,scaaf_,thermpressaf_,dirichtoggle);
+        Boxf_->ApplyFilter(velaf_,scaaf_,thermpressaf_,dirichtoggle);
       else
-        DynSmag_->ApplyFilter(velnp_,scaaf_,thermpressaf_,dirichtoggle);
+        Boxf_->ApplyFilter(velnp_,scaaf_,thermpressaf_,dirichtoggle);
       // get fine-scale velocity
-      DynSmag_->OutputofFineScaleVel(fsvelaf_);
+      Boxf_->OutputofFineScaleVel(fsvelaf_);
 
       break;
     }
@@ -5558,6 +5584,16 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
 
     // set fine-scale vector
     discret_->SetState("fsvelaf",fsvelaf_);
+  }
+  else if (turbmodel_==INPAR::FLUID::dynamic_vreman)
+  {
+    // perform filtering
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
+    if (is_genalpha_)
+       Vrem_->ApplyFilterForDynamicComputationOfCv(velaf_,scaaf_,thermpressaf_,dirichtoggle);
+    else
+       Vrem_->ApplyFilterForDynamicComputationOfCv(velnp_,scaaf_,thermpressaf_,dirichtoggle);
+
   }
   else
     dserror("Unknown turbulence model!");
@@ -5979,11 +6015,11 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcSFS(
 
   // get filtered velocity
   RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*noderowmap,true);
-  DynSmag_->FilteredVelComp(filteredvel, i, j);
+  Boxf_->FilteredVelComp(filteredvel, i, j);
 
   // get filtered reynoldsstress
   RCP<Epetra_Vector> filteredreystr = LINALG::CreateVector(*noderowmap,true);
-  DynSmag_->FilteredReyStrComp(filteredreystr, i , j);
+  Boxf_->FilteredReyStrComp(filteredreystr, i , j);
 
   tauSFS->Update(1.0,*filteredreystr,-1.0, *filteredvel,0.0);
 
@@ -6288,7 +6324,7 @@ Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidImplicitTimeInt::Turbule
 // provide access to box filter for dynamic Smagorinsky model rasthofer
 // -------------------------------------------------------------------
 Teuchos::RCP<FLD::DynSmagFilter> FLD::FluidImplicitTimeInt::DynSmagFilter() {return DynSmag_; }
-
+Teuchos::RCP<FLD::Vreman> FLD::FluidImplicitTimeInt::Vreman() {return Vrem_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -6423,6 +6459,22 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           std::cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
           if ((DRT::INPUT::IntegralValue<int>(*modelparams,"SET_FINE_SCALE_VEL")))
               std::cout << "WARNING: fine-scale velocity is set for nightly tests!" << "\n";
+          std::cout << &std::endl;
+        }
+        else if(turbmodel_ == INPAR::FLUID::vreman)
+        {
+          std::cout << "                             "          ;
+          std::cout << "\n";
+          std::cout << "- Vreman model with constant coefficient\n"      ;
+          std::cout << "- Use filter width medhod:  " << params_->sublist("SUBGRID VISCOSITY").get<std::string>("FILTER_WIDTH","CubeRootVol") << "\n";
+          std::cout << &std::endl;
+        }
+        else if(turbmodel_ == INPAR::FLUID::dynamic_vreman)
+        {
+          std::cout << "                             "          ;
+          std::cout << "\n";
+          std::cout << "- Vreman model with dynamic calculation of coefficient\n"      ;
+          std::cout << "- Use filter width medhod:  Only cube root volume implemented for dynamic coefficient" << "\n";
           std::cout << &std::endl;
         }
       }

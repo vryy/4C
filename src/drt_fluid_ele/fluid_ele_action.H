@@ -40,6 +40,7 @@ enum Action {
     calc_model_params_mfsubgr_scales,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
+    calc_vreman_const,
     integrate_shape,
     calc_divop,
     calc_mat_deriv_u_and_rot_u,

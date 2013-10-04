@@ -48,6 +48,7 @@ namespace FLD
 {
   class TurbulenceStatisticManager;
   class DynSmagFilter;
+  class Vreman;
   namespace UTILS
   {
     class FluidXFluidMapExtractor;
@@ -283,6 +284,7 @@ public:
   virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null;};
   /// provide access to the box filter for dynamic Smagorinsky model
   virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null;};
+  virtual Teuchos::RCP<FLD::Vreman> Vreman() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null;};
 
   /// update velocity increment after Newton step
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }

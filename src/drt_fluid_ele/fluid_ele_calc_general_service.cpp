@@ -1289,11 +1289,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   // get material parameters at element center
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
+
     GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
-    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
     {
       CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -1470,7 +1471,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
-      if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+      if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
       {
         CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -1538,7 +1539,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
         else
           UpdateMaterialParams(mat,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
         visceff_ = visc_;
-        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
         visceff_ += sgvisc_;
       }
     }

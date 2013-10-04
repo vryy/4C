@@ -80,6 +80,7 @@ namespace FLD
 {
   class Meshtying;
   class DynSmagFilter;
+  class Vreman;
 }
 
 
@@ -495,6 +496,8 @@ public:
   ///! get access to dynamic Smagorinsky class of fluid time integration
   void AccessDynSmagFilter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag);
 
+  void AccessVreman(Teuchos::RCP<FLD::Vreman> vrem);
+
   ///! calculate intermediate solution to determine forcing for homogeneous isotropic turbulence
   void CalcIntermediateSolution();
 
@@ -791,6 +794,9 @@ protected:
 
   //! dynamic Smagorinsk model
   virtual void DynamicComputationOfCs()=0;
+  
+  //! dynamic Vreman model
+  virtual void DynamicComputationOfCv()=0;
 
   //! calculate mean CsgsB to estimate CsgsD for multifractal subgrid-scale model
   void RecomputeMeanCsgsB();
@@ -1134,6 +1140,7 @@ protected:
 
   //! one instance of the filter object
   Teuchos::RCP<FLD::DynSmagFilter> DynSmag_;
+  Teuchos::RCP<FLD::Vreman> Vrem_;
 
   //! parameters for sampling/dumping period
   int samstart_;

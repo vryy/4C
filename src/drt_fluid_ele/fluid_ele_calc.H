@@ -494,6 +494,7 @@ namespace ELEMENTS
                         Teuchos::RCP<const MAT::Material>             material,
                         double&                                       Cs_delta_sq,
                         double&                                       Ci_delta_sq,
+                        double&                                       Cv,
                         bool                                          isale,
                         double *                                      saccn,
                         double *                                      sveln,
@@ -748,7 +749,7 @@ namespace ELEMENTS
      //! calculate (all-scale) subgrid viscosity
      void CalcSubgrVisc(const LINALG::Matrix<nsd_,nen_>&  evelaf,        ///< velocity at time n+alpha_f / n+1
                         const double                      vol,           ///< volume
-                        double&                           Cs_delta_sq,   ///< parameter CS in dynamic Smagorinsky
+                        double&                           Cs_delta_sq,   ///< parameter CS in dynamic Smagorinsky // !or Cv in dynamic Vreman!
                         double&                           Ci_delta_sq    ///< parameter CS in dynamic Smagorinsky for loma
                         );
 

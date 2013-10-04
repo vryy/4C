@@ -120,6 +120,8 @@ public:
   INPAR::FLUID::CharEleLengthPC CharEleLengthPC(){return charelelengthpc_;};
   //! flag to (de)activate fine-scale subgrid viscosity
   INPAR::FLUID::FineSubgridVisc Fssgv(){return fssgv_;};
+  // Flag to Vreman filter method
+  INPAR::FLUID::VremanFiMethod Vrfi(){return vrfi_;};
   //! (sign) factor for viscous and reactive stabilization terms
   double ViscReaStabFac(){return viscreastabfac_;};
 
@@ -278,6 +280,8 @@ private:
   INPAR::FLUID::CharEleLengthPC charelelengthpc_;
   //! flag to (de)activate fine-scale subgrid viscosity
   INPAR::FLUID::FineSubgridVisc fssgv_;
+  // flag to Vreman filter method
+  INPAR::FLUID::VremanFiMethod vrfi_;
   //! (sign) factor for viscous and reactive stabilization terms
   double viscreastabfac_;
 

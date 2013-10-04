@@ -485,6 +485,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
       if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
         turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+      if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
+        turbmodel_ = INPAR::FLUID::dynamic_vreman;
       // as the scalar field is constant in the turbulent inflow section
       // we do not need any turbulence model
       if (params.get<bool>("turbulent inflow",false))
@@ -805,6 +807,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         // when no averaging was done, we just keep the calculated (clipped) value
         if (DRT::INPUT::IntegralValue<int>(sgvisclist,"C_SMAGORINSKY_AVERAGED"))
           GetMeanPrtOfHomogenousDirection(params.sublist("TURBULENCE MODEL"),tpn,nlayer);
+      }
+
+      if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
+      {
+        double dt = turbulencelist.get<double>("Dt_vreman");
+        Cs=dt;
       }
 
       // get fine-scale values
@@ -1427,7 +1435,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       DRT::UTILS::ExtractMyValues(*scalar,myscalar,lm);
       for (int i=0;i<nen_;++i)
           ephinp_[0](i,0) = myscalar[i];
-
       // velocity field
       const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity");
       DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
@@ -1443,12 +1450,15 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       double dens_hat = 0.0;
       double temp_hat = 0.0;
       double dens_temp_hat = 0.0;
+      double phi2_hat=0.0;
+      double phiexpression_hat=0.0;
       // get pointers for vector quantities
       Teuchos::RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
       Teuchos::RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
       Teuchos::RCP<std::vector<double> > densveltemp_hat = params.get<RCP<std::vector<double> > >("densveltemp_hat");
       Teuchos::RCP<std::vector<double> > densstraintemp_hat = params.get<RCP<std::vector<double> > >("densstraintemp_hat");
-
+      Teuchos::RCP<std::vector<double> > phi_hat = params.get<RCP<std::vector<double> > >("phi_hat");
+      RCP<std::vector<std::vector<double> > > alphaijsc_hat = params.get<RCP<std::vector<std::vector<double> > > >("alphaijsc_hat");
       // integrate the convolution with the box filter function for this element
       // the results are assembled onto the *_hat arrays
       switch (distype)
@@ -1460,10 +1470,14 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
             dens_hat,
             temp_hat,
             dens_temp_hat,
+            phi2_hat,
+            phiexpression_hat,
             vel_hat,
             densvel_hat,
             densveltemp_hat,
             densstraintemp_hat,
+            phi_hat,
+            alphaijsc_hat,
             volume_contribution,
             ele);
         break;
@@ -1480,6 +1494,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       params.set<double>("dens_hat",dens_hat);
       params.set<double>("temp_hat",temp_hat);
       params.set<double>("dens_temp_hat",dens_temp_hat);
+      params.set<double>("phi2_hat",phi2_hat);
+      params.set<double>("phiexpression_hat",phiexpression_hat);
 
     }// end if (nsd == 3)
     else dserror("action 'calc_scatra_box_filter' is 3D specific action");
@@ -1562,6 +1578,54 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       params.set<double>("ele_Prt",inv_Prt);
     }
     else dserror("action 'calc_turbulent_prandtl_number' is a 3D specific action");
+
+    break;
+  }
+  case SCATRA::calc_vreman_scatra:
+  {
+    if (nsd_ == 3)
+    {
+
+      Teuchos::RCP<Epetra_MultiVector> col_filtered_phi =
+        params.get<RCP<Epetra_MultiVector> >("col_filtered_phi");
+      Teuchos::RCP<Epetra_Vector> col_filtered_phi2 =
+        params.get<RCP<Epetra_Vector> >("col_filtered_phi2");
+      Teuchos::RCP<Epetra_Vector> col_filtered_phiexpression =
+        params.get<RCP<Epetra_Vector> >("col_filtered_phiexpression");
+      Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaijsc =
+        params.get<RCP<Epetra_MultiVector> >("col_filtered_alphaijsc");
+
+      // initialize variables to calculate
+      double dt_numerator=0.0;
+      double dt_denominator=0.0;
+
+      // calculate LkMk and MkMk
+      switch (distype)
+      {
+      case DRT::Element::hex8:
+      {
+        scatra_calc_vreman_dt(
+            col_filtered_phi                   ,
+            col_filtered_phi2              ,
+            col_filtered_phiexpression         ,
+            col_filtered_alphaijsc,
+            dt_numerator,
+            dt_denominator,
+            ele                                );
+        break;
+      }
+      default:
+      {
+        dserror("Unknown element type for vreman scatra application\n");
+      }
+      break;
+      }
+
+      elevec1_epetra(0)=dt_numerator;
+      elevec1_epetra(1)=dt_denominator;
+    }
+    else dserror("action 'calc_vreman_scatra' is a 3D specific action");
+
 
     break;
   }
@@ -1804,6 +1868,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // calculation of subgrid diffusivity and stabilization parameter(s)
   // at element center
   //----------------------------------------------------------------------
+
   if (not tau_gp_)
   {
     // get velocity at element center
@@ -1840,7 +1905,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     {
       // calculation of all-scale subgrid diffusivity (artificial or due to
       // constant-coefficient Smagorinsky model) at element center
-      if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+      if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_vreman)
       {
         if (assgd) dserror("Evaluation of artificial diffusion at element center not supported!");
 
@@ -1978,7 +2043,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
           // calculation of all-scale subgrid diffusivity (artificial or due to
           // constant-coefficient Smagorinsky model) at integration point
-          if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+          if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_vreman)
           {
             if (assgd) dserror("Artificial diffusion not supported for elch!");
 
@@ -2132,7 +2197,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
           // calculation of all-scale subgrid diffusivity (artificial or due to
           // constant-coefficient Smagorinsky model) at integration point
-          if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+          if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_vreman)
           {
             if (assgd) CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
 
@@ -2881,7 +2946,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // in case of multifrcatal subgrid-scales, read Schmidt number
     if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales or sgvel_
-        or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+        or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_vreman)
     {
       //access fluid discretization
       Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
@@ -3338,7 +3403,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
 // check whether there is negative (physical) diffusivity
   if (diffus_[0] < -EPS15) dserror("negative (physical) diffusivity");
-
   return;
 } //ScaTraImpl::GetMaterialParams
 

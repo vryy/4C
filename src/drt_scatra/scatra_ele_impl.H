@@ -31,6 +31,8 @@ namespace DRT
 namespace ELEMENTS
 {
 
+  class FluidEleParameter;
+
 //! Internal Scalar transport element implementation
 /*!
   This internal class keeps all the working arrays needed to
@@ -509,17 +511,20 @@ private:
 
   //! calculate filtered quantities for dynamic Smagorinsky model
   void scatra_apply_box_filter(
-          const double               thermpress,
-          double&                    dens_hat,
-          double&                    temp_hat,
-          double&                    dens_temp_hat,
-          Teuchos::RCP<std::vector<double> >       vel_hat,
-          Teuchos::RCP<std::vector<double> >       densvel_hat,
-          Teuchos::RCP<std::vector<double> >       densveltemp_hat,
-          Teuchos::RCP<std::vector<double> >       densstraintemp_hat,
-          double&                    volume,
-          const DRT::Element*        ele
-  );
+    const double               thermpress,
+    double&                    dens_hat,
+    double&                    temp_hat,
+    double&                    dens_temp_hat,
+    double&                    phi2_hat,
+    double&                    phiexpression_hat,
+    Teuchos::RCP<std::vector<double> >       vel_hat,
+    Teuchos::RCP<std::vector<double> >       densvel_hat,
+    Teuchos::RCP<std::vector<double> >       densveltemp_hat,
+    Teuchos::RCP<std::vector<double> >       densstraintemp_hat,
+    Teuchos::RCP<std::vector<double> >       phi_hat,
+    Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat,
+    double&                    volume,
+    const DRT::Element*        ele);
 
   //! calculate turbulent Prandtl number for dynamic Smagorinsky model
   void scatra_calc_smag_const_LkMk_and_MkMk(
@@ -537,6 +542,15 @@ private:
           double&                   zcenter,
           const DRT::Element*       ele
   );
+
+  void scatra_calc_vreman_dt(
+      Teuchos::RCP<Epetra_MultiVector>& col_filtered_phi,
+      Teuchos::RCP<Epetra_Vector>& col_filtered_phi2              ,
+      Teuchos::RCP<Epetra_Vector>&   col_filtered_phiexpression         ,
+      Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaijsc,
+    double& dt_numerator,
+    double& dt_denominator,
+    const DRT::Element*       ele);
 
   //! calculate mean turbulent Prandtl number
   void GetMeanPrtOfHomogenousDirection(

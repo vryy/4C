@@ -42,6 +42,7 @@ enum Action {
   calc_elch_initial_potential,     // calc_initial_potential_field,
   calc_scatra_box_filter,          // calc_scatra_box_filter,
   calc_turbulent_prandtl_number,   // calc_turbulent_prandtl_number
+  calc_vreman_scatra,              // calc_vreman_scatra,
   calc_TG_mat_and_rhs,             // levelset_TaylorGalerkin,
   reinitialize_levelset,           // reinitialize_levelset,
   calc_error_reinit,               // calc_error_reinit,

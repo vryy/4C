@@ -389,7 +389,8 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
     if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
-        my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+        my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
+        my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
     {
       my::CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -439,7 +440,8 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
-          my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+          my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
+          my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
       {
         my::CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -465,11 +467,13 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     // update material parameters including subgrid-scale part of scalar
     if (my::fldpara_->UpdateMat())
     {
-      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
+          my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
         dserror("No material update in combination with smagorinsky model!");
       my::UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,my::sgscaint_);
       my::visceff_ = my::visc_;
-      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+      if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
+          my::fldpara_->TurbModAction() == INPAR::FLUID::vreman)
         my::visceff_ += my::sgvisc_;
     }
     //----------------------------------------------------------------------

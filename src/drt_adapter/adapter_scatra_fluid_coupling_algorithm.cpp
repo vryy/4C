@@ -96,6 +96,10 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   // if available, allow scatra field to access dynamic Smagorinsky filter
   if (FluidField().DynSmagFilter() != Teuchos::null)
     ScaTraField().AccessDynSmagFilter(FluidField().DynSmagFilter());
+  
+  // if available, allow scatra field to access dynamic Vreman
+  if (FluidField().Vreman() != Teuchos::null)
+    ScaTraField().AccessVreman(FluidField().Vreman());
 
   return;
 

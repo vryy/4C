@@ -1580,7 +1580,11 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
                          RCP<std::vector<std::vector<double> > > modeled_subgrid_stress,
                          double&                       volume,
                          double&                       dens_hat,
-                         double&                       dens_strainrate_hat)
+                         double&                       dens_strainrate_hat,
+                         double&                       expression_hat,
+                         double&                       alpha2_hat,
+                         RCP<std::vector<std::vector<double> > > strainrate_hat,
+                         RCP<std::vector<std::vector<double> > > alphaij_hat)
 {
   // number of spatial dimensions is always 3
   const int NSD = 3;
@@ -1662,71 +1666,69 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
   DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
   DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
-    // get Jacobian matrix and determinant
-    for (int nn=0;nn<NSD;++nn)
-    {
-      for (int rr=0;rr<NSD;++rr)
-      {
-        xjm(nn,rr)=deriv(nn,0)*xyze(rr,0);
-        for (int mm=1;mm<iel;++mm)
-        {
-          xjm(nn,rr)+=deriv(nn,mm)*xyze(rr,mm);
-        }
-      }
-    }
+  // get Jacobian matrix and determinant
 
-    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                       xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                       xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                       xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                       xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                       xjm(0,1)*xjm(1,0)*xjm(2,2);
-
-  if (fldpara->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+  for (int nn=0;nn<3;++nn)
   {
-    /*
-      Use the Jacobian and the known derivatives in element coordinate
-      directions on the right hand side to compute the derivatives in
-      global coordinate directions
-
-            +-                 -+     +-    -+      +-    -+
-            |  dx    dy    dz   |     | dN_k |      | dN_k |
-            |  --    --    --   |     | ---- |      | ---- |
-            |  dr    dr    dr   |     |  dx  |      |  dr  |
-            |                   |     |      |      |      |
-            |  dx    dy    dz   |     | dN_k |      | dN_k |
-            |  --    --    --   |  *  | ---- |   =  | ---- | for all k
-            |  ds    ds    ds   |     |  dy  |      |  ds  |
-            |                   |     |      |      |      |
-            |  dx    dy    dz   |     | dN_k |      | dN_k |
-            |  --    --    --   |     | ---- |      | ---- |
-            |  dt    dt    dt   |     |  dz  |      |  dt  |
-            +-                 -+     +-    -+      +-    -+
-
-    */
-    xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
-    xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
-    xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
-    xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
-    xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
-    xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
-    xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
-    xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
-    xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
-
-    // compute global derivates
-    for (int nn=0;nn<NSD;++nn)
+    for (int rr=0;rr<3;++rr)
     {
-      for (int rr=0;rr<iel;++rr)
+      xjm(nn,rr)=deriv(nn,0)*xyze(rr,0);
+      for (int mm=1;mm<iel;++mm)
       {
-        derxy(nn,rr)=deriv(0,rr)*xji(nn,0);
-        for (int mm=1;mm<NSD;++mm)
-        {
-          derxy(nn,rr)+=deriv(mm,rr)*xji(nn,mm);
-        }
+        xjm(nn,rr)+=deriv(nn,mm)*xyze(rr,mm);
       }
     }
   }
+  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                     xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+  /*
+    Use the Jacobian and the known derivatives in element coordinate
+    directions on the right hand side to compute the derivatives in
+    global coordinate directions
+
+          +-                 -+     +-    -+      +-    -+
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dr    dr    dr   |     |  dx  |      |  dr  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |  *  | ---- |   =  | ---- | for all k
+          |  ds    ds    ds   |     |  dy  |      |  ds  |
+          |                   |     |      |      |      |
+          |  dx    dy    dz   |     | dN_k |      | dN_k |
+          |  --    --    --   |     | ---- |      | ---- |
+          |  dt    dt    dt   |     |  dz  |      |  dt  |
+          +-                 -+     +-    -+      +-    -+
+
+  */
+  xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
+  xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
+  xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
+  xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
+  xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
+  xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
+  xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
+  xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
+  xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
+
+  // compute global derivates
+  for (int nn=0;nn<NSD;++nn)
+  {
+    for (int rr=0;rr<iel;++rr)
+    {
+      derxy(nn,rr)=deriv(0,rr)*xji(nn,0);
+      for (int mm=1;mm<NSD;++mm)
+      {
+        derxy(nn,rr)+=deriv(mm,rr)*xji(nn,mm);
+      }
+    }
+  }
+
 
   // get material at gauss point
   double dens = 0.0;
@@ -1846,23 +1848,27 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
   // determine contribution to patch volume
   volume = wquad*det;
 
-  for (int rr=0;rr<NSD;++rr)
+  if (not (fldpara->TurbModAction() == INPAR::FLUID::dynamic_vreman))
   {
-    double tmp=velint(rr)*volume;
-
-    // add contribution to integral over velocities
-    (*vel_hat)[rr] += tmp;
-    // add contribution to integral over dens times velocity
-    if (fldpara->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky and
-        fldpara->PhysicalType() == INPAR::FLUID::loma)
-      (*densvel_hat)[rr] += dens*tmp;
-
-    // add contribution to integral over reynolds stresses
-    for (int nn=0;nn<NSD;++nn)
+    for (int rr=0;rr<NSD;++rr)
     {
-      (*reynoldsstress_hat)[rr][nn] += dens*tmp*velint(nn);
+      double tmp=velint(rr)*volume;
+
+      // add contribution to integral over velocities
+      (*vel_hat)[rr] += tmp;
+      // add contribution to integral over dens times velocity
+      if (fldpara->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky and
+          fldpara->PhysicalType() == INPAR::FLUID::loma)
+        (*densvel_hat)[rr] += dens*tmp;
+
+      // add contribution to integral over reynolds stresses
+      for (int nn=0;nn<NSD;++nn)
+      {
+        (*reynoldsstress_hat)[rr][nn] += dens*tmp*velint(nn);
+      }
     }
   }
+
 
   if (fldpara->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
   {
@@ -1886,6 +1892,90 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
       dens_hat = dens*volume;
       dens_strainrate_hat = dens*volume*rateofstrain*rateofstrain;
     }
+  }
+
+
+  if (fldpara->TurbModAction() == INPAR::FLUID::dynamic_vreman)
+  {
+    //In the literature about the Vreman model, the indices i and j are swapped compared to the standard
+    //definition in baci. All variables used for the Vreman model are used as in literature and matrices are
+    //transposed, if necessary.
+
+    double strainrateproduct = 0.0;
+    double beta00;
+    double beta11;
+    double beta22;
+    double beta01;
+    double beta02;
+    double beta12;
+    double bbeta;
+    double hk2=pow(volume,(2.0/3.0));
+
+
+    for (int nn=0;nn<NSD;++nn)
+    {
+      for (int rr=0;rr<NSD;++rr)
+      {
+        vderxy(nn,rr)=derxy(rr,0)*evel(nn,0);
+        for (int mm=1;mm<iel;++mm)
+        {
+          vderxy(nn,rr)+=derxy(rr,mm)*evel(nn,mm);
+        }
+        (*alphaij_hat)[rr][nn]=vderxy(nn,rr);
+      }
+    }
+
+    //LINALG::Matrix<NSD,NSD> epsilon;
+    for (int nn=0;nn<NSD;++nn)
+    {
+      for (int rr=0;rr<NSD;++rr)
+      {
+        epsilon(nn,rr)=0.5*(vderxy(nn,rr)+vderxy(rr,nn));
+        (*strainrate_hat)[nn][rr]=epsilon(nn,rr); //symmetric
+      }
+    }
+
+    // add contribution to integral over the modeled part of subgrid
+    // scale stresses
+    for (int rr=0;rr<NSD;++rr)
+    {
+      for (int nn=0;nn<NSD;++nn)
+      {
+        //(*alphaij_hat)[rr][nn] *= volume;//not here, but at the end
+        //(*strainrate_hat)[rr][nn] *= volume;
+        alpha2_hat += (*alphaij_hat)[rr][nn] * (*alphaij_hat)[rr][nn];
+        strainrateproduct += (*strainrate_hat)[rr][nn] * (*strainrate_hat)[rr][nn];
+      }
+    }
+
+    beta00=hk2 * (*alphaij_hat)[0][0] * (*alphaij_hat)[0][0] + hk2 * (*alphaij_hat)[1][0] * (*alphaij_hat)[1][0] + hk2 * (*alphaij_hat)[2][0] * (*alphaij_hat)[2][0];
+    beta11=hk2 * (*alphaij_hat)[0][1] * (*alphaij_hat)[0][1] + hk2 * (*alphaij_hat)[1][1] * (*alphaij_hat)[1][1] + hk2 * (*alphaij_hat)[2][1] * (*alphaij_hat)[2][1];
+    beta22=hk2 * (*alphaij_hat)[0][2] * (*alphaij_hat)[0][2] + hk2 * (*alphaij_hat)[1][2] * (*alphaij_hat)[1][2] + hk2 * (*alphaij_hat)[2][2] * (*alphaij_hat)[2][2];
+    beta01=hk2 * (*alphaij_hat)[0][0] * (*alphaij_hat)[0][1] + hk2 * (*alphaij_hat)[1][0] * (*alphaij_hat)[1][1] + hk2 * (*alphaij_hat)[2][0] * (*alphaij_hat)[2][1];
+    beta02=hk2 * (*alphaij_hat)[0][0] * (*alphaij_hat)[0][2] + hk2 * (*alphaij_hat)[1][0] * (*alphaij_hat)[1][2] + hk2 * (*alphaij_hat)[2][0] * (*alphaij_hat)[2][2];
+    beta12=hk2 * (*alphaij_hat)[0][1] * (*alphaij_hat)[0][2] + hk2 * (*alphaij_hat)[1][1] * (*alphaij_hat)[1][2] + hk2 * (*alphaij_hat)[2][1] * (*alphaij_hat)[2][2];
+
+    bbeta = beta00 * beta11 - beta01 * beta01
+          + beta00 * beta22 - beta02 * beta02
+          + beta11 * beta22 - beta12 * beta12;
+    if (alpha2_hat < 1.0e-15)
+      expression_hat=0.0;
+    else
+      expression_hat=sqrt(bbeta/alpha2_hat) * strainrateproduct;
+
+    alpha2_hat *=volume;
+    expression_hat *=volume;
+
+    for (int rr=0;rr<NSD;++rr)
+    {
+      for (int nn=0;nn<NSD;++nn)
+      {
+        (*alphaij_hat)[rr][nn] *= volume;
+        (*strainrate_hat)[rr][nn] *= volume;
+      }
+    }
+
+    //std::cout << (*alphaij_hat)[0][1] << "   " << (*alphaij_hat)[1][0] << std::endl;
   }
 
   return;
@@ -2421,6 +2511,210 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
 
   return;
 } // DRT::ELEMENTS::Fluid::f3_calc_smag_const_LijMij_and_MijMij
+
+
+template<int iel>
+void f3_calc_vreman_const(DRT::ELEMENTS::Fluid*  ele,
+                                        RCP<Epetra_MultiVector>& col_filtered_strainrate,
+                                        RCP<Epetra_MultiVector>& col_filtered_alphaij,
+                                        RCP<Epetra_Vector>&      col_filtered_expression,
+                                        RCP<Epetra_Vector>&      col_filtered_alpha2,
+                                        double&                  cv_numerator,
+                                        double&                  cv_denominator,
+                                        double&                  volume)
+{
+  LINALG::Matrix<9,iel> estrainrate_hat(true)                 ;
+  LINALG::Matrix<9,iel> ealphaij_hat(true)                 ;
+  LINALG::Matrix<1,iel> eexpression_hat(true)                           ;
+  LINALG::Matrix<1,iel> ealpha2_hat(true)                 ;
+  LINALG::Matrix<3,3> strainrate_hat(true);
+  LINALG::Matrix<3,3> alphaij_hat(true);
+  double alpha2_hat=0.0;
+  double expression_hat=0.0;
+
+  //get to element
+  for (int nn=0;nn<iel;++nn)
+  {
+    int lid = (ele->Nodes()[nn])->LID();
+
+    for (int dimi=0;dimi<3;++dimi)
+    {
+
+      for (int dimj=0;dimj<3;++dimj)
+      {
+        int index=3*dimi+dimj;
+
+        estrainrate_hat(index,nn)
+          =(*((*col_filtered_strainrate)(index)))[lid];
+
+        ealphaij_hat (index,nn)
+          =(*((*col_filtered_alphaij)(index)))[lid];
+      }
+    }
+  }
+
+  for (int nn=0;nn<iel;++nn)
+  {
+    int lid = (ele->Nodes()[nn])->LID();
+
+    eexpression_hat(0,nn) = (*col_filtered_expression)[lid];
+    ealpha2_hat(0,nn) = (*col_filtered_alpha2)[lid];
+
+  }
+
+  // number of spatial dimensions is always 3
+  const int NSD = 3;
+
+
+  // set element data
+  const DRT::Element::DiscretizationType distype = ele->Shape();
+  LINALG::Matrix<iel,1> funct(true);
+  // allocate arrays for shape functions, derivatives and the transposed jacobian
+  LINALG::Matrix<NSD,NSD>  xjm(true);
+  LINALG::Matrix<NSD,iel>  deriv(true);
+
+
+
+  // get node coordinates of element
+  LINALG::Matrix<NSD,iel> xyze(true);
+  for(int inode=0;inode<iel;inode++)
+  {
+    xyze(0,inode)=ele->Nodes()[inode]->X()[0];
+    xyze(1,inode)=ele->Nodes()[inode]->X()[1];
+    xyze(2,inode)=ele->Nodes()[inode]->X()[2];
+  }
+
+  // get gauss rule: we use a one-point rule here
+  DRT::UTILS::GaussRule3D integrationrule_filter=DRT::UTILS::intrule_hex_1point;
+  switch (distype)
+  {
+      case DRT::Element::hex8:
+        integrationrule_filter = DRT::UTILS::intrule_hex_1point;
+        break;
+      case DRT::Element::tet4:
+        integrationrule_filter = DRT::UTILS::intrule_tet_1point;
+        break;
+      case DRT::Element::tet10:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+        dserror("the box filtering operation is only permitted for linear elements\n");
+        break;
+      default:
+        dserror("invalid discretization type for fluid3");
+  }
+
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_filter);
+
+  // shape functions and derivs at element center
+  const double e1    = intpoints_onepoint.qxg[0][0];
+  const double e2    = intpoints_onepoint.qxg[0][1];
+  const double e3    = intpoints_onepoint.qxg[0][2];
+  const double wquad = intpoints_onepoint.qwgt[0];
+
+  DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+  for (int nn=0;nn<3;++nn)
+  {
+    for (int rr=0;rr<3;++rr)
+    {
+      int index = 3*nn+rr;
+      strainrate_hat(nn,rr)=funct(0)*estrainrate_hat(index,0);
+      alphaij_hat(nn,rr)=funct(0)*ealphaij_hat(index,0);
+      for (int mm=1;mm<iel;++mm)
+      {
+        strainrate_hat(nn,rr)+=funct(mm)*estrainrate_hat(index,mm);
+        alphaij_hat(nn,rr)+=funct(mm)*ealphaij_hat(index,mm);
+      }
+    }
+  }
+
+  for (int mm=0;mm<iel;++mm)
+  {
+    alpha2_hat +=funct(mm)*ealpha2_hat(0,mm);
+    expression_hat +=funct(mm)*eexpression_hat(0,mm);
+  }
+  // get Jacobian matrix and determinant
+  for (int nn=0;nn<NSD;++nn)
+  {
+    for (int rr=0;rr<NSD;++rr)
+    {
+      xjm(nn,rr)=deriv(nn,0)*xyze(rr,0);
+      for (int mm=1;mm<iel;++mm)
+      {
+        xjm(nn,rr)+=deriv(nn,mm)*xyze(rr,mm);
+      }
+    }
+  }
+
+  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                     xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+
+  //In the literature about the Vreman model, the indices i and j are swapped compared to the standard
+  //definition in baci. All variables used for the Vreman model are used as in literature and matrices are
+  //transposed, if necessary.
+  volume = wquad*det;
+  //calculate nominator and denominator
+  {
+    double beta00;
+    double beta11;
+    double beta22;
+    double beta01;
+    double beta02;
+    double beta12;
+    double bbeta;
+    double hk2=3.0*pow(volume,(2.0/3.0)); //times 3 because the filter width of the box filter is assumed to be sqrt(3) larger than the implicit grid filter
+    double PIg=0.0;
+    double alphavreman=0.0;
+    double STRAINRATE=0.0;
+
+
+    alphavreman= alphaij_hat(0,0) * alphaij_hat(0,0)
+         + alphaij_hat(0,1) * alphaij_hat(0,1)
+         + alphaij_hat(0,2) * alphaij_hat(0,2)
+         + alphaij_hat(1,0) * alphaij_hat(1,0)
+         + alphaij_hat(1,1) * alphaij_hat(1,1)
+         + alphaij_hat(1,2) * alphaij_hat(1,2)
+         + alphaij_hat(2,0) * alphaij_hat(2,0)
+         + alphaij_hat(2,1) * alphaij_hat(2,1)
+         + alphaij_hat(2,2) * alphaij_hat(2,2);
+
+    STRAINRATE= strainrate_hat(0,0) * strainrate_hat(0,0)
+              + strainrate_hat(0,1) * strainrate_hat(0,1)
+              + strainrate_hat(0,2) * strainrate_hat(0,2)
+              + strainrate_hat(1,0) * strainrate_hat(1,0)
+              + strainrate_hat(1,1) * strainrate_hat(1,1)
+              + strainrate_hat(1,2) * strainrate_hat(1,2)
+              + strainrate_hat(2,0) * strainrate_hat(2,0)
+              + strainrate_hat(2,1) * strainrate_hat(2,1)
+              + strainrate_hat(2,2) * strainrate_hat(2,2);
+
+    beta00=hk2 * alphaij_hat(0,0) * alphaij_hat(0,0) + hk2 * alphaij_hat(1,0) * alphaij_hat(1,0) + hk2 * alphaij_hat(2,0) * alphaij_hat(2,0);
+    beta11=hk2 * alphaij_hat(0,1) * alphaij_hat(0,1) + hk2 * alphaij_hat(1,1) * alphaij_hat(1,1) + hk2 * alphaij_hat(2,1) * alphaij_hat(2,1);
+    beta22=hk2 * alphaij_hat(0,2) * alphaij_hat(0,2) + hk2 * alphaij_hat(1,2) * alphaij_hat(1,2) + hk2 * alphaij_hat(2,2) * alphaij_hat(2,2);
+    beta01=hk2 * alphaij_hat(0,0) * alphaij_hat(0,1) + hk2 * alphaij_hat(1,0) * alphaij_hat(1,1) + hk2 * alphaij_hat(2,0) * alphaij_hat(2,1);
+    beta02=hk2 * alphaij_hat(0,0) * alphaij_hat(0,2) + hk2 * alphaij_hat(1,0) * alphaij_hat(1,2) + hk2 * alphaij_hat(2,0) * alphaij_hat(2,2);
+    beta12=hk2 * alphaij_hat(0,1) * alphaij_hat(0,2) + hk2 * alphaij_hat(1,1) * alphaij_hat(1,2) + hk2 * alphaij_hat(2,1) * alphaij_hat(2,2);
+
+    bbeta = beta00 * beta11 - beta01 * beta01
+          + beta00 * beta22 - beta02 * beta02
+          + beta11 * beta22 - beta12 * beta12;
+    if (alphavreman < 1.0e-15)
+      PIg=0.0;
+    else
+      PIg=sqrt(bbeta/alphavreman);
+    cv_numerator = volume * (alpha2_hat - alphavreman);
+    cv_denominator = volume * (expression_hat - PIg * STRAINRATE);
+  }
+
+  return;
+} // DRT::ELEMENTS::Fluid::f3_calc_vreman_const
 
 
 /*!

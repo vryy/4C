@@ -476,7 +476,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
 
   double Cs_delta_sq   = 0.0;
   double Ci_delta_sq   = 0.0;
+  double Cv = 0.0;
   visceff_  = 0.0;
+  if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
+    Cv=params.get<double>("C_vreman");
+
 
   // remember the layer of averaging for the dynamic Smagorinsky model
   int  nlayer=0;
@@ -521,6 +525,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
          mat,
          Cs_delta_sq,
          Ci_delta_sq,
+         Cv,
          isale,
          saccn,
          sveln,
@@ -571,6 +576,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   Teuchos::RCP<const MAT::Material>             material,
   double&                                       Cs_delta_sq,
   double&                                       Ci_delta_sq,
+  double&                                       Cv,
   bool                                          isale,
   double * saccn,
   double * sveln,
@@ -611,13 +617,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   // get material parameters at element center
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
+
     GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
 
-    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+    if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky
+        or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky
+        or fldpara_->TurbModAction() == INPAR::FLUID::vreman
+        or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
     {
+      if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
+        Cs_delta_sq=Cv; //use the declaration of Cs_delta_sq for the dynamic Vreman constant
       CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
@@ -849,13 +861,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // and/or stabilization parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
+
     if (fldpara_->MatGp())
     {
+
       GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
-      if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+
+      if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
       {
         CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
@@ -1022,7 +1037,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       if (fldpara_->UpdateMat())
       {
         // since we update the viscosity in the next step, a potential subgrid-scale velocity would be overwritten
-        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
            dserror("No material update in combination with smagorinsky model!");
 
         if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
@@ -1030,7 +1045,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
         else
           UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
         visceff_ = visc_;
-        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
           visceff_ += sgvisc_;
       }
 
@@ -4033,7 +4048,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContStab(
     conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*visceff_*vdiv_;
     // additional term q_sq_ for dynamics Smagorisnky only
     if (fldpara_->TurbModAction()==INPAR::FLUID::dynamic_smagorinsky
-        or fldpara_->TurbModAction()==INPAR::FLUID::smagorinsky)
+        or fldpara_->TurbModAction()==INPAR::FLUID::smagorinsky or fldpara_->TurbModAction()==INPAR::FLUID::vreman)
       conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*q_sq_;
   }
 

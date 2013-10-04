@@ -41,6 +41,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
@@ -130,6 +131,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   thermpressdtnp_(0.0),
   numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
   DynSmag_(Teuchos::null),
+  Vrem_(Teuchos::null),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   forcing_(Teuchos::null),
   homisoturb_forcing_(Teuchos::null),
@@ -574,6 +576,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
         std::cout << &std::endl << &std::endl;
       }
     }
+    else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
+    {
+      turbmodel_ = INPAR::FLUID::dynamic_vreman;
+    }
 
     // warning No. 1: if classical (all-scale) turbulence model other than
     // Smagorinsky or multifractal subrgid-scale modeling
@@ -581,6 +587,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     if (turbparams->get<std::string>("PHYSICAL_MODEL") != "Smagorinsky" and
         turbparams->get<std::string>("PHYSICAL_MODEL") != "Dynamic_Smagorinsky" and
         turbparams->get<std::string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales" and
+        turbparams->get<std::string>("PHYSICAL_MODEL") != "Dynamic_Vreman" and
         turbparams->get<std::string>("PHYSICAL_MODEL") != "no_model")
       dserror("No classical (all-scale) turbulence model other than constant-coefficient Smagorinsky model and multifractal subrgid-scale modeling currently possible!");
 
@@ -2518,6 +2525,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   if ((timealgo_ == INPAR::SCATRA::timeint_gen_alpha or timealgo_ == INPAR::SCATRA::timeint_one_step_theta
       or timealgo_ == INPAR::SCATRA::timeint_bdf2) and reinitswitch_ == false)
     DynamicComputationOfCs();
+  if ((timealgo_ == INPAR::SCATRA::timeint_gen_alpha or timealgo_ == INPAR::SCATRA::timeint_one_step_theta
+      or timealgo_ == INPAR::SCATRA::timeint_bdf2) and reinitswitch_ == false)
+    DynamicComputationOfCv();
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
   // set model-dependent parameters
   eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");

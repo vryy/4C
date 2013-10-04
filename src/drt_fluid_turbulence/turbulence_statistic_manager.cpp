@@ -539,6 +539,10 @@ namespace FLD
       {
         turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
       }
+      else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
+           ==
+           "Dynamic_Vreman")
+        turbmodel_ = INPAR::FLUID::dynamic_vreman;
     }
     else
       turbmodel_ = INPAR::FLUID::no_model;
@@ -1518,6 +1522,40 @@ namespace FLD
           statistics_general_mean_->WriteOldAverageVec(output);
       }
     } // end step is in sampling period
+
+    if (discret_->Comm().MyPID()==0 and  turbmodel_ == INPAR::FLUID::dynamic_vreman)
+    {
+      const std::string fnamevreman = "Vremanconstant.txt";
+      double Cv;
+      double Cv_theo;
+      double Dt=0.0;
+      Cv = params_->get<double>("C_vreman");
+      Cv_theo=params_->get<double>("C_vreman_theoretical");
+      if (withscatra_)
+        Dt=params_->get<double>("Dt_vreman");
+      std::ofstream fvreman;
+      if (step <=1)
+      {
+        fvreman.open(fnamevreman.c_str(), std::ofstream::trunc);
+        fvreman << "time step C_v         C_v clipped D_T (required for subgrid diffusivity)\n";
+      }
+      else
+        fvreman.open(fnamevreman.c_str(), std::ofstream::app);
+      fvreman.width(10);
+      fvreman << step ;
+      fvreman.width(12);
+      fvreman << Cv_theo ;
+      fvreman.width(12);
+      fvreman << Cv;
+      if (withscatra_)
+      {
+        fvreman.width(12);
+        fvreman << Dt*Cv;//to make it comparable to the the original paper
+      }
+      fvreman << "\n";
+      fvreman.flush();
+      fvreman.close();
+    }
 
     return;
   } // DoOutput

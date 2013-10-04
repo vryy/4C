@@ -973,6 +973,8 @@ set(OBJS_DRT_FLUID
 )
 set(OBJS_DRT_FLUID_TURBULENCE
   src/drt_fluid_turbulence/dyn_smag.cpp
+  src/drt_fluid_turbulence/dyn_vreman.cpp
+  src/drt_fluid_turbulence/boxfilter.cpp
   src/drt_fluid_turbulence/drt_transfer_turb_inflow.cpp
   src/drt_fluid_turbulence/scale_sep_gmo.cpp
   src/drt_fluid_turbulence/turbulence_hit_initial_field.cpp

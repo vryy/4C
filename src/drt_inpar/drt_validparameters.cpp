@@ -3617,7 +3617,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Dynamic_Smagorinsky",
       "Scale_Similarity",
       "Scale_Similarity_basic",
-      "Multifractal_Subgrid_Scales"),
+      "Multifractal_Subgrid_Scales",
+      "Vreman",
+      "Dynamic_Vreman"),
     tuple<std::string>(
       "If classical LES is our turbulence approach, this is a contradiction and should cause a dserror.",
       "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
@@ -3625,8 +3627,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow.",
       "Scale Similarity Model coherent with the variational multiscale formulation",
       "Scale Similarity Model according to liu, meneveau, katz",
-      "Multifractal Subgrid-Scale Modeling based on the work of burton"),
-    tuple<int>(0,1,2,3,4,5,6),
+      "Multifractal Subgrid-Scale Modeling based on the work of burton",
+      "Vremans constant model",
+      "Dynamic Vreman model according to You and Moin (2007)"),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &fdyn_turbu);
 
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
@@ -3803,7 +3807,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // sublist with additional input parameters for Smagorinsky model
   Teuchos::ParameterList& fdyn_turbsgv = fdyn.sublist("SUBGRID VISCOSITY",false,"");
 
-  DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbsgv);
+  DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24. Vreman constant if the constant vreman model is applied (something between 0.07 and 0.01).",&fdyn_turbsgv);
   DoubleParameter("C_YOSHIZAWA",-1.0,"Constant for the compressible Smagorinsky model: isotropic part of subgrid-stress tensor. About 0.09 or 0.0066. Ci will not be squared!",&fdyn_turbsgv);
   BoolParameter("C_SMAGORINSKY_AVERAGED","No","Flag to (de)activate averaged Smagorinksy constant",&fdyn_turbsgv);
   BoolParameter("C_INCLUDE_CI","No","Flag to (de)inclusion of Yoshizawa model",&fdyn_turbsgv);
@@ -3824,6 +3828,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &fdyn_turbsgv);
 
   DoubleParameter("C_TURBPRANDTL",1.0,"(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",&fdyn_turbsgv);
+  
+  setStringToIntegralParameter<int>("FILTER_WIDTH","CubeRootVol","The Vreman model requires a filter width.",
+                               tuple<std::string>(
+                                 "CubeRootVol",
+                                 "Direction_dependent",
+                                 "Minimum_length"),
+                                 tuple<int>(
+                                     INPAR::FLUID::cuberootvol,
+                                     INPAR::FLUID::dir_dep,
+                                     INPAR::FLUID::min_len),
+                               &fdyn_turbsgv);
+
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for multifractal subgrid-scales

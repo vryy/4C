@@ -151,6 +151,9 @@ protected:
 
     /// dynamic Smagorinsky model
     void DynamicComputationOfCs() {dserror("not implemented!"); return;};
+    
+    // dynamic Vreman model
+    void DynamicComputationOfCv() {dserror("not implemented!"); return;};
 
     /// add parameters specific for time-integration scheme
     void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);

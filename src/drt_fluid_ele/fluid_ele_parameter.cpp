@@ -699,6 +699,27 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       else
        mfs_is_conservative_ = false;
     }
+    else if (physical_turbulence_model == "Vreman")
+    {
+      turb_mod_action_ = INPAR::FLUID::vreman;
+      Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
+
+//      const std::string fssgvdef = turbmodelparams.get<std::string>("FSSUGRVISC","No");
+//
+//      if (fssgvdef == "Smagorinsky_all")        fssgv_ = INPAR::FLUID::smagorinsky_all;
+//      else if (fssgvdef == "Smagorinsky_small") fssgv_ = INPAR::FLUID::smagorinsky_small;
+      if(turbmodelparamssgvisc.get<std::string>("FILTER_WIDTH","CubeRootVol")=="Direction_dependent")
+        vrfi_ = INPAR::FLUID::dir_dep;
+      else if(turbmodelparamssgvisc.get<std::string>("FILTER_WIDTH","CubeRootVol")=="Minimum_length")
+        vrfi_ = INPAR::FLUID::min_len;
+      else
+        vrfi_ = INPAR::FLUID::cuberootvol;
+
+    }
+        else if (physical_turbulence_model == "Dynamic_Vreman")
+    {
+      turb_mod_action_ = INPAR::FLUID::dynamic_vreman;
+    }
     else
     {
       dserror("Up to now, only Smagorinsky, Scale Similarity and Multifractal Subgrid Scales are available");

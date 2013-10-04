@@ -21,6 +21,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_io/io.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_vreman.H"
 
 
 /*----------------------------------------------------------------------*
@@ -206,6 +207,20 @@ void SCATRA::TimIntBDF2::DynamicComputationOfCs()
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
     DynSmag_->ApplyFilterForDynamicComputationOfPrt(convel_,phinp_,thermpressnp_,dirichtoggle,*extraparams_);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | dynamic Vreman model                                krank      09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::DynamicComputationOfCv()
+{
+  if (turbmodel_==INPAR::FLUID::dynamic_vreman)
+  {
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    Vrem_->ApplyFilterForDynamicComputationOfDt(convel_,phinp_,thermpressnp_,dirichtoggle,*extraparams_);
   }
 
   return;

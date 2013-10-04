@@ -265,7 +265,9 @@ namespace INPAR
       avm3,
       scale_similarity,
       scale_similarity_basic,
-      multifractal_subgrid_scales
+      multifractal_subgrid_scales,
+      vreman,
+      dynamic_vreman
     };
 
     //! options for fine-scale subgrid viscosity
@@ -274,6 +276,13 @@ namespace INPAR
       no_fssgv,
       smagorinsky_all,
       smagorinsky_small
+    };
+
+    enum VremanFiMethod
+    {
+      cuberootvol,
+      dir_dep,
+      min_len
     };
 
     //! options for forcing of homogeneous isotropic turbulence

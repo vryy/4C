@@ -23,6 +23,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_vreman.H"
 
 
 /*----------------------------------------------------------------------*
@@ -216,6 +217,19 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | dynamic Smagorinsky model                           krank  09/13     |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
+{
+  if (turbmodel_==INPAR::FLUID::dynamic_vreman)
+  {
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
+    Vrem_->ApplyFilterForDynamicComputationOfDt(convel_,phinp_,thermpressnp_,dirichtoggle,*extraparams_);
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme         vg 11/08 |

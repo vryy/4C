@@ -92,6 +92,8 @@ namespace FLD
 class TurbulenceStatisticManager;
 class HomIsoTurbForcing;
 class DynSmagFilter;
+class Vreman;
+class Boxfilter;
 class LESScaleSeparation;
 class Meshtying;
 class TransferTurbulentInflowCondition;
@@ -515,6 +517,8 @@ public:
   Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
   /// provide access to the box filter for dynamic Smagorinsky model
   Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter();
+  Teuchos::RCP<FLD::Vreman> Vreman();
+  Teuchos::RCP<FLD::Boxfilter> Boxfilter();
 
   /// introduce surface split extractor object
   /*!
@@ -921,6 +925,10 @@ protected:
 
   //! one instance of the filter object
   Teuchos::RCP<FLD::DynSmagFilter> DynSmag_;
+  //! one instance of the filter object
+  Teuchos::RCP<FLD::Vreman> Vrem_;
+  Teuchos::RCP<FLD::Boxfilter> Boxf_;
+
   Teuchos::RCP<LESScaleSeparation> ScaleSepGMO_;
 
   //@}

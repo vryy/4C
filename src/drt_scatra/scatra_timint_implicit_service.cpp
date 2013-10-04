@@ -21,6 +21,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
+#include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -2994,6 +2995,32 @@ void SCATRA::ScaTraTimIntImpl::AccessDynSmagFilter(
       std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     }
     DynSmag_->AddScatra(discret_,scatratype_,pbcmapmastertoslave_);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | provide access to the dynamic Vreman class               krank 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AccessVreman(
+  Teuchos::RCP<FLD::Vreman> vrem
+)
+{
+  Vrem_ = Teuchos::rcp(vrem.get(), false);
+
+  // access to the dynamic Vreman class is provided
+  // by the fluid scatra coupling algorithm
+  // therefore, we only have to add some scatra specific parameters here
+  if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
+  {
+    if (myrank_ == 0)
+    {
+      std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+      std::cout << "Dynamic Vreman model: provided access for ScaTra            " << std::endl;
+      std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    }
+    Vrem_->AddScatra(discret_,scatratype_,pbcmapmastertoslave_);
   }
 
   return;

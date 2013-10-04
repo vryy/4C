@@ -141,6 +141,9 @@ protected:
 
   /// dynamic Smagorinsky model
   void DynamicComputationOfCs() {dserror("no turbulence in stationary flows!"); return;};
+  
+  /// dynamic Vreman model
+  void DynamicComputationOfCv() {dserror("no turbulence in stationary flows!"); return;};
 
   /// write additional data required for restart
   void OutputRestart();
