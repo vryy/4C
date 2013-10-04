@@ -228,8 +228,8 @@ namespace ADAPTER
     {return structure_->GetRestartData(step,time, disn,veln,accn,elementdata );}
 
     /// output results
-    virtual void Output()
-    { return structure_->Output(); }
+    virtual void Output(bool forced_writerestart = false)
+    { return structure_->Output(forced_writerestart); }
 
     /// read restart information for given time step
     virtual void ReadRestart(int step)

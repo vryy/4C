@@ -381,8 +381,19 @@ void THR::TimInt::ReadRestartState()
 /*----------------------------------------------------------------------*
  | output to file                                           mwgee 03/07 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::OutputStep()
+void THR::TimInt::OutputStep(bool forced_writerestart)
 {
+  // special treatment is necessary when restart is forced
+  if(forced_writerestart)
+  {
+    // if state already exists, add restart information in case of forced writerestart
+    if(writeglob_ and (step_%writeglob_ == 0) and step_!=DRT::Problem::Instance()->Restart())
+    {
+      AddRestartToOutputState();
+      return;
+    }
+  }
+
   // this flag is passed along subroutines and prevents
   // repeated initialising of output writer, printing of
   // state vectors, or similar
@@ -390,7 +401,8 @@ void THR::TimInt::OutputStep()
 
   // output restart (try this first)
   // write restart step
-  if (writerestartevery_ and (step_%writerestartevery_ == 0) )
+  if ( ((writerestartevery_ and (step_%writerestartevery_ == 0)) or forced_writerestart)
+      and !(forced_writerestart and writerestartevery_ and (step_%writerestartevery_ == 0)) )
   {
     OutputRestart(datawritten);
   }
@@ -488,6 +500,42 @@ void THR::TimInt::OutputState(bool& datawritten)
   return;
 
 }  // OutputState()
+
+
+/*----------------------------------------------------------------------*
+ | add restart information to OutputStatewrite restart      ghamm 10/13 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt::AddRestartToOutputState()
+{
+  // write all force vectors which are later read in restart
+  WriteRestartForce(output_);
+
+  // finally add the missing mesh information, order is important here
+  output_->WriteMesh(step_, (*time_)[0]);
+
+  // info dedicated to user's eyes staring at standard out
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_ == 0) )
+  {
+    printf("====== Restart written in step %d\n", step_);
+    // print a beautiful line made exactly of 80 dashes
+    printf("--------------------------------------------------------------"
+           "------------------\n");
+    fflush(stdout);
+  }
+
+  // info dedicated to processor error file
+  if (printerrfile_)
+  {
+    fprintf(errfile_, "====== Restart written in step %d\n", step_);
+    fprintf(errfile_,"--------------------------------------------------------------"
+            "------------------\n");
+    fflush(errfile_);
+  }
+
+  // we will say what we did
+  return;
+
+}  // AddRestartToOutputState()
 
 
 /*----------------------------------------------------------------------*

@@ -85,6 +85,9 @@ namespace FS3I
 
   protected:
 
+    /// get information whether INCA will stop in this time step
+    bool INCAfinshed();
+
     /// get time step from INCA
     void GetTimeStep(
     std::vector<double>& timestep  ///< received time step size
@@ -152,6 +155,8 @@ namespace FS3I
     bool additional_boundary_layer_;   ///< bool whether an additional boundary layer is used for mortar coupling
 
     bool fluid_forces_transfer_;   ///< bool whether fluid forces are transferred from INCA
+
+    int stopflag_;   ///< stop flag that is sent from INCA
 
   }; // AeroTFSI
 

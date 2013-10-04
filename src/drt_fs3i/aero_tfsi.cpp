@@ -40,7 +40,8 @@ FS3I::AeroTFSI::AeroTFSI(
   ) :
   FS3I_Base(),
   lcomm_(lcomm),
-  tsi_(Teuchos::null)
+  tsi_(Teuchos::null),
+  stopflag_(false)
 {
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
@@ -233,7 +234,7 @@ void FS3I::AeroTFSI::Timeloop()
   SetInitialTimeStepAndTime(timestep);
 
   // time loop
-  while (tsi_->NotFinished())
+  while (tsi_->NotFinished() and !stopflag_)
   {
     if(lcomm_.MyPID() == 0)
     {
@@ -355,7 +356,7 @@ void FS3I::AeroTFSI::Timeloop()
 
     // communication with AERO-code to send interface position and temperature
     // skip last sending procedure in the simulation because INCA has already finished
-    if(tsi_->NotFinished())
+    if(/*!INCAfinshed() and */ tsi_->NotFinished())  // ghamm 04.10.2013 needs to be added when combined with latest INCA versions
     {
       for(int interf=0; interf<aerocoupling_->NumInterfaces(); interf++)
       {
@@ -426,7 +427,7 @@ void FS3I::AeroTFSI::Timeloop()
     tsi_->Update();
 
     // write output to screen and files
-    tsi_->Output();
+    tsi_->Output(stopflag_);
 
     t_end = Teuchos::Time::wallTime()-t_start;
     BACITime += t_end;
@@ -530,6 +531,28 @@ void FS3I::AeroTFSI::GetTimeStep(
 #endif
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Receive flag from INCA via MPI whether to stop           ghamm 10/13 |
+ *----------------------------------------------------------------------*/
+bool FS3I::AeroTFSI::INCAfinshed()
+{
+#ifdef INCA_COUPLING
+  // get stop tag
+  if(lcomm_.MyPID() == 0)
+  {
+    MPI_Status status;
+    int tag_stopflag = 2000;
+    // note here: on INCA side an MPI_LOGICAL is used
+    MPI_Recv(&stopflag_, 1, MPI_INT, INCAleader_, tag_stopflag, intercomm_, &status);
+  }
+  // broadcast stop flag to all processors in BACI
+  lcomm_.Broadcast(&stopflag_, 1 , localBACIleader_);
+#endif
+
+  return stopflag_;
 }
 
 

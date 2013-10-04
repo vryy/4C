@@ -219,9 +219,9 @@ namespace STR
     );
 
     /// has to be renamed either here or PrintStep()
-    virtual void Output()
+    virtual void Output(bool forced_writerestart)
     {
-      OutputStep();
+      OutputStep(forced_writerestart);
       return;
     }
 

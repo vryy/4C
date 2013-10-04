@@ -121,7 +121,7 @@ namespace TSI
     virtual void Update();
 
     //! write output
-    virtual void Output();
+    virtual void Output(bool forced_writerestart = false);
 
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body

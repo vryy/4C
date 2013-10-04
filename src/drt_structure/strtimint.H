@@ -273,7 +273,7 @@ namespace STR
     ) = 0;
 
     /// output results
-    virtual void Output() = 0;
+    virtual void Output(bool forced_writerestart = false) = 0;
 
     //! Update configuration after time step
     //!
@@ -353,7 +353,7 @@ namespace STR
     //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
-    void OutputStep();
+    void OutputStep(bool forced_writerestart = false);
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -382,6 +382,9 @@ namespace STR
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
     );
+
+    //! Add restart information to OutputState
+    void AddRestartToOutputState();
 
     //! Stress & strain output
     //! \author lw (originally)

@@ -1205,8 +1205,21 @@ void STR::TimInt::PrepareOutput()
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void STR::TimInt::OutputStep()
+void STR::TimInt::OutputStep(bool forced_writerestart)
 {
+  // special treatment is necessary when restart is forced
+  if(forced_writerestart)
+  {
+    // reset possible history data on element level
+    ResetStep();
+    // if state already exists, add restart information in case of forced writerestart
+    if(writeresultsevery_ and (step_%writeresultsevery_ == 0) and step_!=DRT::Problem::Instance()->Restart())
+    {
+      AddRestartToOutputState();
+      return;
+    }
+  }
+
   // this flag is passed along subroutines and prevents
   // repeated initialising of output writer, printing of
   // state vectors, or similar
@@ -1214,7 +1227,8 @@ void STR::TimInt::OutputStep()
 
   // output restart (try this first)
   // write restart step
-  if (writerestartevery_ and (step_%writerestartevery_ == 0) )
+  if ( ((writerestartevery_ and (step_%writerestartevery_ == 0)) or forced_writerestart)
+      and !(forced_writerestart and writerestartevery_ and (step_%writerestartevery_ == 0)) )
   {
     OutputRestart(datawritten);
   }
@@ -1444,6 +1458,52 @@ void STR::TimInt::OutputState
     output_->WriteVector("porosity_p1", porosity);
   }
   // leave for good
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* add restart information to OutputState */
+void STR::TimInt::AddRestartToOutputState()
+{
+  // add velocity and acceleration if necessary
+  if(!writevelacc_)
+  {
+    output_->WriteVector("velocity", (*vel_)(0));
+    output_->WriteVector("acceleration", (*acc_)(0));
+  }
+
+  WriteRestartForce(output_);
+
+  // constraints
+  if (conman_->HaveConstraint())
+  {
+    output_->WriteDouble("uzawaparameter",
+                          consolv_->GetUzawaParameter());
+    output_->WriteVector("lagrmultiplier",
+                          conman_->GetLagrMultVector());
+    output_->WriteVector("refconval",
+                          conman_->GetRefBaseValues());
+  }
+
+  // TODO: add missing restart data for surface stress, contact/meshtying and StatMech here
+
+  // finally add the missing mesh information, order is important here
+  output_->WriteMesh(step_, (*time_)[0]);
+
+  // info dedicated to user's eyes staring at standard out
+  if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+  {
+    IO::cout << "====== Restart written in step " << step_ << IO::endl;
+  }
+
+  // info dedicated to processor error file
+  if (printerrfile_)
+  {
+    fprintf(errfile_, "====== Restart written in step %d\n", step_);
+    fflush(errfile_);
+  }
+
+  // we will say what we did
   return;
 }
 
@@ -2341,7 +2401,10 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
      {
        case INPAR::STR::divcont_stop:
        {
-       		// we should not get here, dserror for safety
+         // write restart output of last converged step before stopping
+         OutputStep(true);
+
+         // we should not get here, dserror for safety
          dserror("Nonlinear solver did not converge! ");
          return 1;
        }

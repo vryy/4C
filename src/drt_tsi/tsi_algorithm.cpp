@@ -81,16 +81,16 @@ void TSI::Algorithm::Update()
 /*----------------------------------------------------------------------*
  | output (protected)                                        dano 12/09 |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::Output()
+void TSI::Algorithm::Output(bool forced_writerestart)
 {
   // Note: The order in the output is important here!
 
   // In here control file entries are written. And these entries define the
   // order in which the filters handle the Discretizations, which in turn
   // defines the dof number ordering of the Discretizations.
-  StructureField()->Output();
+  StructureField()->Output(forced_writerestart);
 
-  ThermoField()->Output();
+  ThermoField()->Output(forced_writerestart);
 
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
@@ -100,7 +100,8 @@ void TSI::Algorithm::Output()
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
   if ( (upres!=0 and (Step()%upres == 0))
-    or ( (uprestart != 0) and (Step()%uprestart == 0) ) )
+    or ( (uprestart != 0) and (Step()%uprestart == 0) )
+    or forced_writerestart == true )
     {
       OutputDeformationInThr(
           StructureField()->Dispn(),

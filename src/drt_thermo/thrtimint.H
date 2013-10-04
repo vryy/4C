@@ -199,10 +199,10 @@ namespace THR
     //! \f$T_{n}, R_{n}\f$. So, #UpdateIncrement should be called
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
-    void OutputStep();
+    void OutputStep(bool forced_writerestart);
 
     //! output
-    virtual void Output() { OutputStep(); }
+    virtual void Output(bool forced_writerestart = false) { OutputStep(forced_writerestart); }
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -218,6 +218,9 @@ namespace THR
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step
       );
+
+    //! Add restart information to OutputState
+    void AddRestartToOutputState();
 
     //! Heatflux & temperature gradient output
     //! \author lw (originally)

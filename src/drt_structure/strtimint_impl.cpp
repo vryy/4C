@@ -1319,6 +1319,9 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
   {
     if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_stop ) )
     {
+      // write restart output of last converged step before stopping
+      OutputStep(true);
+
       dserror("Newton unconverged in %d iterations", iter_);
       return 1;
     }

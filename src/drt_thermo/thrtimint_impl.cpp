@@ -558,6 +558,9 @@ int THR::TimIntImpl::NewtonFullErrorCheck()
   // do some error checks
   if ( (iter_ >= itermax_) and (divcontype_==INPAR::THR::divcont_stop ) )
   {
+    // write restart output of last converged step before stopping
+    Output(true);
+
     dserror("Newton unconverged in %d iterations", iter_);
     return 0;
   }

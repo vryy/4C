@@ -722,9 +722,9 @@ namespace STR
     }
 
     //! Output routine for coupled problems with monolithic approach
-    void Output()
+    void Output(bool forced_writerestart = false)
     {
-      OutputStep();
+      OutputStep(forced_writerestart);
     }
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$

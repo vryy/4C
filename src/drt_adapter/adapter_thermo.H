@@ -213,7 +213,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 
     /// output results
-    virtual void Output() = 0;
+    virtual void Output(bool forced_writerestart = false) = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
