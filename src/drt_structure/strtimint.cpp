@@ -1212,7 +1212,10 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
   {
     // reset possible history data on element level
     ResetStep();
-    // if state already exists, add restart information in case of forced writerestart
+    // restart has already been written
+    if(writerestartevery_ and (step_%writerestartevery_ == 0))
+      return;
+    // if state already exists, add restart information
     if(writeresultsevery_ and (step_%writeresultsevery_ == 0) and step_!=DRT::Problem::Instance()->Restart())
     {
       AddRestartToOutputState();
@@ -1227,8 +1230,7 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
 
   // output restart (try this first)
   // write restart step
-  if ( ((writerestartevery_ and (step_%writerestartevery_ == 0)) or forced_writerestart)
-      and !(forced_writerestart and writerestartevery_ and (step_%writerestartevery_ == 0)) )
+  if ( (writerestartevery_ and (step_%writerestartevery_ == 0)) or forced_writerestart )
   {
     OutputRestart(datawritten);
   }
