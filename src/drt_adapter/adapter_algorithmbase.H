@@ -41,6 +41,9 @@ namespace ADAPTER
     /// current time
     double Time() const {return time_;}
 
+    /// current time step number
+    int Step() const { return step_; }
+
     /// set new time step in ReadRestart() or in a potential outer control
     void SetTimeStep(double time, int step);
 
@@ -48,9 +51,6 @@ namespace ADAPTER
 
     /// time step size
     double Dt() const { return dt_; }
-
-    /// current time step number
-    int Step() const { return step_; }
 
     /// total number of time steps
     int NStep() const { return nstep_;}

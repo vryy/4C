@@ -26,6 +26,7 @@ Maintainer: Georg Hammerl
 #include "../drt_tsi/tsi_utils.H"
 #include "aero_tfsi_serv.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include <Teuchos_Time.hpp>
 
@@ -547,6 +548,15 @@ bool FS3I::AeroTFSI::INCAfinshed()
     int tag_stopflag = 2000;
     // note here: on INCA side an MPI_LOGICAL is used
     MPI_Recv(&stopflag_, 1, MPI_INT, INCAleader_, tag_stopflag, intercomm_, &status);
+
+    if(stopflag_ != 0)
+    {
+      FILE *outFile;
+      outFile = fopen("result_status_baci.inp", "w");
+      // assumption that restart is always written when simulation is stopped by INCA
+      fprintf(outFile, "%s\t%d", DRT::Problem::Instance()->OutputControlFile()->FileName().c_str(), tsi_->Step());
+      fclose(outFile);
+    }
   }
   // broadcast stop flag to all processors in BACI
   lcomm_.Broadcast(&stopflag_, 1 , localBACIleader_);
