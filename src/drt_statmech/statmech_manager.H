@@ -590,7 +590,10 @@ protected:
   //! \brief output of nodal coordinates in a loom setup
   void OutputNodalDisplacements(const Epetra_Vector&      disrow,
                                 const std::ostringstream& filename);
-    
+  //! \brief output of nodal positions
+  void OutputNodalPositions(const Epetra_Vector&      disrow,
+                            const std::ostringstream& filename);
+
   //! \brief output of element internal forces
   void OutputElementInternalForces(const std::ostringstream& filename);
 

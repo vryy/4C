@@ -4516,8 +4516,8 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector&    
 /*------------------------------------------------------------------------------*
  | output nodal displacements                                      mueller 5/12 |
  *------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&                 disrow,
-                                                         const std::ostringstream&            filename)
+void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&      disrow,
+                                                         const std::ostringstream& filename)
 {
   Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
@@ -4532,6 +4532,36 @@ void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&   
     for(int i=0; i<discret_->DofColMap()->NumMyElements(); i=i+6)
         dispnode << discol[i]<<" "<< discol[i+1]<<" "<< discol[i+2]<<std::endl;
     fprintf(fp, dispnode.str().c_str());
+    fclose(fp);
+  }
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+ | output nodal positions                                          mueller 9/13 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputNodalPositions(const Epetra_Vector&      disrow,
+                                                     const std::ostringstream& filename)
+{
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
+  LINALG::Export(disrow, discol);
+
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+
+    std::stringstream posnode;
+    // retrieve translational node displacements
+    for(int i=0; i<discret_->NodeColMap()->NumMyElements(); i++)
+    {
+      DRT::Node* colnode = discret_->lColNode(i);
+      std::vector<int> dofnode = discret_->Dof(colnode);
+      posnode <<std::scientific<<std::setprecision(8) << colnode->X()[dofnode[0]]+discol[dofnode[0]]<<"\t"
+                                                      << colnode->X()[dofnode[1]]+discol[dofnode[1]]<<"\t"
+                                                      << colnode->X()[dofnode[1]]+discol[dofnode[2]]<<std::endl;
+    }
+    fprintf(fp, posnode.str().c_str());
     fclose(fp);
   }
   return;
