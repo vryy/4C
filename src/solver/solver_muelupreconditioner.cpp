@@ -207,12 +207,16 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
 
       Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+#ifdef HAVE_Trilinos_Q3_2013
       H->setlib(Xpetra::UseEpetra);
+#endif
       H->SetDefaultVerbLevel(MueLu::Extreme);
 
       H->GetLevel(0)->Set("A", mueluOp);
       H->GetLevel(0)->Set("Nullspace", nspVector);
+#ifdef HAVE_Trilinos_Q3_2013
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
+#endif
 
       mueLuFactory.SetupHierarchy(*H);
 
@@ -226,9 +230,13 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       // Setup MueLu Hierarchy
       MLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
       Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+#ifdef HAVE_Trilinos_Q3_2013
       H->setlib(Xpetra::UseEpetra);
+#endif
       H->GetLevel(0)->Set("A", mueluOp);
+#ifdef HAVE_Trilinos_Q3_2013
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
+#endif
       mueLuFactory.SetupHierarchy(*H);
 
       // set preconditioner
