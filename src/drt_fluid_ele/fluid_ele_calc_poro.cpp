@@ -2076,41 +2076,41 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
   }
 
   //*************************************************************************************************************
-//  if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
-//  {
-//    double reac_tau;
-//    if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-//      reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
-//    else
-//    {
-//      dserror("Is this factor correct? Check for bugs!");
-//      reac_tau=0.0;
-//      //reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
-//    }
-//
-//    if (my::is_higher_order_ele_ or my::fldpara_->IsNewton())
-//    {
-//      for (int vi=0; vi<my::nen_; ++vi)
-//      {
-//        const double v = reac_tau*my::funct_(vi);
-//
-//        for(int idim=0;idim<my::nsd_;++idim)
-//        {
-//          const int fvi_p_idim = my::nsd_*vi+idim;
-//
-//          for(int jdim=0;jdim<my::nsd_;++jdim)
-//          {
-//            for (int ui=0; ui<my::nen_; ++ui)
-//            {
-//              const int fui_p_jdim   = my::nsd_*ui + jdim;
-//
-//              ecoupl_u(fvi_p_idim,fui_p_jdim) += v*lin_resM_Dus(fvi_p_idim,fui_p_jdim);
-//            } // jdim
-//          } // vi
-//        } // ui
-//      } //idim
-//    } // end if (is_higher_order_ele_) or (newton_)
-//  }
+  if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
+  {
+    double reac_tau;
+    if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+      reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
+    else
+    {
+      dserror("Is this factor correct? Check for bugs!");
+      reac_tau=0.0;
+      //reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
+    }
+
+    if (my::is_higher_order_ele_ or my::fldpara_->IsNewton())
+    {
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const double v = reac_tau*my::funct_(vi);
+
+        for(int idim=0;idim<my::nsd_;++idim)
+        {
+          const int fvi_p_idim = my::nsd_*vi+idim;
+
+          for(int jdim=0;jdim<my::nsd_;++jdim)
+          {
+            for (int ui=0; ui<my::nen_; ++ui)
+            {
+              const int fui_p_jdim   = my::nsd_*ui + jdim;
+
+              ecoupl_u(fvi_p_idim,fui_p_jdim) += v*lin_resM_Dus(fvi_p_idim,fui_p_jdim);
+            } // jdim
+          } // vi
+        } // ui
+      } //idim
+    } // end if (is_higher_order_ele_) or (newton_)
+  }
 
   //*************************************************************************************************************
   // shape derivatives
@@ -2436,16 +2436,16 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 {
 
   double addstab = 0.0;
-//  if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
-//  {
-//    if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-//      addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
-//    else
-//    {
-//      dserror("Is this factor correct? Check for bugs!");
-//      //addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
-//    }
-//  }
+  if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
+  {
+    if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+      addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
+    else
+    {
+      dserror("Is this factor correct? Check for bugs!");
+      //addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
+    }
+  }
   //*************************** linearisation of mesh motion in momentum balance**********************************
   // mass
 
@@ -2707,38 +2707,38 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
         ecoupl_u(vi*3 + 1, ui*3 + 2) += -1.0*derinvJ2/porosity_*visres1_poro;
         ecoupl_u(vi*3 + 2, ui*3 + 2) += -1.0*derinvJ2/porosity_*visres2_poro;
 
-        double v0_poro =    // 2.0*my::funct_(vi)* my::vderxy_(0, 0)
-                           +     my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                                                                               * (   refgrad_porosity_(0) * derxjm_(0,0,1,ui)
-                                                                                   + refgrad_porosity_(1) * derxjm_(0,1,1,ui)
-                                                                                   + refgrad_porosity_(2) * derxjm_(0,2,1,ui)
-                                                                                 )
-                           +     my::funct_(vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0))
-                                                                               * (   refgrad_porosity_(0) * derxjm_(0,0,2,ui)
-                                                                                   + refgrad_porosity_(1) * derxjm_(0,1,2,ui)
-                                                                                   + refgrad_porosity_(2) * derxjm_(0,2,2,ui));
-        double v1_poro =         my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
-                                                                               * (   refgrad_porosity_(0) * derxjm_(1,0,0,ui)
-                                                                                   + refgrad_porosity_(1) * derxjm_(1,1,0,ui)
-                                                                                   + refgrad_porosity_(2) * derxjm_(1,2,0,ui))
-                          // + 2.0*refgrad_porosity_(1)*my::funct_(vi)* my::vderxy_(1, 1)
-                           +     my::funct_(vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1))
-                                                                               * (   refgrad_porosity_(0) * derxjm_(1,0,2,ui)
-                                                                                   + refgrad_porosity_(1) * derxjm_(1,1,2,ui)
-                                                                                   + refgrad_porosity_(2) * derxjm_(1,2,2,ui));
-        double v2_poro =         my::funct_(vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0))
-                                                                               * (   refgrad_porosity_(0) * derxjm_(2,0,0,ui)
-                                                                                   + refgrad_porosity_(1) * derxjm_(2,1,0,ui)
-                                                                                   + refgrad_porosity_(2) * derxjm_(2,2,0,ui))
-                           +     my::funct_(vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1))
-                                                                               * (   refgrad_porosity_(0) * derxjm_(2,0,1,ui)
-                                                                                   + refgrad_porosity_(1) * derxjm_(2,1,1,ui)
-                                                                                   + refgrad_porosity_(2) * derxjm_(2,2,1,ui));
-                          // + 2.0*refgrad_porosity_(2)*my::funct_(vi)* my::vderxy_(2, 2) ;
-
-        ecoupl_u(vi * 3 + 0, ui * 3 + 0) += -1.0*v/porosity_/my::det_ * v0_poro;
-        ecoupl_u(vi * 3 + 1, ui * 3 + 1) += -1.0*v/porosity_/my::det_ * v1_poro;
-        ecoupl_u(vi * 3 + 2, ui * 3 + 2) += -1.0*v/porosity_/my::det_ * v2_poro;
+//        double v0_poro =    // 2.0*my::funct_(vi)* my::vderxy_(0, 0)
+//                           +     my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
+//                                                                               * (   refgrad_porosity_(0) * derxjm_(0,0,1,ui)
+//                                                                                   + refgrad_porosity_(1) * derxjm_(0,1,1,ui)
+//                                                                                   + refgrad_porosity_(2) * derxjm_(0,2,1,ui)
+//                                                                                 )
+//                           +     my::funct_(vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0))
+//                                                                               * (   refgrad_porosity_(0) * derxjm_(0,0,2,ui)
+//                                                                                   + refgrad_porosity_(1) * derxjm_(0,1,2,ui)
+//                                                                                   + refgrad_porosity_(2) * derxjm_(0,2,2,ui));
+//        double v1_poro =         my::funct_(vi)*(my::vderxy_(0, 1) + my::vderxy_(1, 0))
+//                                                                               * (   refgrad_porosity_(0) * derxjm_(1,0,0,ui)
+//                                                                                   + refgrad_porosity_(1) * derxjm_(1,1,0,ui)
+//                                                                                   + refgrad_porosity_(2) * derxjm_(1,2,0,ui))
+//                          // + 2.0*refgrad_porosity_(1)*my::funct_(vi)* my::vderxy_(1, 1)
+//                           +     my::funct_(vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1))
+//                                                                               * (   refgrad_porosity_(0) * derxjm_(1,0,2,ui)
+//                                                                                   + refgrad_porosity_(1) * derxjm_(1,1,2,ui)
+//                                                                                   + refgrad_porosity_(2) * derxjm_(1,2,2,ui));
+//        double v2_poro =         my::funct_(vi)*(my::vderxy_(0, 2) + my::vderxy_(2, 0))
+//                                                                               * (   refgrad_porosity_(0) * derxjm_(2,0,0,ui)
+//                                                                                   + refgrad_porosity_(1) * derxjm_(2,1,0,ui)
+//                                                                                   + refgrad_porosity_(2) * derxjm_(2,2,0,ui))
+//                           +     my::funct_(vi)*(my::vderxy_(1, 2) + my::vderxy_(2, 1))
+//                                                                               * (   refgrad_porosity_(0) * derxjm_(2,0,1,ui)
+//                                                                                   + refgrad_porosity_(1) * derxjm_(2,1,1,ui)
+//                                                                                   + refgrad_porosity_(2) * derxjm_(2,2,1,ui));
+//                          // + 2.0*refgrad_porosity_(2)*my::funct_(vi)* my::vderxy_(2, 2) ;
+//
+//        ecoupl_u(vi * 3 + 0, ui * 3 + 0) += -1.0*v/porosity_/my::det_ * v0_poro;
+//        ecoupl_u(vi * 3 + 1, ui * 3 + 1) += -1.0*v/porosity_/my::det_ * v1_poro;
+//        ecoupl_u(vi * 3 + 2, ui * 3 + 2) += -1.0*v/porosity_/my::det_ * v2_poro;
       }
     }
 
@@ -3513,16 +3513,16 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
 {
 
   double addstab = 0.0;
-//  if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
-//  {
-//    if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-//      addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
-//    else
-//    {
-//      dserror("Is this factor correct? Check for bugs!");
-//      //addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
-//    }
-//  }
+  if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
+  {
+    if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+      addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
+    else
+    {
+      dserror("Is this factor correct? Check for bugs!");
+      //addstab = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
+    }
+  }
 
   //*************************** linearisation of mesh motion in momentum balance**********************************
   // mass

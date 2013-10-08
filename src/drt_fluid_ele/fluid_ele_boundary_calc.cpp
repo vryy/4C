@@ -4340,7 +4340,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
               //double timefacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacPre();
               elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
                                   - u_minus_vs_normalderiv(0,nnod*nsd_+idof2) * pfunct(inode) * timefacpre *fac* survivor(nnod) // no drs_ needed, since it is contained in the linearization w.r.t. nonunitnormal (normalderiv) -> timefacpre*fac instead of timefafacpre = timefacpre * fac_ (fac_ = fac*drs_)
-                                  + pfunct(inode) * unitnormal_(idof2) * timescale * pfunct(nnod) * (timefacpre);
+                                  + pfunct(inode) * unitnormal_(idof2) * timescale * pfunct(nnod) * (timefacfacpre);
             }
 
             else if (block == "Fluid_Porofluid")
