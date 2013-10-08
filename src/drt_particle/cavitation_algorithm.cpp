@@ -521,6 +521,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
         {
           val[iter*(dim+1) + d] = funct[iter] * couplingforce(d);
         }
+        // no contribution on pressure dof
+        val[iter*(dim+1) + 3] = 0.0;
       }
       // do assembly of bubble forces on fluid
       int err = fluidforces->SumIntoGlobalValues(numdofperfluidele, &lm_f[0], &val[0]);
