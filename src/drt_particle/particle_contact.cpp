@@ -1161,7 +1161,7 @@ void PARTICLE::ParticleCollisionHandler::ReadContactParameters(double density)
         //stiffness used for calculation of critical time step
         k_tkrit = k_normal_;
 
-        cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<endl;
+        std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
       }
     }
     break;
@@ -1189,7 +1189,7 @@ void PARTICLE::ParticleCollisionHandler::ReadContactParameters(double density)
         //stiffness used for calculation of critical time step (linear spring stiffness needed!)
         k_tkrit = pow(value,0.2);
 
-        cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<endl;
+        std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
       }
     }
     break;

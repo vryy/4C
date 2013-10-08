@@ -68,7 +68,7 @@ PARTICLE::ParticleNode* PARTICLE::ParticleNode::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              ghamm 06/13|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const PARTICLE::ParticleNode& particle)
+std::ostream& operator << (std::ostream& os, const PARTICLE::ParticleNode& particle)
 {
   particle.Print(os);
   return os;
@@ -77,7 +77,7 @@ ostream& operator << (ostream& os, const PARTICLE::ParticleNode& particle)
 /*----------------------------------------------------------------------*
  |  print this ParticleNode (public)                         ghamm 06/13|
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleNode::Print(ostream& os) const
+void PARTICLE::ParticleNode::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Particle ";
