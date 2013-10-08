@@ -82,8 +82,8 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      soh27_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      soh27_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -104,14 +104,14 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
       {
-        soh27_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh27_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        soh27_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh27_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -133,14 +133,14 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
       {
-        soh27_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh27_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        soh27_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh27_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -166,14 +166,14 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
       {
-        soh27_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh27_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        soh27_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh27_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
 
       if (act==calc_struct_nlnstifflmass) soh27_lumpmass(&elemat2);
@@ -190,27 +190,31 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
         RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > plstraindata = params.get<RCP<std::vector<char> > >("plstrain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
+        if (plstraindata==Teuchos::null) dserror("Cannot get 'plastic strain' data");
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D> strain;
+        LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D> plstrain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
         // special case: geometrically linear
         if (kintype_ == DRT::ELEMENTS::So_hex27::soh27_linear)
         {
-          soh27_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          soh27_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         // standard is: geometrically non-linear with Total Lagrangean approach
         else
         {
-          soh27_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          soh27_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
 
         {
@@ -227,6 +231,14 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+        
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, plstrain);
+          data.StartPacking();
+          AddtoPack(data, plstrain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
         }
       }
     }
@@ -759,9 +771,11 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(
     LINALG::Matrix<NUMDOF_SOH27,1>* force,                 // element internal force vector
     LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
     LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
+    LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
     Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
     const INPAR::STR::StressType   iostress,  // stress output option
-    const INPAR::STR::StrainType   iostrain)  // strain output option
+    const INPAR::STR::StrainType   iostrain,  // strain output option
+    const INPAR::STR::StrainType   ioplstrain)  // plastic strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
@@ -934,6 +948,60 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(
     so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
+    // return gp plastic strains (only in case of plastic strain output)
+    switch (ioplstrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (eleplstrain == NULL) dserror("plastic strain data not available");
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain
+        = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+      for (int i = 0; i < 3; ++i)
+       (*eleplstrain)(gp,i) = plglstrain(i);
+      for (int i = 3; i < 6; ++i)
+       (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+      break;
+    }
+    case INPAR::STR::strain_ea:
+    {
+      if (eleplstrain == NULL) dserror("plastic strain data not available");
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> gl;
+      gl(0,0) = plglstrain(0);
+      gl(0,1) = 0.5*plglstrain(3);
+      gl(0,2) = 0.5*plglstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = plglstrain(1);
+      gl(1,2) = 0.5*plglstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = plglstrain(2);
+
+      // inverse of deformation gradient
+      LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> invdefgrd;
+      invdefgrd.Invert(defgrd);
+
+      LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> temp;
+      LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> euler_almansi;
+      temp.Multiply(gl,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
+
+      (*eleplstrain)(gp,0) = euler_almansi(0,0);
+      (*eleplstrain)(gp,1) = euler_almansi(1,1);
+      (*eleplstrain)(gp,2) = euler_almansi(2,2);
+      (*eleplstrain)(gp,3) = euler_almansi(0,1);
+      (*eleplstrain)(gp,4) = euler_almansi(1,2);
+      (*eleplstrain)(gp,5) = euler_almansi(0,2);
+      break;
+    }
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested plastic strain type not available");
+      break;
+    }
+
     // return gp stresses
     switch (iostress)
     {
@@ -1035,9 +1103,11 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOH27,1>* force,                 // element internal force vector
       LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
+      LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* eleplstrain,   // strains at GP
       Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  // stress output option
-      const INPAR::STR::StrainType   iostrain)  // strain output option
+      const INPAR::STR::StrainType   iostrain,  // strain output option
+      const INPAR::STR::StrainType   ioplstrain)  // plastic strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
@@ -1238,6 +1308,60 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
     so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+    // return gp plastic strains (only in case of plastic strain output)
+        switch (ioplstrain)
+        {
+        case INPAR::STR::strain_gl:
+        {
+          if (eleplstrain == NULL) dserror("plastic strain data not available");
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain
+            = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+          for (int i = 0; i < 3; ++i)
+           (*eleplstrain)(gp,i) = plglstrain(i);
+          for (int i = 3; i < 6; ++i)
+           (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+          break;
+        }
+        case INPAR::STR::strain_ea:
+        {
+          if (eleplstrain == NULL) dserror("plastic strain data not available");
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+          // rewriting Green-Lagrange strains in matrix format
+          LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> gl;
+          gl(0,0) = plglstrain(0);
+          gl(0,1) = 0.5*plglstrain(3);
+          gl(0,2) = 0.5*plglstrain(5);
+          gl(1,0) = gl(0,1);
+          gl(1,1) = plglstrain(1);
+          gl(1,2) = 0.5*plglstrain(4);
+          gl(2,0) = gl(0,2);
+          gl(2,1) = gl(1,2);
+          gl(2,2) = plglstrain(2);
+
+          // inverse of deformation gradient
+          LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> invdefgrd;
+          invdefgrd.Invert(defgrd);
+
+          LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> temp;
+          LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> euler_almansi;
+          temp.Multiply(gl,invdefgrd);
+          euler_almansi.MultiplyTN(invdefgrd,temp);
+
+          (*eleplstrain)(gp,0) = euler_almansi(0,0);
+          (*eleplstrain)(gp,1) = euler_almansi(1,1);
+          (*eleplstrain)(gp,2) = euler_almansi(2,2);
+          (*eleplstrain)(gp,3) = euler_almansi(0,1);
+          (*eleplstrain)(gp,4) = euler_almansi(1,2);
+          (*eleplstrain)(gp,5) = euler_almansi(0,2);
+          break;
+        }
+        case INPAR::STR::strain_none:
+          break;
+        default:
+          dserror("requested plastic strain type not available");
+          break;
+        }
 
     // return gp stresses
     switch (iostress)

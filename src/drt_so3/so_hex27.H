@@ -415,9 +415,11 @@ protected:
       LINALG::Matrix<NUMDOF_SOH27,1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
-      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,  ///< stress output option
-      const INPAR::STR::StrainType   iostrain); ///< strain output option
+      LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* eleplstrain,    ///< plastic strains at GP
+      Teuchos::ParameterList&   params,           ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,    ///< stress output option
+      const INPAR::STR::StrainType   iostrain,    ///< strain output option
+      const INPAR::STR::StrainType   ioplstrain); ///< plastic strain output option
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void soh27_nlnstiffmass(
@@ -429,9 +431,11 @@ protected:
       LINALG::Matrix<NUMDOF_SOH27,1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
-      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,  ///< stress output option
-      const INPAR::STR::StrainType   iostrain); ///< strain output option
+      LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* eleplstrain,    ///< plastic strains at GP
+      Teuchos::ParameterList&   params,           ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,    ///< stress output option
+      const INPAR::STR::StrainType   iostrain,    ///< strain output option
+      const INPAR::STR::StrainType   ioplstrain); ///< plastic strain output option
 
   //! Lump mass matrix (bborn 07/08)
   void soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27>* emass);
