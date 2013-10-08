@@ -901,6 +901,9 @@ protected:
 
   //! corresponding solid element
   DRT::ELEMENTS::So_Poro_Interface* so_interface_;
+
+  //! number of fluid field for which the calc class is instantiated
+  int numporo_;
 };
 }
 }

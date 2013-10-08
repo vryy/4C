@@ -17,6 +17,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_parameter.H"
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 
 /*----------------------------------------------------------------------*
@@ -41,12 +42,13 @@ DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>
    }
    else
    {
-     if ( MY::instances_.find(num)->second != NULL )
+     if ( MY::instances_.at(num)->size())
      {
-       delete MY::instances_.at(num)->find((int)distype)->second;
+       delete MY::instances_.at(num)->at((int)distype);
        MY::instances_.at(num)->erase((int)distype);
-       if (MY::instances_.at(num)->size() == 0)
-         delete MY::instances_.find(num)->second;
+
+       if ( !(MY::instances_.at(num)->size()) )
+         MY::instances_.erase(num);
      }
 
      return NULL;
@@ -63,8 +65,6 @@ void DRT::ELEMENTS::FluidEleCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  //std::cout<<"deleting fluid "<<num_<<" instance of FluidEleCalcStd for distype "<<(int)distype<<std::endl;
-
     Instance( false, num_ );
 }
 

@@ -50,13 +50,15 @@ DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* DRT::ELEMENTS::FluidEleCalcPoroP2<di
   }
   else
   {
-    if ( MY::instances_.find(num)->second != NULL )
+    if ( MY::instances_.at(num)->size())
     {
-      delete MY::instances_.at(num)->find((int)distype)->second;
-      delete MY::instances_.find(num)->second;
+      delete MY::instances_.at(num)->at((int)distype);
+      MY::instances_.at(num)->erase((int)distype);
+
+      if ( !(MY::instances_.at(num)->size()) )
+        MY::instances_.erase(num);
     }
 
-    MY::instances_.insert(std::pair<int,std::map<int,MY* > * >(num, NULL));
     return NULL;
   }
 
@@ -71,9 +73,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  int numinstances = MY::instances_.size();
-  for(int i=0; i<numinstances; i++)
-    Instance( false, i );
+    Instance( false, numporop2_ );
 }
 
 

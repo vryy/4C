@@ -390,6 +390,8 @@ protected:
         const double &                         rhsfac,      ///< right-hand-side factor for residuals
         const double &                         fac3            ///< factor for residual in current subgrid velocities
         );
+
+    int numporop1_;
 };
 
 }//ELEMENTS

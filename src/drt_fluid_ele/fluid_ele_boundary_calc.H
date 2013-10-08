@@ -729,6 +729,8 @@ private:
   double densaf_;
   //! density factor for Neumann boundary conditions (set according to problem type)
   double densfac_;
+  //! num of fluid field in multi-fluid-field problems (currently only fpsi)
+  int num_;
 
   };  // end class fluid3boundaryImpl
 

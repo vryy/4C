@@ -300,6 +300,8 @@ protected:
 
     double W_;
     double dW_dJ_;
+
+    int numporop2_;
 };
 
 }//ELEMENTS
