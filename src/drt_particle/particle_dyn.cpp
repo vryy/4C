@@ -71,7 +71,7 @@ void particle_drt()
       Teuchos::RCP<CAVITATION::Algorithm> cavitation = Teuchos::rcp(new CAVITATION::Algorithm(comm,params));
 
       /// init cavitation simulation
-      cavitation->Init(false);
+      cavitation->InitCavitation();
 
       /// read the restart information, set vectors and variables ---
       const int restart = problem->Restart();

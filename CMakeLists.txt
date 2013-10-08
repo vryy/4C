@@ -1034,6 +1034,7 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
   src/drt_meshfree_discret/drt_meshfree_node.cpp
+  src/drt_particle/particle_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
   src/drt_meshfree_discret/drt_meshfree_multibin.cpp
   src/drt_meshfree_discret/drt_meshfree_cell.cpp
@@ -1193,9 +1194,11 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_PARTICLE
-	src/drt_particle/particle_algorithm.cpp
-	src/drt_particle/particle_dyn.cpp
-	src/drt_particle/cavitation_algorithm.cpp
+  src/drt_particle/particle_algorithm.cpp
+  src/drt_particle/particle_dyn.cpp
+  src/drt_particle/cavitation_algorithm.cpp
+  src/drt_particle/cavitation_service.cpp
+  src/drt_particle/particle_contact.cpp
 	src/drt_particle/scatra_particle_coupling.cpp
 )
 set(OBJS_LINALG
@@ -1667,7 +1670,6 @@ add_library(alg_fpsi ${OBJS_DRT_FPSI})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
-add_library(alg_particle ${OBJS_DRT_PARTICLE})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
@@ -1681,7 +1683,6 @@ set(MULTIFIELD_LIBRARIES
   alg_fs3i
   alg_topopt
   alg_ssi
-  alg_particle
   )
 
 # the adapter layer
@@ -1707,6 +1708,7 @@ add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
+add_library(alg_particle ${OBJS_DRT_PARTICLE})
 
 set(SINGLEFIELD_LIBRARIES
   alg_ale
@@ -1728,6 +1730,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_contact
   alg_fluid_adjoint
   alg_opti
+  alg_particle
   )
 
 # general framework

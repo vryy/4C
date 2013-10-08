@@ -20,6 +20,28 @@ Maintainer: Georg Hammerl
 
 namespace INPAR
 {
+  /// Input parameters for particle/cavitation problems
+	namespace PARTICLE
+	{
+	  /// Contact type for particles
+		enum ContactStrategy
+		{
+			None,
+			Normal,
+			NormalAndTang
+		};
+
+		/// Normal contact law
+		enum NormalContact
+		{
+			LinSpring,
+			Hertz,
+			LinSpringDamp,
+			LeeHerrmann,
+			KuwabaraKono,
+			Tsuji
+		};
+	}
 
   /// Input parameters for cavitation
   namespace CAVITATION

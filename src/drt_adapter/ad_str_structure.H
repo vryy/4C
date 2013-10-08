@@ -365,7 +365,7 @@ namespace ADAPTER {
     virtual void ApplyCouplingState(Teuchos::RCP<const Epetra_Vector> velnp, const std::string& name, unsigned dofset=1) = 0;
 
     /// Set forces due to interface with fluid, the force is expected external-force-like
-    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce) = 0;
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce) = 0;
 
     //! specific method for iterative staggered partitioned TSI
 

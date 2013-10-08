@@ -221,6 +221,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==PoroPresInt)                   os << "porous media pressure integration condition";
   else if (Type()==ScaTraCoupling)                os << "scatra coupling condition";
   else if (Type()==ParticleInflow)                os << "particle inflow condition";
+  else if (Type()==ParticleInitRadius)            os << "particle initial radius condition";
   else if (Type()==ParticleWall)                  os << "particle wall condition";
   else if (Type()==CrackMastersurface)            os << "Master crack surface";
   else if (Type()==CrackSlavesurface)             os << "Slave crack surface";

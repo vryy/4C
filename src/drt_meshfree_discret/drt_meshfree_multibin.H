@@ -303,6 +303,14 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
+   * \brief Delete all associated wall elements from this bin
+
+   *///                                                  (public) ghamm 09/13
+  /*------------------------------------------------------------------------*/
+  void RemoveAssociatedWallEles();
+
+  /*------------------------------------------------------------------------*/
+  /*!
    * \brief Delete an associated fluid element from this bin
    *
    * Searches for position of element with specified gid and deletes entry in

@@ -62,7 +62,7 @@ namespace CAVITATION
     virtual ~Algorithm(){};
 
     /// do initialization of problem
-    virtual void Init(bool restarted);
+    virtual void InitCavitation();
 
     /// read restart
     virtual void ReadRestart(
@@ -101,9 +101,6 @@ namespace CAVITATION
     /// output particle time step
     virtual void Output();
 
-    /// find XAABB and divide into bins using the cutoff radius
-    virtual void CreateBins();
-
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs(
       std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
@@ -119,7 +116,9 @@ namespace CAVITATION
       );
 
     /// build connectivity from fluid elements to bins
-    virtual void BuildElementToBinPointers();
+    virtual void BuildElementToBinPointers(
+      bool wallpointer   ///< bool whether wall element pointer need rebuild
+      );
 
     /// get adjacent bins to corner, where ijk is in 1st octant
     std::vector<int> AdjacentBinstoCorner(

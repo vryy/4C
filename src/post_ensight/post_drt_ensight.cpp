@@ -176,13 +176,14 @@ int main(
     }
     case prb_particle:
     {
-      PostField* particlefield = problem.get_discretization(0);
+      PostField* particlewallfield = problem.get_discretization(0);
+      StructureEnsightWriter writer(particlewallfield, problem.outname(), problem.stresstype(), problem.straintype());
+      writer.WriteFiles();
+
+      PostField* particlefield = problem.get_discretization(1);
       ParticleEnsightWriter  particlewriter(particlefield, problem.outname());
       particlewriter.WriteFiles();
 
-      PostField* particlewallfield = problem.get_discretization(1);
-      StructureEnsightWriter writer(particlewallfield, problem.outname(), problem.stresstype(), problem.straintype());
-      writer.WriteFiles();
       break;
     }
     case prb_cavitation:

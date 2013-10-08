@@ -8,7 +8,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-testing of initial and Dirichlet boundary conditions for particles
+off-center collision of two particles with frictional contact
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        8
 NODES                           27
@@ -40,19 +40,18 @@ NEWTON_TOL                      1e-6
 NEWTON_MAX                      100
 T_PRIOR                         Gauss
 T_SKEW                          None
-T_VARIANCE                      .01                           // = sigma^2 = gamma/h^2
+T_VARIANCE                      .01                             // = sigma^2 = gamma/h^2
 T_RANGE_TOL                     1e-6
 CUTOFF_RADIUS                   1.0
-BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001 
+BOUNDINGBOX -3.000001 -3.000001 -3.000001 3.000001 3.000001 3.000001
 T_COMPLIANCE                    linear
-----------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      ParticleCentrDiff
-GRAVITY_ACCELERATION            0.0 0.0 -9.81                
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-RESULTSEVRY                     1
-RESTARTEVRY                     3
-TIMESTEP                        0.05
-NUMSTEP                         8
+DYNAMICTYP                      OneStepTheta
+RESULTSEVRY                     100
+RESTARTEVRY                     1000000
+RESEVRYERGY                     5
+TIMESTEP                        0.5E-5
+NUMSTEP                         4000
 MAXTIME                         0.5
 DAMPING                         No
 M_DAMP                          0.5
@@ -63,6 +62,28 @@ NORMCOMBI_RESFDISP              Or
 TOLDISP                         1.0E-08
 TOLRES                          1.0E-08
 LINEAR_SOLVER                   1
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      ParticleCentrDiff
+GRAVITY_ACCELERATION            0.0 0.0 0.0
+CONTACT_STRATEGY                NormalAndTangentialContact
+NORMAL_CONTACT_LAW              LinearSpringDamp
+MIN_RADIUS                      0.01
+MAX_RADIUS                      0.01
+REL_PENETRATION                 0.01
+MAX_VELOCITY                    1.0
+TENSION_CUTOFF                  Yes
+FRICT_COEFF                     0.2
+FRICT_COEFF_WALL                0.2
+NORMAL_STIFF                    -1.0
+TANG_STIFF                      -1.0
+COEFF_RESTITUTION               1.0
+NORMAL_DAMP                     -1.0
+TANG_DAMP                       -1.0
+COEFF_RESTITUTION_WALL          0.8
+NORMAL_DAMP_WALL                -1.0
+TANG_DAMP_WALL                  -1.0
+MOVING_WALLS                    No
+RANDOM_AMPLITUDE                0.00 //0.01
 --------------------------------------------------------------------SOLVER 1
 NAME                            Dummy_Structure_Solver
 SOLVER                          UMFPACK
@@ -72,20 +93,21 @@ NDLINE                          0
 NDSURF                          1
 NDVOL                           0
 NDPARTICLE                      2
--------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
-DPARTICLE                       1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+--------------------------------------DESIGN PARTICLE INIT RADIUS CONDITIONS
+DPARTICLE                       0
+//E 1 - SCALAR 12.3 FUNCT 1
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
-DPARTICLE                       1
-E 2 - Velocity 1
+DPARTICLE                       2
+E 1 - Velocity 1
+E 2 - Velocity 2
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           1
 //                              walls
 E 1 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
-NODE                            8 DPARTICLE 1                
-NODE                            10 DPARTICLE 2               
+NODE 1 DPARTICLE 1
+NODE 2 DPARTICLE 2
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
@@ -98,33 +120,8 @@ NODE 7 DSURFACE 1
 NODE 8 DSURFACE 1
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
-PARTICLE 1 COORD -1.000000000000000e+00 -1.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 2 COORD 0.000000000000000e+00 -1.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 3 COORD -1.000000000000000e+00 0.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 4 COORD -1.000000000000000e+00 -1.000000000000000e+00 0.000000000000000e+00
-PARTICLE 5 COORD -1.000000000000000e+00 -3.084013079635017e-16 -1.357421119951852e-16
-PARTICLE 6 COORD 3.084013079635017e-16 -1.000000000000000e+00 -1.357421119951852e-16
-PARTICLE 7 COORD -1.220811646218678e-16 1.220811646218678e-16 -1.000000000000000e+00
-PARTICLE 8 COORD -1.220811646218678e-16 6.938893903907251e-18 -1.288032180912779e-16
-PARTICLE 9 COORD 1.000000000000000e+00 -1.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 10 COORD -1.000000000000000e+00 1.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 11 COORD -1.000000000000000e+00 -1.000000000000000e+00 1.000000000000000e+00
-PARTICLE 12 COORD 1.000000000000000e+00 0.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 13 COORD 0.000000000000000e+00 1.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 14 COORD 0.000000000000000e+00 -1.000000000000000e+00 1.000000000000000e+00
-PARTICLE 15 COORD -1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
-PARTICLE 16 COORD 1.000000000000000e+00 -1.000000000000000e+00 0.000000000000000e+00
-PARTICLE 17 COORD -1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
-PARTICLE 18 COORD -3.084013079635017e-16 1.000000000000000e+00 -1.357421119951852e-16
-PARTICLE 19 COORD -1.220811646218678e-16 -1.220811646218678e-16 1.000000000000000e+00
-PARTICLE 20 COORD 1.000000000000000e+00 3.084013079635017e-16 -1.357421119951852e-16
-PARTICLE 21 COORD 1.000000000000000e+00 1.000000000000000e+00 -1.000000000000000e+00
-PARTICLE 22 COORD 1.000000000000000e+00 -1.000000000000000e+00 1.000000000000000e+00
-PARTICLE 23 COORD -1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
-PARTICLE 24 COORD 1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
-PARTICLE 25 COORD 0.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
-PARTICLE 26 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
-PARTICLE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
+PARTICLE 1 COORD -0.010100000000000e+00 0.000000000000000e+00 0.005000000000000e+00
+PARTICLE 2 COORD 0.010100000000000e+00 0.000000000000000e+00 -0.005000000000000e+00
 NODE 1 COORD -1.1000000000000001e+00 -1.1000000000000001e+00 1.1000000000000001e+00
 NODE 2 COORD -1.1000000000000001e+00 -1.1000000000000001e+00 -1.1000000000000001e+00
 NODE 3 COORD -1.1000000000000001e+00 1.1000000000000001e+00 -1.1000000000000001e+00
@@ -134,37 +131,33 @@ NODE 6 COORD 1.1000000000000001e+00 -1.1000000000000001e+00 -1.1000000000000001e
 NODE 7 COORD 1.1000000000000001e+00 1.1000000000000001e+00 -1.1000000000000001e+00
 NODE 8 COORD 1.1000000000000001e+00 1.1000000000000001e+00 1.1000000000000001e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 3 KINEM nonlinear EAS none
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10. NUE 0.2 DENS 1.0
-MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.01 NUE 0.0 YOUNG 1.0
-MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 10. NUE 0.2 DENS 1.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0E9 NUE 0.3 DENS 1.0
+MAT 2 MAT_Particle DENSITY 7.85E3 INITRADIUS 0.01 NUE 0.3 YOUNG 210.0E9
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/1.5 t1 0. t2 1.5
 ----------------------------------------------------------------------FUNCT1
 // initial velocity (x component)
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 6.0
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
 // initial velocity (y component)
 FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
 // initial velocity (z component)
 FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT2
+// initial velocity (x component)
+FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION -1.0
+// initial velocity (y component)
+FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+// initial velocity (z component)
+FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS particle NODE 2 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY dispy VALUE -1.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY dispz VALUE -1.7848 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY velx VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY vely VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY velz VALUE -3.924 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 8 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 8 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 8 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 10 QUANTITY dispx VALUE 1.4 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 10 QUANTITY velx VALUE 6.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 26 QUANTITY dispx VALUE 1.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 26 QUANTITY dispy VALUE 1.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 26 QUANTITY dispz VALUE -0.7848 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 26 QUANTITY velx VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 26 QUANTITY vely VALUE 0.0 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 26 QUANTITY velz VALUE -3.924 TOLERANCE 1.0e-12
+//bei reibungshehaftetem stoss
+STRUCTURE DIS particle NODE 2 QUANTITY dispx VALUE 1.94976584290106406e-02 TOLERANCE 1.0e-12
+STRUCTURE DIS particle NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
+STRUCTURE DIS particle NODE 2 QUANTITY dispz VALUE -1.76630827558620432e-02 TOLERANCE 1.0e-12
+STRUCTURE DIS particle NODE 2 QUANTITY velx VALUE 5.97102959215523810e-01 TOLERANCE 1.0e-12
+STRUCTURE DIS particle NODE 2 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
+STRUCTURE DIS particle NODE 2 QUANTITY velz VALUE -6.88607632276584836e-01 TOLERANCE 1.0e-12
 -------------------------------------------------------------------------END
 //                              END

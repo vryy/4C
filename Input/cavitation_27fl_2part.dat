@@ -32,19 +32,16 @@ LIMIT_OUTP_TO_PROC              -1
 TYPE                            Particle
 CUTOFF_RADIUS                   0.2 //0.2                     // 0.4
 BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999 
-----------------------------------------------------------CAVITATION DYNAMIC
-COUPALGO cavitation_oneway //cavitation_twowaymomentum
+----------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      ParticleCentrDiff
 GRAVITY_ACCELERATION            0.0 0.0 -9.81                
+----------------------------------------------------------CAVITATION DYNAMIC
+COUPALGO                        cavitation_oneway //cavitation_twowaymomentum
 MAXTIME                         0.5
 NUMSTEP                         5
 RESTARTEVRY                     3
 TIMESTEP                        5.0e-3
 UPRES                           1
-----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      ParticleCentrDiff
-RESULTSEVRY                     1
-RESTARTEVRY                     1
-LINEAR_SOLVER                   2
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
@@ -113,12 +110,9 @@ ML_SMOTIMES                     2 2 1                         // no. smoothing s
 ML_DAMPFINE                     0.45                          // damping fine grid
 ML_DAMPMED                      0.66                          // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
---------------------------------------------------------------------SOLVER 2
-NAME                            Dummy_Struct_Solver
-SOLVER                          UMFPACK //Aztec_MSR           // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 8.9e-4 DENSITY 1000.0 GAMMA 1.0 // Re=6.62
-MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.01
+MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.01 NUE 0.3 YOUNG 210.0E9
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (0.05*(1-cos(2*pi*t/0.02))) t1 0.0 t2 0.01
 ----------------------------------------------------------------------CURVE2

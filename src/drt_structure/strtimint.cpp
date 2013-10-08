@@ -2528,7 +2528,7 @@ void STR::TimInt::SetCouplingState()
  * the force is expected external-force-like */
 void STR::TimInt::SetForceInterface
 (
-  Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+  Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
 )
 {
   fifc_->Update(1.0, *iforce, 0.0);
@@ -2556,13 +2556,15 @@ void STR::TimInt::ApplyDisMat(
 
 /*----------------------------------------------------------------------*/
 /* Attach file handle for energy file #energyfile_                      */
-void STR::TimInt::AttachEnergyFile()
+void STR::TimInt::AttachEnergyFile(std::string name)
 {
-  if (not energyfile_)
+  if (not energyfile_ or name != "")
   {
+    // if energy file with new name is attached, delete the old file handle
+    DetachEnergyFile();
     std::string energyname
       = DRT::Problem::Instance()->OutputControlFile()->FileName()
-      + ".energy";
+      + name + ".energy";
     energyfile_ = new std::ofstream(energyname.c_str());
     *energyfile_ << "# timestep time total_energy"
                  << " kinetic_energy internal_energy external_energy"

@@ -48,6 +48,7 @@ Maintainer: Ursula Mayer
 #include <Teuchos_RCP.hpp>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "geo_utils.H"
+#include "searchtree_nearestobject.H"
 
 
 namespace DRT
@@ -383,6 +384,14 @@ namespace GEO
 	  const std::map<int, std::set<int> >&        elementList,
 	  const LINALG::Matrix<3,1>&                  point,
 	  LINALG::Matrix<3,1>&                        minDistCoords
+  );
+
+  /// returns the nearest coordinates on element and the corresponding object type
+  GEO::ObjectType nearest3DObjectOnElement(
+    DRT::Element*                               surfaceelement,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  point,
+    LINALG::Matrix<3,1>&                        minDistCoords
   );
 
   void nearest2DObjectInNode(

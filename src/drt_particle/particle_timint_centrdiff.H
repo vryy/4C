@@ -21,6 +21,13 @@ Maintainer: Georg Hammerl
 #include "../drt_structure/strtimint_centrdiff.H"
 
 
+//forward declarations
+namespace PARTICLE
+{
+  class Algorithm;
+  class ParticleCollisionHandler;
+}
+
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
 namespace PARTICLE
@@ -68,16 +75,18 @@ namespace PARTICLE
     //! @name Actions
     //@{
 
+    //! mostly init of collision handling
+    virtual void Init();
+
+    //! Equilibrate the initial state by identifying the consistent
+    //! initial accelerations and (if applicable) internal variables
+    virtual void DetermineMassDampConsistAccel();
+
     //! Do time integration of single step
     virtual int IntegrateStep();
 
     //! Nothing to update on element level
     void UpdateStepElement(){ return; }
-
-    //! Equilibrate the initial state by identifying the consistent
-    //! initial accelerations and (if applicable) internal variables
-    //! Make damping and mass matrix --> not yet needed
-    virtual void DetermineMassDampConsistAccel();
 
     //! State vectors are updated according to the new distribution of particles
     void UpdateStatesAfterParticleTransfer();
@@ -92,7 +101,10 @@ namespace PARTICLE
     virtual void ReadRestartState();
 
     //! Read restart forces
-    virtual void ReadRestartForce();
+    virtual void ReadRestartForce() { return; }
+
+    //! particle algorithm is set from outside
+    void SetParticleAlgorithm(Teuchos::RCP<PARTICLE::Algorithm> algorithm) { particle_algorithm_ = algorithm; }
 
     //@}
 
@@ -100,28 +112,78 @@ namespace PARTICLE
     //@{
 
     //! Return radii of particles
-    Teuchos::RCP<Epetra_Vector> ExtractRadiusnp() { return radiusn_; }
+    Teuchos::RCP<Epetra_Vector> ExtractRadius() { return radius_; }
+
+    //! Return mass of particles
+    Teuchos::RCP<Epetra_Vector> ExtractMass() { return mass_; }
 
     //! Return density
     double ParticleDensity() { return density_; }
 
     //@}
 
-
   protected:
+
+    //! apply initial condition for particle radius
+    void ApplyInitialRadiusCondition();
+
+    //! acceleration is applied from given forces
+    void ComputeAcc(
+      Teuchos::RCP<Epetra_Vector> f_contact,
+      Teuchos::RCP<Epetra_Vector> m_contact,
+      Teuchos::RCP<Epetra_Vector> acc,
+      Teuchos::RCP<Epetra_Vector> ang_acc
+      );
+
+    //! update step
+    virtual void UpdateStepState();
+
+    //! states are given to the collision handler
+    void SetStatesForCollision();
+
+    //! initialization of vector for visualization of the particle orientation
+    void InitializeOrientVector();
+
+    //! update of vector for visualization of the particle orientation
+    void RotateOrientVector(double dt);
+    
+    //! energy of the particle system is calculated
+    virtual void DetermineEnergy();
+
+    //! Attach file handle for energy file #energyfile_
+    virtual void AttachEnergyFile(std::string name = "");
 
     //! @name Global properties at \f$t_{n}\f$ and \f$t_{n+1}\f$
     //@{
+
     Teuchos::RCP<Epetra_Vector> radius_;  //!< radius of each particle at \f$t_{n}\f$
 
-    Teuchos::RCP<Epetra_Vector> radiusn_;  //!< radius of each particle at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> mass_;   //!< mass of each particle at \f$t_{n+1}\f$
+
+    Teuchos::RCP<Epetra_Vector> inertia_;   //!< moment of inertia of each particle at \f$t_{n+1}\f$
+
+    Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > ang_vel_;   //!< global angular-velocities \f${V}_{n}, V_{n-1}, ...\f$
+
+    Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > ang_acc_;   //!< global angular-accelerations \f${A}_{n}, A_{n-1}, ...\f$
+
+    Teuchos::RCP<Epetra_Vector> ang_veln_;   //!< global angular-velocitie \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
+
+    Teuchos::RCP<Epetra_Vector> ang_accn_;   //!< global angular-acceleration \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
+
+    Teuchos::RCP<Epetra_Vector> orient_;   //!< global vector for visualization of particle orientation
 
     double density_; //!< density of each particle at \f$t_{n+1}\f$
 
-    void ApplyInitialRadiusCondition(double initial_radius);
-
     //@}
 
+    //! @name helper classes
+    //@{
+
+    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;   //!< particle algorithm that is connected to the time integration
+
+    Teuchos::RCP<PARTICLE::ParticleCollisionHandler> collhandler_;   //!< collision handler for particles
+
+    //@}
 
   };  // class TimIntCentrDiff
 

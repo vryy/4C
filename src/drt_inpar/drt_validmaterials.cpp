@@ -1522,6 +1522,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENSITY","mass density");
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
+    AddNamedReal(m,"NUE","poisson ratio");
+    AddNamedReal(m,"YOUNG","youngs modulus");
 
     AppendMaterialDefinition(matlist,m);
   }

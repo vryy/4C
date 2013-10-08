@@ -167,6 +167,16 @@ void DRT::MESHFREE::MeshfreeMultiBin::DeleteAssociatedWallEle(int gid)
 }
 
 /*--------------------------------------------------------------------------*
+ | Delete all wall elements from current bin           (public) ghamm 09/13 |
+ *--------------------------------------------------------------------------*/
+void DRT::MESHFREE::MeshfreeMultiBin::RemoveAssociatedWallEles()
+{
+      associatedwalleleid_.clear();
+      associatedwallele_.clear();
+  return;
+}
+
+/*--------------------------------------------------------------------------*
  | Delete a single fluid element from the bin          (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::MeshfreeMultiBin::DeleteAssociatedFluidEle(int gid)

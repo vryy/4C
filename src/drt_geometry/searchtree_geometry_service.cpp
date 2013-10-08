@@ -876,6 +876,71 @@ int GEO::nearest3DObjectInNode(
 	return surfid;
 }
 
+
+/*----------------------------------------------------------------------*
+ | gives the coords of the nearest point on a surface        ghamm 09/13|
+ | element and return type of nearest object                            |
+ *----------------------------------------------------------------------*/
+GEO::ObjectType GEO::nearest3DObjectOnElement(
+    DRT::Element*                               surfaceelement,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const LINALG::Matrix<3,1>&                  point,
+    LINALG::Matrix<3,1>&                        minDistCoords)
+{
+  GEO::NearestObject nearestObject;
+  bool pointFound = false;
+  double min_distance = GEO::LARGENUMBER;
+  double distance = GEO::LARGENUMBER;
+  LINALG::Matrix<3,1> x_surface(true);
+
+  pointFound = GEO::getDistanceToSurface(surfaceelement, currentpositions, point, x_surface, distance);
+  if(pointFound && distance < min_distance)
+  {
+    pointFound = false;
+    min_distance = distance;
+    nearestObject.setSurfaceObjectType(surfaceelement->Id(), -1, x_surface);
+  }
+
+  // run over all line elements
+  const std::vector<Teuchos::RCP< DRT::Element> > eleLines = surfaceelement->Lines();
+  for(int i = 0; i < surfaceelement->NumLine(); i++)
+  {
+    pointFound = GEO::getDistanceToLine(eleLines[i].get(), currentpositions, point, x_surface, distance);
+    if(pointFound && distance < min_distance)
+    {
+      pointFound = false;
+      min_distance = distance;
+      nearestObject.setLineObjectType(i, surfaceelement->Id(), -1, x_surface);
+    }
+  }
+
+  // run over all nodes
+  for (std::map<int,LINALG::Matrix<3,1> >::const_iterator nodeIter = currentpositions.begin(); nodeIter != currentpositions.end(); nodeIter++)
+  {
+    LINALG::Matrix<3,1> distance_vector;
+    // vector pointing away from the node towards physCoord
+    distance_vector.Update(1.0, point, -1.0, nodeIter->second);
+
+    // absolute distance between point and node
+    distance = distance_vector.Norm2();
+
+    if (distance < min_distance)
+    {
+      min_distance = distance;
+      nearestObject.setNodeObjectType(nodeIter->first, -1, nodeIter->second);
+    }
+  }
+
+  if(nearestObject.getObjectType()== GEO::NOTYPE_OBJECT)
+    dserror("no nearest object obtained");
+
+  // save projection point
+  minDistCoords = nearestObject.getPhysCoord();
+
+  return nearestObject.getObjectType();
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double GEO::nearestNodeInNode(

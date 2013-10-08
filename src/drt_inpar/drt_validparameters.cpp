@@ -915,6 +915,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&sdyn);
   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&sdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
+  BoolParameter("WRITE_INITIAL_MESH","yes","write initial mesh on/off",&sdyn);
   // Time loop control
   DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
   IntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);
@@ -5901,19 +5902,88 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&xfluid_stab);
 
   /*----------------------------------------------------------------------*/
+   Teuchos::ParameterList& particledyn = list->sublist(
+       "PARTICLE DYNAMIC",
+       false,
+       "control parameters for particle problems\n");
+
+   setStringToIntegralParameter<int>("DYNAMICTYP","ParticleCentrDiff",
+                                "type of time integration control",
+                                tuple<std::string>(
+                                  "ParticleCentrDiff"),
+                                tuple<int>(
+                                  INPAR::STR::dyna_particle_centrdiff
+                                ),
+                                &particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "CONTACT_STRATEGY","None",
+                               "Contact strategies for particle problems",
+                               tuple<std::string>(
+                                 "None",
+                                 "NormalContact",
+                                 "NormalAndTangentialContact"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::None,
+                                 INPAR::PARTICLE::Normal,
+                                 INPAR::PARTICLE::NormalAndTang
+                                 ),
+                               &particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "NORMAL_CONTACT_LAW","LinearSpringDamp",
+                               "contact law for normal contact of particles",
+                               tuple<std::string>(
+                                 "LinearSpring",
+                                 "Hertz",
+                                 "LinearSpringDamp",
+                                 "LeeHerrmann",
+                                 "KuwabaraKono",
+                                 "Tsuji"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::LinSpring,
+                                 INPAR::PARTICLE::Hertz,
+                                 INPAR::PARTICLE::LinSpringDamp,
+                                 INPAR::PARTICLE::LeeHerrmann,
+                                 INPAR::PARTICLE::KuwabaraKono,
+                                 INPAR::PARTICLE::Tsuji
+                                 ),
+                               &particledyn);
+   DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
+   DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);
+   DoubleParameter("REL_PENETRATION",-1.0,"relative particle penetration",&particledyn);
+   DoubleParameter("MAX_VELOCITY",-1.0,"highest particle velocity",&particledyn);
+   DoubleParameter("COEFF_RESTITUTION",-1.0,"coefficient of restitution",&particledyn);
+   DoubleParameter("COEFF_RESTITUTION_WALL",-1.0,"coefficient of restitution (wall)",&particledyn);
+   DoubleParameter("FRICT_COEFF_WALL",-1.0,"friction coefficient for contact particle-wall",&particledyn);
+   DoubleParameter("FRICT_COEFF",-1.0,"dynamic friction coefficient for contact particle-particle",&particledyn);
+   DoubleParameter("NORMAL_STIFF",-1.0,"stiffness for normal contact force",&particledyn);
+   DoubleParameter("TANG_STIFF",-1.0,"stiffness for tangential contact force",&particledyn);
+   DoubleParameter("NORMAL_DAMP",-1.0,"damping coefficient for normal contact force",&particledyn);
+   DoubleParameter("TANG_DAMP",-1.0,"damping coefficient for tangential contact force",&particledyn);
+   DoubleParameter("NORMAL_DAMP_WALL",-1.0,"damping coefficient for normal contact force (wall)",&particledyn);
+   DoubleParameter("TANG_DAMP_WALL",-1.0,"damping coefficient for tangential contact force (wall)",&particledyn);
+   BoolParameter("TENSION_CUTOFF","no","switch on/off tension cutoff",&particledyn);
+   BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
+   DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
+
+   setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
+                             "Acceleration due to gravity in particle/cavitation simulations.",
+                             &particledyn);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& cavitationdyn = list->sublist(
       "CAVITATION DYNAMIC",
       false,
-      "control parameters for cavitation/particle problems\n");
+      "control parameters for cavitation problems\n");
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&cavitationdyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&cavitationdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&cavitationdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&cavitationdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&cavitationdyn);
-  setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
-                            "Acceleration due to gravity in particle/cavitation simulations.",
-                            &cavitationdyn);
 
   // Coupling strategy
   setStringToIntegralParameter<int>(

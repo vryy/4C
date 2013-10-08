@@ -334,7 +334,7 @@ namespace STR
     void DetermineStressStrain();
 
     //! Calculate kinetic, internal and external energy
-    void DetermineEnergy();
+    virtual void DetermineEnergy();
 
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -423,7 +423,7 @@ namespace STR
     }
 
     //! Attach file handle for energy file #energyfile_
-    void AttachEnergyFile();
+    virtual void AttachEnergyFile(std::string name = "");
 
     //! Detach file handle for energy file #energyfile_
     void DetachEnergyFile()
@@ -519,7 +519,7 @@ namespace STR
     //! Set forces due to interface with fluid, the force is expected external-force-like
     virtual void SetForceInterface
     (
-      Teuchos::RCP<Epetra_Vector> iforce  ///< the force on interface
+      Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
     );
 
     //! @name Attributes

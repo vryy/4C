@@ -43,6 +43,10 @@ namespace PAR
     const double density_;
     /// initial radius of particle
     const double initialradius_;
+    /// poisson ratio
+    const double poissonratio_;
+    /// youngs modulus
+    const double young_;
 
     //@}
 

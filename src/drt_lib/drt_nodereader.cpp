@@ -7,6 +7,7 @@
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_node.H"
+#include "../drt_particle/particle_node.H"
 
 #include <Epetra_Time.h>
 
@@ -238,7 +239,7 @@ void NodeReader::Read()
           Teuchos::RCP<DRT::Discretization> diss = DRT::Problem::Instance()->GetDis("particle");
 
           // create particle and add to discretization
-          Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank));
+          Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new PARTICLE::ParticleNode(nodeid,coords,myrank));
           diss->AddNode(particle);
 
           ++bcount;

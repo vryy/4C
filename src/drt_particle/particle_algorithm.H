@@ -28,6 +28,7 @@ Maintainer: Georg Hammerl
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
+#include <Epetra_CrsGraph.h>
 #include <vector>
 
 /*----------------------------------------------------------------------*
@@ -45,6 +46,10 @@ namespace ADAPTER
 namespace IO
 {
   class DiscretizationWriter;
+}
+namespace LINALG
+{
+  class MapExtractor;
 }
 
 /*----------------------------------------------------------------------*
@@ -86,6 +91,33 @@ namespace PARTICLE
       const Epetra_Comm& comm  ///< local epetra communicator
       );
 
+    /// get wall discretization 
+    Teuchos::RCP<DRT::Discretization> WallDiscret() { return particlewalldis_; }
+
+		/// get underlyling structural problem
+    Teuchos::RCP<ADAPTER::Structure> Structure() { return structure_; }
+
+    /// convert i,j,k into bin id
+    virtual int ConvertijkToGid(
+      int* ijk  ///< i,j,k to be converted into a bin id
+      );
+
+    /// get all bin ids for given range of ijk
+    void GidsInijkRange(
+      int* ijk_bound,   ///< given range of ijk
+      std::set<int>& binIds,   ///< all bin ids in the specified range
+      bool checkexistence   ///< check can be added whether the gids are on this proc
+      );
+
+    ///convert bin id into i,j,k
+    virtual void ConvertGidToijk(
+      int gid,  ///< bin id to be converted into i,j,k
+      int* ijk  ///< resulting i,j,k
+      );
+
+    // return gravity acceleration
+    LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
+
 
   protected:
 
@@ -101,14 +133,23 @@ namespace PARTICLE
     /// update the current time step
     virtual void Update();
 
+    /// calculate stresses, strains, energies
+    virtual void PrepareOutput();
+
     /// output particle time step
     virtual void Output();
 
     /// find XAABB and divide into bins using the cutoff radius
-    virtual void CreateBins();
+    virtual void CreateBins(Teuchos::RCP<DRT::Discretization> dis);
 
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();
+
+    // bins are redistributed according to the current fill level with particles
+    virtual void DynamicLoadBalancing();
+
+    // create graph for bin distribution
+    Teuchos::RCP<const Epetra_CrsGraph> CreateGraph();
 
     /// round robin loop to fill particles into its correct bin on according proc
     virtual void FillParticlesIntoBins(
@@ -133,15 +174,12 @@ namespace PARTICLE
 
     /// particle walls are set up and assigned to bins
     virtual void SetupParticleWalls(
-      Teuchos::RCP<DRT::Discretization> structdis
+      Teuchos::RCP<DRT::Discretization> basediscret
       );
 
     /// build connectivity from particle wall elements to bins
-    virtual void BuildElementToBinPointers();
-
-    /// convert i,j,k into bin id
-    virtual int ConvertijkToGid(
-      int* ijk  ///< i,j,k to be converted into a bin id
+    virtual void BuildElementToBinPointers(
+      bool wallpointer   ///< bool whether wall element pointer need rebuild
       );
 
     /// convert position into bin id
@@ -171,18 +209,11 @@ namespace PARTICLE
       int* ijk  ///< resulting i,j,k
       );
 
-    ///convert bin id into i,j,k
-    virtual void ConvertGidToijk(
-      int gid,  ///< bin id to be converted into i,j,k
-      int* ijk  ///< resulting i,j,k
-      );
-
-    /// get all bin ids for given range of ijk
-    void GidsInijkRange(
-      int* ijk_bound,   ///< given range of ijk
-      std::set<int>& binIds,   ///< all bin ids in the specified range
-      bool checkexistence   ///< check can be added whether the gids are on this proc
-      );
+    /// get 26 neighboring bin ids to binId (if existing)
+    void GetBinConnectivity(
+      int binId,   ///< bin id whose connectivity is asked for
+      std::vector<int>& binIds   ///< all neighboring bins on axes
+      );  
 
     /// get nodal coordinates of bin with given id
     void GetBinCorners(
@@ -195,6 +226,8 @@ namespace PARTICLE
       int binId   ///< bin id of which centroid is calculated
       );
 
+    /// assign wall elements to bins
+    void AssignWallElesToBins();
 
     //! @name particle related stuff
     //@{
@@ -215,12 +248,14 @@ namespace PARTICLE
 
     LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
 
+    Teuchos::RCP<ADAPTER::Structure> structure_;     ///< structural (wall) time integration
+
     Teuchos::RCP<DRT::Discretization> particlewalldis_;     ///< fully redundant particle wall discretization
 
-    //@}
+    Teuchos::RCP<LINALG::MapExtractor> wallextractor_;   ///< map extractor for particle wall
 
-    //! @name output discretization writer
-    Teuchos::RCP<IO::DiscretizationWriter> wall_output_;
+    bool moving_walls_;
+
     //@}
 
     //! @name miscellaneous stuff

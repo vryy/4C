@@ -262,6 +262,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--COHESIVE CRACK", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);

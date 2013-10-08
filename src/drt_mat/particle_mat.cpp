@@ -23,7 +23,9 @@ MAT::PAR::ParticleMat::ParticleMat(
   )
 : Parameter(matdata),
   density_(matdata->GetDouble("DENSITY")),
-  initialradius_(matdata->GetDouble("INITRADIUS"))
+  initialradius_(matdata->GetDouble("INITRADIUS")),
+  poissonratio_(matdata->GetDouble("NUE")),
+  young_(matdata->GetDouble("YOUNG"))
 {
 }
 

@@ -171,6 +171,17 @@ bool DRT::Discretization::DeleteNode(const int gid)
 }
 
 /*----------------------------------------------------------------------*
+ |  remove all nodes  (public)                               ghamm 10/13|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::DeleteNodes()
+{
+  node_.clear();
+  Reset();
+  CheckFilledGlobally();
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  delete an element (public)                               mwgee 10/08|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteElement(RCP<DRT::Element> ele)

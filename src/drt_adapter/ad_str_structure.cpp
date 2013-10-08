@@ -207,7 +207,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // create contact/meshtying solver only if contact/meshtying problem.
   //Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
 
-  if ((solver->Params().isSublist("Aztec Parameters") || solver->Params().isSublist("Belos Parameters"))
+  if (solver != Teuchos::null &&
+      (solver->Params().isSublist("Aztec Parameters") || solver->Params().isSublist("Belos Parameters"))
       &&
       solver->Params().isSublist("ML Parameters") // TODO what about MueLu?
       &&
@@ -324,15 +325,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   }
 
   // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output
-    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  // for multilevel monte carlo we do not need to write mesh in every run
-  bool perform_mlmc = Teuchos::getIntegralValue<int>((*mlmcp),"MLMC");
-  Teuchos::RCP<Teuchos::ParameterList> meshfreep
-      = Teuchos::rcp(new Teuchos::ParameterList (problem->MeshfreeParams()));
-  INPAR::MESHFREE::meshfreetype meshfreetype
-      = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(*meshfreep,"TYPE");
-  if (perform_mlmc!=true and meshfreetype!=INPAR::MESHFREE::particle)
+  Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  bool writeinitialmesh = DRT::INPUT::IntegralValue<bool>(sdyn,"WRITE_INITIAL_MESH");
+  if (writeinitialmesh)
   {
     output->WriteMesh(0, 0.0);
   }
@@ -448,6 +443,8 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+  if (linsolvernumber == (-2))
+    return Teuchos::null;
 
   solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                     actdis->Comm(),

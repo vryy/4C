@@ -284,7 +284,7 @@ namespace ADAPTER
     { structure_->ApplyCouplingState(velnp,name,dofset); }
 
     /// set forces due to interface with fluid, the force is expected external-force-like
-    virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce)
+    virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce)
     { structure_->SetForceInterface(iforce); }
 
     //! specific method for iterative staggered partitioned TSI

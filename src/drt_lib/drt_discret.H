@@ -797,6 +797,15 @@ public:
   virtual bool DeleteNode(const int gid);
 
   /*!
+  \brief Removes all nodes from discretization (Filled()==true NOT prerequisite)
+
+  \return Returns true upon successful deletion of all nodes
+
+  \note CheckFilledGlobally() is called to make sure all processors are informed.
+  */
+  virtual bool DeleteNodes();
+
+  /*!
   \brief Delete an element from the discretization (Filled()==true NOT prerequisite)
 
   Delete an element from the discretization. Element can either be ghosted or not.
