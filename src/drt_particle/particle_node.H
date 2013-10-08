@@ -134,7 +134,7 @@ public:
   /*!
   \brief Print this ParticleNode
   */
-  virtual void Print(ostream& os) const ;
+  virtual void Print(std::ostream& os) const ;
 
   /*!
   \brief Print this ParticleNode
@@ -158,7 +158,7 @@ protected:
 
 
 // << operator
-ostream& operator << (ostream& os, const PARTICLE::ParticleNode& particle);
+std::ostream& operator << (std::ostream& os, const PARTICLE::ParticleNode& particle);
 
 
 #endif  // #ifndef PARTICLE_NODE_H
