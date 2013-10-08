@@ -3879,8 +3879,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
 
     // fac_ = intpoints.IP().qwgt[gpid]*drs_ done in EvalShapeFuncAtBouIntPoint()
     const double timefac       = fldpara_->TimeFac();
-    //const double timefacpre    = fldpara_->TimeFacPre();
-    //const double timefacfacpre = fldpara_->TimeFacPre()    * fac_;
+    const double timefacpre    = fldpara_->TimeFacPre();
+    const double timefacfacpre = fldpara_->TimeFacPre()    * fac_;
     const double rhsfac        = fldpara_->TimeFacRhs()    * fac_;
     //const double rhsfacpre     = fldpara_->TimeFacRhsPre() * fac_;
     const double theta         = fldpara_->Theta();
@@ -4324,10 +4324,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
 
                     evaluated on FluidField(): flip sign because unitnormal_ points in opposite direction
                */
-                double timefacfacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacPre();
+                //double timefacfacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacPre();
                 elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) -=
                   (
-                        (timefacfacpre*fac_) * pfunct(inode) * unitnormal_(idof2) * pfunct(nnod)
+                        (timefacfacpre) * pfunct(inode) * unitnormal_(idof2) * pfunct(nnod)
                   );
              }
             else if (block == "Porofluid_Structure")
@@ -4337,10 +4337,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
 
                       evaluated on FluidField(): unitnormal_ points in wrong direction -> flip sign
                */
-              double timefacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacPre();
+              //double timefacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacPre();
               elemat1(inode*numdofpernode_+nsd_,nnod*numdofpernode_+idof2) +=
                                   - u_minus_vs_normalderiv(0,nnod*nsd_+idof2) * pfunct(inode) * timefacpre *fac* survivor(nnod) // no drs_ needed, since it is contained in the linearization w.r.t. nonunitnormal (normalderiv) -> timefacpre*fac instead of timefafacpre = timefacpre * fac_ (fac_ = fac*drs_)
-                                  + pfunct(inode) * unitnormal_(idof2) * timescale * pfunct(nnod) * (timefacpre*fac_);
+                                  + pfunct(inode) * unitnormal_(idof2) * timescale * pfunct(nnod) * (timefacpre);
             }
 
             else if (block == "Fluid_Porofluid")
@@ -4699,8 +4699,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
           /*
             Evaluated on FluidField() wears (+) in residual; multiplied by (-1) for RHS; switch sign because of opposite normal -> (+)
            */
-          double rhsfacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacRhsPre();
-          elevec1(inode*numdofpernode_+nsd_) += (rhsfacpre*fac_) * pfunct(inode) * normal_u_minus_vs;
+          //double rhsfacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacRhsPre();
+          elevec1(inode*numdofpernode_+nsd_) += rhsfac * pfunct(inode) * normal_u_minus_vs;
         } // block conti
 
         else if(block == "structure")

@@ -1357,7 +1357,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      const double timefacfac    = my::fldpara_->TimeFac()       * my::fac_;
      const double timefacfacpre = my::fldpara_->TimeFacPre()    * my::fac_;
      const double rhsfac        = my::fldpara_->TimeFacRhs()    * my::fac_;
-     const double rhsfacpre     = my::fldpara_->TimeFacRhsPre() * my::fac_;
+     //const double rhsfacpre     = my::fldpara_->TimeFacRhsPre() * my::fac_;
 
      // set velocity-based momentum residual vectors to zero
      lin_resM_Du.Clear();
@@ -1584,7 +1584,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
         }
       }
 
-      const double pressfac = press_*rhsfacpre;
+      const double pressfac = press_*rhsfac;
 
       for (int vi=0; vi<my::nen_; ++vi)
       {
@@ -1602,7 +1602,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
       // as it evaluates a whole different pressure equation
       EvaluatePressureEquation( params,
                                 timefacfacpre,
-                                rhsfacpre,
+                                rhsfac,
                                 dphi_dp,
                                 dphi_dJ,
                                 dphi_dJdp,
@@ -1633,7 +1633,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
             0.0,
             timefacfac,
             timefacfacpre,
-            rhsfacpre);
+            rhsfac);
      }
 
      // 7) reactive stabilization term
@@ -4622,10 +4622,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSConti()
   {
 
     // rhs of continuity equation
-    my::rhscon_ = 1.0/my::fldpara_->Dt()/my::fldpara_->ThetaPre() * histcon_;
+    my::rhscon_ = 1.0/my::fldpara_->Dt()/my::fldpara_->Theta() * histcon_;
 
-    my::conres_old_ = my::fldpara_->ThetaPre()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
-                      + press_/my::fldpara_->Dt()/my::fldpara_->ThetaPre() - my::rhscon_;
+    my::conres_old_ = my::fldpara_->Theta()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
+                      + press_/my::fldpara_->Dt()/my::fldpara_->Theta() - my::rhscon_;
   }
   else
   {
