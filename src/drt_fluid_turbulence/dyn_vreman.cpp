@@ -41,6 +41,12 @@ FLD::Vreman::Vreman(RCP<DRT::Discretization>     actdis             ,
     physicaltype_       (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
 {
 
+  Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
+                                      pbcmapmastertoslave_,
+                                      params_             ));
+  //Initialize Boxfilter
+  Boxf_->InitializeVreman();
+
   return;
 }
 
@@ -64,6 +70,14 @@ void FLD::Vreman::AddScatra(
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
   scatra_pbcmapmastertoslave_ = scatra_pbcmapmastertoslave;
+
+  Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_            ,
+                                      scatra_pbcmapmastertoslave_,
+                                      params_             ));
+
+  //Initialize Boxfilter
+  Boxfsc_->InitializeVremanScatra(scatradiscret_,scatratype_,scatra_pbcmapmastertoslave_);
+
   return;
 }
 
@@ -80,17 +94,14 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfCv(
     const Teuchos::RCP<const Epetra_Vector>             dirichtoggle)
 {
   const Epetra_Map* nodecolmap = discret_->NodeColMap();
-  Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
-                                      pbcmapmastertoslave_,
-                                      params_             ));
+
 
   col_filtered_strainrate_         = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
   col_filtered_alphaij_         = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
   col_filtered_expression_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
   col_filtered_alpha2_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
 
-  //Initialize Boxfilter
-  Boxf_->InitializeVreman();
+
   // perform filtering
   Boxf_->ApplyFilter(velocity,scalar,thermpress,dirichtoggle);
 
@@ -115,16 +126,13 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfDt(
   )
 {
   const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
-  Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_            ,
-                                      scatra_pbcmapmastertoslave_,
-                                      params_             ));
+
   col_filtered_phi_         = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
   col_filtered_phi2_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
   col_filtered_phiexpression_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap,true));
   col_filtered_alphaijsc_         = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
 
-  //Initialize Boxfilter
-  Boxfsc_->InitializeVremanScatra(scatradiscret_,scatratype_,scatra_pbcmapmastertoslave_);
+
   // perform filtering
   Boxfsc_->ApplyFilterScatra(velocity,scalar,thermpress,dirichtoggle);
   Boxfsc_->GetFilteredPhi(col_filtered_phi_);
@@ -176,7 +184,7 @@ double FLD::Vreman::DynVremanComputeCv()
   cv_numerator_volumeav=(*Cv_num_denom)[0];
   cv_denominator_volumeav=(*Cv_num_denom)[1];
 //multiply with viscosity
-  if (sqrt(cv_denominator_volumeav*cv_denominator_volumeav)<1.0e-15)//the denominator might also become negative
+  if (sqrt(cv_denominator_volumeav*cv_denominator_volumeav)<1.0e-12)//the denominator might also become negative
     Cv=0.0; //constant vreman
   else
     Cv=(-1.0) * visc / 2.0 *cv_numerator_volumeav/cv_denominator_volumeav;
@@ -187,6 +195,7 @@ double FLD::Vreman::DynVremanComputeCv()
     if (discret_->Comm().MyPID()==0)
       std::cout << "!!   Vreman constant negative --> clipping: Cv=0.0   !!" << std::endl;
   }
+
   //std::cout <<"Vreman constant:   "<< Cv << std::endl;
   params_.set<double>("C_vreman",Cv);
 
@@ -213,32 +222,33 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList&  extraparams)
   //double Sc=visc/diffus;
 
   // generate a parameterlist for communication and control
-  Teuchos::ParameterList calc_vreman_params;
-  calc_vreman_params.set<int>("action",SCATRA::calc_vreman_scatra);
-  calc_vreman_params.set<int>("scatratype",scatratype_);
-  calc_vreman_params.set("col_filtered_phi",  col_filtered_phi_);
-  calc_vreman_params.set("col_filtered_phi2",  col_filtered_phi2_);
-  calc_vreman_params.set("col_filtered_phiexpression",  col_filtered_phiexpression_);
-  calc_vreman_params.set("col_filtered_alphaijsc",  col_filtered_alphaijsc_);
+  Teuchos::ParameterList calc_vreman_params_scatra;
+  calc_vreman_params_scatra.set<int>("action",SCATRA::calc_vreman_scatra);
+  calc_vreman_params_scatra.set<int>("scatratype",scatratype_);
+  calc_vreman_params_scatra.set("col_filtered_phi",  col_filtered_phi_);
+  calc_vreman_params_scatra.set("col_filtered_phi2",  col_filtered_phi2_);
+  calc_vreman_params_scatra.set("col_filtered_phiexpression",  col_filtered_phiexpression_);
+  calc_vreman_params_scatra.set("col_filtered_alphaijsc",  col_filtered_alphaijsc_);
   // loop all elements on this proc (excluding ghosted ones)
   Teuchos::RCP<Epetra_SerialDenseVector> Dt_num_denom
     = Teuchos::rcp(new Epetra_SerialDenseVector(2));
   // call loop over elements (assemble nothing)
-  scatradiscret_->EvaluateScalars(calc_vreman_params, Dt_num_denom);
+  scatradiscret_->EvaluateScalars(calc_vreman_params_scatra, Dt_num_denom);
   scatradiscret_->ClearState();
   dt_numerator_volumeav=(*Dt_num_denom)[0];
   dt_denominator_volumeav=(*Dt_num_denom)[1];
-  if (sqrt(dt_denominator_volumeav*dt_denominator_volumeav)<1.0e-15)//the denominator might also become negative
+  if (sqrt(dt_denominator_volumeav*dt_denominator_volumeav)<1.0e-12)//the denominator might also become negative
       Dt=0.0; //constant vreman
     else
       Dt=1.0 / diffus *dt_numerator_volumeav/dt_denominator_volumeav;
+
   //remark:
   //Dt does not contain Cv, since Cv cancells out during the calculation of the subgrid diffusivity
 
-  Teuchos::ParameterList *  modelparams =&(extraparams.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams_scatra =&(extraparams.sublist("TURBULENCE MODEL"));
 //  if (discret_->Comm().MyPID()==0)
 //    std::cout<< Dt << std::endl;
-  modelparams->set<double>("Dt_vreman",Dt);
+  modelparams_scatra->set<double>("Dt_vreman",Dt);
   params_.set<double>("Dt_vreman",Dt);
   return;
 } // end FLD::Vreman::DynVremanComputeDt()

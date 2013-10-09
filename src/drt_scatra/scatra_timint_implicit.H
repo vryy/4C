@@ -495,7 +495,7 @@ public:
 
   ///! get access to dynamic Smagorinsky class of fluid time integration
   void AccessDynSmagFilter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag);
-
+  ///! get access to dynamic Vreman class of fluid time integration
   void AccessVreman(Teuchos::RCP<FLD::Vreman> vrem);
 
   ///! calculate intermediate solution to determine forcing for homogeneous isotropic turbulence

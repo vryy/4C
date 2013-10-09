@@ -811,8 +811,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
       if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
       {
-        double dt = turbulencelist.get<double>("Dt_vreman");
-        Cs=dt;
+        double D_T = turbulencelist.get<double>("Dt_vreman");
+        Cs=D_T;
       }
 
       // get fine-scale values
@@ -2946,7 +2946,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // in case of multifrcatal subgrid-scales, read Schmidt number
     if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales or sgvel_
-        or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_vreman)
+        or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
     {
       //access fluid discretization
       Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;

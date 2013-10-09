@@ -46,7 +46,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
 
   // do preparations first
   // ---------------------------------------------
-  LINALG::Matrix<nsd_,nsd_> vderxy;
+  LINALG::Matrix<nsd_,nsd_> vderxy (true);
   double alpha2 = 0.0;
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
@@ -122,6 +122,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
     (*phi_hat)[rr] = tmp;
     phi2_hat += tmp*gradphi_(rr);
   }
+
   //calculate vreman part
   if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
@@ -140,11 +141,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
       for (int rr=0;rr<nsd_;++rr)
       {
         vderxy(nn,rr)=derxy_(rr,0)*evelnp_(nn,0);
-        for (int mm=1;mm<8;++mm)
+        for (int mm=1;mm<nen_;++mm)
         {
           vderxy(nn,rr)+=derxy_(rr,mm)*evelnp_(nn,mm);
         }
-        (*alphaijsc_hat)[rr][nn]=vderxy(nn,rr);
+        (*alphaijsc_hat)[rr][nn]=vderxy(nn,rr); //change indices to make compatible to paper
         alpha2 += vderxy(nn,rr)*vderxy(nn,rr);
       }
     }
@@ -159,7 +160,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
     bbeta = beta00 * beta11 - beta01 * beta01
           + beta00 * beta22 - beta02 * beta02
           + beta11 * beta22 - beta12 * beta12;
-    if (alpha2 < 1.0e-15)
+    if (alpha2 < 1.0e-12)
       (phiexpression_hat)=0.0;
     else
       (phiexpression_hat) = (phi2_hat) * sqrt(bbeta/alpha2);
@@ -349,7 +350,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::        scatra_calc_vreman_dt(
   {
   double phi_hat2=0.0;
   LINALG::Matrix<9,nen_> ealphaijsc_hat(true)                 ;
-  LINALG::Matrix<nsd_,nen_> ephi_hat                            ;
+  LINALG::Matrix<nsd_,nen_> ephi_hat(true)                            ;
   LINALG::Matrix<1,nen_> ephi2_hat(true)                           ;
   LINALG::Matrix<1,nen_> ephiexpression_hat(true)                 ;
   LINALG::Matrix<nsd_,nsd_> alphaijsc_hat(true);
@@ -361,6 +362,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::        scatra_calc_vreman_dt(
   DRT::UTILS::ExtractMyNodeBasedValues(ele,ephi2_hat,col_filtered_phi2,1);
   DRT::UTILS::ExtractMyNodeBasedValues(ele,ephiexpression_hat,col_filtered_phiexpression,1);
   DRT::UTILS::ExtractMyNodeBasedValues(ele,ealphaijsc_hat,col_filtered_alphaijsc,nsd_*nsd_);
+  // use one-point Gauss rule to do calculations at the element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  double volume = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0,0);
 
   phi_hat.Multiply(ephi_hat,funct_);
   phi2_hat.Multiply(ephi2_hat,funct_);
@@ -379,7 +383,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::        scatra_calc_vreman_dt(
     }
   }
 
-
   for (int rr=0;rr<nsd_;++rr)
   {
     phi_hat2+=phi_hat(rr,0)*phi_hat(rr,0);
@@ -389,9 +392,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::        scatra_calc_vreman_dt(
 
   //calculate vreman part
   {
-    // use one-point Gauss rule to do calculations at the element center
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-    double volume = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0,0);
 
     double beta00;
     double beta11;
@@ -422,12 +422,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::        scatra_calc_vreman_dt(
     bbeta = beta00 * beta11 - beta01 * beta01
           + beta00 * beta22 - beta02 * beta02
           + beta11 * beta22 - beta12 * beta12;
-    if (alpha2 < 1.0e-15)
+    if (alpha2 < 1.0e-12)
       phiexpressionf_hat=0.0;
     else
       phiexpressionf_hat = (phi_hat2) * sqrt(bbeta/alpha2);
 
     dt_numerator=phiexpressionf_hat-phiexpression_hat(0,0);
+//    std::cout << "scatra_ele_impl_turb_service.cpp  dt_numerator  " << dt_numerator << std::endl;
+//    std::cout << "scatra_ele_impl_turb_service.cpp  dt_denominator  " << dt_denominator << std::endl;
+//    std::cout << "scatra_ele_impl_turb_service.cpp  phi_hat2  " << phi_hat2 << std::endl;
+//    std::cout << "scatra_ele_impl_turb_service.cpp  phi2_hat  " << phi2_hat << std::endl;
+//    std::cout << "scatra_ele_impl_turb_service.cpp  alpha2  " << alpha2 << std::endl;
   }
 
 
@@ -837,7 +842,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
     double sgviscwocv=0.0;
     double Dt=Cs;
 
-    LINALG::Matrix<nsd_,nsd_> velderxy;
+    LINALG::Matrix<nsd_,nsd_> velderxy(true);
 
     velderxy.MultiplyNT(econvelnp_,derxy_);
 
@@ -868,7 +873,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
                 + velderxy(2,1) * velderxy(2,1)
                 + velderxy(2,2) * velderxy(2,2);
 
-    if(alphavreman<1.0E-15)
+    if(alphavreman<1.0E-12)
       sgviscwocv=0.0;
     else
       sgviscwocv=   sqrt(bbeta / alphavreman);
@@ -877,7 +882,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
     //remark: Cs corresponds to Dt, calculated in the vreman class
     //        The vreman constant Cv is not required here, since it cancelles out with the
     //        vreman constant omitted during the calculation of D_t
-    if (Dt<=1.0E-15) sgdiff_[k]=0.0;
+    if (Dt<=1.0E-12) sgdiff_[k]=0.0;
     else
       sgdiff_[k] = densnp_[k] * sgviscwocv / (Dt);
 

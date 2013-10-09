@@ -719,6 +719,12 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
         else if (physical_turbulence_model == "Dynamic_Vreman")
     {
       turb_mod_action_ = INPAR::FLUID::dynamic_vreman;
+      if(turbmodelparamssgvisc.get<std::string>("FILTER_WIDTH","CubeRootVol")=="Direction_dependent")
+        vrfi_ = INPAR::FLUID::dir_dep;
+      else if(turbmodelparamssgvisc.get<std::string>("FILTER_WIDTH","CubeRootVol")=="Minimum_length")
+        vrfi_ = INPAR::FLUID::min_len;
+      else
+        vrfi_ = INPAR::FLUID::cuberootvol;
     }
     else
     {

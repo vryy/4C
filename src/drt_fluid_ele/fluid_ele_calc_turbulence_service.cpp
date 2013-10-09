@@ -306,7 +306,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
         q_sq_ = 0.0;
     }
   }
-
   //Vreman turbulence model according to
   //"An eddy-viscosity subgrid-scale model for turbulent shear flow: Algebraic theory and applications", 2004
   else if (fldpara_->TurbModAction() == INPAR::FLUID::vreman or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
@@ -452,7 +451,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
           + velderxy(2,1) * velderxy(2,1)
           + velderxy(2,2) * velderxy(2,2);
 
-    if(alphavreman<1.0E-15)
+    if(alphavreman<1.0E-12)
       sgvisc_=0.0;
     else
     {
@@ -542,7 +541,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
         q_sq_ = 0.0;
     }
   }
-
   return;
 }
 

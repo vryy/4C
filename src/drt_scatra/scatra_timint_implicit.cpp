@@ -578,6 +578,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     }
     else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
     {
+      // equivalent to dynamic smagorinsky
       turbmodel_ = INPAR::FLUID::dynamic_vreman;
     }
 

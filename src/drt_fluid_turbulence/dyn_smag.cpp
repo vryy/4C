@@ -131,6 +131,10 @@ FLD::DynSmagFilter::DynSmagFilter(
 
   }
 
+  Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
+                                      pbcmapmastertoslave_,
+                                      params_             ));
+
   return;
 }
 
@@ -156,6 +160,14 @@ void FLD::DynSmagFilter::AddScatra(
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
   scatra_pbcmapmastertoslave_ = scatra_pbcmapmastertoslave;
+
+  Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_            ,
+                                      scatra_pbcmapmastertoslave_,
+                                      params_             ));
+
+
+  Boxfsc_->AddScatra(scatradiscret_,scatratype_,scatra_pbcmapmastertoslave_);
+
   return;
 }
 
@@ -175,9 +187,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
 {
 
   const Epetra_Map* nodecolmap = discret_->NodeColMap();
-  Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
-                                      pbcmapmastertoslave_,
-                                      params_             ));
+
 
   // perform filtering
   Boxf_->ApplyFilter(velocity,scalar,thermpress,dirichtoggle);
@@ -247,12 +257,6 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
 {
 
   const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
-  Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_            ,
-                                      scatra_pbcmapmastertoslave_,
-                                      params_             ));
-
-
-  Boxfsc_->AddScatra(scatradiscret_,scatratype_,scatra_pbcmapmastertoslave_);
 
   // perform filtering
   Boxfsc_->ApplyFilterScatra(velocity,scalar,thermpress,dirichtoggle);
