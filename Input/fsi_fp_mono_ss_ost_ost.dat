@@ -89,33 +89,33 @@ NDSURF                          3
 NDVOL                           3
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
-//                              fsi_str_nodes
+// fsi_str_nodes
 E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-//                              str_dry_nodes
+// str_dry_nodes
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
-//                              fluid_volume
+// fluid_volume
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//                              str_vol
+// str_vol
 E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-//                              fluid_outflow
+// fluid_outflow
 E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
-//                              fluid_outflow
+// fluid_outflow
 E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
-//                              fluid_volume
+// fluid_volume
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
-//                              fsi_fluid_interface
+// fsi_fluid_interface
 E 1 - 1
-//                              fsi_structure_interface
+// fsi_structure_interface
 E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 13 DNODE 1
