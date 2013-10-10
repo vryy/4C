@@ -5365,6 +5365,9 @@ void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      di
   return;
 }
 
+/*------------------------------------------------------------------------------*
+| motility assay output                                  (private) mueller 10/13|
+*-------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      disrow,
                                                     const double&             timen,
                                                     const double&             dt,
