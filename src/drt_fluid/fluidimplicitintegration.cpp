@@ -262,11 +262,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     std::vector<DRT::Condition*> flowdeppressuresurf;
     discret_->GetCondition("SurfaceFlowDepPressure",flowdeppressuresurf);
 
-    if (flowdeppressureline.size() > 4 or flowdeppressuresurf.size() > 4)
+    // check number of boundary conditions
+    if (flowdeppressureline.size() > 0 or flowdeppressuresurf.size() > 0)
     {
-      // check number of boundary conditions
-      dserror("More than four flow-dependent pressure line or surface conditions assigned -> correction required!");
-
       // initialize vectors for flow rate and volume
       flowratenp_(true);
       flowratenpi_(true);
@@ -276,7 +274,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       flowvolumenp_(true);
       flowvolumenpi_(true);
       flowvolumen_(true);
-      flowvolumenm_(true);      
+      flowvolumenm_(true);         
+
+      if (flowdeppressureline.size() > 4 or flowdeppressuresurf.size() > 4)
+        dserror("More than four flow-dependent pressure line or surface conditions assigned -> correction required!");
     }
   }
 
