@@ -129,17 +129,20 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
     // if the active set has changed we have to rebuild the preconditioner
     if(linSysParams->isSublist("Linear System properties")) {
       Teuchos::ParameterList & linSystemProps = linSysParams->sublist("Linear System properties");
-      Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-      epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+      
+      if(linSystemProps.isParameter("contact activeDofMap")) {
+	Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+	epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
 
-      if(epActiveDofMap->NumMyElements() != nActiveDofs_) {
-        nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
-        bAllowReuse = false; // active set has changed -> force preconditioner to be rebuilt
-      }
-      else {
-        // active set has not changed. preconditioner may be reused
-        // check other criteria
-        nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+	if(epActiveDofMap->NumMyElements() != nActiveDofs_) {
+	  nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+	  bAllowReuse = false; // active set has changed -> force preconditioner to be rebuilt
+	}
+	else {
+	  // active set has not changed. preconditioner may be reused
+	  // check other criteria
+	  nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+	}
       }
     }
   }
