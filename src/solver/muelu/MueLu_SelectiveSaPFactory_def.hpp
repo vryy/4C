@@ -209,8 +209,7 @@ namespace MueLu {
           bool doTranspose=false;
           bool PtentHasFixedNnzPerRow=true;
 #ifdef HAVE_Trilinos_Q3_2013
-          RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
-          Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP,*fos, PtentHasFixedNnzPerRow);
+          Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP,GetOStream(Statistics2,0), PtentHasFixedNnzPerRow);
 #else
           Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
 #endif
@@ -366,6 +365,8 @@ namespace MueLu {
     Teuchos::Array<Scalar> valout(maxNNz,0.0);
     size_t curNNz = 0; // number nnz to be replaced in current row
 
+    DinvAP->resumeFill();
+
     // loop over local rows
     for(size_t row=0; row<DinvAP->getNodeNumRows(); row++) {
         // extract data from current row (grid)
@@ -384,6 +385,8 @@ namespace MueLu {
          }
         DinvAP->replaceLocalValues(row, indout.view(0,curNNz), valout.view(0,curNNz));
     }
+
+    DinvAP->fillComplete(DinvAP->getDomainMap(), DinvAP->getRangeMap());
 
     return DinvAP;
 #else

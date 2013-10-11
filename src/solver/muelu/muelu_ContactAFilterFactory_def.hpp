@@ -116,35 +116,42 @@ namespace MueLu {
     bool bh = false;
     bool bi = false;
     bool bj = false;
+
+    // declare variables for reading values of current row
+    Teuchos::ArrayView<const LocalOrdinal> indices;
+    Teuchos::ArrayView<const Scalar> vals;
+
+    // reserve enough memory to fill Aout with rows (indices/values)
+    size_t maxNNz = Ain->getNodeMaxNumRowEntries();
+    Teuchos::Array<GlobalOrdinal> indout(maxNNz,0);
+    Teuchos::Array<Scalar> valout(maxNNz,0.0);
+
+    // declare helper variables
+    bool isBlock1, isBlock2;
+    size_t nNonzeros = 0;
+    LocalOrdinal colBlockId = -1;
+
     GetOStream(Statistics0, 0) << "Filtering: ";
     for(size_t row=0; row<numLocalRows; row++) {
         // get global row id
         GlobalOrdinal grid = Ain->getRowMap()->getGlobalElement(row); // global row id
 
         // check in which submap of mapextractor grid belongs to
-        bool isBlock1 = DofMap1->isNodeGlobalElement(grid);
-        bool isBlock2 = DofMap2->isNodeGlobalElement(grid);
+        isBlock1 = DofMap1->isNodeGlobalElement(grid);
+        isBlock2 = DofMap2->isNodeGlobalElement(grid);
 
-	// this can happen due to the stupid permutation strategy which mixes up slave and master dofs or interface and inner dofs
+        // this can happen due to the stupid permutation strategy which mixes up slave and master dofs or interface and inner dofs
         //TEUCHOS_TEST_FOR_EXCEPTION(isBlock1 && isBlock2 == true, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: row is in subblock 1 and subblock 2? Error.");
 
-        size_t nnz = Ain->getNumEntriesInLocalRow(row);
-
-        Teuchos::ArrayView<const LocalOrdinal> indices;
-        Teuchos::ArrayView<const Scalar> vals;
+        //size_t nnz = Ain->getNumEntriesInLocalRow(row);
         Ain->getLocalRowView(row, indices, vals);
 
-        TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<size_t>(indices.size()) != nnz, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: number of nonzeros not equal to number of indices? Error.");
+        //TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<size_t>(indices.size()) != nnz, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: number of nonzeros not equal to number of indices? Error.");
 
         // just copy all values in output
-        Teuchos::ArrayRCP<GlobalOrdinal> indout(indices.size(),Teuchos::ScalarTraits<GlobalOrdinal>::zero());
-        Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
-        size_t nNonzeros = 0;
-
-        LocalOrdinal colBlockId = -1;
+        nNonzeros = 0;
+        colBlockId = -1;
         for(size_t i=0; i<(size_t)indices.size(); i++) {
-            //Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMapData->getData(0);
-
             colBlockId = Teuchos::as<LocalOrdinal>(colBlockData[indices[i]]); // LID -> colBlockID
 
             // colBlockId can be
@@ -166,10 +173,10 @@ namespace MueLu {
               nNonzeros++;
             }
         }
-        indout.resize(nNonzeros);
-        valout.resize(nNonzeros);
+        //indout.resize(nNonzeros);
+        //valout.resize(nNonzeros);
 
-        Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,indout.size()), valout.view(0,valout.size()));
+        Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,nNonzeros), valout.view(0,nNonzeros));
 
         // this is somewhat expensive, but do communication for debug output
         double pPerCent = Teuchos::as<Scalar>(row) / Teuchos::as<Scalar>(numLocalRows);
