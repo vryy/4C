@@ -96,7 +96,7 @@ void LINALG::SOLVER::AztecSolver::Setup(
   // after this call, the solver can access the preconditioner object using the
   // Preconditioner() function.
   int  reuse  = azlist.get("reuse",0);
-  bool create = reset or not Ncall() or not reuse or ( Ncall() % reuse )==0;
+  bool create = AllowReusePreconditioner(reuse, reset)==false;
   if ( create )
   {
     ncall_ = 0;

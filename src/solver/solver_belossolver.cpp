@@ -100,8 +100,8 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
 #endif
 #endif
 
-  int reuse = belist.get("reuse",0); // TODO: fix me!
-  bool create = not Ncall() or not reuse or (Ncall() % reuse ) == 0;
+  int reuse = belist.get("reuse",0);
+  bool create = AllowReusePreconditioner(reuse, reset)==false;
   if (create)
   {
     ncall_ = 0;

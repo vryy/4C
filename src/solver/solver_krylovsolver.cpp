@@ -89,6 +89,7 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
   A_              = Teuchos::null;
   x_              = Teuchos::null;
   b_              = Teuchos::null;
+  nActiveDofs_    = 0;
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q1_2013
   data_           = Teuchos::null;
@@ -101,6 +102,71 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
 int LINALG::SOLVER::KrylovSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
 {
   return preconditioner_->ApplyInverse( X, Y );
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
+    int reuse, // reuse flag from Aztec/Belos parameter list (AZREUSE)
+    bool reset // reset flag (user given from outside)
+    )
+{
+  bool bAllowReuse = true;  // default: allow reuse of preconditioner
+
+  // first, check some parameters with information that has to be updated
+  Teuchos::ParameterList* linSysParams = NULL;
+  if(Params().isSublist("Aztec Parameters")) {
+    Teuchos::ParameterList& reflinSysParams = Params().sublist("Aztec Parameters");
+    linSysParams = &reflinSysParams;
+  }
+  else if (Params().isSublist("Belos Parameters")) {
+    Teuchos::ParameterList& reflinSysParams = Params().sublist("Belos Parameters");
+    linSysParams = &reflinSysParams;
+  }
+
+  if(linSysParams!=NULL) {
+    // check, whether active set has changed in structural contact problems
+    // if the active set has changed we have to rebuild the preconditioner
+    if(linSysParams->isSublist("Linear System properties")) {
+      Teuchos::ParameterList & linSystemProps = linSysParams->sublist("Linear System properties");
+      Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+      epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+
+      if(epActiveDofMap->NumMyElements() != nActiveDofs_) {
+        nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+        bAllowReuse = false; // active set has changed -> force preconditioner to be rebuilt
+      }
+      else {
+        // active set has not changed. preconditioner may be reused
+        // check other criteria
+        nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+      }
+    }
+  }
+
+  // true, if preconditioner must not reused but is to re-created!
+  bool create = reset or not Ncall() or not reuse or ( Ncall() % reuse )==0;
+  if(create) bAllowReuse = false; // we have to create a new preconditioner
+
+  // here, each processor has its own local decision made
+  // bAllowReuse = true -> preconditioner can be reused
+  // bAllowReuse = false -> preconditioner has to be recomputed
+  // If one or more prorcessors decide that the preconditioner has to be recomputed
+  // all of the processors have to recompute it
+
+  // synchronize results of all processors
+  // all processors have to do the same (either recompute preconditioner or allow reusing it)
+  int nProc = comm_.NumProc();
+  int lAllowReuse = bAllowReuse == true ? 1 : 0;
+  int gAllowReuse = 0;
+  comm_.SumAll(&lAllowReuse, &gAllowReuse, 1);
+
+  if(gAllowReuse == nProc)
+    bAllowReuse = true;
+  else
+    bAllowReuse = false;
+
+  return bAllowReuse;
 }
 
 //----------------------------------------------------------------------------------
@@ -364,6 +430,7 @@ void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(const Teuchos::RCP<Epetra
   Teuchos::RCP<const Epetra_CrsMatrix> epPermPMatrix  = GetOperator("permP",  PermFact_);             // row permutation matrix
   Teuchos::RCP<const Epetra_CrsMatrix> epPermScalingMatrix = GetOperator("permScaling",PermFact_); // leftScaling matrix
 
+#if 1
   // P_trafo*b
   Teuchos::RCP<Epetra_MultiVector> btemp1 = Teuchos::rcp(new Epetra_MultiVector(*b));
   epPermPMatrix->Multiply(false, *b, *btemp1);
@@ -376,6 +443,16 @@ void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(const Teuchos::RCP<Epetra
   b_ = b;   // note b is permuted
   A_ = xEpPermCrsMat;//xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
 
+#else
+  Teuchos::RCP<Epetra_MultiVector> btemp1 = Teuchos::rcp(new Epetra_MultiVector(*b));
+  epPermScalingMatrix->Multiply(false, *b, *btemp1);
+
+  // set
+  // b_ = permP * b;
+  // A_ = permQ^T * A * permP
+  b_ = btemp1;   // note b is permuted
+  A_ = xEpPermCrsMat;//xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
+#endif
 }
 
 //----------------------------------------------------------------------------------

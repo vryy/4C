@@ -75,6 +75,11 @@ class KrylovSolver : public SolverType
 
   protected:
 
+  /// return true, if preconditoner can be reused
+  /// reuse (input): AZREUSE from parameter list
+  /// reset (input): force preconditioner to be rebuilt
+  bool AllowReusePreconditioner(int reuse, bool reset);
+
   //! function for creating preconditioner object
   void CreatePreconditioner(
     Teuchos::ParameterList & azlist,
@@ -106,9 +111,18 @@ class KrylovSolver : public SolverType
   //! preconditioner object
   Teuchos::RCP<PreconditionerType> preconditioner_;
 
+  private:
+  //! number of active DOFs in structural contact simulations.
+  //! This is used to check whether preconditioner can be reused or not.
+  //! Member variable only used for structural contact problems with the
+  //! "contact activeDofMap" parameter in the "Linear System properties"
+  //! parameter list set.
+  int                              nActiveDofs_;
+
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q1_2013
 
+  protected:
   //! @name Permutation methods.
   //@{
 
