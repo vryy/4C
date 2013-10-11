@@ -309,9 +309,10 @@ namespace MueLu {
       }
     }
 
+    // check which are necessary and which not
     Teuchos::RCP<Export> exporter = ExportFactory::Build(gPtentColVec->getMap(), gPtentDomVec->getMap());
     gPtentDomVec->doExport(*gPtentColVec,*exporter,Xpetra::ABSMAX);  // communicate blocked gcolids to all procs
-    gPtentColVec->doImport(*gPtentDomVec,*exporter,Xpetra::INSERT);
+    //gPtentColVec->doImport(*gPtentDomVec,*exporter,Xpetra::INSERT);
 
     Teuchos::RCP<Vector> gDinvAPColVec = VectorFactory::Build(DinvAP->getColMap());
     Teuchos::RCP<Import> importer = ImportFactory::Build(gPtentDomVec->getMap(), gDinvAPColVec->getMap());
@@ -349,7 +350,43 @@ namespace MueLu {
 #endif
 
     // 4) remove columns from DinvAP
+#if 1
 
+    // replace columns
+
+    Teuchos::ArrayRCP<const Scalar > gDinvAPColVecData = gDinvAPColVec->getData(0);
+
+    // arrays to extract data from AP matrix
+    Teuchos::ArrayView<const LocalOrdinal> indices;
+    Teuchos::ArrayView<const Scalar> vals;
+
+    // empty arrays to store column indices to override
+    size_t maxNNz = DinvAP->getNodeMaxNumRowEntries();
+    Teuchos::Array<GlobalOrdinal> indout(maxNNz,0);
+    Teuchos::Array<Scalar> valout(maxNNz,0.0);
+    size_t curNNz = 0; // number nnz to be replaced in current row
+
+    // loop over local rows
+    for(size_t row=0; row<DinvAP->getNodeNumRows(); row++) {
+        // extract data from current row (grid)
+        DinvAP->getLocalRowView(row, indices, vals);
+
+        // reset number of indices to override to zero
+        curNNz = 0;
+
+        for(size_t i=0; i<(size_t)indices.size(); i++) {
+           if(gDinvAPColVecData[indices[i]] > 0.0) {
+             // skip this column, explicitely set the value to zero
+             indout[curNNz] = indices[i];
+             valout[curNNz] = 0.0;
+             curNNz++;
+           }
+         }
+        DinvAP->replaceLocalValues(row, indout.view(0,curNNz), valout.view(0,curNNz));
+    }
+
+    return DinvAP;
+#else
      // create new empty Operator
      RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(DinvAP->getRowMap(),DinvAP->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
 
@@ -399,6 +436,7 @@ namespace MueLu {
      ///////////////////////// EXPERIMENTAL
 
      return Aout;
+#endif
   }
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
