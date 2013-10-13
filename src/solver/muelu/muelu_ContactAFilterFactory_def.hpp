@@ -117,15 +117,6 @@ namespace MueLu {
     bool bi = false;
     bool bj = false;
 
-    // declare variables for reading values of current row
-    Teuchos::ArrayView<const LocalOrdinal> indices;
-    Teuchos::ArrayView<const Scalar> vals;
-
-    // reserve enough memory to fill Aout with rows (indices/values)
-    size_t maxNNz = Ain->getNodeMaxNumRowEntries();
-    Teuchos::Array<GlobalOrdinal> indout(maxNNz,0);
-    Teuchos::Array<Scalar> valout(maxNNz,0.0);
-
     // declare helper variables
     bool isBlock1, isBlock2;
     size_t nNonzeros = 0;
@@ -144,11 +135,16 @@ namespace MueLu {
         //TEUCHOS_TEST_FOR_EXCEPTION(isBlock1 && isBlock2 == true, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: row is in subblock 1 and subblock 2? Error.");
 
         //size_t nnz = Ain->getNumEntriesInLocalRow(row);
+        Teuchos::ArrayView<const LocalOrdinal> indices;
+        Teuchos::ArrayView<const Scalar> vals;
         Ain->getLocalRowView(row, indices, vals);
 
         //TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<size_t>(indices.size()) != nnz, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: number of nonzeros not equal to number of indices? Error.");
 
         // just copy all values in output
+        Teuchos::ArrayRCP<GlobalOrdinal> indout(indices.size(),Teuchos::ScalarTraits<GlobalOrdinal>::zero());
+        Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
+
         nNonzeros = 0;
         colBlockId = -1;
         for(size_t i=0; i<(size_t)indices.size(); i++) {
@@ -173,10 +169,10 @@ namespace MueLu {
               nNonzeros++;
             }
         }
-        //indout.resize(nNonzeros);
-        //valout.resize(nNonzeros);
+        indout.resize(nNonzeros);
+        valout.resize(nNonzeros);
 
-        Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,nNonzeros), valout.view(0,nNonzeros));
+        Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,indout.size()), valout.view(0,valout.size()));
 
         // this is somewhat expensive, but do communication for debug output
         double pPerCent = Teuchos::as<Scalar>(row) / Teuchos::as<Scalar>(numLocalRows);

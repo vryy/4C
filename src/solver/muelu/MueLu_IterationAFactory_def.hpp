@@ -56,15 +56,6 @@ namespace MueLu {
     // create new empty Operator
     RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
 
-    // declare array views for getLocalRowView
-    Teuchos::ArrayView<const LocalOrdinal> indices;
-    Teuchos::ArrayView<const Scalar> vals;
-
-    // reserve enough memory to fill Aout with rows (indices/values)
-    size_t maxNNz = Ain->getNodeMaxNumRowEntries();
-    Teuchos::Array<GlobalOrdinal> indout(maxNNz,0);
-    Teuchos::Array<Scalar> valout(maxNNz,0.0);
-
     // loop over local rows
     for(size_t row=0; row<Ain->getNodeNumRows(); row++) {
         // get global row id
@@ -73,19 +64,24 @@ namespace MueLu {
         if(fixeddofmap->isNodeGlobalElement(grid) == false) {
 
           // extract information from current row
-          size_t nnz = Ain->getNumEntriesInLocalRow(row);
+          //size_t nnz = Ain->getNumEntriesInLocalRow(row);
+          Teuchos::ArrayView<const LocalOrdinal> indices;
+          Teuchos::ArrayView<const Scalar> vals;
           Ain->getLocalRowView(row, indices, vals);
 
           //TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<size_t>(indices.size()) != nnz, Exceptions::RuntimeError, "MueLu::IterationAFactory::Build: number of nonzeros not equal to number of indices? Error.");
 
           // just copy all values in output
+          Teuchos::ArrayRCP<GlobalOrdinal> indout(indices.size(),Teuchos::ScalarTraits<GlobalOrdinal>::zero());
+          Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
+
           for(size_t i=0; i<(size_t)indices.size(); i++) {
               GlobalOrdinal gcid = Ain->getColMap()->getGlobalElement(indices[i]); // LID -> GID (column)
               indout [i] = gcid;
+              valout[i]  = vals[i];
           }
-          std::copy( vals.begin(), vals.end(), valout.begin() );
 
-          Aout->insertGlobalValues(grid, indout.view(0,nnz), valout.view(0,nnz));
+          Aout->insertGlobalValues(grid, indout.view(0,indout.size()), valout.view(0,valout.size()));
         } else {
           Aout->insertGlobalValues(grid, Teuchos::tuple<GlobalOrdinal>(grid),Teuchos::tuple<Scalar>(1.0));
         }
