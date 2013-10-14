@@ -136,9 +136,10 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
   double tau_max=1.0e10;
   double gnorm=0.0;
 
-  // "last"/"intermediate" values for cubic model:
-  double tau_l;
-  double e_l;
+  // "last"/"intermediate" values for cubic model
+  // these are actually safeguardly set after the first call to the quadratic model
+  double tau_l=0.0;
+  double e_l=0.0;
 
   int success=0;
 
