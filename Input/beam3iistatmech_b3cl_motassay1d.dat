@@ -106,6 +106,7 @@ DBCDISPDIR          1                     // direction of dbc displacement after
 CURVENUMBER         1                     // applied time curve after starttimeact_
 //============== FILAMENT MODEL =============
 FILAMENTMODEL       std                  // select filament model: std, helical
+FILAMENTPOLARITY    Yes
 NUM_EVAL_ELEMENTS   25                  // number of (initial) beam elements
 RISEPERBSPOT        0.025                // rise per monomer in the actin helix
 ROTPERBSPOT         -2.8999               // rotation per monomer in the actin helix
@@ -283,6 +284,6 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -3.23859901602987887e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -3.83062837412971979e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

@@ -249,7 +249,10 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     dserror("The entered value %d for ACTIVELINKERFRACTION lies outside the valid interval [0;1]!");
   if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0 && linkermodel_!=statmech_linker_active && linkermodel_!=statmech_linker_activeintpol)
     dserror("The parameter LINKERMODEL has to be set to active or activeintpol in order to work with ACTIVELINKERFRACTION>0.0!");
-    
+  if((linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)==0.0)
+    dserror("Active linkers need a positive value DELTABELLSEQ for a force-dependent off-rate");
+
+
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
   {
     case INPAR::STATMECH::frictionmodel_isotropiclumped:
@@ -2867,7 +2870,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
   GetBindingSpotTriads(bspotrotations, bspottriadscol);
 
   // if off-rate is also dependent on the forces acting within the crosslinker
-  if (statmechparams_.get<double>("DELTABELLSEQ", 0.0) != 0.0)
+  if (statmechparams_.get<double>("DELTABELLSEQ", 0.0) != 0.0 || linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
     ForceDependentOffRate(dt, koff, discol, punlink);
 
   int numdetachpolarity = 0;
@@ -3283,12 +3286,6 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
     Teuchos::RCP<Epetra_Vector> actlinklengthtrans = Teuchos::rcp(new Epetra_Vector(*transfermap_, true));
     Teuchos::RCP<Epetra_Vector> crosslinkertypetrans = Teuchos::null;
     CommunicateVector(actlinklengthtrans,actlinklengthout,true,false);
-    // note: only needed in case of multispecies linkers
-    if(crosslinkertype_!=Teuchos::null)
-    {
-      crosslinkertypetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_, true));
-      CommunicateVector(crosslinkertypetrans,crosslinkertype_,true,false);
-    }
 
     // probability check, if length of active linker should be changed
     for(int i=0; i<actlinklengthtrans->MyLength(); i++)
@@ -3408,9 +3405,9 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
       if((toshort+tolong)>0)
       {
         std::cout<<"\n"<<"--Crosslinker length changes--"<<std::endl;
-        std::cout<<" - long to short: "<<toshort<<std::endl;
+        std::cout<<" - long to short: "<<toshortglob<<std::endl;
         std::cout<<"   - due to prob: "<<numprobshortglob<<std::endl;
-        std::cout<<" - short to long: "<<tolong<<std::endl;
+        std::cout<<" - short to long: "<<tolongglob<<std::endl;
         std::cout<<"   - due to prob: "<<numproblongglob<<std::endl;
         std::cout<<"------------------------------"<<std::endl;
       }
@@ -3944,8 +3941,6 @@ void STATMECH::StatMechManager::WriteConv(Teuchos::RCP<CONTACT::Beam3cmanager> b
   //save relevant class variables at the very end of the time step
   crosslinkerbondconv_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerbond_));
   crosslinkerpositionsconv_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerpositions_));
-  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
-    crosslinkertypeconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkertype_));
   bspotstatusconv_ = Teuchos::rcp(new Epetra_Vector(*bspotstatus_));
   numbondconv_ = Teuchos::rcp(new Epetra_Vector(*numbond_));
   crosslink2elementconv_ = Teuchos::rcp(new Epetra_Vector(*crosslink2element_));
@@ -4038,8 +4033,6 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<LINALG::SparseOperator>
   //restore state at the beginning of time step for relevant class variables
   crosslinkerbond_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerbondconv_));
   crosslinkerpositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerpositionsconv_));
-  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
-    crosslinkertype_ = Teuchos::rcp(new Epetra_Vector(*crosslinkertypeconv_));
   bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotstatusconv_));
   numbond_ = Teuchos::rcp(new Epetra_Vector(*numbondconv_));
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslink2elementconv_));
@@ -5115,8 +5108,9 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       crosslinkertype_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
       if(!discret_->Comm().MyPID())
       {
-        std::vector<int> activeorder = Permutation((int)(floor(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)*statmechparams_.get<int>("N_crosslink",0))));
-        for(int i=0; i<(int)activeorder.size(); i++)
+        std::vector<int> activeorder = Permutation(statmechparams_.get<int>("N_crosslink",0));
+
+        for(int i=0; i<(int)(floor(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)*statmechparams_.get<int>("N_crosslink",0))); i++)
           (*crosslinkertype_)[activeorder[i]] = 1.0;
       }
       Teuchos::RCP<Epetra_Vector> crosslinkertypetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));

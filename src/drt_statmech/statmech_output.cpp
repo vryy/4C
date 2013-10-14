@@ -1101,6 +1101,25 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   // wait for all processors to arrive at this point
   discret_->Comm().Barrier();
 
+  // update element2crosslink_ for correct mapping. Reason: Before coming here, elements might have been deleted in
+  // SearchAndSetCrosslinkers(). The ElementRowMap might have changed -> Rebuild
+  if(element2crosslink_!=Teuchos::null)
+  {
+    element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
+    element2crosslink_->PutScalar(-1.0);
+
+    for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
+    {
+      if((*crosslink2element_)[i]>-0.9) // there exists a linker element
+      {
+        // reverse mapping
+        int elelid = discret_->ElementRowMap()->LID((int)(*crosslink2element_)[i]);
+        if(elelid>-0.9)
+          (*element2crosslink_)[elelid] = i;
+      }
+    }
+  }
+
   // loop over the participating processors each of which appends its part of the output to one output file
   for (int proc = 0; proc < discret_->Comm().NumProc(); proc++)
   {
@@ -1179,20 +1198,29 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
         }
 
         //declaring variable for color of elements
-        double color;
+        double color = 1.0;
 
-        //apply different colors for elements representing filaments and those representing dynamics crosslinkers
-        if (element->Id() < basisnodes_)
-          color = 1.0;
-        else
+        //apply different color for crosslinkers
+        if (element->Id() >= basisnodes_)
         {
-          color = 0.5;
-          if(statmechparams_.get<double>("ACTIVELINKERFRACTION", 0.0)>0.0 && discret_->ElementRowMap()->LID(element->Id())>-1)
+          if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
           {
-            int crosslid = crosslinkermap_->LID((int)(*element2crosslink_)[discret_->ElementRowMap()->LID(element->Id())]);
-            if((*crosslinkertype_)[crosslid]==1.0) // active linker
-              color = 0.75;
+            int elementGID = element->Id();
+            int elerowLID = discret_->ElementRowMap()->LID(elementGID);
+            if(elerowLID!=-1)
+            {
+              int crossGID = (*element2crosslink_)[elerowLID];
+              int crossLID = crosslinkermap_->LID(crossGID);
+              if((*crosslinkertype_)[crossLID]==1.0) // active linker
+                color = 0.75;
+              else // standard
+                color = 0.5;
+            }
+            else
+              continue;
           }
+          else // standard linker color (red) without any active linkers
+            color = 0.5;
         }
 
         // highlight contacting elements
@@ -1718,16 +1746,16 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
               crosslinked = false;
           }
 
-            if(crosslinked)
-            {
-              double beadcolor = 4* color ; //red
-              if(crosslinkertype_!=Teuchos::null)
-                if((*crosslinkertype_)[i]==1.0)
-                  beadcolor = 3*color;
-              gmshfilebonds << "SP(" << std::scientific;
-              gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
-              gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
-            }
+          if(crosslinked)
+          {
+            double beadcolor = 4* color ; //red
+            if(statmechparams_.get<double>("ACTIVELINKERFRACTION", 0.0)>0.0)
+              if((*crosslinkertype_)[i]==1.0)
+                beadcolor = 6*color;
+            gmshfilebonds << "SP(" << std::scientific;
+            gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
+            gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
+          }
 //          }
           //TODO reactivate if passive linkers are needed
 //          else  // passive crosslink molecule
