@@ -1185,7 +1185,15 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
         if (element->Id() < basisnodes_)
           color = 1.0;
         else
+        {
           color = 0.5;
+          if(statmechparams_.get<double>("ACTIVELINKERFRACTION", 0.0)>0.0 && discret_->ElementRowMap()->LID(element->Id())>-1)
+          {
+            int crosslid = crosslinkermap_->LID((int)(*element2crosslink_)[discret_->ElementRowMap()->LID(element->Id())]);
+            if((*crosslinkertype_)[crosslid]==1.0) // active linker
+              color = 0.75;
+          }
+        }
 
         // highlight contacting elements
         if(beamcmanager!=Teuchos::null)
@@ -1693,58 +1701,77 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
         case 2:
         {
           // actual crosslinker element connecting two filaments (self-binding kinked crosslinkers are visualized in GmshKinkedVisual())
-          if((*searchforneighbours_)[i] > 0.9)
+          //TODO reactivate if passive linkers are needed
+//          if((*searchforneighbours_)[i] > 0.9)
+//          {
+
+          bool crosslinked = true;
+          // linker attached to binding sites on ONE filament -> different visualization, hence crosslinked = false!
+          if(linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol)
           {
-            if((*crosslinkonsamefilament_)[i] < 0.1)
+            if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((*crosslinkerbond_)[0][i])])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((*crosslinkerbond_)[1][i])])] && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+              crosslinked = false;
+          }
+          else
+          {
+            if((*filamentnumber_)[bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i])]==(*filamentnumber_)[bspotcolmap_->LID((int)(*crosslinkerbond_)[1][i])] && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+              crosslinked = false;
+          }
+
+            if(crosslinked)
             {
               double beadcolor = 4* color ; //red
+              if(crosslinkertype_!=Teuchos::null)
+                if((*crosslinkertype_)[i]==1.0)
+                  beadcolor = 3*color;
               gmshfilebonds << "SP(" << std::scientific;
               gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
               gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
             }
-          }
-          else  // passive crosslink molecule
-          {
-            if((linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol) &&
-                statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
-              dserror("Passified links not implemented for BeamCL elements!");
-            // determine position of nodeGID entry
-            int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
-            if((*crosslinkerbond_)[0][i]<-0.9)
-              bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][i]);
-
-            DRT::Node *node = discret_->lColNode(bspotLID);
-            LINALG::SerialDenseMatrix coord(3, 2, true);
-            for (int j=0; j<coord.M(); j++)
-            {
-              int dofgid = discret_->Dof(node)[j];
-              coord(j, 0) = node->X()[j] + discol[dofgid];
-              coord(j, 1) = (*visualizepositions_)[j][i];
-            }
-
-            double beadcolor = 3*color;
-            // in case of periodic boundary conditions
-            if (periodlength_->at(0) > 0.0)
-            {
-              // get arbitrary element (we just need it to properly visualize)
-              DRT::Element* tmpelement=discret_->lRowElement(0);
-              GmshOutputPeriodicBoundary(coord, 3*color, gmshfilebonds, tmpelement->Id(), true);
-              // visualization of "real" crosslink molecule positions (attention: shifted by one step since StatMechUpdate is called before the Newton scheme)
-              //beadcolor = 0.0; //black
-              //gmshfilebonds << "SP(" << scientific;
-              //gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
-              //gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
-            }
-            else
-            {
-              gmshfilebonds << "SL(" << std::scientific;
-              gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-              gmshfilebonds << ")" << "{" << std::scientific << 3*color << ","<< 3*color << "};" << std::endl;
-              gmshfilebonds << "SP(" << std::scientific;
-              gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
-              gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
-            }
-          }
+//          }
+          //TODO reactivate if passive linkers are needed
+//          else  // passive crosslink molecule
+//          {
+//            if((linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol) &&
+//                statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+//              dserror("Passified links not implemented for BeamCL elements!");
+//            // determine position of nodeGID entry
+//            int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
+//            if((*crosslinkerbond_)[0][i]<-0.9)
+//              bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][i]);
+//
+//            DRT::Node *node = discret_->lColNode(bspotLID);
+//            LINALG::SerialDenseMatrix coord(3, 2, true);
+//            for (int j=0; j<coord.M(); j++)
+//            {
+//              int dofgid = discret_->Dof(node)[j];
+//              coord(j, 0) = node->X()[j] + discol[dofgid];
+//              coord(j, 1) = (*visualizepositions_)[j][i];
+//            }
+//
+//            double beadcolor = 3*color;
+//            // in case of periodic boundary conditions
+//            if (periodlength_->at(0) > 0.0)
+//            {
+//              // get arbitrary element (we just need it to properly visualize)
+//              DRT::Element* tmpelement=discret_->lRowElement(0);
+//              GmshOutputPeriodicBoundary(coord, 3*color, gmshfilebonds, tmpelement->Id(), true);
+//              // visualization of "real" crosslink molecule positions (attention: shifted by one step since StatMechUpdate is called before the Newton scheme)
+//              //beadcolor = 0.0; //black
+//              //gmshfilebonds << "SP(" << scientific;
+//              //gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
+//              //gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
+//            }
+//            else
+//            {
+//              gmshfilebonds << "SL(" << std::scientific;
+//              gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
+//              gmshfilebonds << ")" << "{" << std::scientific << 3*color << ","<< 3*color << "};" << std::endl;
+//              gmshfilebonds << "SP(" << std::scientific;
+//              gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
+//              gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
+//            }
+//          }
         }
           break;
         default:
@@ -1896,8 +1923,9 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
         case 2:
         {
           // actual crosslinker element (not kinked)
-          if((*searchforneighbours_)[i]>0.9)
-          {
+          //TODO reactivate if passive linkers are needed
+//          if((*searchforneighbours_)[i]>0.9)
+//          {
             // loop over filament node components
             for (int j=0; j<visualizepositions_->NumVectors(); j++)
             {
@@ -1929,93 +1957,94 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
               else
                 (*visualizepositions_)[j][i] /= 2.0;
             }
-          }
-          else  // passive crosslink molecule
-          {
-            if((linkermodel_ == statmech_linker_stdintpol  || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol)&& statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
-              dserror("Passified links not implemented for BeamCL elements!");
-            // determine position of bspotLID entry
-            int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
-            if ((*crosslinkerbond_)[0][i] < -0.9)
-              bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][i]);
-
-            const DRT::Node *node0 = discret_->lColNode(bspotLID);
-            //calculate unit tangent
-            LINALG::Matrix<3,1> nodepos0;
-
-            for (int j=0; j<3; j++)
-            {
-              int dofgid0 = discret_->Dof(node0)[j];
-              nodepos0(j,0) = node0->X()[j] + discol[discret_->DofColMap()->LID(dofgid0)];
-            }
-
-            // first and second vector of the nodal triad
-            LINALG::Matrix<3, 1> tangent;
-            LINALG::Matrix<3, 1> normal;
-            // rotation angle
-            double alpha = 0.0;
-
-            // determine tangent and normal direction when helical binding spot geometry is applied
-            if(filamentmodel_ == statmech_filament_helical)
-            {
-              LINALG::Matrix<3,3> bspottriad;
-              // auxiliary variable for storing a triad in quaternion form
-              LINALG::Matrix<4, 1> qnode;
-              // triad of node on first filament which is affected by the new crosslinker
-              for (int j=0; j<4; j++)
-                qnode(j) = (*bspottriadscol)[j][bspotLID];
-              LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
-
-              for(int j=0; j<(int)tangent.M(); j++)
-              {
-                tangent(j) = bspottriad(j,0);
-                normal(j) = bspottriad(j,1);
-              }
-              // rotation angle
-              alpha = (*bspotorientations_)[bspotLID];
-            }
-            else  // conventional case
-            {
-              // choose a second (neighbour) node
-              const DRT::Node *node1 = NULL;
-              int currfilament = (int)(*filamentnumber_)[bspotLID];
-              if(bspotLID < basisnodes_-1)
-              {
-                if((*filamentnumber_)[bspotLID+1]==currfilament)
-                  node1 = discret_->lColNode(bspotLID+1);
-                else
-                  node1 = discret_->lColNode(bspotLID-1);
-              }
-              if(bspotLID == basisnodes_-1)
-                if((*filamentnumber_)[bspotLID-1]==currfilament)
-                  node1 = discret_->lColNode(bspotLID-1);
-
-              //calculate unit tangent
-              for (int j=0; j<3; j++)
-              {
-                int dofgid1 = discret_->Dof(node1)[j];
-                double nodeposj1 = node1->X()[j] + discol[discret_->DofColMap()->LID(dofgid1)];
-                tangent(j) = nodeposj1 - nodepos0(j,0);
-              }
-              tangent.Scale(1 / tangent.Norm2());
-              // calculate normal via cross product: [0 0 1]x[tx ty tz]
-              normal.Clear();
-              normal(0) = -tangent(1);
-              normal(1) = tangent(0);
-              // norm it since the cross product does not keep the length
-              normal.Scale(1 / normal.Norm2());
-              // random angle
-              // by modulo operation involving the crosslink molecule number
-              alpha = fmod((double) i, 2*M_PI);
-            }
-
-            // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
-            RotationAroundFixedAxis(tangent,normal,alpha);
-
-            // calculation of the visualized point lying in the direction of the rotated normal
-            for (int j=0; j<visualizepositions_->NumVectors(); j++)
-              (*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*normal(j,0);
-          }
+//          }
+        //TODO reactivate if passive linkers are needed
+//          else  // passive crosslink molecule
+//          {
+//            if((linkermodel_ == statmech_linker_stdintpol  || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol)&& statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
+//              dserror("Passified links not implemented for BeamCL elements!");
+//            // determine position of bspotLID entry
+//            int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
+//            if ((*crosslinkerbond_)[0][i] < -0.9)
+//              bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][i]);
+//
+//            const DRT::Node *node0 = discret_->lColNode(bspotLID);
+//            //calculate unit tangent
+//            LINALG::Matrix<3,1> nodepos0;
+//
+//            for (int j=0; j<3; j++)
+//            {
+//              int dofgid0 = discret_->Dof(node0)[j];
+//              nodepos0(j,0) = node0->X()[j] + discol[discret_->DofColMap()->LID(dofgid0)];
+//            }
+//
+//            // first and second vector of the nodal triad
+//            LINALG::Matrix<3, 1> tangent;
+//            LINALG::Matrix<3, 1> normal;
+//            // rotation angle
+//            double alpha = 0.0;
+//
+//            // determine tangent and normal direction when helical binding spot geometry is applied
+//            if(filamentmodel_ == statmech_filament_helical)
+//            {
+//              LINALG::Matrix<3,3> bspottriad;
+//              // auxiliary variable for storing a triad in quaternion form
+//              LINALG::Matrix<4, 1> qnode;
+//              // triad of node on first filament which is affected by the new crosslinker
+//              for (int j=0; j<4; j++)
+//                qnode(j) = (*bspottriadscol)[j][bspotLID];
+//              LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+//
+//              for(int j=0; j<(int)tangent.M(); j++)
+//              {
+//                tangent(j) = bspottriad(j,0);
+//                normal(j) = bspottriad(j,1);
+//              }
+//              // rotation angle
+//              alpha = (*bspotorientations_)[bspotLID];
+//            }
+//            else  // conventional case
+//            {
+//              // choose a second (neighbour) node
+//              const DRT::Node *node1 = NULL;
+//              int currfilament = (int)(*filamentnumber_)[bspotLID];
+//              if(bspotLID < basisnodes_-1)
+//              {
+//                if((*filamentnumber_)[bspotLID+1]==currfilament)
+//                  node1 = discret_->lColNode(bspotLID+1);
+//                else
+//                  node1 = discret_->lColNode(bspotLID-1);
+//              }
+//              if(bspotLID == basisnodes_-1)
+//                if((*filamentnumber_)[bspotLID-1]==currfilament)
+//                  node1 = discret_->lColNode(bspotLID-1);
+//
+//              //calculate unit tangent
+//              for (int j=0; j<3; j++)
+//              {
+//                int dofgid1 = discret_->Dof(node1)[j];
+//                double nodeposj1 = node1->X()[j] + discol[discret_->DofColMap()->LID(dofgid1)];
+//                tangent(j) = nodeposj1 - nodepos0(j,0);
+//              }
+//              tangent.Scale(1 / tangent.Norm2());
+//              // calculate normal via cross product: [0 0 1]x[tx ty tz]
+//              normal.Clear();
+//              normal(0) = -tangent(1);
+//              normal(1) = tangent(0);
+//              // norm it since the cross product does not keep the length
+//              normal.Scale(1 / normal.Norm2());
+//              // random angle
+//              // by modulo operation involving the crosslink molecule number
+//              alpha = fmod((double) i, 2*M_PI);
+//            }
+//
+//            // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
+//            RotationAroundFixedAxis(tangent,normal,alpha);
+//
+//            // calculation of the visualized point lying in the direction of the rotated normal
+//            for (int j=0; j<visualizepositions_->NumVectors(); j++)
+//              (*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*normal(j,0);
+//          }
         }
         break;
       }

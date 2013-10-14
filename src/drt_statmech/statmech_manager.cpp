@@ -244,6 +244,12 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
       dserror("Unknown linker model %i", DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "LINKERMODEL"));
   }
 
+  // check linker fraction
+  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>1.0 || statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)<0.0)
+    dserror("The entered value %d for ACTIVELINKERFRACTION lies outside the valid interval [0;1]!");
+  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0 && linkermodel_!=statmech_linker_active && linkermodel_!=statmech_linker_activeintpol)
+    dserror("The parameter LINKERMODEL has to be set to active or activeintpol in order to work with ACTIVELINKERFRACTION>0.0!");
+    
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
   {
     case INPAR::STATMECH::frictionmodel_isotropiclumped:
@@ -650,7 +656,7 @@ void STATMECH::StatMechManager::Update(const int&                               
       ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0), beamcmanager);
 
     // change length of active crosslinkers
-    if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
+    if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
       ChangeActiveLinkerLength(timen, dt, crosslinkeractlengthconv_, crosslinkeractlength_);
 
     /*settling administrative stuff in order to make the discretization ready for the next time step:
@@ -748,33 +754,33 @@ void STATMECH::StatMechManager::GetNodePositionsFromDisVec(Epetra_Vector&       
   if(!positionsonly)
     currentrotations.clear();
 
-    for (int i=0; i<discret_->NumMyColNodes(); ++i)
+  for (int i=0; i<discret_->NumMyColNodes(); ++i)
+  {
+
+    //get pointer at a node
+    const DRT::Node* node = discret_->lColNode(i);
+
+    //get GIDs of this node's degrees of freedom
+    std::vector<int> dofnode = discret_->Dof(node);
+
+    LINALG::Matrix<3, 1> currpos;
+    LINALG::Matrix<3, 1> currrot;
+
+    currpos(0) = node->X()[0] + discol[discret_->DofColMap()->LID(dofnode[0])];
+    currpos(1) = node->X()[1] + discol[discret_->DofColMap()->LID(dofnode[1])];
+    currpos(2) = node->X()[2] + discol[discret_->DofColMap()->LID(dofnode[2])];
+    //if node has also rotational degrees of freedom
+    if (discret_->NumDof(node) == 6 && !positionsonly)
     {
-
-      //get pointer at a node
-      const DRT::Node* node = discret_->lColNode(i);
-
-      //get GIDs of this node's degrees of freedom
-      std::vector<int> dofnode = discret_->Dof(node);
-
-      LINALG::Matrix<3, 1> currpos;
-      LINALG::Matrix<3, 1> currrot;
-
-      currpos(0) = node->X()[0] + discol[discret_->DofColMap()->LID(dofnode[0])];
-      currpos(1) = node->X()[1] + discol[discret_->DofColMap()->LID(dofnode[1])];
-      currpos(2) = node->X()[2] + discol[discret_->DofColMap()->LID(dofnode[2])];
-      //if node has also rotational degrees of freedom
-      if (discret_->NumDof(node) == 6 && !positionsonly)
-      {
-        currrot(0) = discol[discret_->DofColMap()->LID(dofnode[3])];
-        currrot(1) = discol[discret_->DofColMap()->LID(dofnode[4])];
-        currrot(2) = discol[discret_->DofColMap()->LID(dofnode[5])];
-      }
-
-      currentpositions[node->LID()] = currpos;
-      if(!positionsonly)
-        currentrotations[node->LID()] = currrot;
+      currrot(0) = discol[discret_->DofColMap()->LID(dofnode[3])];
+      currrot(1) = discol[discret_->DofColMap()->LID(dofnode[4])];
+      currrot(2) = discol[discret_->DofColMap()->LID(dofnode[5])];
     }
+
+    currentpositions[node->LID()] = currpos;
+    if(!positionsonly)
+      currentrotations[node->LID()] = currrot;
+  }
   return;
 }
 
@@ -1712,18 +1718,18 @@ void STATMECH::StatMechManager::DetectBindingSpots(const Teuchos::RCP<Epetra_Mul
                                 LINALG::Matrix<3,1> firstdir;
                                 LINALG::Matrix<3,1> bspotvec;
                                 // retrieve tangential and normal vector from binding spot quaternions
-                                  LINALG::Matrix<3,3> bspottriad;
-                                  // auxiliary variable for storing a triad in quaternion form
-                                  LINALG::Matrix<4, 1> qnode;
-                                  // triad of node on first filament which is affected by the new crosslinker
-                                  for (int l=0; l<4; l++)
-                                    qnode(l) = (*bspottriadscol)[l][bspotcolmap_->GID(tmplid)];
-                                  LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
-                                  for (int l=0; l<(int)bspottriad.M(); l++)
-                                  {
-                                    firstdir(l) = bspottriad(l,0);
-                                    bspotvec(l) = bspottriad(l,1);
-                                  }
+                                LINALG::Matrix<3,3> bspottriad;
+                                // auxiliary variable for storing a triad in quaternion form
+                                LINALG::Matrix<4, 1> qnode;
+                                // triad of node on first filament which is affected by the new crosslinker
+                                for (int l=0; l<4; l++)
+                                  qnode(l) = (*bspottriadscol)[l][bspotcolmap_->GID(tmplid)];
+                                LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+                                for (int l=0; l<(int)bspottriad.M(); l++)
+                                {
+                                  firstdir(l) = bspottriad(l,0);
+                                  bspotvec(l) = bspottriad(l,1);
+                                }
 
                                 // rotation matrix around tangential vector by given angle
                                 RotationAroundFixedAxis(firstdir,bspotvec,(*bspotorientations_)[bspotcolmap_->GID(tmplid)]);
@@ -1800,9 +1806,9 @@ void STATMECH::StatMechManager::DetectBindingSpots(const Teuchos::RCP<Epetra_Mul
           }
         }
       }
-      // "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
-      if((int)(*numbond)[part]==1)
-        neighbournodes[part].push_back(-1);
+//      // "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
+//      if((int)(*numbond)[part]==1)
+//        neighbournodes[part].push_back(-1);
       // store local maximal number of LIDs per molecule in order to determine neighbourslid->NumVectors()
       maxneighbourslocal = std::max(maxneighbourslocal, (int)neighbournodes[part].size());
     }
@@ -2277,7 +2283,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     // skip binding process, if cycle time is still detached and
                     // skip binding process, if polarity of active linker is not fulfilled
                     bool polaritycriterion = true;
-                    if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
+                    if((linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol) && DRT::INPUT::IntegralValue<int>(statmechparams_,"FILAMENTPOLARITY"))
                       polaritycriterion = LinkerPolarityCheckAttach(bspottriadscol, LID, direction);
                     else
                       direction.Scale(1.0/direction.Norm2());
@@ -2321,25 +2327,14 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                           (*addcrosselement)[irandom] = 1.0;
                           // update molecule positions
                           CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom);
-
-                          // consider crosslinkers covering two binding spots of one filament
-                          if(linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol)
-                          {
-                            if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
-                              (*crosslinkonsamefilament_)[irandom] = 1.0;
-                          }
-                          else
-                          {
-                            if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
-                              (*crosslinkonsamefilament_)[irandom] = 1.0;
-                          }
                         }
                         else // passive crosslink molecule
                         {
-                          (*searchforneighbours_)[irandom] = 0.0;
-                          LINALG::SerialDenseMatrix oneLID(1,1,true);
-                          oneLID(0,0) = LID(0,0);
-                          CrosslinkerIntermediateUpdate(*bspotpositions, oneLID, irandom);
+                          //TODO reactivate if passive linkers are needed
+//                          (*searchforneighbours_)[irandom] = 0.0;
+//                          LINALG::SerialDenseMatrix oneLID(1,1,true);
+//                          oneLID(0,0) = LID(0,0);
+//                          CrosslinkerIntermediateUpdate(*bspotpositions, oneLID, irandom);
                         }
 
                         if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
@@ -2372,7 +2367,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 #endif
   }// if(discret_->Comm().MypPID==0)
 
-  /* note: searchforneighbours_ and crosslinkonsamefilament_ are not being communicated
+  /* note: searchforneighbours_ is not communicated
    * to the other Procs because their information is of concern to Proc 0 only.*/
   //synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
   Teuchos::RCP<Epetra_Vector> bspotstatusrow = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_,true));
@@ -2876,7 +2871,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
     ForceDependentOffRate(dt, koff, discol, punlink);
 
   int numdetachpolarity = 0;
-  if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
+  if((linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol) && DRT::INPUT::IntegralValue<int>(statmechparams_,"FILAMENTPOLARITY"))
     numdetachpolarity = LinkerPolarityCheckDetach(punlink, bspotpositions, bspottriadscol);
 
   // a vector indicating the upcoming deletion of crosslinker elements
@@ -2886,7 +2881,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
   // SEARCH
   // search and setup for the deletion of elements is done by Proc 0
   int numdelelements = 0;
-  if (discret_->Comm().MyPID()==0)
+  if (!discret_->Comm().MyPID())
   {
     // create random order of indices
     std::vector<int> order = Permutation(numbond_->MyLength());
@@ -2903,7 +2898,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
         // crosslink molecule with one bond
         case 1:
         {
-          // singly bound crosslinker in motility assay is just bond on the substrate filament --> don't delete this bond
+          // singly bound crosslinker in motility assay binds to the substrate filament --> don't delete this bond
           if(networktype_ == statmech_network_motassay)
             continue;
 
@@ -2928,15 +2923,11 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
         {
           // currently, if an element is deleted, a one-bonded crosslink molecule remains (no simultaneous cut of both bonds)
           std::vector<int> jorder = Permutation(crosslinkerbond_->NumVectors());
-
-          int J = crosslinkerbond_->NumVectors();
-          if(networktype_ == statmech_network_motassay)
-            J = 1;
-          for (int j=0; j<J; j++)
+          for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
           {
             // random pick of one of the crosslinkerbond entries
             int jrandom = jorder[j];
-            // in motility assays we have deterministic randomness ;-)
+            // in motility assays we want to cut only the second bond (first bond = substrate bond)
             if(networktype_ == statmech_network_motassay)
               jrandom = 1;
             if ((*uniformgen_)() < (*punlink)[jrandom][irandom])
@@ -2944,43 +2935,54 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
               (*numbond_)[irandom] = 1.0;
 
               // an actual crosslinker element exists
-              if((*searchforneighbours_)[irandom]>0.9)
+              //TODO reactivate if passive linkers are needed
+//              if((*searchforneighbours_)[irandom]>0.9)
+//              {
+              numdelelements++;
+              // get the nodal LIDs
+              int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
+
+              // in case of a casimir setup, we want the vertical filaments to be free of linkers. Hence, we choose the node on the vertical filament to let go of the linker
+              // note: jrandom is either 0 or 1. Hence, "!".
+              if(networktype_ == statmech_network_casimir && (*filamentnumber_)[bspotLID]==0)
               {
-                numdelelements++;
-                // get the nodal LIDs
-                int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
+                jrandom = (!jrandom);
+                bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
+              }
 
-                // in case of a casimir setup, we want the vertical filaments to be free of linkers. Hence, we choose the node on the vertical filament to let go of the linker
-                // note: jrandom is either 0 or 1. Hence, "!".
-                if(networktype_ == statmech_network_casimir && (*filamentnumber_)[bspotLID]==0)
-                {
-                  jrandom = (!jrandom);
-                  bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
-                }
+              // enter the crosslinker element ID into the deletion list
+              (*delcrosselement)[irandom] = (*crosslink2element_)[irandom];
 
-                // enter the crosslinker element ID into the deletion list
-                (*delcrosselement)[irandom] = (*crosslink2element_)[irandom];
+              // vector updates
+              (*crosslink2element_)[irandom] = -1.0;
+              (*bspotstatus_)[bspotLID] = -1.0;
+              (*crosslinkerbond_)[jrandom][irandom] = -1.0;
 
-                // vector updates
-                (*crosslink2element_)[irandom] = -1.0;
-                (*bspotstatus_)[bspotLID] = -1.0;
-                (*crosslinkerbond_)[jrandom][irandom] = -1.0;
-
-                // reset linker to long conformation upon unbinding and reset the cycle time
-                if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
+              // reset linker to long conformation upon unbinding and reset the cycle time
+              if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
+              {
+                if(crosslinkertype_==Teuchos::null) // all linkers are active
                 {
                   (*crosslinkeractlength_)[irandom] = 0.0;
                   (*crosslinkeractcycletime_)[irandom]=0.0;
                 }
-
-                // if the linker to be removed occupies to binding spots on the same filament
-                if((*crosslinkonsamefilament_)[irandom] > 0.9)
-                  (*crosslinkonsamefilament_)[irandom] = 0.0;
+                else // a fraction of the linkers are active
+                {
+                  if((*crosslinkertype_)[irandom]==1.0)
+                  {
+                    (*crosslinkeractlength_)[irandom] = 0.0;
+                    (*crosslinkeractcycletime_)[irandom]=0.0;
+                  }
+                }
               }
-              else  // passive crosslink molecule
-                (*searchforneighbours_)[irandom] = 1.0;
+
+                //TODO reactivate if passive linkers are needed
+//              }
+//              else  // passive crosslink molecule
+//                (*searchforneighbours_)[irandom] = 1.0;
 
               for (int k=0; k<crosslinkerbond_->NumVectors(); k++)
+              {
                 if ((*crosslinkerbond_)[k][irandom]>-0.9)
                 {
                   LINALG::SerialDenseMatrix LID(1, 1, true);
@@ -2988,6 +2990,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
                   CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom);
                   break;
                 }
+              }
 
               if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
               {
@@ -2995,7 +2998,6 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
                 (*crosslinkunbindingtimes_)[1][irandom] = timen-t_on;
                 (*crosslinkunbindingtimes_)[0][irandom] = -1.0;
               }
-
               // leave j-loop after first bond is dissolved
               break;
             }
@@ -3007,7 +3009,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
   }// if(discret_->Comm().MyPID()==0)
 
   // synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
-  // note: searchforneighbours_ and crosslinkonsamefilament_ are not communicated
+  // note: searchforneighbours_ is not communicated
   // transfer vectors
   Teuchos::RCP<Epetra_Vector> bspotstatusrow = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_, true));
   Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionstrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_, 3, true));
@@ -3279,11 +3281,23 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
      *note: a fully overlapping node map on processor 0 is imperative for the following part of the code to work correctly!*/
 
     Teuchos::RCP<Epetra_Vector> actlinklengthtrans = Teuchos::rcp(new Epetra_Vector(*transfermap_, true));
+    Teuchos::RCP<Epetra_Vector> crosslinkertypetrans = Teuchos::null;
     CommunicateVector(actlinklengthtrans,actlinklengthout,true,false);
+    // note: only needed in case of multispecies linkers
+    if(crosslinkertype_!=Teuchos::null)
+    {
+      crosslinkertypetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_, true));
+      CommunicateVector(crosslinkertypetrans,crosslinkertype_,true,false);
+    }
 
     // probability check, if length of active linker should be changed
     for(int i=0; i<actlinklengthtrans->MyLength(); i++)
     {
+      // when multiple species of linkers are present, we skip the standard ones.
+      if(crosslinkertypetrans!=Teuchos::null)
+        if((*crosslinkertypetrans)[i]==0.0) // i.e. standard, non-active linker
+          continue;
+
       // only for doubly-bound crosslinkers
       if((*crosslink2element_)[crosslinkermap_->LID(transfermap_->GID(i))]>-0.9)
       {
@@ -3401,7 +3415,6 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
         std::cout<<"------------------------------"<<std::endl;
       }
     }
-
     // update cycle time
     for(int i=0; i<crosslinkeractcycletime_->MyLength(); i++)
       (*crosslinkeractcycletime_)[i] += dt;
@@ -3431,51 +3444,69 @@ int STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_Mul
 
     for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
     {
-      // there exists a crosslinker
+      std::vector<int> order = Permutation(2);
+      // prescribed order because only filament-linker bonds may be broken for motility assays
+      if(networktype_==statmech_network_motassay)
+      {
+        order[0] = 0;
+        order[1] = 1;
+      }
+      // there exists a crosslinker element
       if((*crosslink2element_)[i]>-0.9)
       {
-        int bspotlid0 = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][i]);
-        int bspotlid1 = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][i]);
+        // skip this linker if its not an active one
+        if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+          if((*crosslinkertype_)[i]==0.0)
+            continue;
 
-        // check for periodic boundary conditions
-        std::vector<double> pos(6,0.0);
-        for(int j=0; j<3; j++)
+        for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
         {
-          pos[j] = (*bspotpositions)[j][bspotlid0];
-          pos[j+3] = (*bspotpositions)[j][bspotlid1];
-        }
-        UnshiftPositions(pos,2);
+          int bspotlid0 = bspotcolmap_->LID((int)(*crosslinkerbond_)[order[j]][i]);
+          int bspotlid1 = bspotcolmap_->LID((int)(*crosslinkerbond_)[!order[j]][i]);
 
-        LINALG::Matrix<3,1> linkdirection(true);
-        for(int j=0; j<(int)linkdirection.M(); j++)
-          linkdirection(j) = pos[j+3]-pos[j];
+          // check for periodic boundary conditions
+          std::vector<double> pos(6,0.0);
+          for(int k=0; k<3; k++)
+          {
+            pos[k] = (*bspotpositions)[k][bspotlid0];
+            pos[k+3] = (*bspotpositions)[k][bspotlid1];
+          }
+          UnshiftPositions(pos,2);
 
-        LINALG::Matrix<3,1> firstdir(true);
-        LINALG::Matrix<3,3> bspottriad(true);
-        LINALG::Matrix<4, 1> qnode(true);
+          LINALG::Matrix<3,1> linkdirection(true);
+          for(int k=0; k<(int)linkdirection.M(); k++)
+            linkdirection(k) = pos[k+3]-pos[k];
 
-        for (int l=0; l<4; l++)
-          qnode(l) = (*bspottriadscol)[l][bspotlid1];
+          LINALG::Matrix<3,1> firstdir(true);
+          LINALG::Matrix<3,3> bspottriad(true);
+          LINALG::Matrix<4, 1> qnode(true);
 
-        LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
+          for (int k=0; k<4; k++)
+            qnode(k) = (*bspottriadscol)[k][bspotlid1];
 
-        for (int l=0; l<(int)bspottriad.M(); l++)
-          firstdir(l) = bspottriad(l,0);
+          LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
 
-        double tangentialscalefactor = linkdirection.Dot(firstdir);
-        // For now, manipulate j==1 since this is the free filament binding site
-        if (tangentialscalefactor < 0.0 || ((*crosslinkeractcycletime_)[i] >= recoverytime+detachtime && (*crosslinkeractlength_)[i]>0.9))
-        {
-          numdetach++;
-          (*punlink)[1][i]=1.0;
+          for (int k=0; k<(int)bspottriad.M(); k++)
+            firstdir(k) = bspottriad(k,0);
+
+          double tangentialscalefactor = linkdirection.Dot(firstdir);
+          // For now, manipulate j==1 since this is the free filament binding site
+          if (tangentialscalefactor < 0.0 || ((*crosslinkeractcycletime_)[i] >= recoverytime+detachtime && (*crosslinkeractlength_)[i]>0.9))
+          {
+            numdetach++;
+            (*punlink)[!order[j]][i]=1.0;
+          }
+          // leave loop because substrate bond has to remain untouched
+          if(networktype_==statmech_network_motassay)
+            break;
         }
       }
     }
   }
-
-  Teuchos::RCP<Epetra_MultiVector> punlinktrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,2,true));
+  
+	Teuchos::RCP<Epetra_MultiVector> punlinktrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,2,true));
   CommunicateMultiVector(punlinktrans,punlink);
-
+  
   return numdetach;
 }// StatMechManager::LinkerPolarityCheckDetach()
 
@@ -3546,28 +3577,30 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
           case 2:
           {
             // an actual crosslinker element exists
-            if((*searchforneighbours_)[irandom]>0.9)
-            {
-              numdelelements++;
-              // enter the crosslinker element ID into the deletion list
-              (*delcrosselement)[irandom] = (*crosslink2element_)[irandom];
-              (*delcrossmolecules)[irandom] = 1.0;
+            //TODO reactivate if passive linkers are needed
+//            if((*searchforneighbours_)[irandom]>0.9)
+//            {
+            numdelelements++;
+            // enter the crosslinker element ID into the deletion list
+            (*delcrosselement)[irandom] = (*crosslink2element_)[irandom];
+            (*delcrossmolecules)[irandom] = 1.0;
 
-              ((*bspotstatus_)[(int)(*crosslinkerbond_)[0][irandom]]) = -1.0;
-              ((*bspotstatus_)[(int)(*crosslinkerbond_)[1][irandom]]) = -1.0;
-            }
-            else  // passive crosslink molecule
-            {
-              numdelmolecules++;
-              for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
-                if ((*crosslinkerbond_)[j][irandom]>-0.9)
-                {
-                  // obtain LID and reset crosslinkerbond_ at this position
-                  int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[j][irandom]);
-                  ((*bspotstatus_)[bspotLID]) = -1.0;
-                  (*delcrossmolecules)[irandom] = 1.0;
-                }
-            }
+            ((*bspotstatus_)[(int)(*crosslinkerbond_)[0][irandom]]) = -1.0;
+            ((*bspotstatus_)[(int)(*crosslinkerbond_)[1][irandom]]) = -1.0;
+              //TODO reactivate if passive linkers are needed
+//            }
+//            else  // passive crosslink molecule
+//            {
+//              numdelmolecules++;
+//              for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
+//                if ((*crosslinkerbond_)[j][irandom]>-0.9)
+//                {
+//                  // obtain LID and reset crosslinkerbond_ at this position
+//                  int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[j][irandom]);
+//                  ((*bspotstatus_)[bspotLID]) = -1.0;
+//                  (*delcrossmolecules)[irandom] = 1.0;
+//                }
+//            }
           }
           break;
         }// switch ((int)(*numbond_)[i])
@@ -3595,7 +3628,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
   std::vector<std::vector<double> > newvisualizepositions;
   std::vector<std::vector<double> > newcrosslinkunbindingtimes;
   std::vector<int> newcrosslinkonsamefilament;
-  std::vector<int> newsearchforneighbours;
+  //TODO reactivate if passive linkers are needed
+  //std::vector<int> newsearchforneighbours;
   std::vector<int> newnumbond;
   std::vector<int> newcrosslink2element;
   // Build temporary vectors
@@ -3626,8 +3660,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
       newcrosslinkerpositions.push_back(crosspos);
       newvisualizepositions.push_back(visualpos);
       newcrosslinkerbond.push_back(crossbond);
-      newcrosslinkonsamefilament.push_back((int)(*crosslinkonsamefilament_)[i]);
-      newsearchforneighbours.push_back((int)(*searchforneighbours_)[i]);
+      //TODO reactivate if passive linkers are needed
+      //newsearchforneighbours.push_back((int)(*searchforneighbours_)[i]);
       newnumbond.push_back((int)(*numbond_)[i]);
       newcrosslink2element.push_back((int)(*crosslink2element_)[i]);
     }
@@ -3678,8 +3712,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
   crosslinkerpositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3));
   visualizepositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3));
   crosslinkerbond_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
-  crosslinkonsamefilament_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
-  searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
+  //TODO reactivate if passive linkers are needed
+  //searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   numbond_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
@@ -3699,8 +3733,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
       for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
         (*crosslinkunbindingtimes_)[j][i] = (double)newcrosslinkunbindingtimes[i][j];
 
-    (*crosslinkonsamefilament_)[i] = (double)newcrosslinkonsamefilament[i];
-    (*searchforneighbours_)[i] = (double)newsearchforneighbours[i];
+    //TODO reactivate if passive linkers are needed
+//    (*searchforneighbours_)[i] = (double)newsearchforneighbours[i];
     (*numbond_)[i] = (double)newnumbond[i];
     (*crosslink2element_)[i] = (double)newcrosslink2element[i];
   }
@@ -3789,13 +3823,15 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
 
   output->WriteRedundantDoubleVector("startindex",startindex_);
 
+  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+    WriteRestartRedundantMultivector(output,"crosslinkertype",crosslinkertype_);
   WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
   WriteRestartRedundantMultivector(output,"crosslinkerpositions",crosslinkerpositions_);
   WriteRestartRedundantMultivector(output,"numbond",numbond_);
   WriteRestartRedundantMultivector(output,"crosslink2element",crosslink2element_);
-  WriteRestartRedundantMultivector(output,"crosslinkonsamefilament",crosslinkonsamefilament_);
   WriteRestartRedundantMultivector(output,"visualizepositions",visualizepositions_);
-  WriteRestartRedundantMultivector(output,"searchforneighbours",searchforneighbours_);
+  //TODO reactivate if passive linkers are needed
+  //WriteRestartRedundantMultivector(output,"searchforneighbours",searchforneighbours_);
 
   if(crosslinkunbindingtimes_!=Teuchos::null)
     WriteRestartRedundantMultivector(output,"crosslinkunbindingtimes",crosslinkunbindingtimes_);
@@ -3860,13 +3896,15 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, do
 
   //Read redundant Epetra_Multivectors and STL vectors
   reader.ReadRedundantDoubleVector(startindex_,"startindex");
+  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+    ReadRestartRedundantMultivector(reader,"crosslinkertype", crosslinkertype_);
   ReadRestartRedundantMultivector(reader,"crosslinkerbond",crosslinkerbond_);
   ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
   ReadRestartRedundantMultivector(reader,"numbond",numbond_);
   ReadRestartRedundantMultivector(reader,"crosslink2element",crosslink2element_);
-  ReadRestartRedundantMultivector(reader,"crosslinkonsamefilament",crosslinkonsamefilament_);
   ReadRestartRedundantMultivector(reader,"visualizepositions",visualizepositions_);
-  ReadRestartRedundantMultivector(reader,"searchforneighbours",searchforneighbours_);
+  //TODO reactivate if passive linkers are needed
+  //ReadRestartRedundantMultivector(reader,"searchforneighbours",searchforneighbours_);
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
     ReadRestartRedundantMultivector(reader,"crosslinkunbindingtimes",crosslinkunbindingtimes_);
 
@@ -3906,11 +3944,13 @@ void STATMECH::StatMechManager::WriteConv(Teuchos::RCP<CONTACT::Beam3cmanager> b
   //save relevant class variables at the very end of the time step
   crosslinkerbondconv_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerbond_));
   crosslinkerpositionsconv_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerpositions_));
+  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+    crosslinkertypeconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkertype_));
   bspotstatusconv_ = Teuchos::rcp(new Epetra_Vector(*bspotstatus_));
   numbondconv_ = Teuchos::rcp(new Epetra_Vector(*numbond_));
-  crosslinkonsamefilamentconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkonsamefilament_));
   crosslink2elementconv_ = Teuchos::rcp(new Epetra_Vector(*crosslink2element_));
-  searchforneighboursconv_ = Teuchos::rcp(new Epetra_Vector(*searchforneighbours_));
+  //TODO reactivate if passive linkers are needed
+  //searchforneighboursconv_ = Teuchos::rcp(new Epetra_Vector(*searchforneighbours_));
   if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
     crosslinkeractlengthconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkeractlength_));
 
@@ -3998,11 +4038,13 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<LINALG::SparseOperator>
   //restore state at the beginning of time step for relevant class variables
   crosslinkerbond_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerbondconv_));
   crosslinkerpositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerpositionsconv_));
+  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+    crosslinkertype_ = Teuchos::rcp(new Epetra_Vector(*crosslinkertypeconv_));
   bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotstatusconv_));
   numbond_ = Teuchos::rcp(new Epetra_Vector(*numbondconv_));
-  crosslinkonsamefilament_ = Teuchos::rcp(new Epetra_Vector(*crosslinkonsamefilamentconv_));
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslink2elementconv_));
-  searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*searchforneighboursconv_));
+  //TODO reactivate if passive linkers are needed
+  //searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*searchforneighboursconv_));
   if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
   {
     // reverts reference lengths of elements back to the way they were before... (has to be done prior to restoring actlinklength_. Otherwise, fatal loss of information)
@@ -5044,8 +5086,6 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   // initial bond counter is set (no bonds)
   numbond_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
 
-  crosslinkonsamefilament_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
-
   // crosslinker element IDs of the crosslink molecules
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   crosslink2element_->PutScalar(-1.0);
@@ -5056,10 +5096,11 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     for (int j=0; j<visualizepositions_->NumVectors(); j++)
       (*visualizepositions_)[j][i] = (*crosslinkerpositions_)[j][i];
 
-  searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, false));
-  searchforneighbours_->PutScalar(1.0);
+  //TODO reactivate if passive linkers are needed
+  //searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, false));
+  //searchforneighbours_->PutScalar(1.0);
 
-  if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol)
+  if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
   {
     // set management vector to store the actual length of an active crosslinker: 0=long, 1=short
     // initial set long (=0)
@@ -5067,6 +5108,22 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     //set management vector to store the time since the last time the crosslinker was linked
     crosslinkeractcycletime_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
     crosslinkeractcycletime_->PutScalar(statmechparams_.get<double>("ACTIVELINKERCYCLE",0.04));
+
+    if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+    {
+      // signals linker type
+      crosslinkertype_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
+      if(!discret_->Comm().MyPID())
+      {
+        std::vector<int> activeorder = Permutation((int)(floor(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)*statmechparams_.get<int>("N_crosslink",0))));
+        for(int i=0; i<(int)activeorder.size(); i++)
+          (*crosslinkertype_)[activeorder[i]] = 1.0;
+      }
+      Teuchos::RCP<Epetra_Vector> crosslinkertypetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
+      CommunicateVector(crosslinkertypetrans,crosslinkertype_);
+    }
+    else
+      crosslinkertype_ = Teuchos::null;
   }
 
   // calculate  number of total binding spot depending on BSPOTINTERVAL

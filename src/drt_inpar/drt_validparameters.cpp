@@ -1962,6 +1962,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   // index controlling the start of DBC application (see ACTIONTIME)
   IntParameter("DBCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of DBC application. Starts counting at '1' !",&statmech);
+  //Reading whether fixed seed for random numbers should be applied
+  setStringToIntegralParameter<int>("FILAMENTPOLARITY","No","toggles filament polarity",yesnotuple,yesnovalue,&statmech);
   //Rise per monomer in the actin double helix according to Howard, p. 125
   DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
   //Rotation per monomer in the actin double helix according to Howard, p. 125
@@ -2000,6 +2002,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("LINKERSCALEFACTOR",0.0,"Scaling factor for active linker length changes",&statmech);
   //displacement in the reaction coordinate used in Bell's euqations
   DoubleParameter("DELTABELLSEQ",0.0,"displacement in the reaction coordinate used in Bell's eqation (<0.0 -> catch bond, >0 -> std bond, 0 == no Bell's equation ",&statmech);
+  // active linker fraction
+  DoubleParameter("ACTIVELINKERFRACTION",0.0,"Fraction of linkers that show active behavior", &statmech);
   // cycle time
   DoubleParameter("ACTIVELINKERCYCLE",0.04,"duration of a work cycle of an active linker",&statmech);
   // time fraction during which no bonding is possible due to the linker being in its recovery state
@@ -2020,8 +2024,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // upper bound of the interval within which uniformly distributed random numbers are generated
   DoubleParameter("MaxRandValue",0.0,"Upper bound of the interval within which uniformly distributed random numbers are generated (usually equal to PeriodLength)",&statmech);
   // Three values representing the size of the periodic box in each spatial direction
-  setNumericStringParameter("PERIODLENGTH","0.0 0.0 0.0",
-                            "Values representing the size of the periodic box in each spatial direction",&statmech);
+  setNumericStringParameter("PERIODLENGTH","0.0 0.0 0.0", "Values representing the size of the periodic box in each spatial direction",&statmech);
   //angle between filament axes at crosslinked points with zero potential energy
   DoubleParameter("PHI0",0.0,"equilibrium angle between crosslinker axis and filament at each binding site",&statmech);
   //only angles in the range PHI0 +/- PHIODEV are admitted at all for the angle PHI between filament axes at crosslinked points; the default value for this parameter is 2*pi so that by default any value is admitted
@@ -2074,8 +2077,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // number of raster point along for ddcorr output boundary box shift -> n³ points in volume
   IntParameter("NUMRASTERPOINTS",3,"number of bins for histograms showing the density-density-correlation-function",&statmech);
   //Reading whether fixed seed for random numbers should be applied
-  setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
-                               yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied", yesnotuple,yesnovalue,&statmech);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 

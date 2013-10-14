@@ -988,14 +988,14 @@ protected:
   //! \brief vector storing unbinding probabilites in case of force-dependent unlinking
   Teuchos::RCP<Epetra_MultiVector> unbindingprobability_;
 
+  //! \brief vector determining the linker type
+  Teuchos::RCP<Epetra_Vector> crosslinkertype_;
+
   //! \brief a vector indicating the actual length of an active crosslinker: 0=long, 1=short
   Teuchos::RCP<Epetra_Vector> crosslinkeractlength_;
 
   //! \brief a vector indicating the actual time in the active crosslinker cycle
   Teuchos::RCP<Epetra_Vector> crosslinkeractcycletime_;
-
-  //! \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
-  Teuchos::RCP<Epetra_Vector> crosslinkonsamefilament_;
 
   //! \brief a vector mapping crosslink molecule IDs to crosslinker element IDs
   Teuchos::RCP<Epetra_Vector> crosslink2element_;
@@ -1018,8 +1018,9 @@ protected:
   //! \brief a vector just for the sake of visual quality
   Teuchos::RCP<Epetra_MultiVector> visualizepositions_;
 
+  //TODO reactivate if passive linkers are needed
   //! \brief a vector holding information on whether or not a crosslink molecule searches for neighbours (switch for active/passive crosslinker)
-  Teuchos::RCP<Epetra_Vector> searchforneighbours_;
+  //Teuchos::RCP<Epetra_Vector> searchforneighbours_;
 
   //! \brief a vector holding indices used in DensityDensityCorrOutput()
   Teuchos::RCP<std::vector<double> > startindex_;
@@ -1048,12 +1049,12 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionsconv_;
   //! \brief vector holding converged state of actlinklength__
   Teuchos::RCP<Epetra_Vector> crosslinkeractlengthconv_;
+  //! \brief vector holding converged state of crosslinkertype_
+  Teuchos::RCP<Epetra_Vector> crosslinkertypeconv_;
   //! \brief vector holding converged state of bspotstatus_
   Teuchos::RCP<Epetra_Vector> bspotstatusconv_;
   //! \brief vector holding converged state of numbond_
   Teuchos::RCP<Epetra_Vector> numbondconv_;
-  //! \brief vector holding converged state of crosslinkonsamefilament_
-  Teuchos::RCP<Epetra_Vector> crosslinkonsamefilamentconv_;
   //! \brief vector holding converged state of crosslink2element_
   Teuchos::RCP<Epetra_Vector> crosslink2elementconv_;
   //! \brief vector holding converged state of searchforneighbour_
