@@ -19,6 +19,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../drt_inv_analysis/stat_inv_ana_graddesc.H"
 #include "../drt_inv_analysis/stat_inv_ana_mc.H"
+#include "../drt_inv_analysis/stat_inv_ana_lbfgs.H"
 #include "../drt_lib/drt_discret.H"
 
 /*======================================================================*/
@@ -46,12 +47,24 @@ void STR::statinvanalysis()
     {
       Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaGradDesc(actdis));
       ia->Optimize();
+
+      DRT::Problem::Instance()->AddFieldTest(ia->CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(actdis->Comm());
+    }
+    break;
+    case INPAR::STR::stat_inv_lbfgs:
+    {
+      Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaLBFGS(actdis));
+      ia->Optimize();
+
+      DRT::Problem::Instance()->AddFieldTest(ia->CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(actdis->Comm());
     }
     break;
     case INPAR::STR::stat_inv_mc:
     {
-      STR::INVANA::StatInvAnaMC ia(actdis);
-      ia.Optimize();
+      Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaMC(actdis));
+      ia->Optimize();
     }
     break;
     default:

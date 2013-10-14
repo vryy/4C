@@ -1088,6 +1088,8 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/matpar_manager.cpp
   src/drt_inv_analysis/stat_inv_ana_graddesc.cpp
   src/drt_inv_analysis/stat_inv_ana_mc.cpp
+  src/drt_inv_analysis/stat_inv_ana_lbfgs.cpp
+  src/drt_inv_analysis/invana_resulttest.cpp
 )  
 set(OBJS_MLMC
   src/drt_mlmc/mlmc.cpp

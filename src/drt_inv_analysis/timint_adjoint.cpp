@@ -12,12 +12,12 @@ Maintainer: Sebastian Kehl
 
 !*/
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include <iostream>
 #include "../drt_io/io_pstream.H"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_TimeMonitor.hpp"
+
+#include "../drt_structure/stru_aux.H"
 
 #include "timint_adjoint.H"
 
@@ -33,19 +33,23 @@ Maintainer: Sebastian Kehl
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
+#include "Epetra_CrsMatrix.h"
 
 
 /*----------------------------------------------------------------------*/
-/* constructor */
-STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret):
+/* constructor                                               keh 10/13  */
+/*----------------------------------------------------------------------*/
+STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret, std::vector<double> time):
 discret_(discret),
 solver_(Teuchos::null),
 dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
+dbctoggle_(Teuchos::null),
 dis_(Teuchos::null),
 rhs_(Teuchos::null),
 stiff_(Teuchos::null),
 zeros_(Teuchos::null),
 stepn_(0),
+time_(time),
 isinit_(false)
 {
   PrintLogo();
@@ -65,6 +69,7 @@ isinit_(false)
 
   // initialize stiffness matrix
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
+  stiffn_ = Teuchos::rcp(new LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
 
   //initialize zeros from the dofrowmap
   zeros_ = LINALG::CreateVector(*(dofrowmap_), true);
@@ -73,6 +78,8 @@ isinit_(false)
   disdualn_ = LINALG::CreateVector(*(dofrowmap_), true);
   disn_ = LINALG::CreateVector(*(dofrowmap_), true);
   rhsn_ = LINALG::CreateVector(*(dofrowmap_), true);
+
+  dbctoggle_ = LINALG::CreateVector(*(dofrowmap_), true);
 
   disdual_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
 
@@ -85,7 +92,8 @@ isinit_(false)
 }
 
 /*----------------------------------------------------------------------*/
-/* Setup some quantities */
+/* bring primal solution and rhs in                          keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
                                       Teuchos::RCP<Epetra_MultiVector> dis)
 {
@@ -95,19 +103,22 @@ void STR::TimIntAdjoint::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
   dis_ = dis;
 
   stepn_ = msteps_;
+  timen_ = 0.0;
+
   if (rhs_ != Teuchos::null && dis_ != Teuchos::null)
     isinit_ = true;
 
 }
 
 /*----------------------------------------------------------------------*/
-/* integrate */
+/* advance adjoint equation in time                          keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::Integrate()
 {
   if (!isinit_)
     dserror("rhs is not set up properly for the adjoint equation");
 
-  //integration for the adjoints is reverse! For the quasi static case it doesn't matter
+  //integration of the adjoints is reverse! For the quasi static case it doesn't matter
   while ( stepn_ > 0)
   {
     PrepareStep(); // -> stepn_ is stepn_-1 now
@@ -121,51 +132,83 @@ void STR::TimIntAdjoint::Integrate()
 }
 
 /*----------------------------------------------------------------------*/
-/* integrate */
+/* evaluate stiffness at the coverged primal state           keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::EvaluateStiff()
 {
   // initialize stiffness matrix to zero
   stiff_->Zero();
+  stiffn_->Zero();
 
-  // a dummy internal force vector
-  Teuchos::RCP<Epetra_Vector> fintn;
-  fintn = LINALG::CreateVector(*(dofrowmap_), true);
+  // a dummy internal and external force vector
+  Teuchos::RCP<Epetra_Vector> fintn = LINALG::CreateVector(*(dofrowmap_), true);
+  Teuchos::RCP<Epetra_Vector> fextn = LINALG::CreateVector(*(dofrowmap_), true);
 
   // set the parameters for the discretization
   Teuchos::ParameterList p;
   const std::string action = "calc_struct_nlnstiff";
   p.set("action", action);
 
+  //set time point
+  p.set("total time", timen_);
+
   discret_->ClearState();
-  discret_->SetState(0,"residual displacement", disn_);
+  discret_->SetState(0,"residual displacement", zeros_);
   discret_->SetState(0,"displacement", disn_);
+  discret_->SetState(0,"displacement new", disn_);
+
+  //we dont need fext of the forward problem so dummy fint is just used for the Neumann call to make it run
+  discret_->EvaluateNeumann(p, fextn, stiffn_);
+  stiffn_->Complete();
 
   discret_->Evaluate(p, stiff_, Teuchos::null, fintn, Teuchos::null, Teuchos::null);
   stiff_->Complete();
 
+  //neumann might bring asymmetrie but we want the adjoint operator to the stiffness matrix, so add transpose
+  stiff_->Add(*stiffn_,true,1.0,1.0);
+
+#if 0
+  //check if the system really converged in the forward problem
+  // this is now fres;
+  LINALG::ApplyDirichlettoSystem(fintn,fextn, zeros_,dbctoggle_);
+  fintn->Update(-1.0,*fextn,1.0);
+  //give residul norm:
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  enum INPAR::STR::VectorNorm norm = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn,"ITERNORM");
+  double normfres = STR::AUX::CalculateVectorNorm(norm, fintn);
+#endif
+
+  //stiff_->Complete();
   discret_->ClearState();
 
 }
 
 /*----------------------------------------------------------------------*/
-/* Solve the linear system */
+/* solve the linear system                                   keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::Solve()
 {
   // Apply Dirichlet
   LINALG::ApplyDirichlettoSystem(stiff_, disdualn_, rhsn_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
 
-  // Solve
-  solver_->Solve(stiff_->EpetraOperator(),disdualn_,rhsn_,true,true);
+  //const std::string fname = "dirichlet.mtl";
+  //LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
 
+  // Solve
+  solver_->Solve(stiff_->EpetraOperator(),disdualn_,rhsn_,true,true, Teuchos::null);
+
+  //exit(0);
   return;
 }
 
 /*----------------------------------------------------------------------*/
-/* Prepare variables */
+/* prepare step and time                                     keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::PrepareStep()
 {
   // decrease stepn first
   stepn_ -= 1;
+  timen_=time_[stepn_];
 
   // extract variables needed for this "time step"
   disn_->Update(1.0,*(*dis_)(stepn_),0.0);
@@ -179,8 +222,10 @@ void STR::TimIntAdjoint::PrepareStep()
   return;
 }
 
+
 /*----------------------------------------------------------------------*/
-/* Update step and time */
+/* update state                                              keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::UpdateStep()
 {
   (*disdual_)(stepn_)->Update(1.0,*disdualn_,0.0);
@@ -191,6 +236,9 @@ void STR::TimIntAdjoint::UpdateStep()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* get a linear solver                                       keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::CreateLinearSolver(const Teuchos::ParameterList& sdyn)
 {
   // get the solver number used for structural problems
@@ -208,20 +256,22 @@ void STR::TimIntAdjoint::CreateLinearSolver(const Teuchos::ParameterList& sdyn)
 }
 
 /*----------------------------------------------------------------------*/
-/* Update step and time */
+/* get dirichlet stuff                                       keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::GetDBCMap()
 {
   // Get Dirichlet Map
   Teuchos::ParameterList p;
   //p.set("total time", timen_);
-  discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,Teuchos::null, dbcmaps_);
+  discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,dbctoggle_, dbcmaps_);
   zeros_->PutScalar(0.0); // paranoia
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-/* UPrint Logo */
+/* print logo                                                keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::PrintLogo()
 {
   IO::cout << "--------------------------------------------------" << IO::endl;

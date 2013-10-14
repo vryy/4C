@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file stat_inv_ana_graddesc.H
+ * \file stat_inv_ana_lbfgs.H
  *
 <pre>
 Maintainer: Sebastian Kehl
@@ -9,8 +9,8 @@ Maintainer: Sebastian Kehl
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef STAT_INV_ANA_GRADDESC_H
-#define STAT_INV_ANA_GRADDESC_H
+#ifndef STAT_INV_ANA_LBFGS_H
+#define STAT_INV_ANA_LBFGS_H
 
 #include "stat_inv_analysis.H"
 
@@ -19,21 +19,7 @@ namespace STR
 namespace INVANA
 {
 
-
-  /*!
-  \brief Steepest descent with armijo rule line search
-
-  This is a standard steepest gradient descent implementation derived from StatInvAnalysis.
-
-  Stepsize is computed such that the sufficient decrease condition is fulfilled.
-
-  The LineSearch is based on poynomial approximations based on the available information
-  in each line search step, i.e a quadratic model is used in the first step, while for
-  steps >1 cubic models are applied.
-
-  */
-
-class StatInvAnaGradDesc : public StatInvAnalysis
+class StatInvAnaLBFGS : public StatInvAnalysis
 {
 
 private:
@@ -53,6 +39,12 @@ private:
   //! Print step
   void PrintOptStep(double stepsize, int numsteps);
 
+  //! store new vector quantities
+  void StoreVectors();
+
+  //! compute new direction based on lbfgs formula
+  void ComputeDirection();
+
   //! step size for the gradient scheme
   double stepsize_;
 
@@ -68,24 +60,36 @@ private:
   //! current convergence criterion value
   double convcritc_;
 
-  //! current direction of steepest descent
+  //! maximum size of storage (number of multivectors)
+  int ssize_;
+
+  //! current size of the storage
+  int actsize_;
+
+  //! storage of solution delta
+  Teuchos::RCP<TimIntMStep<Epetra_Vector> > sstore_;
+
+  //! storage of gradient delta
+  Teuchos::RCP<TimIntMStep<Epetra_Vector> > ystore_;
+
+  //! current direction of steepest descent maybe properly scaled by hessian approximation
   Teuchos::RCP<Epetra_MultiVector> p_;
 
-  //! current step made based on direction p_ sacled with a proper stepsize
+  //! current step made based on direction p_ using sacled with a proper stepsize
   Teuchos::RCP<Epetra_MultiVector> step_;
 
 public:
 
   //! standard constructor
-  StatInvAnaGradDesc(Teuchos::RCP<DRT::Discretization> dis);
+  StatInvAnaLBFGS(Teuchos::RCP<DRT::Discretization> dis);
 
-  ~StatInvAnaGradDesc() {};
+  ~StatInvAnaLBFGS() {};
 
   //! start the optimization routine
   void Optimize();
 
-}; // class StatInvAnaGradDesc
+}; // class StatInvAnaLBFGS
 }  // namespace INVANA
 }  // namespace STR
 
-#endif /*INV_ANALYSIS_GRADDESC_H*/
+#endif /*INV_ANALYSIS_LBFGSH*/

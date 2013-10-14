@@ -30,14 +30,27 @@ namespace DRT
   class Discretization;
 }
 
-/*----------------------------------------------------------------------*/
-//! Material parameters manager
 namespace STR
 {
 
 namespace INVANA
 
 {
+
+  /*!
+  \brief A class to handle material parameters for optimization
+
+  The MatParManager handels the mapping between the elemental material parameters and
+  the vector of material parameters held in the optimization process.
+
+  Material Parameters are stored as Epetra_MultiVector where each vector refers to a
+  physical material property (e.g. youngs modulus for St. Venant Kirchhoff, alpha "stiffness"
+  and beta "stiffness" in the AAA material). The layout of each vector is given by the
+  underlying discretization's elecolmap.
+
+  It furthermore handles the evaluation of the gradient of the problem residual w.r.t to the material
+  parameters choosen to be identified.
+ */
   class MatParManager
   {
 
@@ -49,13 +62,14 @@ namespace INVANA
     //!destructor
     virtual ~MatParManager() { ; };
 
-    //! put derivative of internal force vector into dfint
-    //! numvectors: number of parameters (e.g. numelements)
-    //! length of each vector comes from the discretizations dofrowmap
-    void Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint, Teuchos::RCP<Epetra_Vector> disdual);
+    //! evaluate derivative of the residual force vector w.r.t to the material parameters
+    void Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint);
 
     //! update params
     void UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd);
+
+    //! update params
+    void ReplaceParams(Teuchos::RCP<Epetra_MultiVector> toreplace);
 
     //! reset params
     void ResetParams();
@@ -63,17 +77,20 @@ namespace INVANA
     //! Return the material parameters
     const Teuchos::RCP<Epetra_MultiVector> GetParams(){ return params_; };
 
-    //! Return the material parameters
-    const Teuchos::RCP<Epetra_MultiVector> GetInitialGuess(){ return params_init_; };
+    //! Return the material parameters of the last run
+    const Teuchos::RCP<Epetra_MultiVector> GetParamsOld(){ return params_o_; };
+
+    //! Return number of physically different parameters
+    int NumParams(){ return numparams_; };
 
     //! Return weight of the regularization
     double GetRegWeight(){return reg_weight_;};
 
+    //! Put vector index of a given material parameter <string> into loc
+    int GetParameterLocation(int eleid, std::string name);
+
 
   protected:
-
-    //! type of material
-    //INPAR::MAT::MaterialType mattype_;
 
     //! map of names for each material parameter
     //! key: matid, value: vector of names of the parameters
@@ -82,19 +99,14 @@ namespace INVANA
     //! map of matids to parameterids for the parameter vector
     std::map<int,std::vector<int> > parapos_;
 
-    //! size of the parameter vector
-    int sizeparams_;
-
-    //! size of the parameter vector
+    //! number of physically different material parameters
+    //! -> number of vectors in params_
     int numparams_;
 
     //! discretization
     Teuchos::RCP<DRT::Discretization> discret_;
 
-    //! a dofrowmap of the above discretization
-    const Epetra_Map* dofrowmap_;
-
-    //! a elecolmap for the distribution of parameters
+    //! discret_'s elecolmap for the distribution of parameters
     const Epetra_Map* elecolmap_;
 
     //! actual set of parameters
@@ -108,6 +120,9 @@ namespace INVANA
 
     //! weight of the regularization:
     double reg_weight_;
+
+    //! inidicates meta parmaetrization of the material parameters k_m = k^2+0.1
+    bool metaparams_;
 
     //! construct map of material parameters to be optimized
     void SetupMatOptMap();

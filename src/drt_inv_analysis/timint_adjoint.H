@@ -76,7 +76,7 @@ namespace STR
   public:
 
     //! Constructor
-    TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis);
+    TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis, std::vector<double> time);
 
     //! Empty constructor
     TimIntAdjoint() { ; }
@@ -130,6 +130,9 @@ namespace STR
     //! Map to the dirichlet boundary
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
+    //! DBC toggle
+    Teuchos::RCP<Epetra_Vector> dbctoggle_;
+
     //! primal variables (displacements)
     Teuchos::RCP<Epetra_MultiVector> dis_;
 
@@ -151,6 +154,9 @@ namespace STR
     //! stiffness matrix
     Teuchos::RCP<LINALG::SparseOperator> stiff_;
 
+    //! stiffness matrix carrying neumann terms
+    Teuchos::RCP<LINALG::SparseOperator> stiffn_;
+
     //! a vector with zeros
     Teuchos::RCP<Epetra_Vector> zeros_;
 
@@ -159,6 +165,12 @@ namespace STR
 
     //! time step at time n
     int stepn_;
+
+    //! time from the primal problem
+    std::vector<double> time_;
+
+    //! current time value
+    double timen_;
 
     //! rhs and primal variables set?
     bool isinit_;

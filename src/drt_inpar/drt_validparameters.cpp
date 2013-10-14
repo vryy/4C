@@ -1250,16 +1250,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Statistical Inverse Analysis switch
   setStringToIntegralParameter<int>("STAT_INV_ANALYSIS","none",
-                                "types of statistical inverse analysis and on/off switch",
-                                tuple<std::string>(
-                                  "none",
-                                  "GradientDescent",
-                                  "MonteCarlo"),
-                                tuple<int>(
-                                  INPAR::STR::stat_inv_none,
-                                  INPAR::STR::stat_inv_graddesc,
-                                  INPAR::STR::stat_inv_mc),
-                                &statinvp);
+                                    "types of statistical inverse analysis and on/off switch",
+                                    tuple<std::string>(
+                                      "none",
+                                      "GradientDescent",
+                                      "MonteCarlo",
+                                      "LBFGS"),
+                                    tuple<int>(
+                                      INPAR::STR::stat_inv_none,
+                                      INPAR::STR::stat_inv_graddesc,
+                                      INPAR::STR::stat_inv_mc,
+                                      INPAR::STR::stat_inv_lbfgs),
+                                    &statinvp);
 
   // decide which parametrization of material parameters to use
   setStringToIntegralParameter<int>("PARAMETRIZATION","none",
@@ -1274,10 +1276,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::STR::stat_inv_mp_elementwise),
                                     &statinvp);
 
-  // list of materials to be optimized
-  setNumericStringParameter("NUM_KERNEL","-1",
-                            "number of kernel functions per dimension",
-                            &statinvp);
+  // want some regularization
+  setStringToIntegralParameter<int>("REGULARIZATION","none",
+                                    "want regularization? ('thikonov', 'none')",
+                                    tuple<std::string>(
+                                      "none",
+                                      "thikonov"),
+                                    tuple<int>(
+                                      INPAR::STR::stat_inv_reg_none,
+                                      INPAR::STR::stat_inv_reg_thikonov),
+                                    &statinvp);
 
   // monitorfile to provide measurements
   StringParameter("MONITORFILE","none.monitor",
@@ -1305,11 +1313,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // stepsize for deterministic gradient based schemes
   DoubleParameter("STEPSIZE",1.0,"stepsize for the gradient descent scheme",&statinvp);
 
-  // Width of the kernels used to represent the parameter field
-  DoubleParameter("KERNEL_WIDTH",1.0,"width of the kernel for parametric field representation",&statinvp);
+  // convergence criterion tolerance
+  DoubleParameter("CONVTOL",1.0e-06,"stop optimizaiton iterations for convergence criterion below this value",&statinvp);
 
   // Width of the kernels used to represent the parameter field
   DoubleParameter("REG_WEIGHT",0.1,"weight of the regularization",&statinvp);
+
+  // number of optimization steps
+  IntParameter("SIZESTORAGE",20,"number of vectors to keep in storage; defaults to 20 (lbfgs usage only)",&statinvp);
+
+  // meta parametrization of material parameters
+  BoolParameter("METAPARAMS","Yes","want metaparametrization of material parameters to kept them in range?", &statinvp);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");

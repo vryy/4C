@@ -21,7 +21,8 @@ Maintainer: Sebastian Kehl
 
 
 /*----------------------------------------------------------------------*/
-/* standard constructor */
+/* standard constructor                                                 */
+/*----------------------------------------------------------------------*/
 STR::INVANA::ObjectiveFunct::ObjectiveFunct(Teuchos::RCP<DRT::Discretization> discret,
                                             int steps,
                                             Teuchos::RCP<std::vector<double> > timesteps):
@@ -46,7 +47,8 @@ msteps_(steps)
 }
 
 /*----------------------------------------------------------------------*/
-/* read monitor file */
+/* read monitor file                                        keh 10/13   */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string monitorfilename)
 {
   int myrank = discret_->Comm().MyPID();
@@ -98,6 +100,7 @@ void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string monitorfilename)
   // read nodes
   nodes.resize(nnodes);
   dofs.resize(nnodes);
+
   for (int i=0; i<nnodes; ++i)
   {
     fgets(buffer,150000,file);
@@ -106,14 +109,11 @@ void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string monitorfilename)
     int ndofs_act = strtol(foundit,&foundit,10);
     ndofs += ndofs_act;
     dofs[i].resize(ndofs,-1);
-    DRT::Node* actnode = discret_->gNode(nodes[i]);
-    std::vector<int> actdofs = discret_->Dof(actnode);
 
     if (!myrank) printf("Monitored node %d ndofs %d dofs ",nodes[i],(int)dofs[i].size());
     for (int j=0; j<ndofs; ++j)
     {
-      //dofs[i][j] = strtol(foundit,&foundit,10);
-      dofs[i][j] = actdofs[strtol(foundit,&foundit,10)];
+      dofs[i][j] = strtol(foundit,&foundit,10); //actdofs[strtol(foundit,&foundit,10)];
       if (!myrank) printf("%d ",dofs[i][j]);
     }
     if (!myrank) printf("\n");
@@ -149,13 +149,25 @@ void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string monitorfilename)
 
       for (int j=0; j<nnodes; j++)
       {
+        // if this processor does not own this node, skip it
+        if (!(discret_->HaveGlobalNode(nodes[j])))
+        {
+          for (int k=0; k<(int)dofs[j].size(); k++)
+          {
+            strtod(foundit,&foundit);
+          }
+          continue;
+        }
+
+        DRT::Node* actnode = discret_->gNode(nodes[j]);
+        std::vector<int> actdofs = discret_->Dof(actnode);
+
         for (int k=0; k<(int)dofs[j].size(); k++)
         {
-          mdisp_->ReplaceGlobalValue(dofs[j][k],i,strtod(foundit,&foundit));
-          //assuming equal number of measured dofs for each time step
-          //mask_ can be filled only once
-          //mask_->ReplaceGlobalValue(dofs[j][k],i,1.0);
-          mask_->ReplaceGlobalValue(dofs[j][k],0,1.0);
+          mdisp_->ReplaceGlobalValue(actdofs[dofs[j][k]],i,strtod(foundit,&foundit));
+          //assuming the same dofs are measured for each time step
+          // -> mask_ can be just one vector
+          mask_->ReplaceGlobalValue(actdofs[dofs[j][k]],0,1.0);
         }
       }
 
@@ -170,12 +182,11 @@ void STR::INVANA::ObjectiveFunct::ReadMonitor(std::string monitorfilename)
 }
 
 /*----------------------------------------------------------------------*/
-/* Evaluate value of the objective function */
-double STR::INVANA::ObjectiveFunct::Evaluate(Teuchos::RCP<Epetra_MultiVector> disp,
-                                           Teuchos::RCP<MatParManager> matman)
+/* Evaluate value of the objective function                  keh 10/13  */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::ObjectiveFunct::Evaluate(Teuchos::RCP<Epetra_MultiVector> disp,
+                                           double& val)
 {
-  double val;
-
   Epetra_SerialDenseVector normvec(disp->NumVectors());
 
   Epetra_MultiVector tmpvec = Epetra_MultiVector(*dofrowmap_,msteps_,true);
@@ -190,27 +201,12 @@ double STR::INVANA::ObjectiveFunct::Evaluate(Teuchos::RCP<Epetra_MultiVector> di
   // sum every entry
   val = 0.5*normvec.Norm1();
 
-  //std::cout << "mdisp: " << *mdisp_ << std::endl;
-  //std::cout << "disp: " << *disp << std::endl;
-  //std::cout << "mask: " << *mask_ << std::endl;
-
-  //add Thikonov regularization on the parameter vector:
-  normvec.Scale(0.0);
-  Epetra_MultiVector tmpvec2 = Epetra_MultiVector(*matman->GetInitialGuess());
-  std::cout << *matman->GetParams() << std::endl;
-  std::cout << tmpvec2 << std::endl;
-  tmpvec2.Update(1.0,*(matman->GetParams()),-1.0);
-  std::cout << tmpvec2 << std::endl;
-  tmpvec2.Multiply(1.0,tmpvec2,tmpvec2,0.0);
-  std::cout << tmpvec2 << std::endl;
-  tmpvec2.Norm1(normvec.Values());
-  val += 0.5*(matman->GetRegWeight())*normvec.Norm1();
-
-  return val;
 }
 
 /*----------------------------------------------------------------------*/
-/* Evaluate the gradient of the objective function w.r.t the displacements */
+/* Evaluate the gradient of the objective function                      */
+/* w.r.t the displacements                                   keh 10/13  */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::ObjectiveFunct::EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp,
                                                    Teuchos::RCP<Epetra_MultiVector> gradient)
 {
@@ -220,6 +216,5 @@ void STR::INVANA::ObjectiveFunct::EvaluateGradient(Teuchos::RCP<Epetra_MultiVect
   tmpvec.Multiply(1.0,*mask_,*disp,-1.0);
   gradient->Update(1.0,tmpvec,0.0);
 
-  //std::cout << "adjoint rhs " << *gradient << std::endl;
   return;
 }

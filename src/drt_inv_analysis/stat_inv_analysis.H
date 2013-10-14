@@ -16,6 +16,8 @@ Maintainer: Jonas Biehler
 #include "Epetra_Vector.h"
 #include "../drt_structure/strtimint_mstep.H"
 
+#include "objective_funct.H"
+
 // forward declarations
 
 namespace COMM_UTILS
@@ -42,6 +44,7 @@ namespace DRT
 {
   class Condition;
   class Discretization;
+  class ResultTest;
 }
 
 namespace STR
@@ -50,9 +53,29 @@ namespace STR
 namespace INVANA
 {
 
-class ObjectiveFunct;
-
 class MatParManager;
+
+  /*!
+  \brief A class for the inverse analysis
+
+  This class provides all the general stuff needed for some inverse analysis procedure, which is:
+
+  - access to the forward problem time integrator
+  - access to the adjoint problem time integrator
+  - methods to run the forward problem
+  - methods to run the adjoint problem
+  - access to some objective function
+  - access to the gradient of some objective function
+  - an objective function to be minimized or whatever
+  - a MatParManager that has control of the material parameters
+  - final testing of the optimized material parmaters
+
+  What exactly is to be done with this information must be provided by derived classes. This can be
+  implementations like steepest descent, limited memory bfgs, monto carlo sampling, etc.
+
+  A simple Thikonov regularization is included, when specified in the input file. This should be moved
+  some standalone class eventually.
+ */
 
 class StatInvAnalysis {
 
@@ -97,14 +120,26 @@ protected:
   //! outputer
   Teuchos::RCP<IO::DiscretizationWriter> output_;
 
+  //! have regularization?
+  bool havereg_;
+
+  //! weight of the regularization when being added to the objective function
+  double regweight_;
+
   //! solve the primal problem
   void SolveForwardProblem();
 
   //! solve the adjoint problem
   void SolveAdjointProblem();
 
-  //! Evaluate the objective functions gradient w.r.t the design parameters
+  //! Evaluate the objective functions gradient w.r.t the material parameters
   void EvaluateGradient();
+
+  //! Evaluate the objective function
+  void EvaluateError();
+
+  //! Evaluate FD approximation of the objective functions gradient w.r.t the design parameters
+  void EvaluateGradientFD();
 
   //! MStep EpetraVector to EpetraMultiVector
   void MStepEpetraToEpetraMulti(Teuchos::RCP<TimIntMStep<Epetra_Vector> > mstepvec,
@@ -114,9 +149,11 @@ protected:
   void MStepDToStdVecD(Teuchos::RCP<TimIntMStep<double> > mstepvec,
                        Teuchos::RCP<std::vector<double> > stdvec);
 
-  //! do the update on the parameter vector
-  virtual void UpdateOptStep() {dserror("must be implemented in the specific routine");};
+  //! compute some norm on a vector stored in multivector format for storage reasons only
+  void MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, double* result);
 
+  //! compute dot product of two vectors stored in multivector fomat for storage reasons only
+  void MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos::RCP<Epetra_MultiVector> bvector, double* result);
 
 public:
 
@@ -129,9 +166,15 @@ public:
   //! use some specific optimization routine
   virtual void Optimize() = 0;
 
+  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_;};
+
+  Teuchos::RCP<STR::INVANA::MatParManager> MatParManager() {return matman_;};
+
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
 
 }; // class StatInvAnalysis
 }  // namespace INVANA
 }  // namespace STR
 
-#endif /*INV_ANALYSIS_H_*/
+#endif /*STAT_INV_ANALYSIS_H_*/

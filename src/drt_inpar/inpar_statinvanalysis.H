@@ -22,6 +22,12 @@ namespace INPAR
   /// Input parameters for Inverse Analysis
   namespace STR
   {
+    enum StatInvRegularization
+    {
+      stat_inv_reg_none,              // nothing defined
+      stat_inv_reg_thikonov,          // thikonov regularization
+    };
+
     enum StatInvMatParametrization
     {
       stat_inv_mp_none,                  // nothing defined
@@ -34,7 +40,8 @@ namespace INPAR
     {
       stat_inv_none,          // no
       stat_inv_mc,            // statistical inverse analysis using montecarlo
-      stat_inv_graddesc       // deterministic inverse analysis using gradient descent
+      stat_inv_graddesc,      // deterministic inverse analysis using gradient descent
+      stat_inv_lbfgs          // deterministic inverse analysis using limited memory bfgs
     };
 
   }  // namespace STR
