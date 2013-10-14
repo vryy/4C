@@ -81,6 +81,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> Velnm()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Accnp()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Accn()          { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<const Epetra_Vector> Accnm()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Accam()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Scaaf()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Scaam()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
@@ -127,14 +128,14 @@ public:
 
 
   virtual void Solve() = 0;
-  virtual void Predictor()           { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+  virtual void Predictor() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
-  virtual void CalcIntermediateSolution() {dserror("Not implemented in the base class");}
+  virtual void CalcIntermediateSolution() { dserror("Not implemented in the base class");}
   /// get the linear solver object used for this field
-  virtual Teuchos::RCP<LINALG::Solver>  LinearSolver() {dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() {dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; } // only used for FSI
-  virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap(){dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  virtual Teuchos::RCP<const Epetra_Map> PressureRowMap(){dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<LINALG::Solver>  LinearSolver() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; } // only used for FSI
+  virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
 
   /// preparations for Krylov space projection
   virtual void SetupKrylovSpaceProjection(DRT::Condition* kspcond) { dserror("Not implemented in the base class, may be overridden by a subclass."); }
@@ -143,12 +144,12 @@ public:
 
 
   /// the mesh map contains all velocity dofs that are covered by an ALE node
-  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm){dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   /// scaling factor needed to convert the residual to real forces
   virtual double ResidualScaling() const = 0;
 
-  virtual double TimeScaling() const {dserror("Not implemented in the base class, may be overridden by a subclass."); return 1337.0; }
+  virtual double TimeScaling() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 1337.0; }
 
   /// return time integration factor
   virtual double TimIntParam() const = 0;
@@ -161,24 +162,59 @@ public:
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { dserror("Implemented in the fluid wrapper and derived classes");
     static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null; return ret; }
 
-  virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) {dserror("Not implemented in the base class, may be overridden by a subclass."); }
+  virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
-  virtual void ReadRestart(int step) {dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
-  virtual void ReadRestartReducedD(int step) {dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void ReadRestart(int step) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void ReadRestartReducedD(int step) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
   virtual void SetRestart(const int step,
                     const double time,
                     Teuchos::RCP<const Epetra_Vector> readvelnp,
                     Teuchos::RCP<const Epetra_Vector> readveln,
                     Teuchos::RCP<const Epetra_Vector> readvelnm,
                     Teuchos::RCP<const Epetra_Vector> readaccnp,
-                    Teuchos::RCP<const Epetra_Vector> readaccn) {dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+                    Teuchos::RCP<const Epetra_Vector> readaccn) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   virtual double Time() const { return time_; }
   virtual int    Step() const { return step_; }
   virtual double Dt()   const { return dta_;  }
-  /// increment time and step value
-  virtual void   IncrementTimeAndStep() { step_ += 1; time_ += dta_; }
 
+  //! increment time and step value
+  virtual void IncrementTimeAndStep();
+
+  //! set time step size
+  virtual void SetDt (const double dtnew) {dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+
+  //! set time and step
+  virtual void SetTimeStep(const double time, ///< time to set
+                           const int step     ///< time step number to set
+                           )
+  { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+
+  /*!
+  \brief Reset time step
+
+  In case of time step size adaptivity, time steps might have to be repeated.
+  Therefore, we need to reset the solution back to the initial solution of the
+  time step.
+
+  \author: mayr.mt
+  \date: 08/2013
+  */
+  virtual void ResetStep() { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+
+  /*!
+  \brief Reset time and step in case that a time step has to be repeated
+
+  Fluid field increments time and step at the beginning of a time step. If a time
+  step has to be repeated, we need to take this into account and decrease time and
+  step beforehand. They will be incremented right at the beginning of the repetition
+  and, thus, everything will be fine. Currently, this is needed for time step size
+  adaptivity in FSI.
+
+  \author: mayr.mt
+  \date: 08/2013
+   */
+  virtual void ResetTime(const double dtold) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   virtual void LiftDrag() const = 0;
   virtual const double EvalTime() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 0.0; }
@@ -306,41 +342,56 @@ public:
   const INPAR::FLUID::PhysicalType PhysicalType() const {return physicaltype_;}
 
 protected:
+
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
+
+  //! linear solver
   Teuchos::RCP<LINALG::Solver>           solver_;
+
+  //! parameter list
   Teuchos::RCP<Teuchos::ParameterList>   params_;
+
+  //! output writer
   Teuchos::RCP<IO::DiscretizationWriter> output_;
 
-  double  time_;                                            /// physical time
-  int     step_;                                            /// timestep
-  double  dta_;
+  //! @name Time loop stuff
+  //@{
 
-  int     stepmax_;     ///< maximal number of timesteps
-  double  maxtime_;     ///< maximal physical computation time
-  int     itemax_;      /// maximum number of nonlinear iterations
+  double  time_;      /// physical time
+  int     step_;      /// timestep number
+  double  dta_;		    /// time step size of current time step
 
-  int     uprestart_;
-  int     upres_;
+  int     stepmax_;   ///< maximal number of timesteps
+  double  maxtime_;   ///< maximal physical computation time
+  int     itemax_;    /// maximum number of nonlinear iterations
+
+  //@}
+
+  int     uprestart_; ///< write restart data every uprestart_ steps
+  int     upres_;     ///< write result every upres_ steps
 
   INPAR::FLUID::TimeIntegrationScheme timealgo_;     ///< time algorithm flag
   INPAR::FLUID::PhysicalType          physicaltype_; ///< flag for physical type of fluid flow (standard: incompressible)
 
-  int     myrank_;      ///< the processor ID from the communicator
+  int     myrank_;    ///< the processor ID from the communicator
 
   //! @name variables for Krylov Space projection
   //@{
+
   //! flag setting whether Krylov projection needs to be updated or not
-  bool                                  updateprojection_;
+  bool updateprojection_;
+
   //! Krylov projector himself
   Teuchos::RCP<LINALG::KrylovProjector> projector_;
+
   /// Krylov space projection map extractor
   Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
+
   //@}
 
 }; // class TimInt
 
 }
-
 
 #endif  // #ifndef FLUIDIMPLICITINTEGRATION_H

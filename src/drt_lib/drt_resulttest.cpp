@@ -66,7 +66,11 @@ void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, in
 int DRT::ResultTest::CompareValues(double actresult, std::string type, DRT::INPUT::LineDefinition& res)
 {
   int gid;
-  res.ExtractInt(type,gid);
+
+  if (type != "SPECIAL")
+  {
+    res.ExtractInt(type,gid);
+  }
   std::string quantity;
   res.ExtractString("QUANTITY",quantity);
   double givenresult;
@@ -98,23 +102,30 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, DRT::INPU
   if (name != "")
     msghead << "(" << name << ")";
 
-  std::transform(type.begin(), type.end(), type.begin(), ::tolower);
-  msghead << " at " << type << " "
+  if ( type != "SPECIAL" )
+  {
+    std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+    msghead << " at " << type << " "
           << std::right << std::setw(3)<< gid;
+  }
+  else
+  {
+    msghead << "\t";
+  }
 
   // write something to screen depending if the result check was ok or not
   if (!(fabs(fabs(actresult-givenresult)-fabs(actresult-givenresult)) < tolerance) )
   {
     // Result is 'not a number'
     IO::cout  << msghead.str()
-              << " is NAN!\n";
+              << "\t is NAN!\n";
     ret = 1;
   }
   else if (fabs(actresult-givenresult) > tolerance)
   {
     // Result is wrong
     IO::cout  << msghead.str()
-              << " is WRONG --> actresult="
+              << "\t is WRONG --> actresult="
               << std::setw(24) << std::setprecision(17) << std::scientific << actresult
               << ", givenresult="
               << std::setw(24) << std::setprecision(17) << std::scientific << givenresult
@@ -126,7 +137,7 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, DRT::INPU
   {
     // Result is correct
     IO::cout  << msghead.str()
-              << " is CORRECT\n";
+              << "\t is CORRECT\n";
   }
 
   return ret;
@@ -328,8 +339,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
-  DRT::INPUT::LineDefinition fsi;
-  fsi
+  DRT::INPUT::LineDefinition fsi_node;
+  fsi_node
     .AddTag("FSI")
     .AddNamedInt("NODE")
     .AddNamedString("QUANTITY")
@@ -338,16 +349,26 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition fsi_special;
+  fsi_special
+    .AddTag("FSI")
+    .AddTag("SPECIAL")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   DRT::INPUT::LineDefinition invana;
   invana
-      .AddTag("INVANA")
-      .AddNamedString("DIS")
-      .AddNamedInt("ELEMENT")
-      .AddNamedString("QUANTITY")
-      .AddNamedDouble("VALUE")
-      .AddNamedDouble("TOLERANCE")
-      .AddOptionalNamedString("NAME")
-      ;
+    .AddTag("INVANA")
+    .AddNamedString("DIS")
+    .AddNamedInt("ELEMENT")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
 
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
@@ -360,7 +381,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(art_net);
   lines->Add(fld_adj);
   lines->Add(opti);
-  lines->Add(fsi);
+  lines->Add(fsi_node);
+  lines->Add(fsi_special);
   lines->Add(invana);
 
   return lines;

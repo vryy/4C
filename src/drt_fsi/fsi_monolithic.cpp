@@ -27,7 +27,6 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
@@ -39,6 +38,7 @@ Maintainer: Matthias Mayr
 #include "../drt_constraint/constraint_manager.H"
 
 #include "../drt_io/io_control.H"
+
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
@@ -118,7 +118,14 @@ void FSI::MonolithicBase::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::Update()
 {
-  StructureField()->Update();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  bool timeadapton = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+
+  if ( not timeadapton )
+    StructureField()->Update(); // constant dt
+  else
+    StructureField()->Update(Time()); // variable/adaptive dt
+
   FluidField().     Update();
   AleField().       Update();
 }
@@ -265,9 +272,12 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(Teuchos::RC
 /*----------------------------------------------------------------------*/
 FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
                             const Teuchos::ParameterList& timeparams)
-  : MonolithicBase(comm,timeparams)
+  : MonolithicBase(comm,timeparams),
+    firstcall_(true),
+    log_(Teuchos::null),
+    logada_(Teuchos::null)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
@@ -276,14 +286,23 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
     //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
   }
 
-  std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  s.append(".iteration");
-  log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
-
-  firstcall_ = true;
+  // write iterations-file
+  std::string fileiter = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  fileiter.append(".iteration");
+  log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // "Initialize" interface solution increments due to structural predictor
   ddgpred_ = Teuchos::null;
+
+  //-------------------------------------------------------------------------
+  // time step size adaptivity
+  //-------------------------------------------------------------------------
+  const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+
+  if (timeadapton)
+  {
+    InitTimIntAda(fsidyn);
+  }
 }
 
 
@@ -352,10 +371,31 @@ void FSI::Monolithic::SetupSystem()
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+{
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+
+  // Run time loop with constant or adaptive time step size (depending on the user's will)
+  if ( not timeadapton )
+  {
+    // call time loop with constant time step size
+    TimeloopConstDt(interface);
+  }
+  else
+  {
+    // call time loop with adaptive time step size
+    TimeloopAdaDt(interface);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   PrepareTimeloop();
 
@@ -401,14 +441,17 @@ void FSI::Monolithic::PrepareTimeloop()
   // Create printing utilities
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
+  // write header of log-file
   if (Comm().MyPID()==0)
   {
     (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
             << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method") << "\n"
-            << "# step | time | time/step | #nliter | res-norm | #liter\n"
-            << "#\n"
-      ;
+            << "# step | time | time/step  |  #nliter  | res-norm |   #liter  |   dt  | ";
+
+    (*log_) << "#\n\n";
   }
+
+  WriteAdaFileHeader();
 
   // check for prestressing,
   // do not allow monolithic in the pre-phase
@@ -428,7 +471,6 @@ void FSI::Monolithic::PrepareTimeloop()
     }
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -515,10 +557,11 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
             << "\t" << nlParams.sublist("Output").get<int>("Nonlinear Iterations")
             << "\t" << nlParams.sublist("Output").get<double>("2-Norm of Residual")
             << "\t" << lsParams.sublist("Output").get<int>("Total Number of Linear Iterations")
-      ;
+            << "\t" << Dt();
+    }
     (*log_) << std::endl;
     lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
-  }
+
 }
 
 

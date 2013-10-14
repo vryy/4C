@@ -2678,10 +2678,27 @@ void STR::TimInt::Reset()
 }
 
 /*----------------------------------------------------------------------*/
-/* set structure displacement vector due to biofilm growth          */
+/* set structure displacement vector due to biofilm growth              */
 void STR::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
 {
   strgrdisp_= struct_growth_disp;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Resize MStep Object due to time adaptivity in FSI                    */
+void STR::TimInt::ResizeMStepTimAda()
+{
+  // resize time and stepsize fields
+  time_->Resize(-1, 0, (*time_)[0]);
+  dt_->Resize(-1, 0, (*dt_)[0]);
+
+  // resize state vectors, AB2 is a 2-step method, thus we need two
+  // past steps at t_{n} and t_{n-1}
+  dis_->Resize(-1, 0, dofrowmap_, true);
+  vel_->Resize(-1, 0, dofrowmap_, true);
+  acc_->Resize(-1, 0, dofrowmap_, true);
 
   return;
 }

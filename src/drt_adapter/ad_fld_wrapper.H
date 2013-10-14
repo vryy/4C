@@ -42,6 +42,8 @@ namespace ADAPTER
     { return fluid_->Accnp(); };
     virtual Teuchos::RCP<const Epetra_Vector> Accn()
     { return fluid_->Accn(); };
+    virtual Teuchos::RCP<const Epetra_Vector> Accnm()
+    { return fluid_->Accnm(); };
     virtual Teuchos::RCP<const Epetra_Vector> Accam()
     { return fluid_->Accam(); }
     virtual Teuchos::RCP<const Epetra_Vector> Scaaf()
@@ -169,6 +171,20 @@ namespace ADAPTER
     { return fluid_->Step(); }
     virtual double Dt() const
     { return fluid_->Dt(); }
+
+    //! Set fluid time step size that was computed outside
+    virtual void SetDt(const double dtnew)
+    {fluid_->SetDt(dtnew);}
+
+    //! Reset last time step
+    virtual void ResetStep(){fluid_->ResetStep();}
+    
+    //! Reset time and step number of last time step, needed for time step size adaptivity an FSI
+    virtual void ResetTime(const double dtold){fluid_->ResetTime(dtold);}
+
+    //! Set time and step
+    virtual void SetTimeStep(const double time, const int step){fluid_->SetTimeStep(time, step);}
+
     virtual void LiftDrag() const
     { return fluid_->LiftDrag(); }
     virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }

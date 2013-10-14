@@ -179,6 +179,9 @@ namespace STR
     //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
+    //! Resize #TimIntMStep<T> multi-step quantities, needed for fsi time adaptivity
+    virtual void ResizeMStepTimAda();
+
     //! Merge
     //!
     //! Merge basically duplicates the base object content of time
@@ -264,6 +267,9 @@ namespace STR
 
     /// update at time step end
     virtual void Update() = 0;
+
+    /// update at time step end in case of FSI time adaptivity
+    virtual void Update(const double endtime) = 0;
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
@@ -676,6 +682,19 @@ namespace STR
     //! unknown displacements at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
 
+    //! unknown velocities \f$V_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Veln() { return (*vel_)(0); }
+
+    //! unknown accelerations \f$A_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
+
+    //! velocities \f$V_{n-1}\f$
+    //! unknown velocities \f$V_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Velnm() { return (*vel_)(-1); }
+
+    //! Return velocities \f$V_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
+
     //! Return velocities \f$V_{n}\f$
     Teuchos::RCP<Epetra_Vector> Vel() { return (*vel_)(0); }
 
@@ -758,10 +777,11 @@ namespace STR
     //! Return current step number map
     double GetTime() const { return (*time_)[0]; }
 
-    //! Sets the current time needed for the inverse analysis
-    //void SetTime(double time) const { (*time_)[0]=time; }
-    void SetTime(double time){timen_=time;};
-    //void SetTimen(double time){timen_ = time;};
+    //! Sets the current time \f$t_{n}\f$
+    virtual void SetTime(const double time) { (*time_)[0]=time; }
+
+    //! Sets the target time \f$t_{n+1}\f$ of this time step
+    virtual void SetTimen(const double time) { timen_ = time; }
 
     //! Get upper limit of time range of interest
     double GetTimeEnd() const { return timemax_; }
@@ -773,10 +793,14 @@ namespace STR
     double GetTimeStepSize() const { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void SetTimeStepSize(double timestepsize) { (*dt_)[0] = timestepsize; }
+    void SetDt(double dtnew) { (*dt_)[0] = dtnew; }
 
     //! Set time step size and time in the first step \f$\Delta t_n\f$
-    void SetInitialTimeStepAndTime(double timestepsize) { (*dt_)[0] = timestepsize; timen_ = (*time_)[0] + (*dt_)[0]; }
+    void SetInitialTimeStepAndTime(double timestepsize)
+    {
+    	(*dt_)[0] = timestepsize;
+    	timen_ = (*time_)[0] + (*dt_)[0];
+    }
 
     //! Return current step number map
     int GetStep() const { return step_; }
@@ -810,9 +834,6 @@ namespace STR
 
     //! Return locsys manager
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
-
-    //! Sets the time for the next time step needed for the inverse analysis
-    void SetTimen(double time){timen_ = time;};  //!< target time \f$t_{n+1}\f$
 
     //@}
 

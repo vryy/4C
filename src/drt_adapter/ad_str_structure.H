@@ -25,6 +25,8 @@ Maintainer: Georg Hammerl
 
 #include "../drt_inpar/inpar_structure.H"
 
+#include "../drt_structure/strtimint_mstep.H"
+
 // forward declarations:
 namespace DRT
 {
@@ -132,11 +134,26 @@ namespace ADAPTER {
     /// known displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
 
+    /// unknown velocity at t(n)
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
+
+    /// unknown acc at t(n)
+   virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
+
+    /// unknown displacements at t(n-1)
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm() = 0;
+
+    /// unknown displacements at t(n-1)
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
+
     /// return displacements at all the time steps
     virtual Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > DispMStep() = 0;
 
     /// return times at all the time steps
     virtual Teuchos::RCP<STR::TimIntMStep<double> > TimeMStep() = 0;
+
+    virtual void ResizeMStepTimAda() = 0;
+
 
     //@}
 
@@ -207,10 +224,6 @@ namespace ADAPTER {
     /// return time integration factor
     virtual double TimIntParam() = 0;
 
-
-		// set time 
-    virtual void SetTimen(double time) = 0;
-
     /// Get the current time
     virtual double GetTime() const = 0;
 
@@ -240,7 +253,13 @@ namespace ADAPTER {
     virtual void PrepareTimeStep() = 0;
 
     /// set time step size
-    virtual void SetTimeStepSize(double timestepsize) = 0;
+    virtual void SetDt(double timestepsize) = 0;
+
+    //! Sets the current time \f$t_{n}\f$
+    virtual void SetTime(const double time) = 0;
+    
+    //! Sets the target time \f$t_{n+1}\f$ of this time step
+    virtual void SetTimen(const double time) = 0;
 
     /// set time step size and time
     virtual void SetInitialTimeStepAndTime(double timestepsize) = 0;
@@ -260,6 +279,9 @@ namespace ADAPTER {
 
     /// update at time step end
     virtual void Update() = 0;
+
+    /// update at time step end in case of FSI time adaptivity
+    virtual void Update(double endtime) = 0;
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
@@ -286,7 +308,19 @@ namespace ADAPTER {
     virtual void Output(bool forced_writerestart = false) = 0;
 
     /// read restart information for given time step
-    virtual void ReadRestart(int step) = 0;
+    virtual void ReadRestart(const int step) = 0;
+
+    /*!
+    \brief Reset time step
+
+    In case of time step size adaptivity, time steps might have to be repeated.
+    Therefore, we need to reset the solution back to the initial solution of the
+    time step.
+
+    \author: mayr.mt
+    \date: 08/2013
+    */
+    virtual void ResetStep () = 0;
 
     /// set restart information for parameter continuation
     virtual void SetRestart

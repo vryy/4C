@@ -156,9 +156,23 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   const Teuchos::ParameterList& ivap = problem->StatInverseAnalysisParams();
   xparams->set<int>("MSTEPEVRY",Teuchos::getIntegralValue<int>(ivap,"MSTEPS"));
 
+  // handle time adaptivity in FSI in a brute force way. Works only for FSI
+  // ToDO: Make this nicer and more general, but how?
+  if (probtype != prb_fsi)
+  {
+    sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
+  }
+  else // FSI
+  {
+    const bool adapton = DRT::INPUT::IntegralValue<int>(prbdyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+
+    if (!adapton)
+      sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
+    else
+      sdyn.set<double>("TIMESTEP", prbdyn.sublist("TIMEADAPTIVITY").get<double>("DTINITIAL"));
+  }
 
   // overrule certain parameters
-  sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   sdyn.set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn.set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue || probtype == prb_particle)

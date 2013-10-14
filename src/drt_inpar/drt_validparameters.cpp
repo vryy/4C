@@ -130,7 +130,7 @@ void PrintHelpMessage()
             << "\t100% bug free since 1964." << std::endl
             << std::endl
             << "TIPS" << std::endl
-            << "\tCan be obtain from a fristd::endly colleague." << std::endl
+            << "\tCan be obtain from a friendly colleague." << std::endl
             << std::endl
             << "\tAlso, espresso may be donated to room MW1236." << std::endl;
 
@@ -5502,35 +5502,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // monolithic preconditioner parameter
 
   setNumericStringParameter("STRUCTPCOMEGA","1.0 1.0 1.0 1.0",
-                  "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner\n"
-                  "FSIAMG: each number belongs to a level\n"
-                  "PreconditiondKrylov: only first number is used for finest level",
-                  &fsidyn);
+                            "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsidyn);
   setNumericStringParameter("STRUCTPCITER","1 1 1 1",
-               "Number of Richardson iterations on structural block in MFSI block preconditioner\n"
-               "FSIAMG: each number belongs to a level\n"
-               "PreconditiondKrylov: only first number is used for finest level",
-               &fsidyn);
+                            "Number of Richardson iterations on structural block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsidyn);
   setNumericStringParameter("FLUIDPCOMEGA","1.0 1.0 1.0 1.0",
-                  "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner\n"
-                  "FSIAMG: each number belongs to a level\n"
-                  "PreconditiondKrylov: only first number is used for finest level",
-                  &fsidyn);
+                            "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsidyn);
   setNumericStringParameter("FLUIDPCITER","1 1 1 1",
-               "Number of Richardson iterations on fluid block in MFSI block preconditioner\n"
-               "FSIAMG: each number belongs to a level\n"
-               "PreconditiondKrylov: only first number is used for finest level",
-               &fsidyn);
+                            "Number of Richardson iterations on fluid block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsidyn);
   setNumericStringParameter("ALEPCOMEGA","1.0 1.0 1.0 1.0",
-                  "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner\n"
-                  "FSIAMG: each number belongs to a level\n"
-                  "PreconditiondKrylov: only first number is used for finest level",
-                  &fsidyn);
+                            "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsidyn);
   setNumericStringParameter("ALEPCITER","1 1 1 1",
-               "Number of Richardson iterations on ale block in MFSI block preconditioner\n"
-               "FSIAMG: each number belongs to a level\n"
-               "PreconditiondKrylov: only first number is used for finest level",
-               &fsidyn);
+                            "Number of Richardson iterations on ale block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsidyn);
 
   setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
                             "Relaxation factor for Richardson iteration on whole MFSI block preconditioner\n"
@@ -5551,21 +5551,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "Damping factor for Schur complement construction",
                             &fsidyn);
 
-  //DoubleParameter("PCOMEGA",1.,
-  //                "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
-  //                &fsidyn);
-  //IntParameter("PCITER",1,
-  //             "Number of Richardson iterations on whole MFSI block preconditioner",
-  //             &fsidyn);
-
   setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in monolithic FSI with row infnorm?",
-                                     yesnotuple,yesnovalue,&fsidyn);
+                                    yesnotuple,yesnovalue,&fsidyn);
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
-                                     yesnotuple,yesnovalue,&fsidyn);
+                                    yesnotuple,yesnovalue,&fsidyn);
 
   setStringToIntegralParameter<int>("SLIDEALEPROJ","None",
                                  "Projection method to use for sliding FSI.",
-                                 tuple<std::string>("None","Curr","Ref","RotZ","RotZSphere"),
+                                 tuple<std::string>(
+                                     "None",
+                                     "Curr",
+                                     "Ref",
+                                     "RotZ",
+                                     "RotZSphere"),
                                  tuple<int>(
                                      INPAR::FSI::ALEprojection_none,
                                      INPAR::FSI::ALEprojection_curr,
@@ -5576,6 +5574,54 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int> ("DIVPROJECTION", "no", "Project velocity into divergence-free subspace for partitioned fsi",
                                      yesnotuple,yesnovalue,&fsidyn);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for time step size adaptivity in fsi dynamics */
+  Teuchos::ParameterList& fsiadapt = fsidyn.sublist("TIMEADAPTIVITY",false,"");
+
+  DoubleParameter("DTINITIAL", 1.0e-4, "Initial Time Step Size",&fsiadapt);
+  DoubleParameter("DTMAX", 0.1, "Limit maximally permitted time step size (>0)",&fsiadapt);
+  DoubleParameter("DTMIN", 1.0e-4, "Limit minimally allowed time step size (>0)",&fsiadapt);
+
+  DoubleParameter("LOCERRTOLFLUID", 1.0e-3, "Tolerance for the norm of local velocity error",&fsiadapt);
+  DoubleParameter("LOCERRTOLSTRUCTURE", 1.0e-3, "Tolerance for the norm of local displacement error",&fsiadapt);
+
+  IntParameter("ADAPTSTEPMAX", 5, "Maximum number of repetitions of one time step for adapting/reducing the time step size (>0)",&fsiadapt);
+  DoubleParameter("SIZERATIOMAX", 2.0, "Limit maximally permitted change of time step size compared to previous size (>0). ",&fsiadapt);
+  DoubleParameter("SIZERATIOMIN", 0.5, "Limit minimally permitted change of time step size compared to previous size (>0). ",&fsiadapt);
+  DoubleParameter("SAFETYFACTOR", 0.99, "This is a safety factor to scale theoretical optimal step size, should be lower than 1 and must be larger than 0", &fsiadapt);
+
+
+
+  setStringToIntegralParameter<int>("TIMEADAPTON","No",
+                                    "Activate or deactivate time step size adaptivity",
+                                    yesnotuple,yesnovalue, &fsiadapt);
+
+  setStringToIntegralParameter<int>("AUXINTEGRATORFLUID","AB2",
+                                    "Method for error estimation in the fluid field",
+                                    tuple<std::string>(
+                                        "None",
+                                        "ExplicitEuler",
+                                        "AB2"),
+                                    tuple<int>(
+                                        INPAR::FSI::timada_fld_none,
+                                        INPAR::FSI::timada_fld_expleuler,
+                                        INPAR::FSI::timada_fld_adamsbashforth2),
+                                    &fsiadapt);
+
+  setStringToIntegralParameter<int>("AUXINTEGRATORSTRUCTURE","ExplicitEuler",
+                                    "Method for error estimation in the structure field",
+                                    tuple<std::string>(
+                                        "None",
+                                        "ExplicitEuler",
+                                        "AB2"),
+                                    tuple<int>(
+                                        INPAR::FSI::timada_str_none,
+                                        INPAR::FSI::timada_str_expleuler,
+                                        INPAR::FSI::timada_str_adamsbashforth2),
+                                    &fsiadapt);
+
+  /*----------------------------------------------------------------------*/
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& constrfsi = fsidyn.sublist("CONSTRAINT",false,"");

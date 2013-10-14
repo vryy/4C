@@ -108,6 +108,22 @@ namespace INPAR
       bop_and  ///<  and
     };
 
+    /// type of fluid field auxiliary time integrator for time adaptivity
+    enum FluidMethod
+    {
+      timada_fld_none,            ///< no time adaptivity based on fluid field
+      timada_fld_expleuler,       ///< use explicit Euler as auxiliary time integrator
+      timada_fld_adamsbashforth2  ///< use Adams-Bashforth-2 as auxiliary time integrator
+    };
+
+    /// type of structure field auxiliary time integrator for time adaptivity
+    enum SructureMethod
+    {
+      timada_str_none,            ///< no time adaptivity based on structure field
+      timada_str_expleuler,       ///< use explicit Euler as auxiliary time integrator
+      timada_str_adamsbashforth2  ///< use Adams-Bashforth-2 as auxiliary time integrator
+    };
+
     //@}
 
   }  // namespace FSI

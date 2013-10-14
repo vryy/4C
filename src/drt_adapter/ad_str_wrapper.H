@@ -49,6 +49,22 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Dispn()
     { return structure_->Dispn(); }
 
+    ///  velocity at \f$t_{n-1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm()
+    { return structure_->Velnm(); }
+
+    /// unknown velocity at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp()
+    { return structure_->Velnp(); }
+
+    /// unknown velocity at \f$t_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Veln()
+    { return structure_->Veln(); }
+
+    /// unknown velocity at \f$t_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accn()
+    { return structure_->Accn(); }
+
     /// return displacements at all the time steps
     virtual Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > DispMStep()
     { return structure_->DispMStep(); }
@@ -127,6 +143,10 @@ namespace ADAPTER
     virtual void Reset()
     { structure_->Reset(); }
 
+    /// reset last time step, needed for time step size adaptivity in TimIntAda and FSI
+    virtual void ResetStep()
+    { structure_->ResetStep(); }
+
     /// integrate a single time step
     virtual int IntegrateStep()
     { return structure_->IntegrateStep(); }
@@ -153,8 +173,13 @@ namespace ADAPTER
     virtual double TimIntParam()
     { return structure_->TimIntParam(); }
 
-    //! Sets the current time needed for the inverse analysis
-    virtual void SetTimen(double time) { structure_->SetTimen(time); }
+    //! Sets the current time \f$t_{n}\f$
+    virtual void SetTime(const double time)
+    { return structure_->SetTime(time); }
+
+    //! Sets the target time \f$t_{n+1}\f$ of this time step
+    virtual void SetTimen(const double time)
+    { structure_->SetTimen(time); }
 
     /// get the current time
     virtual double GetTime() const
@@ -184,8 +209,8 @@ namespace ADAPTER
     virtual int Integrate() { return structure_->Integrate(); }
 
     /// set time step size
-    virtual void SetTimeStepSize(double timestepsize)
-    { return structure_->SetTimeStepSize(timestepsize); }
+    virtual void SetDt(double dtnew)
+    { return structure_->SetDt(dtnew); }
 
     /// set time step size and time
     virtual void SetInitialTimeStepAndTime(double timestepsize)
@@ -202,6 +227,14 @@ namespace ADAPTER
     /// update at time step end
     virtual void Update()
     { structure_->Update(); }
+
+    /// update at time step end
+    virtual void Update(const double endtime)
+    { structure_->Update(endtime); }
+
+    /// resize MStep objects for AB2
+    virtual void ResizeMStepTimAda()
+    { structure_->ResizeMStepTimAda(); }
 
     /// update iteration; add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
@@ -232,7 +265,7 @@ namespace ADAPTER
     { return structure_->Output(forced_writerestart); }
 
     /// read restart information for given time step
-    virtual void ReadRestart(int step)
+    virtual void ReadRestart(const int step)
     { return structure_->ReadRestart(step); }
 
      /// set restart information for parameter continuation

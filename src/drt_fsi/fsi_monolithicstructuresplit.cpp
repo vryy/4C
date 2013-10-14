@@ -1477,3 +1477,45 @@ void FSI::MonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
   else
     FSI::Monolithic::CombineFieldVectors(v,sv,fv,av);
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::MonolithicStructureSplit::SelectTimeStepSize()
+{
+	const double dtfl 		= GetAdaFlDt();
+	const double dtflfsi 	= GetAdaFlFSIDt();
+	const double dtstrinner	= GetAdaStrInnerDt();
+
+	double dt = std::min(std::min(dtfl, dtflfsi), dtstrinner);
+
+	//in case error estimation in the fluid field is turned off:
+	//Choose the dt resulting from the structure field
+	if ( flmethod_ == INPAR::FSI::timada_fld_none ) { dt = dtstrinner; }
+
+	//in case error estimation in the structure field is turned off:
+	//Choose the minimum dt resulting from the fluid field
+	if ( strmethod_ == INPAR::FSI::timada_str_none ) { dt = std::min(dtfl, dtflfsi); }
+
+	return dt;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::MonolithicStructureSplit::SetAccepted()
+{
+	const double flnorm 		  = GetAdaFlnorm();
+	const double flfsinorm 		= GetAdaFlFSInorm();
+	const double strinnernorm	= GetAdaStrInnernorm();
+
+	bool accepted = std::max(flnorm,flfsinorm) < errtolfl_ && strinnernorm < errtolstr_ ;
+
+	// in case error estimation in the fluid field is turned off:
+	if ( flmethod_ == INPAR::FSI::timada_fld_none )
+	  accepted = std::max(flnorm,flfsinorm) < errtolfl_ ;
+
+	// in case error estimation in the structure field is turned off:
+	if ( strmethod_ == INPAR::FSI::timada_str_none )
+	  accepted = strinnernorm < errtolstr_;
+
+	return accepted;
+}

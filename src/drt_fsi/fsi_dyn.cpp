@@ -27,21 +27,22 @@ Maintainer: Matthias Mayr
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_lungmonolithic.H"
-#include "fsi_lungmonolithic_structuresplit.H"
 #include "fsi_lungmonolithic_fluidsplit.H"
+#include "fsi_lungmonolithic_structuresplit.H"
 #include "fsi_constrmonolithic_fluidsplit.H"
 #include "fsi_constrmonolithic_structuresplit.H"
+#include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_mortarmonolithic_structuresplit.H"
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 #include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 #include "fsi_fluidfluidmonolithic_structuresplit.H"
-#include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
-#include "../drt_fsi_xfem/fsi_xfem_fluid.H"
-#include "../drt_fsi_xfem/fsi_xfem_monolithic.H"
 #include "fsi_utils.H"
 #include "fsi_resulttest.H"
+
+#include "../drt_fsi_xfem/fsi_xfem_fluid.H"
+#include "../drt_fsi_xfem/fsi_xfem_monolithic.H"
 
 #include "fs_monolithic.H"
 
@@ -617,122 +618,124 @@ void fluid_fluid_fsi_drt()
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
-  case fsi_iter_fluidfluid_monolithicstructuresplit:
-  {
-    Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(*comm,fsidyn));
-
-     // now do the coupling setup an create the combined dofmap
-    fsi->SetupSystem();
-
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
+    case fsi_iter_fluidfluid_monolithicstructuresplit:
     {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(restart);
+      Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(*comm,fsidyn));
+
+       // now do the coupling setup an create the combined dofmap
+      fsi->SetupSystem();
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      // here we go...
+      fsi->Timeloop();
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+      // create fsi specific result test
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(*comm);
+
+      break;
     }
-
-    // here we go...
-    fsi->Timeloop();
-
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-
-    // create fsi specific result test
-    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-    DRT::Problem::Instance()->AddFieldTest(fsitest);
-
-    // do the actual testing
-    DRT::Problem::Instance()->TestAll(*comm);
-
-  }
-  break;
-  case fsi_iter_fluidfluid_monolithicfluidsplit:
-  {
-    Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(*comm,fsidyn));
-
-     //Setup the coupling, create the combined dofmap
-    fsi->SetupSystem();
-
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
+    case fsi_iter_fluidfluid_monolithicfluidsplit:
     {
-      // Read the restart information, set vectors and variables
-      fsi->ReadRestart(restart);
+      Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(*comm,fsidyn));
+
+       //Setup the coupling, create the combined dofmap
+      fsi->SetupSystem();
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // Read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      fsi->Timeloop();
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+      // create fsi specific result test
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(*comm);
+
+      break;
     }
-
-    fsi->Timeloop();
-
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-
-    // create fsi specific result test
-    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-    DRT::Problem::Instance()->AddFieldTest(fsitest);
-
-    // do the actual testing
-    DRT::Problem::Instance()->TestAll(*comm);
-
-  }
-  break;
-  case fsi_iter_fluidfluid_monolithicstructuresplit_nox:
-  {
-	Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm,fsidyn));
-
-	// now do the coupling setup an create the combined dofmap
-	fsi->SetupSystem();
-
-	const int restart = DRT::Problem::Instance()->Restart();
-	if (restart)
-	{
-	  // read the restart information, set vectors and variables
-	  fsi->ReadRestart(restart);
-	}
-
-	// here we go...
-	fsi->Timeloop(fsi);
-
-	DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-	DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-	// create fsi specific result test
-	Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-	DRT::Problem::Instance()->AddFieldTest(fsitest);
-	// do the actual testing
-	DRT::Problem::Instance()->TestAll(*comm);
-  }
-  break;
-  default:
-  {
-    // Any partitioned algorithm
-    Teuchos::RCP<FSI::Partitioned> fsi;
-
-    INPAR::FSI::PartitionedCouplingMethod method =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
-
-    if (method==INPAR::FSI::DirichletNeumannSlideale)
-        fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(*comm));
-    else if (method==INPAR::FSI::DirichletNeumann)
-      fsi = Teuchos::rcp(new FSI::DirichletNeumann(*comm));
-    else
-      dserror("unsupported partitioned FSI scheme");
-
-    const int restart = DRT::Problem::Instance()->Restart();
-    if (restart)
+    case fsi_iter_fluidfluid_monolithicstructuresplit_nox:
     {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(restart);
+      Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm,fsidyn));
+
+      // now do the coupling setup an create the combined dofmap
+      fsi->SetupSystem();
+
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      // here we go...
+      fsi->Timeloop(fsi);
+
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      // create fsi specific result test
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      DRT::Problem::Instance()->AddFieldTest(fsitest);
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(*comm);
+
+      break;
     }
+    default:
+    {
+      // Any partitioned algorithm
+      Teuchos::RCP<FSI::Partitioned> fsi;
 
-    fsi->Timeloop(fsi);
-    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+      INPAR::FSI::PartitionedCouplingMethod method =
+        DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
-    // do the actual testing
-    DRT::Problem::Instance()->TestAll(*comm);
+      if (method==INPAR::FSI::DirichletNeumannSlideale)
+          fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(*comm));
+      else if (method==INPAR::FSI::DirichletNeumann)
+        fsi = Teuchos::rcp(new FSI::DirichletNeumann(*comm));
+      else
+        dserror("unsupported partitioned FSI scheme");
 
-    break;
-  }
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        fsi->ReadRestart(restart);
+      }
+
+      fsi->Timeloop(fsi);
+      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(*comm);
+
+      break;
+    }
   }
 }
+
 /*----------------------------------------------------------------------*/
 // entry point for (pure) free surface in DRT
 /*----------------------------------------------------------------------*/
@@ -893,7 +896,7 @@ void fsi_ale_drt()
 
     INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
-    // call constructor to initialise the base class
+    // call constructor to initialize the base class
     if (coupling==fsi_iter_monolithicfluidsplit)
     {
       fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm,fsidyn));

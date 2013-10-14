@@ -37,9 +37,9 @@ Maintainer: Alexander Popp
 /* Constructor */
 STR::TimAda::TimAda
 (
-  const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
+  const Teuchos::ParameterList& sdyn, //!< TIS input parameters
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
-  Teuchos::RCP<TimInt> tis  //!< marching time integrator
+  Teuchos::RCP<TimInt> tis  					//!< marching time integrator
 )
 : sti_(tis),
   discret_(tis->Discretization()),

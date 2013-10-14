@@ -245,6 +245,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC/CONSTRAINT", *list);
+  reader.ReadGidSection("--FSI DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
@@ -1248,28 +1249,28 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_fpsi:
-    {
-      // create empty discretizations
-      structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-      porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm()));
-      fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid", 	reader.Comm()));
-      aledis        = Teuchos::rcp(new DRT::Discretization("ale", 		reader.Comm()));
+  {
+    // create empty discretizations
+    structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid", reader.Comm()));
+    fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid", 	reader.Comm()));
+    aledis        = Teuchos::rcp(new DRT::Discretization("ale", 		reader.Comm()));
 
-      AddDis("structure", structdis);
-      AddDis("porofluid", porofluiddis);
-      AddDis("fluid",     fluiddis);
-      AddDis("ale", 	  aledis);
+    AddDis("structure", structdis);
+    AddDis("porofluid", porofluiddis);
+    AddDis("fluid",     fluiddis);
+    AddDis("ale", 	  aledis);
 
-      std::set<std::string> fluidelementtypes;
-      fluidelementtypes.insert("FLUID");
-      fluidelementtypes.insert("FLUID2");
-      fluidelementtypes.insert("FLUID3");
+    std::set<std::string> fluidelementtypes;
+    fluidelementtypes.insert("FLUID");
+    fluidelementtypes.insert("FLUID2");
+    fluidelementtypes.insert("FLUID3");
 
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
-      break;
-    }
+    break;
+  }
   case prb_poroscatra:
   {
     // create empty discretizations

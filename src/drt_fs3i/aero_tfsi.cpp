@@ -573,7 +573,7 @@ void FS3I::AeroTFSI::SetTimeStep(
   std::vector<double>& timestepsize
   )
 {
-  tsi_->StructureField()->SetTimeStepSize(timestepsize[0]);
+  tsi_->StructureField()->SetDt(timestepsize[0]);
 
   tsi_->ThermoField()->SetTimeStepSize(timestepsize[0]);
 

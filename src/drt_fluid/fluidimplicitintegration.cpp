@@ -213,14 +213,15 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
   // Vectors passed to the element
   // -----------------------------
-  // velocity/pressure at time n+1, n and n-1
+  // velocity/pressure at times n+1, n, and n-1
   velnp_ = LINALG::CreateVector(*dofrowmap,true);
   veln_  = LINALG::CreateVector(*dofrowmap,true);
   velnm_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // acceleration/(scalar time derivative) at time n+1 and n
+  // acceleration/(scalar time derivative) at times n+1, n, and n-1
   accnp_ = LINALG::CreateVector(*dofrowmap,true);
   accn_  = LINALG::CreateVector(*dofrowmap,true);
+  accnm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // velocity/pressure at time n+alpha_F
   velaf_ = LINALG::CreateVector(*dofrowmap,true);
@@ -2936,7 +2937,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
-
   Teuchos::ParameterList *  stabparams;
   if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType()==prb_fpsi)
     stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
@@ -3038,7 +3038,9 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     LINALG::Export(*onlyaccnp,*accnp_);
   }
 
-  // update old acceleration
+  // acceleration of this step becomes most recent
+  // acceleration of the last step
+  accnm_->Update(1.0,*accn_,0.0);
   accn_->Update(1.0,*accnp_,0.0);
 
   // velocities/pressures of this step become most recent
@@ -3092,6 +3094,10 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
+
+  // account for possible changes in time step size and update previous
+  // time step size accordingly
+  dtp_ = dta_;
 
   // -------------------------------------------------------------------
   // treat impedance BC
@@ -6791,7 +6797,6 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
 
   // compute residual forces residual_ and stiffness sysmat_
   // at velnp_, etc which are unchanged
-  // (hand in boolean flag indicating that this a predictor)
   Evaluate(Teuchos::null);
 
   // add linear reaction forces to residual
@@ -6843,7 +6848,6 @@ void FLD::FluidImplicitTimeInt::SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_g
 {
   fldgrdisp_= fluid_growth_disp;  return;
 }
-
 
 void FLD::FluidImplicitTimeInt::SetupMeshtying()
 {
@@ -6900,7 +6904,6 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
   return;
 }
 
-
 /*------------------------------------------------------------------------------------------------*
  | set void volume for cavitation problems                                          (ghamm 08/13) |
  *------------------------------------------------------------------------------------------------*/
@@ -6909,4 +6912,25 @@ void FLD::FluidImplicitTimeInt::SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> v
   if(density_scaling_ == Teuchos::null)
     density_scaling_ = LINALG::CreateVector(*discret_->ElementRowMap(),false);
   density_scaling_->Update(1.0, *voidvolume, 0.0);
+}
+
+/*----------------------------------------------------------------------------*
+ | Set time step size                                         mayr.mt 09/2013 |
+ *----------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::SetDt(const double dtnew)
+{
+  dta_ = dtnew;
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ | Set time and step                                          mayr.mt 09/2013 |
+ *----------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::SetTimeStep(const double time, const int step)
+{
+  step_ = step;
+  time_ = time;
+
+  return;
 }

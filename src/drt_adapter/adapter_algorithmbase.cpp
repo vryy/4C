@@ -31,7 +31,7 @@ ADAPTER::AlgorithmBase::AlgorithmBase(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::AlgorithmBase::SetTimeStep(double time, int step)
+void ADAPTER::AlgorithmBase::SetTimeStep(const double time, const int step)
 {
   step_ = step;
   time_ = time;

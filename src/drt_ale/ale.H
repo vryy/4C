@@ -108,8 +108,37 @@ public:
   /// write output
   virtual void Output() = 0;
 
+  /*!
+  \brief Reset time step
+
+  In case of time step size adaptivity, time steps might have to be repeated.
+  Therefore, we need to reset the solution back to the initial solution of the
+  time step.
+
+  \author: mayr.mt
+  \date: 08/2013
+  */
+  void ResetStep();
+
+  /*!
+  \brief Reset time and step in case that a time step has to be repeated
+
+  ALE field increments time and step at the beginning of a time step. If a time
+  step has to be repeated, we need to take this into account and decrease time and
+  step beforehand. They will be incremented right at the beginning of the repetition
+  and, thus, everything will be fine. Currently, this is needed for time step size
+  adaptivity in FSI.
+
+  \author: mayr.mt
+  \date: 08/2013
+   */
+  void ResetTime(const double dtold);
+
+  /// set time step step size
+  void SetDt(const double dtnew);
+
   /// read restart for given step
-  void ReadRestart(int step);
+  void ReadRestart(const int step);
 
   //@}
 

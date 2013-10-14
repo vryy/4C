@@ -240,18 +240,19 @@ namespace FSI
     */
     virtual void SetupSystem();
 
-    /// prepare time loop
+    //! @name Time loop
+    //@{
+
+    //! prepare time loop
     void PrepareTimeloop();
 
-    /// outer level FSI time loop
+    //! outer level FSI time loop
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
-    /// do new time step
+    //! do new time step
     virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
-    /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
-    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier(){return;};
+    //@}
 
     //! @name NOX methods
 
@@ -295,6 +296,12 @@ namespace FSI
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
     virtual Teuchos::RCP<Epetra_Vector> GetLambda () {dserror ("GetLambda not implemented in the base class"); return Teuchos::null;};
+
+    //! Get time step size
+    double GetDt() const { return Dt(); };
+
+    //! Get number of time step repetitions in case of time step adaptivity
+    int GetNumAdaptSteps() const { return adaptstep_; }
 
   protected:
 
@@ -431,6 +438,47 @@ namespace FSI
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
+    //! @name FSI time adaptivity
+    //@{
+
+    //! access methods
+    //time step sizes
+    const double GetAdaStrDt()      {return dtstr_;}
+    const double GetAdaStrFSIDt()   {return dtstrfsi_;}
+    const double GetAdaFlDt()       {return dtfl_;}
+    const double GetAdaFlFSIDt()    {return dtflfsi_;}
+    const double GetAdaStrInnerDt() {return dtstrinner_;}
+    const double GetAdaFlInnerDt()  {return dtflinner_;}
+
+    //error norms
+    const double GetAdaStrnorm()      {return strnorm_;}
+    const double GetAdaStrFSInorm()   {return strfsinorm_;}
+    const double GetAdaStrInnernorm() {return strinnernorm_;}
+    const double GetAdaFlnorm()       {return flnorm_;}
+    const double GetAdaFlFSInorm()    {return flfsinorm_;}
+    const double GetAdaFlInnerNorm()  {return flinnernorm_;}
+
+    //! Depending on the chosen method (fluid or structure split), only three of
+    //! the 6 available norms are useful. Each of these three norms delivers a
+    //! new time step size. Select the minimum of these three as the new time step size.
+    virtual double SelectTimeStepSize() = 0;
+
+    //! Whether the new time step size is accepted also depends on the chosen method!
+    virtual bool SetAccepted() = 0;
+
+    //@}
+
+    //! @name Parameters for FSI time adaptivity
+    //@{
+
+    double errtolfl_;   ///< tolerance for norm of local truncation error in fluid field
+    double errtolstr_;  ///< tolerance for norm of local truncation error in structure field
+
+    int strmethod_;   ///< auxiliary time integrator in structure field
+    int flmethod_;    ///< auxiliary time integrator in fluid field
+
+    //@}
+
   private:
 
     //! @name Setup of RHS vector
@@ -452,10 +500,207 @@ namespace FSI
 
     //@}
 
+    //! /brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
+    //!
+    //! Recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the
+    //! end of each time step (i.e. condensed forces onto the structure) needed
+    //! for rhs in next time step in order to guarantee temporal consistent
+    //! exchange of coupling traction
+    virtual void RecoverLagrangeMultiplier(){ return; };
+
+    //! @name Time loops
+    //@{
+
+    //! FSI time loop with constant time step size
+    void TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+
+    //! \brief FSI time loop with adaptive time step size
+    //!
+    //! <h3> Idea </h3>
+    //! FSI time loop where the time step size is adapted in each time step based
+    //! on estimation of the local truncation error in structure and fluid field.
+    //! The norms that are used to measure the error and compute the new time step
+    //! size depend on the choice of master and slave side (\sa SelectTimeStepSize).
+    //! If error tolerances are violated, the time step is repeated.
+    //!
+    //! <h3> References </h3>
+    //! Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013 (supervised by Matthias Mayr)
+    //!
+    //! \author: mayr.mt
+    //! \date: 08/2013
+    void TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+
+    //@}
+
+    //! @name Functionality for FSI time adaptivity
+    //@{
+
+    //! method to adapt time step size
+    void AdaptTimeStepSize();
+
+    //! method to reset the recently calculated step if time step size adaption is necessary
+    void ResetStep();
+
+    //! method complementing the ResetStep() method, taking care of time and step counter
+    void ResetTime();
+
+    //! Set time step size in all fields (fsi routine, ale, fluid, structure)
+    void SetDt(const double dtnew);
+
+    //! \brief Do an explicit Euler step as auxiliary time integrator
+    //!
+    //! Based on state vector \f$x_n\f$ we calculate \f$x_{n+1}\f$ using an explicit
+    //! Euler step. Can be used for both structure and fluid field.
+    void ExplicitEuler(const Epetra_Vector& xn,     ///< state vector at \f$t_n\f$
+                       const Epetra_Vector& xndot,  ///< time derivative of state vector at \f$t_n\f$
+                       const double dt,             ///< current time step size
+                       Epetra_Vector& extrapolation ///< extrapolation of state vector to \f$t_{n+1}\f$
+                      ) const;
+
+    //! find out which field determined the new time step size
+    bool DetermineAdaField(const double dt) const;
+
+    //! Prepare a time step for adaptive time stepping which might be repeated
+    virtual void PrepareAdaptiveTimeStep();
+
+    //! Print header for repetition of time step within time adaptivity
+    virtual void PrintHeaderRepeatedStep() const;
+
+    //! Write to .adaptivity-file
+    virtual void WriteAdaFile() const;
+
+    //! Print information on time step adaptivity stuff
+    virtual void PrintAdaptivitySummary() const;
+
+    //! Initialize time adaptivity related stuff
+    void InitTimIntAda(const Teuchos::ParameterList& fsidyn);
+
+    //! Write to adaptivity file
+    void WriteAdaFileHeader() const;
+
+    /*! \brief Indicate local truncation error in structure field
+     *
+     * This is based on the comparison of a marching and an auxiliary time
+     * integrator. Several norms (entire subdomain, interface only, interior
+     * only) are computed.
+     *
+     * The structure  field knows three DOF maps:
+     *    - full map: all displacement DOFs (interior and interface)
+     *    - fsi condition map: only the interface displacement DOFs
+     *    - fsi other map: only interior displacement DOFs
+     *
+     *  For error indication, we do the auxiliary time integration step based with
+     *  full map vectors. Pressure DOFs are blanked after extrapolation. Note
+     *  that Dirichlet DOFs carry the exact values and, thus, have to be excluded
+     *  from error indication, too. In the end, we extract certain portions only
+     *  to use some of them for time step size calculation.
+     *
+     * \author: mayr.mt
+     * \date: 09/2013
+     !*/
+    void IndicateLocalErrorNormsStructure();
+
+    /*! \brief Indicate local truncation error in fluid field
+     *
+     * This is based on the comparison of a marching and an auxiliary time
+     * integrator. Several norms (entire subdomain, interface only, interior
+     * only) are computed.
+     *
+     * The fluid field knows three DOF maps:
+     *    - full map: all velocity and pressure DOFs (interior and interface)
+     *    - fsi condition map: only the interface velocity DOFs
+     *    - fsi other map: all interior DOFs (velocity and pressure) and the interface pressure DOFs
+     *
+     *  For error indication, we do the auxiliary time integration step based with
+     *  full map vectors. Pressure DOFs are blanked after extrapolation. Note
+     *  that Dirichlet DOFs carry the exact values and, thus, have to be excluded
+     *  from error indication, too. In the end, we extract certain portions only
+     *  to use some of them for time step size calculation.
+     *
+     * \author: mayr.mt
+     * \date: 09/2013
+     !*/
+    void IndicateLocalErrorNormsFluid();
+
+    //! \brief Calculate new time step size
+    //!
+    //! New time step size is based on L2-norm of local truncation error. This
+    //! is done for several norms. We have to select the time step size afterwards.
+    //!
+    //! Calculation of new time step size:
+    //!
+    //! \f[ \Delta t_{new} = min\left(\Delta t_{max}, max\left(fac\cdot\Delta t_{old}, Delta t_{min}\right)\right) \f]
+    //! with the scalar factor
+    //! /f[ fac = min\left(fac_{max}, max\left(fac_{min},\left(\frac{tol}{error}\right)^{\frac{1}{p+1}}\right)\right) /f]
+    //! with the maximum increase factor \f$fac_{max}\f$, the minimum decrease factor \f$fac_{min}\f$, the user defined
+    //! tolerance \f$tol\f$, the L2-norm of the local truncation error \f$error\f$ and the order \f$p\f$ of the time integration
+    //! scheme
+    //!
+    //! \author: mayr.mt
+    //! \date: 09/2013
+    double CalculateTimeStepSize(const double errnorm,  ///< L2-norm of local truncation error
+                                 const double errtol,   ///< user given error tolerance
+                                 const double estorder  ///< order of accuracy of time integration scheme
+                                 ) const;
+
+    //@}
+
+    //! @name Access to parameters for FSI time adaptivity
+    //@{
+
+    //! Is the time step accepted?
+    bool StepNotAccepted() const { return (not accepted_); }
+
+    //@}
+
+    //! @name Parameters for FSI time adaptivity
+    //@{
+
+    // time step sizes
+    double dtmax_;      ///< maximum time step size
+    double dtmin_;      ///< minimum time step size
+    double dtold_;      ///< time step size of previous run of this time step
+    double dtprevious_; ///< time step size of previous converged time step \f$\Delta t^{n_1}\f$
+
+    int adaptstep_; ///< current number of adaption steps, i.e. repetitions of this time step
+
+    bool accepted_; ///< Indicate whether an acceptable time step size was found
+
+    //! bool to check which field determined the time step size
+    //! true if dt of error calculated to structure field determined dt
+    bool setstrdt_;
+
+    int numstrfsidbcdofs_;  ///< Number of structural interface DOFs with Dirichlet BC
+    int numflfsidbcdofs_;   ///< Number of fluid interface DOFs with Dirichlet BC
+
+    //! variables to store the norms of the local error vectors of displacement (in the structure field) and velocity (in the fluid field)
+    double strnorm_;
+    double flnorm_;
+    double strfsinorm_;
+    double flfsinorm_;
+    double strinnernorm_;
+    double flinnernorm_;
+
+    // time step sizes calculated according to the 6 available norms
+    double dtstr_;      ///< time step size based on error in entire structure field
+    double dtfl_;       ///< time step size based on error in entire fluid field
+    double dtstrfsi_;   ///< time step size based on error in interface DOFs of structure field
+    double dtflfsi_;    ///< time step size based on error in interface DOFs of fluid field
+    double dtstrinner_; ///< time step size based on error in interior DOFs of structure field
+    double dtflinner_;  ///< time step size based on error in interior DOFs of fluid field
+
+    int estorderfl_;    ///< order of accuracy of auxiliary time integrator in fluid field
+    int estorderstr_;   ///< order of accuracy of auxiliary time integrator in structure field
+
+    bool dtminused_;    ///< true if time step size has been repeated with dtmin_
+
+    //@}
+
     /// dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;
 
     //! @name Some NOX related stuff
+    //@{
 
     /// output utilities
     Teuchos::RCP<NOX::Utils> utils_;
@@ -472,8 +717,11 @@ namespace FSI
 
     //@}
 
-    /// output stream
+    /// output stream for log-file
     Teuchos::RCP<std::ofstream> log_;
+
+    /// output stream for adaptiviy-file
+    Teuchos::RCP<std::ofstream> logada_;
 
     /// @name special debugging output
 
@@ -575,7 +823,6 @@ namespace FSI
 
     /// setup RHS contributions based on terms for first nonlinear iteration
     virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
-
 
   };
 }

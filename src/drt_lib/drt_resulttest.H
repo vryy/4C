@@ -69,7 +69,12 @@ namespace DRT
 
   protected:
 
-    /// compare a calculated value with the expected one
+    //! compare a calculated value with the expected one
+    //!
+    //! There is a difference between node/element based results and special results.
+    //! Node/element based results have to be compared at a specific node/element.
+    //! Special results are not attached to a specific node/element, but to the
+    //! overall algorithm.
     virtual int CompareValues(double actresult, std::string type, DRT::INPUT::LineDefinition& res);
 
   private:

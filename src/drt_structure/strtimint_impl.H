@@ -711,15 +711,32 @@ namespace STR
       return;
     }
 
-
     //! Update routine for coupled problems with monolithic approach
-    void Update()
+    virtual void Update()
     {
       UpdateStepState();
       UpdateStepTime();
       UpdateStepElement();
       return;
     }
+
+    //! Update routine for coupled problems with monolithic approach with time adaptivity
+    virtual void Update(const double endtime)
+    {
+      UpdateStepState();
+
+      timen_ = endtime;
+
+      //Update
+      time_->UpdateSteps(timen_);
+      step_ = stepn_;
+      stepn_ += 1;
+
+      UpdateStepElement();
+      return;
+    }
+
+
 
     //! Output routine for coupled problems with monolithic approach
     void Output(bool forced_writerestart = false)

@@ -234,6 +234,13 @@ namespace STR
       return;
     }
 
+    //! Update routine for coupled problems with monolithic approach with time adaptivity
+    virtual void Update(const double endtime)
+    {
+      dserror("Not implemented. No time adaptivity available for explicit time integration.");
+    }
+
+
     /* Linear structure solve with just an interface load */
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
     {

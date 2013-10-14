@@ -229,6 +229,46 @@ public:
   /// Implement ADAPTER::Fluid
   void Update() { TimeUpdate(); }
 
+  //! set time step size
+  virtual void SetDt (const double dtnew);
+
+  //! set time and step
+  virtual void SetTimeStep(const double time, ///< time to set
+                           const int step);   ///< time step number to set
+
+  /*!
+  \brief Reset time step
+
+  In case of time step size adaptivity, time steps might have to be repeated.
+  Therefore, we need to reset the solution back to the initial solution of the
+  time step.
+
+  \author: mayr.mt
+  \date: 08/2013
+  */
+  void ResetStep()
+  {
+	  accnp_ ->Update(1.0, *accn_ ,0.0);
+	  velnp_ ->Update(1.0, *veln_ ,0.0);
+	  dispnp_->Update(1.0, *dispn_,0.0);
+
+	  return;
+  }
+
+  /*!
+  \brief Reset time and step in case that a time step has to be repeated
+
+  Fluid field increments time and step at the beginning of a time step. If a time
+  step has to be repeated, we need to take this into account and decrease time and
+  step beforehand. They will be incremented right at the beginning of the repetition
+  and, thus, everything will be fine. Currently, this is needed for time step size
+  adaptivity in FSI.
+
+  \author: mayr.mt
+  \date: 08/2013
+   */
+  void ResetTime(const double dtold) { SetTimeStep(Time()-dtold, Step()-1); }
+
   /*!
   \brief lift'n'drag forces, statistics time sample and
          output of solution and statistics
@@ -361,19 +401,20 @@ public:
   /// Return true residual, ie the actual force in Newton [N]
   Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
 
-  Teuchos::RCP<const Epetra_Vector> Velnp() { return velnp_; }
-  Teuchos::RCP<      Epetra_Vector> ViewOfVelnp() { return velnp_; }
-  Teuchos::RCP<const Epetra_Vector> Velaf() { return velaf_; }
-  Teuchos::RCP<const Epetra_Vector> Veln() { return veln_; }
-  Teuchos::RCP<const Epetra_Vector> Velnm() { return velnm_; }
-  Teuchos::RCP<const Epetra_Vector> Accnp() { return accnp_; }
-  Teuchos::RCP<const Epetra_Vector> Accn() { return accn_; }
-  Teuchos::RCP<const Epetra_Vector> Accam() { return accam_; }
-  Teuchos::RCP<const Epetra_Vector> Scaaf() { return scaaf_; }
-  Teuchos::RCP<const Epetra_Vector> Scaam() { return scaam_; }
-  Teuchos::RCP<const Epetra_Vector> Hist() { return hist_; }
-  Teuchos::RCP<const Epetra_Vector> GridVel() { return gridv_; }
-  Teuchos::RCP<      Epetra_Vector> ViewOfGridVel() { return gridv_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp()     { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> ViewOfVelnp()     { return velnp_; }
+  Teuchos::RCP<const Epetra_Vector> Velaf()     { return velaf_; }
+  Teuchos::RCP<const Epetra_Vector> Veln()      { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> Velnm()     { return velnm_; }
+  Teuchos::RCP<const Epetra_Vector> Accnp()     { return accnp_; }
+  Teuchos::RCP<const Epetra_Vector> Accn()      { return accn_; }
+  Teuchos::RCP<const Epetra_Vector> Accnm()     { return accnm_; }
+  Teuchos::RCP<const Epetra_Vector> Accam()     { return accam_; }
+  Teuchos::RCP<const Epetra_Vector> Scaaf()     { return scaaf_; }
+  Teuchos::RCP<const Epetra_Vector> Scaam()     { return scaam_; }
+  Teuchos::RCP<const Epetra_Vector> Hist()      { return hist_; }
+  Teuchos::RCP<const Epetra_Vector> GridVel()   { return gridv_; }
+  Teuchos::RCP<Epetra_Vector> ViewOfGridVel()   { return gridv_; }
   Teuchos::RCP<const Epetra_Vector> FsVel() {
     // get fine-scale part of velocity at time n+alpha_F or n+1
     if (Sep_ != Teuchos::null)
@@ -473,9 +514,14 @@ public:
   void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
 
   void PrepareTimeandStep() { UpdateStepandTime(); }
-  void UpdateStepandTime(){ step_ += 1;
-  time_ += dta_;}
 
+  void UpdateStepandTime()
+  {
+	  step_ += 1;
+	  time_ += dta_;
+	  
+	  return;
+  }
 
   /*!
   \brief return type of time integration scheme
@@ -835,28 +881,32 @@ protected:
   /// Nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector>    incvel_;
 
-  //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
-  Teuchos::RCP<Epetra_Vector>    accnp_;
-  Teuchos::RCP<Epetra_Vector>    accn_;
-  Teuchos::RCP<Epetra_Vector>    accam_;
+  //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n) and n-1
+  //@{
+  Teuchos::RCP<Epetra_Vector> accnp_; ///< acceleration at time \f$t^{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> accn_;  ///< acceleration at time \f$t^{n}\f$
+  Teuchos::RCP<Epetra_Vector> accam_; ///< acceleration at time \f$t^{n+\alpha_M}\f$
+  Teuchos::RCP<Epetra_Vector> accnm_; ///< acceleration at time \f$t^{n-1}\f$
   //@}
 
   //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
-  Teuchos::RCP<Epetra_Vector>    velnp_;
-  Teuchos::RCP<Epetra_Vector>    veln_;
-  Teuchos::RCP<Epetra_Vector>    velnm_;
-  Teuchos::RCP<Epetra_Vector>    velaf_;
+  //@{
+  Teuchos::RCP<Epetra_Vector> velnp_; ///< velocity at time \f$t^{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> veln_;  ///< velocity at time \f$t^{n}\f$
+  Teuchos::RCP<Epetra_Vector> velaf_; ///< velocity at time \f$t^{n+\alpha_F}\f$
+  Teuchos::RCP<Epetra_Vector> velnm_; ///< velocity at time \f$t^{n-1}\f$
   //@}
 
   //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
-  Teuchos::RCP<Epetra_Vector>    scaaf_;
-  Teuchos::RCP<Epetra_Vector>    scaam_;
+  Teuchos::RCP<Epetra_Vector> scaaf_;
+  Teuchos::RCP<Epetra_Vector> scaam_;
   //@}
 
   //! @name displacements at time n+1, n and n-1
-  Teuchos::RCP<Epetra_Vector>    dispnp_;
-  Teuchos::RCP<Epetra_Vector>    dispn_;
-  Teuchos::RCP<Epetra_Vector>    dispnm_;
+  //@{
+  Teuchos::RCP<Epetra_Vector> dispnp_; ///< displacement at time \f$t^{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> dispn_;  ///< displacement at time \f$t^{n}\f$
+  Teuchos::RCP<Epetra_Vector> dispnm_; ///< displacement at time \f$t^{n-1}\f$
   //@}
 
   //! @name flow rate and volume at time n+1 (i+1), n+1 (i), n and n-1 for flow-dependent pressure boundary conditions

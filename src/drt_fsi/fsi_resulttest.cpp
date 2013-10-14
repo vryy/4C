@@ -29,9 +29,10 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic> fsi,
+FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic>& fsi,
                                   const Teuchos::ParameterList& fsidyn)
-  : DRT::ResultTest("FSI")
+  : DRT::ResultTest("FSI"),
+    fsi_(fsi)
 {
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
@@ -166,6 +167,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
     }
   }
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
@@ -194,34 +196,35 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
       if (actnode->Owner() != slavedisc_->Comm().MyPID())
         return;
 
-      std::string position;
-      res.ExtractString("QUANTITY",position);
-      bool unknownpos = true; // make sure the result value std::string can be handled
-      double result = 0.0;    // will hold the actual result of run
+      std::string quantity;
+      res.ExtractString("QUANTITY", quantity);
+      bool unknownquantity = true;  // make sure the result value std::string can be handled
+      double result = 0.0;          // will hold the actual result of run
 
       // test Lagrange multipliers
       if (fsilambda_ != Teuchos::null)
       {
         const Epetra_BlockMap& fsilambdamap = fsilambda_->Map();
-        if (position=="lambdax")
+        if (quantity=="lambdax")
         {
-          unknownpos = false;
+          unknownquantity = false;
           result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,0))];
         }
-        else if (position=="lambday")
+        else if (quantity=="lambday")
         {
-          unknownpos = false;
+          unknownquantity = false;
           result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,1))];
         }
-        else if (position=="lambdaz")
+        else if (quantity=="lambdaz")
         {
-          unknownpos = false;
+          unknownquantity = false;
           result = (*fsilambda_)[fsilambdamap.LID(slavedisc_->Dof(0,actnode,2))];
         }
       }
-      // catch position strings, which are not handled by fsi result test
-      if (unknownpos)
-        dserror("Quantity '%s' not supported in fsi testing", position.c_str());
+
+      // catch quantity strings, which are not handled by fsi result test
+      if ( unknownquantity )
+        dserror("Quantity '%s' not supported in fsi testing", quantity.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);
@@ -229,4 +232,51 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
       test_count++;
     }
   }
+
+  return;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FSIResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+{
+  dserror("FSI ELEMENT test not implemented, yet.");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+{
+  std::string quantity;
+  res.ExtractString("QUANTITY",quantity);
+  bool unknownquantity = true; // make sure the result value std::string can be handled
+  double result = 0.0;    // will hold the actual result of run
+
+  // test for time step size
+  if ( quantity == "dt" )
+  {
+    unknownquantity = false;
+    result = fsi_->GetDt();
+  }
+
+  // test for number of repetitions of time step in case of time step size adaptivity
+  if ( quantity == "adasteps" )
+  {
+    unknownquantity = false;
+    result = fsi_->GetNumAdaptSteps();
+  }
+
+  // catch quantity strings, which are not handled by fsi result test
+  if ( unknownquantity )
+    dserror("Quantity '%s' not supported in fsi testing", quantity.c_str());
+
+  // compare values
+  const int err = CompareValues(result, "SPECIAL", res);
+  nerr += err;
+  test_count++;
+
+  return;
+}
+

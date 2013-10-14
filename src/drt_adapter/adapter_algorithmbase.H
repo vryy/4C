@@ -33,10 +33,10 @@ namespace ADAPTER
     const Epetra_Comm& Comm() const { return comm_; }
 
     /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_+1e-8*dt_ < maxtime_; }
+    bool NotFinished() const { return step_ < nstep_ and time_+1e-8*dt_ < maxtime_; }
 
     /// set time step size
-    void SetDt(double stepsize) { dt_ = stepsize; }
+    void SetDt(const double stepsize) { dt_ = stepsize; }
 
     /// current time
     double Time() const {return time_;}
@@ -45,7 +45,9 @@ namespace ADAPTER
     int Step() const { return step_; }
 
     /// set new time step in ReadRestart() or in a potential outer control
-    void SetTimeStep(double time, int step);
+    void SetTimeStep(const double time, ///< physical time to set
+                     const int step     ///< time step number to set
+                     );
 
   protected:
 

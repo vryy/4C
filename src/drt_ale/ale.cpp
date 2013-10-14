@@ -122,7 +122,7 @@ void ALE::Ale::Integrate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ALE::Ale::ReadRestart(int step)
+void ALE::Ale::ReadRestart(const int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
@@ -214,6 +214,34 @@ void ALE::Ale::Reset()
 
   dispnp_ = LINALG::CreateVector(*dofrowmap,true);
   dispn_  = LINALG::CreateVector(*dofrowmap,true);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::ResetStep()
+{
+  dispnp_ ->Update(1.0, *dispn_,0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::ResetTime(const double dtold)
+{
+  time_=time_-dtold;
+  step_=step_-1;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::SetDt(const double dtnew)
+{
+  dt_ = dtnew;
 
   return;
 }

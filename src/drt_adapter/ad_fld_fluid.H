@@ -124,40 +124,43 @@ namespace ADAPTER {
     /// true residual
     virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() = 0;
 
-    /// velocities (and pressures) at t(n+1)
+    /// velocities (and pressures) at \f$t^{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
-    /// velocities (and pressures) at t(n+alpha_F)
+    /// velocities (and pressures) at \f$t^{n+\alpha_F}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velaf() = 0;
 
-    /// velocities (and pressures) at t(n)
+    /// velocities (and pressures) at \f$t^n\f$
     virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
 
-    /// velocities (and pressures) at t(n-1)
+    /// velocities (and pressures) at \f$t^{n-1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnm() = 0;
 
-    /// accelerations at t(n+1)
+    /// accelerations at \f$t^{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
 
-    /// accelerations at t(n)
+    /// accelerations at \f$t^n\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
 
-    /// accelerations at t(n+alpha_M)
+    /// accelerations at \f$t^{n-1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accnm() = 0;
+
+    /// accelerations at \f$t^{n+\alpha_M}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accam() = 0;
 
-    /// scalars at t(n+alpha_F)
+    /// scalars at \f$t^{n+\alpha_F}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Scaaf() = 0;
 
-    /// scalars at t(n+alpha_M)
+    /// scalars at \f$t^{n+\alpha_M}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Scaam() = 0;
 
     /// history vector
     virtual Teuchos::RCP<const Epetra_Vector> Hist() = 0;
 
-    /// mesh displacements at t(n+1)
+    /// mesh displacements at \f$t^{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
 
-    /// mesh displacements at t(n+1)
+    /// mesh displacements at \f$t^{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
 
     /// convective velocity (= velnp - grid velocity)
@@ -168,13 +171,13 @@ namespace ADAPTER {
     /// fine-scale velocity
     virtual Teuchos::RCP<const Epetra_Vector> FsVel() = 0;
 
-    /// velocities (and pressures) at t(n) w/out enriched dofs
+    /// velocities (and pressures) at \f$t^{n}\f$ w/out enriched dofs
     virtual Teuchos::RCP<Epetra_Vector> StdVeln() = 0;
 
-    /// velocities (and pressures) at t(n+1) w/out enriched dofs
+    /// velocities (and pressures) at \f$t^{n+1}\f$ w/out enriched dofs
     virtual Teuchos::RCP<Epetra_Vector> StdVelnp() = 0;
 
-    /// velocities (and pressures) at t(n+alpha_F) w/out enriched dofs
+    /// velocities (and pressures) at \f$t^{n+\alpha_F}\f$ w/out enriched dofs
     virtual Teuchos::RCP<Epetra_Vector> StdVelaf() = 0;
 
     //@}
@@ -340,6 +343,40 @@ namespace ADAPTER {
 
     /// time step size
     virtual double Dt() const = 0;
+
+    /// set time step size
+    virtual void SetDt(const double dtold) = 0;
+
+    /// set time and step
+    virtual void SetTimeStep(const double time, ///< time to set
+                             const int step     ///< time step number to set
+                            )=0;
+
+    /*!
+    \brief Reset time step
+
+    In case of time step size adaptivity, time steps might have to be repeated.
+    Therefore, we need to reset the solution back to the initial solution of the
+    time step.
+
+    \author: mayr.mt
+    \date: 08/2013
+    */
+    virtual void ResetStep() = 0;
+
+    /*!
+    \brief Reset time and step in case that a time step has to be repeated
+
+    Fluid field increments time and step at the beginning of a time step. If a time
+    step has to be repeated, we need to take this into account and decrease time and
+    step beforehand. They will be incremented right at the beginning of the repetition
+    and, thus, everything will be fine. Currently, this is needed for time step size
+    adaptivity in FSI.
+
+    \author: mayr.mt
+    \date: 08/2013
+     */
+    virtual void ResetTime(const double dtold) = 0;
 
     /// calculation (and output) of lift&drag
     virtual void LiftDrag() const = 0;

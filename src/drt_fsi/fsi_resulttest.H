@@ -50,7 +50,7 @@ namespace FSI
   public:
     //! constructor for standard FSI
     FSIResultTest(
-      Teuchos::RCP<FSI::Monolithic> fsi,
+      Teuchos::RCP<FSI::Monolithic>& fsi,
       const Teuchos::ParameterList& fsidyn
     );
 
@@ -67,6 +67,17 @@ namespace FSI
                           int& nerr,                        ///< number of tests with errors
                           int& test_count);                 ///< number of tests performed
 
+    //! \brief fsi version of element value tests
+    virtual void TestElement(DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
+                             int& nerr,                        ///< number of tests with errors
+                             int& test_count);                 ///< number of tests performed
+
+
+    //! \brief fsi version of special tests
+    virtual void TestSpecial(DRT::INPUT::LineDefinition& res,  ///< the line definition from input file
+                             int& nerr,                        ///< number of tests with errors
+                             int& test_count);                 ///< number of tests performed
+
   private:
 
     //! slave discretisation
@@ -74,6 +85,9 @@ namespace FSI
 
     //! Lagrange multiplier living on the slave discretization
     Teuchos::RCP<Epetra_Vector> fsilambda_;
+
+    //! the monolithic solver object itself
+    Teuchos::RCP<FSI::Monolithic> fsi_;
   };
 }
 #endif /* #ifndef FSIRESULTTEST_H */

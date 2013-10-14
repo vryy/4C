@@ -168,7 +168,9 @@ namespace ADAPTER {
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
 
-    /// the interface map setup for fsi interface, free surface, interior translation
+    //! \brief interface map setup for fsi interface, free surface, interior translation
+    //!
+    //! Note: full map contains velocity AND pressure DOFs
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
 
     /// the interface map setup for fpsi interface, free surface, interior translation
