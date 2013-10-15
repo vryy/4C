@@ -152,6 +152,9 @@ public:
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
+
+  virtual std::vector<double> ElementCenterRefeCoords();
+
   /*!
   \brief Return unique ParObject id
 
@@ -348,9 +351,12 @@ protected:
     calc_struct_update_istep,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
+    calc_struct_reset_all,  //!< reset elementwise internal variables
+                            //!< to state in the beginning of the computation
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     prestress_update,
-    postprocess_stress
+    postprocess_stress,
+    calc_global_gpstresses_map
   };
 
   //! kinematic types of so_tet10 but yet only total-lagrangian is implemented

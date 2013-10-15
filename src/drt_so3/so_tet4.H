@@ -373,6 +373,7 @@ protected:
     calc_struct_reset_all,  //!< reset elementwise internal variables
                             //!< to state in the beginning of the computation
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
+    calc_global_gpstresses_map, //! basically calc_struct_stress but with assembly of global gpstresses map
     prestress_update,
     calc_struct_energy,
     calc_struct_output_E,

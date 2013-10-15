@@ -467,6 +467,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
     default:
       dserror("Unknown type of action for Solid3");
+      break;
   }
   return 0;
 }
@@ -723,6 +724,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       break;
     default:
       dserror("requested strain type not available");
+      break;
     }
 
     /* non-linear B-operator (may so be called, meaning
@@ -821,6 +823,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       break;
     default:
       dserror("requested stress type not available");
+      break;
     }
 
     const double detJ_w = detJ * gpweights[gp];

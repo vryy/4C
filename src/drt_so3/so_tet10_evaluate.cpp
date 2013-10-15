@@ -16,6 +16,7 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_patspec/patspec.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_contact/contact_analytical.H"
@@ -62,12 +63,16 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_fsiload")       act = So_tet10::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_tet10::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")   act = So_tet10::calc_struct_reset_istep;
+  else if (action=="calc_struct_reset_all")     act = So_tet10::calc_struct_reset_all;
   else if (action=="calc_struct_errornorms")    act = So_tet10::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet10::prestress_update;
+  else if (action=="calc_global_gpstresses_map")       act = So_tet10::calc_global_gpstresses_map;
   else if (action=="postprocess_stress")        act = So_tet10::postprocess_stress;
   else dserror("Unknown type of action for So_tet10");
 
-
+  // check for patient specific data
+  PATSPEC::GetILTDistance(Id(),params,discretization);
+  PATSPEC::GetLocalRadius(Id(),params,discretization);
 
   // what should the element do
   switch(act) {
@@ -287,6 +292,29 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       so3mat->ResetStep();
   }
   break;
+  //==================================================================================
+  case calc_struct_reset_all:
+  {
+    // Reset of history for materials
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->ResetAll(NUMGPT_SOTET10);
+
+    // Reset prestress
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      time_ = 0.0;
+      LINALG::Matrix<3,3> Id(true);
+      Id(0,0) = Id(1,1) = Id(2,2) = 1.0;
+      for (int gp=0; gp<NUMGPT_SOTET10; ++gp)
+      {
+        prestress_->MatrixtoStorage(gp,Id,prestress_->FHistory());
+        prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+      }
+    }
+    if (pstype_==INPAR::STR::prestress_id)
+      dserror("Reset of Inverse Design not yet implemented");
+  }
+  break;
 
   case calc_struct_errornorms:
   {
@@ -483,11 +511,112 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   }
 	break;
 
+// evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
+  case calc_global_gpstresses_map:
+  {
+    // nothing to do for ghost elements
+    if (discretization.Comm().MyPID()==Owner())
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+      RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
+      if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      if (gpstressmap==Teuchos::null)
+        dserror("no gp stress map available for writing gpstresses");
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",Teuchos::null);
+      if (gpstrainmap==Teuchos::null)
+        dserror("no gp strain map available for writing gpstrains");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D> stress;
+      LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D> strain;
+      INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+
+
+      // if a linear analysis is desired
+      if (kintype_ == DRT::ELEMENTS::So_tet10::so_tet10_linear)
+      {
+        dserror("Linear case not implemented");
+      }
+
+
+      else
+      {
+        if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+          dserror("Inverse Design not implemented for SOTET10");
+          //invdesign_->so_tet10_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+        else // standard analysis
+          so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+      }
+      // add stresses to global map
+      //get EleID Id()
+      int gid = Id();
+      RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+      gpstress->Shape(NUMGPT_SOTET10,MAT::NUM_STRESS_3D);
+
+      //move stresses to serial dense matrix
+      for(int i=0;i<NUMGPT_SOTET10;i++)
+      {
+        for(int j=0;j<MAT::NUM_STRESS_3D;j++)
+        {
+          (*gpstress)(i,j)=stress(i,j);
+        }
+      }
+
+      //strains
+      RCP<Epetra_SerialDenseMatrix> gpstrain = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+      gpstrain->Shape(NUMGPT_SOTET10,MAT::NUM_STRESS_3D);
+
+      //move stresses to serial dense matrix
+      for(int i=0;i<NUMGPT_SOTET10;i++)
+      {
+        for(int j=0;j<MAT::NUM_STRESS_3D;j++)
+        {
+          (*gpstrain)(i,j)=strain(i,j);
+        }
+      }
+
+      //add to map
+      (*gpstressmap)[gid]=gpstress;
+      (*gpstrainmap)[gid]=gpstrain;
+
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+      }
+
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+      }
+    }
+  }
+  break;
+
+
     default:
-      dserror("Unknown type of action for So_tet10");
+      dserror("Unknown type of action for SolidTet10");
+      break;
   }
   return 0;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -778,6 +907,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       break;
     default:
       dserror("requested strain type not available");
+      break;
     }
 
     /* non-linear B-operator (may so be called, meaning
@@ -876,6 +1006,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       break;
     default:
       dserror("requested stress type not available");
+      break;
     }
 
     double detJ_w = detJ*gpweights_4gp[gp];
