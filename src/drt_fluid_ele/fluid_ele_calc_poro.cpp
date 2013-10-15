@@ -47,9 +47,8 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype> * DRT::ELEMENTS::FluidEleCalcPoro<disty
   {
     if(static_cast<int>(MY::instances_.count(num))==0)
     {
-      std::map<int,MY* > * temp_ = new std::map<int,MY* >;
-      temp_->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcPoro<distype>(num)));
-      MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, temp_));
+      MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, new std::map<int,MY* >));
+      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcPoro<distype>(num)));
     }
     else if ( MY::instances_.count(num) > 0 and MY::instances_.at(num)->count((int)distype) == 0 )
     {

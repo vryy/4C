@@ -214,6 +214,8 @@ namespace DRT
       double visc_;
       //! density at t_(n+alpha_F) or t_(n+1)
       double densaf_;
+      //! num of fluid field in multi-fluid-field problems (only of importance for fpsi so far, default = 0)
+      double num_;
 
       //-----------------------------------------------------------------
       //-----------------------------------------------------------------

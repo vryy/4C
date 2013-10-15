@@ -111,9 +111,8 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<
   {
     if(static_cast<int>(my::instances_.count(num))==0)
     {
-      std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*> * temp = new std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>;
-      temp->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryParent<distype>* >((int)distype,new FluidBoundaryParent<distype>(num)));
-      my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface* > * >(num, temp));
+      my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface* > * >(num, new std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>));
+      my::instances_.at(num)->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryParent<distype>* >((int)distype,new FluidBoundaryParent<distype>(num)));
     }
     else if ( my::instances_.count(num) > 0 and my::instances_.at(num)->count((int)distype) == 0 )
     {
@@ -124,20 +123,20 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<
   }
   else
   {
-    if ( my::instances_.find(num)->second != NULL )
+    if ( my::instances_.at(num)->size())
     {
-      for (std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>::iterator it=my::instances_.find(num)->second->begin(); it!=my::instances_.find(num)->second->end(); ++it)
-      {
-        if(it->first == (int)distype)
-          delete it->second;
-      }
+      delete my::instances_.at(num)->at((int)distype);
+      my::instances_.at(num)->erase((int)distype);
 
-      delete my::instances_.find(num)->second;
+      if ( !my::instances_.at(num)->size())
+        my::instances_.erase(num);
+
     }
 
-    my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface* > * >(num, NULL));
     return NULL;
   }
+
+  return NULL;
 }
 
 
@@ -148,9 +147,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  int numinstances = my::instances_.size();
-  for(int i=0; i<numinstances; i++)
-    Instance( false, i );
+    Instance( false, num_ );
 }
 
 
@@ -162,7 +159,8 @@ DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent(int num)
     drs_(0.0),
     fac_(0.0),
     visc_(0.0),
-    densaf_(1.0)
+    densaf_(1.0),
+    num_(num)
 {
   // pointer to class FluidParentParameter (access to the general parameter)
   fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance(num);

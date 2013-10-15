@@ -125,9 +125,8 @@ DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryImpl<dist
   {
     if(static_cast<int>(my::instances_.count(num))==0)
     {
-      std::map<int,DRT::ELEMENTS::FluidBoundaryImplInterface*> * temp = new std::map<int,DRT::ELEMENTS::FluidBoundaryImplInterface*>;
-      temp->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryImpl<distype>* >((int)distype,new FluidBoundaryImpl<distype>(num)));
-      my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryImplInterface* > * >(num, temp));
+        my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryImplInterface* > * >(num, new std::map<int,DRT::ELEMENTS::FluidBoundaryImplInterface*>));
+        my::instances_.at(num)->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryImpl<distype>* >((int)distype,new FluidBoundaryImpl<distype>(num)));
     }
     else if ( my::instances_.count(num) > 0 and my::instances_.at(num)->count((int)distype) == 0 )
     {
@@ -162,6 +161,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::Done()
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
   Instance( false, num_ );
+
 }
 
 
@@ -4701,6 +4701,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
            */
           //double rhsfacpre = DRT::ELEMENTS::FluidEleParameter::Instance(INPAR::FPSI::porofluid)->TimeFacRhsPre();
           elevec1(inode*numdofpernode_+nsd_) += rhsfac * pfunct(inode) * normal_u_minus_vs;
+
         } // block conti
 
         else if(block == "structure")
