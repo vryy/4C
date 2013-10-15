@@ -531,7 +531,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
   // Create the solver
-  Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<Teuchos::ParameterList>(&nlParams,false));
+  Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,Teuchos::RCP<Teuchos::ParameterList>(&nlParams,false));
 
   // we know we already have the first linear system calculated
   grp->CaptureSystemState();
