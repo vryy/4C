@@ -247,9 +247,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     dispnm_ = LINALG::CreateVector(*dofrowmap,true);
     gridv_  = LINALG::CreateVector(*dofrowmap,true);
 
-    if (   physicaltype_ == INPAR::FLUID::poro
+    if (  (physicaltype_ == INPAR::FLUID::poro
         or physicaltype_ == INPAR::FLUID::poro_p1
         or physicaltype_ == INPAR::FLUID::poro_p2)
+        and discret_->Name()=="porofluid" )
       gridvn_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
@@ -1509,7 +1510,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     discret_->SetState("dispnp", dispnp_);
     discret_->SetState("gridv", gridv_);
 
-    if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1)
+    if ((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1) and discret_->Name()=="porofluid" )
     {
       //just for porous media
       discret_->SetState("dispn", dispn_);
@@ -3006,12 +3007,17 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     if (not (    physicaltype_ == INPAR::FLUID::poro
               or physicaltype_ == INPAR::FLUID::poro_p1
               or physicaltype_ == INPAR::FLUID::poro_p2
-        ) ) //standard case
+            )
+              or
+            (    DRT::Problem::Instance()->ProblemType()==prb_fpsi
+                 and discret_->Name()=="fluid"
+            )
+       ) //standard case
     {
-      onlyaccn = velpressplitter_.ExtractOtherVector(accn_);
+      onlyaccn  = velpressplitter_.ExtractOtherVector(accn_);
       onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
       onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
-      onlyveln = velpressplitter_.ExtractOtherVector(veln_);
+      onlyveln  = velpressplitter_.ExtractOtherVector(veln_);
       onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
     }
     else //poroelasticity case
@@ -3383,7 +3389,7 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("scalar_field", scalar_field);
     }
 
-    if(physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
+    if((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid" )
     {
       RCP<Epetra_Vector>  convel= rcp(new Epetra_Vector(*velnp_));
       convel->Update(-1.0,*gridv_,1.0);
@@ -3837,9 +3843,9 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     reader.ReadVector(dispn_ , "dispn");
     reader.ReadVector(dispnm_,"dispnm");
 
-    if(physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
+    if((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid" )
       reader.ReadVector(gridv_,"gridv");
-    if(physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
+    if((physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid")
       reader.ReadVector(gridvn_,"gridvn");
   }
 
@@ -6357,7 +6363,7 @@ void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
 
     *velnp_ = *aux;
 
-    if (physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
+    if ((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid" )
     {
       //only one step theta
       // new end-point accelerations
