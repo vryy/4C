@@ -63,8 +63,17 @@ namespace LINALG
 
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
+      // private Initialization routine for MueLu Multigrid hierarchy
+      Teuchos::RCP<Hierarchy> InitializeHierarchy(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+
+      // private Setup routine for MueLu Multigrid factories
+      Teuchos::RCP<Hierarchy> SetupFactories(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params);
+
+      // private Setup routine for smoothers
+      Teuchos::RCP<Hierarchy> SetupSmoothers(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params);
+
       // private Setup routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
+      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::RCP<Hierarchy> & h, const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
 
       Teuchos::ParameterList & mllist_;
 
@@ -73,6 +82,12 @@ namespace LINALG
 
       /// preconditioner
       Teuchos::RCP<Epetra_Operator>                  P_;
+
+      /// hierarchy object
+      Teuchos::RCP<Hierarchy> H_;
+
+      /// multigrid levels
+      Teuchos::Array<Teuchos::RCP<FactoryManager> > vecManager_;
 
     };
   }

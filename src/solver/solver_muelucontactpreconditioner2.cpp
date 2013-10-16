@@ -94,6 +94,14 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
 {
   SetupLinearProblem( matrix, x, b );
 
+  // handle reuse strategy
+  std::string reuseStrategy = "nothing";
+  if(mllist_.isParameter("muelu reuse: strategy")) reuseStrategy = mllist_.get<std::string>("muelu reuse: strategy");
+
+  // reuseStrategy == "nothing" -> force rebuilding the preconditioner
+  if(reuseStrategy == "nothing" && create == false)
+    create = true;
+
   if ( create )
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
@@ -102,6 +110,7 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
 
     // free old matrix first
     P_       = Teuchos::null;
+    H_       = Teuchos::null;
     Pmatrix_ = Teuchos::null;
 
     // create a copy of the scaled matrix
@@ -132,64 +141,81 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
     // remove unsupported flags
     mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
 
+    H_ = Teuchos::rcp(new Hierarchy());
+    H_ = InitializeHierarchy(H_, mllist_, mueluOp, nspVector);
+    H_ = SetupFactories(H_, mllist_);
+    H_ = SetupSmoothers(H_, mllist_);
+
     // Setup MueLu Hierarchy
-    //Teuchos::RCP<Hierarchy> H = MLInterpreter::Setup(mllist_, mueluOp, nspVector);
-    Teuchos::RCP<Hierarchy> H = SetupHierarchy(mllist_, mueluOp, nspVector);
+    H_ = SetupHierarchy(H_, mllist_, mueluOp, nspVector);
 
     // set preconditioner
-    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
+
+  }
+  // only rebuild parts of preconditioner
+  // reuse nonsmoothed transfer operators and Importer objects in case of active rebalancing
+  else if (create == false && reuseStrategy=="Ptent")  {
+
+    H_->ExpertClear();
+
+    //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+    //Teuchos::RCP<Level> coarseLevel0 = H_->GetLevel(0);
+    //coarseLevel0->print(*out);
+
+    // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
+    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
+    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+
+    // prepare nullspace vector for MueLu
+    int numdf = mllist_.get<int>("PDE equations",-1);
+    int dimns = mllist_.get<int>("null space: dimension",-1);
+    if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
+    Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
+
+    Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+    Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
+
+    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+        Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
+        const size_t myLength = nspVector->getLocalLength();
+        for(size_t j=0; j<myLength; j++) {
+                nspVectori[j] = (*nsdata)[i*myLength+j];
+        }
+    }
+
+    // remove unsupported flags
+    mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
+
+    H_ = InitializeHierarchy(H_, mllist_, mueluOp, nspVector);
+
+    H_ = SetupSmoothers(H_, mllist_);
+
+    // Setup MueLu Hierarchy
+    H_ = SetupHierarchy(H_, mllist_, mueluOp, nspVector);
+
+    // set preconditioner
+    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 
   }
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierarchy(
+Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::InitializeHierarchy(
+    const Teuchos::RCP<Hierarchy> & h,
     const Teuchos::ParameterList & params,
     const Teuchos::RCP<Matrix> & A,
     const Teuchos::RCP<MultiVector> nsp)
 {
-  //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
-
-  // read in common parameters
-  int maxLevels = 10;       // multigrid prameters
   int verbosityLevel = 10;  // verbosity level
-  int maxCoarseSize = 50;
   int nDofsPerNode = 1;         // coalesce and drop parameters
-  //double agg_threshold = 0.0;   // aggregation parameters
-  double agg_damping = 4/3;
-  //int    agg_smoothingsweeps = 1;
-  int    minPerAgg = 3;       // optimal for 2d
-  int    maxNbrAlreadySelected = 0;
-  std::string agg_type = "Uncoupled";
+  int maxCoarseSize = 50;
   bool bSegregateAggregates = true; //false; // TODO fix me: only for tests with repartitioning! true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
 
-#ifdef HAVE_MUELU_ISORROPIA
-  bool bDoRepartition = false;
-  double optNnzImbalance = 1.3;
-  int optMinRowsPerProc = 3000;
-#endif
-
-  if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
   if(params.isParameter("ML output"))  verbosityLevel = params.get<int>("ML output");
-  if(params.isParameter("coarse: max size")) maxCoarseSize = params.get<int>("coarse: max size");
   if(params.isParameter("PDE equations")) nDofsPerNode = params.get<int>("PDE equations");
-  //if(params.isParameter("aggregation: threshold"))          agg_threshold       = params.get<double>("aggregation: threshold");
-  if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
-  //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
-  if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
-  if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
-  //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
-
-#ifdef HAVE_MUELU_ISORROPIA
-  if(params.isParameter("muelu repartition: enable")) {
-    if(params.get<int>("muelu repartition: enable") == 1)      bDoRepartition = true;
-  }
-  if(params.isParameter("muelu repartition: max min ratio"))      optNnzImbalance     = params.get<double>("muelu repartition: max min ratio");
-  if(params.isParameter("muelu repartition: min per proc"))       optMinRowsPerProc   = params.get<int>("muelu repartition: min per proc");
-#else
-  dserror("Isorropia has not been compiled with Trilinos. Repartitioning is not working.");
-#endif
+  if(params.isParameter("coarse: max size")) maxCoarseSize = params.get<int>("coarse: max size");
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
@@ -201,7 +227,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   if(verbosityLevel > 4 )  eVerbLevel = Teuchos::VERB_MEDIUM;
   if(verbosityLevel > 7 )  eVerbLevel = Teuchos::VERB_HIGH;
   if(verbosityLevel > 9 )  eVerbLevel = Teuchos::VERB_EXTREME;
-
 
   // extract additional maps from parameter list
   // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
@@ -235,22 +260,16 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   ///////////////////////////////////////////////////////////
 
   // fill hierarchy
-  Teuchos::RCP<Hierarchy> hierarchy = Teuchos::rcp(new Hierarchy(A));
-  hierarchy->setlib(Xpetra::UseEpetra);
-  hierarchy->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
-  hierarchy->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize)/*+nSlaveDofs*/);
-  //hierarchy->SetDebug(true);
-
-  /*int timestep = mllist_.get<int>("time-step");
-  int newtoniter = mllist_.get<int>("newton-iter");
-  std::stringstream str; str << "t" << timestep << "_n" << newtoniter;
-  hierarchy->SetDebugPrefix(str.str());*/
+  //Teuchos::RCP<Hierarchy> hierarchy = Teuchos::rcp(new Hierarchy(A));
+  h->setlib(Xpetra::UseEpetra);
+  h->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
+  h->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize)/*+nSlaveDofs*/);
 
   ///////////////////////////////////////////////////////////
 
   // set fine level nullspace
   // use given fine level null space or extract pre-computed nullspace from ML parameter list
- Teuchos::RCP<MueLu::Level> Finest = hierarchy->GetLevel();  // get finest level
+ Teuchos::RCP<MueLu::Level> Finest = h->GetLevel(0);  // get finest level
  Finest->setlib(Xpetra::UseEpetra);
  Finest->Set("A",A); // not necessary
 
@@ -282,7 +301,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     Finest->Set("Nullspace",nspVector);                       // set user given null space
   }
 
-
   ///////////////////////////////////////////////////////////////////////
   // declare "SingleNodeAggDofMap" on finest level
   // this map marks the problematic rows of the input matrix
@@ -290,12 +308,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // -> MyTrilinosSmoother, IterationAFactory
   if(xSingleNodeAggMap != Teuchos::null)
    Finest->Set("SingleNodeAggDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSingleNodeAggMap));
-
-  // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
-  // TODO what if xSingleNodeAggMap == Teuchos::null?
-  // when is SingleNodeAFact built? first when TrilinosSmoother is generated? Is it reused properly?
-  Teuchos::RCP<FactoryBase> singleNodeAFact =
-       Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
 
   ///////////////////////////////////////////////////////////////////////
   // declare "SlaveDofMap" on finest level
@@ -314,16 +326,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   if(xMasterDofMap != Teuchos::null)
     Finest->Set("MasterDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xMasterDofMap));
 
-  // for segregating aggregates (slave and master)
-  Teuchos::RCP<Factory> segregatedAFact = Teuchos::null;
-  if(bSegregateAggregates) {
-    segregatedAFact =
-         Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
-    segregatedAFact->SetParameter("Input matrix name",Teuchos::ParameterEntry(std::string("A")));
-    segregatedAFact->SetParameter("Map block 1 name",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
-    segregatedAFact->SetParameter("Map block 2 name",Teuchos::ParameterEntry(std::string("MasterDofMap")));
-  }
-
   ///////////////////////////////////////////////////////////////////////
   // declare "NearZeroDiagMap" on finest level
   // this map marks rows of A with a near zero diagonal entry (usually the
@@ -334,12 +336,101 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   if(xNearZeroDiagMap != Teuchos::null)
     Finest->Set("NearZeroDiagMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xNearZeroDiagMap));
 
-  ///////////////////////////////////////////////////////////////////////
-  // keep factories
+  // now, the finest level contain the following variables
+  // - A
+  // - Nullspace
+  // - NearZeroDiagMap (if available)
+  // - MasterDofMap (if available)
+  // - SlaveDofMap (if available)
+  // - SingleNodeAggDofMap (if available)
 
-  // keep singleNodeAFact since it's needed in the solution phase by MyTrilinosSmoother
-  if(xSingleNodeAggMap != Teuchos::null)
-    Finest->Keep("A",singleNodeAFact.get());
+  return h;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactories(
+    const Teuchos::RCP<Hierarchy> & h,
+    const Teuchos::ParameterList & params)
+{
+  // read in common parameters
+  int maxLevels = 10;       // multigrid prameters
+  //double agg_threshold = 0.0;   // aggregation parameters
+  double agg_damping = 4/3;
+  int    minPerAgg = 3;       // optimal for 2d
+  int    maxNbrAlreadySelected = 0;
+  std::string agg_type = "Uncoupled";
+  std::string reuseStrategy = "none";
+  bool bSegregateAggregates = true; //false; // TODO fix me: only for tests with repartitioning! true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
+
+#ifdef HAVE_MUELU_ISORROPIA
+  bool bDoRepartition = false;
+  double optNnzImbalance = 1.3;
+  int optMinRowsPerProc = 3000;
+#endif
+
+  if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
+  if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
+  //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
+  if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
+  if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
+  //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
+  if(params.isParameter("muelu reuse: strategy"))           reuseStrategy       = params.get<std::string>("muelu reuse: strategy");
+#ifdef HAVE_MUELU_ISORROPIA
+  if(params.isParameter("muelu repartition: enable")) {
+    if(params.get<int>("muelu repartition: enable") == 1)      bDoRepartition = true;
+  }
+  if(params.isParameter("muelu repartition: max min ratio"))      optNnzImbalance     = params.get<double>("muelu repartition: max min ratio");
+  if(params.isParameter("muelu repartition: min per proc"))       optMinRowsPerProc   = params.get<int>("muelu repartition: min per proc");
+#else
+  dserror("Isorropia has not been compiled with Trilinos. Repartitioning is not working.");
+#endif
+
+  //std::cout << "Reuse strategy: " << reuseStrategy << std::endl;
+
+  // extract additional maps from parameter list
+  // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
+  // has access to the contact manager class
+  Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
+  Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
+  Teuchos::RCP<Map> xNearZeroDiagMap = Teuchos::null;
+  if(params.isSublist("Linear System properties")) {
+    const Teuchos::ParameterList & linSystemProps = params.sublist("Linear System properties");
+    // extract information provided by solver (e.g. PermutedAztecSolver)
+    epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact masterDofMap");
+    epSlaveDofMap =  linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact slaveDofMap");
+    epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+    epInnerDofMap  = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact innerDofMap");
+    if(linSystemProps.isParameter("non diagonal-dominant row map"))
+      xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
+    if(linSystemProps.isParameter("near-zero diagonal row map"))
+      xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
+    if(linSystemProps.isParameter("ProblemType") && linSystemProps.get<std::string>("ProblemType") == "meshtying")
+      bSegregateAggregates = false;
+  }
+
+  // transform Epetra maps to Xpetra maps (if necessary)
+  //Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
+  Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
+  Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
+
+  ///////////////////////////////////////////////////////////
+
+ Teuchos::RCP<MueLu::Level> Finest = h->GetLevel(0);  // get finest level
+
+
+  // for segregating aggregates (slave and master)
+  Teuchos::RCP<Factory> segregatedAFact = Teuchos::null;
+  if(bSegregateAggregates) {
+    segregatedAFact =
+         Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
+    segregatedAFact->SetParameter("Input matrix name",Teuchos::ParameterEntry(std::string("A")));
+    segregatedAFact->SetParameter("Map block 1 name",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+    segregatedAFact->SetParameter("Map block 2 name",Teuchos::ParameterEntry(std::string("MasterDofMap")));
+  }
 
   // Coalesce and drop factory with constant number of Dofs per freedom
   // note: coalescing based on original matrix A
@@ -363,6 +454,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   Teuchos::RCP<TwoLevelFactoryBase> RFact;
 
   Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory());
+
+  if(reuseStrategy == "Ptent")
+    h->Keep("P",           PtentFact.get()); // keep tentative P factory!!!!
 
   // choose either nonsmoothed transfer operators or
   // PG-AMG smoothed aggregation transfer operators
@@ -426,13 +520,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   AcFact->SetFactory("R",RFact);
   AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
-  // write out aggregates
-  /*Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>());
-  aggExpFact->SetParameter("Output filename",Teuchos::ParameterEntry(std::string("aggs_level%LEVELID_proc%PROCID.out")));
-  aggExpFact->SetFactory("Aggregates",UCAggFact);
-  aggExpFact->SetFactory("DofsPerNode",dropFact);
-  AcFact->AddTransferFactory(aggExpFact);*/
-
   // transfer maps to coarser grids
   if(xSingleNodeAggMap != Teuchos::null) {
     Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("SingleNodeAggDofMap", MueLu::NoFactory::getRCP()));
@@ -454,13 +541,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
-  ///////////////////////////////////////////////////////////////////////
-  // setup coarse level smoothers/solvers
-  ///////////////////////////////////////////////////////////////////////
-
-  // coarse level smoother/solver
-  Teuchos::RCP<SmootherFactory> coarsestSmooFact;
-  coarsestSmooFact = GetContactCoarsestSolverFactory(params, Teuchos::null ); // use full matrix A on coarsest level (direct solver)
 
   ///////////////////////////////////////////////////////////////////////
   // introduce rebalancing
@@ -504,6 +584,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     RepartitionFact->SetFactory("A", AcFact);
     RepartitionFact->SetFactory("Partition", repInterface);
 
+    if(reuseStrategy == "Ptent")
+      h->Keep("Importer", RepartitionFact.get()); // keep Importer from RepartitionFact!!
+
     // Reordering of the transfer operators
     RebalancedPFact = Teuchos::rcp(new RebalanceTransferFactory());
     RebalancedPFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Interpolation")));
@@ -513,6 +596,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     RebalancedRFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Restriction")));
     RebalancedRFact->SetFactory("R", RFact);
     RebalancedRFact->SetFactory("Nullspace", PtentFact);
+    if(reuseStrategy == "Ptent") RebalancedRFact->DisableMultipleCheckGlobally(); // TODO check this!!
 
     // Compute Ac from rebalanced P and R
     RebalancedAFact = Teuchos::rcp(new RebalanceAcFactory());
@@ -542,42 +626,30 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   ///////////////////////////////////////////////////////////////////////
 
 
-  bool bIsLastLevel = false;
-  std::vector<Teuchos::RCP<FactoryManager> > vecManager(maxLevels);
+  //vecManager_.reserve(maxLevels);
   for(int i=0; i < maxLevels; i++) {
     Teuchos::ParameterList pp(params);
-    vecManager[i] = Teuchos::rcp(new FactoryManager());
 
-    // fine/intermedium level smoother
-    Teuchos::RCP<SmootherFactory> SmooFactFine = Teuchos::null;
-    if(xSingleNodeAggMap != Teuchos::null)
-      SmooFactFine = GetContactSmootherFactory(pp, i, singleNodeAFact); // use filtered matrix on fine and intermedium levels
-    else
-      SmooFactFine = GetContactSmootherFactory(pp, i, Teuchos::null); // use filtered matrix on fine and intermedium levels
+    vecManager_.push_back(Teuchos::rcp(new FactoryManager()));
 
-    // Configure FactoryManager
-    if(SmooFactFine != Teuchos::null)
-      vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
-    vecManager[i]->SetFactory("CoarseSolver", coarsestSmooFact);
-    vecManager[i]->SetFactory("Aggregates", UCAggFact);
-    vecManager[i]->SetFactory("Graph", dropFact);
-    vecManager[i]->SetFactory("DofsPerNode", dropFact);
-
+    vecManager_[i]->SetFactory("Aggregates", UCAggFact);
+    vecManager_[i]->SetFactory("Graph", dropFact);
+    vecManager_[i]->SetFactory("DofsPerNode", dropFact);
 #ifdef HAVE_MUELU_ISORROPIA
     if(bDoRepartition) {
-      vecManager[i]->SetFactory("A", RebalancedAFact);
-      vecManager[i]->SetFactory("P", RebalancedPFact);
-      vecManager[i]->SetFactory("R", RebalancedRFact);
-      vecManager[i]->SetFactory("Nullspace",   RebalancedRFact);
-      vecManager[i]->SetFactory("Importer",    RepartitionFact);
-      vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
+      vecManager_[i]->SetFactory("A", RebalancedAFact);
+      vecManager_[i]->SetFactory("P", RebalancedPFact);
+      vecManager_[i]->SetFactory("R", RebalancedRFact);
+      vecManager_[i]->SetFactory("Nullspace",   RebalancedRFact);
+      vecManager_[i]->SetFactory("Importer",    RepartitionFact);
+      vecManager_[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
     } else {
 #endif // #ifdef HAVE_MUELU_ISORROPIA
-      vecManager[i]->SetFactory("Nullspace", nspFact); // use same nullspace factory throughout all multigrid levels
-      vecManager[i]->SetFactory("A", AcFact);          // same RAP factory for all levels
-      vecManager[i]->SetFactory("P", PFact);           // same prolongator and restrictor factories for all levels
-      vecManager[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
-      vecManager[i]->SetFactory("R", RFact);           // same prolongator and restrictor factories for all levels
+      vecManager_[i]->SetFactory("Nullspace", nspFact); // use same nullspace factory throughout all multigrid levels
+      vecManager_[i]->SetFactory("A", AcFact);          // same RAP factory for all levels
+      vecManager_[i]->SetFactory("P", PFact);           // same prolongator and restrictor factories for all levels
+      vecManager_[i]->SetFactory("Ptent", PtentFact);   // same prolongator and restrictor factories for all levels
+      vecManager_[i]->SetFactory("R", RFact);           // same prolongator and restrictor factories for all levels
 #ifdef HAVE_MUELU_ISORROPIA
     }
 #endif
@@ -585,23 +657,93 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   }
 
+  return h;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmoothers(
+    const Teuchos::RCP<Hierarchy> & h,
+    const Teuchos::ParameterList & params)
+{
+  // extract additional maps from parameter list
+  // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
+  // has access to the contact manager class
+  Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
+  if(params.isSublist("Linear System properties")) {
+    const Teuchos::ParameterList & linSystemProps = params.sublist("Linear System properties");
+    if(linSystemProps.isParameter("non diagonal-dominant row map"))
+      xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
+  }
+
+  // TODO fix bug: remove old singleNodeAFact or somehow generate only one and put it in here!!!
+  // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
+  Teuchos::RCP<FactoryBase> singleNodeAFact = Teuchos::null;
+  if(xSingleNodeAggMap != Teuchos::null) {
+    singleNodeAFact = Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
+    // keep singleNodeAFact since it's needed in the solution phase by MyTrilinosSmoother
+    h->GetLevel(0)->Keep("A",singleNodeAFact.get());
+  }
+
+  // set Smoother and CoarseSolver factories in FactoryManager
+  int maxLevels = 10;
+  if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
+
+  // coarse level smoother/solver
+  Teuchos::RCP<SmootherFactory> coarsestSmooFact;
+  coarsestSmooFact = GetContactCoarsestSolverFactory(params, Teuchos::null ); // use full matrix A on coarsest level (direct solver)
+
+  //vecManager_.reserve(maxLevels);
+  for(int i=0; i < maxLevels; i++) {
+    Teuchos::ParameterList pp(params);
+
+    // fine/intermedium level smoother
+    Teuchos::RCP<SmootherFactory> SmooFactFine = Teuchos::null;
+    if(xSingleNodeAggMap != Teuchos::null)
+      SmooFactFine = GetContactSmootherFactory(pp, i, singleNodeAFact); // use filtered matrix on fine and intermedium levels
+    else
+      SmooFactFine = GetContactSmootherFactory(pp, i, Teuchos::null);
+
+    // Configure FactoryManager
+    if(SmooFactFine != Teuchos::null)
+      vecManager_[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
+    vecManager_[i]->SetFactory("CoarseSolver", coarsestSmooFact);
+  }
+
+  return h;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierarchy(
+    const Teuchos::RCP<Hierarchy> & h,
+    const Teuchos::ParameterList & params,
+    const Teuchos::RCP<Matrix> & A,
+    const Teuchos::RCP<MultiVector> nsp)
+{
+  bool bIsLastLevel = false;
+  int maxLevels = 10;
+  if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
+
+  ////////////////////////////
+
   // use new Hierarchy::Setup routine
   if(maxLevels == 1) {
-    bIsLastLevel = hierarchy->Setup(0, Teuchos::null, vecManager[0].ptr(), Teuchos::null); // 1 level "multigrid" method
+    bIsLastLevel = h->Setup(0, Teuchos::null, vecManager_[0].ptr(), Teuchos::null); // 1 level "multigrid" method
   }
   else
   {
-    bIsLastLevel = hierarchy->Setup(0, Teuchos::null, vecManager[0].ptr(), vecManager[1].ptr()); // first (finest) level
+    bIsLastLevel = h->Setup(0, Teuchos::null, vecManager_[0].ptr(), vecManager_[1].ptr()); // first (finest) level
     for(int i=1; i < maxLevels-1; i++) { // intermedium levels
       if(bIsLastLevel == true) break;
-      bIsLastLevel = hierarchy->Setup(i, vecManager[i-1].ptr(), vecManager[i].ptr(), vecManager[i+1].ptr());
+      bIsLastLevel = h->Setup(i, vecManager_[i-1].ptr(), vecManager_[i].ptr(), vecManager_[i+1].ptr());
     }
     if(bIsLastLevel == false) { // coarsest level
-        bIsLastLevel = hierarchy->Setup(maxLevels-1, vecManager[maxLevels-2].ptr(), vecManager[maxLevels-1].ptr(), Teuchos::null);
+        bIsLastLevel = h->Setup(maxLevels-1, vecManager_[maxLevels-2].ptr(), vecManager_[maxLevels-1].ptr(), Teuchos::null);
      }
   }
 
-  return hierarchy;
+  return h;
 }
 
 //----------------------------------------------------------------------------------

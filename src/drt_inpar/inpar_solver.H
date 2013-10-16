@@ -119,6 +119,20 @@ namespace INPAR
         Permutation_algebraic,  /// < use algebraic permutation strategy
         Permutation_local       /// < use local permutations
     };
+
+    /// reuse strategies for MueLu Contact preconditioner
+    ///
+    /// up to now these parameters are only used by the MueLu_ContactPreconditioner2
+    ///
+    /// \author tw
+    /// \date 10/13
+    enum ReuseStrategy
+    {
+        Reuse_nothing,   /// < do not reuse multigrid preconditioner (even if AZREUSE is > 1)
+        Reuse_Ptent,     /// < try to reuse non-smoothed tentative prolongator (prerequisite AZREUSE > 1 appropriately set)
+        Reuse_full       /// < try to reuse full multigrid hierarchy (this is exactly the behaviour as we expect it from AZREUSE)
+    };
+
   }  // namespace SOLVER
 
 }  // namespace INPAR

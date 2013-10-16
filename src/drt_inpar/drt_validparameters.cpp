@@ -6443,6 +6443,28 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   DoubleParameter("MueLu_REBALANCE_NONZEROIMBALANCE",1.2,"maximum allowed nonzero imbalance factor",&list);
   IntParameter("MueLu_REBALANCE_MINROWS", 1000  ,"minimum numbers of rows per processor before rebalancing is necessary",&list);
 
+  {
+    // MueLu_Reuse
+    Teuchos::Tuple<std::string,3> name;
+    Teuchos::Tuple<int,3>  number;
+
+    name[0] = "nothing";                      number[0] = INPAR::SOLVER::Reuse_nothing;
+    name[1] = "Ptent";                        number[1] = INPAR::SOLVER::Reuse_Ptent;
+    name[2] = "full";                         number[2] = INPAR::SOLVER::Reuse_full;
+
+    setStringToIntegralParameter<int>(
+      "MueLu_REUSE", "nothing",
+      "Reuse strategy in MueLu contact preconditioner 2.\n"
+      "The options are 'none', 'Ptent' and 'full'.\n"
+      "'full' means: reuse the full multigrid hierarchy.\n"
+      "'Ptent': reuse aggregates and nonsmoothed transfer operator.\n"
+      "The MueLu_Reuse parameter only makes sense together with AZREUSE.\n",
+      name,
+      number,
+      &list
+      );
+  }
+
   // parameters for AMG(BS)
   setNumericStringParameter("AMGBS_BS_DAMPING","1.3 1.3 1.3",
                             "Relaxation factor for Braess-Sarazin smoother within AMGBS method",
