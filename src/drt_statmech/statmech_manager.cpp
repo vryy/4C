@@ -3283,8 +3283,13 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
      *(4) do also with short crosslinkers
      *note: a fully overlapping node map on processor 0 is imperative for the following part of the code to work correctly!*/
 
-    Teuchos::RCP<Epetra_Vector> actlinklengthtrans = Teuchos::rcp(new Epetra_Vector(*transfermap_, true));
+    Teuchos::RCP<Epetra_Vector> actlinklengthtrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
     Teuchos::RCP<Epetra_Vector> crosslinkertypetrans = Teuchos::null;
+    if(crosslinkertype_!=Teuchos::null)
+    {
+      crosslinkertypetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_, true));
+      CommunicateVector(crosslinkertypetrans, crosslinkertype_,true,false);
+    }
     CommunicateVector(actlinklengthtrans,actlinklengthout,true,false);
 
     // probability check, if length of active linker should be changed
