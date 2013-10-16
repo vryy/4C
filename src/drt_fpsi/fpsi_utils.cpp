@@ -350,7 +350,6 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 //    std::cout<<curr->second->Id()<<" proc :" <<mastercomm.MyPID()<<endl;
     int parenteleid=-1;
     int parenteleowner=-1;
-    int mastereleonproc = -1;
     int match = 0;
     int mastergeomsize = mastergeom.size();
     int sizelist[mastercomm.NumProc()]; // how many master interface elements has each processor
@@ -434,7 +433,7 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
       // match current master element
       // compare position to every element on interface slave side, every processor compares masterloc of current master element of processor[proc]
       Teuchos::RCP<DRT::Element> matchcurr = Teuchos::null;
-      int matchproc = -1;
+
       for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator scurr=slavegeom.begin(); scurr!=slavegeom.end(); ++scurr)
       {
         std::pair <std::multimap<int,double>::iterator, std::multimap<int,double>::iterator> range;
@@ -460,41 +459,11 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
         if(match == problem->NDim())
         {
           matchcurr = scurr->second;
-          matchproc = 1;
-          if(masterdis.HaveGlobalElement(parenteleid))
-            mastereleonproc = 1;
-          else
-            mastereleonproc = 0;
           break;
         }
       } // end matching
 
       mastercomm.Barrier();
-
-      // broadcast node ids of parent element
-      int parentelenodeids[8];
-      if(fbele != Teuchos::null)
-      {
-        const int* tempnodeids = fbele->ParentElement()->NodeIds();
-        for(int k=0;k<8;k++)
-        {
-          parentelenodeids[k] = tempnodeids[k];
-        }
-      }
-
-      mastercomm.Broadcast(&parentelenodeids[0],8,parenteleowner);
-
-      // determine processor on which the slave element lies
-      std::vector<int> matchproclist(mastercomm.NumProc());
-      mastercomm.GatherAll(&matchproc,&matchproclist[0],1);
-
-      for(int k=0; k<(int)matchproclist.size();k++)
-      {
-        if(matchproclist[k] > -1)
-          matchproc = k;
-      }
-
-      mastercomm.Broadcast(&mastereleonproc,1,matchproc);
 
       if(matchcurr != Teuchos::null)
       {
@@ -548,6 +517,7 @@ void FPSI::UTILS::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
   std::map<int,int>::iterator mapcurr;
   std::map<int,RCP<DRT::Element> >::iterator slaveelecurr;
   std::map<int,RCP<DRT::Element> >::iterator masterelecurr;
+  DRT::Element* masterele = NULL;
 
   DRT::Problem* problem = DRT::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis(masterdis->Name())->Comm();
@@ -596,53 +566,35 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
     comm.Broadcast(&mastereleid,1,proc);
     comm.Broadcast(&slaveeleid,1,proc);
 
-        int root=0;
-
-    // get owner of slave interface element
-//    if(slavegeom.size()) // only on procs which have slave interface elements
-//    {
-//      slaveelecurr = slavegeom.find(slaveeleid);
-//      if(slaveelecurr->second->Id() == slaveeleid) // only on the one proc on which the interface ele Id matches the entry in th map
-//      {
-//        slaveeleowner = slaveelecurr->second->Owner(); // this proc is the owner
-//      }
-//    }
-//    comm.GatherAll(&slaveeleowner,&slaveeleowners[0],1);
-//
-//    for(int i=0;i<comm.NumProc();i++)
-//    {
-//      if(slaveeleowners[i] != -1)
-//        root = i;
-//    }
-//    comm.Broadcast(&slaveeleowner,1,root);
-
-
-    // get owner of master interface/parent element
     if(masterdis->HaveGlobalElement(mastereleid))
     {
-        mastereleowner = comm.MyPID();
-    }
+      masterele = masterdis->gElement(mastereleid);
+      mastereleowner = masterele->Owner();
+
+      if(masterele->Owner() != comm.MyPID())
+      {
+        masterele = NULL;
+        mastereleowner = -1;
+      }
+    } // only the owner of the masterele has a pointer != NULL and mastereleowner != -1
 
     comm.GatherAll(&mastereleowner,&mastereleowners[0],1);
 
     for(int i=0;i<comm.NumProc();i++)
     {
       if(mastereleowners[i] != -1)
-        root = i;
-    }
-    comm.Broadcast(&mastereleowner,1,root);
+        mastereleowner = i;
+    } // now every processor knows the mastereleowner
+
 
     std::vector<int> procHasMasterEle(comm.NumProc());
-    //if(masterdis->ElementRowMap()->GID(0) != -1)
     HasMasterEle = masterdis->HaveGlobalElement(mastereleid);
     comm.GatherAll(&HasMasterEle,&procHasMasterEle[0],1);
 
 
     int parentelenodeids[8];
-    if(masterdis->HaveGlobalElement(mastereleid)) // only on master element owning proc
+    if(mastereleowner == comm.MyPID()) // only on master element owning proc
     {
-      DRT::Element* masterele = masterdis->gElement(mastereleid);
-
       // broadcast node ids of parent element
       const int* tempnodeids = masterele->NodeIds();
       for(int k=0;k<8;k++)
@@ -656,19 +608,19 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
 
 
     // ghost parent master element on master discretization of proc owning the matching slave interface element
+
     const Epetra_Map colcopy = *(masterdis->NodeColMap());
     int myglobalelementsize = colcopy.NumMyElements();
     std::vector<int> myglobalelements(myglobalelementsize);
     colcopy.MyGlobalElements(&myglobalelements[0]);
 
-
     //std::cout<<"oldmap: \n"<<*(masterdis->NodeColMap())<<endl;
     // modify nodecolmap of slave element owning proc only
-    if(comm.MyPID() == proc and procHasMasterEle[proc] == 0) // ghost master ele on owner of slave ele, but only if this proc doesn't already own the masterele
-    {//std::cout<<myglobalelementsize<<endl;
+    if(comm.MyPID() == proc and mastereleowner != proc) // ghost master ele on owner of slave ele, but only if this proc doesn't already own the masterele
+    {
       for(int k=0;k<8;k++)
       {
-        if(not masterdis->HaveGlobalElement(mastereleid)and colcopy.LID(parentelenodeids[k]) == -1) // if node not already in NodeColMap()
+        if(colcopy.LID(parentelenodeids[k]) == -1) // if node not already in NodeColMap()
         {
           //std::cout<<parentelenodeids[k]<<endl;
           myglobalelements.push_back(parentelenodeids[k]);
@@ -682,8 +634,9 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
     int globalsize;
     comm.SumAll(&myglobalelementsize,&globalsize,1);
     Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(globalsize,myglobalelementsize,&myglobalelements[0],0,comm));
-    //std::cout<<"newmap: \n"<<*newnodecolmap<<endl;
-    Teuchos::RCP<const Epetra_Map> rowcopy = Teuchos::rcp(new const Epetra_Map(*masterdis->NodeRowMap()));
+    Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::rcp(new Epetra_Map(*masterdis->NodeRowMap()));
+//    std::cout<<"newmap: \n"<<*newnodecolmap<<endl;
+
 //    Teuchos::RCP<const Epetra_Map> rowelecopy = Teuchos::rcp(new const Epetra_Map(*masterdis->ElementRowMap()));
 
 
@@ -705,18 +658,15 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
         before = masterdis->HaveGlobalElement(mastereleid);
       }
       comm.Barrier();
-      masterdis->Redistribute(*rowcopy,*newnodecolmap,true,false,true,true);
+      masterdis->Redistribute(*newnoderowmap,*newnodecolmap,true,false,true,true);
       if(comm.MyPID() == proc)
       {
         //std::cout<<counter<<" --After: Have GID "<<mastereleid<<" = "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
         after = masterdis->HaveGlobalElement(mastereleid);
         if(after == 0 and before == 0)
-          dserror("Element with gid=%d was not redistributed ! ",mastereleid);
+          dserror("Element with gid=%d has not been redistributed ! ",mastereleid);
       }
     }
-
-
-
 
     if(comm.MyPID()==proc and mapcurr != interfacefacingelementmap.end())
       ++mapcurr;

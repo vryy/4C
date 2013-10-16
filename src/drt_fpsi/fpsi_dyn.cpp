@@ -91,7 +91,7 @@ void fpsi_drt()
   fpsi_ = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams,poroelastdynparams);
 
   //3.1- Read restart if needed.
-  const int restartstep = DRT::Problem::Instance()->Restart();
+  const int restartstep = problem->Restart();
   if (restartstep)
     {
       fpsi_->ReadRestart(restartstep);
