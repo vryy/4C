@@ -626,7 +626,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
 
   // final output for loop
   if (Comm().MyPID()==0)
-    std::cout << " RRL done!" << endl;
+    std::cout << " RRL done!" << std::endl;
 
   return;
 }
@@ -704,7 +704,7 @@ void CONTACT::CoInterface::RoundRobinEvaluate()
 
   // final output for loop
   if (Comm().MyPID()==0)
-    std::cout << " RRL done!" << endl;
+    std::cout << " RRL done!" << std::endl;
 
   return;
 }
