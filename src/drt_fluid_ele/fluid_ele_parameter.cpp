@@ -23,6 +23,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/drt_dserror.H"
 
 #include "../drt_io/io_pstream.H"
+#include "../drt_inpar/inpar_fpsi.H"
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
@@ -230,7 +231,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   Teuchos::ParameterList stablist;
   if(params.get<int>("numfield")==0)
     stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
-  else if (params.get<int>("numfield")==1)
+  else if (params.get<int>("numfield")==(int)INPAR::FPSI::porofluid)
     stablist = params.sublist("POROUS-FLOW STABILIZATION");
 
   Teuchos::ParameterList& stablist_edgebased     = params.sublist("EDGE-BASED STABILIZATION");
@@ -246,7 +247,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     supg_     = DRT::INPUT::IntegralValue<int>(stablist,"SUPG");
     vstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
     rstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
-    graddiv_    = DRT::INPUT::IntegralValue<int>(stablist,"GRAD_DIV");
+    graddiv_  = DRT::INPUT::IntegralValue<int>(stablist,"GRAD_DIV");
     cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
     reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
