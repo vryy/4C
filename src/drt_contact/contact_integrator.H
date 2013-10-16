@@ -83,6 +83,10 @@ public:
   CoIntegrator(Teuchos::ParameterList& params,
                DRT::Element::DiscretizationType eletype);
 
+  CoIntegrator(Teuchos::ParameterList& params,
+               DRT::Element::DiscretizationType eletype,
+               const Epetra_Comm& comm);
+
   /*!
   \brief Destructor
 
@@ -102,7 +106,7 @@ public:
        LINALG::SerialDenseVector& lm2val,
        LINALG::SerialDenseVector& m2val,
        double& dmxideta, double& dxdmxi,
-       double& wgt);
+       double& wgt,const Epetra_Comm& comm);
 
   /*!
   \brief evaluate D/M-matrix entries at GP
@@ -539,18 +543,6 @@ public:
        const std::vector<std::vector<std::map<int,double> > >& dualmap);
 
   /*!
-  \brief Build all integrals and linearizations on a 1D or 2D
-         slave element (i.e. onl D, LinD possible).
-
-  This method is outdated!!! We now obtain the D-matrix by
-  integrating the mortar segments (just like the M-matrix entries).
-
-  */
-  void IntegrateDerivSlave2D3D(
-      MORTAR::MortarElement& sele, double* sxia, double* sxib,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg);
-
-  /*!
   \brief Build all integrals and linearizations without segmentation -- 2D
          (i.e. M, g, LinM, Ling and possibly D, LinD)
 
@@ -572,7 +564,8 @@ public:
   */
   void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
-      MORTAR::MortarElement& mele, double& mxia, double& mxib);
+      MORTAR::MortarElement& mele, double& mxia, double& mxib,
+      const Epetra_Comm& comm);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -864,7 +857,7 @@ protected:
     bool                                             duallin_;   // flag indicating linearization of dual shape fct.
     std::vector<std::vector<std::map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
     std::vector<std::map<int,double> >               ximaps_;    // storage for 2d segment endpoints derivatives
-
+    const Epetra_Comm&                                Comm_;
     //wear-specific stuff
     bool                                             wearimpl_;  // flag for implicit wear algorithm
 

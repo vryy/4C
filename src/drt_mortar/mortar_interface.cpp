@@ -926,7 +926,7 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   //*****NON-REDUNDANT STORAGE*****
   else if (Redundant()==INPAR::MORTAR::redundant_none)
   {
-    dserror("ERROR: Non-redundant interface storage not yet implemented.");
+    //dserror("ERROR: Non-redundant interface storage not yet implemented.");
 
     // nothing to do here, we work with the given non-redundant distribution
     // of both slave and master nodes to the individual processsors. However
@@ -1435,7 +1435,7 @@ void MORTAR::MortarInterface::SetElementAreas()
 /*----------------------------------------------------------------------*
  |  evaluate mortar coupling (public)                         popp 11/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::Evaluate()
+void MORTAR::MortarInterface::Evaluate(int rriter)
 {
   // interface needs to be complete
   if (!Filled() && Comm().MyPID()==0)
@@ -1472,10 +1472,16 @@ void MORTAR::MortarInterface::Evaluate()
 #endif // #ifdef MORTARGMSHCELLS
     
   // evaluate nodal normals on slave node row map
-  EvaluateNodalNormals();
+  // only once at the begin of the round-robin loop
+  // if no rrloop is started --> default: rriter=0
+  if (rriter==0)
+    EvaluateNodalNormals();
 
   // export nodal normals to slave node column map
+  // this call is very expensive and the computation
+  // time scales directly with the proc number !
   ExportNodalNormals();
+
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -1491,7 +1497,7 @@ void MORTAR::MortarInterface::Evaluate()
 
     // empty vector of master element pointers
     std::vector<MortarElement*> melements;
-    
+
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
     for (int j=0;j<selement->MoData().NumSearchElements();++j)
@@ -1500,6 +1506,8 @@ void MORTAR::MortarInterface::Evaluate()
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
       MortarElement* melement = static_cast<MortarElement*>(ele2);
+      //std::cout << "Myrank= " << Comm().MyPID() <<"  id " << selement->Id() << " sele " << selement->Owner() << "  mele "  << melement->Id() << "  owner= "<< melement->Owner() << std::endl;
+
       melements.push_back(melement);
     }
   
@@ -1650,13 +1658,20 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   double enlarge = 0.0;
 
   // create fully overlapping map of all master elements
-  Teuchos::RCP<Epetra_Map> melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+  // for non-redundant storage (RRloop) we handle the master elements
+  // like the slave elements --> melecolmap_
+  INPAR::MORTAR::RedundantStorage redunt = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(IParams(),"REDUNDANT_STORAGE");
+  Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
+  if (redunt != INPAR::MORTAR::redundant_none)
+    melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+  else
+    melefullmap = melerowmap_;
 
   // loop over all slave elements on this proc.
   for (int i=0;i<selecolmap_->NumMyElements();++i)
   {
-    DRT::Element* element = idiscret_->gElement(selecolmap_->GID(0));
-    if (!element) dserror("ERROR: Cannot find element with gid %\n",selecolmap_->GID(0));
+    DRT::Element* element = idiscret_->gElement(selecolmap_->GID(i));
+    if (!element) dserror("ERROR: Cannot find element with gid %\n",selecolmap_->GID(i));
     MORTAR::MortarElement* mrtrelement = (MortarElement*) element;
     if (mrtrelement->MinEdgeSize() < lmin)
       lmin= mrtrelement->MinEdgeSize();
@@ -1854,8 +1869,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
       // slabs of current master and slave element do intercept
       if (nintercepts==kdop/2)
       {
-        //std::cout << Comm().MyPID() << "\nCoupling found between slave element: "
-        //     << sgid <<" and master element: "<< mgid;
+        //std::cout << Comm().MyPID() << " Coupling found between slave element: " << sgid <<" and master element: "<< mgid << std::endl;
         DRT::Element* element= idiscret_->gElement(sgid);
         MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(element);
         selement->AddSearchElements(mgid);

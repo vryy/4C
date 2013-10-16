@@ -187,7 +187,8 @@ public:
   void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
                       Teuchos::RCP<Epetra_Vector>& sliptoggle,
                       Teuchos::RCP<Epetra_Vector>& weightedwear,
-                      Teuchos::RCP<Epetra_Vector>& realwear);
+                      Teuchos::RCP<Epetra_Vector>& realwear,
+                      bool forcedrestart = false);
 
   /*!
   \brief Perform a write restart

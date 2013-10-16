@@ -74,7 +74,7 @@ bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
   // loop over all master nodes
   for (int master=0;master<mele.NumNode();++master)
   {
-    CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[master]);
+    CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[master]);
 
     // only process slave node rows that belong to this proc
     //std::cout << "owner= " << mnode->Owner() << "  current proc= " << comm.MyPID()<< std::endl;

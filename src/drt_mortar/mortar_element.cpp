@@ -1148,3 +1148,18 @@ bool MORTAR::MortarElement::AddSearchElements(const int & gid)
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  reset found search elements                              farah 10/13|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::DeleteSearchElements()
+{
+  // check calling element type
+  if (!IsSlave())
+    dserror("ERROR: DeleteSearchElements called for infeasible MortarElement!");
+
+  // add new gid to vector of search candidates
+  MoData().SearchElements().clear();
+
+  return;
+}
+

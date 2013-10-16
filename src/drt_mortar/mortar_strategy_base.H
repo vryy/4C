@@ -90,6 +90,7 @@ class StrategyBase
       lmupdate,
       lmuzawa,
       activeold,
+      slipold,
       jump,
       dm,
       pentrac,
@@ -186,7 +187,7 @@ class StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> ContactWear() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,Teuchos::RCP<Epetra_Vector>& sliptoggle,Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear) = 0;
+    virtual void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,Teuchos::RCP<Epetra_Vector>& sliptoggle,Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false) = 0;
     virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) = 0;

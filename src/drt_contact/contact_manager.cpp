@@ -295,8 +295,8 @@ discret_(discret)
     // (for structural contact we currently choose redundant master storage)
     // (the only exception is self contact where a redundant slave is needed, too)
     INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(icparams,"REDUNDANT_STORAGE");
-    if (isself[0]==false && redundant != INPAR::MORTAR::redundant_master)
-      dserror("ERROR: CoManager: Contact requires redundant master storage");
+//    if (isself[0]==false && redundant != INPAR::MORTAR::redundant_master)
+//      dserror("ERROR: CoManager: Contact requires redundant master storage");
     if (isself[0]==true && redundant != INPAR::MORTAR::redundant_all)
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
@@ -573,8 +573,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements &&
-       (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual ||
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin   ))
+       (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual))
     dserror("ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
 
   if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
@@ -767,7 +766,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
+void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // quantities to be written for restart
   Teuchos::RCP<Epetra_Vector> activetoggle;
@@ -777,7 +776,7 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
 
 
   // quantities to be written for restart
-  GetStrategy().DoWriteRestart(activetoggle,sliptoggle,weightedwear,realwear);
+  GetStrategy().DoWriteRestart(activetoggle,sliptoggle,weightedwear,realwear, forcedrestart);
 
   // export restart information for contact to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();

@@ -42,7 +42,6 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_node.H"
-//#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -106,7 +105,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   double mxib = xiproj_[3];
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
+  CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape(),Comm());
 
   // *******************************************************************
   // different options for mortar integration
@@ -128,7 +127,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     // ***********************************************************
     //                   Integrate stuff !!!                    //
     // ***********************************************************
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib);
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
     // ***********************************************************
     //                   END INTEGRATION !!!                    //
     // ***********************************************************
@@ -256,7 +255,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
         return false;
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
+    CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape(),Comm());
 
     // *******************************************************************
     // different options for mortar integration
@@ -474,7 +473,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   else           endslave = false;
 
   // create an integrator for this segment
-  CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
+  CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape(),Comm());
 
   std::vector<std::map<int,double> > ximaps(4);
   // get directional derivatives of sxia, sxib, mxia, mxib

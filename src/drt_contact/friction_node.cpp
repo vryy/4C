@@ -53,6 +53,8 @@ DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
   // TODO: friplus = true for all nodes!!! change this with pack/unpack
   CONTACT::FriNode* node = new CONTACT::FriNode(0,x,0,0,dofs,false,false,true);
   node->Unpack(data);
+
+
   return node;
 }
 
@@ -61,8 +63,8 @@ DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
  |  ctor (public)                                             mgit 01/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainer::FriNodeDataContainer():
-activeold_(false),
-slip_(false)
+slip_(false),
+slipold_(false)
 {
   for (int i=0;i<3;++i)
   {
@@ -82,10 +84,10 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add jump_
   DRT::ParObject::AddtoPack(data,jump_,3*sizeof(double));
-  // add activeold_
-  DRT::ParObject::AddtoPack(data,activeold_);
   // add slip_
   DRT::ParObject::AddtoPack(data,slip_);
+  // add slip_
+  DRT::ParObject::AddtoPack(data,slipold_);
   // add traction_
   DRT::ParObject::AddtoPack(data,traction_,3*sizeof(double));
   // add tractionold_
@@ -131,10 +133,10 @@ void CONTACT::FriNodeDataContainer::Unpack(std::vector<char>::size_type& positio
 {
   // jump_
   DRT::ParObject::ExtractfromPack(position,data,jump_,3*sizeof(double));
-  // activeold_
-  activeold_ = DRT::ParObject::ExtractInt(position,data);
   // slip_
   slip_ = DRT::ParObject::ExtractInt(position,data);
+  // slipold_
+  slipold_ = DRT::ParObject::ExtractInt(position,data);
   // traction_
   DRT::ParObject::ExtractfromPack(position,data,traction_,3*sizeof(double));
   // tractionold_
@@ -184,6 +186,55 @@ deltawear_(0.0)
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                           farah 10/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNodeDataContainerPlus::Pack(DRT::PackBuffer& data) const
+{
+  DRT::ParObject::AddtoPack(data,wear_);
+  DRT::ParObject::AddtoPack(data,deltawear_);
+
+  // add d2row
+  int hasdata = d2rows_.size();
+  DRT::ParObject::AddtoPack(data,hasdata);
+
+  if(hasdata!=0)
+  {
+    for (int i=0;i<hasdata;i++)
+    {
+      DRT::ParObject::AddtoPack(data,(d2rows_[i]));
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                           farah 10/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNodeDataContainerPlus::Unpack(std::vector<char>::size_type& position,
+                                               const std::vector<char>& data)
+{
+  DRT::ParObject::ExtractfromPack(position,data,wear_);
+  DRT::ParObject::ExtractfromPack(position,data,deltawear_);
+
+  //d2rows_
+  int hasdata;
+  DRT::ParObject::ExtractfromPack(position,data,hasdata);
+
+  if(hasdata!=0)
+  {
+    d2rows_.resize(hasdata);
+    for (int i=0;i<hasdata;i++)
+    {
+      DRT::ParObject::ExtractfromPack(position,data,d2rows_[i]);
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                             mgit 02/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
@@ -194,6 +245,7 @@ CONTACT::CoNode(id,coords,owner,numdof,dofs,isslave,initactive),
 mechdiss_(0.0),
 friplus_(friplus)
 {
+
   return;
 }
 
@@ -264,6 +316,10 @@ void CONTACT::FriNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,hasdata);
   if (hasdata) fridata_->Pack(data);
 
+  bool hasdataplus = (fridataplus_!=Teuchos::null);
+  AddtoPack(data,hasdataplus);
+  if (hasdataplus) fridataplus_->Pack(data);
+
   return;
 }
 
@@ -286,7 +342,8 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   CONTACT::CoNode::Unpack(basedata);
 
-  // data_
+  // **************************
+  // FriData
   bool hasdata = ExtractInt(position,data);
   if (hasdata)
   {
@@ -294,11 +351,20 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
     fridata_->Unpack(position,data);
   }
   else
-  {
     fridata_ = Teuchos::null;
-    fridataplus_ = Teuchos::null;
-  }
 
+  // **************************
+  // FriDataPlus
+  bool hasdataplus = ExtractInt(position,data);
+  if (hasdataplus)
+  {
+    fridataplus_ = Teuchos::rcp(new CONTACT::FriNodeDataContainerPlus());
+    fridataplus_->Unpack(position,data);
+  }
+  else
+    fridataplus_ = Teuchos::null;
+
+  // Check
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -332,6 +398,36 @@ void CONTACT::FriNode::AddMNode(int node)
     dserror("ERROR: AddMNode: function called for boundary node %i", Id());
 
   FriData().GetMNodes().insert(node);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'D2' map                              farah 06/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==true)
+    dserror("ERROR: AddD2Value: function called for slave node %i", Id());
+
+  //std::cout << "in addd2value" << std::endl;
+
+  //std::cout << "MODATA= " << (int)MoData().GetD2().size() << std::endl;
+
+  // check if this has been called before
+  if ((int)FriDataPlus().GetD2().size()==0)
+    FriDataPlus().GetD2().resize(NumDof());
+
+  // check row index input
+  if ((int)FriDataPlus().GetD2().size()<=row)
+    dserror("ERROR: AddD2Value: tried to access invalid row index!");
+
+  //std::cout << "in addd2value 2" << std::endl;
+
+  // add the pair (col,val) to the given row
+  std::map<int,double>& d2map = FriDataPlus().GetD2()[row];
+  d2map[col] += val;
 
   return;
 }
@@ -573,9 +669,9 @@ void CONTACT::FriNode::InitializeDataContainer()
   // only initialize if not yet done
   if (modata_==Teuchos::null && codata_==Teuchos::null && fridata_==Teuchos::null)
   {
-    modata_=Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
-    codata_ =Teuchos::rcp(new CONTACT::CoNodeDataContainer());
-    fridata_=Teuchos::rcp(new CONTACT::FriNodeDataContainer());
+    modata_  = Teuchos::rcp(new MORTAR::MortarNodeDataContainer());
+    codata_  = Teuchos::rcp(new CONTACT::CoNodeDataContainer());
+    fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
   }
   
   // initialize data container for wear and tsi problems 

@@ -2385,8 +2385,12 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
 void CONTACT::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
                                                  Teuchos::RCP<Epetra_Vector>& sliptoggle,
                                                  Teuchos::RCP<Epetra_Vector>& weightedwear,
-                                                 Teuchos::RCP<Epetra_Vector>& realwear)
+                                                 Teuchos::RCP<Epetra_Vector>& realwear,
+                                                 bool forcedrestart)
 {
+  //TODO: extend this function to forcedrestart -- write output for
+  // last converged wear... see contact_lagrange_strategy.cpp!
+
   // initalize
   activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
   if (friction_)
@@ -3044,7 +3048,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
             // nodes coming into contact
             static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #ifdef CONTACTFRICTIONLESSFIRST
-            if (static_cast<FriNode*>(cnode)->FriData().ActiveOld()==false)
+            if (static_cast<FriNode*>(cnode)->CoData().ActiveOld()==false)
               static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #endif
           }
@@ -3100,7 +3104,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->FriData().ActiveOld()==false)
+                if(frinode->CoData().ActiveOld()==false)
                 {}
                 else
                 {
@@ -3142,7 +3146,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->FriData().ActiveOld()==false)
+                if(frinode->CoData().ActiveOld()==false)
                 {}
                 else
                 {

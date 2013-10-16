@@ -1214,7 +1214,7 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
 
         // in the case of frictionless contact for nodes just coming into
         // contact, the frictionless contact condition is applied.
-        if (cnode->FriData().ActiveOld()==false)
+        if (cnode->CoData().ActiveOld()==false)
         {
           friclessandfirst=true;
           for (int dim=0;dim<cnode->NumDof();++dim)
@@ -1497,7 +1497,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
 
       // in the case of frictionless contact for nodes just coming into
       // contact, the frictionless contact condition is applied.
-      if (cnode->FriData().ActiveOld()==false)
+      if (cnode->CoData().ActiveOld()==false)
       {
         friclessandfirst=true;
         for (int dim=0;dim<cnode->NumDof();++dim)
@@ -2354,7 +2354,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           double val = (prefactor*ztan+sum-frbound)*txi[dim];
 
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = txi[dim];
+          if (cnode->CoData().ActiveOld()==false) val = txi[dim];
   #endif
 
           // do not assemble zeros into matrix
@@ -2374,7 +2374,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         std::vector<int> lmowner(1);
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false)
+        if (cnode->CoData().ActiveOld()==false)
         {
           lm[0]     = cnode->Dofs()[1];
           lmowner[0]  = cnode->Owner();
@@ -2409,7 +2409,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
          //std::cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = 0;
+          if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
 
          // do not assemble zeros into matrix
@@ -2459,7 +2459,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = 0;
+          if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
 
            // do not assemble zeros into matrix
@@ -2477,7 +2477,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           //std::cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = 0;
+          if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
 
           // do not assemble zeros into matrix
@@ -2506,7 +2506,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
-            if (cnode->FriData().ActiveOld()==false) val = 0;
+            if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
             // do not assemble zeros into matrix
             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
@@ -2528,7 +2528,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-            if (cnode->FriData().ActiveOld()==false) val = 0;
+            if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -2555,7 +2555,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = (colcurr->second)*z[j];
+          if (cnode->CoData().ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
 
             // do not assemble zeros into matrix
@@ -2582,7 +2582,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -2612,7 +2612,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
           //std::cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
           // do not assemble zeros into matrix
@@ -2650,7 +2650,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into matrix
@@ -2673,7 +2673,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -2700,7 +2700,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -2727,7 +2727,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
            //std::cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
            // do not assemble zeros into matrix
@@ -2761,7 +2761,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
             //std::cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
              // do not assemble zeros into matrix
@@ -3103,15 +3103,15 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    CoNode* cnode = static_cast<CoNode*>(node);
+    FriNode* cnode = static_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleDM: Node ownership inconsistency!");
 
-    /**************************************************** D-matrix ******/
-    if ((cnode->CoData().GetD2()).size()>0)
+    /**************************************************** D2-matrix ******/
+    if ((cnode->FriDataPlus().GetD2()).size()>0)
     {
-      std::vector<std::map<int,double> > dmap = cnode->CoData().GetD2();
+      std::vector<std::map<int,double> > dmap = cnode->FriDataPlus().GetD2();
       int rowsize = cnode->NumDof();
       int colsize = (int)dmap[0].size();
 
@@ -3884,15 +3884,15 @@ void CONTACT::WearInterface::Initialize()
       int gid = MasterRowNodes()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      FriNode* cnode = static_cast<FriNode*>(node);
 
       if (cnode->IsSlave() ==false)
       {
         // reset nodal Mortar maps
-        for (int j=0;j<(int)((cnode->CoData().GetD2()).size());++j)
-          (cnode->CoData().GetD2())[j].clear();
+        for (int j=0;j<(int)((cnode->FriDataPlus().GetD2()).size());++j)
+          (cnode->FriDataPlus().GetD2())[j].clear();
 
-        (cnode->CoData().GetD2()).resize(0);
+        (cnode->FriDataPlus().GetD2()).resize(0);
       }
     }
   }

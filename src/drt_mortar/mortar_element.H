@@ -695,6 +695,8 @@ public:
   */
   virtual void InitializeDataContainer();
 
+  // delete all found meles for this element
+  virtual void DeleteSearchElements();
   /*!
   \brief Resets the data container of the element
 

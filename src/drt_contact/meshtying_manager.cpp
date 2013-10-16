@@ -494,7 +494,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 /*----------------------------------------------------------------------*
  |  write restart information for meshtying (public)          popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output)
+void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // write restart information for meshtying
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();

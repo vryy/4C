@@ -123,7 +123,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 
   // create a CONTACT integrator instance with correct NumGP and Dim
   // it is sufficient to do this once as all IntCells are triangles
-  CONTACT::CoIntegrator integrator(imortar_,Cells()[0]->Shape());
+  CONTACT::CoIntegrator integrator(imortar_,Cells()[0]->Shape(),Comm());
 
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
@@ -1455,7 +1455,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
       // create an integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
+      CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape(),Comm());
 
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
@@ -1628,7 +1628,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape());
+    CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape(),Comm());
 
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
@@ -1853,7 +1853,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
        RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
        // create an integrator for this cell
-       CONTACT::CoIntegrator integrator(imortar_,currcell->Shape());
+       CONTACT::CoIntegrator integrator(imortar_,currcell->Shape(),Comm());
        for (int gp=0;gp<integrator.nGP(); ++gp)
        {
          // coordinates and weight

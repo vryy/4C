@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 #include "mortar_node.H"
 #include "mortar_element.H"
 #include "mortar_defines.H"
+#include "../drt_contact/contact_defines.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
@@ -1041,7 +1042,9 @@ eps_(eps)
 
     // trivial initialization / error
     mtreenodesmap_[0].push_back(mroot_);
-    dserror("No master element for Binarytree initialization on this processor");
+
+    // no error: round robin loop can handle this case!
+    //dserror("No master element for Binarytree initialization on this processor");
   }
 
   /*

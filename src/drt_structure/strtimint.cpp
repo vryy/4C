@@ -1487,7 +1487,14 @@ void STR::TimInt::AddRestartToOutputState()
                           conman_->GetRefBaseValues());
   }
 
+  // contact/meshtying information
+  if (HaveContactMeshtying())
+  {
+    cmtman_->WriteRestart(*output_,true);
+  }
+
   // TODO: add missing restart data for surface stress, contact/meshtying and StatMech here
+
 
   // finally add the missing mesh information, order is important here
   output_->WriteMesh(step_, (*time_)[0]);

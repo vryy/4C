@@ -264,6 +264,13 @@ public:
   */
   bool Redistribute(int index);
 
+  void RoundRobinEvaluate();
+
+  void RoundRobinChangeOwnership();
+
+  void RoundRobinDetectGhosting();
+
+  void RoundRobinExtendGhosting(bool firstevaluation);
   /*!
   \brief Collect data concering load balance and parallel distribution
 
@@ -280,7 +287,7 @@ public:
   Derived version!
 
   */
-  void CreateSearchTree();
+  void CreateSearchTree(bool roundrobinghosted=false);
   
   /*!
   \brief Initialize / reset interface for contact
@@ -613,6 +620,10 @@ protected:
   Teuchos::RCP<Epetra_Map>      slipnodes_;      // row map of all slip slave nodes
   Teuchos::RCP<Epetra_Map>      slipdofs_;       // row map of all slip slave dofs
   Teuchos::RCP<Epetra_Map>      slipt_;          // row map of part of T-matrix (slip nodes)
+
+  Teuchos::RCP<Epetra_Map>      nextendedghosting_;
+  Teuchos::RCP<Epetra_Map>      eextendedghosting_;
+
 
   Teuchos::ParameterList        icontact_;       // containing contact input parameters of interface
 

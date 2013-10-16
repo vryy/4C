@@ -61,6 +61,7 @@ DRT::ParObject* CONTACT::CoNodeType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 CONTACT::CoNodeDataContainer::CoNodeDataContainer():
 grow_(1.0e12),
+activeold_(false),
 kappa_(1.0)
   {
     for (int i=0;i<3;++i)
@@ -91,6 +92,8 @@ void CONTACT::CoNodeDataContainer::Pack(DRT::PackBuffer& data) const
   DRT::ParObject::AddtoPack(data,grow_);
   // add kappa_
   DRT::ParObject::AddtoPack(data,kappa_);
+  // add activeold_
+  DRT::ParObject::AddtoPack(data,activeold_);
 
   // no need to pack derivs_
   // (these will evaluated anew anyway)
@@ -113,6 +116,8 @@ void CONTACT::CoNodeDataContainer::Unpack(std::vector<char>::size_type& position
   DRT::ParObject::ExtractfromPack(position,data,grow_);
   // kappa_
   DRT::ParObject::ExtractfromPack(position,data,kappa_);
+  // activeold_
+  activeold_ = DRT::ParObject::ExtractInt(position,data);
 
   return;
 }
@@ -269,36 +274,6 @@ void CONTACT::CoNode::AddgValue(double& val)
 
   // add given value to grow_
   CoData().Getg()+=val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Add a value to the 'D2' map                              farah 06/13|
- *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddD2Value(int& row, int& col, double& val)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==true)
-    dserror("ERROR: AddD2Value: function called for slave node %i", Id());
-
-  //std::cout << "in addd2value" << std::endl;
-
-  //std::cout << "MODATA= " << (int)MoData().GetD2().size() << std::endl;
-
-  // check if this has been called before
-  if ((int)CoData().GetD2().size()==0)
-    CoData().GetD2().resize(NumDof());
-
-  // check row index input
-  if ((int)CoData().GetD2().size()<=row)
-    dserror("ERROR: AddD2Value: tried to access invalid row index!");
-
-  //std::cout << "in addd2value 2" << std::endl;
-
-  // add the pair (col,val) to the given row
-  std::map<int,double>& d2map = CoData().GetD2()[row];
-  d2map[col] += val;
 
   return;
 }

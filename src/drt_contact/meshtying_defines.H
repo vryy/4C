@@ -53,6 +53,6 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
-#define MESHTYINGASOUTPUT    /* flag for detailed active set output */
+//#define MESHTYINGASOUTPUT    /* flag for detailed active set output */
 
 #endif  // #ifndef MESHTYING_DEFINES_H

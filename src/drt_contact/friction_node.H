@@ -126,10 +126,6 @@ public:
   \brief Return jump per time step (only for slave side!) (max length 2)
   */
   virtual inline double* jump_var() { return jumpvar_; }
-  /*!
-  \brief Return contact status of last converged state n (active=true)
-  */
-  virtual inline bool& ActiveOld() { return activeold_; }
 
   /*!
   \brief Return friction status of this node (slip=true)
@@ -187,6 +183,11 @@ public:
   virtual inline double* traction() { return traction_; }
 
   /*!
+  \brief Return contact status of last converged state n (active=true)
+  */
+  virtual inline bool& SlipOld() { return slipold_; }
+
+  /*!
   \brief Return old penalty traction (length 3)
   */
   virtual inline double* tractionold() { return tractionold_; }
@@ -201,8 +202,8 @@ protected:
 
   double          jump_[3];     // jump per time step
   double          jumpvar_[2];  // variant jump per time step
-  bool            activeold_;   // true if cnode was in contact (last converged state n)
   bool            slip_;        // true if cnode slips (contact force reaches friction bound)
+  bool            slipold_;     // true if cnode slips (contact force reaches friction bound) - last converged timestep
 
   std::vector<std::map<int,double> > drowsold_;     // nodal rows of old D matrix
   std::vector<std::map<int,double> > mrowsold_;     // nodal rows of old M matrix
@@ -250,6 +251,9 @@ public:
 
   //! @name Access methods
 
+  virtual void Pack(DRT::PackBuffer& data) const;
+  virtual void Unpack(std::vector<char>::size_type& position,
+                      const std::vector<char>& data);
   /*!
   \brief Return the old 'A' map (vector) of this node (last converged state)
   */
@@ -289,6 +293,11 @@ public:
    virtual std::map<int,std::map<int,double> >& GetDerivE() { return derive_; }
 
    /*!
+   \brief Return the 'D' map (vector) of this node
+   */
+   virtual std::vector<std::map<int,double> >& GetD2() { return d2rows_; }
+
+   /*!
    \brief Return current discrete wear in step n+1 (only for slave side!) (length 1)
    */
    virtual double* wcurr() { return wcurr_; }
@@ -312,6 +321,9 @@ protected:
   std::vector<std::map<int,double> >      trows_;        // nodal rows of T matrix
   std::vector<std::map<int,double> >      erows_;        // nodal rows of E matrix
   
+  std::vector<std::map<int,double> >      d2rows_;       // nodal rows of master sided D matrix
+
+
   std::map<int,std::map<int,double> >     derivt_;        // directional derivative of nodal Tw-matrix values
   std::map<int,std::map<int,double> >     derive_;        // directional derivative of nodal E-matrix values
 
@@ -548,6 +560,9 @@ public:
   */
   void AddBNode (int node);
 
+
+  void AddD2Value(int& row, int& col, double& val);
+
   /*!
   \brief Set deltawear to value
 
@@ -601,6 +616,7 @@ protected:
 
   Teuchos::RCP<CONTACT::FriNodeDataContainer>     fridata_;       // additional information of proc's friction nodes
   Teuchos::RCP<CONTACT::FriNodeDataContainerPlus> fridataplus_;   // additional information to proc's data container
+
 
   bool friplus_;                                      // bool for tsi || wear
 }; // class FriNode

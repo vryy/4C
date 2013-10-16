@@ -95,6 +95,10 @@ tsi_(false)
   if (!selfcontact_ && redundant == INPAR::MORTAR::redundant_all)
     dserror("ERROR: We do not want redundant interface storage for contact");
 
+  // init extended ghosting for RR loop
+  eextendedghosting_ = Teuchos::null;
+  nextendedghosting_ = Teuchos::null;
+
   return;
 }
 
@@ -142,6 +146,566 @@ void CONTACT::CoInterface::AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele)
     quadslave_=true;
 
   idiscret_->AddElement(cele);
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  store the required ghosting within a round              farah 10/13 |
+ |  robin iteration for current interface (public)                      |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
+{
+  std::vector<int> eghosting;
+  std::vector<int> nghosting;
+  for (int k=0; k<SlaveColElements()->NumMyElements();++k)
+  {
+    int gid = SlaveColElements()->GID(k);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+    CoElement* sele = static_cast<CoElement*>(ele);
+
+    for (int j=0;j<sele->MoData().NumSearchElements();++j)
+    {
+      int gid2 = sele->MoData().SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CoElement* melement = static_cast<CoElement*>(ele2);
+
+      eghosting.push_back(melement->Id());
+
+      for (int z=0;z<melement->NumNode();++z)
+      {
+        int gidn = melement->NodeIds()[z];
+        nghosting.push_back(gidn);
+      }
+    }
+    //reset found elements
+    sele->DeleteSearchElements();
+  }
+
+  Teuchos::RCP<Epetra_Map> ecurrghosting = Teuchos::rcp(new Epetra_Map(-1,(int)eghosting.size(),&eghosting[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> ncurrghosting = Teuchos::rcp(new Epetra_Map(-1,(int)nghosting.size(),&nghosting[0],0,Comm()));
+
+  if(firstevaluation)
+  {
+    eextendedghosting_=Teuchos::rcp(new Epetra_Map(*ecurrghosting));
+    nextendedghosting_=Teuchos::rcp(new Epetra_Map(*ncurrghosting));
+  }
+  else
+  {
+    eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,ecurrghosting,true);
+    nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,ncurrghosting,true);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | perform the ownership change within a round robin        farah 10/13 |
+ | iteration                                                            |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::RoundRobinChangeOwnership()
+{
+  //TODO: pack/unpack friction nodes is only required for wear problems
+  // so we should create a slightly redundant function for the wear-
+  // interface and exclude the friction node packing from here
+
+  // get friction type
+  INPAR::CONTACT::FrictionType ftype =
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+
+  // change master-side proc ownership
+  // some local variables
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Comm().Clone());
+  const int myrank  = comm->MyPID();
+  const int numproc = comm->NumProc();
+  const int torank = (myrank + 1) % numproc;             // to
+  const int fromrank = (myrank + numproc - 1) % numproc; // from
+
+  // new eles, new nodes
+  std::vector<int> ncol, nrow;
+  std::vector<int> ecol, erow;
+
+  //create dummy
+  Teuchos::RCP<Epetra_Map> MasterColNodesdummy = Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
+  Teuchos::RCP<Epetra_Map> MasterColelesdummy  = Teuchos::rcp(new Epetra_Map(*MasterColElements()));
+
+  //create origin maps
+  Teuchos::RCP<Epetra_Map> SCN  = Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
+  Teuchos::RCP<Epetra_Map> SCE  = Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
+  Teuchos::RCP<Epetra_Map> SRN  = Teuchos::rcp(new Epetra_Map(*SlaveRowNodes()));
+  Teuchos::RCP<Epetra_Map> SRE  = Teuchos::rcp(new Epetra_Map(*SlaveRowElements()));
+
+  // *****************************************
+  // Elements
+  // *****************************************
+  std::vector<char> sdataeles;
+  std::vector<char> rdataeles;
+
+  // vector containing all proc ids
+  std::vector<int> allproc(numproc);
+  for (int i=0; i<numproc; ++i) allproc[i] = i;
+
+  // get exporter
+  DRT::Exporter exporter(idiscret_->Comm());
+
+  // create data buffer
+  DRT::PackBuffer dataeles;
+
+  // pack data - first just reserving the mem.
+  for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
+  {
+    int gid = MasterColelesdummy->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+    mele->Pack(dataeles);
+
+    int ghost=0;
+    DRT::ParObject::AddtoPack(dataeles,ghost);
+  }
+
+  dataeles.StartPacking();
+
+  // now pack/store
+  for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
+  {
+    int gid = MasterColelesdummy->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+    mele->Pack(dataeles);
+
+    // check for ghosting
+    int ghost;
+    if (mele->Owner()==myrank) ghost=1;
+    else                       ghost=0;
+
+    DRT::ParObject::AddtoPack(dataeles,ghost);
+  }
+  std::swap(sdataeles, dataeles());
+
+  // delete the elements from discretization
+  for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
+  {
+    int gid = MasterColelesdummy->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %i",gid);
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+    // check for ghosting
+    if (mele->Owner()==myrank)
+    {
+      idiscret_->DeleteElement(mele->Id());
+    }
+  }
+
+  // send the information
+  MPI_Request request;
+  exporter.ISend(myrank, torank, &(sdataeles[0]), (int)sdataeles.size(), 1234, request);
+
+  // receive the information
+  int length = rdataeles.size();
+  int tag = -1;
+  int from = -1;
+  exporter.ReceiveAny(from,tag,rdataeles,length);
+  if (tag != 1234 or from != fromrank)
+    dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
+
+  // ---- unpack ----
+  {
+    // Put received nodes into discretization
+    std::vector<char>::size_type index = 0;
+    while (index < rdataeles.size())
+    {
+      std::vector<char> data;
+      int ghost=-1;
+      DRT::ParObject::ExtractfromPack(index,rdataeles,data);
+      DRT::ParObject::ExtractfromPack(index,rdataeles,ghost);
+      if (ghost==-1) dserror("UNPACK ERROR!!!!!!!!!");
+
+      // this Teuchos::rcp holds the memory of the ele
+      Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data),true);
+      Teuchos::RCP<MORTAR::MortarElement> ele = Teuchos::rcp_dynamic_cast<MORTAR::MortarElement>(object);
+      if (ele == Teuchos::null) dserror("Received object is not an ele");
+
+      // add whether its a row ele
+      if(ghost==1)
+      {
+        ele->SetOwner(myrank);
+        idiscret_->AddElement(ele);
+
+        // to new ele
+        erow.push_back(ele->Id());
+        ecol.push_back(ele->Id());
+      }
+      else
+      {
+        ecol.push_back(ele->Id());
+      }
+    }
+  }// end unpack
+
+  // wait for all communication to finish
+  exporter.Wait(request);
+  comm->Barrier();
+
+  // *****************************************
+  // NODES
+  // *****************************************
+  std::vector<char> sdatanodes;
+  std::vector<char> rdatanodes;
+
+  // get exporter
+  DRT::Exporter exportern(idiscret_->Comm());
+
+  DRT::PackBuffer datanodes;
+
+  // pack data -- col map --> should prevent further ghosting!
+  for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
+  {
+    int gid = MasterColNodesdummy->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find ele with gid %i",gid);
+
+    if (ftype==INPAR::CONTACT::friction_none)
+    {
+      MORTAR::MortarNode* cnode = static_cast<MORTAR::MortarNode*>(node);
+      cnode->Pack(datanodes);
+    }
+    else
+    {
+      FriNode* cnode = static_cast<FriNode*>(node);
+      cnode->Pack(datanodes);
+    }
+
+    int ghost=0;
+    DRT::ParObject::AddtoPack(datanodes,ghost);
+  }
+
+  datanodes.StartPacking();
+  for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
+  {
+    int gid = MasterColNodesdummy->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find ele with gid %i",gid);
+
+    // check for ghosting
+    int ghost;
+
+    if (ftype==INPAR::CONTACT::friction_none)
+    {
+      MORTAR::MortarNode* cnode = static_cast<MORTAR::MortarNode*>(node);
+      cnode->Pack(datanodes);
+
+      if (cnode->Owner()==myrank) ghost=1;
+      else                        ghost=0;
+    }
+    else
+    {
+      FriNode* cnode = static_cast<FriNode*>(node);
+      cnode->Pack(datanodes);
+
+      if (cnode->Owner()==myrank) ghost=1;
+      else                        ghost=0;
+    }
+
+    DRT::ParObject::AddtoPack(datanodes,ghost);
+  }
+  std::swap(sdatanodes, datanodes());
+
+  //DELETING
+  for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
+  {
+    int gid = MasterColNodesdummy->GID(i);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find ele with gid %i",gid);
+
+    if (ftype==INPAR::CONTACT::friction_none)
+    {
+      MORTAR::MortarNode* cnode = static_cast<MORTAR::MortarNode*>(node);
+      if (cnode->Owner()==myrank)
+        idiscret_->DeleteNode(cnode->Id());
+    }
+    else
+    {
+      FriNode* cnode = static_cast<FriNode*>(node);
+      if (cnode->Owner()==myrank)
+        idiscret_->DeleteNode(cnode->Id());
+    }
+  }
+
+  // ---- send ----
+  MPI_Request requestn;
+  exportern.ISend(myrank, torank, &(sdatanodes[0]), (int)sdatanodes.size(), 1234, requestn);
+
+  // ---- receive ----
+  int lengthn = rdatanodes.size();
+  int tagn = -1;
+  int fromn = -1;
+  exportern.ReceiveAny(fromn,tagn,rdatanodes,lengthn);
+  if (tagn != 1234 or fromn != fromrank)
+    dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, fromn, myrank);
+
+  // ---- unpack ----
+  {
+    // Put received nodes into discretization
+    std::vector<char>::size_type index = 0;
+    while (index < rdatanodes.size())
+    {
+      std::vector<char> data;
+
+      int ghost=-1;
+      DRT::ParObject::ExtractfromPack(index,rdatanodes,data);
+      DRT::ParObject::ExtractfromPack(index,rdatanodes,ghost);
+      if (ghost==-1) dserror("UNPACK ERROR!!!!!!!!!");
+
+      // this Teuchos::rcp holds the memory of the node
+      Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data),true);
+
+      if (ftype==INPAR::CONTACT::friction_none)
+      {
+        Teuchos::RCP<MORTAR::MortarNode> node = Teuchos::rcp_dynamic_cast<MORTAR::MortarNode>(object);
+        if (node == Teuchos::null) dserror("Received object is not a node");
+
+        if (ghost==1)
+        {
+          node->SetOwner(myrank);
+          idiscret_->AddNode(node);
+
+          nrow.push_back(node->Id());
+          ncol.push_back(node->Id());
+        }
+        else
+        {
+          // all others to col
+          ncol.push_back(node->Id());
+        }
+      }
+      else // if friction...
+      {
+        Teuchos::RCP<FriNode> node = Teuchos::rcp_dynamic_cast<FriNode>(object);
+        if (node == Teuchos::null) dserror("Received object is not a node");
+
+        if (ghost==1)
+        {
+          node->SetOwner(myrank);
+          idiscret_->AddNode(node);
+
+          nrow.push_back(node->Id());
+          ncol.push_back(node->Id());
+        }
+        else
+        {
+          // all others to col
+          ncol.push_back(node->Id());
+        }
+      }
+    }
+  } // end unpack
+
+  // wait for all communication to finish
+  exportern.Wait(requestn);
+  comm->Barrier();
+
+  //create maps from sending
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(-1,(int)nrow.size(),&nrow[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)ncol.size(),&ncol[0],0,Comm()));
+
+  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(-1,(int)erow.size(),&erow[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)ecol.size(),&ecol[0],0,Comm()));
+
+  // Merge s/m column maps for eles and nodes
+  Teuchos::RCP<Epetra_Map> colnodesfull = LINALG::MergeMap(nodecolmap,SCN,true);
+  Teuchos::RCP<Epetra_Map> colelesfull  = LINALG::MergeMap(elecolmap,SCE,true);
+
+  // Merge s/m row maps for eles and nodes
+  Teuchos::RCP<Epetra_Map> rownodesfull = LINALG::MergeMap(noderowmap,SRN,false);
+  Teuchos::RCP<Epetra_Map> rowelesfull  = LINALG::MergeMap(elerowmap,SRE,false);
+
+  // to discretization
+  // export nodes and elements to the row map
+  Discret().ExportRowNodes(*rownodesfull);
+  Discret().ExportRowElements(*rowelesfull);
+
+  // export nodes and elements to the col map
+  Discret().ExportColumnNodes(*colnodesfull);
+  Discret().ExportColumnElements(*colelesfull);
+
+  // ********************************************
+  // call the (very) expensive FILLCOMPLETE()!
+  // ********************************************
+  // make sure discretization is complete
+  FillComplete();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  change master ownership clockwise for contact            farah 10/13|
+ |  interface without evaluation of the interface                       |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::RoundRobinDetectGhosting()
+{
+  if (SearchAlg()==INPAR::MORTAR::search_bfele)           EvaluateSearchBruteForce(SearchParam());
+  else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
+  else                                                    dserror("ERROR: Invalid search algorithm");
+
+  // first ghosting for std. distribution
+  RoundRobinExtendGhosting(true);
+
+  // Init Maps
+  Teuchos::RCP<Epetra_Map> Init_SCN  = Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
+  Teuchos::RCP<Epetra_Map> Init_SCE  = Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
+  Teuchos::RCP<Epetra_Map> Init_MCN  = Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
+  Teuchos::RCP<Epetra_Map> Init_MCE  = Teuchos::rcp(new Epetra_Map(*MasterColElements()));
+
+  // *************************************
+  // start RR loop for current interface
+  // *************************************
+  // loop over all procs
+  if (Comm().NumProc()>1)
+    for (int j=0;j<(int)(Comm().NumProc());++j)
+    {
+      // status output
+      if (Comm().MyPID()==0 && j==0) std::cout << "Round-Robin-Iteration #" << j;
+      if (Comm().MyPID()==0 && j>0) std::cout << " #" << j;
+
+      // perform the ownership change
+      RoundRobinChangeOwnership();
+
+      //build new search tree or do nothing for bruteforce
+      if (SearchAlg()==INPAR::MORTAR::search_binarytree)   CreateSearchTree();
+      else if (SearchAlg()!=INPAR::MORTAR::search_bfele)   dserror("ERROR: Invalid search algorithm");
+
+      // evaluate interfaces
+      if (j<(int)(Comm().NumProc()-1))
+      {
+        if (SearchAlg()==INPAR::MORTAR::search_bfele)           EvaluateSearchBruteForce(SearchParam());
+        else if (SearchAlg()==INPAR::MORTAR::search_binarytree) EvaluateSearchBinarytree();
+        else                                                    dserror("ERROR: Invalid search algorithm");
+
+        // other ghostings per iter
+        RoundRobinExtendGhosting(false);
+      }
+      else
+      {
+        // do nothing -- just switch
+      }
+    }//end RR
+
+  //OLD VERSION
+//  Teuchos::RCP<Epetra_Map> eold = Teuchos::rcp(new Epetra_Map(*Discret().ElementColMap()));
+//  Teuchos::RCP<Epetra_Map> nold = Teuchos::rcp(new Epetra_Map(*Discret().NodeColMap()));
+//  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,eold,true);
+//  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,nold,true);
+
+  //NEW VERSION
+  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,Init_SCE,true);
+  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,Init_SCN,true);
+  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,Init_MCE,true);
+  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,Init_MCN,true);
+
+  //finally extend ghosting
+  Discret().ExportColumnElements(*eextendedghosting_);
+  Discret().ExportColumnNodes(*nextendedghosting_);
+  FillComplete();
+
+  // reset extended ghosting maps
+  eextendedghosting_ = Teuchos::null;
+  nextendedghosting_ = Teuchos::null;
+
+  //build new search tree or do nothing for bruteforce
+  if (SearchAlg()==INPAR::MORTAR::search_binarytree)   CreateSearchTree(true);
+  else if (SearchAlg()!=INPAR::MORTAR::search_bfele)   dserror("ERROR: Invalid search algorithm");
+
+  // final output for loop
+  if (Comm().MyPID()==0)
+    std::cout << " RRL done!" << endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  change master ownership clockwise for contact            farah 10/13|
+ |  interface and evaluate within each iteration                        |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::RoundRobinEvaluate()
+{
+  // first evaluation with init. parallel redistr.
+  Evaluate(0);
+
+  // first ghosting for std. distribution
+  RoundRobinExtendGhosting(true);
+
+  // Init Maps
+  Teuchos::RCP<Epetra_Map> Init_SCN  = Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
+  Teuchos::RCP<Epetra_Map> Init_SCE  = Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
+  Teuchos::RCP<Epetra_Map> Init_MCN  = Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
+  Teuchos::RCP<Epetra_Map> Init_MCE  = Teuchos::rcp(new Epetra_Map(*MasterColElements()));
+
+  // *************************************
+  // start RR loop for current interface
+  // *************************************
+  // loop over all procs
+  if (Comm().NumProc()>1)
+    for (int j=0;j<(int)(Comm().NumProc());++j)
+    {
+      // status output
+      if (Comm().MyPID()==0 && j==0) std::cout << "Round-Robin-Iteration #" << j;
+      if (Comm().MyPID()==0 && j>0) std::cout << " #" << j;
+
+      // perform the ownership change
+      RoundRobinChangeOwnership();
+
+      //build new search tree or do nothing for bruteforce
+      if (SearchAlg()==INPAR::MORTAR::search_binarytree)   CreateSearchTree();
+      else if (SearchAlg()!=INPAR::MORTAR::search_bfele)   dserror("ERROR: Invalid search algorithm");
+
+      // evaluate interfaces
+      if (j<(int)(Comm().NumProc()-1))
+      {
+        Evaluate(j+1);
+
+        // other ghostings per iter
+        RoundRobinExtendGhosting(false);
+      }
+      else
+      {
+        // do nothing -- just switch
+      }
+    }//end RR
+
+  //OLD VERSION
+//  Teuchos::RCP<Epetra_Map> eold = Teuchos::rcp(new Epetra_Map(*Discret().ElementColMap()));
+//  Teuchos::RCP<Epetra_Map> nold = Teuchos::rcp(new Epetra_Map(*Discret().NodeColMap()));
+//  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,eold,true);
+//  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,nold,true);
+
+  //NEW VERSION
+  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,Init_SCE,true);
+  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,Init_SCN,true);
+  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,Init_MCE,true);
+  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,Init_MCN,true);
+
+  //finally extend ghosting
+  Discret().ExportColumnElements(*eextendedghosting_);
+  Discret().ExportColumnNodes(*nextendedghosting_);
+  FillComplete();
+
+  // reset extended ghosting maps
+  eextendedghosting_ = Teuchos::null;
+  nextendedghosting_ = Teuchos::null;
+
+  // final output for loop
+  if (Comm().MyPID()==0)
+    std::cout << " RRL done!" << endl;
+
   return;
 }
 
@@ -532,7 +1096,7 @@ void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
 /*----------------------------------------------------------------------*
  |  create search tree (public)                               popp 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::CreateSearchTree()
+void CONTACT::CoInterface::CreateSearchTree(bool roundrobinghosted)
 {
   // ***WARNING:*** This is commented out here, as idiscret_->SetState()
   // needs all the procs around, not only the interface local ones!
@@ -573,7 +1137,21 @@ void CONTACT::CoInterface::CreateSearchTree()
       if (!lComm()) return;
 
       // create fully overlapping map of all master elements
-      Teuchos::RCP<Epetra_Map> melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+      // for non-redundant storage (RRloop) we handle the master elements
+      // like the slave elements --> melecolmap_
+      INPAR::MORTAR::RedundantStorage redunt = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(IParams(),"REDUNDANT_STORAGE");
+      Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
+      if (roundrobinghosted)
+      {
+        melefullmap = melecolmap_;
+      }
+      else
+      {
+        if (redunt != INPAR::MORTAR::redundant_none)
+          melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+        else
+          melefullmap = melerowmap_;
+      }
       
       // create binary tree object for contact search and setup tree
       binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
@@ -1276,7 +1854,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct NumGP and Dim
-      CONTACT::CoIntegrator integrator(imortar_,sele.Shape());
+      CONTACT::CoIntegrator integrator(imortar_,sele.Shape(),Comm());
       integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
 
       // do the assembly into the slave nodes
@@ -1293,7 +1871,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
         Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
         // create a CONTACT integrator instance with correct NumGP and Dim
-        CONTACT::CoIntegrator integrator(imortar_,sauxelements[i]->Shape());
+        CONTACT::CoIntegrator integrator(imortar_,sauxelements[i]->Shape(),Comm());
         integrator.IntegrateKappaPenalty(sele,*(sauxelements[i]),sxia,sxib,gseg);
 
         // do the assembly into the slave nodes
@@ -1315,7 +1893,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
     // create a CONTACT integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(imortar_,sele.Shape());
+    CONTACT::CoIntegrator integrator(imortar_,sele.Shape(),Comm());
     integrator.IntegrateKappaPenalty(sele,sxia,sxib,gseg);
 
     // do the assembly into the slave nodes
@@ -4044,7 +4622,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // in the case of frictionless contact for nodes just coming into
       // contact, the frictionless contact condition is applied.
-      if (cnode->FriData().ActiveOld()==false)
+      if (cnode->CoData().ActiveOld()==false)
       {
         friclessandfirst=true;
         for (int dim=0;dim<cnode->NumDof();++dim)
@@ -4868,7 +5446,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           double val = (prefactor*ztan+sum-frbound)*txi[dim];
 
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = txi[dim];
+          if (cnode->CoData().ActiveOld()==false) val = txi[dim];
   #endif
 
           // do not assemble zeros into matrix
@@ -4888,7 +5466,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         std::vector<int> lmowner(1);
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false)
+        if (cnode->CoData().ActiveOld()==false)
         {
         	lm[0] 		= cnode->Dofs()[1];
         	lmowner[0]	= cnode->Owner();
@@ -4923,7 +5501,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           double val = prefactor*(-1)*ct*txi[dim]*(D-Dold)*ztan;
          //std::cout << "01 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = 0;
+          if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
 
          // do not assemble zeros into matrix
@@ -4973,7 +5551,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "02 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = 0;
+          if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
 
            // do not assemble zeros into matrix
@@ -4991,7 +5569,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //std::cout << "03 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = 0;
+          if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
 
           // do not assemble zeros into matrix
@@ -5020,7 +5598,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
   #ifdef CONTACTFRICTIONLESSFIRST
-            if (cnode->FriData().ActiveOld()==false) val = 0;
+            if (cnode->CoData().ActiveOld()==false) val = 0;
   #endif
             // do not assemble zeros into matrix
             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
@@ -5042,7 +5620,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "1 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-            if (cnode->FriData().ActiveOld()==false) val = 0;
+            if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5069,7 +5647,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "2 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-          if (cnode->FriData().ActiveOld()==false) val = (colcurr->second)*z[j];
+          if (cnode->CoData().ActiveOld()==false) val = (colcurr->second)*z[j];
 #endif
 
             // do not assemble zeros into matrix
@@ -5096,7 +5674,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "3 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5126,7 +5704,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           //std::cout << "4 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
           // do not assemble zeros into matrix
@@ -5164,7 +5742,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "5 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into matrix
@@ -5187,7 +5765,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "6 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5214,7 +5792,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "7 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
             // do not assemble zeros into s matrix
@@ -5241,7 +5819,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
            //std::cout << "8 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
            // do not assemble zeros into matrix
@@ -5275,7 +5853,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             //std::cout << "9 GID " << gid << " row " << row << " col " << col << " val " << val << std::endl;
 
 #ifdef CONTACTFRICTIONLESSFIRST
-        if (cnode->FriData().ActiveOld()==false) val = 0;
+        if (cnode->CoData().ActiveOld()==false) val = 0;
 #endif
 
              // do not assemble zeros into matrix

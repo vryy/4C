@@ -141,10 +141,9 @@ public:
   virtual double& Getg() { return grow_; }
 
   /*!
-  \brief Return the 'D' map (vector) of this node
+  \brief Return contact status of last converged state n (active=true)
   */
-  virtual std::vector<std::map<int,double> >& GetD2() { return d2rows_; }
-
+  virtual inline bool& ActiveOld() { return activeold_; }
 
   /*!
   \brief Return the 'DerivN' map (vector) of this node
@@ -312,7 +311,8 @@ protected:
   double          tetaold_[3];     // nodal tangent t_eta for contact methods at newton step n-1
   double          grow_;           // nodal entry of g vector
 
-  std::vector<std::map<int,double> >      d2rows_;        // nodal rows of master sided D matrix
+  bool            activeold_;   // true if cnode was in contact (last converged state n)
+
   std::vector<std::map<int,double> >      derivn_;        // directional derivative of nodal normal
   std::vector<std::map<int,double> >      derivtxi_;      // directional derivative of nodal tangent t_xi
   std::vector<std::map<int,double> >      derivteta_;     // directional derivative of nodal tangent t_eta
@@ -478,9 +478,6 @@ public:
   */
   void AddgValue(double& val);
 
-
-
-  void AddD2Value(int& row, int& col, double& val);
 
   /*!
   \brief Add a value to the map of LM derivatives of this node

@@ -3012,7 +3012,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
           cnode->Active() = true;
           activesetconv_ = false;
 #ifdef CONTACTFRICTIONLESSFIRST
-       if (static_cast<FriNode*>(cnode)->FriData().ActiveOld()==false)
+       if (static_cast<FriNode*>(cnode)->CoData().ActiveOld()==false)
          static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #endif
         }
@@ -3070,7 +3070,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->FriData().ActiveOld()==false)
+                if(frinode->CoData().ActiveOld()==false)
                 {}
                 else
                 {
@@ -3113,7 +3113,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->FriData().ActiveOld()==false)
+                if(frinode->CoData().ActiveOld()==false)
                 {}
                 else
                 {
@@ -3406,7 +3406,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
             // nodes coming into contact
             static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #ifdef CONTACTFRICTIONLESSFIRST
-            if (static_cast<FriNode*>(cnode)->FriData().ActiveOld()==false)
+            if (static_cast<FriNode*>(cnode)->CoData().ActiveOld()==false)
               static_cast<FriNode*>(cnode)->FriData().Slip() = true;
 #endif
           } 
@@ -3462,7 +3462,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->FriData().ActiveOld()==false)
+                if(frinode->CoData().ActiveOld()==false)
                 {}
                 else
                 {
@@ -3504,7 +3504,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
               else
               {
 #ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->FriData().ActiveOld()==false)
+                if(frinode->CoData().ActiveOld()==false)
                 {}
                 else
                 {

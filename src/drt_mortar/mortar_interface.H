@@ -566,7 +566,7 @@ public:
   \param nonlinear (in): nonlinear mortar coupling flag
 
   */
-  virtual void Evaluate();
+  virtual void Evaluate(int rriter=0);
 
   /*!
   \brief Evaluate nodal normals

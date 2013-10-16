@@ -88,6 +88,15 @@ namespace INPAR
       redundant_none      ///< no redundant storage
     };
 
+    /// Type of parallel interface evaluation
+    /// (this enum represents the input file parameter PARALLEL_STRATEGY)
+    enum ParallelStrategy
+    {
+      ghosting_redundant,  ///< redundant storage of master or master&slave surfaces
+      roundrobinevaluate,           ///< round robin loop for interface evaluation
+      roundrobinghost
+    };
+
     /// Type of parallel redistribution algorithm
     /// (this enum represents the input file parameter PARALLEL_REDIST)
     enum ParRedist

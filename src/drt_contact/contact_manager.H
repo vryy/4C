@@ -131,7 +131,7 @@ public:
   \param output (in): IO::Discretization writer for restart
   
   */
-  void WriteRestart(IO::DiscretizationWriter& output);
+  void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart = false);
 
   /*!
   \brief Read restart information for contact

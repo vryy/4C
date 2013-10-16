@@ -586,7 +586,7 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
 
   // mortar initialization and evaluation
   SetState("displacement",dis);
-  InitEvalInterface();
+  InitEvalInterface();         // RR-LOOP implemented here !!!
   InitEvalMortar();
 
   // evaluate relative movement for friction
@@ -597,9 +597,10 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
   if (!predictor) UpdateActiveSetSemiSmooth();
 
   // apply contact forces and stiffness
-  Initialize();
-  Evaluate(kt,f,dis);
+  Initialize();             // init lin-matrices
+  Evaluate(kt,f,dis);       // eval contact/fric
   InterfaceForces();
+
 #endif // #ifdef CONTACTTIME
 
   return;
@@ -663,7 +664,11 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
   // time measurement (on each processor)
   const double t_start = Teuchos::Time::wallTime();
 
-  // for all interfaces
+  // get type of parallel strategy
+  INPAR::MORTAR::ParallelStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(),"PARALLEL_STRATEGY");
+
+  // Evaluation for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // initialize / reset interfaces
@@ -672,8 +677,31 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     //store required integration time
     inttime_+=interface_[i]->Inttime();
 
-    // evaluate interfaces
-    interface_[i]->Evaluate();
+    if (strat==INPAR::MORTAR::roundrobinevaluate)
+    {
+      // check redundant input
+      INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(Params(),"REDUNDANT_STORAGE");
+      if (redundant != INPAR::MORTAR::redundant_none)
+        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
+
+      // this contains the evaluation as well as the rr loop
+      interface_[i]->RoundRobinEvaluate();
+    }
+    else if(strat==INPAR::MORTAR::roundrobinghost)
+    {
+      // check redundant input
+      INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(Params(),"REDUNDANT_STORAGE");
+      if (redundant != INPAR::MORTAR::redundant_none)
+        dserror("Round-Robin-Loop only for none-redundant storage of interface!");
+
+      // first perform rrloop to detect the required ghosting
+      interface_[i]->RoundRobinDetectGhosting();
+
+      // second step --> evaluate
+      interface_[i]->Evaluate();
+    }
+    else //std. evaluation fro redundant ghosting
+      interface_[i]->Evaluate();
   }
 
   //**********************************************************************
@@ -912,7 +940,7 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-  
+
   if (tsi_) amatrix_->Complete();
 
   return;
@@ -940,6 +968,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
   SetState("displacement",vec);
   InitEvalInterface();
   InitEvalMortar();
+
   
   // initialize init contact with nodal gap
   if(initcontactbygap)
@@ -975,7 +1004,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
     if(gactivenodes_->NumGlobalElements() == 0)
       dserror("ERROR: No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
   }  
-  
+
   // store contact state to contact nodes (active or inactive)
   if(friction_)
     StoreNodalQuantities(MORTAR::StrategyBase::activeold);
@@ -986,17 +1015,17 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
   // store nodal entries from D and M to old ones
   if(friction_)
     StoreToOld(MORTAR::StrategyBase::dm);
-  
+
   // transform dold_ in the case of dual quadratic 3d
   if (Dualquadslave3d())
   {
     Teuchos::RCP<LINALG::SparseMatrix> tempold = LINALG::MLMultiply(*dold_,false,*invtrafo_,false,false,false,true);
     doldmod_ = tempold;
-  }  
+  }
 
   // evaluate relative movement
-  // needed because it is not called in the predictor of the  
-  // lagrange multiplier strategy 
+  // needed because it is not called in the predictor of the
+  // lagrange multiplier strategy
   if(friction_)
     EvaluateRelMov();
 
@@ -1191,6 +1220,10 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       {
         break;
       }
+      case MORTAR::StrategyBase::slipold:
+      {
+        break;
+      }
       case MORTAR::StrategyBase::wear:
       {
         break;
@@ -1297,10 +1330,16 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         }
         case MORTAR::StrategyBase::activeold:
         {
+          cnode->CoData().ActiveOld() = cnode->Active();
+          break;
+        }
+        case MORTAR::StrategyBase::slipold:
+        {
           if (!friction_)
-            dserror("ERROR: This should not be called for contact without friction");
-          CONTACT::FriNode* frinode = static_cast<FriNode*>(cnode);
-          frinode->FriData().ActiveOld() = frinode->Active();
+            dserror("Slip just for friction problems!");
+
+          FriNode* fnode = static_cast<FriNode*>(cnode);
+          fnode->FriData().SlipOld() = fnode->FriData().Slip();
           break;
         }
         case MORTAR::StrategyBase::wear:
@@ -1532,6 +1571,9 @@ void CONTACT::CoAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> 
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
   StoreDM("old");
 
+  // store contact state to contact nodes (active or inactive)
+  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+
   // old displacements in nodes
   // (this is NOT only needed for friction but also for calculating
   // the auxiliary positions in binarytree contact search)
@@ -1572,9 +1614,9 @@ void CONTACT::CoAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> 
   // information / quantities. 
   if (friction_)
   {
-    // store contact state to contact nodes (active or inactive)
-    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
-  
+    // store contact state to friction nodes (slip or stick)
+    StoreNodalQuantities(MORTAR::StrategyBase::slipold);
+
     // store nodal entries of D and M to old ones
     StoreToOld(MORTAR::StrategyBase::dm);
 
@@ -1595,7 +1637,8 @@ void CONTACT::CoAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> 
 void CONTACT::CoAbstractStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
                                                  Teuchos::RCP<Epetra_Vector>& sliptoggle,
                                                  Teuchos::RCP<Epetra_Vector>& weightedwear,
-                                                 Teuchos::RCP<Epetra_Vector>& realwear)
+                                                 Teuchos::RCP<Epetra_Vector>& realwear,
+                                                 bool forcedrestart)
 {
   // initalize
   activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
@@ -1617,14 +1660,29 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& ac
       CoNode* cnode = static_cast<CoNode*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
-      // set value active / inactive in toggle vector
-      if (cnode->Active()) (*activetoggle)[dof]=1;
-      
+      if(forcedrestart)
+      {
+        // set value active / inactive in toggle vector
+        if (cnode->CoData().ActiveOld()) (*activetoggle)[dof]=1;
+      }
+      else
+      {
+        // set value active / inactive in toggle vector
+        if (cnode->Active()) (*activetoggle)[dof]=1;
+      }
+
       // set value slip / stick in the toggle vector 
       if (friction_)
       {
         CONTACT::FriNode* frinode = static_cast<CONTACT::FriNode*>(cnode);
-        if (frinode->FriData().Slip()) (*sliptoggle)[dof]=1;
+        if(forcedrestart)
+        {
+          if (frinode->FriData().SlipOld()) (*sliptoggle)[dof]=1;
+        }
+        else
+        {
+          if (frinode->FriData().Slip()) (*sliptoggle)[dof]=1;
+        }
       }
     }
   }
