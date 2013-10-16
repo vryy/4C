@@ -524,7 +524,6 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
   la.Clear();
 
   // we need to look at all DofSets of our Discretization
-  int numdofsets = la.Size();
   for (int dofset=0; dofset<la.Size(); ++dofset)
   {
     std::vector<int>& lm  = la[dofset].lm_;
