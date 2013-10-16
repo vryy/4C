@@ -887,28 +887,7 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
     std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
     Teuchos::RCP<Epetra_Map> fluidcolmap = Teuchos::rcp(new Epetra_Map(-1,(int)fluidcolgids.size(),&fluidcolgids[0],0,Comm()));
 
-    // create ghosting for fluid eles (each knowing its node ids)
-    fluiddis_->ExportColumnElements(*fluidcolmap);
-
-    // create a set of node IDs for each proc (row + ghost)
-    std::set<int> nodes;
-    for (int lid=0;lid<fluidcolmap->NumMyElements();++lid)
-    {
-      DRT::Element* ele = fluiddis_->gElement(fluidcolmap->GID(lid));
-      const int* nodeids = ele->NodeIds();
-      for(int inode=0; inode<ele->NumNode(); ++inode)
-        nodes.insert(nodeids[inode]);
-    }
-
-    // copy nodegids to a vector and create nodecolmap
-    std::vector<int> colnodes(nodes.begin(),nodes.end());
-    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,Comm()));
-
-    // create ghosting for nodes
-    fluiddis_->ExportColumnNodes(*nodecolmap);
-
-    // do a final fillcomplete to build connectivity
-    fluiddis_->FillComplete(true,true,true);
+    fluiddis_->ExtendedGhosting(*fluidcolmap,true,true,true);
 
   }
 

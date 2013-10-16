@@ -532,8 +532,8 @@ void DRT::Discretization::BuildElementRowColumn(
                                     const Epetra_Map& noderowmap,
                                     const Epetra_Map& nodecolmap,
                                     RCP<Epetra_Map>& elerowmap,
-                                    RCP<Epetra_Map>& elecolmap,
-                                    bool ExtendedGhosting) const
+                                    RCP<Epetra_Map>& elecolmap
+                                    ) const
 {
   const int myrank = Comm().MyPID();
   const int numproc = Comm().NumProc();
@@ -614,22 +614,8 @@ void DRT::Discretization::BuildElementRowColumn(
           ++nummine;
 
       // if I do not own any of the nodes, it is definitely not my element
-      // and I do not ghost it, except ExtendedGhosting is switched to true // rauch 09/13
-      bool skipflag = false;
-      if (!nummine and ExtendedGhosting == false)
-        skipflag = true;
-      else if (ExtendedGhosting == true)
-      {
-        for (int j=0; j<numnode; ++j)
-        {
-          if (nodecolmap.LID(nodeids[j]) == -1)
-          { // this processor has not all nodes of the element in its colmap and does thus not ghost it
-            skipflag = true;
-          }
-        }
-      }
-
-      if(skipflag)
+      // and I do not ghost it
+      if (!nummine)
         continue;
 
       // check whether I ghost all nodes of this element
@@ -712,14 +698,13 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
                                        bool assigndegreesoffreedom ,
                                        bool initelements           ,
                                        bool doboundaryconditions,
-                                       bool extendedghosting,
                                        bool killdofs,
                                        bool killcond)
 {
   // build the overlapping and non-overlapping element maps
   RCP<Epetra_Map> elerowmap;
   RCP<Epetra_Map> elecolmap;
-  BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap,extendedghosting);
+  BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap);
 
   // export nodes and elements to the new maps
   ExportRowNodes(noderowmap,killdofs,killcond);
@@ -735,6 +720,57 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  ghost elements according to element column map (public)  rauch 10/13|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
+                                           bool assigndegreesoffreedom,
+                                           bool initelements,
+                                           bool doboundaryconditions)
+{
+  #ifdef DEBUG
+    const Epetra_Map oldelecolmap = *(this->ElementColMap());
+    int   oldglobalelementsize    = oldelecolmap.NumGlobalElements();
+  #endif
+
+  // first export the elements according to the processor local element column maps
+  ExportColumnElements(elecolmap);
+
+  // get the node ids of the elements that are to be ghosted and create a proper node column map for their export
+  std::set<int> nodes;
+  for (int lid=0;lid<elecolmap.NumMyElements();++lid)
+  {
+    DRT::Element* ele = this->gElement(elecolmap.GID(lid));
+    const int* nodeids = ele->NodeIds();
+    for(int inode=0; inode<ele->NumNode(); ++inode)
+      nodes.insert(nodeids[inode]);
+  }
+
+  std::vector<int> colnodes(nodes.begin(),nodes.end());
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,Comm()));
+
+  // now ghost the nodes
+  ExportColumnNodes(*nodecolmap);
+
+  // these exports have set Filled()=false as all maps are invalid now
+  int err = FillComplete(assigndegreesoffreedom,initelements,doboundaryconditions);
+  if(err)
+    dserror("FillComplete() threw error code %d",err);
+
+  #ifdef DEBUG
+    int globalelementsize = elecolmap.NumGlobalElements();
+    int diff = globalelementsize - oldglobalelementsize;
+    if (diff<0)
+    {
+      std::cout<<"ElementColMap of discretization "<<this->Name()<<" contains less elements after ExtendedGhosting than before ! "<<std::endl;
+      dserror("Fatal Error");
+    }
+    else if (diff==0)
+      dserror("no elements have been ghosted");
+    if(0)
+      std::cout<<"ExtendedGhosting ghosted "<<diff<<" elements "<<std::endl;
+  #endif
+}
 
 /*----------------------------------------------------------------------*
 // this is to go away!!!!

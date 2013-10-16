@@ -1007,9 +1007,24 @@ public:
                             bool assigndegreesoffreedom=true,
                             bool initelements          =true,
                             bool doboundaryconditions  =true,
-                            bool extendedghosting      =false,
                             bool killdofs              =true,
                             bool killcond              =true);
+
+  /*!
+    \brief Ghost elements on processors according to provided element column map
+
+    Steps taken in this method are:<br>
+    - build element maps (row and column)
+    - do export of row/col nodes and row/col elements
+    - call Fillcomplete(assigndegreesoffreedom,initelements,doboundaryconditions)
+
+    \param elecolmap  (in): new element column map the discretization dis shall have on exit
+
+    */
+    virtual void ExtendedGhosting(const Epetra_Map& elecolmap,
+                                  bool assigndegreesoffreedom = true,
+                                  bool initelements           = true,
+                                  bool doboundaryconditions   = true);
 
 //-----------------------------------------------------------------------------------
 // this is temporary to hide away this method SetupGhosting and only give access to the
@@ -1080,8 +1095,8 @@ public:
   virtual void BuildElementRowColumn(const Epetra_Map& noderowmap,
                                      const Epetra_Map& nodecolmap,
                                      RCP<Epetra_Map>& elerowmap,
-                                     RCP<Epetra_Map>& elecolmap,
-                                     bool ExenedGhosting = false) const;
+                                     RCP<Epetra_Map>& elecolmap
+                                     ) const;
 
   /*!
   \brief Export the nodes to a different parallel layout

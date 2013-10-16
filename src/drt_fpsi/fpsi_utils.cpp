@@ -592,52 +592,24 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
     comm.GatherAll(&HasMasterEle,&procHasMasterEle[0],1);
 
 
-    int parentelenodeids[8];
-    if(mastereleowner == comm.MyPID()) // only on master element owning proc
-    {
-      // broadcast node ids of parent element
-      const int* tempnodeids = masterele->NodeIds();
-      for(int k=0;k<8;k++)
-      {
-        parentelenodeids[k] = tempnodeids[k];
-      }
-    }
-
-    comm.Broadcast(&parentelenodeids[0],8,mastereleowner);
-    //std::cout<<"PROC "<<comm.MyPID()<<" :\n"<<parentelenodeids[0]<<" "<<parentelenodeids[1]<<" "<< parentelenodeids[2]<<" "<< parentelenodeids[3]<<" "<<parentelenodeids[4]<<" "<<parentelenodeids[5]<<" "<<parentelenodeids[6]<<" "<<parentelenodeids[7]<<endl;
-
-
     // ghost parent master element on master discretization of proc owning the matching slave interface element
-
-    const Epetra_Map colcopy = *(masterdis->NodeColMap());
+    const Epetra_Map colcopy = *(masterdis->ElementColMap());
     int myglobalelementsize = colcopy.NumMyElements();
     std::vector<int> myglobalelements(myglobalelementsize);
     colcopy.MyGlobalElements(&myglobalelements[0]);
 
-    //std::cout<<"oldmap: \n"<<*(masterdis->NodeColMap())<<endl;
-    // modify nodecolmap of slave element owning proc only
     if(comm.MyPID() == proc and mastereleowner != proc) // ghost master ele on owner of slave ele, but only if this proc doesn't already own the masterele
     {
-      for(int k=0;k<8;k++)
+      if(colcopy.LID(mastereleid) == -1) // if element not already in ElementColMap()
       {
-        if(colcopy.LID(parentelenodeids[k]) == -1) // if node not already in NodeColMap()
-        {
-          //std::cout<<parentelenodeids[k]<<endl;
-          myglobalelements.push_back(parentelenodeids[k]);
-          myglobalelementsize = myglobalelementsize + 1;
-        }
+        myglobalelements.push_back(mastereleid);
+        myglobalelementsize = myglobalelementsize + 1;
       }
-      //std::cout<<myglobalelementsize<<endl;
-      //std::cout<<"\n"<<endl;
     }
 
     int globalsize;
     comm.SumAll(&myglobalelementsize,&globalsize,1);
-    Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(globalsize,myglobalelementsize,&myglobalelements[0],0,comm));
-    Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::rcp(new Epetra_Map(*masterdis->NodeRowMap()));
-//    std::cout<<"newmap: \n"<<*newnodecolmap<<endl;
-
-//    Teuchos::RCP<const Epetra_Map> rowelecopy = Teuchos::rcp(new const Epetra_Map(*masterdis->ElementRowMap()));
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(globalsize,myglobalelementsize,&myglobalelements[0],0,comm));
 
 
     if(mastereleid == printid)
@@ -658,7 +630,7 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
         before = masterdis->HaveGlobalElement(mastereleid);
       }
       comm.Barrier();
-      masterdis->Redistribute(*newnoderowmap,*newnodecolmap,true,false,true,true);
+      masterdis->ExtendedGhosting(*newelecolmap,true,false,true);
       if(comm.MyPID() == proc)
       {
         //std::cout<<counter<<" --After: Have GID "<<mastereleid<<" = "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
@@ -686,7 +658,7 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
 } // for all procs
 
 if(comm.MyPID()==0)
-  std::cout<<"\n REDISTRIBUTE INTERFACE: checked "<<counter<<" elements in interfacefacingelementmap ... \n"<<std::endl;
+  std::cout<<"\n EXTENDEDGHOSTING: checked "<<counter<<" elements in interfacefacingelementmap ... \n"<<std::endl;
   return;
 }
 

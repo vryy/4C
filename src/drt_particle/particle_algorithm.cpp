@@ -819,30 +819,8 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
     bincolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)bincolmap.size(),&bincolmap[0],0,Comm()));
 
     // create ghosting for bins (each knowing its particle ids)
-    particledis_->ExportColumnElements(*bincolmap_);
+    particledis_->ExtendedGhosting(*bincolmap_,true,false,true);
   }
-
-  // 2st step: ghosting of particles according to bin distribution
-  {
-    // create a set of particle IDs for each proc (row + ghost)
-    std::set<int> particles;
-    for (int lid=0;lid<bincolmap_->NumMyElements();++lid)
-    {
-      DRT::Element* bin = particledis_->gElement(bincolmap_->GID(lid));
-      const int* particleids = bin->NodeIds();
-      for(int iparticle=0;iparticle<bin->NumNode();iparticle++)
-        particles.insert(particleids[iparticle]);
-    }
-
-    // copy particlegids to a vector and create particlecolmap
-    std::vector<int> colparticles(particles.begin(),particles.end());
-    Teuchos::RCP<Epetra_Map> particlecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colparticles.size(),&colparticles[0],0,Comm()));
-
-    // create ghosting for particles
-    particledis_->ExportColumnNodes(*particlecolmap);
-
-    // Note: IndependentDofSet is used; new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
-    particledis_->FillComplete(true, false, true);
 
 
 #ifdef DEBUG
@@ -866,7 +844,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
       }
     }
 #endif
-  }
+
 
   return;
 }
@@ -975,36 +953,9 @@ void PARTICLE::Algorithm::TransferParticles()
   particledis_->CheckFilledGlobally();
 
   // new ghosting is necessary
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles:NewGhost");
-    particledis_->ExportColumnElements(*bincolmap_);
+  particledis_->ExtendedGhosting(*bincolmap_,true,false,true);
 
-    // create a set of particle IDs for each proc (row plus ghost)
-    std::set<int> particles;
-    for (int lid=0;lid<bincolmap_->NumMyElements();++lid)
-    {
-      DRT::Element* ele = particledis_->gElement(bincolmap_->GID(lid));
-      const int* nodeids = ele->NodeIds();
-      for(int inode=0;inode<ele->NumNode();inode++)
-      {
-//        cout << "ele with ID: " << ele->Id() << " on proc: " << myrank_ << " contains node: " << nodeids[inode] << endl;
-        particles.insert(nodeids[inode]);
-      }
-    }
 
-    // copy nodegids to a vector and create nodecolmap
-    std::vector<int> colparticles(particles.begin(),particles.end());
-    Teuchos::RCP<Epetra_Map> particlecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colparticles.size(),&colparticles[0],0,Comm()));
-
-    // create ghosting for particles
-    particledis_->ExportColumnNodes(*particlecolmap);
-  }
-
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles:FillComplete");
-    // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-    particledis_->FillComplete(true, false, true);
-  }
 
   // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
   bool rebuildwallpointer = true;
