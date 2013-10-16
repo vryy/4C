@@ -211,7 +211,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::InitializeH
   int verbosityLevel = 10;  // verbosity level
   int nDofsPerNode = 1;         // coalesce and drop parameters
   int maxCoarseSize = 50;
-  bool bSegregateAggregates = true; //false; // TODO fix me: only for tests with repartitioning! true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
+  //bool bSegregateAggregates = true; //false; // TODO fix me: only for tests with repartitioning! true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
 
   if(params.isParameter("ML output"))  verbosityLevel = params.get<int>("ML output");
   if(params.isParameter("PDE equations")) nDofsPerNode = params.get<int>("PDE equations");
@@ -248,8 +248,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::InitializeH
       xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
     if(linSystemProps.isParameter("near-zero diagonal row map"))
       xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
-    if(linSystemProps.isParameter("ProblemType") && linSystemProps.get<std::string>("ProblemType") == "meshtying")
-      bSegregateAggregates = false;
+    /*if(linSystemProps.isParameter("ProblemType") && linSystemProps.get<std::string>("ProblemType") == "meshtying")
+      bSegregateAggregates = false;*/
   }
 
   // transform Epetra maps to Xpetra maps (if necessary)
