@@ -145,7 +145,7 @@ $CMAKE_COMMAND \
     -D HAVE_MueLu:BOOL=$BUILD_MueLu \
     -D HAVE_Trilinos_Q1_2013:BOOL=$BUILD_HAVE_Trilinos_Q1_2013 \
     -D HAVE_Trilinos_Q3_2013:BOOL=$BUILD_HAVE_Trilinos_Q3_2013 \
-    -D HAVE_Stratimikos:BOOL=ON \
+    -D HAVE_Stratimikos:BOOL=OFF \
     -D TRILINOS_DEV:BOOL=$TRILINOSDEV \
     -D D_ARTNET:BOOL=ON \
     -D D_RED_AIRWAYS:BOOL=ON \
