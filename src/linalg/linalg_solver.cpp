@@ -769,6 +769,59 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     break;
   } // end switch prec typ
 
+  // set repartitioning parameters
+  // TODO remove switch clause
+  switch (prectyp)
+  {
+  case INPAR::SOLVER::azprec_ML: // do nothing, this is standard
+  case INPAR::SOLVER::azprec_MLAPI: // set flag to use mlapi operator
+  case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restriction
+  case INPAR::SOLVER::azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
+  case INPAR::SOLVER::azprec_AMG:   // set flag to use AMGPreconditioner
+  {
+#if defined(PARALLEL) && defined(PARMETIS) // these are the hard-coded ML repartitioning settings
+    mllist.set("repartition: enable",1);
+    mllist.set("repartition: partitioner","ParMETIS");
+    mllist.set("repartition: max min ratio",1.3);
+    mllist.set("repartition: min per proc",3000);
+#endif
+  }
+  break;
+  case INPAR::SOLVER::azprec_MueLuAMG_sym: // MueLu operator (smoothed aggregation)
+  case INPAR::SOLVER::azprec_MueLuAMG_nonsym: // MueLu operator (Petrov-Galerkin)
+  {
+    int doRepart = DRT::INPUT::IntegralValue<int>(inparams,"MueLu_REBALANCE");
+    if(doRepart > 2) {
+      mllist.set("repartition: enable",1);
+    } else {
+      mllist.set("repartition: enable",0);
+    }
+    mllist.set("repartition: partitioner","ParMETIS");
+    mllist.set("repartition: max min ratio",inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
+    mllist.set("repartition: min per proc",inparams.get<int>("MueLu_REBALANCE_MINROWS"));
+  }
+  break;
+  case INPAR::SOLVER::azprec_MueLuAMG_contact: // MueLu operator (contact)
+  case INPAR::SOLVER::azprec_MueLuAMG_contact2: // MueLu operator (contact)
+  case INPAR::SOLVER::azprec_MueLuAMG_contact3: // MueLu operator (contact)
+  case INPAR::SOLVER::azprec_MueLuAMG_contactSP: // MueLu operator (contact)
+  case INPAR::SOLVER::azprec_MueLuAMG_contactPen: // MueLu operator (contact)
+  {
+    int doRepart = DRT::INPUT::IntegralValue<int>(inparams,"MueLu_REBALANCE");
+    if(doRepart > 2) {
+      mllist.set("muelu repartition: enable",1);
+    } else {
+      mllist.set("muelu repartition: enable",0);
+    }
+    //mllist.set("repartition: partitioner","ParMETIS");
+    mllist.set("muelu repartition: max min ratio",inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
+    mllist.set("muelu repartition: min per proc",inparams.get<int>("MueLu_REBALANCE_MINROWS"));
+  }
+  break;
+  default: dserror("Unknown type of ml preconditioner");
+    break;
+  } // end switch prec typ
+
   mllist.set("ML output"                       ,inparams.get<int>("ML_PRINT"));
   if (inparams.get<int>("ML_PRINT")==10)
     mllist.set("print unused"                  ,1);
