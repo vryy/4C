@@ -433,6 +433,9 @@ protected:
                                      LINALG::Matrix<3, 1>&              ThetaXi,
                                      LINALG::Matrix<4,1>&               rQxi);
 
+  //! \brief after updating added and deleted crosslinker elements, an update of management and mapping vectors is necessary
+  void ElementToCrosslinkMapping();
+
   /*! \brief adjust off-rate by considering forces in the crosslinker
    *  \param (in) dt  time step size
    *  \param (in) koff0 initial chemical dissaociation rate

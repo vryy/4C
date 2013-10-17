@@ -2055,6 +2055,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CROTPTC0",0.145,"PTC factor for rotational DOF in first iteration step",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("ALPHAPTC",6.0,"exponent of power law for reduction of PTC factor",&statmech);
+  //Number of iterations after which PTC is turned off
+  IntParameter("MAXITERPTC",5,"Number of iterations after which PTC is turned off!",&statmech);
+  // fraction of initial residual below which PTC is turned off
+  DoubleParameter("RESLOWPTC",0.001,"fraction of initial residual below which PTC is turned off!",&statmech);
   //Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally
   DoubleParameter("PlotFactorThick",0.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
   //Reading whether fixed seed for random numbers should be applied

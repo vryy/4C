@@ -1346,8 +1346,12 @@ void STR::TimIntStatMech::PTCStatMechUpdate(double& ctransptc, double& crotptc, 
   ctransptc *= std::pow((np/nc),alphaptc);
   nc = np;
 
+  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  int maxptciter = statmechparams.get<int>("MAXITERPTC",5);
+  double resfrac = statmechparams.get<double>("RESLOWPTC",0.001);
+
   // modification: turn of ptc once residual is small enough
-  if(np < 0.001*resinit || iter_ > 5)
+  if(np < resfrac*resinit || iter_ > maxptciter)
   {
     ctransptc = 0.0;
     crotptc = 0.0;

@@ -1101,25 +1101,6 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   // wait for all processors to arrive at this point
   discret_->Comm().Barrier();
 
-  // update element2crosslink_ for correct mapping. Reason: Before coming here, elements might have been deleted in
-  // SearchAndSetCrosslinkers(). The ElementRowMap might have changed -> Rebuild
-  if(element2crosslink_!=Teuchos::null)
-  {
-    element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
-    element2crosslink_->PutScalar(-1.0);
-
-    for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
-    {
-      if((*crosslink2element_)[i]>-0.9) // there exists a linker element
-      {
-        // reverse mapping
-        int elelid = discret_->ElementRowMap()->LID((int)(*crosslink2element_)[i]);
-        if(elelid>-0.9)
-          (*element2crosslink_)[elelid] = i;
-      }
-    }
-  }
-
   // loop over the participating processors each of which appends its part of the output to one output file
   for (int proc = 0; proc < discret_->Comm().NumProc(); proc++)
   {
@@ -1199,25 +1180,22 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
 
         //declaring variable for color of elements
         double color = 1.0;
-
-        //apply different color for crosslinkers
         if (element->Id() >= basisnodes_)
         {
-          if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+          //apply different colors for different crosslinkers
+          if(crosslinkertype_!=Teuchos::null)
           {
-            int elementGID = element->Id();
-            int elerowLID = discret_->ElementRowMap()->LID(elementGID);
-            if(elerowLID!=-1)
+            int crossLID = crosslinkermap_->LID((int)(*element2crosslink_)[discret_->ElementColMap()->LID(element->Id())]);
+            if((*crosslinkertype_)[crossLID]==1.0) // active linker
             {
-              int crossGID = (*element2crosslink_)[elerowLID];
-              int crossLID = crosslinkermap_->LID(crossGID);
-              if((*crosslinkertype_)[crossLID]==1.0) // active linker
-                color = 0.75;
-              else // standard
-                color = 0.5;
+              color = 0.75;
+              //std::cout<<"Proc "<<discret_->Comm().MyPID()<<" - SL active "<<crosslinkermap_->GID(crossLID)<<", element "<<element->Id()<<", Type "<<(*crosslinkertype_)[crossLID]<<std::endl;
             }
-            else
-              continue;
+            else // standard single species crosslinker
+            {
+              color = 0.5;
+              //std::cout<<"  Proc "<<discret_->Comm().MyPID()<<" - SL passive "<<crosslinkermap_->GID(crossLID)<<", element "<<element->Id()<<", Type "<<(*crosslinkertype_)[crossLID]<<std::endl;
+            }
           }
           else // standard linker color (red) without any active linkers
             color = 0.5;
@@ -1662,7 +1640,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
   GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
 
-  if (discret_->Comm().MyPID() == 0)
+  if (!discret_->Comm().MyPID())
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
     //special visualization for crosslink molecules with one/two bond(s); going through the Procs
@@ -1749,9 +1727,16 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
           if(crosslinked)
           {
             double beadcolor = 4* color ; //red
-            if(statmechparams_.get<double>("ACTIVELINKERFRACTION", 0.0)>0.0)
+            if(crosslinkertype_!=Teuchos::null)
+            {
               if((*crosslinkertype_)[i]==1.0)
+              {
                 beadcolor = 6*color;
+                //std::cout<<"Proc "<<discret_->Comm().MyPID()<<" - SP active "<<i<<", element "<<(*crosslink2element_)[i]<<", Type "<<(*crosslinkertype_)[i]<<std::endl;
+              }
+              //else
+              //  std::cout<<"  Proc "<<discret_->Comm().MyPID()<<" - SP passive "<<i<<", element "<<(*crosslink2element_)[i]<<", Type "<<(*crosslinkertype_)[i]<<std::endl;
+            }
             gmshfilebonds << "SP(" << std::scientific;
             gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
             gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
