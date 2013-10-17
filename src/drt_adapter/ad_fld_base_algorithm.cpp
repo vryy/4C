@@ -404,6 +404,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_SOL_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_SOL_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DISCRET_OUT",      DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DISCRET_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_CUT_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_CUT_OUT"));
+
+    fluidtimeparams->sublist("XFEM").set<double>("XFLUIDFLUID_SEARCHRADIUS",  xdyn.get<double>("XFLUIDFLUID_SEARCHRADIUS"));
   }
 
   // ----------------------------- sublist for xfem-specific fluid parameters

@@ -64,6 +64,8 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
     Teuchos::ParameterList&   params_xfem  = params_.sublist("XFEM");
     gmsh_debug_out_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
 
+    searchradius_fac_= params_xfem.get<double>("XFLUIDFLUID_SEARCHRADIUS");
+
     // find the radius of the search tree
     SearchRadius();
 
@@ -805,7 +807,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
     		}
     	}
     }
-    else IO::cout << "empty !!!" << embdis_->Comm().MyPID()  << IO::endl;
+    else dserror("The search radius is empty! Change the XFLUIDFLUID_SEARCHRADIUS is your dat-file.");
   }
 }
 
@@ -1447,7 +1449,7 @@ void XFEM::XFluidFluidTimeIntegration::SearchRadius()
     line4 = sqrt(line4);
     line5 = sqrt(line5);
 
-    minradius_ = std::max(line0,std::max(line1,std::max(line2,std::max(line3,std::max(line4,line5)))));
+    minradius_ =  searchradius_fac_*std::max(line0,std::max(line1,std::max(line2,std::max(line3,std::max(line4,line5)))));
     
 }//SearchRadius
 

@@ -305,6 +305,9 @@ public:
   // min radius needed for the search tree
   double minradius_;
 
+  // search radius factor
+  double searchradius_fac_;
+
 };
 
 } // namespace XFEM
