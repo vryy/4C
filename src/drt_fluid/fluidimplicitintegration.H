@@ -52,6 +52,11 @@ namespace DRT
   class Discretization;
   class DiscretizationFaces;
   class ResultTest;
+
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
 }
 namespace IO
 {
@@ -468,6 +473,22 @@ public:
   /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
+
+  //! Return locsys manager
+  Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
+  //! Apply Dirichlet boundary conditions on provided state vectors
+  void ApplyDirichletBC
+  (
+    Teuchos::ParameterList& params,
+    Teuchos::RCP<Epetra_Vector> systemvector,   //!< (may be Teuchos::null)
+    Teuchos::RCP<Epetra_Vector> systemvectord,  //!< (may be Teuchos::null)
+    Teuchos::RCP<Epetra_Vector> systemvectordd, //!< (may be Teuchos::null)
+    bool recreatemap  //!< recreate mapextractor/toggle-vector
+                      //!< which stores the DOF IDs subjected
+                      //!< to Dirichlet BCs
+                      //!< This needs to be true if the bounded DOFs
+                      //!< have been changed.
+  );
 
   Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<      Epetra_Vector> ViewOfDispnp() { return dispnp_; }
@@ -1064,6 +1085,9 @@ protected:
   //@{
   Teuchos::RCP<Epetra_Vector> fldgrdisp_;
   //@}
+
+  //! Dirichlet BCs with local co-ordinate system
+  Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
 private:
 

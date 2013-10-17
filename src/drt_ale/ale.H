@@ -39,6 +39,11 @@ namespace DRT
 {
   class ResultTest;
   class Discretization;
+
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
 }
 
 namespace IO
@@ -211,6 +216,25 @@ public:
 
   Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
+  //! Return (rotatory) transformation matrix of local co-ordinate systems
+  Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+
+  //! Return locsys manager
+  Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
+
+  //! Apply Dirichlet boundary conditions on provided state vectors
+  void ApplyDirichletBC
+  (
+    Teuchos::ParameterList& params,
+    Teuchos::RCP<Epetra_Vector> systemvector,   //!< (may be Teuchos::null)
+    Teuchos::RCP<Epetra_Vector> systemvectord,  //!< (may be Teuchos::null)
+    Teuchos::RCP<Epetra_Vector> systemvectordd, //!< (may be Teuchos::null)
+    bool recreatemap  //!< recreate mapextractor/toggle-vector
+                      //!< which stores the DOF IDs subjected
+                      //!< to Dirichlet BCs
+                      //!< This needs to be true if the bounded DOFs
+                      //!< have been changed.
+  );
 
   /// Reset state vectors
   void Reset();
@@ -226,6 +250,9 @@ protected:
   Teuchos::RCP<LINALG::Solver> solver_;
   Teuchos::RCP<Teuchos::ParameterList> params_;
   Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+  //! Dirichlet BCs with local co-ordinate system
+  Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
   //@}
 

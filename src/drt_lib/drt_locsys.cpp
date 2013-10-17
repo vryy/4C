@@ -30,7 +30,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret):
 discret_(discret),
 dim_(-1),
 numlocsys_(-1),
-locsyscurve_(false)
+locsyscurvefunct_(false)
 {
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = DRT::Problem::Instance()->NDim();
@@ -78,9 +78,9 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   //   by means of there nodal DoFs. If further element types are integrated into locsys
   //   more elaborate criteria might be useful.
 
-  //If we have no time curves in the locsys conditions the whole Setup method is only conducted
-  //once in the constructor (where time is set to -1.0).
-  if (time>=0.0 and locsyscurve_==false)
+  //If we have no time curves or functions in the locsys conditions the whole Setup method is only
+  //conducted once in the constructor (where time is set to -1.0).
+  if (time>=0.0 and locsyscurvefunct_==false)
     return;
 
   // get dof row map of discretization
@@ -116,9 +116,10 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions
-      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
-        locsyscurve_=true;
+      //Check, if we have time dependent locsys conditions (through curves or functions)
+      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
+        locsyscurvefunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -187,9 +188,10 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions
-      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
-        locsyscurve_=true;
+      //Check, if we have time dependent locsys conditions (through curves or functions)
+      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
+        locsyscurvefunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -259,9 +261,10 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions
-      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
-        locsyscurve_=true;
+      //Check, if we have time dependent locsys conditions (through curves or functions)
+      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
+        locsyscurvefunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -331,9 +334,10 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions
-      if ((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0)
-        locsyscurve_=true;
+      //Check, if we have time dependent locsys conditions (through curves or functions)
+      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
+        locsyscurvefunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -668,7 +672,6 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseM
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset)
 {
-
   //Add an offset value to the displacement vector. This offsett value is needed for Kirchhoff type
   //beam elements, where tangent vectors and not position vectors are rotated!!!
   if (offset)

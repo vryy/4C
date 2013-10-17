@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 // further includes for AleBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_locsys.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -78,6 +79,26 @@ ALE::Ale::Ale(RCP<DRT::Discretization> actdis,
   {
     DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
+  }
+
+  // ---------------------------------------------------------------------
+  // Create LocSysManager, if needed (used for LocSys-Dirichlet BCs)
+  // ---------------------------------------------------------------------
+  {
+    std::vector<DRT::Condition*> locsysconditions(0);
+    discret_->GetCondition("Locsys", locsysconditions);
+    if (locsysconditions.size())
+    {
+      // Only 'classic_lin' and 'springs' are supported for use with locsys.
+      // If you want to use locsys with another ALE type, just copy from 'classic_lin'
+      const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
+      int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
+      if (not ((aletype==INPAR::ALE::classic_lin) || (aletype==INPAR::ALE::springs)))
+          dserror("Only ALE types 'classic_lin' and 'springs' are supported for use with locsys conditions.");
+
+      // Initialize locsys manager
+      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+    }
   }
 }
 
@@ -139,6 +160,11 @@ void ALE::Ale::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
+
+  // Update local coordinate systems (which may be time dependent)
+  if (locsysman_ != Teuchos::null) {
+    locsysman_->Setup(time_);
+  }
 }
 
 
@@ -146,12 +172,13 @@ void ALE::Ale::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void ALE::Ale::SetupDBCMapEx(bool dirichletcond)
 {
-  // set fixed nodes (conditions != 0 are not supported right now)
+  // set fixed nodes (conditions != 0 are not supported right now). hahn: Why?!
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
-  discret_->EvaluateDirichlet(eleparams,dispnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
+
+  ApplyDirichletBC(eleparams,dispnp_,Teuchos::null,Teuchos::null,true);
 
   if (dirichletcond)
   {
@@ -206,6 +233,59 @@ void ALE::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
     interface_->InsertAleWearCondVector(idisp,dispnp_);
 }
 
+/*---------------------------------------------------------------*/
+/* Apply Dirichlet boundary conditions on provided state vectors */
+void ALE::Ale::ApplyDirichletBC
+(
+  Teuchos::ParameterList& params,
+  Teuchos::RCP<Epetra_Vector> systemvector,   //!< (may be Teuchos::null)
+  Teuchos::RCP<Epetra_Vector> systemvectord,  //!< (may be Teuchos::null)
+  Teuchos::RCP<Epetra_Vector> systemvectordd, //!< (may be Teuchos::null)
+  bool recreatemap  //!< recreate mapextractor/toggle-vector
+)
+{
+  // In the case of local coordinate systems, we have to rotate forward ...
+  // --------------------------------------------------------------------------------
+  if (locsysman_ != Teuchos::null)
+  {
+    if (systemvector != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(systemvector);
+    if (systemvectord != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(systemvectord);
+    if (systemvectordd != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(systemvectordd);
+  }
+
+  // Apply DBCs
+  // --------------------------------------------------------------------------------
+  discret_->ClearState();
+  if (recreatemap)
+  {
+    discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
+                                Teuchos::null, dbcmaps_);
+  }
+  else
+  {
+    discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
+                               Teuchos::null, Teuchos::null);
+  }
+  discret_->ClearState();
+
+  // In the case of local coordinate systems, we have to rotate back into global Cartesian frame
+  // --------------------------------------------------------------------------------
+  if (locsysman_ != Teuchos::null)
+  {
+    if (systemvector != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(systemvector);
+    if (systemvectord != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(systemvectord);
+    if (systemvectordd != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(systemvectordd);
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ALE::Ale::Reset()
@@ -244,6 +324,16 @@ void ALE::Ale::SetDt(const double dtnew)
   dt_ = dtnew;
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Return (rotatory) transformation matrix of local coordinate systems  */
+Teuchos::RCP<const LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
+{
+  if (locsysman_ != Teuchos::null)
+    return locsysman_->Trafo();
+
+  return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*/
@@ -412,5 +502,3 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   else
     dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());
 }
-
-

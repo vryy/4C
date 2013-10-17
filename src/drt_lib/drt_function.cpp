@@ -758,6 +758,34 @@ namespace UTILS {
     LINALG::Matrix<4,1> satAtt_q_IB_;
   };
 
+  /// special implementation for acceleration profiles
+  class AccelerationProfileFunction : public Function
+  {
+  public:
+
+    /// ctor
+    AccelerationProfileFunction(std::string fileName);
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  private:
+    // Time of previous time step (at t-deltaT)
+    double timeOld_;
+
+    // Number of cells (variables) (time + 3-dim acc = 4)
+    const int NUMACCELERATIONCELLS_;
+
+    // Number of acceleration rows
+    int numAccelerations_;
+
+    // Double Vector containing acceleration information (t, acc_x_B, acc_y_B, acc_z_B)
+    std::vector<double> accelerations_;
+
+    // Current acceleration (at t)
+    LINALG::Matrix<3,1> acc_B_;
+  };
+
 }
 }
 
@@ -988,6 +1016,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedString("TYPE")
     ;
 
+  DRT::INPUT::LineDefinition accelerationprofile;
+  accelerationprofile
+    .AddNamedInt("FUNCT")
+    .AddTag("ACCELERATIONPROFILE")
+    .AddNamedString("FILE")
+    ;
+
   DRT::INPUT::LineDefinition componentexpr;
   componentexpr
     .AddNamedInt("FUNCT")
@@ -1035,6 +1070,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(rotatingcone);
   lines->Add(levelsetcuttest);
   lines->Add(controlledrotation);
+  lines->Add(accelerationprofile);
   lines->Add(componentexpr);
   lines->Add(expr);
   return lines;
@@ -1365,6 +1401,13 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           function->ExtractString("TYPE", type);
 
           functions_.push_back(Teuchos::rcp(new ControlledRotationFunction(fileName, type)));
+      }
+      else if (function->HaveNamed("ACCELERATIONPROFILE"))
+      {
+          std::string fileName;
+          function->ExtractString("FILE", fileName);
+
+          functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
       }
       else if (function->HaveNamed("EXPR"))
       {
@@ -3881,4 +3924,122 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
         dserror("When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or 'FLUID'");
         return 0.0;
     }
+}
+
+/*----------------------------------------------------------------------*
+ | Constructor of AccelerationProfile                        hahn 09/13 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::AccelerationProfileFunction::AccelerationProfileFunction(std::string fileName) :
+Function(), NUMACCELERATIONCELLS_(4)
+{
+    // Initialize variables
+    // *****************************************************************************
+
+    // Initialize time of previous time step (at t-deltaT)
+    timeOld_ = 0.0;
+
+    // Initialize accelerations
+    accelerations_.clear();
+
+    // Initialize current acceleration (at t)
+    acc_B_(0,0) = 0.0;
+    acc_B_(1,0) = 0.0;
+    acc_B_(2,0) = 0.0;
+
+    // Read acceleration profile file and fill acceleration variable
+    // *****************************************************************************
+
+    std::string line;
+    std::stringstream lineStream;
+    std::string cell;
+
+    // Open file
+    std::ifstream file (fileName.c_str());
+    if (!file.is_open()) {
+        dserror("Unable to open file: %s", fileName.c_str());
+    }
+
+    // Loop through all lines
+    while (getline (file,line)) {
+        if (!line.empty()) {
+            // Clear local variables
+            lineStream.clear();
+            cell.clear();
+
+            // Obtain all numAccelerationCells=4 values from current line (t, acc_x_B, acc_y_B, acc_z_B)
+            lineStream << line;
+            for (int i=0; i<NUMACCELERATIONCELLS_; i++) {
+                // Obtain i-th cell from current line
+                getline(lineStream, cell, ' ');
+
+                // If empty cell, than either empty line or one cell in the line
+                // missing, anyhow an error.
+                if (cell.empty()) {
+                    dserror("Error during reading of file: %s", fileName.c_str());
+                }
+
+                // Convert input cell from string to double
+                double cellDouble = (double)strtod(cell.c_str(), NULL);
+
+                // Add cell to acceleration vector
+                accelerations_.push_back(cellDouble);
+            }
+        }
+    }
+
+    // Close file
+    file.close();
+
+    // Determine number of accelerations
+    numAccelerations_ = (int)(accelerations_.size()) / (int)NUMACCELERATIONCELLS_;
+
+    // Output acceleration list
+    printf("\n=================================================================================\n");
+    printf("AccelerationProfile\n");
+    printf("---------------------------------------\n");
+    printf("The following %d acceleration rows have been loaded from file %s:\n", numAccelerations_, fileName.c_str());
+    for (int i=0; i<numAccelerations_; i++) {
+        printf("Time: %e  acc_B: %e, %e, %e \n",
+                accelerations_[i*NUMACCELERATIONCELLS_+0], accelerations_[i*NUMACCELERATIONCELLS_+1],
+                accelerations_[i*NUMACCELERATIONCELLS_+2], accelerations_[i*NUMACCELERATIONCELLS_+3]);
+    }
+    printf("=================================================================================\n\n");
+
+}
+
+/*---------------------------------------------------------------------*
+ | Evaluate AccelerationProfile and return the respective acceleration |
+ | of the node for the given index.                         hahn 09/13 |
+ *---------------------------------------------------------------------*/
+double DRT::UTILS::AccelerationProfileFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+    // Determine time difference
+    double deltaT = t - timeOld_;
+
+    // If new time step, determine current acceleration
+    // *****************************************************************************
+    if (deltaT > 1e-9) { // new time step
+
+        // Determine current acceleration (at t)
+        // -------------------------------------------------------------------------
+        acc_B_(0,0) = 0.0;
+        acc_B_(1,0) = 0.0;
+        acc_B_(2,0) = 0.0;
+
+        for (int i=0; i<numAccelerations_; i++) {
+            if (t >= accelerations_[i*NUMACCELERATIONCELLS_+0]) {
+                acc_B_(0,0) = accelerations_[i*NUMACCELERATIONCELLS_+1];
+                acc_B_(1,0) = accelerations_[i*NUMACCELERATIONCELLS_+2];
+                acc_B_(2,0) = accelerations_[i*NUMACCELERATIONCELLS_+3];
+            }
+        }
+
+        // Update time of last time step
+        // -------------------------------------------------------------------------
+        timeOld_ = t;
+    }
+
+    // Return the acceleration of the node for the given index
+    // *****************************************************************************
+    return acc_B_(index,0);
 }

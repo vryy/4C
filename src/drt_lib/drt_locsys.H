@@ -23,6 +23,7 @@ namespace LINALG {
 }
 
 namespace DRT {
+
 namespace UTILS {
 
 /*!
@@ -247,8 +248,8 @@ protected:
   /// types of local system conditions
   std::vector<DRT::Condition::ConditionType> typelocsys_;
 
-  /// vector that indicates the existence of time curves within the locsys condition
-  bool locsyscurve_;
+  /// vector that indicates the existence of time curves or functions within the locsys condition
+  bool locsyscurvefunct_;
 
   /// maps the GID of a node onto the pseudo-rotation vector which rotates the global xyz system onto local system of the node
   std::map<int,LINALG::Matrix<3,1> > nodalrotvectors_;

@@ -44,6 +44,7 @@ std::map<std::string,std::string> ALE::UTILS::AleCloneStrategy::ConditionsToCopy
   conditions_to_copy.insert(std::pair<std::string,std::string>("XFEMCoupling","XFEMCoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("FluidFluidCoupling","FluidFluidCoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("AleWear","AleWear"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("AleLocsys","Locsys"));
 
   return conditions_to_copy;
 }

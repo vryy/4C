@@ -1836,10 +1836,10 @@ set(FILTER_LIBRARIES
   post_drt_common
   drt_lib_register
   ${ELEMENT_LIBRARIES}
+  linalg                  #linalg requires symbols from drt_lib which are in the SUPPORT_LIBRARIES
   ${SUPPORT_LIBRARIES}
   drt_mat
   drt_lib_utils
-  linalg
   filter_common
   drt_comm
   ${LIBRARIES})

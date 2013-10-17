@@ -798,18 +798,60 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
+  // Ale
+  Teuchos::RCP<ConditionDefinition> pointalelocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT ALE LOCSYS CONDITIONS",
+                                         "AleLocsys",
+                                         "Point local coordinate system",
+                                         DRT::Condition::PointLocsys,
+                                         true,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linealelocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE ALE LOCSYS CONDITIONS",
+                                         "AleLocsys",
+                                         "Line local coordinate system",
+                                         DRT::Condition::LineLocsys,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfalelocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF ALE LOCSYS CONDITIONS",
+                                         "AleLocsys",
+                                         "Surface local coordinate system",
+                                         DRT::Condition::SurfaceLocsys,
+                                         true,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volalelocsys =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL ALE LOCSYS CONDITIONS",
+                                         "AleLocsys",
+                                         "Volume local coordinate system",
+                                         DRT::Condition::VolumeLocsys,
+                                         true,
+                                         DRT::Condition::Volume));
+
   for (unsigned i=0; i<locsyscomponents.size(); ++i)
   {
     pointlocsys->AddComponent(locsyscomponents[i]);
     linelocsys->AddComponent(locsyscomponents[i]);
     surflocsys->AddComponent(locsyscomponents[i]);
     vollocsys->AddComponent(locsyscomponents[i]);
+
+    //Ale
+    pointalelocsys->AddComponent(locsyscomponents[i]);
+    linealelocsys->AddComponent(locsyscomponents[i]);
+    surfalelocsys->AddComponent(locsyscomponents[i]);
+    volalelocsys->AddComponent(locsyscomponents[i]);
   }
 
   condlist.push_back(pointlocsys);
   condlist.push_back(linelocsys);
   condlist.push_back(surflocsys);
   condlist.push_back(vollocsys);
+
+  // Ale
+  condlist.push_back(pointalelocsys);
+  condlist.push_back(linealelocsys);
+  condlist.push_back(surfalelocsys);
+  condlist.push_back(volalelocsys);
 
   /*--------------------------------------------------------------------*/
   // periodic boundary

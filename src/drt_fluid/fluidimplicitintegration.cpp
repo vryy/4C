@@ -53,6 +53,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_assemblestrategy.H"
+#include "../drt_lib/drt_locsys.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_opt.H"
@@ -112,7 +113,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   inrelaxation_(false),
   msht_(INPAR::FLUID::no_meshtying),
   facediscret_(Teuchos::null),
-  fldgrdisp_(Teuchos::null)
+  fldgrdisp_(Teuchos::null),
+  locsysman_(Teuchos::null)
 {
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
@@ -283,6 +285,19 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     }
   }
 
+  // ---------------------------------------------------------------------
+  // Create LocSysManager, if needed (used for LocSys-Dirichlet BCs)
+  // ---------------------------------------------------------------------
+  {
+    std::vector<DRT::Condition*> locsysconditions(0);
+    discret_->GetCondition("Locsys", locsysconditions);
+    if (locsysconditions.size())
+    {
+      // Initialize locsys manager
+      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+    }
+  }
+
   // Vectors associated to boundary conditions
   // -----------------------------------------
 
@@ -305,8 +320,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
-    discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
-                                Teuchos::null, dbcmaps_);
+    ApplyDirichletBC(eleparams, zeros_, Teuchos::null, Teuchos::null, true);
 
     // evaluate the map of the womersley bcs
     vol_surf_flow_bc_ -> EvaluateMapExtractor(vol_flow_rates_bc_extractor_);
@@ -742,6 +756,42 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   if (physicaltype_ == INPAR::FLUID::topopt)
     SetElementTopoptParameter();
 
+
+  // ------------------------------------------------------------------------------
+  // Check, if features are used with the locsys manager that are not supported,
+  // or better, not implemented yet.
+  // ------------------------------------------------------------------------------
+  if (locsysman_ != Teuchos::null) {
+    // XFEM
+    if ((DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem) or
+        (DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem)) {
+      dserror("No XFEM problem types are supported for use with locsys conditions!");
+    }
+
+    // Airways
+    if ((ART_exp_timeInt_ != Teuchos::null) or (airway_imp_timeInt_ != Teuchos::null)) {
+      dserror("No problem types involving airways are supported for use with locsys conditions!");
+    }
+
+    // TangVel predictor
+    if (predictor_ == "TangVel") {
+      dserror("No problem types involving TangVel predictors are supported for use with locsys conditions!");
+    }
+
+    // Nonlinear boundary conditions
+    if (nonlinearbc_ == true) {
+      dserror("No problem types involving nonlinear boundary conditions (via function ApplyNonlinearBoundaryConditions) are supported for use with locsys conditions!");
+    }
+
+    // Meshtying
+    if (msht_ != INPAR::FLUID::no_meshtying) {
+      dserror("No problem types involving meshtying are supported for use with locsys conditions!");
+    }
+
+    // Additionally, locsys doesn't work yet with AVM3 and LinearRelaxationSolve. Those
+    // checks needed to be put in the corresponding functions, so they are not listed here.
+  }
+
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -1029,8 +1079,14 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //  Set time parameter for element call
   // -------------------------------------------------------------------
-
   SetElementTimeParameter();
+
+  // -------------------------------------------------------------------
+  // Update local coordinate systems (which may be time dependent)
+  // -------------------------------------------------------------------
+  if (locsysman_ != Teuchos::null) {
+    locsysman_->Setup(time_);
+  }
 
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
@@ -1047,7 +1103,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,velnp_,Teuchos::null,Teuchos::null,Teuchos::null);
+    ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);
 
 #ifdef D_ALE_BFLOW
     if (alefluid_)
@@ -1327,6 +1383,13 @@ void FLD::FluidImplicitTimeInt::Solve()
   if (not inconsistent_)
   {
     AssembleMatAndRHS();
+
+    if (locsysman_ != Teuchos::null) {
+        // Transform newly built residual to local coordinate system
+        // in order to later properly erase the lines containing
+        // Dirichlet conditions in function ConvergenceCheck()
+        locsysman_->RotateGlobalToLocal(residual_);
+     }
 
     // account for meshtying if required
     if(msht_ != INPAR::FLUID::no_meshtying)
@@ -2062,13 +2125,22 @@ void FLD::FluidImplicitTimeInt::ApplyDirichletToSystem()
   // - Time for applying Dirichlet boundary conditions is measured.
   // -------------------------------------------------------------------
   incvel_->PutScalar(0.0);
+
+  Teuchos::RCP<const LINALG::SparseMatrix> locsysTrafo = Teuchos::null;
+
+  if (locsysman_ != Teuchos::null) {
+     // Transform system matrix and rhs to local co-ordinate systems
+     locsysman_->RotateGlobalToLocal(SystemMatrix(), residual_);
+
+     locsysTrafo = locsysman_->Trafo();
+  }
   {
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,locsysTrafo,zeros_,*(dbcmaps_->CondMap()));
   }
   {
     // apply the womersley velocity profile as a dirichlet bc
-    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,locsysTrafo,zeros_,*(vol_surf_flow_bcmaps_));
   }
 
 } // FluidImplicitTimeInt::ApplyDirichletToSystem
@@ -2562,7 +2634,7 @@ void FLD::FluidImplicitTimeInt::FreeSurfaceFlowUpdate()
     {
       Teuchos::ParameterList eleparams;
       // set action for elements
-      eleparams.set<int>("action",FLD::calc_node_normal);
+      eleparams.set<int>("action",FLD::ba_calc_node_normal);
 
       // get a vector layout from the discretization to construct matching
       // vectors and matrices
@@ -2896,10 +2968,21 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // conditions
   incvel_->PutScalar(0.0);
 
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+  if (LocsysManager() != Teuchos::null) {
+    // Transform system matrix and rhs to local coordinate systems
+    LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
 
-  // apply Womersley as a Dirichlet BC
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,locsysman_->Trafo(),zeros_,*(dbcmaps_->CondMap()));
+
+    // apply Womersley as a Dirichlet BC
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,locsysman_->Trafo(),zeros_,*(vol_surf_flow_bcmaps_));
+
+  } else {
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+    // apply Womersley as a Dirichlet BC
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+  }
 
 }
 
@@ -4024,6 +4107,11 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::AVM3Preparation()
 {
+  // AVM3 can't be used with locsys conditions cause it hasn't been implemented yet
+  if (locsysman_ != Teuchos::null) {
+    dserror("AVM3 can't be used with locsys conditions cause it hasn't been implemented yet!");
+  }
+
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
@@ -5119,7 +5207,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       discret_->SetState("velaf",velnp_);
       // predicted dirichlet values
       // velnp then also holds prescribed new dirichlet values
-      discret_->EvaluateDirichlet(eleparams,velnp_,Teuchos::null,Teuchos::null,Teuchos::null);
+      ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);
 #ifdef D_ALE_BFLOW
         if (alefluid_)
         {
@@ -5713,6 +5801,11 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
+  // LinearRelaxationSolve can't be used with locsys conditions cause it hasn't been implemented yet
+  if (locsysman_ != Teuchos::null) {
+    dserror("LinearRelaxationSolve can't be used with locsys conditions cause it hasn't been implemented yet!");
+  }
+
   TEUCHOS_FUNC_TIME_MONITOR("FluidImplicitTimeInt::LinearRelaxationSolve");
 
   //
@@ -6847,7 +6940,6 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /* set fluid displacement vector due to biofilm growth          */
 void FLD::FluidImplicitTimeInt::SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
@@ -6937,6 +7029,59 @@ void FLD::FluidImplicitTimeInt::SetTimeStep(const double time, const int step)
 {
   step_ = step;
   time_ = time;
+
+  return;
+}
+
+/*---------------------------------------------------------------*/
+/* Apply Dirichlet boundary conditions on provided state vectors */
+void FLD::FluidImplicitTimeInt::ApplyDirichletBC
+(
+  Teuchos::ParameterList& params,
+  Teuchos::RCP<Epetra_Vector> systemvector,   //!< (may be Teuchos::null)
+  Teuchos::RCP<Epetra_Vector> systemvectord,  //!< (may be Teuchos::null)
+  Teuchos::RCP<Epetra_Vector> systemvectordd, //!< (may be Teuchos::null)
+  bool recreatemap  //!< recreate mapextractor/toggle-vector
+)
+{
+  // In the case of local coordinate systems, we have to rotate forward ...
+  // --------------------------------------------------------------------------------
+  if (locsysman_ != Teuchos::null)
+  {
+    if (systemvector != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(systemvector);
+    if (systemvectord != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(systemvectord);
+    if (systemvectordd != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(systemvectordd);
+  }
+
+  // Apply DBCs
+  // --------------------------------------------------------------------------------
+  discret_->ClearState();
+  if (recreatemap)
+  {
+    discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
+                                Teuchos::null, dbcmaps_);
+  }
+  else
+  {
+    discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
+                               Teuchos::null, Teuchos::null);
+  }
+  discret_->ClearState();
+
+  // In the case of local coordinate systems, we have to rotate back into global Cartesian frame
+  // --------------------------------------------------------------------------------
+  if (locsysman_ != Teuchos::null)
+  {
+    if (systemvector != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(systemvector);
+    if (systemvectord != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(systemvectord);
+    if (systemvectordd != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(systemvectordd);
+  }
 
   return;
 }

@@ -25,6 +25,7 @@ Maintainer: Ulrich Kuettler
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_io/io.H"
+#include "../drt_lib/drt_locsys.H"
 
 #define scaling_infnorm true
 
@@ -68,10 +69,23 @@ void ALE::AleLinear::BuildSystemMatrix(bool full)
     sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*interface_,*interface_,81,false,true));
   }
 
-  if (not incremental_)
+  if (not incremental_) // Build system matrix only once
   {
     EvaluateElements();
-    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+
+    if (LocsysManager() != Teuchos::null) {
+      // Transform system matrix and rhs to local coordinate systems
+      // (this is also done only once for the whole simulation time)
+      LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
+
+      // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for ApplyDirichlettoSystem
+      Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(dispnp_)));
+      LocsysManager()->RotateGlobalToLocal(dispnp_local);
+
+      LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,GetLocSysTrafo(),dispnp_local,*(dbcmaps_->CondMap()));
+    } else {
+      LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+    }
 
    // prepare constant preconditioner on constant matrix
 
@@ -128,7 +142,7 @@ void ALE::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::stri
 
   if (ddisp!=Teuchos::null and incrementtype == "step")
   {
-    // Dirichlet -boundaries != 0 are not supported.
+    // Dirichlet -boundaries != 0 are not supported. hahn: Why?!
     dispnp_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
   }
   else if (ddisp!=Teuchos::null and incrementtype == "iter")
@@ -147,8 +161,21 @@ void ALE::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::stri
   if (incremental_)
   {
     EvaluateElements();
-    // dispn_ has zeros at the Dirichlet-entries, so we maintain zeros there
-    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispn_,*(dbcmaps_->CondMap()));
+    // dispn_ has zeros at the Dirichlet-entries, so we maintain zeros there. hahn: The code says
+    // something else. Shall this comment be deleted?!
+
+    if (LocsysManager() != Teuchos::null) {
+      // Transform system matrix and rhs to local coordinate systems
+      LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
+
+      // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for ApplyDirichlettoSystem
+      Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(dispnp_)));
+      LocsysManager()->RotateGlobalToLocal(dispnp_local);
+
+      LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,GetLocSysTrafo(),dispnp_local,*(dbcmaps_->CondMap()));
+    } else {
+      LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+    }
 
     if (xffinterface_->XFluidFluidCondRelevant())
     {
@@ -170,15 +197,33 @@ void ALE::AleLinear::Solve()
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
-  if (incremental_)
+
+  if (incremental_) {
     EvaluateElements();
 
-  discret_->EvaluateDirichlet(eleparams,dispnp_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+    if (LocsysManager() != Teuchos::null) {
+      // Transform system matrix and rhs to local coordinate systems
+      LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
+    }
+  }
 
-  if (xffinterface_->XFluidFluidCondRelevant())
+  // Apply Dirichlet boundary conditions on provided state vector
+  ALE::Ale::ApplyDirichletBC(eleparams,dispnp_,Teuchos::null,Teuchos::null,false);
+
+  if (LocsysManager() != Teuchos::null)
+  {
+    // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for ApplyDirichlettoSystem
+    Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(dispnp_)));
+    LocsysManager()->RotateGlobalToLocal(dispnp_local);
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,GetLocSysTrafo(),dispnp_local,*(dbcmaps_->CondMap()));
+  } else {
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+  }
+
+  if (xffinterface_->XFluidFluidCondRelevant()) {
     LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,xfftoggle_);
+  }
 
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
 }

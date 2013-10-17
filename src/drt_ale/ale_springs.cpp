@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 #include "../linalg/linalg_precond.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_lib/drt_locsys.H"
 
 
 /*----------------------------------------------------------------------*
@@ -97,14 +98,26 @@ void ALE::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::str
 
   if (ddisp!=Teuchos::null)
   {
-    // Dirichlet boundaries != 0 are not supported.
+    // Dirichlet boundaries != 0 are not supported. hahn: Why?!
 
     incr_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
     dispnp_->Update(1.0,*incr_,0.0);
   }
 
   EvaluateElements();
-  LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+
+  if (LocsysManager() != Teuchos::null) {
+    // Transform system matrix and rhs to local coordinate systems
+    LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
+
+    // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for ApplyDirichlettoSystem
+    Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(dispnp_)));
+    LocsysManager()->RotateGlobalToLocal(dispnp_local);
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,GetLocSysTrafo(),dispnp_local,*(dbcmaps_->CondMap()));
+  } else {
+    LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+  }
 
   if (xffinterface_->XFluidFluidCondRelevant())
   {
@@ -128,12 +141,23 @@ void ALE::AleSprings::Solve()
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
-  discret_->EvaluateDirichlet(eleparams,dispnp_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  ALE::Ale::ApplyDirichletBC(eleparams,dispnp_,Teuchos::null,Teuchos::null,false);
 
   incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
 
-  LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
+  if (LocsysManager() != Teuchos::null) {
+    // Transform system matrix and rhs to local coordinate systems
+    LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
+
+    // When using local systems, a rotated incr_ vector needs to be used as dbcval for ApplyDirichlettoSystem
+    Teuchos::RCP<Epetra_Vector> incr_local = Teuchos::rcp(new Epetra_Vector(*(incr_)));
+    LocsysManager()->RotateGlobalToLocal(incr_local);
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,GetLocSysTrafo(),incr_local,*(dbcmaps_->CondMap()));
+  } else {
+    LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
+  }
 
   if (xffinterface_->XFluidFluidCondRelevant())
       LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,xfftoggle_);
@@ -156,7 +180,18 @@ void ALE::AleSprings::SolveBioGr()
 
   incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
 
-  LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
+  if (LocsysManager() != Teuchos::null) {
+    // Transform system matrix and rhs to local coordinate systems
+    LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
+
+    // When using local systems, a rotated incr_ vector needs to be used as dbcval for ApplyDirichlettoSystem
+    Teuchos::RCP<Epetra_Vector> incr_local = Teuchos::rcp(new Epetra_Vector(*(incr_)));
+    LocsysManager()->RotateGlobalToLocal(incr_local);
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,GetLocSysTrafo(),incr_local,*(dbcmaps_->CondMap()));
+  } else {
+    LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
+  }
 
   solver_->Solve(sysmat_->EpetraOperator(),incr_,residual_,true);
 
@@ -195,7 +230,6 @@ void ALE::AleSprings::Output()
  *----------------------------------------------------------------------*/
 void ALE::AleSprings::EvaluateElements()
 {
-
   //find out if we have free surface nodes with heightfunction coupling
   std::vector<DRT::Condition*> hfconds;
   if (interface_->FSCondRelevant())
@@ -450,7 +484,6 @@ void ALE::AleSprings::EvaluateElements()
     // ========== END:  compute ale springs stiffness matrix ==========================
 
 
-
     // ========================= Loop over conditioned rownodes =======================
     // ======================= Manipulate ALE-systemmatrix ============================
 
@@ -498,7 +531,6 @@ void ALE::AleSprings::EvaluateElements()
         dofLID[i] = ndnorm0->Map().LID(rgid);
       }
 
-
      //get values and indices of entries in this row
       std::vector<double> values(numdof);
       std::vector<int> cgids(numdof);
@@ -521,7 +553,7 @@ void ALE::AleSprings::EvaluateElements()
     Teuchos::RCP<LINALG::SparseMatrix> Mult = LINALG::Multiply(aig,false,*H,false,true);
 
     aig = *Mult;
-  }
+}
   // ====================================================================================
   //
   // End of Heightfunction

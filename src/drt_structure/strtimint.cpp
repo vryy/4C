@@ -850,8 +850,8 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* evaluate Dirichlet BC at t_{n+1} */
+/*---------------------------------------------------------------*/
+/* Apply Dirichlet boundary conditions on provided state vectors */
 void STR::TimInt::ApplyDirichletBC
 (
   const double time,
@@ -861,18 +861,20 @@ void STR::TimInt::ApplyDirichletBC
   bool recreatemap
 )
 {
-  // in the case of local systems we have to rotate forward ...
+  // In the case of local coordinate systems, we have to rotate forward ...
+  // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    locsysman_->RotateGlobalToLocal(dis,true);
+    if (dis != Teuchos::null)
+        locsysman_->RotateGlobalToLocal(dis,true);
     if (vel != Teuchos::null)
         locsysman_->RotateGlobalToLocal(vel);
     if (acc != Teuchos::null)
         locsysman_->RotateGlobalToLocal(acc);
   }
 
-
-  // apply DBCs
+  // Apply DBCs
+  // --------------------------------------------------------------------------------
   // needed parameters
   ParameterList p;
   p.set("total time", time);  // target time
@@ -892,17 +894,18 @@ void STR::TimInt::ApplyDirichletBC
   }
   discret_->ClearState();
 
-  // in the case of local systems we have to rotate back into global Cartesian frame
+  // In the case of local coordinate systems, we have to rotate back into global Cartesian frame
+  // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    locsysman_->RotateLocalToGlobal(dis,true);
+    if (dis != Teuchos::null)
+        locsysman_->RotateLocalToGlobal(dis,true);
     if (vel != Teuchos::null)
         locsysman_->RotateLocalToGlobal(vel);
     if (acc != Teuchos::null)
         locsysman_->RotateLocalToGlobal(acc);
   }
 
-  // ciao
   return;
 }
 
