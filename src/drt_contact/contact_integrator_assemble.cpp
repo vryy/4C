@@ -52,7 +52,6 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_serialdensematrix.H"
 
 #include "../drt_inpar/inpar_contact.H"
-#include "contact_manager.H"
 #include "../drt_mortar/mortar_projector.H"
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 

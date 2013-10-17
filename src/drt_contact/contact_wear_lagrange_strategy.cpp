@@ -48,7 +48,6 @@ Maintainer: Philipp Farah
 #include "contact_lagrange_strategy.H"
 #include "contact_interface.H"
 #include "contact_defines.H"
-#include "contact_manager.H"
 
 #include "friction_node.H"
 
@@ -326,7 +325,7 @@ void CONTACT::WearLagrangeStrategy::InitEvalMortar()
   // wearvector_ only updated at the end of a time step --> this newton-step-wise
   // update is not elegant!
   // *********************************************************************************
-  if (wear_ and Params().get<int>("PROBTYPE")!=structalewear and !wearimpl_)
+  if (wear_ and Params().get<int>("PROBTYPE")!=INPAR::CONTACT::structalewear and !wearimpl_)
     g_->Update(1.0,*wearvector_,1.0);
   else
   {

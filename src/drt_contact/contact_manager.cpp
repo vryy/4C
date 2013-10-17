@@ -130,7 +130,7 @@ discret_(discret)
       DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(cparams,"WEARTYPE");
 
   bool friplus = false;
-  if ((wlaw!=INPAR::CONTACT::wear_none) || (cparams.get<int>("PROBTYPE")==tsi))
+  if ((wlaw!=INPAR::CONTACT::wear_none) || (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::tsi))
     friplus=true;
 
   for (int i=0; i<(int)contactconditions.size(); ++i)
@@ -749,13 +749,13 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   // store relevant problem types
   if (problemtype==prb_structure)
-      cparams.set<int> ("PROBTYPE",structure);
+      cparams.set<int> ("PROBTYPE",INPAR::CONTACT::structure);
   else if (problemtype==prb_tsi)
-    cparams.set<int> ("PROBTYPE",tsi);
+    cparams.set<int> ("PROBTYPE",INPAR::CONTACT::tsi);
   else if (problemtype==prb_struct_ale)
-    cparams.set<int> ("PROBTYPE",structalewear);
+    cparams.set<int> ("PROBTYPE",INPAR::CONTACT::structalewear);
   else
-    cparams.set<int> ("PROBTYPE",other);
+    cparams.set<int> ("PROBTYPE",INPAR::CONTACT::other);
 
   // no parallel redistribution in the serial case
   if (Comm().NumProc()==1) cparams.set<std::string>("PARALLEL_REDIST","None");

@@ -58,15 +58,6 @@ namespace CONTACT
 \author popp (popp@lnm.mw.tum.de)
 */
 
-// problemtype to avoid use of drt_globalproblem.H
-enum Problemtype
-{
-  structure,
-  tsi,
-  structalewear,
-  other
-};
-
 class CoManager : public MORTAR::ManagerBase
 {
 public:

@@ -43,7 +43,6 @@ Maintainer: Alexander Popp
 #include "contact_node.H"
 #include "contact_element.H"
 #include "contact_defines.H"
-#include "contact_manager.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -2416,7 +2415,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
   // flags for thermo-structure-interaction with contact
   bool tsiprob = false;
-  if (imortar_.get<int>("PROBTYPE")==tsi) tsiprob=true;
+  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi) tsiprob=true;
   bool scaling = false;
   if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")) scaling=true;
   bool friction = false;     // friction

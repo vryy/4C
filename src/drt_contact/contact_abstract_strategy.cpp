@@ -39,7 +39,6 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #include "contact_abstract_strategy.H"
 #include "contact_defines.H"
-#include "contact_manager.H"
 #include "contact_interface.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -92,7 +91,7 @@ wear_(false)
     wear_ = true;
 
   // set thermo-structure-interaction with contact  
-  if (params.get<int>("PROBTYPE")==tsi)
+  if (params.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
     tsi_ = true;
 
   // call setup method with flag redistributed=FALSE, init=TRUE
@@ -1352,7 +1351,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
               FriNode* frinode = static_cast<FriNode*>(cnode);
               double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
               
-              if (Params().get<int>("PROBTYPE")!=structalewear)
+              if (Params().get<int>("PROBTYPE")!=INPAR::CONTACT::structalewear)
                 frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear(); // amount of wear
               else
                 frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear(); // wear for each ale step

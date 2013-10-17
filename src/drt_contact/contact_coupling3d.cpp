@@ -41,7 +41,6 @@ Maintainer: Alexander Popp
 #include "contact_integrator.H"
 #include "contact_node.H"
 #include "contact_defines.H"
-#include "contact_manager.H"
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -182,7 +181,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 
       if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
         scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-      if (imortar_.get<int>("PROBTYPE")==tsi)
+      if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
       {
         mdisssegs = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
         mdisssegm = Teuchos::rcp(new Epetra_SerialDenseVector(ncol));
@@ -214,7 +213,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       
       // assemble of mechanical dissipation to slave and master nodes
       // and matrix A and B
-      if (imortar_.get<int>("PROBTYPE")==tsi)
+      if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
       {  
         if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_,"FRICTION") != INPAR::CONTACT::friction_none)
         {        

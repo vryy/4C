@@ -154,6 +154,15 @@ namespace INPAR
       boct_spbb        ///< spherical bounding boxes
     };
 
+    // problemtype to avoid use of drt_globalproblem.H
+    enum Problemtype
+    {
+      structure,
+      tsi,
+      structalewear,
+      other
+    };
+
   }  // namespace CONTACT
 
 }  // namespace INPAR

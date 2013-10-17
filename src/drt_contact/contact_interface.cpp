@@ -49,7 +49,6 @@ Maintainer: Alexander Popp
 #include "contact_coupling2d.H"
 #include "contact_coupling3d.H"
 #include "contact_defines.H"
-#include "contact_manager.H"
 #include "friction_node.H"
 #include "selfcontact_binarytree.H"
 #include "../drt_mortar/mortar_binarytree.H"
@@ -85,7 +84,7 @@ tsi_(false)
     wear_ = true;
 
   // set thermo-structure-interaction with contact  
-  if (icontact.get<int>("PROBTYPE")==tsi)
+  if (icontact.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
     tsi_ = true;
   
   // check for redundant slave storage
