@@ -345,7 +345,7 @@ void STR::MLMC::Integrate()
         if(!reduced_output_)
         {
           Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
-          //Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+          Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
 
         // time to go home...
@@ -441,7 +441,7 @@ void STR::MLMC::IntegrateNoReset()
   // get initial number of continuation steps from input
   unsigned int num_cont_steps= mlmcp.get<int>("NUMCONTSTEPS");
 
-  double time_step_size = 0.0 ;
+  //double time_step_size = 0.0 ;
 
 
   //store time init with zero just to be sure
@@ -507,7 +507,7 @@ void STR::MLMC::IntegrateNoReset()
           // get all information
           structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_);
           // Get timestep size
-          time_step_size=structadaptor.GetTimeStepSize();
+          //time_step_size=structadaptor.GetTimeStepSize();
         }
         else
         {
@@ -543,7 +543,7 @@ void STR::MLMC::IntegrateNoReset()
         if(!reduced_output_)
         {
           Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
-          //Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+          Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
 
         // time to go home...
@@ -695,7 +695,8 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongatorParallel()
 {
-  // number of outliers
+  dserror("no longer maintianed");
+/*  // number of outliers
   int num_outliers = 0;
   const Epetra_Map* rmap_disp = NULL;
   const Epetra_Map* dmap_disp = NULL;
@@ -793,7 +794,7 @@ void STR::MLMC::SetupProlongatorParallel()
   IO::cout << "################################################### " << IO::endl;
   IO::cout << "   SUCCESSFULLY INITIALIZED  PROLONGATOR" << IO::endl;
   IO::cout <<  num_outliers << " Nodes do not lie within a background element " << IO::endl;
-  IO::cout << "################################################### " << IO::endl;
+  IO::cout << "################################################### " << IO::endl; */
 }
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongator()
@@ -1392,17 +1393,17 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
       std::vector<double> ele_center;
       ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
-      //if(use_det_value_)
-      //{
-       // stoch_mat_par=det_value_;
-      //  IO::cout << "WARNING NOT USING RANDOM FIELD BUT DET_VALUE INSTEAD" << IO::endl;
-      //}
-      //if(numb_run_-start_run_== 0)
       if(use_det_value_)
       {
-        stoch_mat_par=4.561;
-        IO::cout << "WARNING NOT USING RANDOM FIELD BUT 05 INSTEAD" << IO::endl;
+        stoch_mat_par=det_value_;
+        IO::cout << "WARNING NOT USING RANDOM FIELD BUT A DET_VALUE OF " << det_value_<<"  INSTEAD" << IO::endl;
       }
+      //if(numb_run_-start_run_== 0)
+      //if(use_det_value_)
+      //{
+       // stoch_mat_par=4.61;
+       // IO::cout << "WARNING NOT USING RANDOM FIELD BUT 4.61 INSTEAD" << IO::endl;
+     // }
       else
       {
         // get dim of field
@@ -2393,6 +2394,7 @@ void STR::MLMC::ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> Outpu
     File << std::endl;
     File.close();
     }
+    //dsfdsf
   }
   actdis_coarse_->Comm().Barrier();
 }
