@@ -6,10 +6,12 @@
  */
 
 
-#include "MueLu_ExplicitInstantiation.hpp"
+
 
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q3_2013
+
+#include "MueLu_ExplicitInstantiation.hpp"
 
 #include "MueLu_ContactSPRepartitionInterface_def.hpp"
 
