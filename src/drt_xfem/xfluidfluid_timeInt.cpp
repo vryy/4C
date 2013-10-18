@@ -609,6 +609,7 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
           or ((iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())))
       {
         IO::cout << "CHECK: Took enriched values !!" << " Node GID " << bgnode->Id() << IO::endl;
+        IO::cout << " Warning: You may need to make your search radius bigger in the dat-file!" << IO::endl;
         std::vector<int> gdofsn = iteren->second;
 
         WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp1,bgstatevn1);
@@ -628,6 +629,7 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
           IO::cout << " n:enriched -> n+1: std " << IO::endl;
         else if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end())
           IO::cout << " n:void ->  n+1:enriched " << IO::endl;
+        IO::cout << " Warning: You may need to make your search radius bigger in the dat-file!" << IO::endl;
       }
     }
   }// end of loop over bgnodes without history
@@ -781,6 +783,8 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
         searchTree->searchElementsInRadius(*embdis_,currentpositions,bgnodecords,minradius_,0);
 
 
+    // Remark: it could be that closeles is empty on one processor but still has elements on other processors.
+
     if(closeeles.empty() == false)
     {
     	for(std::map<int, std::set<int> >::const_iterator closele = closeeles.begin(); closele != closeeles.end(); closele++)
@@ -789,7 +793,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
     		for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
     		{
     			if (insideelement) break;
-    			DRT::Element* pele = embdis_->gElement(*eleIter);
+    			DRT::Element* pele = embdis_->gElement(*eleIter); // eleIter is the gid of the pele
     			insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,
     					                                               embstatevn1,embstatevn2,embstatevn3,embstatevn4,embstatevn5,
     		    		                                               aledispn,embdis_);
@@ -807,7 +811,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
     		}
     	}
     }
-    else dserror("The search radius is empty! Change the XFLUIDFLUID_SEARCHRADIUS is your dat-file.");
+    else IO::cout << "The search radius is empty on one processor! You may need to change the XFLUIDFLUID_SEARCHRADIUS is your dat-file."<< IO::endl;
   }
 }
 
