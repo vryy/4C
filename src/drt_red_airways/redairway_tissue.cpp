@@ -33,7 +33,6 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
 {
   // before setting up the structure time integrator, manipulate coupling conditions -> turn them
   // into neumann orthopressure conditions
-
   std::vector<DRT::Condition*> surfneumcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -102,7 +101,11 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
 
   Epetra_Map redundantmap(tmp.size(),tmp.size(),&tmp[0],0,comm);
   couppres_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
+  couppres_ip_tilde_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   couppres_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
+  couppres_im_tilde_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
+  couppres_il_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
+  omega_np_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupflux_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupflux_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupvol_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
@@ -134,12 +137,16 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   tolp_ = rawtisdyn.get<double>("CONVTOL_P");
 
   // get tolerance for flux
-  tolq_ = rawtisdyn.get<double>("CONVTOL_Q");;
+  tolq_ = rawtisdyn.get<double>("CONVTOL_Q");
   
+  // dynamic relaxation type
+  relaxtype_ = DRT::INPUT::IntegralValue<INPAR::ARTNET::RELAXTYPE_3D_0D>(rawtisdyn,"RELAXTYPE");
+
   // get normal direction 
-  // -> if normal == 1.0 : the pressure will be implimented from inside the element to the outside
-  // -> if normal ==-1.0 : the pressure will be implimented from outside the element to the inside
+  // -> if normal == 1.0 : the pressure will be implemented from inside the element to the outside
+  // -> if normal ==-1.0 : the pressure will be implemented from outside the element to the inside
   normal_ = rawtisdyn.get<double>("NORMAL");
+
   // determine initial volume
   structure_->InitVol();
 }
@@ -168,6 +175,7 @@ void AIRWAY::RedAirwayTissue::Integrate()
     do
     {
       DoRedAirwayStep();
+      RelaxPressure(iter);
       DoStructureStep();
       iter++;
     }while (NotConverged(iter)&&iter<itermax_);
@@ -179,6 +187,195 @@ void AIRWAY::RedAirwayTissue::Integrate()
 
     UpdateAndOutput();
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate airways time step and calculate pressures  yoshihara 09/12|
+ *----------------------------------------------------------------------*/
+void AIRWAY::RedAirwayTissue::DoRedAirwayStep()
+{
+  //Scale with -1 (redairway convention: outflow is negative)
+  coupflux_ip_->Scale(-1.0);
+
+  redairways_->SetAirwayFluxFromTissue(coupflux_ip_);
+  redairways_->IntegrateStep();
+  redairways_->ExtractPressure(couppres_ip_tilde_);
+  couppres_ip_tilde_->Update(0.0,*couppres_ip_tilde_,normal_);
+
+}
+
+/*----------------------------------------------------------------------*
+ |  Relax the coupling pressure as described in Kuettler et al.:        |
+ |  "Fixed-point-fluid-structure interaction solvers with dynamic       |
+ |   relaxation" (2008)                                       roth 10/13|
+ *----------------------------------------------------------------------*/
+void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
+{
+
+  switch(relaxtype_)
+  {
+    case INPAR::ARTNET::norelaxation:
+    {
+      printf("No dynamic relaxation \n");
+      couppres_ip_->Update(1.0,*couppres_ip_tilde_,0.0);
+    }
+    break;
+
+    case INPAR::ARTNET::fixedrelaxation:
+    {
+      // Fixed \omega_i
+      omega_ = 0.85;
+      printf("Fixed Relaxation Parameter: %f \n",omega_);
+
+      //Dynamic Relaxation formula (35)
+      // p^{n+1}_{i+1} = \omega_i \tilde{p}^{n+1}_{i+1} + (1-\omega_i) p^{n+1}_{i}
+      // where \tilde{p}^{n+1}_{i+1} = couppres_ip_
+      //                 p^{n+1}_{i} = couppres_im_
+      couppres_ip_->Update(omega_, *couppres_ip_tilde_, (1.0-omega_), *couppres_im_, 0.0);
+    }
+    break;
+
+    case INPAR::ARTNET::Aitken:
+    {
+      // \omega_{i+1} = omega_np_
+
+      // Kuettler (2008), Remark 10: Two previous steps are required to calculate the \omega,
+      // thus the relaxation factor is fixed for the first two steps to \omega = 1.0
+      if (iter < 2)
+      {
+        omega_np_->PutScalar(1.0);
+      }
+      else if (iter >= 2)
+      {
+        //Relaxation factor formula (41)
+        // \omega_{i+1} = (p_{i} - p_{i+1}) / (p_{i} - \tilde{p}_{i+1} - p_{i+1} + \tilde{p}_{i+2})
+        //      where p_{i} = couppres_il_
+        //          p_{i+1} = couppres_im_
+        //  \tilde{p}_{i+1} = couppres_im_tilde_
+        //  \tilde{p}_{i+2} = couppres_ip_tilde_
+        omega_np_->Update(1.0,*couppres_il_,-1.0, *couppres_im_,0.0);
+
+        Teuchos::RCP<Epetra_Vector> denominator = Teuchos::rcp(new Epetra_Vector(*omega_np_));
+        denominator->Update(-1.0,*couppres_im_tilde_,+1.0,*couppres_ip_tilde_,1.0);
+
+        omega_np_->ReciprocalMultiply(1.0,*denominator,*omega_np_,0.0);
+
+        /*for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+        {
+
+          (*omega_np_)[i] = ((*couppres_il_)[i] - (*couppres_im_)[i]) / ((*couppres_il_)[i] - (*couppres_im_tilde_)[i] - (*couppres_im_)[i] + (*couppres_ip_tilde_)[i]);
+        }*/
+      }
+
+      //Aitken Relaxation formula (35)
+      // p^{n+1}_{i+1} = \omega_i \tilde{p}^{n+1}_{i+1} + (1-\omega_i) p^{n+1}_{i}
+      for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+      {
+        (*couppres_ip_)[i] = (*omega_np_)[i]*(*couppres_ip_tilde_)[i] + (1-(*omega_np_)[i])*(*couppres_im_)[i];
+      }
+
+      //Print relaxation factor \omega_np_
+      printf("Aitken Relaxation: \n");
+      for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+        std::cout << "omega_np_["<< i << "]: " << (*omega_np_)[i] << std::endl;
+      std::cout <<  std::endl;
+    }
+    break;
+
+    // not implemented yet...
+    case INPAR::ARTNET::SD:
+    {
+      dserror("Currently only two types of RELAXTYPE possible: norelaxation, fixedrelaxation, Aitken");
+    }
+    break;
+
+    default:
+    {
+      dserror("Currently only two types of RELAXTYPE possible: norelaxation, fixedrelaxation, Aitken");
+    }
+    break;
+  }
+
+  /*/Print coupling pressure for validation of dynamic relaxation
+  std::cout << "\nSingle couppres_ip_: " << std::endl;
+  for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+  {
+    printf(" Time: %f couppres_ip_: %6.3e \n",Time(), (*couppres_ip_)[i]);
+  }*/
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate structure time step and calculate fluxes   yoshihara 09/12|
+ *----------------------------------------------------------------------*/
+void AIRWAY::RedAirwayTissue::DoStructureStep()
+{
+  structure_->SetPressure(couppres_ip_);
+  structure_->IntegrateStep();
+  structure_->CalcFlux(coupflux_ip_,coupvol_ip_,Dt());
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Check for convergence between fields                 yoshihara 09/12|
+ *----------------------------------------------------------------------*/
+/* Note: This has to be done for each field on its own, not as a Norm2
+ * over all fields.
+ */
+bool AIRWAY::RedAirwayTissue::NotConverged(int iter)
+{
+  Teuchos::RCP<Epetra_Vector> pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
+  Teuchos::RCP<Epetra_Vector> scaled_pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
+  Teuchos::RCP<Epetra_Vector> flux_inc = Teuchos::rcp(new Epetra_Vector(*coupflux_ip_));
+  Teuchos::RCP<Epetra_Vector> scaled_flux_inc = Teuchos::rcp(new Epetra_Vector(*coupflux_ip_));
+
+  //Calculate Pressure Norm
+  for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+  {
+     //Calculate pressure increment
+     (*pres_inc)[i] = abs((*couppres_ip_)[i] - (*couppres_im_)[i]);
+
+     //Calculate scaled pressure increment
+     if(abs((*couppres_ip_)[i]) > 1e-05)
+       (*scaled_pres_inc)[i] = (*pres_inc)[i] / abs((*couppres_ip_)[i]);
+     else
+       (*scaled_pres_inc)[i] = (*pres_inc)[i];
+   }
+
+  //Calculate Flux Norm
+  for (int i=0; i<coupflux_ip_->Map().NumMyElements(); ++i)
+  {
+    //Calculate flux increment
+    (*flux_inc)[i] = abs((*coupflux_ip_)[i] - (*coupflux_im_)[i]);
+
+    //Calculate scaled flux increment
+    if(abs((*coupflux_ip_)[i]) > 1e-05)
+      (*scaled_flux_inc)[i] = (*flux_inc)[i] / abs((*coupflux_ip_)[i]);
+    else
+      (*scaled_flux_inc)[i] = (*flux_inc)[i];
+  }
+
+  //Output
+  OutputIteration(pres_inc, scaled_pres_inc, flux_inc, scaled_flux_inc, iter);
+
+  //Update values
+  couppres_il_->Update(1.0,*couppres_im_,0.0);
+  couppres_im_->Update(1.0,*couppres_ip_,0.0);
+  couppres_im_tilde_->Update(1.0,*couppres_ip_tilde_,0.0);
+  coupflux_im_->Update(1.0,*coupflux_ip_,0.0);
+  coupvol_im_->Update(1.0,*coupvol_ip_,0.0);
+
+  double pres_max, flux_max;
+  scaled_pres_inc->NormInf(&pres_max);
+  scaled_flux_inc->NormInf(&flux_max);
+
+  if (pres_max < tolp_ and flux_max < tolq_ and iter > 1)
+    return false;
+
+  return true;
 }
 
 
@@ -218,133 +415,29 @@ void AIRWAY::RedAirwayTissue::UpdateAndOutput()
 }
 
 
-/*----------------------------------------------------------------------*
- |  Integrate airways time step and calculate pressures  yoshihara 09/12|
- *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::DoRedAirwayStep()
-{
-  // scale with -1 (redairway convention: outflow is negative)
-  coupflux_ip_->Scale(-1.0);
-
-  redairways_->SetAirwayFluxFromTissue(coupflux_ip_);
-  redairways_->IntegrateStep();
-  redairways_->ExtractPressure(couppres_ip_);
-  couppres_ip_->Update(0.0,*couppres_ip_,normal_);
-}
-
-/*----------------------------------------------------------------------*
- |  Integrate structure time step and calculate fluxes   yoshihara 09/12|
- *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::DoStructureStep()
-{
-  structure_->SetPressure(couppres_ip_);
-  structure_->IntegrateStep();
-  structure_->CalcFlux(coupflux_ip_,coupvol_ip_,Dt());
- 
-}
-
-
-/*----------------------------------------------------------------------*
- |  Check for convergence between fields                 yoshihara 09/12|
- *----------------------------------------------------------------------*/
-/* Note: This has to be done for each field on its own, not as a Norm2
- * over all fields.
- */
-bool AIRWAY::RedAirwayTissue::NotConverged(int iter)
-{
-  Teuchos::RCP<Epetra_Vector> pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
-  Teuchos::RCP<Epetra_Vector> scaled_pres_inc = Teuchos::rcp(new Epetra_Vector(*couppres_ip_));
-  Teuchos::RCP<Epetra_Vector> flux_inc = Teuchos::rcp(new Epetra_Vector(*coupflux_ip_));
-  Teuchos::RCP<Epetra_Vector> scaled_flux_inc = Teuchos::rcp(new Epetra_Vector(*coupflux_ip_));
-
-  /*elegant solution not fully finished...
-  pres_inc->Update(1.0,*couppres_ip_, -1.0, *couppres_im_, 0.0);
-  scaled_pres_inc->ReciprocalMultiply(1.0,*couppres_ip_,*pres_inc, 0.0);
-
-  flux_inc->Update(1.0,*coupflux_ip_, -1.0, *coupflux_im_, 0.0);
-  scaled_flux_inc->ReciprocalMultiply(1.0,*coupflux_ip_,*flux_inc, 0.0);
-  */
-
-  //Calculate Pressure Norm
-  for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
-  {
-        //Calculate pressure increment
-        (*pres_inc)[i] = abs((*couppres_ip_)[i] - (*couppres_im_)[i]);
-
-        //Calculate scaled pressure increment
-        if(abs((*couppres_ip_)[i]) > 1e-05)
-          (*scaled_pres_inc)[i] = (*pres_inc)[i] / abs((*couppres_ip_)[i]);
-        else
-          (*scaled_pres_inc)[i] = (*pres_inc)[i];
-   }
-
-  //Calculate Flux Norm
-  for (int i=0; i<coupflux_ip_->Map().NumMyElements(); ++i)
-  {
-          //Calculate flux increment
-          (*flux_inc)[i] = abs((*coupflux_ip_)[i] - (*coupflux_im_)[i]);
-
-          //Calculate scaled flux increment
-          if(abs((*coupflux_ip_)[i]) > 1e-05)
-            (*scaled_flux_inc)[i] = (*flux_inc)[i] / abs((*coupflux_ip_)[i]);
-          else
-            (*scaled_flux_inc)[i] = (*flux_inc)[i];
-  }
-
-  //Output
-  OutputIteration(pres_inc, scaled_pres_inc, flux_inc, scaled_flux_inc, iter);
-
-  //Update values
-  couppres_im_->Update(1.0,*couppres_ip_,0.0);
-  coupflux_im_->Update(1.0,*coupflux_ip_,0.0);
-  coupvol_im_->Update(1.0,*coupvol_ip_,0.0);
-
-  double pres_max, flux_max;
-  scaled_pres_inc->NormInf(&pres_max);
-  scaled_flux_inc->NormInf(&flux_max);
-
-  if (pres_max < tolp_ and flux_max < tolq_ and iter > 1)
-    return false;
-
-  return true;
-}
-
-
 void AIRWAY::RedAirwayTissue::SetupRedAirways()
 {
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
+  //Access the discretization
   RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis("red_airway");
 
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
+  //Set degrees of freedom in the discretization
   if (!actdis->Filled())
   {
     actdis->FillComplete();
   }
 
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
+  //Context for output and restart
   RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false);
   output->WriteMesh(0,0.0);
 
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  // const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  //Set some pointers and variables
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
 
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  // get the solver number
+  //Create a solver
+  // Get the solver number
   const int linsolvernumber = rawdyn.get<int>("LINEAR_SOLVER");
-  // check if the present solver has a valid solver number
+  // Check if the present solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC to a valid number!");
   RCP<LINALG::Solver> solver = Teuchos::rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
@@ -353,34 +446,31 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
                                     false);
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  // -------------------------------------------------------------------
-  // set parameters in list required for all schemes
-  // -------------------------------------------------------------------
+  //Set parameters in list required for all schemes
   ParameterList airwaystimeparams;
 
-  // -------------------------------------- number of degrees of freedom
-  // number of degrees of freedom
+  //Number of degrees of freedom
   const int ndim = DRT::Problem::Instance()->NDim();
   airwaystimeparams.set<int>              ("number of degrees of freedom" ,1*ndim);
 
-  // -------------------------------------------------- time integration
-  // the default time step size
+  //Time integration
+  // Default time step size
   airwaystimeparams.set<double>           ("time step size"           ,rawdyn.get<double>("TIMESTEP"));
-  // maximum number of timesteps
+  // Maximum number of timesteps
   airwaystimeparams.set<int>              ("max number timesteps"     ,rawdyn.get<int>("NUMSTEP"));
 
-  // ----------------------------------------------- restart and output
-  // restart
+  // Restart and output
+  // Restart
   airwaystimeparams.set                  ("write restart every"       ,rawdyn.get<int>("RESTARTEVRY"));
-  // solution output
+  // Solution output
   airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
 
-  // ----------------------------------------------- solver parameters
-  // solver type
+  // Solver parameters
+  // Solver type
   airwaystimeparams.set                  ("solver type"             ,rawdyn.get<std::string>("SOLVERTYPE"));
-  // tolerance
+  // Tolerance
   airwaystimeparams.set                  ("tolerance"               ,rawdyn.get<double>("TOLERANCE"));
-  // maximum number of iterations
+  // Maximum number of iterations
   airwaystimeparams.set                  ("maximum iteration steps" ,rawdyn.get<int>("MAXITERATIONS"));
 
   airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());

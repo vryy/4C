@@ -65,6 +65,7 @@ MAXITER                         10
 MAXTIME                         1000
 NUMSTEP                         750
 TIMESTEP                        0.002
+RELAXTYPE			Aitken
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      CrankNicolson

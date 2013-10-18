@@ -50,11 +50,31 @@ typedef enum _RED_AIRWAYS_DYNTYPE
 } _RED_AIRWAYS_DYNTYPE;
 
 
+
+
+
+
+
 namespace INPAR
 {
   namespace ARTNET
   {
-    // to be filled with enums
+    /*!----------------------------------------------------------------------
+    \brief enum of reduced dimensional relaxation type
+
+    <pre>                                                     roth 10/13
+    This is the enumeration of all types of different relaxation types
+    </pre>
+
+    *-----------------------------------------------------------------------*/
+    enum RELAXTYPE_3D_0D
+    {
+      norelaxation,
+      fixedrelaxation,
+      Aitken,
+      SD
+    };
+
   }
 }  // namespace INPAR
 

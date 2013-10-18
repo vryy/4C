@@ -4120,6 +4120,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
      DoubleParameter("CONVTOL_P",1E-6,"Coupled red_airway and tissue iteration convergence for pressure",&redtisdyn);
      DoubleParameter("CONVTOL_Q",1E-6,"Coupled red_airway and tissue iteration convergence for flux",&redtisdyn);
      IntParameter("MAXITER",5,"Maximum coupling iterations",&redtisdyn);
+     setStringToIntegralParameter<int>("RELAXTYPE","norelaxation","Dynamic Relaxation Type",
+                                   tuple<std::string>(
+                                       "norelaxation",
+                                       "fixedrelaxation",
+                                       "Aitken",
+                                       "SD"),
+                                   tuple<int>(
+                                       INPAR::ARTNET::norelaxation,
+                                       INPAR::ARTNET::fixedrelaxation,
+                                       INPAR::ARTNET::Aitken,
+                                       INPAR::ARTNET::SD),
+                                   &redtisdyn);
      DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redtisdyn);
      IntParameter("NUMSTEP",1,"Number of Time Steps",&redtisdyn);
      DoubleParameter("MAXTIME",4.0,"",&redtisdyn);

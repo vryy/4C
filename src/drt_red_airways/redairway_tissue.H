@@ -15,6 +15,7 @@ Maintainer: Lena Yoshihara
 #define REDAIRWAYTISSUE_H
 
 #include "../drt_adapter/adapter_algorithmbase.H"
+#include "../drt_inpar/inpar_artnet.H"
 #include <Teuchos_RCP.hpp>
 #include "Epetra_Vector.h"
 
@@ -56,6 +57,8 @@ public:
 
   void DoStructureStep();
 
+  void RelaxPressure(int iter);
+
   void DoRedAirwayStep();
 
   /// flag whether iteration between fields should be finished
@@ -79,6 +82,21 @@ private:
   /// redundant vector of outlet pressures (old iteration step)
   Teuchos::RCP<Epetra_Vector> couppres_im_;
 
+
+  // Aitken Variables:
+  //Relaxation factor
+  Teuchos::RCP<Epetra_Vector> omega_np_;
+
+  /// redundant vector of outlet pressures (before old iteration step), p^{i}_{n+1}
+  Teuchos::RCP<Epetra_Vector> couppres_il_;
+
+  /// redundant vector of outlet pressures (old iteration step guess), \tilde{p}^{i+1}_{n+1}
+  Teuchos::RCP<Epetra_Vector> couppres_im_tilde_;
+
+  /// redundant vector of outlet pressures (new iteration step guess), \tilde{p}^{i+2}_{n+1}
+  Teuchos::RCP<Epetra_Vector> couppres_ip_tilde_;
+
+
   /// redundant vector of outlet fluxes (new iteration step)
   Teuchos::RCP<Epetra_Vector> coupflux_ip_;
 
@@ -92,16 +110,22 @@ private:
   Teuchos::RCP<Epetra_Vector> coupvol_im_;
 
   /// internal iteration step
-  int itermax_ ;
+  int itermax_;
 
   /// internal tolerance for pressure
-  double tolp_ ;
+  double tolp_;
 
   /// internal tolerance for flux
-  double tolq_ ;
+  double tolq_;
 
   /// defined normal direction
   double normal_;
+
+  /// fixed relaxation paramater
+  double omega_;
+
+  /// fixed relaxation paramater
+  INPAR::ARTNET::RELAXTYPE_3D_0D relaxtype_;
 
 };
 }
