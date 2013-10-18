@@ -290,7 +290,8 @@ void CONTACT::FriNode::Print(std::ostream& os) const
   // Print id and coordinates
   os << "Contact ";
   CONTACT::CoNode::Print(os);
-  if (IsInitActive()) os << " InitActive ";
+  if (IsSlave())
+    if (IsInitActive()) os << " InitActive ";
 
   return;
 }
