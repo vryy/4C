@@ -89,6 +89,8 @@ namespace LINALG
       /// multigrid levels
       Teuchos::Array<Teuchos::RCP<FactoryManager> > vecManager_;
 
+      /// A Factory which shall be reused by MyTrilinosSmoother
+      Teuchos::RCP<FactoryBase> singleNodeAFact_;
     };
   }
 }

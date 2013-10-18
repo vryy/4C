@@ -83,6 +83,7 @@ LINALG::SOLVER::MueLuContactPreconditioner2::MueLuContactPreconditioner2( FILE *
   : PreconditionerType( outfile ),
     mllist_( mllist )
 {
+  singleNodeAFact_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -676,13 +677,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmooth
       xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
   }
 
-  // TODO fix bug: remove old singleNodeAFact or somehow generate only one and put it in here!!!
   // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
-  Teuchos::RCP<FactoryBase> singleNodeAFact = Teuchos::null;
+  // rebuild a new singleNodeAFact
+  singleNodeAFact_ = Teuchos::null;  // delete the old singleNodeAFact_ if there was one before
   if(xSingleNodeAggMap != Teuchos::null) {
-    singleNodeAFact = Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
+    singleNodeAFact_ = Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
     // keep singleNodeAFact since it's needed in the solution phase by MyTrilinosSmoother
-    h->GetLevel(0)->Keep("A",singleNodeAFact.get());
+    h->GetLevel(0)->Keep("A",singleNodeAFact_.get());
   }
 
   // set Smoother and CoarseSolver factories in FactoryManager
@@ -700,7 +701,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmooth
     // fine/intermedium level smoother
     Teuchos::RCP<SmootherFactory> SmooFactFine = Teuchos::null;
     if(xSingleNodeAggMap != Teuchos::null)
-      SmooFactFine = GetContactSmootherFactory(pp, i, singleNodeAFact); // use filtered matrix on fine and intermedium levels
+      SmooFactFine = GetContactSmootherFactory(pp, i, singleNodeAFact_); // use filtered matrix on fine and intermedium levels
     else
       SmooFactFine = GetContactSmootherFactory(pp, i, Teuchos::null);
 
