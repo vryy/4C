@@ -875,7 +875,7 @@ void MAT::Damage::Evaluate(
     // Phi_{n+1} == 0 = q / (1-D_{n+1}) - sigma_y(Rplast_{n+1})
     // --> q = sigma_y(Rplast_{n+1}) * omega_{n+1}
     // TODO Max:     q = omega_n * q_tilde - 3.0 * G * Dgamma;
-    double q = omega * sigma_y;
+//    double q = omega * sigma_y;
 
     // get damaged pressure
     double p = omega * p_tilde;
