@@ -68,7 +68,7 @@ DYNAMICTYP                      Statics                       // Centr_Diff,Gen_
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
-MAXITER                         15
+MAXITER                         25
 MAXTIME                         5
 MINITER                         0
 M_DAMP                          0.5
@@ -92,7 +92,7 @@ TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLINCO                         1e-08
 TOLPRE                          1e-08
-TOLRES                          1e-06 //prescribed in de Souza Neto; default: 1e-08 
+TOLRES                          1e-06  //prescribed in de Souza Neto; default: 1e-08 
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -150,7 +150,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1                    
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_Damage YOUNG 2.1e8 NUE 0.3 DENS 0.0 SAMPLENUM 2 SIGMA_Y 2.4e5 2.4e5 EPSBAR_P 0 1 TOL 1.0e-06
+MAT 1 MAT_Struct_Damage YOUNG 2.1e8 NUE 0.3 DENS 0.0 SAMPLENUM 2 SIGMA_Y 2.4e5 2.4e5 EPSBAR_P 0 1 DAMDEN 1 DAMEXP 1.0 DAMTHRESHOLD 1.0e4 TOL 1.0e-06
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0 // Tmax=5
 ----------------------------------------------------------------------CURVE2

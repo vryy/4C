@@ -633,6 +633,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"SAMPLENUM","number of stress-strain pairs in list");
     AddNamedRealVector(m,"SIGMA_Y","yield stress", "SAMPLENUM");
     AddNamedRealVector(m,"EPSBAR_P","accumulated plastic strain corresponding to SIGMA_Y", "SAMPLENUM");
+    AddNamedReal(m,"DAMDEN","denominator of damage evoluation law");
+    AddNamedReal(m,"DAMEXP","exponent of damage evoluation law");
+    AddNamedReal(m,"DAMTHRESHOLD","damage threshold");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);

@@ -279,17 +279,17 @@ private:
     MAT::PAR::PlasticLinElast* params_;
 
     //! plastic history vector
-    // old plastic strain at t_n
+    //! old plastic strain at t_n
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
-    // current plastic strain at t_n+1
+    //! current plastic strain at t_n+1
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
-    // old accumulated plastic strain at t_n
+    //! old accumulated plastic strain at t_n
     Teuchos::RCP<std::vector<double> > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
-    // current accumulated plastic strain at t_n+1
+    //! current accumulated plastic strain at t_n+1
     Teuchos::RCP<std::vector<double> > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
-    // old back stress at t_n
+    //! old back stress at t_n
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
-    // current back stress at t_n+1
+    //! current back stress at t_n+1
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
 
 
