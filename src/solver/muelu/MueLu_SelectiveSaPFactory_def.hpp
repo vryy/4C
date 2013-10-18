@@ -132,7 +132,7 @@ namespace MueLu {
         if (A->getRowMap()->lib() == Xpetra::UseTpetra) optimizeStorage=false;
 #ifdef HAVE_Trilinos_Q3_2013
         RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
-        AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage);
+        AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage,false /* use Xpetra matrix-matrix multiply */);
 #else
         AP = Utils::Multiply(*A, false, *Ptent, false, doFillComplete, optimizeStorage);
 #endif
