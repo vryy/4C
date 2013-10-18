@@ -160,9 +160,9 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
 
     H_->ExpertClear();
 
-    //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
-    //Teuchos::RCP<Level> coarseLevel0 = H_->GetLevel(0);
-    //coarseLevel0->print(*out);
+    /*Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+    Teuchos::RCP<Level> coarseLevel0 = H_->GetLevel(0);
+    coarseLevel0->print(*out);*/
 
     // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
     Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
@@ -679,6 +679,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmooth
 
   // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
   // rebuild a new singleNodeAFact
+  h->GetLevel(0)->Delete("A",singleNodeAFact_.get());
   singleNodeAFact_ = Teuchos::null;  // delete the old singleNodeAFact_ if there was one before
   if(xSingleNodeAggMap != Teuchos::null) {
     singleNodeAFact_ = Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
