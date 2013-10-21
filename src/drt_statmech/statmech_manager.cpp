@@ -5721,7 +5721,7 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
       // if point in time is reached at which the application of Dirichlet values starts
       if(!DBCStart(params))
         return;
-      DBCOscillatoryMotion(params,dis,deltadbc);
+      DBCOscillatoryMotion(params,dis,vel,deltadbc);
       useinitdbcset_ = true;
     }
     break;
@@ -5730,14 +5730,14 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
     {
       if(!DBCStart(params))
         return;
-      DBCOscillatoryMotion(params,dis,deltadbc);
+      DBCOscillatoryMotion(params,dis,vel,deltadbc);
     }
     break;
     // pin down and release individual nodes
     case INPAR::STATMECH::dbctype_pinnodes:
     {
       // apply DBCs from input file first
-      DBCGetPredefinedConditions(params,dis,dbcgids);
+      DBCGetPredefinedConditions(params,dis,vel,dbcgids);
       // then, determine nodes that get inhibited by Crosslinkers
       DBCPinNodes();
     }
@@ -5749,7 +5749,7 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
     {
       if(!DBCStart(params))
         return;
-      DBCAffineShear(params,dis,deltadbc);
+      DBCAffineShear(params,dis,vel,deltadbc);
       // used here to store the node set that remains under DBCs after the initial affine displacement
       useinitdbcset_ = true;
     }
@@ -5759,7 +5759,7 @@ void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList
     {
       if(!DBCStart(params))
         return;
-      DBCMovableSupport1D(params, dis);
+      DBCMovableSupport1D(params,dis);
     }
     break;
     default:
@@ -5871,6 +5871,7 @@ void STATMECH::StatMechManager::BCSanityCheck()
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& params,
                                                      Teuchos::RCP<Epetra_Vector> dis,
+                                                     Teuchos::RCP<Epetra_Vector> vel,
                                                      Teuchos::RCP<Epetra_Vector> deltadbc)
 {
   INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE");
@@ -5880,6 +5881,14 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
   int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
   int oscdir = statmechparams_.get<int>("DBCDISPDIR",-1)-1;
   double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
+
+  // time curve increment
+  double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+                       DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+
+  std::vector<double> curvefac(2,0.0);
+  if(vel!=Teuchos::null)
+    curvefac = DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1);
 
 //------------------------------------------------------gather dbc node set(s)
   // after the the very first entry into the following part, reenter only if the Dirichlet Node Set is dynamically updated
@@ -5960,12 +5969,9 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
                   oscillnodes.push_back(element->Nodes()[n+1]->Id());
 
                   // incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
-                  // time curve increment
-                  double tcincrement = 0.0;
-                  if(curvenumber>-1)
-                    tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                                  DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-                  (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
+                  (*deltadbc)[doflids.at(numdof*(n+1)+oscdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*tcincrement;
+                  if(vel!=Teuchos::null)
+                    (*vel)[doflids.at(numdof*(n+1)+oscdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*curvefac[1];
                 }
               }// end of case 1
               if(cut(2,n)==2.0)// case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
@@ -5978,11 +5984,9 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
                 if(noderowlidn>-1)
                 {
                   oscillnodes.push_back(element->Nodes()[n]->Id());
-                  double tcincrement = 0.0;
-                  if(curvenumber>-1)
-                    tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                                  DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-                  (*deltadbc)[doflids.at(numdof*n+oscdir)] = amp*tcincrement;
+                  (*deltadbc)[doflids.at(numdof*n+oscdir)] = (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
+                  if(vel!=Teuchos::null)
+                    (*vel)[doflids.at(numdof*n+oscdir)] = (coord(2,n)/(*periodlength_)[2])*amp*curvefac[1];
                 }
               } // end of case 2
             }
@@ -6086,6 +6090,7 @@ void STATMECH::StatMechManager::DBCPinNodes()
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     params,
                                                Teuchos::RCP<Epetra_Vector> dis,
+                                               Teuchos::RCP<Epetra_Vector> vel,
                                                Teuchos::RCP<Epetra_Vector> deltadbc)
 {
   /*====the following is mostly taken from DBCOscillatoryMotion()====
@@ -6101,6 +6106,9 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
   double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
                        DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
 
+  std::vector<double> curvefac(2,0.0);
+  if(vel!=Teuchos::null)
+    curvefac = DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1);
 
   double tol = 1e-10;
 
@@ -6179,6 +6187,8 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
                     nodedbcstatus.at(nodelidn) = true;
                     sensornodes.push_back(element->Nodes()[n]->Id());
                     (*deltadbc)[doflids.at(numdof*n+displacementdir)] =  (coord(2,n)/(*periodlength_)[2])*amp*tcincrement;
+                    if(vel!=Teuchos::null)
+                      (*vel)[doflids.at(numdof*n+displacementdir)] = (coord(2,n)/(*periodlength_)[2])*amp*curvefac[1];
                   }
                   break;
                 }
@@ -6200,6 +6210,8 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
                     nodedbcstatus.at(nodelidnp) = true;
                     sensornodes.push_back(element->Nodes()[n+1]->Id());
                     (*deltadbc)[doflids.at(numdof*(n+1)+displacementdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*tcincrement;
+                    if(vel!=Teuchos::null)
+                      (*vel)[doflids.at(numdof*(n+1)+displacementdir)] = (coord(2,n+1)/(*periodlength_)[2])*amp*curvefac[1];
                   }
                   break;
                   // case 2: broken element (in z-dir); node_n displaced, node_n+1 is fixed in dir. of displacement
@@ -6588,6 +6600,7 @@ void STATMECH::StatMechManager::DoDirichletConditionPeriodic(std::vector<int>*  
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DBCGetPredefinedConditions(Teuchos::ParameterList&      params,
                                                            Teuchos::RCP<Epetra_Vector>  dis,
+                                                           Teuchos::RCP<Epetra_Vector>  vel,
                                                            Teuchos::RCP<std::set<int> > dbcgids)
 {
   //get absolute time
@@ -6602,12 +6615,12 @@ void STATMECH::StatMechManager::DBCGetPredefinedConditions(Teuchos::ParameterLis
   for (int i=0; i<(int)dirichlet.size(); i++)
   {
     if (dirichlet[i]->Type() != DRT::Condition::LineDirichlet) continue;
-    DoDirichletConditionPredefined(*dirichlet[i],*discret_,usetime,time,dis,Teuchos::null,Teuchos::null,Teuchos::null,dbcgids);
+    DoDirichletConditionPredefined(*dirichlet[i],*discret_,usetime,time,dis,vel,Teuchos::null,Teuchos::null,dbcgids);
   }
   for (int i=0; i<(int)dirichlet.size(); i++)
   {
     if (dirichlet[i]->Type() != DRT::Condition::PointDirichlet) continue;
-    DoDirichletConditionPredefined(*dirichlet[i],*discret_,usetime,time,dis,Teuchos::null,Teuchos::null,Teuchos::null,dbcgids);
+    DoDirichletConditionPredefined(*dirichlet[i],*discret_,usetime,time,dis,vel,Teuchos::null,Teuchos::null,dbcgids);
   }
 
   return;

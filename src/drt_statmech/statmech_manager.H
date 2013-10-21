@@ -801,14 +801,17 @@ protected:
   /*! \brief Dirichlet conditions needed for viscoelastic measurements*/
   void DBCOscillatoryMotion(Teuchos::ParameterList&     params,
                             Teuchos::RCP<Epetra_Vector> dis,
+                            Teuchos::RCP<Epetra_Vector> vel,
                             Teuchos::RCP<Epetra_Vector> deltadbc);
 
   /*! \brief Apply affine shear deformation to network
    *  \param params   (in)  Parameter List
    *  \param dis      (in)  displacement vector
+   *  \param vel      (in)  velocity vector
    *  \param dbcgids  (in/out)  set of DOF GIDs on which Dirichlet values are imposed*/
   void DBCAffineShear(Teuchos::ParameterList&     params,
                       Teuchos::RCP<Epetra_Vector> dis,
+                      Teuchos::RCP<Epetra_Vector> vel,
                       Teuchos::RCP<Epetra_Vector> deltadbc);
 
   /*! \brief pin down and release nodes at their location by Dirichlet Values*/
@@ -823,9 +826,11 @@ protected:
   /*! \brief Get DBCs defined in Input file and ad the DBCs DOFs to dbcgids
    *  \param params   (in)  Parameter List
    *  \param dis      (in)  displacement vector
+   *  \param vel      (in)  velocity vector
    *  \param dbcgids  (in/out)  set of DOF GIDs on which Dirichlet values are imposed*/
   void DBCGetPredefinedConditions(Teuchos::ParameterList&       params,
                                   Teuchos::RCP<Epetra_Vector>   dis,
+                                  Teuchos::RCP<Epetra_Vector>   vel,
                                   Teuchos::RCP<std::set<int> >  dbcgids);
 
   /* \brief set Dirichlet values according to given Dirichlet map)
