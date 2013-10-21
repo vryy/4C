@@ -3402,11 +3402,7 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
             switch(linkermodel_)
             {
               case statmech_linker_active:
-              {
                 (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->SetReferenceLength(sca);
-                Epetra_SerialDenseVector force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->InternalForceVector();
-                std::cout<<"force = \n"<<force<<std::endl;
-              }
               break;
               case statmech_linker_activeintpol:
                 (dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lColElement(collid)))->SetReferenceLength(sca);
