@@ -726,12 +726,29 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
 void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
                                            bool assigndegreesoffreedom,
                                            bool initelements,
-                                           bool doboundaryconditions)
+                                           bool doboundaryconditions,
+                                           bool checkghosting)
 {
-  #ifdef DEBUG
-    const Epetra_Map oldelecolmap = *(this->ElementColMap());
-    int   oldglobalelementsize    = oldelecolmap.NumGlobalElements();
-  #endif
+#ifdef DEBUG
+  if(Filled())
+  {
+    const Epetra_Map* oldelecolmap = ElementColMap();
+    // check whether standard ghosting is included in extended ghosting
+    for(int i=0; i<oldelecolmap->NumMyElements(); ++i)
+    {
+      bool hasgid = elecolmap.MyGID(oldelecolmap->GID(i));
+      if(!hasgid)
+        dserror("standard ghosting of ele %d is not included in extended ghosting", oldelecolmap->GID(i));
+    }
+
+    if(checkghosting)
+    {
+      int diff = elecolmap.NumGlobalElements() - oldelecolmap->NumGlobalElements();
+      if (diff==0 and Comm().MyPID()==0)
+        dserror("no additional elements have been ghosted");
+    }
+  }
+#endif
 
   // first export the elements according to the processor local element column maps
   ExportColumnElements(elecolmap);
@@ -757,19 +774,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
   if(err)
     dserror("FillComplete() threw error code %d",err);
 
-  #ifdef DEBUG
-    int globalelementsize = elecolmap.NumGlobalElements();
-    int diff = globalelementsize - oldglobalelementsize;
-    if (diff<0)
-    {
-      std::cout<<"ElementColMap of discretization "<<this->Name()<<" contains less elements after ExtendedGhosting than before ! "<<std::endl;
-      dserror("Fatal Error");
-    }
-    else if (diff==0)
-      dserror("no elements have been ghosted");
-    if(0)
-      std::cout<<"ExtendedGhosting ghosted "<<diff<<" elements "<<std::endl;
-  #endif
+	return;
 }
 
 /*----------------------------------------------------------------------*

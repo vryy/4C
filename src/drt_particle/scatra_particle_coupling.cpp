@@ -884,7 +884,7 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
     std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
     Teuchos::RCP<Epetra_Map> fluidcolmap = Teuchos::rcp(new Epetra_Map(-1,(int)fluidcolgids.size(),&fluidcolgids[0],0,Comm()));
 
-    scatradis_->ExtendedGhosting(*fluidcolmap,true,true,true);
+    scatradis_->ExtendedGhosting(*fluidcolmap,true,true,true,false);
 
   }
 

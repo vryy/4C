@@ -819,7 +819,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
     bincolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)bincolmap.size(),&bincolmap[0],0,Comm()));
 
     // create ghosting for bins (each knowing its particle ids)
-    particledis_->ExtendedGhosting(*bincolmap_,true,false,true);
+    particledis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
   }
 
 
@@ -953,7 +953,7 @@ void PARTICLE::Algorithm::TransferParticles()
   particledis_->CheckFilledGlobally();
 
   // new ghosting is necessary
-  particledis_->ExtendedGhosting(*bincolmap_,true,false,true);
+  particledis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
 
 
 

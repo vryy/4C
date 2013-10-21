@@ -630,7 +630,7 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
         before = masterdis->HaveGlobalElement(mastereleid);
       }
       comm.Barrier();
-      masterdis->ExtendedGhosting(*newelecolmap,true,false,true);
+      masterdis->ExtendedGhosting(*newelecolmap,true,false,true,true);
       if(comm.MyPID() == proc)
       {
         //std::cout<<counter<<" --After: Have GID "<<mastereleid<<" = "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;

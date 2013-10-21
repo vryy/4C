@@ -997,8 +997,6 @@ public:
                                        present
   \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
                                        present.
-  \param extendedghosting       (in) : if true, build geometry of boundary conditions
-                                       present.
 
   \note Filled()==true is a prerequisite, Filled()==true on exit
   */
@@ -1018,13 +1016,15 @@ public:
     - do export of row/col nodes and row/col elements
     - call Fillcomplete(assigndegreesoffreedom,initelements,doboundaryconditions)
 
-    \param elecolmap  (in): new element column map the discretization dis shall have on exit
+    \param elecolmap  (in): new element column map the discretization shall have on exit
+    \param checkghosting (in): additional check can be performed
 
     */
     virtual void ExtendedGhosting(const Epetra_Map& elecolmap,
                                   bool assigndegreesoffreedom = true,
                                   bool initelements           = true,
-                                  bool doboundaryconditions   = true);
+                                  bool doboundaryconditions   = true,
+                                  bool checkghosting          = true);
 
 //-----------------------------------------------------------------------------------
 // this is temporary to hide away this method SetupGhosting and only give access to the

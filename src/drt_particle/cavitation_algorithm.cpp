@@ -887,7 +887,7 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
     std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
     Teuchos::RCP<Epetra_Map> fluidcolmap = Teuchos::rcp(new Epetra_Map(-1,(int)fluidcolgids.size(),&fluidcolgids[0],0,Comm()));
 
-    fluiddis_->ExtendedGhosting(*fluidcolmap,true,true,true);
+    fluiddis_->ExtendedGhosting(*fluidcolmap,true,true,true,false);
 
   }
 
