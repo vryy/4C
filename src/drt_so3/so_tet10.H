@@ -200,7 +200,7 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
   {
     if(nds==0)
       return NumDofPerNode(node);

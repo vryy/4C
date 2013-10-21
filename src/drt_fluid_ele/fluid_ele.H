@@ -296,7 +296,7 @@ public:
   separately.
 
   */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const;
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const;
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -618,9 +618,9 @@ public:
   separately.
 
   */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
   {
-    return parent_->NumDofPerNode(nds,node);
+    return parent_->NumDofPerNode(nds,node,disname);
   }
 
   /*!
@@ -945,9 +945,9 @@ public:
   separately.
 
   */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
   {
-    return std::max(parent_master_->NumDofPerNode(nds,node),parent_slave_->NumDofPerNode(nds,node));
+    return std::max(parent_master_->NumDofPerNode(nds,node,disname),parent_slave_->NumDofPerNode(nds,node,disname));
   }
 
   /*!

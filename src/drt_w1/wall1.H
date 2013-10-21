@@ -201,7 +201,7 @@ public:
   /// separately.
   virtual int NumDofPerNode(const DRT::Node& node) const { return Wall1::noddof_; }
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
   {
     if (nds!=0)
       return 0;
@@ -906,13 +906,13 @@ public:
   /// separately.
   virtual int NumDofPerNode(const DRT::Node& node) const { return 2; }
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
   {
     if(nds == 0)
       return NumDofPerNode(node);
     else
     //ask the parent element for the number of dofs of the other dofset
-      return parent_->NumDofPerNode(nds,node);
+      return parent_->NumDofPerNode(nds,node,disname);
   };
 
   /// Get number of degrees of freedom per element

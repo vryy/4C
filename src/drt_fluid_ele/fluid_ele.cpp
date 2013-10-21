@@ -586,9 +586,13 @@ RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateInternalFaces( DRT::Element* paren
 }
 
 
-int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
 {
-  if (nds==1)
+  if (nds==0)
+  {
+    return NumDofPerNode(node);
+  }
+  else if (nds==1)
   {
     // what's the current problem type?
     PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
@@ -599,13 +603,21 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
       case prb_fpsi:
       {
         const Teuchos::ParameterList& params= DRT::Problem::Instance()->FluidDynamicParams();
-        INPAR::FLUID::PhysicalType physicaltype =
-              DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(params,"PHYSICAL_TYPE");
+        INPAR::FLUID::PhysicalType physicaltype = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(params,"PHYSICAL_TYPE");
         switch(physicaltype)
         {
         case INPAR::FLUID::poro:
         case INPAR::FLUID::poro_p2:
-          return DRT::Problem::Instance()->NDim();
+          if (disname == "porofluid")
+          {
+            return DRT::Problem::Instance()->NDim();
+            break;
+          }
+          else if (disname == "fluid")
+          {
+        	return DRT::Problem::Instance()->NDim()+1;
+        	break;
+          }
           break;
         case INPAR::FLUID::poro_p1:
           return DRT::Problem::Instance()->NDim()+1;
@@ -624,8 +636,6 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
       }
     }
   }
-  else if(nds==0)
-    return NumDofPerNode(node);
   else if(nds==2)
   {
     // what's the current problem type?
@@ -638,33 +648,9 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
         return 1;
         break;
       }
-      case prb_fpsi:
-      {
-        return DRT::Problem::Instance()->NDim()+1;
-        break;
-      }
       default:
       {
         dserror("invalid number of dofsets (3) for this problem type");
-        return -1;
-        break;
-      }
-    }
-  }
-  else if(nds == 3)
-  {
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-    switch (probtype)
-    {
-      case prb_fpsi:
-      {
-        // return 4 for ale field. otherwise assembly for block structure_ale not correct (evaluated on FluidField() and assembled in matrix with ale map)
-        return DRT::Problem::Instance()->NDim()+1;
-        break;
-      }
-      default:
-      {
-        dserror("invalid number of dofsets (4) for this problem type");
         return -1;
         break;
       }
@@ -675,6 +661,7 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
     dserror("invalid number of dof sets");
     return -1;
   }
+  return -1;
 }
 
 

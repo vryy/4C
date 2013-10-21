@@ -1054,7 +1054,7 @@ private:
       separately.
 
       */
-      virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+      virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
       {
         // TODO: darf ich hier den Dofmanager fragen?
         //  std::cout << "NumDofPerNode()" << std::endl;

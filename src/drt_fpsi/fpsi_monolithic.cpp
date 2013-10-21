@@ -105,35 +105,15 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
   PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
 
-
-  porostructdofset = Teuchos::null;
-  porofluiddofset  = Teuchos::null;
-  fluiddofset      = Teuchos::null;
+  // build a proxy of the fluid discretization for the structure field
   aledofset        = Teuchos::null;
-
-
-  // build a proxy of the structure discretization for the fluid field
-  porostructdofset = PoroField()-> StructureField()->Discretization()->GetDofSetProxy();
-  // build a proxy of the fluid discretization for the structure field
-  porofluiddofset  = PoroField() ->FluidField()->Discretization()->GetDofSetProxy();
-  // build a proxy of the fluid discretization for the structure field
-  fluiddofset =                    FluidField()->Discretization()->GetDofSetProxy();
-  // build a proxy of the fluid discretization for the structure field
   aledofset =                      AleField()->Discretization()->GetDofSetProxy();
 
-  FluidField()->Discretization()->AddDofSet(aledofset);//(porostructdofset);
-  if (FluidField()->Discretization()->AddDofSet(fluiddofset) != 2)//(porofluiddofset) != 2 )
+  if (FluidField()->Discretization()->AddDofSet(aledofset) != 1)
   {
     dserror("Yippie-ei-yeah ... Schweinebacke ... ");
   }
-  if (FluidField()->Discretization()->AddDofSet(aledofset) != 3 )
-  {
-    dserror("Yippie-ei-yeah ... Schweinebacke ... ");
-  }
-  if (PoroField()->FluidField()->Discretization()->AddDofSet(fluiddofset) != 2 )
-  {
-    dserror("Yippie-ei-yeah ... Schweinebacke ... ");
-  }
+
 
 } // MonolithicBase
 
@@ -1020,7 +1000,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
 
         DRT::AssembleStrategy structurealestrategy(
             0,                   // fluid dofset for row
-            3,                   // ale dofset for column
+            1,                   // ale dofset for column
             a,                   // coupling matrix with fluid rowmap
             Teuchos::null,       // no other matrix or vectors
             Teuchos::null,
@@ -1198,7 +1178,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
           k_fa -> UnComplete();
           DRT::AssembleStrategy rhsfluidfluidstrategy3(
               0,                   // fluid dofset for row
-              3,                   // ale dofset for column
+              1,                   // ale dofset for column
               k_fa,                // coupling matrix with fluid rowmap
               Teuchos::null,
               Teuchos::null,

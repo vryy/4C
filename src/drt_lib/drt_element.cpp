@@ -438,7 +438,7 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
 
         const int owner = node->Owner();
         std::vector<int> dof = dis.Dof(dofset,node);
-        const int size = NumDofPerNode(dofset,*node);
+        const int size = NumDofPerNode(dofset,*node,dis.Name());
         if (size)
           lmstride.push_back(size);
         const int offset = size*nds[i];
@@ -540,7 +540,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
 
         const int owner = node->Owner();
         std::vector<int> dof = dis.Dof(dofset,node);
-        const int size = NumDofPerNode(dofset,*(node));
+        const int size = NumDofPerNode(dofset,*(node),dis.Name());
         if (size) lmstride.push_back(size);
         for (int j=0; j< size; ++j)
         {

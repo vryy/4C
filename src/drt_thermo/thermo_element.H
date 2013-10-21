@@ -235,7 +235,7 @@ namespace ELEMENTS
     //! number of degrees of freedom per node along the way for each of it's nodes
     //! separately.
     // adapt method for TSI
-    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
     {
       // in a 3D example (TSI only implemented for hex8 element)
       if (nds == 1)
@@ -563,9 +563,9 @@ namespace ELEMENTS
     //! number of degrees of freedom per node along the way for each of it's nodes
     //! separately.
     //! extendes method for volume coupling (here: TSI)
-    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
     {
-      return parent_->NumDofPerNode(nds,node);
+      return parent_->NumDofPerNode(nds,node,disname);
     }
 
     //! Return a pointer to the parent element of this boundary element

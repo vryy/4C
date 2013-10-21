@@ -167,7 +167,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
   {
     if (nds==1)
     {

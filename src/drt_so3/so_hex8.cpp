@@ -337,7 +337,7 @@ DRT::ELEMENTS::So_hex8::~So_hex8()
 /*----------------------------------------------------------------------*
  |  Get number of degrees of freedom (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex8::NumDofPerNode(const unsigned nds,const DRT::Node& node) const
+int DRT::ELEMENTS::So_hex8::NumDofPerNode(const unsigned nds,const DRT::Node& node, const std::string disname) const
 {
   if (nds==1)
   {

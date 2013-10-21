@@ -133,13 +133,13 @@ public:
   inline virtual int NumDofPerNode(const DRT::Node& node) const
   {return 3;}
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy") ) const
   {
     if(nds == 0)
       return NumDofPerNode(node);
     else
     //ask the parent element for the number of dofs of the other dofset
-      return parent_->NumDofPerNode(nds,node);
+      return parent_->NumDofPerNode(nds,node,disname);
   };
 
   /*!
