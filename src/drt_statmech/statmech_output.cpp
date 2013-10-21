@@ -861,11 +861,17 @@ void STATMECH::StatMechManager::Output(const int                            ndim
          // ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
           //DDCorrOutput(dis, ddcorrfilename, istep, dt);
         }
-      
-          std::ostringstream nodepairfilename;
-          nodepairfilename << outputrootpath_ << "/StatMechOutput/NodePairPosition_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-          OutputSlidingMotion(dis, nodepairfilename);
 
+        std::ostringstream nodepairfilename;
+        nodepairfilename << outputrootpath_ << "/StatMechOutput/NodePairPosition_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        OutputSlidingMotion(dis, nodepairfilename);
+
+        if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+        {
+          std::ostringstream matforcefilename;
+          matforcefilename << outputrootpath_ <<"/StatMechOutput/IntMatForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          OutputElementMaterialInternalForces(dis,matforcefilename);
+        }
   
         if(statmechparams_.get<double>("DELTABELLSEQ", 0.0)!=0.0)
         {
@@ -987,7 +993,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
 
         std::ostringstream filename3;
         filename3 << outputrootpath_ << "/StatMechOutput/InternalForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-        OutputElementInternalForces(filename3);
+        OutputElementSpatialInternalForces(filename3);
       }
     }
     break;
@@ -4436,7 +4442,7 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
         }
 
       // retrieve the internal force vector of the element
-      Teuchos::RCP<Epetra_SerialDenseVector> force = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->InternalForces();
+      Teuchos::RCP<Epetra_SerialDenseVector> force = dynamic_cast<DRT::ELEMENTS::Truss3*>(element)->InternalForceVector();
       LINALG::Matrix<3,1> fint;
       for(int j=0; j<(int)fint.M(); j++)
         fint(j) = (double)onoff->at(j)*(*force)[j];
@@ -4612,7 +4618,7 @@ void STATMECH::StatMechManager::OutputNodalPositions(const Epetra_Vector&      d
 /*------------------------------------------------------------------------------*
  | output element internal forces                                  mueller 5/12 |
  *------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringstream& filename)
+void STATMECH::StatMechManager::OutputElementSpatialInternalForces(const std::ostringstream& filename)
 {
   std::stringstream elementfint;
 
@@ -4637,23 +4643,22 @@ void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringst
         const DRT::ElementType &eot = element->ElementType();
         if(eot == DRT::ELEMENTS::Beam3Type::Instance())
         {
-          force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->InternalForces();
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->InternalForceVector();
           eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->EpsilonSgn();
         }
         else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
         {
-          force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->InternalForces();
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->InternalForceVector();
           eps = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->EpsilonSgn();
         }
         else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
         {
-          force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(element))->InternalForces();
+          force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(element))->InternalForceVector();
           eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(element))->EpsilonSgn();
         }
         else
           dserror("No implementation for other Beam elements yet!");
 
-        // compute element averaged force
         LINALG::Matrix<3,1> nodalforce;
         for(int j=0; j<(int)nodalforce.M(); j++)
           nodalforce(j) = force(j);
@@ -4663,6 +4668,65 @@ void STATMECH::StatMechManager::OutputElementInternalForces(const std::ostringst
         elementfint << fabsolute <<std::endl;
       }
 
+      fprintf(fp, elementfint.str().c_str());
+      fclose(fp);
+    }
+    discret_->Comm().Barrier();
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | output of internal forces in material coords   (public) mueller 10/13|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra_Vector&      disrow,
+                                                                    const std::ostringstream& filename)
+{
+  Epetra_Vector discol(*(discret_->DofColMap()),true);
+  LINALG::Export(disrow,discol);
+  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+  std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+  GetNodePositionsFromDisVec(discol,currentpositions,currentrotations,true);
+
+  std::stringstream elementfint;
+
+  //note: for now, only filament elements
+  for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
+  {
+    if(pid==discret_->Comm().MyPID())
+    {
+      FILE* fp = NULL;
+      if(pid==0)
+        fp = fopen(filename.str().c_str(), "w");
+      else
+        fp = fopen(filename.str().c_str(), "a");
+
+      for(int i=0; i<discret_->NumMyRowElements(); i++)
+      {
+        // material forces at element center
+        DRT::Element* rowele = discret_->lRowElement(i);
+        LINALG::Matrix<3,1> force;
+        const DRT::ElementType &eot = rowele->ElementType();
+        if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(rowele))->MatForceGp();
+        else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(rowele))->MatForceGp();
+        else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
+          force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(rowele))->MatForceGp();
+        else
+          dserror("No implementation for other Beam elements yet!");
+
+        elementfint <<rowele->Id()<<"\t"<<std::scientific<<std::setprecision(8)<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
+
+        // get nodal positions
+        for(int j=0; j<rowele->NumNode(); j++)
+        {
+          int nodecollid = discret_->NodeColMap()->LID(rowele->NodeIds()[j]);
+          std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
+          elementfint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
+        }
+        elementfint<<std::endl;
+      }
       fprintf(fp, elementfint.str().c_str());
       fclose(fp);
     }
@@ -5495,7 +5559,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
           if(eot == DRT::ELEMENTS::Beam3Type::Instance())
           {
             force.Resize(crosslinker->NumNode()*6);
-            force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForces();
+            force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForceVector();
             eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
           }
           else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
@@ -5503,7 +5567,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
             if(crosslinker->NumNode()!=4)
               dserror("Currently only implemented for BEAM3CL with four nodes.");
             force.Resize(crosslinker->NumNode()/2*6);
-            force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForces();
+            force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForceVector();
             eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->EpsilonSgn();
           }
           else

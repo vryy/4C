@@ -914,9 +914,6 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
     pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);    
 
-    if((params.get<std::string>("internalforces","no")=="yes") && (force != NULL))
-      eps_ = gamma(0);
-
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
     *to single blocks of matrix in eq. (4.3); note that Jacobi determinantn in diagonal blocks cancels out
     *determinant*/
@@ -1021,6 +1018,14 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
 
   }
 
+  // Note that we return the internal force vector of the interpolated/fictitious nodes!
+  if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
+  {
+    f_ = fforce;
+    eps_ = gamma(0);
+    Ngp_ = stressN;
+  }
+
 
     /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a:                 std::ostream& DRT::ELEMENTS::operator<<(std::ostream&, const DRT::Element&)
@@ -1076,10 +1081,6 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
        for(int i=0;i<6;i++)
          (*force)(12*node+6*Ri+i)+=Ibp[node](Ri)*fforce(6*node+i);
    }
-
-   // Note that we return the internal force vector of the interpolated/fictitious nodes!
-   if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-     internalforces_ = fforce;
 
    return;
 

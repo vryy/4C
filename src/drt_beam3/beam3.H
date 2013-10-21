@@ -248,7 +248,9 @@ public:
   int HowManyRandomNumbersINeed();
 
   //! \brief internal force vector
-  const Epetra_SerialDenseVector& InternalForces() const {return internalforces_;}
+  const Epetra_SerialDenseVector& InternalForceVector() const {return f_;}
+  //! \brief return material forces at Gauss point
+  const LINALG::Matrix<3,1>& MatForceGp() const {return Ngp_;}
 
   //! brief epsilonnormal
   const double& EpsilonSgn() const { return eps_;}
@@ -395,8 +397,8 @@ public:
       thetaprimeconv_.resize((nnode-1));
       thetaprimeold_.resize((nnode-1));
       thetaprimenew_.resize((nnode-1));
-      internalforces_.Resize(6*this->NumNode());
-      internalforces_.Scale(0.0);
+      f_.Resize(6*this->NumNode());
+      f_.Scale(0.0);
 
       //create Matrix for the derivates of the shapefunctions at the GP
       LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -599,9 +601,10 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //! vector storing the internal force vector
-  Epetra_SerialDenseVector internalforces_;
-
+  //! \brief vector storing the internal force vector
+  Epetra_SerialDenseVector f_;
+  //! \brief material forces at Gauss point
+  LINALG::Matrix<3,1> Ngp_;
   //! storing epsilonn(0)
   double eps_;
 

@@ -323,7 +323,7 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,eps_);
   AddtoPack<6,1>(data,xactrefe_);
   AddtoPack<6,1>(data,rotinitrefe_);
-  AddtoPack(data,internalforces_);
+  AddtoPack(data,f_);
 
 
   return;
@@ -372,7 +372,7 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,eps_);
   ExtractfromPack<6,1>(position,data,xactrefe_);
   ExtractfromPack<6,1>(position,data,rotinitrefe_);
-  ExtractfromPack(position,data,internalforces_);
+  ExtractfromPack(position,data,f_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

@@ -3191,7 +3191,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
       if(eot == DRT::ELEMENTS::Beam3Type::Instance())
       {
         force.Resize(crosslinker->NumNode()*6);
-        force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForces();
+        force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForceVector();
         eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
         checkgid = crosslinker->Nodes()[0]->Id();
       }
@@ -3200,7 +3200,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
         if(crosslinker->NumNode()!=4)
           dserror("Currently only implemented for BEAM3CL with four nodes.");
         force.Resize(crosslinker->NumNode()/2*6);
-        force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForces();
+        force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForceVector();
         eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->EpsilonSgn();
 
         // mapping from binding spot to internal forces
@@ -3402,7 +3402,11 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
             switch(linkermodel_)
             {
               case statmech_linker_active:
+              {
                 (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->SetReferenceLength(sca);
+                Epetra_SerialDenseVector force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->InternalForceVector();
+                std::cout<<"force = \n"<<force<<std::endl;
+              }
               break;
               case statmech_linker_activeintpol:
                 (dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lColElement(collid)))->SetReferenceLength(sca);
@@ -5659,6 +5663,7 @@ void STATMECH::StatMechManager::CrosslinkerPeriodicBoundaryShift(Teuchos::RCP<Ep
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::EvaluateDirichletStatMech(Teuchos::ParameterList&            params,
                                                           Teuchos::RCP<Epetra_Vector>        dis,
+                                                          Teuchos::RCP<Epetra_Vector>        vel,
                                                           Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 {
   if(dbcmapextractor!=Teuchos::null)
@@ -5669,11 +5674,11 @@ void STATMECH::StatMechManager::EvaluateDirichletStatMech(Teuchos::ParameterList
     {
       // standard DBC application
       case INPAR::STATMECH::dbctype_std:
-        discret_->EvaluateDirichlet(params, dis, Teuchos::null, Teuchos::null, Teuchos::null, dbcmapextractor);
+        discret_->EvaluateDirichlet(params, dis, vel, Teuchos::null, Teuchos::null, dbcmapextractor);
       break;
       // default: everything involving periodic boundary conditions
       default:
-        EvaluateDirichletPeriodic(params, dis, dbcmapextractor);
+        EvaluateDirichletPeriodic(params, dis, vel, dbcmapextractor);
       break;
     }
   }
@@ -5687,6 +5692,7 @@ void STATMECH::StatMechManager::EvaluateDirichletStatMech(Teuchos::ParameterList
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::EvaluateDirichletPeriodic(Teuchos::ParameterList& params,
                                                           Teuchos::RCP<Epetra_Vector> dis,
+                                                          Teuchos::RCP<Epetra_Vector> vel,
                                                           Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 {
 #ifdef MEASURETIME

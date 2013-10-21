@@ -307,7 +307,7 @@ public:
   const double& L0() const { return lrefe_;}
 
   //! \brief internal force vector
-  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForceVector() const {return f_;}
 
   //@}
 
@@ -375,7 +375,7 @@ private:
   double crosssec_;
 
   //! internal force vector
-  Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
+  Teuchos::RCP<Epetra_SerialDenseVector> f_;
 
   //! Kinematic type
   KinematicType kintype_;

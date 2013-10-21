@@ -1126,9 +1126,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 		epsilonn.Scale(1/jacobi_[numgp]);
 		epsilonn(0) -=  1.0;
 
-		if((params.get<std::string>("internalforces","no")=="yes") && (force != NULL))
-			eps_ = epsilonn(0);
-
 		epsilonm.Clear();
 
 		//computing spin matrix S(dxdxi_gp) according to Crisfield, Vol. 2, equation (17.100)
@@ -1286,7 +1283,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
   if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-  	internalforces_ = *force;
+  {
+    eps_ = epsilonn(0);
+  	f_ = *force;
+  	Ngp_ = stressn; //correct?
+  }
 
   return;
 

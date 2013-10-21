@@ -240,7 +240,9 @@ public:
   int HowManyRandomNumbersINeed();
 
   //! \brief internal force vector
-  const Epetra_SerialDenseVector& InternalForces() const {return internalforces_;}
+  const Epetra_SerialDenseVector& InternalForceVector() const {return f_;}
+  //! \brief return material forces at Gauss point
+  const LINALG::Matrix<3,1>& MatForceGp() const {return Ngp_;}
   
   //! brief epsilonnormal
   const double& EpsilonSgn() const { return eps_;}
@@ -288,8 +290,8 @@ public:
       jacobimass_.resize(nnode);
       jacobinode_.resize(nnode);
 
-      internalforces_.Resize(6*nnode);
-      internalforces_.Scale(0.0);
+      f_.Resize(6*nnode);
+      f_.Scale(0.0);
 
       //create Matrix for the derivates of the shapefunctions at the GP
       LINALG::Matrix<1,nnode> shapefuncderiv;
@@ -565,7 +567,9 @@ private:
   //! storing epsilonn(0)
   double eps_;
   //! vector storing the internal force vector
-  Epetra_SerialDenseVector internalforces_;
+  Epetra_SerialDenseVector f_;
+  //! vector storing internal forces at gauss point in material configuration
+  LINALG::Matrix<3,1> Ngp_;
 
   //! nodal triads in quaternion form at the end of the preceeding time step
   std::vector<LINALG::Matrix<4,1> > Qconv_;

@@ -490,13 +490,13 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
   // set vector values needed by elements
   discret_->ClearState();
 
-  discret_->SetState("displacement",disn_);
-  discret_->SetState("velocity",veln_);
+  //discret_->SetState("displacement",disn_);
+  //discret_->SetState("velocity",veln_);
   // predicted dirichlet values
   // disn then also holds prescribed new dirichlet displacements
 
   // determine DBC evaluation mode (new vs. old)
-  statmechman_->EvaluateDirichletStatMech(p, disn_, dbcmaps_);
+  statmechman_->EvaluateDirichletStatMech(p, dis, vel, dbcmaps_);
 
   discret_->ClearState();
 

@@ -371,10 +371,9 @@ namespace DRT
         int HowManyRandomNumbersINeed();
 
         //! \brief internal force vector
-        const Epetra_SerialDenseVector& InternalForces() const
-        {
-          return internalforces_;
-        }
+        const Epetra_SerialDenseVector& InternalForceVector() const{return f_;}
+        //! \brief return material forces at Gauss point
+        const LINALG::Matrix<3,1>& MatForceGp() const {return Ngp_;}
 
         //! brief epsilonnormal
         const double& EpsilonSgn() const
@@ -446,8 +445,8 @@ namespace DRT
             isinit_ = true;
             int nnode = 2 * fnnode;
 
-            internalforces_.Resize(6 * fnnode);
-            internalforces_.Scale(0.0);
+            f_.Resize(6 * fnnode);
+            f_.Scale(0.0);
 
             /*first the nodes for the reference triad \Lambda_r of the element are chosen according to eq. (6.2), Crisfield 1999;
              *note that the first node of the element in BACI is node 0 so that we need -1 in the end to convert from the notation
@@ -759,7 +758,9 @@ namespace DRT
         std::vector<double> rotrefe_;
 
         //! vector storing the internal force vector
-        Epetra_SerialDenseVector internalforces_;
+        Epetra_SerialDenseVector f_;
+        //! \brief material forces at Gauss point
+        LINALG::Matrix<3,1> Ngp_;
         //! storing epsilonn(0)
         double eps_;
 

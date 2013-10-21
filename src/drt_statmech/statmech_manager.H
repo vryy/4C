@@ -290,10 +290,12 @@ public:
 
   /*! \brief adjusted DBC evaluation for StatMech
    *  \param params          (in)     a parameter list
-   *  \param disn            (in)     displacement vector
+   *  \param dis             (in)     displacement vector
+   *  \param vel             (in)     velocity vector
    *  \param dbcmapextractor (in/out) map extractor for Dirichlet DOFs (new method)*/
   void EvaluateDirichletStatMech(Teuchos::ParameterList&            params,
                                  Teuchos::RCP<Epetra_Vector>        dis,
+                                 Teuchos::RCP<Epetra_Vector>        vel,
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /*! \brief adjusted NBC evaluation for StatMech
@@ -597,8 +599,12 @@ protected:
   void OutputNodalPositions(const Epetra_Vector&      disrow,
                             const std::ostringstream& filename);
 
-  //! \brief output of element internal forces
-  void OutputElementInternalForces(const std::ostringstream& filename);
+  //! \brief output of spatial element internal forces
+  void OutputElementSpatialInternalForces(const std::ostringstream& filename);
+
+  //! \brief output of material element internal forces
+  void OutputElementMaterialInternalForces(const Epetra_Vector&      disrow,
+                                           const std::ostringstream& filename);
 
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);
@@ -693,6 +699,8 @@ protected:
                                        const int                       numsections,
                                        std::stringstream&              gmshfilecontent,
                                        const double                    color);
+  //! \brief colored output to Gmsh
+  void GmshOutputForces();
 
 
   /*! \brief Handles Crosslinker diffusion
@@ -755,10 +763,12 @@ protected:
 
   /*! \brief adjusted DBC evaluation for periodic case
    *  \param params          (in)     a parameter list
-   *  \param disn            (in)     displacement vector
+   *  \param dis             (in)     displacement vector
+   *  \param vel             (in)     velocity vector
    *  \param dbcmapextractor (in/out) map extractor for Dirichlet DOFs (new method)*/
   void EvaluateDirichletPeriodic(Teuchos::ParameterList&            params,
                                  Teuchos::RCP<Epetra_Vector>        dis,
+                                 Teuchos::RCP<Epetra_Vector>        vel,
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /*! \brief signals whether or not to start DBC application according to given time

@@ -304,7 +304,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,kapparef_);
 
   AddtoPack(data,eps_);
-  AddtoPack(data,internalforces_);
+  AddtoPack(data,f_);
 
 
   return;
@@ -350,7 +350,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,kapparef_);
 
   ExtractfromPack(position,data,eps_);
-  ExtractfromPack(position,data,internalforces_);
+  ExtractfromPack(position,data,f_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

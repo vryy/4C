@@ -811,9 +811,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
     computestrain(rprime,Lambda[numgp],gamma,kappa);
 
-    if((params.get<std::string>("internalforces","no")=="yes") && (force != NULL))
-      eps_ = gamma(0);
-
     //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
     strainstress(gamma,kappa,stressN,CN,stressM,CM);
 
@@ -942,8 +939,12 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   }
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
-  if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-    internalforces_ = *force;
+  if(gausspoints.nquad==1 && params.get<std::string>("internalforces","no")=="yes" && force != NULL)
+  {
+    eps_ = gamma(0);
+    f_ = *force;
+    Ngp_ = stressN;
+  }
 
   	/*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
