@@ -583,7 +583,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // evaluate shape functions and derivatives at element center
-  //my::EvalShapeFuncAndDerivsAtEleCenter();
+  my::EvalShapeFuncAndDerivsAtEleCenter();
 
   //------------------------------------------------------------------------
   //  start loop over integration points

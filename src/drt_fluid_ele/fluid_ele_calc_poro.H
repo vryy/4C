@@ -854,7 +854,7 @@ protected:
   void ComputeOldRHSAndSubgridScaleVelocity();
 
   /// get stabilization paramters
-  void ComputeStabilizationParameters();
+  void ComputeStabilizationParameters(const double& vol);
 
   /// get compute RHS of contiuity equation of time step n
   void ComputeOldRHSConti();

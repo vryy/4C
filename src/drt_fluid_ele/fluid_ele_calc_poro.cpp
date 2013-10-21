@@ -792,7 +792,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // evaluate shape functions and derivatives at element center
-  //my::EvalShapeFuncAndDerivsAtEleCenter();
+  my::EvalShapeFuncAndDerivsAtEleCenter();
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -1222,6 +1222,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
   LINALG::Matrix<my::nsd_,1>                  resM_Du(true);
   LINALG::Matrix<my::nen_*my::nsd_,my::nen_>  lin_resM_Dp(true);
 
+  // set element area or volume
+  const double vol = my::fac_;
+
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
    {
      // evaluate shape functions and derivatives at integration point
@@ -1342,7 +1345,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      GetMaterialParamters(material);
 
      // get stabilization parameters at integration point
-     ComputeStabilizationParameters();
+     ComputeStabilizationParameters(vol);
 
      // compute old RHS of momentum equation and subgrid scale velocity
      ComputeOldRHSAndSubgridScaleVelocity();
@@ -1450,7 +1453,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      }
 
 
- /************************************************************************/
+     /************************************************************************/
      /* Brinkman term: viscosity term */
      /*
                       /                        \
@@ -1750,6 +1753,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
   // definition of velocity-based momentum residual vectors
   LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
 
+  // set element area or volume
+  const double vol = my::fac_;
+
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     //reset matrix
@@ -1875,7 +1881,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     GetMaterialParamters(material);
 
     // get stabilization parameters at integration point
-    ComputeStabilizationParameters();
+    ComputeStabilizationParameters(vol);
 
     // compute old RHS of momentum equation and subgrid scale velocity
     ComputeOldRHSAndSubgridScaleVelocity();
@@ -4567,10 +4573,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters()
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(const double& vol)
 {
-  // set element area or volume
-  const double vol = my::fac_;
 
   // calculate stabilization parameters at integration point
   if (my::fldpara_->TauGp())
