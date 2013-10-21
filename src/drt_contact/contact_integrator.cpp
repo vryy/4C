@@ -7337,6 +7337,10 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   for (int i=0;i<3;++i)
     jumpval[0]+=gpt[i]*jump[i];
 
+  // no jump --> no wear
+  if (abs(jumpval[0])<1e-12)
+    return;
+
   // product
   // use non-abs value for implicit-wear algorithm
   // just for simple linear. maybe we change this in future
@@ -7681,6 +7685,10 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
 
   // absolute value of relative tangential jump
   jumpval[0] = sqrt(jumptan(0,0)*jumptan(0,0)+jumptan(1,0)*jumptan(1,0)+jumptan(2,0)*jumptan(2,0));
+
+  // no jump --> no wear
+  if (abs(jumpval[0])<1e-12)
+    return;
 
   // product
   if(wearimpl_)
