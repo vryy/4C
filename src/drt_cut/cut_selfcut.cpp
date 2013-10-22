@@ -206,7 +206,7 @@ void GEO::CUT::SelfCut::MergeCoincidingNodes()
       Side * scside = *j;
       const std::vector<Node*> scnodes = scside->Nodes();
 
-      // store the nodeids that should be replaced with other ids
+      // store the nodes that should be replaced with other ids
       std::vector<std::pair<const Node*,const Node*> > ids_replace;
 
       for( std::vector<Node*>::const_iterator noit = scnodes.begin(); noit != scnodes.end(); noit++ )
@@ -247,7 +247,8 @@ void GEO::CUT::SelfCut::MergeCoincidingNodes()
 
       // now that we have all the informations about coinciding nodes
       // Do the necessary operations in the mesh to consider only one node
-      operationsForNodeMerging( ids_replace, scside, true );
+      if( ids_replace.size() > 0 )
+        operationsForNodeMerging( ids_replace, scside, true );
 
     }
   }
@@ -261,7 +262,6 @@ void GEO::CUT::SelfCut::MergeCoincidingNodes()
 void GEO::CUT::SelfCut::operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl,
                                                   Side* side, bool initial )
 {
-
   // this is an important "edge" data structure we use to to connect nodenumbers-edge information
   // the node numbers has to be set accordingly
   std::map<plain_int_set, Teuchos::RCP<Edge> > & edges = const_cast<std::map<plain_int_set, Teuchos::RCP<Edge> > &>(mesh_.Edges());
@@ -346,6 +346,7 @@ void GEO::CUT::SelfCut::FindSelfCutPoints()
         i != possiblecuttingsides.end(); ++i)
     {
       Side * possiblecuttingside = *i;
+
       PointSet selfcutpoints;
       PerformSelfCut(*cutside, *possiblecuttingside, selfcutpoints);
       PerformSelfCut(*possiblecuttingside, *cutside, selfcutpoints);
@@ -404,15 +405,13 @@ void GEO::CUT::SelfCut::GetSelfCutObjects()
     for (std::vector<Node*>::iterator i = cutsidenodes.begin();
         i != cutsidenodes.end(); ++i)
     {
-      Node * cutsidenode = *i;
-      int cutsidenodeid = cutsidenode->Id();
+      int cutsidenodeid = (*i)->Id();
       std::map<int, Teuchos::RCP<Node> > cutsidenodercp = mesh_.Nodes();
       std::map<int, Teuchos::RCP<Node> >::iterator nodeiterator =
           cutsidenodercp.find(cutsidenodeid);
       selfcut_nodes_[cutsidenodeid] = nodeiterator->second;
     }
   }
-
 }
 
 /*-------------------------------------------------------------------------------------*
@@ -430,6 +429,11 @@ void GEO::CUT::SelfCut::CreateSelfCutNodes()
     cuttedsidesnodes.push_back(cuttedsidesnode);
   }
 
+  // we take all selfcut points of each side
+  // 1.if these points are at any of the nodes of cut side, then no need to create a new node
+  //   just set their position as "oncutsurface"
+  // 2.If not we create a new node at this location and add it to the mesh, and corresponding cut side
+  //   set their position as "oncutsurface"
   for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
       selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
@@ -481,27 +485,27 @@ void GEO::CUT::SelfCut::CreateSelfCutNodes()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::CreateSelfCutEdges()
 {
-
+  // Find common nodes between a cut side and its self-cutting sides
+  // create edges between these common nodes
   for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
       selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
     Side * cutside = &*i->second;
     plain_side_set cuttingsides = cutside->CuttingSides();
-    plain_node_set cutsideselfcutnodes = cutside->SelfCutNodes();
+    plain_node_set cutside_nodes = cutside->SelfCutNodes();
     for (plain_side_set::iterator i = cuttingsides.begin();
         i != cuttingsides.end(); ++i)
     {
       Side * cuttingside = *i;
-      plain_node_set cuttingsideselfcutnodes = cuttingside->SelfCutNodes();
+      plain_node_set cuttingside_nodes = cuttingside->SelfCutNodes();
       std::vector<Node*> commonselfcutnodes;
       plain_int_set commonselfcutnodeids;
-      for (plain_node_set::iterator i = cutsideselfcutnodes.begin();
-          i != cutsideselfcutnodes.end(); ++i)
+      for (plain_node_set::iterator i = cutside_nodes.begin();
+          i != cutside_nodes.end(); ++i)
       {
         Node * cutsideselfcutnode = *i;
-        plain_node_set::iterator nodeiterator = cuttingsideselfcutnodes.find(
-            cutsideselfcutnode);
-        if (nodeiterator != cuttingsideselfcutnodes.end())
+        plain_node_set::iterator nodeiterator = cuttingside_nodes.find(cutsideselfcutnode);
+        if (nodeiterator != cuttingside_nodes.end())
         {
           Node * commonselfcutnode = *nodeiterator;
           commonselfcutnodes.push_back(commonselfcutnode);
@@ -512,7 +516,7 @@ void GEO::CUT::SelfCut::CreateSelfCutEdges()
       {
         std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator edgeiterator =
             selfcut_edges_.find(commonselfcutnodeids);
-        if (edgeiterator != selfcut_edges_.end())
+        if (edgeiterator != selfcut_edges_.end())             // this edge is already formed when processing other side
         {
           Edge * commonedge = &*edgeiterator->second;
           commonedge->SelfCutPosition(Point::oncutsurface);
@@ -562,7 +566,9 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
     std::vector<double> cutsideplane = KERNEL::EqnPlane(cutsidepoints[0],
         cutsidepoints[1], cutsidepoints[2]);
 
-    // create facets on cut side by taking into account the self-cut points
+    // -----
+    // STEP 1 : Create facets on cut side by taking into account the self-cut points
+    // -----
     IMPL::PointGraph pointgraph(cutside);
     Cycle * maincycle = &*(pointgraph.fbegin());
     bool IsCorrectNormal = CheckNormal(cutsideplane, *maincycle);
@@ -622,6 +628,10 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
       std::vector<Point*> holecyclepoints = (*holecycle)();
       mainholecyclepoints.push_back(holecyclepoints);
     }
+
+    // -----
+    // STEP 2 : Triangulate each facet using Earclipping algorithm
+    // -----
     std::vector<std::vector<Point*> > allmaincycletriangles;
     for (std::vector<Cycle*>::iterator i = maincycles.begin();
         i != maincycles.end(); ++i)
@@ -694,6 +704,7 @@ void GEO::CUT::SelfCut::CreateSelfCutSides()
 
     std::vector<std::vector<Point*> > selfcuttriangles =
         cutside->SelfCutTriangles();
+
     for (std::vector<std::vector<Point*> >::iterator i =
         selfcuttriangles.begin(); i != selfcuttriangles.end(); ++i)
     {
@@ -823,7 +834,6 @@ void GEO::CUT::SelfCut::DetermineSelfCutPosition()
     if (cutsideedge->SelfCutPosition() == Point::oncutsurface)
     {
       cutsides = cutsideedge->Sides();
-      std::vector<Node*> cutsideedgenodes = cutsideedge->Nodes();
       for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end();
           ++i)
       {
@@ -841,6 +851,7 @@ void GEO::CUT::SelfCut::DetermineSelfCutPosition()
         }
       }
     }
+
     for (std::vector<Side*>::iterator i = selfcutsides.begin();
         i != selfcutsides.end(); ++i)
     {
@@ -877,28 +888,24 @@ void GEO::CUT::SelfCut::DetermineSelfCutPosition()
       {
         continue;
       }
-      LINALG::Matrix<3, 1> onselfcutedgepointcoordinates;
-      LINALG::Matrix<3, 1> onselfcutedgepointlocalcoordinates;
-      LINALG::Matrix<2, 1> onselfcutedgepointlocalcoordinates2;
-      LINALG::Matrix<3, 1> otherselfcutsidenormal;
-      onselfcutedgenode->point()->Coordinates(
-          onselfcutedgepointcoordinates.A());
-      otherselfcutside->LocalCoordinates(onselfcutedgepointcoordinates,
-          onselfcutedgepointlocalcoordinates, false);
-      onselfcutedgepointlocalcoordinates2(0) =
-          onselfcutedgepointlocalcoordinates(0);
-      onselfcutedgepointlocalcoordinates2(1) =
-          onselfcutedgepointlocalcoordinates(1);
-      otherselfcutside->Normal(onselfcutedgepointlocalcoordinates2,
-          otherselfcutsidenormal);
+      LINALG::Matrix<3, 1> oncut_cord;
+      LINALG::Matrix<3, 1> oncut_cord_loc;
+      LINALG::Matrix<2, 1> oncut_cord_loc2;
+      LINALG::Matrix<3, 1> otherSideNormal;
+      onselfcutedgenode->point()->Coordinates(oncut_cord.A());
+      otherselfcutside->LocalCoordinates(oncut_cord,oncut_cord_loc, false);
+      oncut_cord_loc2(0) = oncut_cord_loc(0);
+      oncut_cord_loc2(1) = oncut_cord_loc(1);
+      otherselfcutside->Normal(oncut_cord_loc2,otherSideNormal);
       LINALG::Matrix<3, 1> undecidedpointcoordinates;
       LINALG::Matrix<3, 1> differencebetweenpoints;
       undecidednode->point()->Coordinates(undecidedpointcoordinates.A());
-      differencebetweenpoints.Update(1.0, onselfcutedgepointcoordinates, -1.0,
+      differencebetweenpoints.Update(1.0, oncut_cord, -1.0,
           undecidedpointcoordinates);
       LINALG::Matrix<1, 1> innerproduct;
-      innerproduct.MultiplyTN(differencebetweenpoints, otherselfcutsidenormal);
-      if (innerproduct(0) > 0)
+      innerproduct.MultiplyTN(differencebetweenpoints, otherSideNormal);
+
+      if (innerproduct(0) > 0 and fabs(innerproduct(0)) > SELF_CUT_POS_TOL )
       {
         undecidednode->SelfCutPosition(Point::inside);
       }

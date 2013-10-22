@@ -53,4 +53,6 @@
 // if volume of cell is less than this, we do not generate gauss rules
 #define REF_VOL_DIRDIV 1e-6
 
+#define SELF_CUT_POS_TOL 1e-10
+
 #endif
