@@ -873,7 +873,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           OutputElementMaterialInternalForces(dis,matforcefilename);
         }
   
-        if(statmechparams_.get<double>("DELTABELLSEQ", 0.0)!=0.0)
+        if(statmechparams_.get<double>("DELTABELLSEQ", 0.0)!=0.0 && (linkermodel_==statmech_linker_bellseq || linkermodel_==statmech_linker_bellseqintpol))
         {
           std::ostringstream forcedepfilename;
           forcedepfilename << outputrootpath_ << "/StatMechOutput/UnbindingProbability_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
