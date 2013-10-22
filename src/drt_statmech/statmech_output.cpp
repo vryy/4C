@@ -4716,7 +4716,7 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
         else
           dserror("No implementation for other Beam elements yet!");
 
-        elementfint <<rowele->Id()<<"\t"<<std::scientific<<std::setprecision(8)<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
+        elementfint <<rowele->Id()<<"\t"<<(*filamentnumber_)[discret_->NodeColMap()->LID(rowele->NodeIds()[0])]<<"\t"<<std::scientific<<std::setprecision(8)<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
 
         // get nodal positions
         for(int j=0; j<rowele->NumNode(); j++)
