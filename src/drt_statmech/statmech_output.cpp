@@ -4688,16 +4688,19 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
   std::map<int, LINALG::Matrix<3, 1> > currentrotations;
   GetNodePositionsFromDisVec(discol,currentpositions,currentrotations,true);
 
-  std::stringstream elementfint;
+  std::stringstream filelefint;
+  std::stringstream crosselefint;
 
-  //note: for now, only filament elements
   for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
   {
     if(pid==discret_->Comm().MyPID())
     {
       FILE* fp = NULL;
       if(pid==0)
+      {
         fp = fopen(filename.str().c_str(), "w");
+        filelefint <<std::scientific<<std::setprecision(8)<<basiselements_<<"\t"<<basisnodes_<<std::endl;
+      }
       else
         fp = fopen(filename.str().c_str(), "a");
 
@@ -4716,22 +4719,53 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
         else
           dserror("No implementation for other Beam elements yet!");
 
-        elementfint <<rowele->Id()<<"\t"<<(*filamentnumber_)[discret_->NodeColMap()->LID(rowele->NodeIds()[0])]<<"\t"<<std::scientific<<std::setprecision(8)<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
-
-        // get nodal positions
-        for(int j=0; j<rowele->NumNode(); j++)
+        if(rowele->Id()<basisnodes_) // filament element
         {
-          int nodecollid = discret_->NodeColMap()->LID(rowele->NodeIds()[j]);
-          std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
-          elementfint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
+          filelefint <<std::scientific<<std::setprecision(8)<<rowele->Id()<<"\t"<<(*filamentnumber_)[discret_->NodeColMap()->LID(rowele->NodeIds()[0])]
+                                                                          <<"\t"<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
+          // get nodal positions
+          for(int j=0; j<rowele->NumNode(); j++)
+          {
+            int nodecollid = discret_->NodeColMap()->LID(rowele->NodeIds()[j]);
+            std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
+            filelefint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
+          }
+          filelefint<<std::endl;
         }
-        elementfint<<std::endl;
+        else
+        {
+          crosselefint <<std::scientific<<std::setprecision(8)<<rowele->Id()<<"\t"<<(*filamentnumber_)[discret_->NodeColMap()->LID(rowele->NodeIds()[0])]
+                                                                            <<"\t"<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
+          // get nodal positions
+          for(int j=0; j<rowele->NumNode(); j++) // crosslinker element
+          {
+            int nodecollid = discret_->NodeColMap()->LID(rowele->NodeIds()[j]);
+            std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
+            crosselefint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
+          }
+          crosselefint<<std::endl;
+        }
       }
-      fprintf(fp, elementfint.str().c_str());
+      // write filament information
+      fprintf(fp, filelefint.str().c_str());
       fclose(fp);
     }
     discret_->Comm().Barrier();
   }
+
+  // write crosslinker information at the end
+  for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
+  {
+    if(pid==discret_->Comm().MyPID())
+    {
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "a");
+      fprintf(fp, crosselefint.str().c_str());
+      fclose(fp);
+    }
+    discret_->Comm().Barrier();
+  }
+
   return;
 }
 
