@@ -1320,7 +1320,8 @@ baci_test(art_aorta_3D_lognorm_field_FFT 1 "")
 baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic "")
 baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
 baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")
-baci_test(fpsi_bending_struct 2 "")
+baci_test(fpsi_bending_struct 2 3)
+
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
 baci_framework_test(tutorial_fluid 2)

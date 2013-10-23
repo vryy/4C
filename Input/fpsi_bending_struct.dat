@@ -48,7 +48,7 @@ NUMSTASTEPS                     0
 NUMSTEP                         1
 PHYSICAL_TYPE                   Poro
 PREDICTOR                       steady_state //explicit_second_order_midpoint
-RESTARTEVRY                     20
+RESTARTEVRY                     3
 SIMPLER                         no
 SIMPLER_SOLVER                  -1
 STARTFUNCNO                     -1
@@ -93,7 +93,7 @@ COUPALGO                        fpsi_monolithic_plain
 PARTITIONED                     monolithic // monolithic  RobinNeumann nocoupling
 ITEMAX                          100
 NUMSTEP                         10000000
-RESTARTEVRY                     1
+RESTARTEVRY                     3
 SHAPEDERIVATIVES                Yes // linearization with respect to ale mesh motion (obligatory for fpsi-problems)
 USESHAPEDERIVATIVES		Yes
 TIMESTEP                        0.01
@@ -139,7 +139,7 @@ ITEMAX                          100
 ITEMIN                          1
 MAXTIME                         2.0
 NUMSTEP                         1000000
-RESTARTEVRY                     100
+RESTARTEVRY                     3
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
@@ -312,7 +312,7 @@ NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis //VelAcc
 RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESTARTEVRY                     3
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no

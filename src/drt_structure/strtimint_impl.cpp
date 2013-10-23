@@ -221,6 +221,8 @@ int STR::TimIntImpl::IntegrateStep()
 /* predict solution */
 void STR::TimIntImpl::Predict()
 {
+  // fix pointer to dofrowmap_ for fpsi problems (because of ExtendedGhosting)
+  dofrowmap_=discret_->DofRowMap();
 
   // set iteration step to 0 (predictor)
   iter_ = 0;

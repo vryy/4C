@@ -197,7 +197,7 @@ them.
 
   SetupLocalInterfaceFacingElementMap(*fluiddis,*porofluiddis,"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
   SetupLocalInterfaceFacingElementMap(*porofluiddis,*fluiddis,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
-  if(comm.NumProc() > 1)
+  if(comm.NumProc() > 1 and problem->Restart() == 0)
   {
     RedistributeInterface(fluiddis,*porofluiddis,"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
     RedistributeInterface(aledis,*porofluiddis,"FSICoupling",*PoroFluid_Fluid_InterfaceMap);

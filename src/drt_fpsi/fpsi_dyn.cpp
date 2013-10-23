@@ -93,9 +93,20 @@ void fpsi_drt()
   //3.1- Read restart if needed.
   const int restartstep = problem->Restart();
   if (restartstep)
+  {
+    fpsi_->ReadRestart(restartstep);
+
+    Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
+    Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
+
+    if(comm.NumProc() > 1)
     {
-      fpsi_->ReadRestart(restartstep);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid")    ,*problem->GetDis("porofluid"),"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("ale")      ,*problem->GetDis("porofluid"),"FSICoupling",*PoroFluid_Fluid_InterfaceMap);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"),*problem->GetDis("fluid")    ,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
+      FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"),*problem->GetDis("fluid")    ,"FSICoupling",*Fluid_PoroFluid_InterfaceMap);
     }
+  }
 
   //////////////////////////////////
  //4.- Run of the actual problem.//
