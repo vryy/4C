@@ -285,10 +285,10 @@ void MAT::Damage::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 
     strainbarpllast_->at(i) = 0.0;
     strainbarplcurr_->at(i) = 0.0;
-    
+
     isohardvarlast_->at(i) = 0.0;
     isohardvarcurr_->at(i) = 0.0;
-    
+
     damagelast_->at(i) = 0.0;
     damagecurr_->at(i) = 0.0;
   }
@@ -306,7 +306,7 @@ void MAT::Damage::Update()
 {
   // make current values at time step tlast+1 to values of last step tlast
   strainpllast_ = strainplcurr_;
-  
+
   strainbarpllast_ = strainbarplcurr_;
   isohardvarlast_ = isohardvarcurr_;
   damagelast_ = damagecurr_;
@@ -394,6 +394,7 @@ void MAT::Damage::Evaluate(
   //---------------------------------------------------------------------------
 
   // -------------------------------- old damage internal state variables
+
   // to consider damage in the present material model we introduce the
   // '~'-operator to indicate UNDAMAGED values (e.g. s^{~,trial}_{n+1}) in
   // contrast to DAMAGED values (e.g. s^{trial}_{n+1})
@@ -409,7 +410,10 @@ void MAT::Damage::Evaluate(
   // R^{trial}_{n+1} = R_n
   Rplast = isohardvarlast_->at(gp);
   if (isohardvarlast_->at(gp) < 0.0)
+  {
+    std::cout << "Rplast am ele = " << eleID << ": " << Rplast << std::endl;
     dserror("damaged isotropic hardening variable has to be equal to or greater than zero!");
+  }
 
   // get old integrity: omega_n = 1 - D_n
   double omegaold = 0.0;
@@ -496,15 +500,39 @@ void MAT::Damage::Evaluate(
   // check plastic admissibility, Phi<=0 is admissble
   //---------------------------------------------------------------------------
 
-  // ------------------------------------------------ trial yield function
+  // ----------------------------------------------- trial yield function
+  
+  // initialise yield stress and its derivative
+  double Hiso = 0.0;
+  double sigma_y = 0.0;
 
-  //calculate the current isotropic hardening modulus
-  // siehe de Souza Neto: S. 492, (12.53)
-  // Hiso = dsigma_y / d Rplast_{n+1}
-  double Hiso = GetIsoHardAtStrainbarnp(strainbar_p);
+  // --------------------------------------------------- damage threshold
 
-  // calculate the uniaxial yield stress out of samples
-  double sigma_y = GetSigmaYAtStrainbarnp(strainbar_p);
+  // calculate damage threshold (according to de Souza Neto, p.483ff)
+
+  // bool which decide if threshold is passed or not
+  // current strainbar_p < strainbar_p_D
+  if (strainbar_p < strainbar_p_D)
+  {
+    // --> no damage evolution: damage_{n+1} = damage_n == 0
+    // strainbar_p_{n+1}= strainbar_p_n + Dgamma
+
+    // no damage evolution -> omega = 1 -D = 1 - 0 = 1
+    damage = 0.0;
+    omegaold = 1.0;
+
+    // calculate the isotropic hardening modulus with old plastic strains
+    // Hiso = dsigma_y / d astrain^p
+    Hiso = GetIsoHardAtStrainbarnp(strainbar_p);
+
+    // calculate the uniaxial yield stress out of samples
+    sigma_y = GetSigmaYAtStrainbarnp(strainbar_p);
+  }
+  else  // current strainbar_p > strainbar_p_D
+  {
+    // calculate the uniaxial yield stress out of samples
+    sigma_y = GetSigmaYAtStrainbarnp(Rplast);
+  }
 
   // calculate the yield function
   // Phi = \sqrt{ 3.0 . J2 } - sigma_y = q - sigma_y
@@ -524,11 +552,13 @@ void MAT::Damage::Evaluate(
   // calculate derivative of engergy release rate Ytan w.r.t. Dgamma
   double Ytan = 0.0;
   // integrity
-  // omega_{n+1} = 3G / (q_tilde - sigma_y) * Dgamma = 1 - D_{n+1}
+  // omega_{n+1} = 1 - D_{n+1}
   double omega = 1.0;  // if not damaged, omega == 1.0
+  // flag indicating if damage evolution takes place or not
+  bool damevolution = false;
 
   // unit flow vector Nbar (Prandtl-Reuss)
-  // (using the updated relative stress s_n+1, no longer s_n+1^trial)
+  // (using s_n+1^trial for undamaged, and s_n+1 for damaged load step)
   // Nbar = ( s^{trial}_{n+1} / || s^{trial}_{n+1} || )
   LINALG::Matrix<NUM_STRESS_3D,1> Nbar(true);
 
@@ -537,32 +567,18 @@ void MAT::Damage::Evaluate(
   // N = sqrt{3/2}/(1 - D_{n+1}) . ( s_{n+1} / || s_{n+1} || )
   LINALG::Matrix<NUM_STRESS_3D,1> N(true);
 
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // IF consistency condition is violated, i.e. plastic load step use return-mapping
   // (Phi_trial > 0.0, Dgamma >= 0.0)
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   if (Phi_trial > 1.0e-08)  // if (Phi_trial > 0.0)
   {
-    // only first plastic call is output at screen for every processor
-    // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
-    if (plastic_step_ == false)
-    {
-      if ( (plastic_step_ == false) and (gp == 0) )
-        std::cout << "plasticity starts in element = " << eleID << std::endl;
-
-      plastic_step_ = true;
-    }
-
     // ------------------------------------------------ damage threshold
 
     // calculate damage threshold (according to de Souza Neto, p.483ff)
 
-    // initialise variable to decide wether there is damage evolution or not
-    bool damevolution = false;
-
     // bool which decide if threshold is passed or not
     // current strainbar_p < strainbar_p_D
-    // if (strainbar_p < strainbar_p_D)
     if (strainbar_p < strainbar_p_D)
     {
       // --> no damage evolution: damage_{n+1} = damage_n == 0
@@ -571,7 +587,7 @@ void MAT::Damage::Evaluate(
       // no damage evolution -> omega = 1 -D = 1 - 0 = 1
       omega = 1.0;
 
-      // --------------------------------------------------------- return-mapping
+      // ------------------------------------------------------- return-mapping
 
       // local Newton-Raphson
 
@@ -640,7 +656,7 @@ void MAT::Damage::Evaluate(
         // astrain^p_{n+1} = astrain^p_n + Dgamma
         // astrain^p_{n+1} = SUM{Dgamma_n} from all time steps n
         // Kuhn-Tucker: Dgamma >= 0.0 --> astrain^p_{n+1} >= 0.0
-        strainbar_p = strainbarpllast_->at(gp) + Dgamma;
+        strainbar_p = strainbarpllast_->at(gp) + Dgamma/omega;
         if (strainbar_p < 0.0)
         {
           std::cout << "strainbar_p = " << strainbar_p << std::endl;
@@ -650,7 +666,7 @@ void MAT::Damage::Evaluate(
         // isotropic damage variable remains the same using D == 0 (omega=1)
         Rplast = isohardvarlast_->at(gp) + Dgamma;
 
-        // Hiso = dsigma_y / d Rplast_{n+1}
+        // Hiso = dsigma_y / d astrain^p_{n+1}
         Hiso = GetIsoHardAtStrainbarnp(strainbar_p);
 
         // sigma_y = sigma_y(astrain^p_{n+1})
@@ -679,7 +695,74 @@ void MAT::Damage::Evaluate(
         // no damage occurs, i.e. current solution is correct, no return-map
         // considering damage is necessary
         damevolution = false;
-      }
+
+        // --------------------------------------------------- plastic update
+
+        // ---------------------------------------------- update flow vectors
+
+        // deviatoric stress norm || s^{trial}_{n+1} ||
+        double devstress_tildenorm = 0.0;
+        devstress_tildenorm = sqrt( devstress_tilde(0)*devstress_tilde(0)
+                                    + devstress_tilde(1)*devstress_tilde(1)
+                                    + devstress_tilde(2)*devstress_tilde(2)
+                              + 2 * ( devstress_tilde(3)*devstress_tilde(3)
+                                      + devstress_tilde(4)*devstress_tilde(4)
+                                      + devstress_tilde(5)*devstress_tilde(5) ) );
+
+        // unit flow vector Nbar = s^{trial}_{n+1} / || s^{trial}_{n+1} ||
+        Nbar.Update(1.0, devstress_tilde, 0.0);
+        Nbar.Scale(1 / devstress_tildenorm);
+
+        // flow vector N = sqrt(3/2) . Nbar
+        N.Update( (sqrt(3.0 / 2.0)), Nbar, 0.0);
+
+        // deviatoric stress
+        // s = s_{n+1}^{trial} - 2 . G . Delta gamma . N
+        const double facdevstress = (-2.0) * G * Dgamma;
+        devstress.Update( 1.0, devstress_tilde, 0.0);
+        devstress.Update( facdevstress, N, omega);
+
+        // total stress
+        // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
+        // pressure/volumetric stress no influence due to plasticity
+        Stress( p_tilde, devstress, *stress );
+
+        // total strains
+        // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . N
+        // compute converged engineering strain components (Voigt-notation)
+        strain_e.Update( 1.0, trialstrain_e, 0.0);
+        strain_e.Update( (-Dgamma), N, 1.0 );
+
+        // strain^p_{n+1} = strain^p_n + Dgamma . N
+        strain_p.Update( Dgamma, N, 1.0 );
+
+        // compute converged engineering strain components (Voigt-notation)
+        for (int i=3; i<6; ++i) strain_e(i) *= 2.0;
+        for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
+
+        // pass the current plastic strains to the element (for visualisation)
+        plstrain.Update(1.0, strain_p, 0.0);
+
+        // --------------------------------------------------- update history
+        // plastic strain
+        strainplcurr_->at(gp) = strain_p;
+
+        // accumulated plastic strain
+        strainbarplcurr_->at(gp) = strainbar_p;
+
+        // update damaged isotropic hardening variable R_{n+1}
+        isohardvarcurr_->at(gp) = Rplast;
+
+        // update damage variable damage_{n+1}
+        damagecurr_->at(gp) = damage;
+
+#ifdef DEBUGMATERIAL
+        std::cout << "end strain_p\n " << strain_p << std::endl;
+        std::cout << "end strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << std::endl;
+#endif //ifdef DEBUGMATERIAL
+
+      }  // (strainbar_p < strainbar_p_D)
+      // updated strainbar_p not valid, recalculate step considering damage
       else  // (strainbar_p > strainbar_p_D)
       {
 #ifdef DEBUGMATERIAL
@@ -688,37 +771,51 @@ void MAT::Damage::Evaluate(
             "\n Recalculate load step considering damage!" << std::endl;
 #endif  // #ifdef DEBUGMATERIAL
 
-        // no damage occurs, i.e. current solution is correct, no return-map
-        // considering damage is necessary
+        // damage occurs, i.e. current solution is not correct, recalculate
+        // load step considering damage
         damevolution = true;
-      }
+      }  // (strainbar_p > strainbar_p_D)
     }  // no damage: (strainbar_p < strainbar_p_D)
 
-    else  // threshold exceeded (strainbar_p > strainbar_p_D), i.e. damage evolves
+    // ------------------------------------ threshold of trial step is exceeded
+    // (strainbar_p > strainbar_p_D), i.e. damage evolves
+    else
       damevolution = true;
 
-    // damage has to be considered
-    if (damevolution == true) // (strainbar_p > strainbar_p_D)
+    //-------------------------------------------------------------------
+    // -------------------------------------- return-mapping considering damage
+    // damage has to be considered (strainbar_p > strainbar_p_D)
+    //-------------------------------------------------------------------
+    if (damevolution == true)
     {
+      // only first plastic call is output at screen for every processor
+      // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
+      if (plastic_step_ == false)
+      {
+        if ( (plastic_step_ == false) and (gp == 0) )
+          std::cout << "damage starts to evolve in element = " << eleID << std::endl;
+
+        plastic_step_ = true;
+      }
+
 #ifdef DEBUGMATERIAL
-      if (gp == 0)
-        std::cout << "Damage has to be considered for current load step! Threshold exceeded!" << std::endl;
+        std::cout << "Damage has to be considered for current load step and ele = "
+          << eleID << ", and gp = " << gp << " ! Threshold exceeded!" << std::endl;
 #endif  // #ifdef DEBUGMATERIAL
-      
-      // --------------------------------------------------- return-mapping
+
+      // ------------------------------------------------- return-mapping
 
       // local Newton-Raphson
 
-      // ------------------------------------------------------- initialise
+      // ------------------------------- initial guess for Dgamma (12.49)
 
-      // --------------------------------- initial guess for Dgamma (12.49)
       // instead of initial guess Dgamma^{m=0} = 0.0 use perfectly plastic
       // solution with frozen yield surface at beginning of each load increment
       //
       // Dgamma^{m=0} = q^{~,trial} - sigma(Rplast_n) * omega_n / 3G
       Dgamma = omegaold * Phi_trial / (3 * G);
 
-      // ---------------------- initialise internal variables with Dgamma^0
+      // -------------------- initialise internal variables with Dgamma^0
 
       // Rplast = R^{p,m=0}_{n+1} = R^p_n + Dgamma
       Rplast = isohardvarlast_->at(gp) + Dgamma;
@@ -752,20 +849,22 @@ void MAT::Damage::Evaluate(
 
         // calculate the uniaxial yield stress out of samples using newest
         // solution of Dgamma^m
+        // if m=0: sigma_y = sigma_y(R^{p,m}_{n+1}(Dgamma^{m=0}))
         // if m>0: R^{p,m} was updated at end of last local Newton loop
         // sigma_y = sigma_y(R^{p,m}_{n+1})
         sigma_y = GetSigmaYAtStrainbarnp(Rplast);
-        // Hiso is updated after convergence check
+        // slope of hardening function
+        // Hiso = dsigma_y / d Rplast^m_{n+1}
+        Hiso = GetIsoHardAtStrainbarnp(Rplast);
+        // plasticity with nonlinear (piecewise linear) isotropic hardening
+
+        // get derivative of energy release rate w.r.t Dgamma
+        // d(-energyrelrate) / dDgamma = - Hiso(Rplast^m) . sigma_y(Rplast^m) / (3 . G)
+        Ytan = - Hiso * sigma_y / (3 * G);
 
         // integrity
-        // omega_{n+1} = 3G / (q_tilde - sigma_y) * Dgamma
+        // omega_{n+1} = 3G / (q_tilde - sigma_y) * Dgamma = 1 - D_{n+1}
         omega = 3 * G / (q_tilde - sigma_y) * Dgamma;
-        // check if damage variable is acceptable
-        // admissible values: (0 <= D < 1) or (1 >= omega > 0)
-        // sanity check: omega < 1.0e-20
-        if (omega < 1.0e-20)
-          dserror("Inadmissible value of integrity: omega = %-14.8E in ele = %4d!"
-            " \n Omega has to be greater than zero!", eleID, omega);
 
         // damage energy release rate only implicitely depending on Dgamma (12.47)
         energyrelrate = - (sigma_y * sigma_y) / (6 * G) - p_tilde * p_tilde / (2 * kappa);
@@ -783,35 +882,25 @@ void MAT::Damage::Evaluate(
         // check: absolute value of Res has to be smaller than given tolerance
         if (norm < (params_->abstol_))
         {
-  #ifdef DEBUGMATERIAL
+#ifdef DEBUGMATERIAL
           if (gp == 0)
             printf(
               "Newton method converged after %i iterations; abs(Res)=  %-14.8E\n",
               itnum,
               abs(Res)
               );
-  #endif  // #ifdef DEBUGMATERIAL
+#endif  // #ifdef DEBUGMATERIAL
           break;
         }
 
         // if load state is not converged, calculate derivatives w.r.t Dgamma
-
-        // slope of hardening function
-        // Hiso = dsigma_y / d Rplast^m_{n+1}
-        Hiso = GetIsoHardAtStrainbarnp(Rplast);
-
-        // get derivative of energy release rate w.r.t Dgamma
-        // d(-energyrelrate) / dDgamma = - Hiso(Rplast^m) . sigma_y(Rplast^m) / (3 . G)
-        Ytan = - Hiso * sigma_y / (3 * G);
-
-        // plasticity with nonlinear (piecewise linear) isotropic hardening
 
         // derviative of residual w.r.t. Dgamma
         // ResTan = (3 . G)/(q_tilde - sigma_y)
         //          + (3 . G)/(q_tilde - sigma_y) . Dgamma . Hiso / (q_tilde - sigma_y)
         //          - Hiso / (3 . G) . (-Y/r)^s
         //          - s . Ytan / ( ( (3 . G)/(q_tilde - sigma_y) ) . r) . (-Y/r)^(s-1)
-        ResTan = (3 * G)/(q_tilde - sigma_y)
+        ResTan = (3 * G) / (q_tilde - sigma_y)
                  + (3 * G)/(q_tilde - sigma_y) * Dgamma * Hiso / (q_tilde - sigma_y)
                  - Hiso / (3 * G) * pow( (-energyrelrate / damden), damexp)
                  - damexp * Ytan / ( ( (3 * G)/(q_tilde - sigma_y) ) * damden )
@@ -829,111 +918,132 @@ void MAT::Damage::Evaluate(
         // Kuhn-Tucker: Dgamma >= 0.0 --> R^p_{n+1} >= 0.0
         Rplast = isohardvarlast_->at(gp) + Dgamma;
 
-  #ifdef DEBUGMATERIAL
+        // compute new residual of accumulatd plastic strains
+        // astrain^p_{n+1} = astrain^p_n + Dgamma/omega
+        // astrain^p_{n+1} = SUM{Dgamma_n} from all time steps n
+        // Kuhn-Tucker: Dgamma >= 0.0 --> astrain^p_{n+1} >= 0.0
+        strainbar_p = strainbarpllast_->at(gp) + Dgamma/omega;
+        if (strainbar_p < 0.0)
+        {
+          std::cout << "strainbarpllast_->at(gp) = " << strainbarpllast_->at(gp) << std::endl;
+          std::cout << "omega = " << omega << std::endl;
+          std::cout << "Dgamma = " << Dgamma << std::endl;
+          std::cout << "strainbar_p = " << strainbar_p << std::endl;
+          dserror("accumulated plastic strain has to be equal or greater than zero");
+        }
+
+#ifdef DEBUGMATERIAL
         if (gp == 0)
         {
+          std::cout << "Ende local Newton damage = " << damage << std::endl;
+          std::cout << "Ende local Newton strainbar_p = " << strainbar_p << std::endl;
+          std::cout << "Ende local Newton Rplast = " << Rplast << std::endl;
+
           std::cout << "am 1.GP: local Newton: Res " << Res << std::endl;
           std::cout << "local Newton: ResTan " << ResTan << std::endl;
           std::cout << "local Newton: Dgamma " << Dgamma << std::endl;
           std::cout << "local Newton: sigma_y " << sigma_y << std::endl;
         }
-  #endif  // #ifdef DEBUGMATERIAL
+#endif  // #ifdef DEBUGMATERIAL
 
       }  // end of local Newton iteration
 
-    }  // damage evolution has to be considered, damage threshold exceeded
+      // ------------------------------------------------- update plastic state
 
-    // --------------------------------------------------- update plastic state
-    
-    // ---------------------------- update hardening and damage variables
+      // -------------------------- update hardening and damage variables
 
-    // update damage variable damage_{n+1}
-    damage = 1.0 - omega;
-    // damaged isotropic hardening variable has newest value (see L678)
+      // check if damage variable is acceptable
+      // admissible values: (0 <= D < 1) or (1 >= omega > 0)
+      // sanity check: omega < 1.0e-20
+      if (omega < 1.0e-20)
+        dserror("INadmissible value of integrity: omega = %-14.8E in ele = %4d!"
+          " \n Omega has to be greater than zero!", eleID, omega);
 
-    // ---------------------------------------------- update flow vectors
+      // update damage variable damage_{n+1}
+      damage = 1.0 - omega;
 
-    
-    // deviatoric stress norm || s^{trial}_{n+1} ||
-    double devstressnorm_tilde = 0.0;
-    devstressnorm_tilde = sqrt( devstress_tilde(0)*devstress_tilde(0)
-                                + devstress_tilde(1)*devstress_tilde(1)
-                                + devstress_tilde(2)*devstress_tilde(2)
-                          + 2 * ( devstress_tilde(3)*devstress_tilde(3)
-                                  + devstress_tilde(4)*devstress_tilde(4)
-                                  + devstress_tilde(5)*devstress_tilde(5) ) );
+      // --> damaged isotropic hardening variable has newest value (see L678)
 
-    // unit flow vector Nbar = s^{trial}_{n+1} / || s^{trial}_{n+1} ||
-    Nbar.Update(1.0, devstress_tilde, 0.0);
-    Nbar.Scale(1 / devstressnorm_tilde);
+      // final von Mises equivalent stress q_{n+1} = sqrt(3 J)
+      // using consistency condition for admissible state
+      // Phi_{n+1} == 0 = q / (1-D_{n+1}) - sigma_y(Rplast_{n+1})
+      // --> q = sigma_y(Rplast_{n+1}) * omega_{n+1}
+      // or alternatively: q = omega_n * q_tilde - 3.0 * G * Dgamma;
+      double q = omega * sigma_y;
 
-    // flow vector N = sqrt(3/2) . Nbar
-    N.Update( (sqrt(3.0 / 2.0)), Nbar, 0.0);
-    
-    // final von Mises equivalent stress q_{n+1} = sqrt(3 J)
-    // using consistency condition for admissible state
-    // Phi_{n+1} == 0 = q / (1-D_{n+1}) - sigma_y(Rplast_{n+1})
-    // --> q = sigma_y(Rplast_{n+1}) * omega_{n+1}
-    // TODO Max:     q = omega_n * q_tilde - 3.0 * G * Dgamma;
-//    double q = omega * sigma_y;
+      // get damaged pressure
+      double p = omega * p_tilde;
 
-    // get damaged pressure
-    double p = omega * p_tilde;
+      // deviatoric stress
+      // s_{n+1} = (1 - D_{n+1}) s_{n+1}^{trial}
+      //           - 2 . G . Delta gamma . sqrt(3/2) . s^{~,trial}/||s^{~,trial}||
+      // or alternative
+      // s_{n+1} = s_{n+1}^{~,trial} * q / q_tilde
+      // with deviatoric stress^{~} = 2 . G . devstrain
+      devstress.Update( (q/q_tilde), devstress_tilde, 0.0);
+      // alternatively with identical results:
+      // s_{n+1} = [omega - 3G Dgamma / q_tilde] . s_{n+1}^{~,trial}
 
-    // deviatoric stress
-    // s = (1 - D_{n+1}) . s_{n+1}^{trial} - 2 . G . Dgamma . N
-    const double facdevstress = (-2.0) * G * Dgamma;
-    devstress_tilde.Update( facdevstress, N, omega);
-    devstress.Update(devstress_tilde);
+      // total stress
+      // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
+      // pressure/volumetric stress no influence due to plasticity
+      Stress( p, devstress, *stress );
 
-    // deviatoric stress
-    // s_{n+1} = (1 - D_{n+1}) s_{n+1}^{trial}
-    //           - 2 . G . Delta gamma . sqrt(3/2) . s^{~,trial}/||s^{~,trial}||
-    // or alternative
-    // s_{n+1} = s_{n+1}^{~,trial} * q / q_tilde
-    // with deviatoric stress^{~} = 2 . G . devstrain
-//TODO    devstress.Update( (q/q_tilde), devstress_tilde, 0.0);
-    // alternatively with identical results:
-    // s_{n+1} = [omega - 3G Dgamma / q_tilde] . s_{n+1}^{~,trial}
-    
-    // total stress
-    // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
-    // pressure/volumetric stress no influence due to plasticity
-    Stress( p, devstress, *stress );
+      // -------------------------------------------- update flow vectors
 
-    // total strains
-    // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . N
-    // compute converged engineering strain components (Voigt-notation)
-    strain_e.Update( 1.0, trialstrain_e, 0.0);
-    strain_e.Update( (-Dgamma), N, 1.0 );
+      // unit flow vector Nbar = s_{n+1} / || s_{n+1} ||
+      double devstressnorm = 0.0;
+      devstressnorm = sqrt( devstress(0)*devstress(0)
+                                  + devstress(1)*devstress(1)
+                                  + devstress(2)*devstress(2)
+                            + 2 * ( devstress(3)*devstress(3)
+                                    + devstress(4)*devstress(4)
+                                    + devstress(5)*devstress(5) ) );
+      Nbar.Update(1.0, devstress, 0.0);
+      Nbar.Scale(1 / devstressnorm);
 
-    // strain^p_{n+1} = strain^p_n + Dgamma . N
-    strain_p.Update( Dgamma, N, 1.0 );
+      // flow vector N = sqrt(3/2) . Nbar . 1/omega (Box 12.3 (iv))
+      N.Update( (sqrt(3.0 / 2.0) / omega), Nbar, 0.0 );
 
-    // compute converged engineering strain components (Voigt-notation)
-    for (int i=3; i<6; ++i) strain_e(i) *= 2.0;
-    for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
+      // total strains
+      // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . N
+      // or alternatively
+      //   strain^e_{n+1} = volstrain^{e,trial} + 1/2G . s_{n+1}
+      //     = volstrain^{e,trial} + (1 - 3G . Dgamma / (omega . q_tilde) ) . devstrain
+      strain_e.Update( 1.0, trialstrain_e, 0.0);
+      strain_e.Update( (-Dgamma), N, 1.0 );
 
-    // pass the current plastic strains to the element (for visualisation)
-    plstrain.Update(1.0, strain_p, 0.0);
+      // strain^p_{n+1} = strain^p_n + Dgamma . N
+      // or alternatively
+      //   strain^p_{n+1} = strain_{n+1} - strain^e_{n+1}
+      strain_p.Update( Dgamma, N, 1.0 );
 
-    // --------------------------------------------------- update history
-    // plastic strain
-    strainplcurr_->at(gp) = strain_p;
+      // compute converged engineering strain components (Voigt-notation)
+      for (int i=3; i<6; ++i) strain_e(i) *= 2.0;
+      for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
 
-    // accumulated plastic strain
-    strainbarplcurr_->at(gp) = strainbar_p;
+      // pass the current plastic strains to the element (for visualisation)
+      plstrain.Update(1.0, strain_p, 0.0);
 
-    // update damaged isotropic hardening variable
-    isohardvarcurr_->at(gp) = Rplast;
+      // ------------------------------------------------- update history
+      // plastic strain
+      strainplcurr_->at(gp) = strain_p;
 
-    // update damage variable damage_{n+1}
-    damagecurr_->at(gp) = damage;
+      // accumulated plastic strain
+      strainbarplcurr_->at(gp) = strainbar_p;
+
+      // update damaged isotropic hardening variable
+      isohardvarcurr_->at(gp) = Rplast;
+
+      // update damage variable damage_{n+1}
+      damagecurr_->at(gp) = damage;
 
 #ifdef DEBUGMATERIAL
-    std::cout << "end strain_p\n " << strain_p << std::endl;
-    std::cout << "end strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << std::endl;
+      std::cout << "end strain_p\n " << strain_p << std::endl;
+      std::cout << "end strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << std::endl;
 #endif //ifdef DEBUGMATERIAL
+
+    }  // damage evolution has to be considered, damage threshold exceeded
 
   }  // plastic corrector
 
@@ -984,20 +1094,6 @@ void MAT::Damage::Evaluate(
   // --------------------------------- consistent elastoplastic tangent modulus
   //---------------------------------------------------------------------------
 
-  // unit flow vector Nbar := 1/(1 - D_{n+1}) . s_{n+1} / || s_{n+1} ||
-  // in contrast to other plastic materials, use the updated relative stress
-  // s_{n+1}, and not s^{trial}_{n+1}
-  // deviatoric stress norm || s_{n+1} ||
-  double devstressnorm = 0.0;
-  devstressnorm = sqrt( devstress(0)*devstress(0)
-                        + devstress(1)*devstress(1)
-                        + devstress(2)*devstress(2)
-                        + 2 * ( devstress(3)*devstress(3)
-                                + devstress(4)*devstress(4)
-                                + devstress(5)*devstress(5) ) );
-  Nbar.Update(1.0, devstress, 0.0);
-  Nbar.Scale( 1 /(omega * devstressnorm) );
-
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
   // if Phi^trial = 0: two tangent stress-strain relations exist
@@ -1024,6 +1120,7 @@ void MAT::Damage::Evaluate(
     Hiso,
     Nbar,
     gp,
+    damevolution,
     heaviside
     );
 
@@ -1119,292 +1216,312 @@ void MAT::Damage::SetupCmatElastoPlastic(
   double Dgamma,  // plastic multiplier
   double G,  // shear modulus
   double kappa,  // bulk modulus
-  double p_tilde1,  // undamaged pressure
-  double q_tilde1,  // undamaged trial von Mises equivalent stress
-  double energyrelrate1,  // damage energy release rate
-  double Ytan1,  // derivative of engergy release rate Ytan w.r.t. Dgamma
-  double sigma_y1,  // current yield stress
-  double Hiso1,  // isotropic hardening modulus
-  LINALG::Matrix<NUM_STRESS_3D,1> Nbar1,  // unit flow vector
+  double p_tilde,  // undamaged pressure
+  double q_tilde,  // undamaged trial von Mises equivalent stress
+  double energyrelrate,  // damage energy release rate
+  double Ytan,  // derivative of engergy release rate Ytan w.r.t. Dgamma
+  double sigma_y,  // current yield stress
+  double Hiso,  // isotropic hardening modulus
+  LINALG::Matrix<NUM_STRESS_3D,1> Nbar,  // unit flow vector
   int gp,  // current Gauss point
+  bool damevolution,  // flag indicating if damage evolves or not
   double heaviside  // Heaviside function
   )
 {
-  // TODO
-//  // incremental constitutive function for the stress tensor
-//  // consistent tangent operator
-//  // D^{ep} := dsigma_n+1 / dstrain_n+1
-//
-//  // depending on the flow vector Cmat_ep can be a fully-occupied matrix
-//
-//  // ---------------------------------------------------------- Heaviside
-//
-//  // if plastic loading:   heaviside = 1.0 --> use D^{ep}
-//  // if elastic unloading: heaviside = 0.0 --> use D^e
-//
-//  // -------------------------------------------------- identity matrices
-//
-//  // deviatoric projection tensor: I_d = I_s - 1/3 I \otimes I
-//  // I_d in Voigt-notation applied to symmetric problem, like stress calculation
-//  //         [ 2/3   -1/3  -1/3 | 0    0    0  ]
-//  //         [-1/3    2/3  -1/3 | 0    0    0  ]
-//  //         [-1/3   -1/3   2/3 | 0    0    0  ]
-//  //   I_d = [ ~~~~  ~~~~  ~~~~  ~~~  ~~~  ~~~ ]
-//  //         [                  | 1/2   0   0  ]
-//  //         [    symmetric     |      1/2  0  ]
-//  //         [                  |          1/2 ]
-//
-//  // build Cartesian identity 2-tensor I_{AB}
-//  LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
-//  for (int i=0; i<3; i++) id2(i) = 1.0;
-//
-//  // set Cartesian identity 4-tensor in 6-Voigt matrix notation
-//  // this is fully 'contra-variant' identity tensor, i.e. I^{ABCD}
-//  // REMARK: rows are stress-like 6-Voigt
-//  //         columns are stress-like 6-Voigt
-//  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> id4sharp(true);
-//  for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
-//  for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
-//
-//  // ------------------------------------- extract current history values
-//  // integrity omega_{n+1}
-//  double omega = 1 - damagecurr_->at(gp);
-//
-//  // ----------------------------------------------------- damaged elastic term
-//  // D^{ep} = (1 - D_{n+1}) . C^e = omega_{n+1} . C^e
-//  //        = omega_{n+1} . 2G . I_d + omega_{n+1} . kappa . id2 \otimes id2
-//  // add standard isotropic elasticity tensor C^e first
-//  if (heaviside == 0)
-//  {
-//    SetupCmat(cmat);
-//    cmat.Scale(omega);
-//  }
-//  else // (heaviside == 1)
-//  {
-//    // D^{ep} = a . I_d + b . Nbar \otimes Nbar + c . Nbar \otimes id2
-//    //          + d . id2 \otimes Nbar + e . id2 \otimes id2
-//
-//    // ----------------------------------- extract some material parameters
-//
-//    // get material parameters
-//    // damage evolution law denominator r
-//    double damden = params_->damden_;
-//    // damage evolution law exponent s
-//    double damexp = params_->damexp_;
-//
-//    // ---------------------------------------------------------- plastic terms
-//
-//    // --------------------------------------- extract undamaged stresses
-//    // check if omega is admissible
-//    if (omega < 1.0e-20)
-//      dserror("Omega has to be greater than zero! omega = %-14.8E\n", omega);
-//
-//    // be aware: in the 1st equilibrium (Newton) iteration (i=0) D^{ep} is
-//    // indeterminate due to Dgamma == 0.0
-//    // a small perturbation Dgamma=1e-08 is used (instead of using a limiting
-//    // procedure) which was proposed by de Souza Neto
-//    if (Dgamma == 0)
-//      Dgamma = 1.0e-08;
-//
-//    // ------------------------ factors required for the elasto-plastic tangent
-//
-//    // some constants
-//    double aux = -energyrelrate1 / damden;
-//    double auxb = (q_tilde1 - sigma_y1) / (3 * G);
-//    double Phi_trial1 = q_tilde1 - sigma_y1;
-//
-//    // ---------------------------------------- derivatives w.r.t. Dgamma
-//    // domega/dDgamma
-//    double Domega = (3.0 * G + omega * Hiso1) / Phi_trial1;
-//    // domega/dq_tilde . dq_tilde/dDgamma
-//    double DomegaDq_tilde = - omega / Phi_trial1;
-//    // derviative of residual function dF/dDgamma
-//    double ResTan = Domega - Hiso1 / (3 * G) * pow(aux, damexp)
-//                    - auxb * damexp * Ytan1 / damden * pow(aux, (damexp -1) );
-//    // derivative of residual function dF/dp_tilde . dp_tilde/dDgamma
-//    // DResDp_tilde = s . (q_tilde - sigma_y)/(3G) . pow((-Y/r), s-1) . p_tilde /(r . kappa)
-//    double DResDp_tilde = damexp * auxb * pow(aux, (damexp -1) ) * p_tilde1
-//                          / (damden * kappa);
-//    // derivative of residual function F w.r.t. q_tilde
-//    double DResDq_tilde = DomegaDq_tilde + pow(aux, damexp) / (3 * G);
-//
-//    // --------- calculate the constants according to de Souza Neto (12.52)
-//
-//    // a1 = - DResDq_tilde / ResTan
-//    //    = [ omega / (q_tilde - sigma_y) - pow( (-energyrelrate/damden), damexp)
-//    //                                      / (3.0 * G) ] / ResTan;
-//    // TODO a1 = [1 - Dgamma / (omega . omega) . pow( (-Y/r), s)] . omega / [ (q_tilde - sigma_y) . ResTan]
-//    double a1 = - DResDq_tilde / ResTan;
-//
-//    // a2 = - DResDp_tilde / ResTan
-//    //    = - s . p_tilde . (q_tilde - sigma_y) / (3G . r . kappa . ResTan) . pow((-Y/r), s-1);
-//    double a2 = 0.0;
-//    a2 = - DResDp_tilde / ResTan;
-//
-//    // a3 = a2 * Domega
-//    double a3 = 0.0;
-//    a3 = a2 * Domega;
-//
-//    // a4 = a1 . Domega + DomegaDq_tilde
-//    //    = a1 . Domega - omega / (q_tilde - sigma_y)
-//    double a4 = 0.0;
-//    a4 = a1 * Domega + DomegaDq_tilde;
-//
-//    // ------- calculate actual coefficients of elasto-plastic material tangent
-//
-//    // a = 2G . sigma_y . omega / q_tilde
-//    double a = 0.0;
-//    a = (2.0 * G * sigma_y1 * omega) / q_tilde1;
-//    // b = 2G . (a1 . Hiso . omega + a4 . sigma_y - sigma_y . omega / q_tilde
-//    double b = 0.0;
-//    b = 2.0 * G * (a1 * Hiso1 * omega + a4 * sigma_y1 - sigma_y1 * omega / q_tilde1);
-//    // c = kappa . (a2 . Hiso . omega + a3 . sigma_y) / sqrt(3/2)
-//    double c = 0.0;
-//    c = ( kappa * (a2 * Hiso1 * omega + a3 * sigma_y1) / sqrt(3.0/2.0) );
-//    // d = p_tilde . 2G . sqrt(3/2) . a4
-//    double d = 0.0;
-//    d = ( p_tilde1 * 2.0 * G * sqrt(3.0/2.0) * a4 );
-//    // e = kappa . (omega + p_tilde . a3)
-//    double e = 0.0;
-//    e = kappa * (omega + p_tilde1 * a3);
-//
-//    // ------------------------------- assemble elasto-plastic material tangent
-//
-//    // empty consistent tangent operator
-//    cmat.Clear();
-//    // constitutive tensor
-//    // I_d = id4sharp - 1/3 Id \otimes Id
-//    // contribution: Id4^#
-//    cmat.Update(a, id4sharp, 1.0);
-//    // contribution: Id \otimes Id
-//    double epfac = 0.0;
-//    epfac = a / (-3.0);
-//    if (q_tilde1 != 0.0)
-//    {
-//      cmat.MultiplyNT(epfac, id2, id2, 1.0);
-//    }
-//    cmat.MultiplyNT(b, Nbar1, Nbar1, 1.0);
-//    cmat.MultiplyNT(c, Nbar1, id2, 1.0);
-//    cmat.MultiplyNT(d, id2, Nbar1, 1.0);
-//    cmat.MultiplyNT(e, id2, id2, 1.0);
-//
-//  }  // plastic load step: (heaviside == 1)
-//  // complete material tangent C_ep available
-//
-//#ifdef DEBUGMATERIAL
-//  if (Dgamma != 0)
-//  {
-//    std::cout << "Ende SetupCmatElastPlast" << std::endl;
-//    std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
-//    std::cout << " G " << G << std::endl;
-//    std::cout << " q " << q << std::endl;
-//    std::cout << " Nbar " << Nbar << std::endl;
-//    std::cout << " heaviside " << heaviside << std::endl;
-//    std::cout << " epfac " << epfac << std::endl;
-//    std::cout << " epfac1 " << epfac1 << std::endl;
-//    std::cout << " cmat " << cmat << std::endl;
-//  }
-//#endif // #ifdef DEBUGMATERIAL
-
-  // incremental constitutive function for the stress tensor
-  // sigma_n+1 = [ cmat - (Dgamma 6 G^2/q) I_d ] : strain_n+1^{e,trial}
-  // consistent tangent operator
-  // D^{ep} := dsigma_n+1 / dstrain_n+1^{e,trial}
-
-  // depending on the flow vector Cmat_ep can be a fully-occupied matrix
-
-  // C_ep = C_e - ( H^ . Dgamma . 6 . G^2 ) / q . I_d +
-  //        +  H^ . 6 . G^2 ( Dgamma/q - 1/(3 G + Hiso) ) Nbar \otimes Nbar
-
-  // ---------------------------------------------------------- Heaviside
-  // if plastic loading:   heaviside = 1.0 --> use C_ep
-  // if elastic unloading: heaviside = 0.0 --> use C_e
-
-  // I_d = I_s - 1/3 I . I
-  // I_d in Voigt-notation applied to symmetric problem, like stress calculation
-  //         [ 2/3   -1/3  -1/3 | 0    0    0  ]
-  //         [-1/3    2/3  -1/3 | 0    0    0  ]
-  //         [-1/3   -1/3   2/3 | 0    0    0  ]
-  //   I_d = [ ~~~~  ~~~~  ~~~~  ~~~  ~~~  ~~~ ]
-  //         [                  | 1/2   0   0  ]
-  //         [    symmetric     |      1/2  0  ]
-  //         [                  |          1/2 ]
-  //
-
-  // build Cartesian identity 2-tensor I_{AB}
-  LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
-  for (int i=0; i<3; i++) id2(i) = 1.0;
-
-  // set Cartesian identity 4-tensor in 6-Voigt matrix notation
-  // this is fully 'contra-variant' identity tensor, ie I^{ABCD}
-  // REMARK: rows are stress-like 6-Voigt
-  //         columns are stress-like 6-Voigt
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> id4sharp(true);
-  for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
-  for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
-
-  // ------------------------------------------------------- elastic term
-  // C_ep = C_e
-  // add standard isotropic elasticity tensor C_e first
-  SetupCmat(cmat);
-
-  // ------------------------------------------------------ plastic terms
-
-  // if plastic loading:   heaviside = 1.0 --> use C_ep
-  // if elastic unloading: heaviside = 0.0 --> use C_e
-
-  // ------------------------------------------------- first plastic term
-  // - ( H^ . Dgamma . 6 . G^2 ) / q^{trial} . I_d
-
-  double epfac = 0.0;
-  double epfac3 = 0.0;
-  // elastic trial von Mises effective stress
-  if (q_tilde1 != 0.0)
+  // damage threshold is still not passed, i.e. use undamaged material tangent
+  if (damevolution == false)
   {
-    epfac = (-1.0) * heaviside * Dgamma * 6 * G * G / q_tilde1;
-  }
-  // constitutive tensor
-  // I_d = id4sharp - 1/3 Id \otimes Id
-  // contribution: Id4^#
-  cmat.Update(epfac, id4sharp, 1.0);
-  // contribution: Id \otimes Id
-  double epfac1 = 0.0;
-  epfac1 = epfac / (-3.0);
-  cmat.MultiplyNT(epfac1, id2, id2, 1.0);
+    // incremental constitutive function for the stress tensor
+      // sigma_n+1 = [ cmat - (Dgamma 6 G^2/q) I_d ] : strain_n+1^{e,trial}
+      // consistent tangent operator
+      // D^{ep} := dsigma_n+1 / dstrain_n+1^{e,trial}
 
-  // ------------------------------------------------ second plastic term
+      // depending on the flow vector Cmat_ep can be a fully-occupied matrix
 
-  // loop strains (columns)
-  for (int k=0; k<6; ++k)
-  {
-    // ---------------------------------------------------------- tangent
-    // loop stresses (rows)
-    for (int i=0; i<6; ++i)
-    {
-      if (q_tilde1 != 0.0)
+      // C_ep = C_e - ( H^ . Dgamma . 6 . G^2 ) / q . I_d +
+      //        +  H^ . 6 . G^2 ( Dgamma/q - 1/(3 G + Hiso) ) Nbar \otimes Nbar
+
+      // ---------------------------------------------------------- Heaviside
+      // if plastic loading:   heaviside = 1.0 --> use C_ep
+      // if elastic unloading: heaviside = 0.0 --> use C_e
+
+      // I_d = I_s - 1/3 I . I
+      // I_d in Voigt-notation applied to symmetric problem, like stress calculation
+      //         [ 2/3   -1/3  -1/3 | 0    0    0  ]
+      //         [-1/3    2/3  -1/3 | 0    0    0  ]
+      //         [-1/3   -1/3   2/3 | 0    0    0  ]
+      //   I_d = [ ~~~~  ~~~~  ~~~~  ~~~  ~~~  ~~~ ]
+      //         [                  | 1/2   0   0  ]
+      //         [    symmetric     |      1/2  0  ]
+      //         [                  |          1/2 ]
+      //
+
+      // build Cartesian identity 2-tensor I_{AB}
+      LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
+      for (int i=0; i<3; i++) id2(i) = 1.0;
+
+      // set Cartesian identity 4-tensor in 6-Voigt matrix notation
+      // this is fully 'contra-variant' identity tensor, ie I^{ABCD}
+      // REMARK: rows are stress-like 6-Voigt
+      //         columns are stress-like 6-Voigt
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> id4sharp(true);
+      for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
+      for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
+
+      // ------------------------------------------------------- elastic term
+      // C_ep = C_e
+      // add standard isotropic elasticity tensor C_e first
+      SetupCmat(cmat);
+
+      // ------------------------------------------------------ plastic terms
+
+      // if plastic loading:   heaviside = 1.0 --> use C_ep
+      // if elastic unloading: heaviside = 0.0 --> use C_e
+
+      // ------------------------------------------------- first plastic term
+      // - ( H^ . Dgamma . 6 . G^2 ) / q^{trial} . I_d
+
+      double epfac = 0.0;
+      double epfac3 = 0.0;
+      // elastic trial von Mises effective stress
+      if (q_tilde != 0.0)
       {
-        epfac3 =  heaviside * 6 * G * G * ( Dgamma / q_tilde1 - 1.0 / (3 * G + Hiso1) );
-        cmat(i,k) += epfac3 * Nbar1(i) * Nbar1(k);
-      }  // (q != 0.0)
-    }  // end rows, loop i
-  }  // end columns, loop k
+        epfac = (-1.0) * heaviside * Dgamma * 6 * G * G / q_tilde;
+      }
+      // constitutive tensor
+      // I_d = id4sharp - 1/3 Id \otimes Id
+      // contribution: Id4^#
+      cmat.Update(epfac, id4sharp, 1.0);
+      // contribution: Id \otimes Id
+      double epfac1 = 0.0;
+      epfac1 = epfac / (-3.0);
+      cmat.MultiplyNT(epfac1, id2, id2, 1.0);
 
-  // complete material tangent C_ep available
+      // ------------------------------------------------ second plastic term
+
+      // loop strains (columns)
+      for (int k=0; k<6; ++k)
+      {
+        // ---------------------------------------------------------- tangent
+        // loop stresses (rows)
+        for (int i=0; i<6; ++i)
+        {
+          if (q_tilde != 0.0)
+          {
+            epfac3 =  heaviside * 6 * G * G * ( Dgamma / q_tilde - 1.0 / (3 * G + Hiso) );
+            // here: Nbar = s^{trial}_{n+1} / || s^{trial}_{n+1} ||
+            cmat(i,k) += epfac3 * Nbar(i) * Nbar(k);
+          }  // (q != 0.0)
+        }  // end rows, loop i
+      }  // end columns, loop k
+
+      // complete material tangent C_ep available
 
 #ifdef DEBUGMATERIAL
-  if (Dgamma != 0)
-  {
-    std::cout << "Ende SetupCmatElastPlast" << std::endl;
-    std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
-    std::cout << " G " << G << std::endl;
-    std::cout << " q " << q << std::endl;
-    std::cout << " Nbar " << Nbar << std::endl;
-    std::cout << " heaviside " << heaviside << std::endl;
-    std::cout << " epfac " << epfac << std::endl;
-    std::cout << " epfac1 " << epfac1 << std::endl;
-    std::cout << " cmat " << cmat << std::endl;
-  }
+      if (Dgamma != 0)
+      {
+        std::cout << "Ende SetupCmatElastPlast" << std::endl;
+        std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
+        std::cout << " G " << G << std::endl;
+        std::cout << " q " << q << std::endl;
+        std::cout << " Nbar " << Nbar << std::endl;
+        std::cout << " heaviside " << heaviside << std::endl;
+        std::cout << " epfac " << epfac << std::endl;
+        std::cout << " epfac1 " << epfac1 << std::endl;
+        std::cout << " cmat " << cmat << std::endl;
+      }
 #endif // #ifdef DEBUGMATERIAL
+  }  // (damevolution == false)
+
+  // material tangent differs for case damage or not
+  // if no damage: use standard tangent of purely plastic behaviour
+  else  // (damevolution == true)
+  {
+#ifdef DEBUGMATERIAL
+    if (gp == 0)
+      std::cout << "damage evolution takes place in eleID = " << eleID << endl;
+#endif // #ifdef DEBUGMATERIAL
+
+    // incremental constitutive function for the stress tensor
+    // consistent tangent operator
+    // D^{ep} := dsigma_n+1 / dstrain_n+1
+
+    // depending on the flow vector Cmat_ep can be a fully-occupied matrix
+
+    // ---------------------------------------------------------- Heaviside
+
+    // if plastic loading:   heaviside = 1.0 --> use D^{ep}
+    // if elastic unloading: heaviside = 0.0 --> use D^e
+
+    // -------------------------------------------------- identity matrices
+
+    // deviatoric projection tensor: I_d = I_s - 1/3 I \otimes I
+    // I_d in Voigt-notation applied to symmetric problem, like stress calculation
+    //         [ 2/3   -1/3  -1/3 | 0    0    0  ]
+    //         [-1/3    2/3  -1/3 | 0    0    0  ]
+    //         [-1/3   -1/3   2/3 | 0    0    0  ]
+    //   I_d = [ ~~~~  ~~~~  ~~~~  ~~~  ~~~  ~~~ ]
+    //         [                  | 1/2   0   0  ]
+    //         [    symmetric     |      1/2  0  ]
+    //         [                  |          1/2 ]
+
+    // build Cartesian identity 2-tensor I_{AB}
+    LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
+    for (int i=0; i<3; i++) id2(i) = 1.0;
+
+    // set Cartesian identity 4-tensor in 6-Voigt matrix notation
+    // this is fully 'contra-variant' identity tensor, i.e. I^{ABCD}
+    // REMARK: rows are stress-like 6-Voigt
+    //         columns are stress-like 6-Voigt
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> id4sharp(true);
+    for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
+    for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
+
+    // ------------------------------------- extract current history values
+    // integrity omega_{n+1}
+    double omega = 1 - damagecurr_->at(gp);
+
+    // ----------------------------------------------------- damaged elastic term
+    // D^{ep} = (1 - D_{n+1}) . C^e = omega_{n+1} . C^e
+    //        = omega_{n+1} . 2G . I_d + omega_{n+1} . kappa . id2 \otimes id2
+    // add standard isotropic elasticity tensor C^e first
+    if (heaviside == 0)
+    {
+      SetupCmat(cmat);
+      cmat.Scale(omega);
+    }
+    else // (heaviside == 1)
+    {
+      // D^{ep} = a . I_d + b . Nbar \otimes Nbar + c . Nbar \otimes id2
+      //          + d . id2 \otimes Nbar + e . id2 \otimes id2
+
+      // ----------------------------------- extract some material parameters
+
+      // get material parameters
+      // damage evolution law denominator r
+      double damden = params_->damden_;
+      // damage evolution law exponent s
+      double damexp = params_->damexp_;
+
+      // ---------------------------------------------------------- plastic terms
+
+      // check if omega is admissible
+      if (omega < 1.0e-20)
+        dserror("Omega has to be greater than zero! omega = %-14.8E\n", omega);
+
+      // be aware: in the 1st equilibrium (Newton) iteration (i=0) D^{ep} is
+      // indeterminate due to Dgamma == 0.0
+      // a small perturbation Dgamma=1e-08 is used (instead of using a limiting
+      // procedure) which was proposed by de Souza Neto
+      if (Dgamma == 0)
+        Dgamma = 1.0e-08;
+
+      // ------------------------ factors required for the elasto-plastic tangent
+
+      // some constants
+      double aux = -energyrelrate / damden;
+      double auxb = (q_tilde - sigma_y) / (3 * G);
+      // PhiT = qtilde - sigma_y(Rplast_{n+1})
+      // be careful: NOT Phi_trial which was calculated using sigma_y(Rplast_n)
+      double PhiT = q_tilde - sigma_y;
+
+      // ---------------------------------------- derivatives w.r.t. Dgamma
+      // domega/dDgamma
+      double Domega = (3.0 * G + omega * Hiso) / PhiT;
+      // domega/dq_tilde . dq_tilde/dDgamma
+      double DomegaDq_tilde = - omega / PhiT;
+
+      // derviative of residual function dF/dDgamma
+      double ResTan = Domega - Hiso / (3 * G) * pow(aux, damexp)
+                      - auxb * damexp * Ytan / damden * pow(aux, (damexp -1) );
+      // derivative of residual function dF/dp_tilde . dp_tilde/dDgamma
+      // DResDp_tilde = s . (q_tilde - sigma_y)/(3G) . pow((-Y/r), s-1) . p_tilde /(r . kappa)
+      double DResDp_tilde = damexp * auxb * pow(aux, (damexp -1) ) * p_tilde
+                            / (damden * kappa);
+      // derivative of residual function F w.r.t. q_tilde
+      double DResDq_tilde = DomegaDq_tilde + pow(aux, damexp) / (3 * G);
+
+      // --------- calculate the constants according to de Souza Neto (12.52)
+
+      // a1 = - DResDq_tilde / ResTan
+      //    = [ omega / (q_tilde - sigma_y) - pow( (-energyrelrate/damden), damexp)
+      //                                      / (3.0 * G) ] / ResTan;
+      // or alternatively
+      //   a1 = [1 - Dgamma / (omega . omega) . pow( (-Y/r), s)] . omega
+      //          / [ (q_tilde - sigma_y) . ResTan]
+      double a1 = - DResDq_tilde / ResTan;
+
+      // a2 = - DResDp_tilde / ResTan
+      //    = - s . p_tilde . (q_tilde - sigma_y) / (3G . r . kappa . ResTan) . pow((-Y/r), s-1);
+      double a2 = 0.0;
+      a2 = - DResDp_tilde / ResTan;
+
+      // a3 = a2 * Domega
+      double a3 = 0.0;
+      a3 = a2 * Domega;
+
+      // a4 = a1 . Domega + DomegaDq_tilde
+      //    = a1 . Domega - omega / (q_tilde - sigma_y)
+      double a4 = 0.0;
+      a4 = a1 * Domega + DomegaDq_tilde;
+
+      // ------- calculate actual coefficients of elasto-plastic material tangent
+
+      // a = 2G . sigma_y . omega / q_tilde
+      double a = 0.0;
+      a = (2.0 * G * sigma_y * omega) / q_tilde;
+      // b = 2G . (a1 . Hiso . omega + a4 . sigma_y - sigma_y . omega / q_tilde
+      double b = 0.0;
+      b = 2.0 * G * (a1 * Hiso * omega + a4 * sigma_y - sigma_y * omega / q_tilde);
+      // c = kappa . (a2 . Hiso . omega + a3 . sigma_y) / sqrt(3/2)
+      double c = 0.0;
+      c = kappa * (a2 * Hiso * omega + a3 * sigma_y) / sqrt(3.0/2.0);
+      // d = p_tilde . 2G . sqrt(3/2) . a4
+      double d = 0.0;
+      d = ( p_tilde * 2.0 * G * sqrt(3.0/2.0) * a4 );
+      // e = kappa . (omega + p_tilde . a3)
+      double e = 0.0;
+      e = kappa * (omega + p_tilde * a3);
+
+      // ------------------------------- assemble elasto-plastic material tangent
+
+      // empty consistent tangent operator
+      cmat.Clear();
+      // constitutive tensor
+      // I_d = id4sharp - 1/3 Id \otimes Id
+      // contribution: Id4^#
+      cmat.Update(a, id4sharp, 1.0);
+      // contribution: Id \otimes Id
+      double epfac = 0.0;
+      epfac = a / (-3.0);
+      if (q_tilde != 0.0)
+      {
+        cmat.MultiplyNT(epfac, id2, id2, 1.0);
+      }
+      cmat.MultiplyNT(b, Nbar, Nbar, 1.0);
+      cmat.MultiplyNT(c, Nbar, id2, 1.0);
+      cmat.MultiplyNT(d, id2, Nbar, 1.0);
+      cmat.MultiplyNT(e, id2, id2, 1.0);
+
+    }  // plastic load step: (heaviside == 1)
+    // complete material tangent C_ep available
+
+#ifdef DEBUGMATERIAL
+    if (Dgamma != 0)
+    {
+      std::cout << "Ende SetupCmatElastPlast" << std::endl;
+      std::cout << "Cep\n" << " Dgamma " << Dgamma << std::endl;
+      std::cout << " G " << G << std::endl;
+      std::cout << " q_tilde " << q_tilde << std::endl;
+      std::cout << " Nbar " << Nbar << std::endl;
+      std::cout << " heaviside " << heaviside << std::endl;
+      std::cout << " epfac " << epfac << std::endl;
+      std::cout << " epfac1 " << epfac1 << std::endl;
+      std::cout << " cmat " << cmat << std::endl;
+    }
+#endif // #ifdef DEBUGMATERIAL
+
+  }  // damage evolves: (damevolution == true)
 
 }  // SetupCmatElastoPlastic()
 
@@ -1568,6 +1685,7 @@ bool MAT::Damage::VisData(
       temp += AccumulatedStrain(iter);
     data[0] = temp/numgp;
   }
+
   if (name == "isohardeningvar")
   {
     if ((int)data.size() != 1) dserror("size mismatch");
@@ -1585,6 +1703,7 @@ bool MAT::Damage::VisData(
       temp += IsotropicDamage(iter);
     data[0] = temp/numgp;
   }
+
   return true;
 }  // VisData()
 

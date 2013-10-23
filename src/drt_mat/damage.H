@@ -210,6 +210,7 @@ private:
       double Hiso,
       LINALG::Matrix<NUM_STRESS_3D,1> Nbar,
       int gp,  //!< current Gauss point
+      bool damevolution,  //!< flag indicating if damage threshold is passed, i.e. if damage evolves
       double heaviside  //!< heaviside function: decide if loading/unloading
       );
 
@@ -295,9 +296,9 @@ private:
     //! current damaged accumulated plastic strain corresponding to isotropic hardening at t_n+1
     Teuchos::RCP<std::vector<double> > isohardvarcurr_;  //!< \f${R}_{n}\f$
     //! old damage internal state variable D at t_n
-    Teuchos::RCP<std::vector<double > > damagelast_;  //!< \f${\D}_{n}\f$
+    Teuchos::RCP<std::vector<double > > damagelast_;  //!< \f${D}_{n}\f$
     //! current damage internal state variable D at t_n+1
-    Teuchos::RCP<std::vector<double > > damagecurr_;  //!< \f${\D}_{n+1}\f$
+    Teuchos::RCP<std::vector<double > > damagecurr_;  //!< \f${D}_{n+1}\f$
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
