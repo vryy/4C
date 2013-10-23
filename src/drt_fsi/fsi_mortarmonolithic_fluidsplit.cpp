@@ -1944,8 +1944,6 @@ void FSI::MortarMonolithicFluidSplit::CheckDynamicEquilibrium()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
                                       Teuchos::RCP<const Epetra_Vector> sv,
                                       Teuchos::RCP<const Epetra_Vector> fv,
@@ -1970,35 +1968,31 @@ void FSI::MortarMonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
     FSI::Monolithic::CombineFieldVectors(v,sv,fv,av);
 }
 
-/*----------------------------------------------------------------------*/
-// Choose as the new time step the smallest of the three time step sizes
-// calculated from error norms appropriate for a fluid split
-/*----------------------------------------------------------------------*/
-
-double FSI::MortarMonolithicFluidSplit::SelectTimeStepSize()
+double FSI::MortarMonolithicFluidSplit::SelectTimeStepSize() const
 {
-	const double strdt = GetAdaStrDt();
-	const double dtstrfsi = GetAdaStrFSIDt();
-	const double dtflinner = GetAdaFlInnerDt();
+  // get time step size suggestions based on some error norms
+	const double dtstr = GetAdaStrDt();         // based on all structure DOFs
+	const double dtstrfsi = GetAdaStrFSIDt();   // based on structure FSI DOFs
+	const double dtflinner = GetAdaFlInnerDt(); // based on inner fluid DOFs
 
-	double dt = std::min(std::min(strdt, dtstrfsi), dtflinner);
+	// determine minimum
+	double dt = std::min(std::min(dtstr, dtstrfsi), dtflinner);
 
-	//in case error estimation in the fluid field is turned off:
-	//Choose the smallest dt resulting from the structure field
-	if ( flmethod_ == INPAR::FSI::timada_fld_none ) { dt = std::min(strdt, dtstrfsi); }
+	// Time adaptivity not based on fluid: use structural suggestions only
+	if ( flmethod_ == INPAR::FSI::timada_fld_none ) { dt = std::min(dtstr, dtstrfsi); }
 
-	//in case error estimation in the structure field is turned off:
-	//Choose the dt resulting from the fluid field
+	// Time adaptivity not based on structure: use fluid suggestions only
 	if ( strmethod_ == INPAR::FSI::timada_str_none ) { dt = dtflinner; }
 
 	return dt;
 }
 
-bool FSI::MortarMonolithicFluidSplit::SetAccepted()
+bool FSI::MortarMonolithicFluidSplit::SetAccepted() const
 {
-	const double strnorm 		= GetAdaStrnorm();
-	const double strfsinorm 	= GetAdaStrFSInorm();
-	const double flinnernorm	= GetAdaFlInnerNorm();
+  // get error norms
+	const double strnorm = GetAdaStrnorm();         // based on all structure DOFs
+	const double strfsinorm = GetAdaStrFSInorm();   // based on structure FSI DOFs
+	const double flinnernorm = GetAdaFlInnerNorm(); // based on inner fluid DOFs
 
 	bool accepted = std::max(strnorm,strfsinorm) < errtolstr_ && flinnernorm < errtolfl_;
 

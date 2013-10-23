@@ -90,7 +90,7 @@ COUPALGO                        iter_monolithicfluidsplit
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         0.31
+MAXTIME                         0.33
 NUMSTEP                         1000
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
@@ -120,7 +120,7 @@ TOL_VEL_RES_L2                  1e-07
 UPRES                           1
 -----------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 DTINITIAL												0.0002
-DTMAX                           0.02
+DTMAX                           0.2
 DTMIN                           0.0002
 TIMEADAPTON                     Yes
 LOCERRTOLSTRUCTURE   						0.0001
@@ -151,7 +151,7 @@ STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -8.0e-3 TOLERANCE 1.0e-8
 FSI NODE 16 QUANTITY lambdax VALUE 0.0 TOLERANCE 1.0e-8
 FSI NODE 16 QUANTITY lambday VALUE 0.0 TOLERANCE 1.0e-8
 FSI NODE 16 QUANTITY lambdaz VALUE 0.0 TOLERANCE 1.0e-8
-FSI SPECIAL QUANTITY dt VALUE 1.19923055338873787e-02 TOLERANCE 1.0e-10
+FSI SPECIAL QUANTITY dt VALUE 3.05466523532547767e-02 TOLERANCE 1.0e-10
 FSI SPECIAL QUANTITY adasteps VALUE 1 TOLERANCE 1.0e-12
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4

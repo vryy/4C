@@ -126,8 +126,8 @@ void FSI::MonolithicBase::Update()
   else
     StructureField()->Update(Time()); // variable/adaptive dt
 
-  FluidField().     Update();
-  AleField().       Update();
+  FluidField().Update();
+  AleField().Update();
 }
 
 
@@ -558,13 +558,10 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
             << "\t" << nlParams.sublist("Output").get<double>("2-Norm of Residual")
             << "\t" << lsParams.sublist("Output").get<int>("Total Number of Linear Iterations")
             << "\t" << Dt();
-    }
-    (*log_) << std::endl;
-    lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
-
+  }
+  (*log_) << std::endl;
+  lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
 }
-
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

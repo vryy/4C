@@ -691,6 +691,9 @@ namespace STR
     //! Prepare time step for coupled problems with monolithic approach
     void PrepareTimeStep()
     {
+      // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
+      SetTimen( (*time_)[0]+(*dt_)[0] );
+
       // prepare contact for new time step
       PrepareStepContact();
 

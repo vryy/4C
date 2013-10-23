@@ -793,12 +793,12 @@ namespace STR
     double GetTimeStepSize() const { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void SetDt(double dtnew) { (*dt_)[0] = dtnew; }
+    void SetDt(const double dtnew) { (*dt_)[0] = dtnew; }
 
     //! Set time step size and time in the first step \f$\Delta t_n\f$
-    void SetInitialTimeStepAndTime(double timestepsize)
+    void SetInitialTimeStepAndTime(const double dt)
     {
-    	(*dt_)[0] = timestepsize;
+    	(*dt_)[0] = dt;
     	timen_ = (*time_)[0] + (*dt_)[0];
     }
 

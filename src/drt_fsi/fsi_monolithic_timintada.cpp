@@ -39,21 +39,26 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   // initialize member variables
   dtold_ = 0.0;
   dtprevious_ = 0.0;
+
   adaptstep_ = 0;
   accepted_ = false;
+
   setstrdt_ = false;
+
   strnorm_ = 0.0;
   flnorm_ = 0.0;
   strfsinorm_ = 0.0;
   flfsinorm_ = 0.0;
   strinnernorm_ = 0.0;
   flinnernorm_ = 0.0;
+
   dtstr_ = 0.0;
   dtfl_ = 0.0;
   dtstrfsi_ = 0.0;
   dtflfsi_ = 0.0;
   dtstrinner_ = 0.0;
   dtflinner_ = 0.0;
+
   dtminused_ = false;
 
   //----------------------------------------------------------------------------
@@ -106,6 +111,16 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   numstrfsidbcdofs_ = intersectionmapstruct->NumGlobalElements();
   numflfsidbcdofs_ = intersectionmapfluid->NumGlobalElements();
 
+  //----------------------------------------------------------------------------
+  // Check whether input parameters make sense
+  //---------------------------------------------------------------------------
+  const double safetyfac = fsidyn.sublist("TIMEADAPTIVITY").get<double>("SAFETYFACTOR");
+  if ( safetyfac > 1.0 )
+    dserror("SAFETYFACTOR in FSI DYNAMIC/TIMEADAPTIVITY is %f > 1.0 and, thus, to large.", safetyfac);
+
+  if ( dtmax_ <= dtmin_ )
+    dserror("DTMAX = %f has to be larger than DMIN = %f.", dtmax_, dtmin_);
+
   return;
 }
 
@@ -128,10 +143,12 @@ void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::R
 
   PrepareTimeloop();
 
+  // the time loop
   while ( NotFinished() )
   {
     PrepareAdaptiveTimeStep();
 
+    // time step adaptivity loop
     while( StepNotAccepted() && adaptstep_ < adaptstepmax && (not dtminused_) )
     {
       PrintHeaderRepeatedStep();
@@ -390,6 +407,10 @@ double FSI::Monolithic::CalculateTimeStepSize(const double errnorm,
   const double dtmin = fsidyn.sublist("TIMEADAPTIVITY").get<double>("DTMIN");
   //----------------------------------------------------------------------
 
+  // catch case that error norm is (very close to) zero
+  if ( errnorm < 1.0e-14)
+    return dtmax;
+
   //----------------------------------------------------------------------
   // Calculate new time step size
   //----------------------------------------------------------------------
@@ -525,15 +546,27 @@ void FSI::Monolithic::IndicateLocalErrorNormsFluid()
     errorvelinterface->Norm2(&flfsinorm_);
     errorvelinterior->Norm2(&flinnernorm_);
 
-    // Length scaling: We just need the non-DBC and the non-pressure DOFs.
-    flnorm_ /= sqrt(errorvel->GlobalLength() - FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements());
-    flfsinorm_ /= sqrt(errorvelinterface->GlobalLength() - numflfsidbcdofs_);
-    flinnernorm_ /= sqrt(errorvelinterior->GlobalLength() - FluidField().PressureRowMap()->NumGlobalElements() - (FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numflfsidbcdofs_));
+    // -------------------------------------------------------------------------
 
-    // take care of possible not-a-numbers
-    if ( isnan(flnorm_) ) { flnorm_ = 0.0; }
-    if ( isnan(flfsinorm_) ) { flfsinorm_ = 0.0; }
-    if ( isnan(flinnernorm_) ) { flinnernorm_ = 0.0; }
+    // Length scaling: We just need the non-DBC and the non-pressure DOFs.
+    // Take care, that we do not divide by zero
+
+    if ( sqrt(errorvel->GlobalLength() - FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements()) != 0 )
+      flnorm_ /= sqrt(errorvel->GlobalLength() - FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements());
+    else
+      flnorm_ = 0.0;
+
+    if ( sqrt(errorvelinterface->GlobalLength() - numflfsidbcdofs_) != 0 )
+      flfsinorm_ /= sqrt(errorvelinterface->GlobalLength() - numflfsidbcdofs_);
+    else
+      flfsinorm_ = 0.0;
+
+    if ( sqrt(errorvelinterior->GlobalLength() - FluidField().PressureRowMap()->NumGlobalElements() - (FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numflfsidbcdofs_)) != 0 )
+      flinnernorm_ /= sqrt(errorvelinterior->GlobalLength() - FluidField().PressureRowMap()->NumGlobalElements() - (FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numflfsidbcdofs_));
+    else
+      flinnernorm_ = 0.0;
+
+    // -------------------------------------------------------------------------
   }
   else
   {
@@ -630,16 +663,27 @@ void FSI::Monolithic::IndicateLocalErrorNormsStructure()
     errorinterface->Norm2(&strfsinorm_);
     errorinterior ->Norm2(&strinnernorm_);
 
+    // -------------------------------------------------------------------------
+
     // normalize the norms with the correct lengths of the error vectors
     // For length scaling we just need the non-DBC and non-pressure DOFs.
-    strnorm_ /= sqrt(error->GlobalLength() - StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements());
-    strfsinorm_ /= sqrt(errorinterface->GlobalLength() - numstrfsidbcdofs_);
-    strinnernorm_ /= sqrt(errorinterior->GlobalLength() - (StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numstrfsidbcdofs_));
+    // Take care, that we do not divide by zero
+    if ( sqrt(error->GlobalLength() - StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements()) != 0 )
+      strnorm_ /= sqrt(error->GlobalLength() - StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements());
+    else
+      strnorm_ = 0.0;
 
-    // take care of possible not-a-numbers
-    if ( isnan(strnorm_) ) { strnorm_ = 0.0; }
-    if ( isnan(strfsinorm_) ) { strfsinorm_ = 0.0; }
-    if ( isnan(strinnernorm_) ) { strinnernorm_ = 0.0; }
+    if ( sqrt(errorinterface->GlobalLength() - numstrfsidbcdofs_) != 0 )
+      strfsinorm_ /= sqrt(errorinterface->GlobalLength() - numstrfsidbcdofs_);
+    else
+      strfsinorm_ = 0.0;
+
+    if ( sqrt(errorinterior->GlobalLength() - (StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numstrfsidbcdofs_)) != 0 )
+      strinnernorm_ /= sqrt(errorinterior->GlobalLength() - (StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numstrfsidbcdofs_));
+    else
+      strinnernorm_ = 0.0;
+
+    // -------------------------------------------------------------------------
   }
   else
   {

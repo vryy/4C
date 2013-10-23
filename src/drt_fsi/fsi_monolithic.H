@@ -441,30 +441,29 @@ namespace FSI
     //! @name FSI time adaptivity
     //@{
 
-    //! access methods
-    //time step sizes
-    const double GetAdaStrDt()      {return dtstr_;}
-    const double GetAdaStrFSIDt()   {return dtstrfsi_;}
-    const double GetAdaFlDt()       {return dtfl_;}
-    const double GetAdaFlFSIDt()    {return dtflfsi_;}
-    const double GetAdaStrInnerDt() {return dtstrinner_;}
-    const double GetAdaFlInnerDt()  {return dtflinner_;}
+    // access to time step size suggestions based on different norms
+    const double GetAdaStrDt() const      {return dtstr_;}      ///< \f$\Delta t\f$ based on all structural DOFs
+    const double GetAdaStrFSIDt() const   {return dtstrfsi_;}   ///< \f$\Delta t\f$ based on structural FSI DOFs
+    const double GetAdaStrInnerDt() const {return dtstrinner_;} ///< \f$\Delta t\f$ based on inner structural DOFs
+    const double GetAdaFlDt() const       {return dtfl_;}       ///< \f$\Delta t\f$ based on all fluid DOFs
+    const double GetAdaFlFSIDt() const    {return dtflfsi_;}    ///< \f$\Delta t\f$ based on fluid FSI DOFs
+    const double GetAdaFlInnerDt() const  {return dtflinner_;}  ///< \f$\Delta t\f$ based on inner fluid DOFs
 
-    //error norms
-    const double GetAdaStrnorm()      {return strnorm_;}
-    const double GetAdaStrFSInorm()   {return strfsinorm_;}
-    const double GetAdaStrInnernorm() {return strinnernorm_;}
-    const double GetAdaFlnorm()       {return flnorm_;}
-    const double GetAdaFlFSInorm()    {return flfsinorm_;}
-    const double GetAdaFlInnerNorm()  {return flinnernorm_;}
+    // access to error norms
+    const double GetAdaStrnorm() const      {return strnorm_;}      ///< error norm based on all structural DOFs
+    const double GetAdaStrFSInorm() const   {return strfsinorm_;}   ///< error norm based on structural FSI DOFs
+    const double GetAdaStrInnernorm() const {return strinnernorm_;} ///< error norm based on inner structural DOFs
+    const double GetAdaFlnorm() const       {return flnorm_;}       ///< error norm based on all fluid DOFs
+    const double GetAdaFlFSInorm() const    {return flfsinorm_;}    ///< error norm based on fluid FSI DOFs
+    const double GetAdaFlInnerNorm() const  {return flinnernorm_;}  ///< error norm based on inner fluid DOFs
 
     //! Depending on the chosen method (fluid or structure split), only three of
     //! the 6 available norms are useful. Each of these three norms delivers a
     //! new time step size. Select the minimum of these three as the new time step size.
-    virtual double SelectTimeStepSize() = 0;
+    virtual double SelectTimeStepSize() const = 0;
 
     //! Whether the new time step size is accepted also depends on the chosen method!
-    virtual bool SetAccepted() = 0;
+    virtual bool SetAccepted() const = 0;
 
     //@}
 

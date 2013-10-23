@@ -1480,20 +1480,20 @@ void FSI::MonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::MonolithicStructureSplit::SelectTimeStepSize()
+double FSI::MonolithicStructureSplit::SelectTimeStepSize() const
 {
-	const double dtfl 		= GetAdaFlDt();
-	const double dtflfsi 	= GetAdaFlFSIDt();
-	const double dtstrinner	= GetAdaStrInnerDt();
+  // get time step size suggestions based on some error norms
+	const double dtfl 		= GetAdaFlDt();         // based on all fluid DOFs
+	const double dtflfsi 	= GetAdaFlFSIDt();      // based on fluid FSI DOFs
+	const double dtstrinner	= GetAdaStrInnerDt(); // based on inner structural DOFs
 
+  // determine minimum
 	double dt = std::min(std::min(dtfl, dtflfsi), dtstrinner);
 
-	//in case error estimation in the fluid field is turned off:
-	//Choose the dt resulting from the structure field
+	// Time adaptivity not based on fluid: use structural suggestions only
 	if ( flmethod_ == INPAR::FSI::timada_fld_none ) { dt = dtstrinner; }
 
-	//in case error estimation in the structure field is turned off:
-	//Choose the minimum dt resulting from the fluid field
+	// Time adaptivity not based on structure: use fluid suggestions only
 	if ( strmethod_ == INPAR::FSI::timada_str_none ) { dt = std::min(dtfl, dtflfsi); }
 
 	return dt;
@@ -1501,11 +1501,12 @@ double FSI::MonolithicStructureSplit::SelectTimeStepSize()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::MonolithicStructureSplit::SetAccepted()
+bool FSI::MonolithicStructureSplit::SetAccepted() const
 {
-	const double flnorm 		  = GetAdaFlnorm();
-	const double flfsinorm 		= GetAdaFlFSInorm();
-	const double strinnernorm	= GetAdaStrInnernorm();
+  // get error norms
+	const double flnorm = GetAdaFlnorm();             // based on all fluid DOFs
+	const double flfsinorm= GetAdaFlFSInorm();        // based on fluid FSI DOFs
+	const double strinnernorm	= GetAdaStrInnernorm(); // based on inner structural DOFs
 
 	bool accepted = std::max(flnorm,flfsinorm) < errtolfl_ && strinnernorm < errtolstr_ ;
 

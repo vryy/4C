@@ -156,7 +156,7 @@ namespace FSI
     //!
     //! \author: mayr.mt
     //! \date: 08/2013
-    virtual double SelectTimeStepSize();
+    virtual double SelectTimeStepSize() const;
 
     //! \brief Check whether time step is accepted or not
     //!
@@ -165,7 +165,7 @@ namespace FSI
     //!
     //! \author: mayr.mt
     //! \date: 08/2013
-    virtual bool SetAccepted();
+    virtual bool SetAccepted() const;
 
     //@}
 

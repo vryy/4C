@@ -147,7 +147,7 @@ namespace FSI
     //!
     //! \author: mayr.mt
     //! \date: 08/2013
-    virtual double SelectTimeStepSize()
+    virtual double SelectTimeStepSize() const
     {
       dserror ("SelectTimeStepSize() not implemented, yet!");
       return 0.0;
@@ -160,7 +160,7 @@ namespace FSI
     //!
     //! \author: mayr.mt
     //! \date: 08/2013
-    virtual bool SetAccepted()
+    virtual bool SetAccepted() const
     {
       dserror ("SetAccepted() not implemented, yet!");
       return false;
