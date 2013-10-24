@@ -53,7 +53,7 @@ MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
-INITPOTCALC                     No
+INITPOTCALC                     no
 SCATRATYPE                      Elch_ENC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-12

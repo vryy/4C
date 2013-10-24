@@ -21,6 +21,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 
 
@@ -74,7 +75,8 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
     fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  ElectrodeKineticsTimeUpdate(true);
+  if (IsElch(scatratype_))
+    ComputeTimeDerivPot0(true);
 
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
@@ -277,6 +279,7 @@ void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",true);
   params.set("total time",time_-(1-alphaF_)*dta_);
+  params.set("delta t",dta_);
   params.set("time factor",genalphafac_*dta_);
   params.set("alpha_F",alphaF_);
 
@@ -447,6 +450,62 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressureTimeDerivative()
   return;
 }
 
+/*-------------------------------------------------------------------------------------*
+ | compute time derivative of applied electrode potential                   ehrl 08/13 |
+ *-------------------------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::ComputeTimeDerivPot0(const bool init)
+{
+  std::vector<DRT::Condition*> cond;
+  discret_->GetCondition("ElectrodeKinetics",cond);
+  int numcond = cond.size();
+
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    double pot0np =  cond[icond]->GetDouble("pot");
+    const int curvenum =   cond[icond]->GetInt("curve");
+    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
+
+    if (init)
+    {
+      // create and initialize additional b.c. entries for galvanostatic simulations or
+      // simulations including a double layer
+      cond[icond]->Add("pot0n",0.0);
+      cond[icond]->Add("pot0dtnp",0.0);
+      cond[icond]->Add("pot0dtn",0.0);
+      cond[icond]->Add("pot0hist",0.0);
+
+      // Double layer charging can not be integrated into the exiting framework without major restructuring on element level:
+      // Derivation is based on a history vector!!
+      if(dlcap!=0.0)
+        dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
+        //dlcapexists_=true;
+
+      //if(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")==true)
+      //    dserror("Double layer charging and galvanostatic mode are not implemented for generalized-alpha! You have to use one-step-theta time integration scheme");
+    }
+    else
+    {
+      // these values are not used without double layer charging
+      // compute time derivative of applied potential
+      if (curvenum>=0)
+      {
+        const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
+        // adjust potential at metal side accordingly
+        pot0np *= curvefac;
+      }
+      // compute time derivative of applied potential pot0
+      // pot0dt(n+1) = (pot0(n+1)-pot0(n)) / (theta*dt) + (1-(1/theta))*pot0dt(n)
+      double pot0n = cond[icond]->GetDouble("pot0n");
+      double pot0dtn = cond[icond]->GetDouble("pot0dtn");
+      double pot0dtnp =(pot0np-pot0n)/(dta_*gamma_) + (1-(1/gamma_))*pot0dtn;
+      // add time derivative of applied potential pot0dtnp to BC
+      cond[icond]->Add("pot0dtnp", pot0dtnp);
+    }
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
@@ -559,8 +618,8 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
           output_->WriteDouble("pot",pot);
 
           // electrode potential of the adjusted electrode kinetics BC at time n
-          double potn = mycond->GetDouble("potn");
-          output_->WriteDouble("potn",potn);
+          double potn = mycond->GetDouble("pot0n");
+          output_->WriteDouble("pot0n",potn);
         }
       }
     }
@@ -616,6 +675,9 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   if(isale_)
     reader.ReadVector(trueresidual_, "trueresidual");
 
+  // Initialize Nernst-BC
+  InitNernstBC();
+
   // restart for galvanostatic applications
   if (IsElch(scatratype_))
   {
@@ -640,8 +702,8 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
           double pot = reader.ReadDouble("pot");
           mycond->Add("pot",pot);
 
-          double potn = reader.ReadDouble("potn");
-          mycond->Add("potn",potn);
+          double potn = reader.ReadDouble("pot0n");
+          mycond->Add("pot0n",potn);
 
           read_pot=true;
           if (myrank_==0)
@@ -752,29 +814,27 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate(const bool init)
+void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate()
 {
   if (IsElch(scatratype_))
   {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
+        dlcapexists_==true)
     {
-       std::vector<DRT::Condition*> cond;
-       discret_->GetCondition("ElectrodeKinetics",cond);
-       for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
-       {
-         double potnp = cond[i]->GetDouble("pot");
-         if (init) // create and initialize additional b.c. entries if desired
-         {
-           cond[i]->Add("potn",potnp);
-         }
-         //double potn = cond[i]->GetDouble("potn");
-         // shift status variables
-         cond[i]->Add("potn",potnp);
+      ComputeTimeDerivPot0(false);
 
-         const double dlcapacitance = cond[i]->GetDouble("dlcap");
-         if (dlcapacitance > EPS12)
-           dserror("Galvanostatic mode for GenAlpha does not support double-layer capacitance yet.");
-       }
+      std::vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+      for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
+      {
+        {
+          double pot0np = cond[i]->GetDouble("pot");
+          cond[i]->Add("pot0n",pot0np);
+
+          //double pot0dtnp = cond[i]->GetDouble("pot0dtnp");
+          //cond[i]->Add("pot0dtn",pot0dtnp);
+        }
+      }
     }
   }
   return;

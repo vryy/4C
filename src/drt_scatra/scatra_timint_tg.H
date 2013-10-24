@@ -61,6 +61,13 @@ public:
     ///  compute scalar time derivative
     void ComputeTimeDerivative();
 
+    ///  compute scalar time derivate parameters of the input voltage
+    void ComputeTimeDerivPot0(const bool init)
+    {
+      dserror("Double layer charging is not implemented for BDF2! You have to use one-step-theta time integration scheme");
+      return;
+    };
+
     ///  compute time derivative of thermodynamic pressure
     void ComputeThermPressureTimeDerivative();
 
@@ -165,7 +172,7 @@ protected:
     double ResidualScaling() const { return 1.0; }
 
     /// update time-dependent electrode state variables at the end of an time step
-    void ElectrodeKineticsTimeUpdate(const bool init = false);
+    void ElectrodeKineticsTimeUpdate();
 
     /// set old part of RHS for galvanostatic equation
     void ElectrodeKineticsSetOldPartOfRHS();

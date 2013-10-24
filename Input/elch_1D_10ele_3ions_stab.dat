@@ -148,9 +148,9 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              inflow
-E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 0 VAL 1.0 2.0 2.0 1.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 1.0 2.0 2.0 1.0 0.0 CURVE none none none none none FUNCT 0 0 0 0 0
 //                              outflow
-E 2 - NUMDOF 6 ONOFF 1 0 0 1 0 0 VAL 0.1 0.0 0.0 0.1 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 5 ONOFF 1 0 0 1 0 VAL 0.1 0.0 0.0 0.1 0.0 CURVE none none none none none FUNCT 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS

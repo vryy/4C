@@ -41,7 +41,6 @@
 #include "../drt_mat/elchphase.H"
 #include "../drt_mat/newman.H"
 
-//TODO(ehrl): Dirichlet for eliminated species
 
 //#define DEBUG_BATTERY
 
@@ -142,6 +141,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParamsDiffCond(
 
   for (int k = 0;k<numscal_;++k)
   {
+    // set density at various time steps and density gradient factor to 1.0/0.0
+    densn_[k]       = 1.0;
+    densnp_[k]      = 1.0;
+    densam_[k]      = 1.0;
+    densgradfac_[k] = 0.0;
+
     const int specid = actmat->SpecID(k);
     Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
 
@@ -228,6 +233,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParamsDiffCond(
       // since time curve is used as input routine
       cond_[iphase] = actsinglemat->ComputeConductivity(conint_[0]);
       condderiv_[iphase] = actsinglemat->ComputeFirstDerivCond(conint_[0]);
+
+      therm_[iphase] = actsinglemat->ComputeThermodynamicFactor(conint_[0]);
+      thermderiv_[iphase] = actsinglemat->ComputeFirstDerivThermodynamicFactor(conint_[0]);
+
       eps_[iphase] = actsinglemat->Epsilon();
       tort_[iphase] = actsinglemat->Tortuosity();
       epstort_[iphase]=eps_[iphase]*tort_[iphase];
@@ -414,6 +423,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
       }
       else
       {
+        // TODO: do I need this term
         rhsint = eps_[0]*hist_[k] + (rhs_[k]*timefac); // contributions from t_n and \theta*dt*bodyforce(t_{n+1})
         //residual  = conint_[k] + timefac*(conv_ephinp_k - diff_ephinp_k) - rhsint;
 
@@ -489,6 +499,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
         // matrix entries
         double matvalconc = 0.0;
 
+        // Stabilization is not available so far (usually not necessary)
         // convective term (transport equation)
         //
         // (w, u grad Dc)
@@ -668,7 +679,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             for(int iscal=0;iscal<numscal_;++iscal)
             {
               emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
+                += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*(therm_[0])*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
 
               //TODO (ehrl): Linearization only for one species (otherwise you need two for-dim loops)
               {
@@ -677,19 +688,24 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
 
                 // Linearization wrt ln c
                 emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                  += -timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]/conint_[iscal]*laplawf2*funct_(ui);
+                  += -timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*(therm_[0])*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]/conint_[iscal]*laplawf2*funct_(ui);
 
                 // Linearization wrt kappa
                 emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*condderiv_[iscal]*funct_(ui);
+                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*(therm_[0])*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*condderiv_[iscal]*funct_(ui);
 
                 // Linearization wrt transference number
                 emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*cond_[0]/c_/conint_[iscal]*laplawf2*(a_+b_*trans_[iscal])*(transderiv_[iscal])[iscal]*funct_(ui);
+                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*cond_[0]/c_/conint_[iscal]*laplawf2*(therm_[0])*(a_+b_*trans_[iscal])*(transderiv_[iscal])[iscal]*funct_(ui);
 
                 // Linearization wrt transference number
                 emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*cond_[0]/c_/conint_[iscal]*laplawf2*trans_[iscal]*b_*(transderiv_[iscal])[iscal]*funct_(ui);
+                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*cond_[0]*(therm_[0])/c_/conint_[iscal]*laplawf2*trans_[iscal]*b_*(transderiv_[iscal])[iscal]*funct_(ui);
+
+                // Linearization wrt thermodynamic factor
+                emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
+                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*thermderiv_[iscal]*funct_(ui);
+
               }
 
             }
@@ -800,7 +816,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi); // compute once, reuse below!
 
             erhs[fvi]
-              -= rhsfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
+              -= rhsfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*(therm_[0])*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
           }
         }
 
@@ -1013,10 +1029,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
                 emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
                   += timefacfac/faraday*epstort_[0]/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf;
             }
+            // thermodynamic factor only implemented for Newman
             else
             {
               emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                += timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf;
+                += timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(therm_[0])*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf;
 
               //TODO (ehrl): Linearization only for one species (otherwise you need two for-dim loops)
               {
@@ -1025,15 +1042,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
 
                 // Linearization wrt ln c
                 emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                  += -timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]/conint_[iscal]*laplawf2*funct_(ui);
+                  += -timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(therm_[0])*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]/conint_[iscal]*laplawf2*funct_(ui);
 
                 // Linearization wrt kappa
                 emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                  += timefacfac*epstort_[0]/faraday/frt_*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*condderiv_[iscal]*funct_(ui);
+                  += timefacfac*epstort_[0]/faraday/frt_*(therm_[0])*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*condderiv_[iscal]*funct_(ui);
 
                 // Linearization wrt transference number
                 emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                  += timefacfac*epstort_[0]/faraday/frt_*cond_[0]/c_/conint_[iscal]*laplawf2*b_*(transderiv_[iscal])[iscal]*funct_(ui);
+                  += timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(therm_[0])/c_/conint_[iscal]*laplawf2*b_*(transderiv_[iscal])[iscal]*funct_(ui);
+
+                // Linearization wrt thermodynamic factor
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
+                  += timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*thermderiv_[iscal]*funct_(ui);
               }
             }
           }
@@ -1065,6 +1086,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             else
               erhs[vi*numdofpernode_+numscal_] -= rhsfac/faraday*epstort_[0]/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf2;
           }
+          // thermodynamic factor only implemented for Newman
           else
           {
             // diffusive term second
@@ -1072,7 +1094,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi); // compute once, reuse below!
 
             erhs[vi*numdofpernode_+numscal_]
-              -= rhsfac*epstort_[0]/faraday/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
+              -= rhsfac*epstort_[0]/faraday/frt_*cond_[0]*(therm_[0])*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
           }
         }
       }
@@ -1159,6 +1181,87 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
 
   return;
 } // ScaTraImpl::CalMatElch
+
+/*----------------------------------------------------------------------*
+  |  CalculateElectricPotentialField (ELCH) (private)          gjb 04/10 |
+  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
+  const DRT::Element*         ele,
+  const double                frt,
+  const enum INPAR::SCATRA::ScaTraType  scatratype,
+  Epetra_SerialDenseMatrix&   emat,
+  Epetra_SerialDenseVector&   erhs,
+  bool                        newman
+  )
+{
+  if(newman==false)
+    dserror("The function CalcInitialPotential is only implemented for Newman materials");
+
+  const double faraday = INPAR::SCATRA::faraday_const;
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    // get concentration of transported scalar k at integration point
+    for (int k = 0;k<numscal_;++k)
+      conint_[k] = funct_.Dot(ephinp_[k]);
+
+    // access material parameters
+    GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
+
+    for (int k=0; k<numscal_; ++k)
+    {
+      // diffusive terms on rhs
+      // gradient of current scalar value
+      gradphi_.Multiply(derxy_,ephinp_[k]);
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+numscal_;
+        double laplawf(0.0);
+        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+
+        for (int iscal=0; iscal < numscal_; ++iscal)
+        {
+          erhs[fvi] -= fac*epstort_[0]/faraday/frt_*cond_[0]*(therm_[0])*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
+        }
+      }
+
+      // provide something for conc. dofs: a standard mass matrix
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int    fvi = vi*numdofpernode_+k;
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+          emat(fvi,fui) += fac*funct_(vi)*funct_(ui);
+        }
+      }
+    } // for k
+
+    // ----------------------------------------matrix entries
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int    fvi = vi*numdofpernode_+numscal_;
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = ui*numdofpernode_+numscal_;
+        double laplawf(0.0);
+        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        emat(fvi,fui) += fac*epstort_[0]/faraday*cond_[0]*laplawf;
+      }
+    }
+  } // integration loop
+
+  return;
+
+} //ScaTraImpl<distype>::CalculateElectricPotentialField
 
 /*----------------------------------------------------------------------*
   |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |

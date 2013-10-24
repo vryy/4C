@@ -168,9 +168,9 @@ DSURF                           0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 3 - pot -0.1 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dlcap 0.0 //i0 = 0.01
+E 3 - pot -0.1 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 //i0 = 0.01
 //                              anode
-E 4 - pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dlcap 0.0
+E 4 - pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

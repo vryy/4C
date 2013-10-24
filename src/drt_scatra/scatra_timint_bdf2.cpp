@@ -67,7 +67,8 @@ SCATRA::TimIntBDF2::TimIntBDF2(
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  ElectrodeKineticsTimeUpdate(true);
+  if (IsElch(scatratype_))
+    ComputeTimeDerivPot0(true);
 
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
@@ -236,6 +237,7 @@ void SCATRA::TimIntBDF2::AddSpecificTimeIntegrationParameters(
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",false);
   params.set("total time",time_);
+  params.set("delta t",dta_);
   params.set("time factor",theta_*dta_);
   params.set("alpha_F",1.0);
 
@@ -393,6 +395,39 @@ void SCATRA::TimIntBDF2::ComputeTimeDerivative()
   return;
 }
 
+/*-------------------------------------------------------------------------------------*
+ | compute time derivative of applied electrode potential                   ehrl 08/13 |
+ *-------------------------------------------------------------------------------------*/
+void SCATRA::TimIntBDF2::ComputeTimeDerivPot0(const bool init)
+{
+  std::vector<DRT::Condition*> cond;
+  discret_->GetCondition("ElectrodeKinetics",cond);
+  int numcond = cond.size();
+
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
+
+    if (init)
+    {
+      // create and initialize additional b.c. entries for galvanostatic simulations or
+      // simulations including a double layer
+      cond[icond]->Add("pot0n",0.0);
+      cond[icond]->Add("pot0nm",0.0);
+      cond[icond]->Add("pot0hist",0.0);
+
+      // The galvanostatic mode and double layer charging has never been tested if it is implemented correctly!!
+      // The code have to be checked in detail, if somebody want to use it!!
+      if(dlcap!=0.0)
+        dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
+
+      if(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")==true)
+          dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
+    }
+  }
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | compute time derivative of thermodynamic pressure           vg 09/09 |
@@ -513,8 +548,8 @@ void SCATRA::TimIntBDF2::OutputRestart()
           output_->WriteDouble("pot",pot);
 
           // electrode potential of the adjusted electrode kinetics BC at time n
-          double potn = mycond->GetDouble("potn");
-          output_->WriteDouble("potn",potn);
+          double potn = mycond->GetDouble("pot0n");
+          output_->WriteDouble("pot0n",potn);
 
           // electrode potential of the adjusted electrode kinetics BC at time n -1
           double potnm = mycond->GetDouble("potnm");
@@ -571,6 +606,9 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   if(isale_)
     reader.ReadVector(trueresidual_, "trueresidual");
 
+  // Initialize Nernst-BC
+  InitNernstBC();
+
   // restart for galvanostatic applications
   if (IsElch(scatratype_))
   {
@@ -594,8 +632,8 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
         {
           double pot = reader.ReadDouble("pot");
           mycond->Add("pot",pot);
-          double potn = reader.ReadDouble("potn");
-          mycond->Add("potn",potn);
+          double potn = reader.ReadDouble("pot0n");
+          mycond->Add("pot0n",potn);
           double potnm = reader.ReadDouble("potnm");
           mycond->Add("potnm",potnm);
           double pothist = reader.ReadDouble("pothist");
@@ -653,31 +691,36 @@ void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate(const bool init)
+void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate()
 {
+  return;
+
+  // The galvanostatic mode and double layer charging has never been tested if it is implemented correctly!!
+  // The code have to be checked in detail, if somebody want to use it!!
+
+  /*
   if (IsElch(scatratype_))
   {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
+        dlcapexists_==true)
     {
+      //ComputeTimeDerivPot0(false);
+
       std::vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
       for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
       {
-        double potnp = cond[i]->GetDouble("pot");
-        if (init) // create and initialize additional b.c. entries if desired
         {
+          double potnp = cond[i]->GetDouble("pot");
+          double potn = cond[i]->GetDouble("potn");
+          // shift status variables
+          cond[i]->Add("potnm",potn);
           cond[i]->Add("potn",potnp);
-          cond[i]->Add("potnm",potnp);
-          cond[i]->Add("pothist",0.0);
         }
-        double potn = cond[i]->GetDouble("potn");
-        // shift status variables
-        cond[i]->Add("potnm",potn);
-        cond[i]->Add("potn",potnp);
       }
     }
   }
-  return;
+  */
 }
 
 
@@ -688,7 +731,8 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsSetOldPartOfRHS()
 {
   if (IsElch(scatratype_))
   {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
+    if ((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
+        dlcapexists_==true)
     {
       std::vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
@@ -696,10 +740,11 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsSetOldPartOfRHS()
         // prepare "old part of rhs" for galvanostatic equation (to be used at next time step)
       {
         double pothist(0.0);
-        double potn = cond[i]->GetDouble("potn");
+        double potn = cond[i]->GetDouble("pot0n");
         double potnm = cond[i]->GetDouble("potnm");
         if (step_>1)
         {
+          // ?? tpdt(n+1) = ((3/2)*tp(n+1)-2*tp(n)+(1/2)*tp(n-1))/dt
           double fact1 = 4.0/3.0;
           double fact2 = -1.0/3.0;
           pothist= fact1*potn + fact2*potnm;

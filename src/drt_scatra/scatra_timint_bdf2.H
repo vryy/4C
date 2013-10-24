@@ -54,6 +54,9 @@ public:
   ///  compute scalar time derivative
   void ComputeTimeDerivative();
 
+  ///  compute scalar time derivate parameters of the input voltage to compute double layer current densities
+  void ComputeTimeDerivPot0(const bool init);
+
   ///  compute time derivative of thermodynamic pressure
   void ComputeThermPressureTimeDerivative();
 
@@ -159,7 +162,7 @@ protected:
   double ResidualScaling() const { return 1.0/(dta_*theta_); }
 
   /// update time-dependent electrode state variables at the end of an time step
-  void ElectrodeKineticsTimeUpdate(const bool init = false);
+  void ElectrodeKineticsTimeUpdate();
 
   /// set old part of RHS for galvanostatic equation
   void ElectrodeKineticsSetOldPartOfRHS();

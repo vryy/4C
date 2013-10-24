@@ -337,7 +337,7 @@ void SCATRA::TimIntTaylorGalerkin::PrepareFirstTimeStep()
 /*----------------------------------------------------------------------*
  | update of time-dependent variables for electrode kinetics  gjb 11/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntTaylorGalerkin::ElectrodeKineticsTimeUpdate(const bool init)
+void SCATRA::TimIntTaylorGalerkin::ElectrodeKineticsTimeUpdate()
 {
 	dserror("do not call this function");
   return;

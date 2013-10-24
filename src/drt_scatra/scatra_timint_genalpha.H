@@ -61,6 +61,9 @@ public:
   ///  compute scalar time derivative
   void ComputeTimeDerivative();
 
+  ///  compute scalar time derivate parameters of the input voltage
+  void ComputeTimeDerivPot0(const bool init);
+
   ///  compute time derivative of thermodynamic pressure
   void ComputeThermPressureTimeDerivative();
 
@@ -169,7 +172,7 @@ protected:
   double ResidualScaling() const { return 1.0/(dta_*genalphafac_); }
 
   /// update time-dependent electrode state variables at the end of an time step
-  void ElectrodeKineticsTimeUpdate(const bool init = false);
+  void ElectrodeKineticsTimeUpdate();
 
 private:
 

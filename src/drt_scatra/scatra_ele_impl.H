@@ -480,6 +480,16 @@ private:
     Epetra_SerialDenseVector&   erhs  //!< rhs-vector (to be assembled)
   );
 
+  //! calculate el. potential field based on ion concentrations
+  void CalculateElectricPotentialField(
+    const DRT::Element*         ele,  //!<the current element
+    const double                frt,  //!< factor F/RT needed for ELCH calculations
+    const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
+    Epetra_SerialDenseMatrix&   emat, //!< matrix (to be assembled)
+    Epetra_SerialDenseVector&   erhs,  //!< rhs-vector (to be assembled)
+    bool                        newman  //!< newman as material
+  );
+
   /*========================================================================*/
   //! @name Poro-Scatra ?
   /*========================================================================*/
@@ -959,6 +969,11 @@ private:
   //! conductivity
   std::vector<double> cond_;
   std::vector<double> condderiv_;
+
+  //! thermodynamic factor
+  std::vector<double> therm_;
+  std::vector<double> thermderiv_;
+
   std::vector<double> diffusderiv_;
   std::vector<double> diffuselimderiv_;
   double diffuselim_;

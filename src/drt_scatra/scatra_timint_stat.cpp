@@ -44,7 +44,8 @@ SCATRA::TimIntStationary::TimIntStationary(
     dserror("Turbulence is not stationary problem!");
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  ElectrodeKineticsTimeUpdate(true);
+  if (IsElch(scatratype_))
+    ComputeTimeDerivPot0(true);
 
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
@@ -71,6 +72,34 @@ SCATRA::TimIntStationary::~TimIntStationary()
 void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 {
   hist_->PutScalar(0.0);
+
+  return;
+}
+
+
+/*-------------------------------------------------------------------------------------*
+ | compute time derivative of applied electrode potential                   ehrl 08/13 |
+ *-------------------------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::ComputeTimeDerivPot0(const bool init)
+{
+  std::vector<DRT::Condition*> cond;
+  discret_->GetCondition("ElectrodeKinetics",cond);
+  int numcond = cond.size();
+
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
+
+    if (init)
+    {
+      if(dlcap!=0.0)
+        dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
+        //dlcapexists_=true;
+
+      if(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")==true)
+          dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
+    }
+  }
 
   return;
 }
@@ -124,6 +153,7 @@ void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
   params.set("using stationary formulation",true);
   params.set("using generalized-alpha time integration",false);
   params.set("total time",time_);
+  params.set("delta t",dta_);
 
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
@@ -150,6 +180,9 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   // for elch problems with moving boundary
   // if(isale_)
   //  reader.ReadVector(trueresidual_, "trueresidual");
+
+  // Initialize Nernst-BC
+  InitNernstBC();
 
   // restart for galvanostatic applications
   if (IsElch(scatratype_))

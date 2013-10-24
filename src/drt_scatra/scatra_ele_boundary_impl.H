@@ -216,36 +216,37 @@ public:
 
     //! evaluate an electrode kinetics boundary condition
     void EvaluateElectrodeKinetics(
-       const DRT::Element*        ele,  ///< the actual boundary element
-       Epetra_SerialDenseMatrix& emat,  ///< element-matrix
-       Epetra_SerialDenseVector& erhs,  ///< element-rhs
-       const std::vector<double>&   ephinp,  ///< actual conc. and pot. values
-       double                 timefac,
-       Teuchos::RCP<const MAT::Material>  material,  ///< the material
-       Teuchos::RCP<DRT::Condition>       cond,      ///< the condition
-       const int                 nume,  ///< number of transfered electrons
-       const std::vector<int>  stoich,  ///< stoichometry of the reaction
-       const int             kinetics,  ///< desired electrode kinetics model
-       const double              pot0,  ///< actual electrode potential on metal side
-       const double               frt,  ///< factor F/RT
-       const bool              iselch,  ///< problemtype elch or scatra
-       const INPAR::SCATRA::ScaTraType scatratype   ///< scatra problem type
+       const DRT::Element*          ele,          ///< the actual boundary element
+       Epetra_SerialDenseMatrix&    emat,         ///< element-matrix
+       Epetra_SerialDenseVector&    erhs,         ///< element-rhs
+       const std::vector<double>&   ephinp,       ///< actual conc. and pot. values
+       const std::vector<double>&   ehist,        ///< element history vector
+       double                       timefac,      ///< time factor
+       Teuchos::RCP<const MAT::Material>  material,   ///< the material
+       Teuchos::RCP<DRT::Condition>       cond,       ///< the condition
+       const int                 nume,                ///< number of transfered electrons
+       const std::vector<int>  stoich,                ///< stoichometry of the reaction
+       const int             kinetics,                ///< desired electrode kinetics model
+       const double              pot0,                ///< actual electrode potential on metal side
+       const double               frt,                ///< factor F/RT
+       const bool              iselch,                ///< problemtype elch or scatra
+       const INPAR::SCATRA::ScaTraType scatratype     ///< scatra problem type
        );
 
     //! provide electrode kinetics status information
     void ElectrodeStatus(
-        const DRT::Element*        ele,  ///< the actual boundary element
-        Teuchos::ParameterList& params,  ///< the parameter list
-        Teuchos::RCP<DRT::Condition>  cond,  ///< the condition
-        const std::vector<double>&   ephinp,  ///< current conc. and potential values
-        const std::vector<double>& ephidtnp,  ///< time derivative vector evaluated at t_{n+1}
-        const int             kinetics,  ///< desired electrode kinetics model
-        const std::vector<int>  stoich,  ///< stoichometry of the reaction
-        const int                 nume,  ///<  number of transfered electrons
-        const double              pot0,  ///< actual electrode potential on metal side at t_{n+1}
-        const double               frt,  ///< factor F/RT
-        const bool              iselch,  ///< problemtype elch or scatra
-        const double           timefac   ///< factor due to time discretization
+        const DRT::Element*           ele,      ///< the actual boundary element
+        Teuchos::ParameterList&       params,   ///< the parameter list
+        Teuchos::RCP<DRT::Condition>  cond,     ///< the condition
+        const std::vector<double>&    ephinp,   ///< current conc. and potential values
+        const std::vector<double>&    ephidtnp, ///< time derivative vector evaluated at t_{n+1}
+        const int                     kinetics, ///< desired electrode kinetics model
+        const std::vector<int>        stoich,   ///< stoichometry of the reaction
+        const int                     nume,     ///<  number of transfered electrons
+        const double                  pot0,     ///< actual electrode potential on metal side at t_{n+1}
+        const double                  frt,      ///< factor F/RT
+        const bool                    iselch,   ///< problemtype elch or scatra
+        const double                  timefac   ///< factor due to time discretization
     );
 
     //! evaluate surface/interface permeability
@@ -400,10 +401,10 @@ public:
     //! thermodynamic pressure (LOMA specific)
     double thermpress_;
 
+    //! flag for closure equation
     enum INPAR::ELCH::EquPot equpot_;
+    //! porosity
     double eps_;
-    double tort_;
-    double epstort_;
   };
 
 }

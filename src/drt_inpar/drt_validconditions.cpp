@@ -2355,8 +2355,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
     butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
     butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-    butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",
                                                              butlervolmer,
                                                              INPAR::SCATRA::butler_volmer)));
@@ -2374,8 +2374,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     butlervolmeryang.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
     butlervolmeryang.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
     butlervolmeryang.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    butlervolmeryang.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-    butlervolmeryang.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    butlervolmeryang.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    butlervolmeryang.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Yang1997",
                                                              butlervolmeryang,
                                                              INPAR::SCATRA::butler_volmer_yang1997)));
@@ -2390,24 +2390,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     tafel.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
     tafel.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
     tafel.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    tafel.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-    tafel.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    tafel.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    tafel.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Tafel",
                                                              tafel,
                                                              INPAR::SCATRA::tafel)));
 
     // linear kinetics
     std::vector<Teuchos::RCP<ConditionComponent> > linear;
-    linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
-    linear.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+    linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha")));
+    linear.push_back(Teuchos::rcp(new RealConditionComponent("alpha")));
     linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
     linear.push_back(Teuchos::rcp(new RealConditionComponent("i0")));
     linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
     linear.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
     linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
     linear.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
-    linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-    linear.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    linear.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("linear",
                                                                    linear,
                                                                    INPAR::SCATRA::linear)));
@@ -2421,8 +2421,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     bvnewman.push_back(Teuchos::rcp(new RealConditionComponent("k_c")));
     bvnewman.push_back(Teuchos::rcp(new SeparatorConditionComponent("beta")));
     bvnewman.push_back(Teuchos::rcp(new RealConditionComponent("beta")));
-    bvnewman.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-    bvnewman.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    bvnewman.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    bvnewman.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Newman",
                                                               bvnewman,
                                                               INPAR::SCATRA::butler_volmer_newman)));
@@ -2440,8 +2440,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     bvbard.push_back(Teuchos::rcp(new RealConditionComponent("c_c0")));
     bvbard.push_back(Teuchos::rcp(new SeparatorConditionComponent("c_a0")));
     bvbard.push_back(Teuchos::rcp(new RealConditionComponent("c_a0")));
-    bvbard.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-    bvbard.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    bvbard.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    bvbard.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Bard",
                                                               bvbard,
                                                               INPAR::SCATRA::butler_volmer_bard)));
@@ -2452,8 +2452,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     nernst.push_back(Teuchos::rcp(new RealConditionComponent("e0")));
     nernst.push_back(Teuchos::rcp(new SeparatorConditionComponent("c0")));
     nernst.push_back(Teuchos::rcp(new RealConditionComponent("c0")));
-    nernst.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
-    nernst.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    nernst.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+    nernst.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Nernst",
                                                               nernst,
                                                               INPAR::SCATRA::nernst)));

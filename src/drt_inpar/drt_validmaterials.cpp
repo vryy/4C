@@ -445,6 +445,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"TORTUOSITY","porousity of the phase");
     AddNamedReal(m,"CONDUCTIVITY","conductivity");
     AddNamedInt(m,"NR","conductivity depending on concentration: number of curve",0,true);
+    AddNamedInt(m,"CURVE_THERM","thermodynamic factor depending on concentration: number of curve",0,true);
 
     AppendMaterialDefinition(matlist,m);
   }

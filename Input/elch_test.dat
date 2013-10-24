@@ -284,8 +284,8 @@ DLINE                           0
 DLINE                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           2
-E 1 - pot 1.0 curve none numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 1.0 alpha_c 0.0 i0 96485.3399 gamma 1.0 refcon 1.0 dlcap 0.0 //1.0
-E 2 - pot 0.0 curve none numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.0 alpha_c 1.0 i0 96485.3399 gamma 1.0 refcon 1.0 dlcap 0.0 //1.0
+E 1 - pot 1.0 curve none numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 1.0 alpha_c 0.0 i0 96485.3399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 //1.0
+E 2 - pot 0.0 curve none numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.0 alpha_c 1.0 i0 96485.3399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 //1.0
 //here, exchange current i0 is scaled by z_1*F in order to get the values of Choi et al.
 --------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
 DSURF                           0

@@ -124,6 +124,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatnumite_(0),
   gstatincrement_(0.0),
   frt_      (0.0),
+  dlcapexists_(false),
+  ektoggle_(Teuchos::null),
   initialmass_(0.0),
   thermpressn_(0.0),
   thermpressnp_(0.0),
@@ -743,7 +745,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //                       initialization
   // -------------------------------------------------------------------
-  if (step_ == 0 and not skipinitder_)
+  if (step_ == 0)
   {
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
@@ -752,9 +754,15 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     // Calculation of initial derivative yields in different results for the uncharged particle and
     // the binary electrolyte solution
     // -> Check calculation procedure of the method (genalpha)
-    if (initialvelset_) PrepareFirstTimeStep();
-    else if (reinitswitch_){}
-    else dserror("Initial velocity field has not been set");
+    if(not skipinitder_)
+    {
+      if (initialvelset_) PrepareFirstTimeStep();
+      else if (reinitswitch_){}
+      else dserror("Initial velocity field has not been set");
+    }
+
+    // Initialize Nernst-BC
+    InitNernstBC();
   }
 
   // -------------------------------------------------------------------
@@ -782,10 +790,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // Preparation for including DC on the master side in the condensation process
   if(msht_ != INPAR::FLUID::no_meshtying)
     meshtying_->IncludeDirichletInCondensation(phinp_, phin_);
-
-  //TODO (ehrl): experimental boundary condition
-  // Manipulate DC in case of a Nernst BC
-  //AdaptDC(sysmat_, residual_, phinp_);
 
   // -------------------------------------------------------------------
   //     update velocity field if given by function AND time curve
@@ -2838,7 +2842,12 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // are not used anyway.
     // We could avoid this though, if the dofrowmap would not include
     // the Dirichlet values as well. But it is expensive to avoid that.
+
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+
+    //Add linearization of NernstCondition to system matrix
+    if(ektoggle_!=Teuchos::null)
+      LinearizationNernstCondition();
 
     // project residual such that only part orthogonal to nullspace is considered
     if (projector_!=Teuchos::null)
@@ -2860,7 +2869,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
-    //------------------------------------------------solve
     {
       // get cpu time
       const double tcpusolve=Teuchos::Time::wallTime();

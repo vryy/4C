@@ -50,6 +50,8 @@ namespace MAT
 
       const double condcurvenr_;
 
+      const int curvetherm_;
+
       //@}
 
       /// create material instance of matching type with my parameters
@@ -137,8 +139,14 @@ private:
     /// valence (= charge number)
     double CondCurveNr() const { return params_->condcurvenr_; }
 
+    /// curve representing the transference number
+    int CurveTherm() const { return params_->curvetherm_; }
+
     double ComputeConductivity (const double cint) const ;
     double ComputeFirstDerivCond(const double cint) const;
+
+    double ComputeThermodynamicFactor (const double cint) const ;
+    double ComputeFirstDerivThermodynamicFactor(const double cint) const;
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

@@ -62,6 +62,8 @@ private:
   Teuchos::RCP<Epetra_Vector>       mysol_;
   /// RCP to mass/heat flux vector
   Teuchos::RCP<Epetra_MultiVector>  myflux_;
+  /// RCP to electrode kinetics vector
+  Teuchos::RCP<std::vector<double> >  myelectkin_;
   /// RCP to scatra structure biofilm growth vector
   Teuchos::RCP<Epetra_MultiVector>  mystrgrowth_;
   /// RCP to scatra fluid biofilm growth vector

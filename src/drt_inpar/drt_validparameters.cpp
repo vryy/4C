@@ -4363,8 +4363,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("SKIPINITDER",
       "no","Flag to skip computation of initial time derivative",&scatradyn);
 
-  BoolParameter("INITPOTCALC","no",
-      "Automatically calculate initial field for electric potential",&scatradyn);
+  setStringToIntegralParameter<int>("INITPOTCALC","no",
+                                    "Automatically calculate initial field for electric potential",
+                                    tuple<std::string>(
+                                        "no",
+                                        "standard",
+                                        "fix_potential"),
+                                    tuple<int>(
+                                        INPAR::SCATRA::initpotcalc_no,
+                                        INPAR::SCATRA::initpotcalc_standard,
+                                        INPAR::SCATRA::initpotcalc_fix_pot),
+                                    &scatradyn);
 
   setStringToIntegralParameter<int>("FSSUGRDIFF",
                                "No",
@@ -4396,6 +4405,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Elch_ENC_PDE_ELIM",
                                  "Elch_Poisson",
                                  "Elch_Laplace",
+                                 "Elch_Diffcond",
                                  "LevelSet",
                                  "TurbulentPassiveScalar",
                                  "Poroscatra",
@@ -4409,6 +4419,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_elch_enc_pde_elim,
                                  INPAR::SCATRA::scatratype_elch_poisson,
                                  INPAR::SCATRA::scatratype_elch_laplace,
+                                 INPAR::SCATRA::scatratype_elch_diffcond,
                                  INPAR::SCATRA::scatratype_levelset,
                                  INPAR::SCATRA::scatratype_turbpassivesca,
                                  INPAR::SCATRA::scatratype_poro,

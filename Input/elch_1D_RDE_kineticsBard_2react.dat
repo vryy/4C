@@ -154,6 +154,9 @@ SCATRA DIS scatra NODE 125 QUANTITY phi1 VALUE 3.39905507746415651e-04 TOLERANCE
 SCATRA DIS scatra NODE 125 QUANTITY phi7 VALUE -5.23024207080314348e-04 TOLERANCE 1e-13
 SCATRA DIS scatra NODE 200 QUANTITY phi1 VALUE 9.95000000000003174e-03 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 200 QUANTITY phi7 VALUE -4.82394132426114524e-05 TOLERANCE 1e-13
+SCATRA DIS scatra NODE 1 QUANTITY meanc VALUE 3.55690180322390840e-05 TOLERANCE 1e-13
+SCATRA DIS scatra NODE 1 QUANTITY meaneta VALUE -1.18134427518601981e-01 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 1 QUANTITY meancur VALUE -5.95032844021728082e-05 TOLERANCE 1e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2
@@ -168,8 +171,8 @@ DSURF                           0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              left_electrode
-E 1 - pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 Butler-Volmer-Bard e0 -1.1813e-1 k0 1.0338e-2 beta 0.500 c_c0 0.00995 c_a0 0.0001 dlcap 0.0
-E 1 - pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 Butler-Volmer-Bard e0 4.6740e-1 k0 2.0390e-1 beta 0.463 c_c0 0.005 c_a0 0.005 dlcap 0.0
+E 1 - pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 Butler-Volmer-Bard e0 -1.1813e-1 k0 1.0338e-2 beta 0.500 c_c0 0.00995 c_a0 0.0001 dl_spec_cap 0.0
+E 1 - pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 Butler-Volmer-Bard e0 4.6740e-1 k0 2.0390e-1 beta 0.463 c_c0 0.005 c_a0 0.005 dl_spec_cap 0.0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

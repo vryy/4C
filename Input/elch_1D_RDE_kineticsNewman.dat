@@ -164,7 +164,7 @@ DSURF                           0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           1
 //                              left_electrode
-E 1 - pot -1.0 curve 1 numscal 4 stoich -1 1 0 0 e- 1 Butler-Volmer-Newman k_a 1.0312e-4 k_c 1.0364e-6 beta 0.5 dlcap 0.0
+E 1 - pot -1.0 curve 1 numscal 4 stoich -1 1 0 0 e- 1 Butler-Volmer-Newman k_a 1.0312e-4 k_c 1.0364e-6 beta 0.5 dl_spec_cap 0.0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

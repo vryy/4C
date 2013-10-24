@@ -27,7 +27,8 @@ MAT::PAR::ElchPhase::ElchPhase(
   epsilon_(matdata->GetDouble("EPSILON")),
   tortuosity_(matdata->GetDouble("TORTUOSITY")),
   conductivity_(matdata->GetDouble("CONDUCTIVITY")),
-  condcurvenr_(matdata->GetInt("NR"))
+  condcurvenr_(matdata->GetInt("NR")),
+  curvetherm_(matdata->GetInt("CURVE_THERM"))
 {
 }
 
@@ -142,6 +143,42 @@ double MAT::ElchPhase::ComputeFirstDerivCond(const double cint) const
   else
   {
     firstderiv = (DRT::Problem::Instance()->Curve(CondCurveNr()-1).FctDer(cint,1))[1];
+  }
+
+  return firstderiv;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ElchPhase::ComputeThermodynamicFactor(const double cint) const
+{
+  double therm=1.0;
+
+  if(CurveTherm()==0)
+  {
+    therm = 1.0;
+  }
+  else
+  {
+    therm = DRT::Problem::Instance()->Curve(CurveTherm()-1).f(cint);
+  }
+
+  return therm;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ElchPhase::ComputeFirstDerivThermodynamicFactor(const double cint) const
+{
+  double firstderiv=0.0;
+
+  if(CurveTherm()==0)
+  {
+    firstderiv = 0.0;
+  }
+  else
+  {
+    firstderiv = (DRT::Problem::Instance()->Curve(CurveTherm()-1).FctDer(cint,1))[1];
   }
 
   return firstderiv;

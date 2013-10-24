@@ -65,7 +65,7 @@ INITIALFIELD                    field_by_condition              // test this opt
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           4
-INITPOTCALC                     yes
+INITPOTCALC                     standard
 //
 // Calculation of initial derivative yields in different results for the uncharged particle and
 // the binary electrolyte solution

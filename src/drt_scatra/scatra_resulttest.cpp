@@ -27,6 +27,7 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraTimIntImpl& scatra)
   dis_    = scatra.Discretization();
   mysol_  = scatra.Phinp();
   myflux_ = scatra.Flux();
+  myelectkin_ = scatra.OutputElectrodeInfo(false,false);
   mystrgrowth_ = scatra.StrGrowth();
   myfldgrowth_ = scatra.FldGrowth();
 }
@@ -94,6 +95,12 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
         result = ((*myflux_)[1])[phinpmap.LID(dis_->Dof(0,actnode,0))];
       else if (position=="fluxz")
         result = ((*myflux_)[2])[phinpmap.LID(dis_->Dof(0,actnode,0))];
+      else if (position=="meanc")
+        result = (*myelectkin_)[0];
+      else if (position=="meaneta")
+        result = (*myelectkin_)[1];
+      else if (position=="meancur")
+        result = (*myelectkin_)[2];
       // test result values for biofilm growth (scatra structure and scatra fluid)
       else if (position=="scstr_growth_displx")
         result = ((*mystrgrowth_)[0])[phinpmap.LID(dis_->Dof(0,actnode,0))];

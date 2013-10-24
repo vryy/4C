@@ -333,6 +333,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     transderiv_(numscal_,std::vector<double>(numscal_,0.0 )),
     cond_(1,0.0),
     condderiv_(numscal_,0.0),
+    therm_(1,0.0),
+    thermderiv_(numscal_,1.0),
     diffusderiv_(numscal_,0.0),
     diffuselimderiv_(numscal_,0.0),
     diffuselim_(0.0),
@@ -366,8 +368,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra
   )
 {
-  // cout << "TEST CRISTOBAL Evaluate scatra_ele_impl.cpp" << endl;
-
   // --------mandatory are performed here at first ------------
   // get node coordinates (we do this for all actions!)
   if(nsd_ == 1 && nen_ == 2){ // Rotates line element in order to perform computations in 3D
@@ -378,7 +378,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   }else{
     GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
   }
-
 
   // get additional state vector for ALE case: grid displacement
   is_ale_ = params.get<bool>("isale",false);
@@ -1395,9 +1394,18 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     break;
   }
+  case SCATRA::calc_elch_electrode_kinetics:
+  {
+    dserror(" ");
+    break;
+  }
   // calculate initial electric potential field caused by initial ion concentrations
   case SCATRA::calc_elch_initial_potential:
   {
+    // set specific parameter used in diffusion conduction formulation
+    // this method need to be located inside ELCH
+    DiffCondParams(ele, params);
+
     // need initial field -> extract local values from the global vector
     Teuchos::RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
     if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
@@ -1415,7 +1423,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     } // for i
     const double frt = params.get<double>("frt");
 
-    CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
+    if(diffcond_==false)
+      CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
+    else
+      CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra,newman_);
 
     break;
   }
@@ -2320,6 +2331,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     }
   } // integration loop
 
+  // Todo: Is there a way to implemented it nicer
   // usually, we are done here, but
   // for two certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries
@@ -2368,7 +2380,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       } // for vi
     }  // elim
 
-    // usually, we are done here, but
     // for concentrated solution theory (using div i as closing term for the potential)
     // additional flux terms / currents across Dirichlet boundaries
     if(diffcond_==true and newman_==true and equpot_==INPAR::ELCH::equpot_divi)
@@ -2417,6 +2428,45 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           {
             //reacting species 0
             int k =0;
+
+            //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
+            //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<std::endl;
+            const int fvi = vi*numdofpernode_+numscal_;
+            // We use the fact, that the rhs vector value for boundary nodes
+            // is equivalent to the integrated negative normal flux
+            // due to diffusion and migration
+
+            // scaling of div i results in a matrix with better condition number
+            val = erhs[fvi];
+            erhs[vi*numdofpernode_+k] += 1.0/valence_[k]*(-val);
+            // corresponding linearization
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              val = emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k);
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += 1.0/valence_[k]*(-val);
+              val = emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_);
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) +=1.0/valence_[k]*(-val);
+            }
+          }
+        } // if Dirichlet at node vi
+      } // for vi
+
+      // Nernst boundary conditions have to be handled like Dirichlet conditions!!!
+      std::string condname2 = "ElectrodeKinetics";
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        std::vector<DRT::Condition*> elctrodeKinetics;
+        nodes[vi]->GetCondition(condname2,elctrodeKinetics);
+
+        // there is at least one Dirichlet condition on this node
+        if (elctrodeKinetics.size() == 1)
+        {
+          const int  kinetics = elctrodeKinetics[0]->GetInt("kinetic model");
+
+          if (kinetics==INPAR::SCATRA::nernst)
+          {
+            //reacting species 0
+            int k = 0;
 
             //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
             //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<std::endl;
@@ -4511,7 +4561,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
 
   // undo the matrix from the standard call, only a mass matrix is needed here created below
   emat.Scale(0.0);
-
+/*
+  std::cout.precision(18);
+  std::cout << "node 1:  " << ele->Id() << "  " << erhs[0] << std::endl;
+  std::cout << "node 2:  " << ele->Id() << "  " << erhs[2] << std::endl;
+  std::cout << "node 3:  " << ele->Id() << "  " << erhs[4] << std::endl;
+  std::cout << "node 4:  " << ele->Id() << "  " << erhs[6] << std::endl;
+  std::cout << "node 5:  " << ele->Id() << "  " << erhs[8] << std::endl;
+  std::cout << "node 6:  " << ele->Id() << "  " << erhs[10] << std::endl;
+  std::cout << "node 7:  " << ele->Id() << "  " << erhs[12] << std::endl;
+  std::cout << "node 8:  " << ele->Id() << "  " << erhs[14] << std::endl;
+*/
   // get time-step length
   const double dt   = params.get<double>("time-step length");
 
@@ -4684,6 +4744,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
         }
       }
 
+      // current as a solution variable
       if(cursolvar_==true)
       {
         for(int idim=0;idim<nsd_;++idim)
@@ -4706,7 +4767,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
     } // if is_elch
 
   } // integration loop
-
+/*
+  std::cout << "after 0:  " << ele->Id() << "  " << erhs[0] << std::endl;
+  std::cout << "after 1:  " << ele->Id() << "  " << erhs[1] << std::endl;
+  std::cout << "after 2:  " << ele->Id() << "  " << erhs[2] << std::endl;
+  std::cout << "after 3:  " << ele->Id() << "  " << erhs[3] << std::endl;
+  std::cout << "after 4:  " << ele->Id() << "  " << erhs[4] << std::endl << std::endl;
+*/
   // correct scaling of rhs (after subtraction!!!!)
   double timefac2 = params.get<double>("time factor");
   erhs.Scale(1.0/timefac2);
@@ -5278,7 +5345,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
           epotnp_(nn)+=epsilon;
         }
       }
-      //TODO (ehrl): current only for 2D
+      // current only for 2D (ehrl)
       // perturbation of the current
       else if(cursolvar_==true and (rr==(numscal_+1)+0))
       {

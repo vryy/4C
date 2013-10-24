@@ -318,6 +318,9 @@ public:
   //! compute time derivative
   virtual void ComputeTimeDerivative() = 0;
 
+  //! compute parameters of the Input voltage to use for the double layer current density
+  virtual void ComputeTimeDerivPot0(const bool init) = 0;
+
   //! compute values at intermediate time steps (required for
   //generalized-alpha) ? rename?
   virtual void ComputeIntermediateValues() = 0;
@@ -394,13 +397,13 @@ public:
   Teuchos::RCP<Epetra_Vector> DensElchNm() { return elchdensnm_; }
 
   //! output of all electrode information to screen and/or file (default: 2x true)
-  void OutputElectrodeInfo(
+  Teuchos::RCP< std::vector<double> > OutputElectrodeInfo(
     bool printtoscreen = true,  //!< flag for printing information to screen
     bool printtofile = true     //!< flag for printing information to file
   );
 
   //! output of electrode information for a single boundary condition
-  void OutputSingleElectrodeInfo(
+  Teuchos::RCP< std::vector<double> > OutputSingleElectrodeInfo(
     DRT::Condition* condition, //!< pointer to the condition
     const int  condid,         //!< condition id
     const bool printtoscreen,  //!< flag for output to screen
@@ -737,18 +740,14 @@ protected:
     Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
   );
 
-  //! compute contribution of electrode kinetics to eq. system
-  void AdaptDC(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
-    Teuchos::RCP<Epetra_Vector>          residual,
-    Teuchos::RCP<Epetra_Vector>          phinp     //!< rhs vector
-  );
+  //! Initialize Nernst-BC
+  void InitNernstBC();
 
+  //! Add Linearization for Nernst-BC
+  void  LinearizationNernstCondition();
 
   //! update time-dependent electrode state variables at the end of an time step
-  virtual void ElectrodeKineticsTimeUpdate(
-    const bool init = false  //!< initialization flag
-  ) = 0;
+  virtual void ElectrodeKineticsTimeUpdate() = 0;
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -1100,6 +1099,14 @@ protected:
 
   //! ELCH-specific parameter F/RT (default value for the temperature is 298K)
   double frt_;
+
+  //! true if kinetic model is butler volmer and one electrode has a double layer capacitance unequal zero
+  // initialized with true and set false if no capacitance is detected in the first timestep
+  bool dlcapexists_;
+
+  //! electro-kinetics toggle
+  //! Toggle defining the dof's with Nernst-BC
+  Teuchos::RCP<Epetra_Vector> ektoggle_;
 
   /*========================================================================*/
   //! @name AVM3 variables

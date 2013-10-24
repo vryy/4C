@@ -321,9 +321,9 @@ DVOL                            0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 1 - pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dlcap 0.0 //i0 = 0.01
+E 1 - pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 //i0 = 0.01
 //                              anode
-E 2 - pot 0.5 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dlcap 0.0
+E 2 - pot 0.5 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dl_spec_cap 0.0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

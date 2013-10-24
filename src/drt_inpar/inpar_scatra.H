@@ -177,6 +177,7 @@ namespace INPAR
       scatratype_elch_enc_pde_elim,
       scatratype_elch_poisson,
       scatratype_elch_laplace,
+      scatratype_elch_diffcond,
       scatratype_levelset,
       scatratype_turbpassivesca,
       scatratype_poro,
@@ -259,6 +260,13 @@ namespace INPAR
     {
       fluxeval_standard,
       fluxeval_alldof
+    };
+
+    enum Initpotcalc
+    {
+      initpotcalc_no,
+      initpotcalc_standard,
+      initpotcalc_fix_pot
     };
 
     // faraday constant (general definition)

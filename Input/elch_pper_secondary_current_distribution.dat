@@ -199,9 +199,9 @@ DLINE                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           2
 //                              anode
-E 1 - pot 1.0 curve none numscal 1 stoich -1 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dlcap 0.0
+E 1 - pot 1.0 curve none numscal 1 stoich -1 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dl_spec_cap 0.0
 //                              cathode
-E 2 - pot -1.0 curve none numscal 1 stoich -1 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dlcap 0.0
+E 2 - pot -1.0 curve none numscal 1 stoich -1 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 1.0 refcon 1.0 dl_spec_cap 0.0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           0
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
