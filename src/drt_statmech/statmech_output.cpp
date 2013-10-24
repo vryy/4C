@@ -4730,10 +4730,11 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
             std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
             filelefint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
           }
-          filelefint<<std::endl;
+          filelefint<<"-1"<<std::endl;
         }
         else
         {
+          int crosslid = (*element2crosslink_)[discret_->ElementColMap()->LID(discret_->ElementRowMap()->GID(i))];
           crosselefint <<std::scientific<<std::setprecision(8)<<rowele->Id()<<"\t"<<(*filamentnumber_)[discret_->NodeColMap()->LID(rowele->NodeIds()[0])]
                                                                             <<"\t"<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
           // get nodal positions
@@ -4743,7 +4744,7 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
             std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
             crosselefint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
           }
-          crosselefint<<std::endl;
+          crosselefint<<(int)(*crosslinkertype_)[crosslid]<<std::endl;
         }
       }
       // write filament information
