@@ -436,7 +436,7 @@ protected:
                                      LINALG::Matrix<4,1>&               rQxi);
 
   //! \brief after updating added and deleted crosslinker elements, an update of management and mapping vectors is necessary
-  void ElementToCrosslinkMapping();
+  void ElementToCrosslinkMapping(Teuchos::RCP<Epetra_Vector> element2crosslink);
 
   /*! \brief adjust off-rate by considering forces in the crosslinker
    *  \param (in) dt  time step size

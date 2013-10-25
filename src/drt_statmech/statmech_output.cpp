@@ -866,12 +866,9 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         nodepairfilename << outputrootpath_ << "/StatMechOutput/NodePairPosition_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
         OutputSlidingMotion(dis, nodepairfilename);
 
-        if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
-        {
-          std::ostringstream matforcefilename;
-          matforcefilename << outputrootpath_ <<"/StatMechOutput/IntMatForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-          OutputElementMaterialInternalForces(dis,matforcefilename);
-        }
+        std::ostringstream matforcefilename;
+        matforcefilename << outputrootpath_ <<"/StatMechOutput/IntMatForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        OutputElementMaterialInternalForces(dis,matforcefilename);
   
         if(statmechparams_.get<double>("DELTABELLSEQ", 0.0)!=0.0 && (linkermodel_==statmech_linker_bellseq || linkermodel_==statmech_linker_bellseqintpol))
         {
@@ -4688,6 +4685,14 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
   std::map<int, LINALG::Matrix<3, 1> > currentrotations;
   GetNodePositionsFromDisVec(discol,currentpositions,currentrotations,true);
 
+  Teuchos::RCP<Epetra_Vector> element2crosslink(element2crosslink_);
+  if(element2crosslink_==Teuchos::null)
+  {
+    element2crosslink = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap()), true));
+    element2crosslink->PutScalar(-1.0);
+    ElementToCrosslinkMapping(element2crosslink);
+  }
+
   std::stringstream filelefint;
   std::stringstream crosselefint;
 
@@ -4730,11 +4735,13 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
             std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
             filelefint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
           }
-          filelefint<<"-1"<<std::endl;
+          if(crosslinkertype_!=Teuchos::null)
+            filelefint<<"-1\t-1";
+          filelefint<<std::endl;
         }
         else
         {
-          int crosslid = (*element2crosslink_)[discret_->ElementColMap()->LID(discret_->ElementRowMap()->GID(i))];
+          int crosslid = (*element2crosslink)[discret_->ElementColMap()->LID(discret_->ElementRowMap()->GID(i))];
           crosselefint <<std::scientific<<std::setprecision(8)<<rowele->Id()<<"\t"<<(*filamentnumber_)[discret_->NodeColMap()->LID(rowele->NodeIds()[0])]
                                                                             <<"\t"<<force(0)<<"\t"<<force(1)<<"\t"<<force(2)<<"\t";
           // get nodal positions
@@ -4744,7 +4751,9 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
             std::map< int,LINALG::Matrix<3,1> >::const_iterator it = currentpositions.find(nodecollid);
             crosselefint <<(it->second)(0)<<"\t"<<(it->second)(1)<<"\t"<<(it->second)(2)<<"\t";
           }
-          crosselefint<<(int)(*crosslinkertype_)[crosslid]<<std::endl;
+          if(crosslinkertype_!=Teuchos::null)
+            crosselefint<<(int)(*crosslinkertype_)[crosslid]<<"\t"<<(int)(*crosslinkeractlength_)[crosslid];
+          crosselefint<<std::endl;
         }
       }
       // write filament information

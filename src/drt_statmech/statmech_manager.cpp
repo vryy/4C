@@ -251,7 +251,8 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     dserror("The parameter LINKERMODEL has to be set to active or activeintpol in order to work with ACTIVELINKERFRACTION>0.0!");
   if((linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)==0.0)
     dserror("Active linkers need a positive value DELTABELLSEQ for a force-dependent off-rate");
-
+  if((linkermodel_==statmech_linker_std || linkermodel_==statmech_linker_stdintpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)!=0.0)
+    dserror("This linker model does not work with DELTABELLSEQ!=0.0! Check your input file!");
 
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
   {
@@ -649,7 +650,7 @@ void STATMECH::StatMechManager::Update(const int&                               
       t5 = Teuchos::Time::wallTime();
 #endif
 
-      ElementToCrosslinkMapping();
+      ElementToCrosslinkMapping(element2crosslink_);
     }
 
     // reset thermal energy to new value (simple value change for now, maybe Load Curve later on)
@@ -3127,23 +3128,23 @@ void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& m
   return;
 }
 
-void STATMECH::StatMechManager::ElementToCrosslinkMapping()
+void STATMECH::StatMechManager::ElementToCrosslinkMapping(Teuchos::RCP<Epetra_Vector> element2crosslink)
 {
   // update element2crosslink_ for correct mapping. Reason: Before coming here, elements might have been deleted in
   // SearchAndSetCrosslinkers(). The ElementRowMap might have changed -> Rebuild
-  if(element2crosslink_!=Teuchos::null)
+  if(element2crosslink!=Teuchos::null)
   {
-    element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap())));
-    element2crosslink_->PutScalar(-1.0);
+    element2crosslink = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap())));
+    element2crosslink->PutScalar(-1.0);
 
     for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
     {
-      if((*crosslink2element_)[i]>-0.9) // there exists a linker element
+      if((*element2crosslink)[i]>-0.9) // there exists a linker element
       {
         // reverse mapping
         int elelid = discret_->ElementColMap()->LID((int)(*crosslink2element_)[i]);
         if(elelid>-0.9)
-          (*element2crosslink_)[elelid] = i;
+          (*element2crosslink)[elelid] = i;
       }
     }
   }
@@ -3167,7 +3168,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
   double delta = statmechparams_.get<double>("DELTABELLSEQ", 0.0);
 
   // update element2crosslink_
-  ElementToCrosslinkMapping();
+  ElementToCrosslinkMapping(element2crosslink_);
 
   for(int i=0; i<discret_->ElementColMap()->NumMyElements(); i++)
   {
