@@ -334,9 +334,9 @@ DLINE                           0
 ----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
 DSURF                           2
 //                              dirichlet1
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 20.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 20.0 CURVE none FUNCT 0
 //                              dirichlet2
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 40.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 40.0 CURVE none FUNCT 0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D

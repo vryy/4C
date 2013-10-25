@@ -223,9 +223,9 @@ DPOINT                          0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE                           2
 // line inflow front
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 1
 // line inflow back
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 1
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D

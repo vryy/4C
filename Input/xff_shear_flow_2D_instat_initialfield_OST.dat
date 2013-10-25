@@ -205,11 +205,11 @@ DLINE                           0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
 // Fluid xfem
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // Fluid volume
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
