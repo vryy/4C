@@ -67,11 +67,11 @@ STR::TimIntExplEuler::TimIntExplEuler
   ResizeMStep();
 
   // allocate force vectors
-  fextn_  = LINALG::CreateVector(*dofrowmap_, true);
-  fintn_  = LINALG::CreateVector(*dofrowmap_, true);
-  fviscn_ = LINALG::CreateVector(*dofrowmap_, true);
-  fcmtn_  = LINALG::CreateVector(*dofrowmap_, true);
-  frimpn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fviscn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fcmtn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // let it rain
   return;

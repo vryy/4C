@@ -126,15 +126,15 @@ void PARTICLE::TimIntCentrDiff::Init()
     // allocate vectors
     inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
-    ang_vel_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
-    ang_acc_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+    ang_vel_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    ang_acc_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
-    ang_veln_ = LINALG::CreateVector(*dofrowmap_,true);
-    ang_accn_ = LINALG::CreateVector(*dofrowmap_,true);
+    ang_veln_ = LINALG::CreateVector(*DofRowMapView(),true);
+    ang_accn_ = LINALG::CreateVector(*DofRowMapView(),true);
 
 #ifdef orientationvector
     //initialize orientation-vector for visualization
-    orient_ = LINALG::CreateVector(*dofrowmap_,true);
+    orient_ = LINALG::CreateVector(*DofRowMapView(),true);
     InitializeOrientVector();
 #endif
 

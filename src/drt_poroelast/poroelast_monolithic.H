@@ -107,9 +107,6 @@ namespace POROELAST
       Teuchos::RCP<Epetra_Vector> RHS()
           {return rhs_;};
 
-      //! composed merged system matrix needed for monolithic coupling of poroelast problem
-      Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix();
-
       //! zero all entries in iterinc vector
       void ClearPoroIterinc();
 
@@ -118,6 +115,18 @@ namespace POROELAST
 
       // iter_ += 1
       void IncrementPoroIter();
+
+      //! FluidField()->SystemMatrix()->RangeMap()
+      Teuchos::RCP<const Epetra_Map> FluidRangeMap() const {return fluidrangemap_;};
+
+      //! FluidField()->SystemMatrix()->DomainMap()
+      Teuchos::RCP<const Epetra_Map> FluidDomainMap() const {return fluiddomainmap_;};
+
+      //! StructureField()->SystemMatrix()->RangeMap()
+      Teuchos::RCP<const Epetra_Map> StructureRangeMap() const {return structurerangemap_;};
+
+      //! StructureField()->SystemMatrix()->DomainMap()
+      Teuchos::RCP<const Epetra_Map> StructureDomainMap() const {return structuredomainmap_;};
 
       //@}
 
@@ -363,6 +372,12 @@ namespace POROELAST
       Teuchos::RCP<Epetra_Vector> delhist_;
       //! Aitken factor
       double mu_;
+
+      //! maps of sparse matrices of single fields
+      Teuchos::RCP<Epetra_Map>   fluidrangemap_;
+      Teuchos::RCP<Epetra_Map>   fluiddomainmap_;
+      Teuchos::RCP<Epetra_Map>   structurerangemap_;
+      Teuchos::RCP<Epetra_Map>   structuredomainmap_;
 
       //@}
   }; // Monolithic

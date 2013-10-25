@@ -133,39 +133,39 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   // create state vectors
 
   // mid-displacements
-  dism_ = LINALG::CreateVector(*dofrowmap_, true);
+  dism_ = LINALG::CreateVector(*DofRowMapView(), true);
   // mid-velocities
-  velm_ = LINALG::CreateVector(*dofrowmap_, true);
+  velm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // mid-accelerations
-  accm_ = LINALG::CreateVector(*dofrowmap_, true);
+  accm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = LINALG::CreateVector(*dofrowmap_, true);
+  fint_ = LINALG::CreateVector(*DofRowMapView(), true);
   // internal mid-force vector F_{int;n+1-alpha_f}
-  fintm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fintm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*dofrowmap_, true);
+  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
   // external mid-force vector F_{ext;n+1-alpha_f}
-  fextm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
   // inertial force vector F_{int;n} at last time
-  finert_ = LINALG::CreateVector(*dofrowmap_, true);
+  finert_ = LINALG::CreateVector(*DofRowMapView(), true);
   // inertial mid-force vector F_{int;n+1-alpha_f}
-  finertm_ = LINALG::CreateVector(*dofrowmap_, true);
+  finertm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // inertial force vector F_{int;n+1} at new time
-  finertn_ = LINALG::CreateVector(*dofrowmap_, true);
+  finertn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // viscous mid-point force vector F_visc
-  fviscm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   if (!HaveNonlinearMass())
   {
@@ -499,7 +499,7 @@ void STR::TimIntGenAlpha::UpdateIterIncrementally()
 {
   // auxiliary global vectors
   Teuchos::RCP<Epetra_Vector> aux
-    = LINALG::CreateVector(*dofrowmap_, true);
+    = LINALG::CreateVector(*DofRowMapView(), true);
 
   // further auxiliary variables
   const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$
@@ -625,13 +625,13 @@ void STR::TimIntGenAlpha::UpdateStepElement()
     discret_->SetState("acceleration",(*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
-    update_disp = LINALG::CreateVector(*dofrowmap_, true);
+    update_disp = LINALG::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_vel;
-    update_vel = LINALG::CreateVector(*dofrowmap_, true);
+    update_vel = LINALG::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_acc;
-    update_acc = LINALG::CreateVector(*dofrowmap_, true);
+    update_acc = LINALG::CreateVector(*DofRowMapView(), true);
 
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);

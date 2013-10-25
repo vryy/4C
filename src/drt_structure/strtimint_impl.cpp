@@ -125,18 +125,18 @@ STR::TimIntImpl::TimIntImpl
   }
 
   // create empty residual force vector
-  fres_ = LINALG::CreateVector(*dofrowmap_, false);
+  fres_ = LINALG::CreateVector(*DofRowMapView(), false);
 
   // create empty reaction force vector of full length
-  freact_ = LINALG::CreateVector(*dofrowmap_, false);
+  freact_ = LINALG::CreateVector(*DofRowMapView(), false);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = LINALG::CreateVector(*dofrowmap_, true);
+  disi_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   //prepare matrix for scaled thickness business of thin shell structures
   stcmat_=
-    Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+    Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
 
   stccompl_ =false;
 
@@ -221,8 +221,6 @@ int STR::TimIntImpl::IntegrateStep()
 /* predict solution */
 void STR::TimIntImpl::Predict()
 {
-  // fix pointer to dofrowmap_ for fpsi problems (because of ExtendedGhosting)
-  dofrowmap_=discret_->DofRowMap();
 
   // set iteration step to 0 (predictor)
   iter_ = 0;
@@ -434,7 +432,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 
   // for displacement increments on Dirichlet boundary
   Teuchos::RCP<Epetra_Vector> dbcinc
-    = LINALG::CreateVector(*dofrowmap_, true);
+    = LINALG::CreateVector(*DofRowMapView(), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *(*dis_)(0), 0.0);
@@ -457,7 +455,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   {
     // linear reactions
     Teuchos::RCP<Epetra_Vector> freact
-      = LINALG::CreateVector(*dofrowmap_, true);
+      = LINALG::CreateVector(*DofRowMapView(), true);
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -719,8 +717,8 @@ void STR::TimIntImpl::TestForceStiffPotential
       p.set("pot_man", potman_);
       p.set("total time", time);
 
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
-      Teuchos::RCP<Epetra_Vector> fint_test=LINALG::CreateVector(*dofrowmap_, true);
+      Teuchos::RCP<LINALG::SparseMatrix> stiff_test=Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(),81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+      Teuchos::RCP<Epetra_Vector> fint_test=LINALG::CreateVector(*DofRowMapView(), true);
       fint_test->PutScalar(0.0);
       stiff_test->Zero();
 
@@ -2866,7 +2864,7 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
   // recalculate mass and damping matrices
 
   Teuchos::RCP<Epetra_Vector> fint
-    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+    = LINALG::CreateVector(*DofRowMapView(), true); // internal force
 
   stiff_->Zero();
   mass_->Zero();
@@ -2945,7 +2943,7 @@ void STR::TimIntImpl::STCPreconditioning()
     if(stcscale_==INPAR::STR::stc_currsym)
     {
       stiff_ = MLMultiply(*stcmat_,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,false,true);
-      Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
+      Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*DofRowMapView(), true);
       stcmat_->Multiply(true,*fres_,*fressdc);
       fres_->Update(1.0,*fressdc,0.0);
     }
@@ -3003,7 +3001,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat=
-      Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,true));
+      Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(),81,true,true));
     tmpstcmat->Zero();
 
     discret_-> Evaluate(pe, tmpstcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
@@ -3033,7 +3031,7 @@ void STR::TimIntImpl::RecoverSTCSolution()
 {
   if(stcscale_!=INPAR::STR::stc_none)
   {
-    Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*dofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*DofRowMapView(), true);
 
     stcmat_->Multiply(false,*disi_,*disisdc);
     disi_->Update(1.0,*disisdc,0.0);
@@ -3050,7 +3048,7 @@ void STR::TimIntImpl::TSIMatrix()
   // recalculate mass and damping matrices
 
   Teuchos::RCP<Epetra_Vector> fint
-    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+    = LINALG::CreateVector(*DofRowMapView(), true); // internal force
 
   stiff_->Zero();
   mass_->Zero();

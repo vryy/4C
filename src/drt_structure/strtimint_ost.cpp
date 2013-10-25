@@ -93,34 +93,34 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   // create state vectors
 
   // mid-displacements
-  dist_ = LINALG::CreateVector(*dofrowmap_, true);
+  dist_ = LINALG::CreateVector(*DofRowMapView(), true);
   // mid-velocities
-  velt_ = LINALG::CreateVector(*dofrowmap_, true);
+  velt_ = LINALG::CreateVector(*DofRowMapView(), true);
   // mid-accelerations
-  acct_ = LINALG::CreateVector(*dofrowmap_, true);
+  acct_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = LINALG::CreateVector(*dofrowmap_, true);
+  fint_ = LINALG::CreateVector(*DofRowMapView(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*dofrowmap_, true);
+  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
   // inertial force vector F_{int;n} at last time
-  finert_ = LINALG::CreateVector(*dofrowmap_, true);
+  finert_ = LINALG::CreateVector(*DofRowMapView(), true);
   // inertial mid-force vector F_{int;n+1-alpha_f}
-  finertt_ = LINALG::CreateVector(*dofrowmap_, true);
+  finertt_ = LINALG::CreateVector(*DofRowMapView(), true);
   // inertial force vector F_{int;n+1} at new time
-  finertn_ = LINALG::CreateVector(*dofrowmap_, true);
+  finertn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // viscous mid-point force vector F_visc
-  fvisct_ = LINALG::CreateVector(*dofrowmap_, true);
+  fvisct_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   if (!HaveNonlinearMass())
   {
@@ -467,7 +467,7 @@ void STR::TimIntOneStepTheta::UpdateIterIncrementally()
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
   Teuchos::RCP<Epetra_Vector> aux
-      = LINALG::CreateVector(*dofrowmap_, false);
+      = LINALG::CreateVector(*DofRowMapView(), false);
 
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -587,13 +587,13 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
     discret_->SetState("acceleration",(*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
-    update_disp = LINALG::CreateVector(*dofrowmap_, true);
+    update_disp = LINALG::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_vel;
-    update_vel = LINALG::CreateVector(*dofrowmap_, true);
+    update_vel = LINALG::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_acc;
-    update_acc = LINALG::CreateVector(*dofrowmap_, true);
+    update_acc = LINALG::CreateVector(*DofRowMapView(), true);
 
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);

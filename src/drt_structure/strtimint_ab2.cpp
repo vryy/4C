@@ -66,11 +66,11 @@ STR::TimIntAB2::TimIntAB2
   ResizeMStep();
 
   // allocate force vectors
-  fextn_  = LINALG::CreateVector(*dofrowmap_, true);
-  fintn_  = LINALG::CreateVector(*dofrowmap_, true);
-  fviscn_ = LINALG::CreateVector(*dofrowmap_, true);
-  fcmtn_  = LINALG::CreateVector(*dofrowmap_, true);
-  frimpn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fviscn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fcmtn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // let it rain
   return;
@@ -86,9 +86,9 @@ void STR::TimIntAB2::ResizeMStep()
 
   // resize state vectors, AB2 is a 2-step method, thus we need two
   // past steps at t_{n} and t_{n-1}
-  dis_->Resize(-1, 0, dofrowmap_, true);
-  vel_->Resize(-1, 0, dofrowmap_, true);
-  acc_->Resize(-1, 0, dofrowmap_, true);
+  dis_->Resize(-1, 0, DofRowMapView(), true);
+  vel_->Resize(-1, 0, DofRowMapView(), true);
+  acc_->Resize(-1, 0, DofRowMapView(), true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ int STR::TimIntAB2::IntegrateStep()
     else
     {
       RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
-      RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*dofrowmap_, true);
+      RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*DofRowMapView(), true);
       int error = massmatrix->ExtractDiagonalCopy(*diagonal);
       if (error!=0) dserror("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0,*diagonal,*frimpn_,0.0);

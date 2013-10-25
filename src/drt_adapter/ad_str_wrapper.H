@@ -87,6 +87,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
     { return structure_->DofRowMap(nds); }
 
+    /// view of dof map of vector of vector of unknowns
+    virtual const Epetra_Map* DofRowMapView()
+    { return structure_->DofRowMapView(); }
+
     /// domain map of system matrix
     virtual const Epetra_Map& DomainMap()
     { return structure_->DomainMap(); }

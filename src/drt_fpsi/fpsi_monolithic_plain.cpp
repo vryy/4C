@@ -223,7 +223,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
 
   // get single field block matrices
-        Teuchos::RCP<LINALG::SparseMatrix>          p      = PoroField() -> SystemSparseMatrix();
+        Teuchos::RCP<LINALG::SparseMatrix>          p      = PoroField() -> SystemMatrix();
   const Teuchos::RCP<LINALG::SparseMatrix>          f      = FluidField()-> SystemSparseMatrix();
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a      = AleField()  -> BlockSystemMatrix();
   /*----------------------------------------------------------------------*/
@@ -266,7 +266,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     k_ap -> Add(*laig,false,1.0,1.0);
 
     k_aa -> Complete(aii.DomainMap(),aii.RangeMap());
-    k_ap -> Complete(PoroField()->SystemSparseMatrix()->DomainMap(),laig->RangeMap());
+    k_ap -> Complete(p->DomainMap(),laig->RangeMap());
     mat.Assign(2,2,View,*k_aa);
     mat.Assign(2,0,View,*k_ap);
 
@@ -288,7 +288,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
                              *aaa,
                               false);
 
-  aaa -> Complete(*AleField()->Interface()->OtherMap(),PoroField()->SystemSparseMatrix()->RangeMap());
+  aaa -> Complete(*AleField()->Interface()->OtherMap(),p->RangeMap());
   mat.Assign(0, 2, View, *(aaa)); // assign poro_ale coupling matrix
 
 
@@ -297,16 +297,16 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   Teuchos::RCP<LINALG::SparseMatrix> fluid_ale_gamma = Teuchos::rcp(new LINALG::SparseMatrix(*(FluidField()->DofRowMap()),81,false));
   Teuchos::RCP<LINALG::SparseMatrix> fluid_ale_omega = Teuchos::rcp(new LINALG::SparseMatrix(*(FluidField()->DofRowMap()),81,false));
   fluid_ale_omega -> Assign(View,Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(k_fa_)->Matrix(0,0));
-  fluid_ale_omega -> Complete(*AleField()->Interface()->OtherMap(),FluidField()->SystemSparseMatrix()->RangeMap());
+  fluid_ale_omega -> Complete(*AleField()->Interface()->OtherMap(),f->RangeMap());
   fluid_ale_gamma -> Assign(View,Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(k_fa_)->Matrix(1,0));
-  fluid_ale_gamma -> Complete(*AleField()->Interface()->OtherMap(),FluidField()->SystemSparseMatrix()->RangeMap());
+  fluid_ale_gamma -> Complete(*AleField()->Interface()->OtherMap(),f->RangeMap());
   //std::cout<<"fluid_ale_omega: "<<*fluid_ale_omega<<endl;
   //std::cout<<"fluid_ale_gamma: "<<*fluid_ale_gamma<<endl;
 
   aa2 -> Add(*fluid_ale_omega,false,1.0,1.0);
   aa2 -> Add(*fluid_ale_gamma,false,1.0,1.0);
 
-  aa2 -> Complete(AleField()->BlockSystemMatrix()->DomainMap(0),FluidField()->SystemSparseMatrix()->RangeMap());
+  aa2 -> Complete(AleField()->BlockSystemMatrix()->DomainMap(0),f->RangeMap());
   mat.Assign(1,2,View,*aa2); // assign fluid_ale coupling matrix (due to Neumann Integration)
 
 
@@ -371,8 +371,8 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
           false,  // bool exactmatch = true (default)
           false); // bool add
 
-      tempale1  -> Complete(PoroField()->StructureField()->SystemMatrix()->RangeMap(),FluidField()->SystemSparseMatrix()->RangeMap());
-      tempale2  -> Complete(PoroField()->StructureField()->SystemMatrix()->RangeMap(),FluidField()->SystemSparseMatrix()->RangeMap());
+      tempale1  -> Complete(*PoroField()->StructureRangeMap(),f->RangeMap());
+      tempale2  -> Complete(*PoroField()->StructureRangeMap(),f->RangeMap());
 
       //Teuchos::RCP<LINALG::SparseMatrix> tempale12 = Teuchos::rcp(new LINALG::SparseMatrix((FluidField()->SystemSparseMatrix()->RowMap()),81,false));
       //tempale12->Add(*tempale2,false,1.0,1.0);
@@ -382,7 +382,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
       k_fp -> Add(*tempale1,false,1.0,1.0);
       k_fp -> Add(*tempale2,false,1.0,1.0);
-      k_fp -> Complete(PoroField()->SystemSparseMatrix()->RangeMap(),FluidField()->SystemSparseMatrix()->RangeMap());
+      k_fp -> Complete(p->RangeMap(),f->RangeMap());
     }
     else // if shapederivatives = no in FluidDynamics section in dat-file
     {

@@ -44,7 +44,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
   {
     // the temperature field has only one dof per node, disregarded by the
     // dimension of the problem
-    const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]));
+    const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
     if (la[1].Size() != nen_*numdofpernode_thr)
       dserror("Location vector length for temperatures does not match!");
 
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
 
       // the temperature field has only one dof per node, disregarded by the
       // dimension of the problem
-      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]));
+      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
       if (la[1].Size() != nen_*numdofpernode_thr)
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures
@@ -356,7 +356,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
 
       // the temperature field has only one dof per node, disregarded by the
       // dimension of the problem
-      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]));
+      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
       if (la[1].Size() != nen_*numdofpernode_thr)
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures
@@ -471,7 +471,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
 
       // the temperature field has only one dof per node, disregarded by the
       // dimension of the problem
-      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]));
+      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
       if (la[1].Size() != nen_*numdofpernode_thr)
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures
@@ -593,7 +593,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
-        const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]));
+        const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
         if (la[1].Size() != nen_*numdofpernode_thr)
           dserror("Location vector length for temperature does not match!");
 
@@ -749,7 +749,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
 
       // the temperature field has only one dof per node, disregarded by the
       // dimension of the problem
-      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]));
+      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
       if (la[1].Size() != nen_*numdofpernode_thr)
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures

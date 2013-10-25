@@ -77,30 +77,30 @@ STR::TimIntGEMM::TimIntGEMM
   // create state vectors
 
   // mid-displacements
-  dism_ = LINALG::CreateVector(*dofrowmap_, true);
+  dism_ = LINALG::CreateVector(*DofRowMapView(), true);
   // mid-velocities
-  velm_ = LINALG::CreateVector(*dofrowmap_, true);
+  velm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // mid-accelerations
-  accm_ = LINALG::CreateVector(*dofrowmap_, true);
+  accm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // create force vectors
 
   // internal force vector F_{int;m} at mid-time
-  fintm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fintm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*dofrowmap_, true);
+  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
   // external mid-force vector F_{ext;n+1-alpha_f}
-  fextm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
   // inertial mid-point force vector F_inert
-  finertm_ = LINALG::CreateVector(*dofrowmap_, true);
+  finertm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // viscous mid-point force vector F_visc
-  fviscm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // gemm time integrator cannot handle nonlinear inertia forces
   if (HaveNonlinearMass())
@@ -366,7 +366,7 @@ void STR::TimIntGEMM::UpdateIterIncrementally()
 {
   // auxiliary global vectors
   Teuchos::RCP<Epetra_Vector> aux
-      = LINALG::CreateVector(*dofrowmap_, false);
+      = LINALG::CreateVector(*DofRowMapView(), false);
 
   // further auxiliary variables
   const double dt = (*dt_)[0];  // step size \f$\Delta t_{n}\f$

@@ -666,7 +666,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
     const DRT::Element * const * myele = actnode->Elements();
     int numdf = 0;
     for (int j=0; j<numele; ++j)
-      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode));
+      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode,dis.Name()));
 
     if ( ( total_numdf % numdf ) != 0 )
       dserror( "illegal dof set number" );
@@ -1126,7 +1126,7 @@ void  DRT::Discretization::DoInitialField(DRT::Condition& cond,
     const DRT::Element * const * myele = actnode->Elements();
     int numdf = 0;
     for (int j=0; j<numele; ++j)
-      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode));
+      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode,""));
 
     if ( ( total_numdf % numdf ) != 0 )
       dserror( "illegal dof set number" );

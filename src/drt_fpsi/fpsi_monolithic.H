@@ -290,6 +290,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>   rhsold_;
 
   Teuchos::RCP<const Epetra_Vector>   meshdispold_;
+
   Teuchos::RCP<Epetra_Vector>   porointerfacedisplacementsold_;
 
   // adapt solver tolerancePoroField()->SystemSparseMatrix()

@@ -146,7 +146,7 @@ namespace ELEMENTS
     virtual int NumDofPerNode(
       const unsigned nds,
       const DRT::Node& node,
-      const std::string disname = std::string("dummy")
+      const std::string disname
       ) const
     {
       if (nds == 1)

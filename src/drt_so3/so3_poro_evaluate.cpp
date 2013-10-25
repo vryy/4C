@@ -47,7 +47,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
     if(la.Size()>2)
     {
       //  dofs per node of second dofset
-      const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]));
+      const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
 
       if (la[1].Size() != numnod_*numdofpernode)
         dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
   if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
-  const int numdofpernode = NumDofPerNode(dofset,*(Nodes()[0]));
+  const int numdofpernode = NumDofPerNode(dofset,*(Nodes()[0]),discretization.Name());
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());

@@ -67,11 +67,11 @@ STR::TimIntCentrDiff::TimIntCentrDiff
   ResizeMStep();
 
   // allocate force vectors
-  fextn_  = LINALG::CreateVector(*dofrowmap_, true);
-  fintn_  = LINALG::CreateVector(*dofrowmap_, true);
-  fviscn_ = LINALG::CreateVector(*dofrowmap_, true);
-  fcmtn_  = LINALG::CreateVector(*dofrowmap_, true);
-  frimpn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  fviscn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fcmtn_  = LINALG::CreateVector(*DofRowMapView(), true);
+  frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // let it rain
   return;
@@ -191,7 +191,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
     else
     {
       RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
-      RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*dofrowmap_, true);
+      RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*DofRowMapView(), true);
       int error = massmatrix->ExtractDiagonalCopy(*diagonal);
       if (error!=0) dserror("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0,*diagonal,*frimpn_,0.0);

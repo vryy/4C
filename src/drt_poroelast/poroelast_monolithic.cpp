@@ -64,7 +64,11 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
     directsolve_(true),
     del_(Teuchos::null),
     delhist_(Teuchos::null),
-    mu_(0.0)
+    mu_(0.0),
+    fluidrangemap_(Teuchos::null),
+    fluiddomainmap_(Teuchos::null),
+    structurerangemap_(Teuchos::null),
+    structuredomainmap_(Teuchos::null)
 {
   const Teuchos::ParameterList& sdynparams
   = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -290,6 +294,16 @@ void POROELAST::Monolithic::SetupSystem()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces2;
 
+  if(PoroBase::PartOfMultifieldProblem_)
+  {
+    vecSpaces2.push_back(StructureField()->Interface()->Map(0));
+    vecSpaces2.push_back(StructureField()->Interface()->Map(1));
+    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(0));
+    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(1));
+
+    SetInterfaceDofRowMaps(vecSpaces2);
+  }
+
   // use its own DofRowMap, that is the 0th map of the discretization
   //
   // when using constraints applied via Lagrange-Multipliers there is a
@@ -310,16 +324,6 @@ void POROELAST::Monolithic::SetupSystem()
     dserror("No fluid equation. Panic.");
 
   SetDofRowMaps(vecSpaces);
-
-  if(PoroBase::PartOfMultifieldProblem_)
-  {
-    vecSpaces2.push_back(StructureField()->Interface()->Map(0));
-    vecSpaces2.push_back(StructureField()->Interface()->Map(1));
-    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(0));
-    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(1));
-
-    SetInterfaceDofRowMaps(vecSpaces2);
-  }
 
   BuildCombinedDBCMap();
 
@@ -383,6 +387,10 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
+  if(structurerangemap_ == Teuchos::null)
+    structurerangemap_ = Teuchos::rcp(new Epetra_Map(k_ss->RangeMap()));
+  if(structuredomainmap_ == Teuchos::null)
+	structuredomainmap_ = Teuchos::rcp(new Epetra_Map(k_ss->DomainMap()));
 
   if(k_ss==Teuchos::null)
     dserror("structure system matrix null pointer!");
@@ -411,6 +419,10 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
+  if(fluidrangemap_ == Teuchos::null)
+    fluidrangemap_ = Teuchos::rcp(new Epetra_Map(k_ff->RangeMap()));
+  if(fluiddomainmap_ == Teuchos::null)
+	fluiddomainmap_ = Teuchos::rcp(new Epetra_Map(k_ff->DomainMap()));
 
   if(k_ff==Teuchos::null)
     dserror("fuid system matrix null pointer!");
@@ -455,6 +467,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
+
 } // SetupSystemMatrix
 
 /*----------------------------------------------------------------------*
@@ -1607,13 +1620,6 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemMatrix()
 {
   return systemmatrix_->Merge();
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-  Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemSparseMatrix()
-  {
-    return systemmatrix_->Merge();
-  }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

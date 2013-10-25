@@ -95,7 +95,6 @@ STR::TimInt::TimInt
 )
 : discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
-  dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
   contactsolver_(contactsolver),
   solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
@@ -186,7 +185,6 @@ STR::TimInt::TimInt
 
       discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
 
-      dofrowmap_ = discret_->DofRowMap(0);
     }
   }
 
@@ -202,7 +200,7 @@ STR::TimInt::TimInt
     AttachEnergyFile();
 
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*dofrowmap_, true);
+  zeros_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -214,40 +212,40 @@ STR::TimInt::TimInt
   }
 
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  acc_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = LINALG::CreateVector(*dofrowmap_, true);
+  disn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
       (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
   {
     // material displacements Dm_{n+1} at t_{n+1}
-    dismatn_ = LINALG::CreateVector(*dofrowmap_,true);
+    dismatn_ = LINALG::CreateVector(*DofRowMapView(),true);
 
     // material_displacements D_{n}
-    dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+    dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   }
 
   // velocities V_{n+1} at t_{n+1}
-  veln_ = LINALG::CreateVector(*dofrowmap_, true);
+  veln_ = LINALG::CreateVector(*DofRowMapView(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = LINALG::CreateVector(*dofrowmap_, true);
+  accn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
+  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // create empty matrices
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
-  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   if (damping_ != INPAR::STR::damp_none)
   {
     if (!HaveNonlinearMass())
     {
-      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
     }
     else
     {
@@ -303,10 +301,6 @@ STR::TimInt::TimInt
   {
     PrepareStatMech();
   }
-  // fix pointer to #dofrowmap_, which has not really changed, but is
-  // located at different place
-  // (this is necessary to BOTH constraints and contact / meshtying)
-  dofrowmap_ = discret_->DofRowMap();
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
   surfstressman_ = Teuchos::rcp(new UTILS::SurfStressManager(discret_,
@@ -320,7 +314,7 @@ STR::TimInt::TimInt
     if (potentialcond.size())
     {
       potman_ = Teuchos::rcp(new POTENTIAL::PotentialManager(Discretization(), *discret_));
-      stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,81,true,false, LINALG::SparseMatrix::FE_MATRIX));
+      stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(),81,true,false, LINALG::SparseMatrix::FE_MATRIX));
     }
   }
 
@@ -387,9 +381,6 @@ STR::TimInt::TimInt
     {
       //initialize patient specific parameters and conditions
       PATSPEC::PatientSpecificGeometry(discret_, pslist_);
-
-      // fix pointer to dofrowmap_
-      dofrowmap_ = discret_->DofRowMap();
     }
   }
 
@@ -745,9 +736,9 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext
-    = LINALG::CreateVector(*dofrowmap_, true); // external force
+    = LINALG::CreateVector(*DofRowMapView(), true); // external force
   Teuchos::RCP<Epetra_Vector> fint
-    = LINALG::CreateVector(*dofrowmap_, true); // internal force
+    = LINALG::CreateVector(*DofRowMapView(), true); // internal force
 
   // initialise matrices
   stiff_->Zero();
@@ -825,7 +816,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   //   - surface stress forces
   //   - potential forces
   {
-    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*DofRowMapView(), true);
     if (damping_ == INPAR::STR::damp_rayleigh)
     {
       damp_->Multiply(false, (*vel_)[0], *rhs);
@@ -1018,9 +1009,6 @@ void STR::TimInt::ReadRestart
 
   ReadRestartForce();
 
-  // fix pointer to #dofrowmap_, which has not really changed, but is
-  // located at different place
-  dofrowmap_ = discret_->DofRowMap();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1060,9 +1048,6 @@ void STR::TimInt::SetRestart
   //biofilm growth
   if (strgrdisp_!=Teuchos::null) dserror("Set restart not implemented for biofilm growth");
 
-  // fix pointer to #dofrowmap_, which has not really changed, but is
-  // located at different place
-  dofrowmap_ = discret_->DofRowMap();
 }
 
 /*----------------------------------------------------------------------*/
@@ -1611,7 +1596,7 @@ void STR::TimInt::DetermineEnergy()
     kinergy_ = 0.0;  // total kinetic energy
     {
       Teuchos::RCP<Epetra_Vector> linmom
-        = LINALG::CreateVector(*dofrowmap_, true);
+        = LINALG::CreateVector(*DofRowMapView(), true);
       mass_->Multiply(false, *veln_, *linmom);
       linmom->Dot(*veln_, &kinergy_);
       kinergy_ *= 0.5;
@@ -2031,7 +2016,7 @@ void STR::TimInt::OutputNodalPositions()
 
   //RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
   //RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
-  //dofrowmap_  = Teuchos::rcp(new discret_->DofRowMap());
+  //DofRowMapView()  = Teuchos::rcp(new discret_->DofRowMap());
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -2645,6 +2630,12 @@ Teuchos::RCP<const Epetra_Map> STR::TimInt::DofRowMap(unsigned nds)
   return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
+/*----------------------------------------------------------------------*/
+/* view of dof map of vector of unknowns                                */
+const Epetra_Map* STR::TimInt::DofRowMapView()
+{
+  return discret_->DofRowMap();
+}
 
 /*----------------------------------------------------------------------
  Shorten the Dirichlet DOF set
@@ -2664,22 +2655,22 @@ void STR::TimInt::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptorem
 void STR::TimInt::Reset()
 {
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // displacements D_{n}
-  dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  acc_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = LINALG::CreateVector(*dofrowmap_, true);
+  disn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // velocities V_{n+1} at t_{n+1}
-  veln_ = LINALG::CreateVector(*dofrowmap_, true);
+  veln_ = LINALG::CreateVector(*DofRowMapView(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = LINALG::CreateVector(*dofrowmap_, true);
+  accn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
+  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // set initial fields
   SetInitialFields();
@@ -2706,9 +2697,9 @@ void STR::TimInt::ResizeMStepTimAda()
 
   // resize state vectors, AB2 is a 2-step method, thus we need two
   // past steps at t_{n} and t_{n-1}
-  dis_->Resize(-1, 0, dofrowmap_, true);
-  vel_->Resize(-1, 0, dofrowmap_, true);
-  acc_->Resize(-1, 0, dofrowmap_, true);
+  dis_->Resize(-1, 0, DofRowMapView(), true);
+  vel_->Resize(-1, 0, DofRowMapView(), true);
+  acc_->Resize(-1, 0, DofRowMapView(), true);
 
   return;
 }

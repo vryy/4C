@@ -201,7 +201,7 @@ public:
   /// separately.
   virtual int NumDofPerNode(const DRT::Node& node) const { return Wall1::noddof_; }
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
   {
     if (nds!=0)
       return 0;
@@ -906,7 +906,7 @@ public:
   /// separately.
   virtual int NumDofPerNode(const DRT::Node& node) const { return 2; }
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy")) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
   {
     if(nds == 0)
       return NumDofPerNode(node);

@@ -72,10 +72,10 @@ STR::TimIntStatics::TimIntStatics
   // create force vectors
 
   // internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // initial resize of multi-step quantities
   if (xparams.isParameter("MSTEPEVRY") )
@@ -97,9 +97,9 @@ void STR::TimIntStatics::ResizeMStep()
   dt_->Resize(-(stepmax_-1), 0, (*dt_)[0]);
 
   // resize state vectors according to mstepevery_
-  dis_->Resize(-(stepmax_-1), 0, dofrowmap_, true);
-  vel_->Resize(-(stepmax_-1), 0, dofrowmap_, true);
-  acc_->Resize(-(stepmax_-1), 0, dofrowmap_, true);
+  dis_->Resize(-(stepmax_-1), 0, DofRowMapView(), true);
+  vel_->Resize(-(stepmax_-1), 0, DofRowMapView(), true);
+  acc_->Resize(-(stepmax_-1), 0, DofRowMapView(), true);
 
 }
 

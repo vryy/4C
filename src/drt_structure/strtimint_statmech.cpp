@@ -1430,7 +1430,7 @@ void STR::TimIntStatMech::UpdateIterIncrementally()
   // correctly 'predicted', final values.
 
   // this version leads to a segmentation fault if the time step has to be repeated...
-  //Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*dofrowmap_, false);
+  //Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*DofRowMapView(), false);
 
   Teuchos::RCP<Epetra_Vector> aux = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), false));
 

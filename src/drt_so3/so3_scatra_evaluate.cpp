@@ -41,7 +41,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
   if(la.Size()>1)
   {
     //  dofs per node of second dofset
-    const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]));
+    const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
 
     if (la[1].Size() != numnod_*numdofpernode)
       dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");

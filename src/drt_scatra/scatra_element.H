@@ -219,7 +219,7 @@ public:
 
   This is the version for a coupling to fluid flow with a second dof set.
   */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname = std::string("dummy") ) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
   {
     // number of dofs for fluid (based on similar discretization)
     if (nds==1)
@@ -589,7 +589,7 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const
   {return parent_->NumDofPerNode(node);}
 
-  virtual int NumDofPerNode(const unsigned nds,const DRT::Node& node,  const std::string disname = std::string("dummy")) const
+  virtual int NumDofPerNode(const unsigned nds,const DRT::Node& node,  const std::string disname) const
   {return parent_->NumDofPerNode(nds,node,disname);}
 
   //! Return a pointer to the parent element of this boundary element

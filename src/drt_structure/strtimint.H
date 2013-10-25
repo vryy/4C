@@ -596,6 +596,9 @@ namespace STR
       return discret_;
     }
 
+    //! Access to rcp pointer to dofrowmap of discretization
+    const Epetra_Map* DofRowMapView();
+
     //! Access solver, one of these have to be removed (see below)
     Teuchos::RCP<LINALG::Solver> Solver()
     {
@@ -984,9 +987,6 @@ namespace STR
     //@{
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
     int myrank_;  //!< ID of actual processor in parallel
-    const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization
-                                   //!< to construct matching
-                                   //!< vectors and matrices
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
     Teuchos::RCP<LINALG::Solver> contactsolver_;  //!< linear algebraic solver (for contact/meshtying)
     bool solveradapttol_;  //!< adapt solver tolerance

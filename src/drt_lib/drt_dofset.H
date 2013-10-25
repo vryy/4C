@@ -317,7 +317,7 @@ protected:
   /// get number of nodal dofs for this element at this node
   virtual int NumDofPerNode( const Element & element, const Node & node, unsigned dspos ) const
   {
-    return element.NumDofPerNode( dspos, node );
+    return element.NumDofPerNode( dspos, node, "" );
   }
 
   /// get number of element dofs for this element
