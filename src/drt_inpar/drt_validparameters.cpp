@@ -5837,8 +5837,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
 
-  DoubleParameter("XFLUIDFLUID_SEARCHRADIUS",1.0,"Radius of the search tree",&xfem_general);
-
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the cut volumes",
                                tuple<std::string>("Tessellation","MomentFitting","DirectDivergence"),
@@ -5903,6 +5901,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RELAXING_ALE_EVERY",1,"Relaxing Ale after how many monolithic steps",&xfluid_general);
 
   BoolParameter("RELAXING_ALE","yes","switch on/off for relaxing Ale in monolithic fluid-fluid-fsi",&xfluid_general);
+
+  DoubleParameter("XFLUIDFLUID_SEARCHRADIUS",1.0,"Radius of the search tree",&xfluid_general);
 
   // xfluidfluid-fsi-monolithic approach
   setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH","xffsi_fixedALE_partitioned","The monolithic apporach for xfluidfluid-fsi",

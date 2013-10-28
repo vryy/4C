@@ -404,8 +404,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_SOL_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_SOL_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DISCRET_OUT",      DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DISCRET_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_CUT_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_CUT_OUT"));
-
-    fluidtimeparams->sublist("XFEM").set<double>("XFLUIDFLUID_SEARCHRADIUS",  xdyn.get<double>("XFLUIDFLUID_SEARCHRADIUS"));
   }
 
   // ----------------------------- sublist for xfem-specific fluid parameters
@@ -424,6 +422,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<std::string>("MONOLITHIC_XFFSI_APPROACH"));
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("XFLUIDFLUID_TIMEINT",xfdyn.sublist("GENERAL").get<std::string>("XFLUIDFLUID_TIMEINT"));
+    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<double>("XFLUIDFLUID_SEARCHRADIUS",  xfdyn.sublist("GENERAL").get<double>("XFLUIDFLUID_SEARCHRADIUS"));
   }
 
 

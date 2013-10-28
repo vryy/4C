@@ -64,7 +64,8 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
     Teuchos::ParameterList&   params_xfem  = params_.sublist("XFEM");
     gmsh_debug_out_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
 
-    searchradius_fac_= params_xfem.get<double>("XFLUIDFLUID_SEARCHRADIUS");
+    Teuchos::ParameterList&   params_xf_gen = params_.sublist("XFLUID DYNAMIC/GENERAL");
+    searchradius_fac_= params_xf_gen.get<double>("XFLUIDFLUID_SEARCHRADIUS");
 
     // find the radius of the search tree
     SearchRadius();
