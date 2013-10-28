@@ -1212,6 +1212,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
     for (int k = 0;k<numscal_;++k)
       conint_[k] = funct_.Dot(ephinp_[k]);
 
+    // get gradient of electric potential at integration point
+    gradpot_.Multiply(derxy_,epotnp_);
+
     // access material parameters
     GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
@@ -1256,6 +1259,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
         GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
         emat(fvi,fui) += fac*epstort_[0]/faraday*cond_[0]*laplawf;
       }
+
+      double laplawf(0.0);
+      GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
+      erhs[fvi] -= fac*epstort_[0]/faraday*cond_[0]*laplawf;
     }
   } // integration loop
 

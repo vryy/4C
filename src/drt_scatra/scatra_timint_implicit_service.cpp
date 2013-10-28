@@ -765,11 +765,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 {
-  // TODO
-  // Calculation of initial derivative yields in different results for the uncharged particle and
-  // the binary electrolyte solution
-  // -> Check calculation procedure of the method
-
   // assemble system: M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
   CalcInitialPhidtAssemble();
   // solve for phidt_0
@@ -1442,12 +1437,6 @@ void SCATRA::ScaTraTimIntImpl::ValidParameterDiffCond()
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(scatraparams,"WRITEFLUX"))== INPAR::SCATRA::flux_diffusive_domain or
        (DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(scatraparams,"WRITEFLUX"))== INPAR::SCATRA::flux_total_domain)
       dserror("This feature is needed -> Think about!!");
-
-    if((DRT::INPUT::IntegralValue<int>(scatraparams,"SKIPINITDER"))!= true)
-      std::cout << "Initial phidt - What is it doing in case of diffcond??" << std::endl;
-
-    if((DRT::INPUT::IntegralValue<int>(scatraparams,"INITPOTCALC"))!= INPAR::SCATRA::initpotcalc_no)
-      std::cout << "Initial phidt - What is it doing in case of diffcond??" << std::endl;
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM"))!= INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
@@ -2331,19 +2320,21 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
       Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
       Teuchos::RCP<Epetra_Vector> phi0 = LINALG::CreateVector(*dofrowmap,true);
+      phi0->Update(1.0,*phinp_,0.0);
+      Teuchos::RCP<Epetra_Vector> inc = LINALG::CreateVector(*dofrowmap,true);
 
       // zero out matrix entries
       sysmat_->Zero();
 
       // evaluate Dirichlet boundary conditions at time t=0
       // the values should match your initial field at the boundary!
-      //ApplyDirichletBC(time_,phin_,phidtn_);
       ApplyDirichletBC(time_,phin_,Teuchos::null);
 
-      // ToDo:
       // contributions due to Neumann b.c. or ElectrodeKinetics b.c.
       // have to be summed up here, and applied
       // as a current flux condition at the potential field!
+
+      // so far: fluxes resulting from Neuman and electrochemical boundary conditions are not considered in the framework!
 
       // Electrode kinetics:
       // If, e.g., the initial field does not match the applied boundary conditions
@@ -2360,11 +2351,17 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
 
         electKinetToggle = LINALG::CreateVector(*dofrowmap,true);
 
-        // check if for fluid Krylov projection is required
+        if(numcond!=2)
+          dserror("option fix_potential: The framework is restricted to two electrode applications");
+
+        bool iszero = false;
+
         for(int icond = 0; icond < numcond; icond++)
         {
           const int kinetics = cond[icond]->GetInt("kinetic model");
 
+          // So far it is implemented that
+          // you have to have at least one zero electrode boundary condition in your model.
           if(kinetics != INPAR::SCATRA::zero)
           {
             const double pot0 = cond[icond]->GetDouble("pot");
@@ -2384,43 +2381,47 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
               electKinetToggle->ReplaceGlobalValues(1,&one,&bc_dof[numscal_]);
             }
           }
+          else
+            iszero=true;
         }
-
-        // create the parameters for the discretization
-        Teuchos::ParameterList eleparams;
-
-        // action for elements
-        eleparams.set<int>("action",SCATRA::calc_elch_initial_potential);
-
-        // set type of scalar transport problem
-        eleparams.set<int>("scatratype",scatratype_);
-
-        // factor F/RT
-        eleparams.set("frt",frt_);
-
-        // parameters for stabilization
-        eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-        // parameters for Elch/DiffCond formulation
-        if(IsElch(scatratype_))
-          eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
-
-        //provide displacement field in case of ALE
-        eleparams.set("isale",isale_);
-        if (isale_)
-          AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-        // set vector values needed by elements
-        discret_->ClearState();
-        discret_->SetState("phi0",phin_);
-
-        // call loop over elements
-        discret_->Evaluate(eleparams,sysmat_,rhs);
-        discret_->ClearState();
-
-        // finalize the complete matrix
-        sysmat_->Complete();
+        if(iszero==false)
+          dserror("A zero electrode condition is necessary to apply the option fix_potential");
       }
+
+      // create the parameters for the discretization
+      Teuchos::ParameterList eleparams;
+
+      // action for elements
+      eleparams.set<int>("action",SCATRA::calc_elch_initial_potential);
+
+      // set type of scalar transport problem
+      eleparams.set<int>("scatratype",scatratype_);
+
+      // factor F/RT
+      eleparams.set("frt",frt_);
+
+      // parameters for stabilization
+      eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+      // parameters for Elch/DiffCond formulation
+      if(IsElch(scatratype_))
+        eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
+      //provide displacement field in case of ALE
+      eleparams.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("phi0",phin_);
+
+      // call loop over elements
+      discret_->Evaluate(eleparams,sysmat_,rhs);
+      discret_->ClearState();
+
+      // finalize the complete matrix
+      sysmat_->Complete();
 
       // apply Dirichlet boundary conditions to system matrix
       LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,*(dbcmaps_->CondMap()));
@@ -2428,8 +2429,14 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
       if(electKinetToggle != Teuchos::null)
         LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,electKinetToggle);
 
-      // solve
-      solver_->Solve(sysmat_->EpetraOperator(),phi0,rhs,true,true);
+      // solve the system linear incrementally:
+      // the system is linear and therefore it converges in a single step but
+      // an incremental solution procedure supports allows the solution for the potential field
+      // to converge to an "defined" potential level due to initial conditions!
+      solver_->Solve(sysmat_->EpetraOperator(),inc,rhs,true,true);
+
+      // update the original initial field
+      phi0->Update(1.0,*inc,1.0);
 
       // copy solution of initial potential field to the solution vectors
       Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phi0);

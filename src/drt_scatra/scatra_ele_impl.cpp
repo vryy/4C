@@ -1420,6 +1420,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         // split for each transported scalar, insert into element arrays
         ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
       }
+      // get values for el. potential at element nodes
+      epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
     } // for i
     const double frt = params.get<double>("frt");
 
@@ -7349,6 +7351,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
     for (int k = 0;k<numscal_;++k)
       conint_[k] = funct_.Dot(ephinp_[k]);
 
+    // get gradient of electric potential at integration point
+    gradpot_.Multiply(derxy_,epotnp_);
+
     // access material parameters
     GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
@@ -7357,6 +7362,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
     {
       double sigma_k = frt*valence_[k]*diffusvalence_[k]*conint_[k];
       sigmaint += sigma_k;
+
+      // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
+      if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        sigmaint += frt*valence_[k]*diffusvalence_[numscal_]*(-conint_[k]);
 
       // diffusive terms on rhs
       // gradient of current scalar value
@@ -7368,6 +7377,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
         double laplawf(0.0);
         GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
         erhs[fvi] -= vrhs*laplawf;
+        // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
+        if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+          erhs[fvi] -= -fac*valence_[k]*diffus_[numscal_]*laplawf;
       }
 
       // provide something for conc. dofs: a standard mass matrix
@@ -7393,6 +7405,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
         GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
         emat(fvi,fui) += fac*sigmaint*laplawf;
       }
+
+      double laplawf(0.0);
+      GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
+      erhs[fvi] -= fac*sigmaint*laplawf;
     }
   } // integration loop
 
