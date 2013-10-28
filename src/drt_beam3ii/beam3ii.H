@@ -6,10 +6,10 @@
   of geometrically exact rods", Romero 2004)
 
 <pre>
-Maintainer: Christian Cyron
-            cyron@lnm.mw.tum.de
+Maintainer: Christoph Meier
+            meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15264
+            089 - 289-15262
 </pre>
 *----------------------------------------------------------------------*/
 
