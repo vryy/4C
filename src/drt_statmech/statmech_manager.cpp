@@ -4273,9 +4273,11 @@ void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& para
   params.set("STARTTIMEACT",actiontime_->at(dbctimeindex_));
   params.set("DELTA_T_NEW",timestepsizes_->at(dbctimeindex_));
   params.set("PERIODLENGTH",GetPeriodLength());
+
   if(linkermodel_ == statmech_linker_bellseq || linkermodel_ == statmech_linker_bellseqintpol ||
      linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol ||
-     networktype_ == statmech_network_casimir)
+     networktype_ == statmech_network_casimir ||
+     DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_viscoelasticity)
     params.set<std::string>("internalforces","yes");
   return;
 }
