@@ -224,14 +224,11 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 											bool update)
 {
 
-  const int twistdofpn = TWISTDOFPN;
-  if(twistdofpn!=1 and twistdofpn!=2)
+  const int twistdofs = TWISTDOFS;
+  if(twistdofs!=2 and twistdofs!=3 and twistdofs!=4)
   {
-    dserror("Only the values 1 and 2 are valid for TWISTDOFPN!!!");
+    dserror("Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
   }
-
-	//dimensions of freedom per node
-	const int dofpn = 6+twistdofpn;
 
 	//number of nodes fixed for these element
 	const int nnode = 2;
@@ -240,13 +237,13 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 	const int vnode = 2;	//value + first derivative
 
 	//internal force vector
-	LINALG::TMatrix<FAD,dofpn*nnode,1> f_int;
+	LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_int;
 
 	//initialize
 	f_int.Clear();
 
 	//matrix for current nodal positions and nodal tangents
-	std::vector<FAD> disp_totlag(nnode*dofpn, 0.0);
+	std::vector<FAD> disp_totlag(6*nnode+twistdofs, 0.0);
 
 	//quantities to store the total internal energy of the element
 	FAD temp_energy=0.0;
@@ -265,25 +262,25 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
   LINALG::TMatrix<FAD,3,1> tangent_s; //t'=g1'
 
 	//matrices holding the shape functions
-	LINALG::TMatrix<FAD,3,nnode*dofpn> N_s;
-	LINALG::TMatrix<FAD,3,nnode*dofpn> N_ss;
-	LINALG::TMatrix<FAD,3,nnode*dofpn> N_sss;
-	LINALG::TMatrix<FAD,1,nnode*dofpn> C;
-	LINALG::TMatrix<FAD,1,nnode*dofpn> C_s;
+	LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_s;
+	LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_ss;
+	LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_sss;
+	LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C;
+	LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C_s;
 
 	//Matrices for N_i, N_i,xi and N_i,xixi. vnode*nnode due to hermite shapefunctions
 	LINALG::TMatrix<FAD,1,vnode*nnode> N_i;
 	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xi;
 	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixi;
 	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixixi;
-  LINALG::TMatrix<FAD,1,twistdofpn*nnode> C_i;
-  LINALG::TMatrix<FAD,1,twistdofpn*nnode> C_i_xi;
+  LINALG::TMatrix<FAD,1,twistdofs> C_i;
+  LINALG::TMatrix<FAD,1,twistdofs> C_i_xi;
 
 	//Matrices for N_i,s and N_i,ss
 	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_s;
 	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_ss;
 	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_sss;
-	LINALG::TMatrix<FAD,1,twistdofpn*nnode> C_i_s;
+	LINALG::TMatrix<FAD,1,twistdofs> C_i_s;
 
 	//Matrices to store r',r''
 	LINALG::TMatrix<FAD,3,1> r_s;
@@ -302,9 +299,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 	LINALG::TMatrix<FAD,3,3> Srxx;
 	LINALG::TMatrix<FAD,3,3> Stemp_vector;
 
-	LINALG::TMatrix<FAD,nnode*dofpn,3> M1;
-	LINALG::TMatrix<FAD,nnode*dofpn,3> M2;
-  LINALG::TMatrix<FAD,nnode*dofpn,3> M2_aux;
+	LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M1;
+	LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M2;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M2_aux;
 
 	//spatial force stress resultant n and moment stress resultant m
   LINALG::TMatrix<FAD,3,1> m;
@@ -338,8 +335,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 	const DRT::Element::DiscretizationType distype = Shape();
 
 	//! Calculates nodal positions, tangents and relative twist angles out of the corresponding displacements
-  //if TWISTDOFPN = 1: [ r1 t1 gamma1 r2 t2 gamma2]
-  //if TWISTDOFPN = 2: [ r1 t1 gamma1 r2 t2 gamma2 gamma3 gamma4]
+  //if TWISTDOFS = 2: [ r1 t1 gamma1 r2 t2 gamma2]
+	//if TWISTDOFS = 3: [ r1 t1 gamma1 r2 t2 gamma2 gamma3]
+	//if TWISTDOFS = 4: [ r1 t1 gamma1 r2 t2 gamma2 gamma3 gamma4]
 	UpdateDispTotlag(disp, disp_totlag);
 
   //begin: quantities which are needed for NSRISR calculation
@@ -379,6 +377,134 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
   Calculate_r_s(disp_totlag, xi, r_s_midpoint);
   //Fill all three epsilon values at CPs in matrix epsilonCP
   CalculateEpsilonCP(disp_totlag, r_s_midpoint, epsilonCP);
+
+//    //**********************begin: calculation of original ANS variant epsilon4*****************************************************************
+//    LINALG::TMatrix<FAD,4,1> epsilon4;
+//    epsilon4.Clear();
+//
+//    for(int iter=0; iter < 4; iter++)
+//    {
+//      #if defined(TWISTDOFS) && (TWISTDOFS==2)
+//
+//      int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+//                                          {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
+//                                          {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
+//
+//      int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
+//
+//      #elif defined(TWISTDOFS) && (TWISTDOFS==3)
+//
+//      int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+//                                          {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+//                                          {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
+//
+//      int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
+//
+//      #elif defined(TWISTDOFS) && (TWISTDOFS==4)
+//
+//      int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
+//                                             {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+//                                             {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
+//
+//      #else
+//      dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
+//      #endif
+//
+//      abs_r_s=0.0;
+//      N_i_xi.Clear();
+//      N_i_s.Clear();
+//      N_s.Clear();
+//      r_s.Clear();
+//      LINALG::TMatrix<FAD,3,1> r0_xi;
+//      r0_xi.Clear();
+//      FAD jacobi_local=0.0;
+//      double xi_help = 0.0;
+//
+//      switch(iter)
+//      {
+//      case 0:
+//      {
+//        //Get location and weight of GP in parameter space
+//        xi_help = -0.8605772;
+//      }
+//        break;
+//
+//      case 1:
+//      {
+//        //Get location and weight of GP in parameter space
+//        xi_help = -0.3269228;
+//      }
+//        break;
+//
+//      case 2:
+//      {
+//        //Get location and weight of GP in parameter space
+//        xi_help = 0.3269228;
+//      }
+//        break;
+//
+//      case 3:
+//      {
+//        //Get location and weight of GP in parameter space
+//        xi_help = 0.8605772;
+//      }
+//        break;
+//      }
+//
+//      const double xi=xi_help;
+//
+//      //Get hermite derivatives N'xi and N''xi
+//      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+//
+//      //Calculate local jacobi factors
+//      for (int i=0;i<3;i++)
+//      {
+//        r0_xi(i)+=Nodes()[0]->X()[i]*N_i_xi(0) + Nodes()[1]->X()[i]*N_i_xi(2) +Tref_[0](i)*N_i_xi(1) + Tref_[1](i)*N_i_xi(3);
+//      }
+//      for (int i=0; i<3; i++)
+//      {
+//        jacobi_local+=pow(r0_xi(i),2.0);
+//      }
+//      jacobi_local=pow(jacobi_local,0.5);
+//
+//        N_i_s=N_i_xi;
+//        N_i_s.Scale(1/jacobi_local);
+//
+//      //Assemble the matrices of the shape functions
+//      for (int i=0; i<6*nnode+twistdofs; i++)
+//      {
+//        for (int j=0; j<3; j++)
+//        {
+//          if(assembly_N[j][i]==0)
+//          {
+//            N_s(j,i)=0;
+//          }
+//          else
+//          {
+//            N_s(j,i)=N_i_s(assembly_N[j][i]-1);
+//          }
+//        }
+//      }
+//
+//      //Calculation of r' and r'', gamma and gamma' at the gp
+//      for (int i=0; i<3; i++)
+//      {
+//        for (int j=0; j<6*nnode+twistdofs; j++)
+//        {
+//          r_s(i)+=N_s(i,j)*disp_totlag[j];
+//        }
+//      }
+//
+//      //Calculation of |r'| (r_s.Norm2() not available for FAD) and r'T r''
+//      for (int i=0; i<3; i++)
+//      {
+//        abs_r_s+=pow(r_s(i),2.0);
+//      }
+//      abs_r_s=pow(abs_r_s,0.5);
+//
+//      epsilon4(iter)=abs_r_s-1;
+//    }
+//    //**********************end: calculation of original ANS variant epsilon4*****************************************************************
 
 //**********************begin: gauss integration*********************************************************************
 
@@ -457,14 +583,14 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 		//Calculation of r' and r'', gamma and gamma' at the gp
 		for (int i=0; i<3; i++)
 		{
-			for (int j=0; j<nnode*dofpn; j++)
+			for (int j=0; j<6*nnode+twistdofs; j++)
 			{
 				r_s(i)+=N_s(i,j)*disp_totlag[j];
 				r_ss(i)+=N_ss(i,j)*disp_totlag[j];
 				r_sss(i)+=N_sss(i,j)*disp_totlag[j];
 			}
 		}
-		for (int i=0; i<nnode*dofpn; i++)
+		for (int i=0; i<6*nnode+twistdofs; i++)
 		{
 			gamma_+=C(i)*disp_totlag[i];
 			gamma_s+=C_s(i)*disp_totlag[i];
@@ -517,12 +643,22 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       epsilon=abs_r_s - 1.0;
     #else
       epsilon=epsilonCP(0)*(-0.5*xi*(1.0 - xi)) + epsilonCP(2)*(0.5*xi*(1.0 + xi)) + epsilonCP(1)*(1 - xi*xi);
+//***********begin: original ANS******************************************************************************
+//      double a = -0.8605772;
+//      double b = -0.3269228;
+//      double c = 0.3269228;
+//      double d = 0.8605772;
+//      epsilon=epsilon4(0)*(xi-b)*(xi-c)*(xi-d)/((a-b)*(a-c)*(a-d))
+//             +epsilon4(1)*(xi-a)*(xi-c)*(xi-d)/((b-a)*(b-c)*(b-d))
+//             +epsilon4(2)*(xi-a)*(xi-b)*(xi-d)/((c-a)*(c-b)*(c-d))
+//             +epsilon4(3)*(xi-a)*(xi-b)*(xi-c)/((d-a)*(d-b)*(d-c));
+//***********end: original ANS*********************************************************************************
     #endif
 
     //Calculation of stress resultants m and n
     for (int i=0;i<3;i++)
     {
-      m(i,0)= sm*Irr_*(tau_gp + gamma_s - tau0_[numgp])*tangent(i) + ym*Izz_*(kappa_g2 - kappa0g20_[numgp])*triad_mat_gp(0,i) + ym*Izz_*(kappa_g3-kappa0g30_[numgp])*triad_mat_gp(1,i);
+      m(i,0)= sm*Irr_*(tau_gp + gamma_s - tau0_[numgp])*tangent(i) + ym*Iyy_*(kappa_g2 - kappa0g20_[numgp])*triad_mat_gp(0,i) + ym*Izz_*(kappa_g3-kappa0g30_[numgp])*triad_mat_gp(1,i);
       n(i,0)= ym*crosssec_*epsilon*tangent(i);
     }
 
@@ -531,7 +667,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     M2.Update(1.0/pow(abs_r_s,2.0),M2_aux,1.0);
 
 		//Calculation of auxiliary matrices M1 and M2
-    for (int row=0;row<nnode*dofpn;row++)
+    for (int row=0;row<6*nnode+twistdofs;row++)
     {
       for (int column=0;column<3;column++)
       {
@@ -540,7 +676,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     }
 
 	  //Calculation of the internal force vector (valid for all! triads)
-    for (int row=0; row<nnode*dofpn; row++)
+    for (int row=0; row<6*nnode+twistdofs; row++)
     {
       for (int column=0; column<3; column++)
       {
@@ -574,9 +710,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 	if(stiffmatrix!=NULL)
 	{
 		//Calculating stiffness matrix with FAD
-		for(int i = 0; i < dofpn*nnode; i++)
+		for(int i = 0; i < 6*nnode+twistdofs; i++)
 		{
-			for(int j = 0; j < dofpn*nnode; j++)
+			for(int j = 0; j < 6*nnode+twistdofs; j++)
 		  {
 			  (*stiffmatrix)(i,j)=f_int(i).dx(j);
 		  }
@@ -584,7 +720,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 	}
 	if(force!=NULL)
 	{
-		for (int i=0; i< dofpn*nnode; i++)
+		for (int i=0; i< 6*nnode+twistdofs; i++)
 		{
 			(*force)(i)=f_int(i).val();
 		}
@@ -614,14 +750,11 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
                                                               Epetra_SerialDenseVector* force_inertia,
                                                               bool update)
 {
-  const int twistdofpn = TWISTDOFPN;
-  if(twistdofpn!=1 and twistdofpn!=2)
+  const int twistdofs = TWISTDOFS;
+  if(twistdofs!=2 and twistdofs!=3 and twistdofs!=4)
   {
-    dserror("Only the values 1 and 2 are valid for TWISTDOFPN!!!");
+    dserror("Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
   }
-
-  //dimensions of freedom per node
-  const int dofpn = 6+twistdofpn;
 
   //number of nodes fixed for these element
   const int nnode = 2;
@@ -630,34 +763,34 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
   const int vnode = 2;  //value + first derivative
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,1> f_inertia;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_inertia;
 
   //initialize
   f_inertia.Clear();
   
     //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,1> f_inertia_m;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_inertia_m;
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,1> f_inertia_f;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_inertia_f;
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NTN;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,6*nnode+twistdofs> NTN;
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NsTNs;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,6*nnode+twistdofs> NsTNs;
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NTN_gp;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,6*nnode+twistdofs> NTN_gp;
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NsTNs_gp;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,6*nnode+twistdofs> NsTNs_gp;
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> CTC;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,6*nnode+twistdofs> CTC;
 
   //internal force vector
-  LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> CTC_gp;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,6*nnode+twistdofs> CTC_gp;
 
   //initialize
   f_inertia.Clear();
@@ -668,9 +801,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
   CTC.Clear();
 
   //matrix for current nodal positions and nodal tangents
-  std::vector<FAD> disp_totlag(nnode*dofpn, 0.0);
-  std::vector<FAD> vel_totlag(nnode*dofpn, 0.0);
-  std::vector<FAD> acc_totlag(nnode*dofpn, 0.0);
+  std::vector<FAD> disp_totlag(6*nnode+twistdofs, 0.0);
+  std::vector<FAD> vel_totlag(6*nnode+twistdofs, 0.0);
+  std::vector<FAD> acc_totlag(6*nnode+twistdofs, 0.0);
 
   //values needed to calculate f_int and K_T
 
@@ -708,14 +841,14 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
 
 
   //matrices holding the shape functions
-  LINALG::TMatrix<FAD,3,nnode*dofpn> N;
-  LINALG::TMatrix<FAD,3,nnode*dofpn> N_s;
-  LINALG::TMatrix<FAD,1,nnode*dofpn> C;
+  LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N;
+  LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_s;
+  LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C;
 
   //Matrices for N_i, N_i,xi and N_i,xixi. vnode*nnode due to hermite shapefunctions
   LINALG::TMatrix<FAD,1,vnode*nnode> N_i;
   LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xi;
-  LINALG::TMatrix<FAD,1,twistdofpn*nnode> C_i;
+  LINALG::TMatrix<FAD,1,twistdofs> C_i;
 
   //Matrices for N_i,s and N_i,ss
   LINALG::TMatrix<FAD,1,vnode*nnode> N_i_s;
@@ -738,7 +871,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
   //spinmatrices
   LINALG::TMatrix<FAD,3,3> Stangent;
 
-  LINALG::TMatrix<FAD,nnode*dofpn,3> M_aux;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M_aux;
 
   //spatial force stress resultant n and moment stress resultant m
   LINALG::TMatrix<FAD,3,1> m_inertia;
@@ -751,8 +884,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
   const DRT::Element::DiscretizationType distype = Shape();
 
   //! Calculates nodal positions, tangents and relative twist angles out of the corresponding displacements
-  //if TWISTDOFPN = 1: [ r1 t1 gamma1 r2 t2 gamma2]
-  //if TWISTDOFPN = 2: [ r1 t1 gamma1 r2 t2 gamma2 gamma3 gamma4]
+  //if TWISTDOFS = 2: [ r1 t1 gamma1 r2 t2 gamma2]
+  //if TWISTDOFS = 3: [ r1 t1 gamma1 r2 t2 gamma2 gamma3]
+  //if TWISTDOFS = 4: [ r1 t1 gamma1 r2 t2 gamma2 gamma3 gamma4]
   UpdateDispVelAccTotlag(disp, vel, acc, disp_totlag, vel_totlag, acc_totlag);
 
   //first of all we get the material law
@@ -875,7 +1009,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
     //Calculation of r' and r'', gamma and gamma' at the gp
     for (int i=0; i<3; i++)
     {
-      for (int j=0; j<nnode*dofpn; j++)
+      for (int j=0; j<6*nnode+twistdofs; j++)
       {
         r_s(i)+=N_s(i,j)*disp_totlag[j];
         r_s_t(i)+=N_s(i,j)*vel_totlag[j];
@@ -884,7 +1018,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
         r_t(i)+=N(i,j)*vel_totlag[j];
       }
     }
-    for (int i=0; i<nnode*dofpn; i++)
+    for (int i=0; i<6*nnode+twistdofs; i++)
     {
       gamma_+=C(i)*disp_totlag[i];
       gamma_t+=C(i)*vel_totlag[i];
@@ -962,7 +1096,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
 
     M_aux.MultiplyTN(N_s,Stangent);
     M_aux.Scale(-1.0/abs_r_s);
-    for (int i=0;i<nnode*dofpn;i++)
+    for (int i=0;i<6*nnode+twistdofs;i++)
     {
       for (int j=0;j<3;j++)
       {
@@ -977,7 +1111,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
     CTC.Update(density*Irr_*wgt*jacobi_[numgp],CTC_gp,1.0);
 
     //Calculation of the internal force vector (valid for all! triads)
-    for (int row=0; row<nnode*dofpn; row++)
+    for (int row=0; row<6*nnode+twistdofs; row++)
     {
       for (int column=0; column<3; column++)
       {
@@ -997,11 +1131,11 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
     double beta_newmark = params.get<double>("beta_newmark");
     double gamma_newmark = params.get<double>("gamma_newmark");
     //Calculating mass matrix with FAD
-    for(int i = 0; i < dofpn*nnode; i++)
+    for(int i = 0; i < 6*nnode+twistdofs; i++)
     {
-      for(int j = 0; j < dofpn*nnode; j++)
+      for(int j = 0; j < 6*nnode+twistdofs; j++)
       {
-        (*massmatrix)(i,j)=beta_newmark*delta_t*delta_t*f_inertia(i).dx(j) + gamma_newmark*delta_t*f_inertia(i).dx(j+2*(6+TWISTDOFPN)) + f_inertia(i).dx(j+2*2*(6+TWISTDOFPN));
+        (*massmatrix)(i,j)=beta_newmark*delta_t*delta_t*f_inertia(i).dx(j) + gamma_newmark*delta_t*f_inertia(i).dx(j+2*6+TWISTDOFS) + f_inertia(i).dx(j+2*(2*6+TWISTDOFS));
       }
     }
 
@@ -1012,7 +1146,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
   if(force_inertia!=NULL)
   {
     //Calculating inertial force
-    for(int i = 0; i < dofpn*nnode; i++)
+    for(int i = 0; i < 6*nnode+twistdofs; i++)
     {
         (*force_inertia)(i)=f_inertia(i).val();
     }
@@ -1033,14 +1167,14 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
                                                Epetra_SerialDenseMatrix* elemat1)
 {
 
-  const int twistdofpn = TWISTDOFPN;
-  if(twistdofpn!=1 and twistdofpn!=2)
+  const int twistdofs = TWISTDOFS;
+  if(twistdofs!=2 and twistdofs!=3 and twistdofs!=4)
   {
-    dserror("Only the values 1 and 2 are valid for TWISTDOFPN!!!");
+    dserror("Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
   }
   //dimensions of freedom per node
   const int nnode=2;
-  const int dofpn = 6+twistdofpn;
+  //const int dofpn = 6+twistdofpn;
 	const int dofgamma = 6; //gamma is the seventh dof
 
   // get element displacements
@@ -1051,8 +1185,8 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
 
   //Apply DBC needs the nodal values as a FAD structure - currently, Apply_Dirichlet calculates internal values via FAD
   //if the linearizations are hard coded, this step is no longer necessary!
-  std::vector<FAD> disp_totlag(nnode*dofpn);
-  for (int dof=0; dof<nnode*dofpn; dof++)
+  std::vector<FAD> disp_totlag(6*nnode+twistdofs);
+  for (int dof=0; dof<6*nnode+twistdofs; dof++)
   {
       int node=0;
       if(dof>=7)
@@ -1088,7 +1222,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
       }
       //Last thing to do here - set variables for differentiation
       //FAD: disp_totlag[dof] is the dof-variable of nnode*dofpn variables to differentiate later
-      disp_totlag[dof].diff(dof,nnode*dofpn);
+      disp_totlag[dof].diff(dof,6*nnode+twistdofs);
   }
 
   // get element velocities (UNCOMMENT IF NEEDED)
@@ -1357,14 +1491,11 @@ void DRT::ELEMENTS::Beam3ebanisotrop::DetermineNodalTriads(std::vector<FAD> disp
                                                        std::vector<LINALG::TMatrix<FAD,2,3> >& triads_ref_nodes)
 {
 
-    const int twistdofpn = TWISTDOFPN;
-    if(twistdofpn!=1 and twistdofpn!=2)
+    const int twistdofs = TWISTDOFS;
+    if(twistdofs!=2 and twistdofs!=3 and twistdofs!=4)
     {
-      dserror("Only the values 1 and 2 are valid for TWISTDOFPN!!!");
+      dserror("Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
     }
-
-    //dimensions of freedom per node
-    const int dofpn = 6+twistdofpn;
 
     //number of nodes fixed for these element
     const int nnode = 2;
@@ -1395,24 +1526,24 @@ void DRT::ELEMENTS::Beam3ebanisotrop::DetermineNodalTriads(std::vector<FAD> disp
     tangent_leftnode.Clear();
 
     //matrices holding the shape functions
-    LINALG::TMatrix<FAD,3,nnode*dofpn> N_s;
-    LINALG::TMatrix<FAD,3,nnode*dofpn> N_ss;
-    LINALG::TMatrix<FAD,3,nnode*dofpn> N_sss;
+    LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_s;
+    LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_ss;
+    LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_sss;
 
-    LINALG::TMatrix<FAD,1,nnode*dofpn> C;
-    LINALG::TMatrix<FAD,1,nnode*dofpn> C_s;
+    LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C;
+    LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C_s;
 
     LINALG::TMatrix<FAD,1,vnode*nnode> N_i;
     LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xi;
     LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixi;
     LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixixi;
-    LINALG::TMatrix<FAD,1,twistdofpn*nnode> C_i;
-    LINALG::TMatrix<FAD,1,twistdofpn*nnode> C_i_xi;
+    LINALG::TMatrix<FAD,1,twistdofs> C_i;
+    LINALG::TMatrix<FAD,1,twistdofs> C_i_xi;
 
     LINALG::TMatrix<FAD,1,vnode*nnode> N_i_s;
     LINALG::TMatrix<FAD,1,vnode*nnode> N_i_ss;
     LINALG::TMatrix<FAD,1,vnode*nnode> N_i_sss;
-    LINALG::TMatrix<FAD,1,twistdofpn*nnode> C_i_s;
+    LINALG::TMatrix<FAD,1,twistdofs> C_i_s;
 
     //Get DiscretizationType of beam element
     const DRT::Element::DiscretizationType distype = Shape();
@@ -1487,7 +1618,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::DetermineNodalTriads(std::vector<FAD> disp
       //Calculation of r' and r'', gamma and gamma' at the gp
       for (int i=0; i<3; i++)
       {
-        for (int j=0; j<nnode*dofpn; j++)
+        for (int j=0; j<6*nnode+twistdofs; j++)
         {
           r_s(i)+=N_s(i,j)*disp_totlag[j];
         }
@@ -1993,23 +2124,23 @@ void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FA
                                                               LINALG::TMatrix<FAD,1,4> N_i_xi,
                                                               LINALG::TMatrix<FAD,1,4> N_i_xixi,
                                                               LINALG::TMatrix<FAD,1,4> N_i_xixixi,
-                                                              LINALG::TMatrix<FAD,1,TWISTDOFPN*2> C_i,
-                                                              LINALG::TMatrix<FAD,1,TWISTDOFPN*2> C_i_xi,
+                                                              LINALG::TMatrix<FAD,1,TWISTDOFS> C_i,
+                                                              LINALG::TMatrix<FAD,1,TWISTDOFS> C_i_xi,
                                                               FAD jacobi_local,
                                                               FAD jacobi2_local,
                                                               FAD jacobi3_local,
-                                                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_s,
-                                                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_ss,
-                                                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_sss,
-                                                              LINALG::TMatrix<FAD,1,2*(6+TWISTDOFPN)>& C,
-                                                              LINALG::TMatrix<FAD,1,2*(6+TWISTDOFPN)>& C_s)
+                                                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_s,
+                                                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_ss,
+                                                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_sss,
+                                                              LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C,
+                                                              LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C_s)
 {
 
   //Matrices for N_i,s and N_i,ss
   LINALG::TMatrix<FAD,1,4> N_i_s;
   LINALG::TMatrix<FAD,1,4> N_i_ss;
   LINALG::TMatrix<FAD,1,4> N_i_sss;
-  LINALG::TMatrix<FAD,1,TWISTDOFPN*2> C_i_s;
+  LINALG::TMatrix<FAD,1,TWISTDOFS> C_i_s;
 
   N_i_s.Clear();
   N_i_ss.Clear();
@@ -2031,26 +2162,38 @@ void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FA
 
   //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
   //it determines, which shape function is used in which column of N respectively C
-  #if defined(TWISTDOFPN) && (TWISTDOFPN==2)
 
-  int assembly_N[3][2*(6+TWISTDOFPN)]={{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
-                                       {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-                                       {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
-  int assembly_C[2*(6+TWISTDOFPN)]={0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
 
-  #elif defined(TWISTDOFPN) && (TWISTDOFPN==1)
+  #if defined(TWISTDOFS) && (TWISTDOFS==2)
 
-  int assembly_N[3][2*(6+TWISTDOFPN)]={{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-                                  {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
-                                  {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
-  int assembly_C[2*(6+TWISTDOFPN)]={0,0,0,0,0,0,1,0,0,0,0,0,0,2};
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
+                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
+
+  int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
+
+  #elif defined(TWISTDOFS) && (TWISTDOFS==3)
+
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
+
+  int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
+
+  #elif defined(TWISTDOFS) && (TWISTDOFS==4)
+
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
+                                         {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                         {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
+
+  int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
 
   #else
-  dserror("TWISTDOFPN has to be defined. Only the values 1 and 2 are valid for TWISTDOFPN!!!");
+  dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
   #endif
 
   //Assemble the matrices of the shape functions
-  for (int i=0; i<2*(6+TWISTDOFPN); i++)
+  for (int i=0; i<2*6+TWISTDOFS; i++)
   {
     for (int j=0; j<3; j++)
     {
@@ -2087,11 +2230,11 @@ void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FA
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i,
                                                               LINALG::TMatrix<FAD,1,4> N_i_xi,
-                                                              LINALG::TMatrix<FAD,1,2*TWISTDOFPN> C_i,
+                                                              LINALG::TMatrix<FAD,1,TWISTDOFS> C_i,
                                                               FAD jacobi_local,
-                                                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N,
-                                                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_s,
-                                                              LINALG::TMatrix<FAD,1,2*(6+TWISTDOFPN)>& C)
+                                                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N,
+                                                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_s,
+                                                              LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C)
 {
 
   LINALG::TMatrix<FAD,1,4> N_i_s;
@@ -2104,26 +2247,37 @@ void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FA
 
   //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
   //it determines, which shape function is used in which column of N respectively C
-  #if defined(TWISTDOFPN) && (TWISTDOFPN==2)
 
-  int assembly_N[3][2*(6+TWISTDOFPN)]={{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
-                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
-  int assembly_C[2*(6+TWISTDOFPN)]={0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
+  #if defined(TWISTDOFS) && (TWISTDOFS==2)
 
-  #elif defined(TWISTDOFPN) && (TWISTDOFPN==1)
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
+                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
 
-  int assembly_N[3][2*(6+TWISTDOFPN)]={{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-                                 {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
-                                 {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
-  int assembly_C[2*(6+TWISTDOFPN)]={0,0,0,0,0,0,1,0,0,0,0,0,0,2};
+  int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
+
+  #elif defined(TWISTDOFS) && (TWISTDOFS==3)
+
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
+
+  int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
+
+  #elif defined(TWISTDOFS) && (TWISTDOFS==4)
+
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
+                                         {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                         {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
+
+  int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
 
   #else
-  dserror("TWISTDOFPN has to be defined. Only the values 1 and 2 are valid for TWISTDOFPN!!!");
+  dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
   #endif
 
   //Assemble the matrices of the shape functions
-  for (int i=0; i<2*(6+TWISTDOFPN); i++)
+  for (int i=0; i<2*6+TWISTDOFS; i++)
   {
     for (int j=0; j<3; j++)
     {
@@ -2156,7 +2310,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FA
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i_xi,
                                                               FAD jacobi_local,
-                                                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_s)
+                                                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_s)
 {
 
   LINALG::TMatrix<FAD,1,4> N_i_s;
@@ -2169,24 +2323,31 @@ void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FA
 
   //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
   //it determines, which shape function is used in which column of N respectively C
-  #if defined(TWISTDOFPN) && (TWISTDOFPN==2)
 
-  int assembly_N[3][2*(6+TWISTDOFPN)]={{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
-                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
+#if defined(TWISTDOFS) && (TWISTDOFS==2)
 
-  #elif defined(TWISTDOFPN) && (TWISTDOFPN==1)
+int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                    {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
+                                    {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
 
-  int assembly_N[3][2*(6+TWISTDOFPN)]={{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-                                 {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
-                                 {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
+#elif defined(TWISTDOFS) && (TWISTDOFS==3)
 
-  #else
-  dserror("TWISTDOFPN has to be defined. Only the values 1 and 2 are valid for TWISTDOFPN!!!");
-  #endif
+int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                    {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                    {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
+
+#elif defined(TWISTDOFS) && (TWISTDOFS==4)
+
+int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
+                                       {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                       {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
+
+#else
+dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
+#endif
 
   //Assemble the matrices of the shape functions
-  for (int i=0; i<2*(6+TWISTDOFPN); i++)
+  for (int i=0; i<2*6+TWISTDOFS; i++)
   {
     for (int j=0; j<3; j++)
     {
@@ -2410,7 +2571,7 @@ LINALG::TMatrix<FAD,3,1> DRT::ELEMENTS::Beam3ebanisotrop::VectorProduct(LINALG::
 void DRT::ELEMENTS::Beam3ebanisotrop::UpdateDispTotlag(std::vector<double> disp, std::vector<FAD>& disp_totlag)
 {
 
-  for (int dof=0; dof<2*(6+TWISTDOFPN); dof++)
+  for (int dof=0; dof<2*6+TWISTDOFS; dof++)
     {
         int node=0;
         if(dof>=7)
@@ -2446,7 +2607,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::UpdateDispTotlag(std::vector<double> disp,
         }
         //Last thing to do here - set variables for differentiation
         //FAD: disp_totlag[dof] is the dof-variable of nnode*dofpn variables to differentiate later
-        disp_totlag[dof].diff(dof,2*(6+TWISTDOFPN));
+        disp_totlag[dof].diff(dof,2*6+TWISTDOFS);
     }
 
   return;
@@ -2463,7 +2624,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::UpdateDispVelAccTotlag( std::vector<double
                                                               std::vector<FAD>& acc_totlag)
 {
 
-  for (int dof=0; dof<2*(6+TWISTDOFPN); dof++)
+  for (int dof=0; dof<2*6+TWISTDOFS; dof++)
     {
       int node=0;
       if(dof>=7)
@@ -2502,9 +2663,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::UpdateDispVelAccTotlag( std::vector<double
 
       //Last thing to do here - set variables for differentiation
       //FAD: disp_totlag[dof] is the dof-variable of nnode*dofpn variables to differentiate later
-      disp_totlag[dof].diff(dof,3*2*(6+TWISTDOFPN));
-      vel_totlag[dof].diff(dof+2*(6+TWISTDOFPN),3*2*(6+TWISTDOFPN));
-      acc_totlag[dof].diff(dof+2*2*(6+TWISTDOFPN),3*2*(6+TWISTDOFPN));
+      disp_totlag[dof].diff(dof,3*(2*6+TWISTDOFS));
+      vel_totlag[dof].diff(dof+2*6+TWISTDOFS,3*(2*6+TWISTDOFS));
+      acc_totlag[dof].diff(dof+2*(2*6+TWISTDOFS),3*(2*6+TWISTDOFS));
     }
 
   return;
@@ -2614,7 +2775,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Calculate_r_s(std::vector<FAD> disp_totlag
 
           FAD abs_r_s=0.0;
           LINALG::TMatrix<FAD,1,4> N_i_xi;
-          LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)> N_s;
+          LINALG::TMatrix<FAD,3,2*6+TWISTDOFS> N_s;
           N_i_xi.Clear();
           N_s.Clear();
           FAD jacobi_local=0.0;
@@ -2636,7 +2797,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Calculate_r_s(std::vector<FAD> disp_totlag
           //Calculation of r' and r'', gamma and gamma' at the gp
           for (int i=0; i<3; i++)
           {
-            for (int j=0; j<2*(6+TWISTDOFPN); j++)
+            for (int j=0; j<2*6+TWISTDOFS; j++)
             {
               r_s_midpoint(i)+=N_s(i,j)*disp_totlag[j];
             }

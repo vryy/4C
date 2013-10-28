@@ -75,7 +75,8 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINY")
+    .AddNamedDouble("MOMINZ")
     .AddNamedDouble("MOMINPOL")
     .AddNamedDoubleVector("TANGENTS",6)
     .AddNamedDoubleVector("CURVATURE",6)
@@ -86,7 +87,32 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
     .AddIntVector("LIN2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINY")
+    .AddNamedDouble("MOMINZ")
+    .AddNamedDouble("MOMINPOL")
+    .AddNamedDoubleVector("TANGENTS",6)
+    .AddNamedDoubleVector("CURVATURE",6)
+    .AddNamedIntVector("DBC",2)
+    ;
+
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMINY")
+    .AddNamedDouble("MOMINZ")
+    .AddNamedDouble("MOMINPOL")
+    .AddNamedDoubleVector("TANGENTS",6)
+    .AddNamedDoubleVector("CURVATURE",6)
+    .AddNamedIntVector("DBC",2)
+    ;
+
+  defs["LIN3"]
+    .AddIntVector("LIN3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMINY")
+    .AddNamedDouble("MOMINZ")
     .AddNamedDouble("MOMINPOL")
     .AddNamedDoubleVector("TANGENTS",6)
     .AddNamedDoubleVector("CURVATURE",6)
@@ -97,7 +123,8 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
       .AddIntVector("LINE4",4)
       .AddNamedInt("MAT")
       .AddNamedDouble("CROSS")
-      .AddNamedDouble("MOMIN")
+      .AddNamedDouble("MOMINY")
+      .AddNamedDouble("MOMINZ")
       .AddNamedDouble("MOMINPOL")
       .AddNamedDoubleVector("TANGENTS",6)
       .AddNamedDoubleVector("CURVATURE",6)
@@ -108,7 +135,8 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
       .AddIntVector("LIN4",4)
       .AddNamedInt("MAT")
       .AddNamedDouble("CROSS")
-      .AddNamedDouble("MOMIN")
+      .AddNamedDouble("MOMINY")
+      .AddNamedDouble("MOMINZ")
       .AddNamedDouble("MOMINPOL")
       .AddNamedDoubleVector("TANGENTS",6)
       .AddNamedDoubleVector("CURVATURE",6)
@@ -150,6 +178,7 @@ timestepcount_(0)
   dwparalleldt_nodes_.resize(2,0.0);
   alphat_nodes_.resize(2,0.0);
   alphatt_nodes_.resize(2,0.0);
+
   return;
 }
 /*----------------------------------------------------------------------*
@@ -223,11 +252,14 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ebanisotrop::Shape() const
     case 2:
       return line2;
       break;
+    case 3:
+      return line3;
+      break;
     case 4:
       return line4;
       break;
     default:
-      dserror("Only Line2 and Line4 elements are implemented.");
+      dserror("Only Line2, Line3 and Line4 elements are implemented.");
       break;
   }
 
@@ -269,12 +301,31 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,b0_);
   AddtoPack<3,1>(data,dt0ds_);
   AddtoPack<3,1>(data,db0ds_);
-
-
+  AddtoPack<3,1>(data,t0_nodes_);
+  AddtoPack<3,1>(data,n0_nodes_);
+  AddtoPack<3,1>(data,b0_nodes_);
+  AddtoPack<3,1>(data,dt0ds_nodes_);
+  AddtoPack<3,1>(data,db0ds_nodes_);
+  AddtoPack<3,1>(data,w0_nodes_);
+  AddtoPack<3,1>(data,dw0perpdt_nodes_);
+  AddtoPack(data,dw0paralleldt_nodes_);
+  AddtoPack<3,1>(data,w_nodes_);
+  AddtoPack<3,1>(data,dwperpdt_nodes_);
+  AddtoPack(data,dwparalleldt_nodes_);
+  AddtoPack(data,alphat_nodes_);
+  AddtoPack(data,alphatt_nodes_);
+  AddtoPack(data,firstcall_);
+  AddtoPack(data,timestepcount_);
+  AddtoPack(data,int_energy_);
+  AddtoPack(data,sr_theta_nodes_old_);
+  AddtoPack(data,theta_nodes_old_);
+  AddtoPack(data,kappa0g20_);
+  AddtoPack(data,kappa0g30_);
+  AddtoPack<3,1>(data,Tref_);
+  AddtoPack<3,1>(data,G2ref_);
 
   return;
 }
-
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  |                                                           meier 05/12|
@@ -290,7 +341,6 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-
 
   //extract all class variables of beam3 element
   ExtractfromPack(position,data,jacobi_);
@@ -311,6 +361,28 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,b0_);
   ExtractfromPack<3,1>(position,data,dt0ds_);
   ExtractfromPack<3,1>(position,data,db0ds_);
+  ExtractfromPack<3,1>(position,data,t0_nodes_);
+  ExtractfromPack<3,1>(position,data,n0_nodes_);
+  ExtractfromPack<3,1>(position,data,b0_nodes_);
+  ExtractfromPack<3,1>(position,data,dt0ds_nodes_);
+  ExtractfromPack<3,1>(position,data,db0ds_nodes_);
+  ExtractfromPack<3,1>(position,data,w0_nodes_);
+  ExtractfromPack<3,1>(position,data,dw0perpdt_nodes_);
+  ExtractfromPack(position,data,dw0paralleldt_nodes_);
+  ExtractfromPack<3,1>(position,data,w_nodes_);
+  ExtractfromPack<3,1>(position,data,dwperpdt_nodes_);
+  ExtractfromPack(position,data,dwparalleldt_nodes_);
+  ExtractfromPack(position,data,alphat_nodes_);
+  ExtractfromPack(position,data,alphatt_nodes_);
+  firstcall_ = ExtractInt(position,data);
+  ExtractfromPack(position,data,timestepcount_);
+  ExtractfromPack(position,data,int_energy_);
+  ExtractfromPack(position,data,sr_theta_nodes_old_);
+  ExtractfromPack(position,data,theta_nodes_old_);
+  ExtractfromPack(position,data,kappa0g20_);
+  ExtractfromPack(position,data,kappa0g30_);
+  ExtractfromPack<3,1>(position,data,Tref_);
+  ExtractfromPack<3,1>(position,data,G2ref_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -344,14 +416,11 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
    *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a
    *second initilization in principle (e.g. for periodic boundary conditions*/
 
-  //dimensions of freedom per node
-  const int dofpn = 6+TWISTDOFPN;
-
   const int nnode = 2; //number of nodes
   const int vnode = 2; //interpolated values per node (2: value + derivative of value)
 
   //matrix for current nodal positions and nodal tangents
-  std::vector<FAD> disp_totlag(nnode*dofpn, 0.0);
+  std::vector<FAD> disp_totlag(6*nnode + TWISTDOFS, 0.0);
 
   //set disp_totlag for reference geometry: So far the initial value for the relative angle gamma is set to zero, i.e.
   //material coordinate system and reference system in the reference configuration coincidence: gamma_0(s)=0

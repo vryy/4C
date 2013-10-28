@@ -52,7 +52,7 @@ typedef Sacado::Fad::DFad<double> FAD;
 
 //#define MATERIALREF  //decide whether the old material or the old reference triad is used to define the new reference triad. DEFAULT: OUT
 
-#define TWISTDOFPN 2 //degrees of freedom per node related to twist angle; only the values 1 or 2 are valid. DEFAULT: 2
+#define TWISTDOFS 4 //degrees of freedom per element related to twist angle; only the values 2,3,4 are valid. DEFAULT: 4
 
 //#define NODALALPHAT 2 //Needed for dynamics --> 1: alpha_t = 0; 2: old reference triad constant; 3: old reference triad non-constant. DEFAULT: OUT
 
@@ -552,29 +552,29 @@ private:
                               LINALG::TMatrix<FAD,1,4> N_i_xi,
                               LINALG::TMatrix<FAD,1,4> N_i_xixi,
                               LINALG::TMatrix<FAD,1,4> N_i_xixixi,
-                              LINALG::TMatrix<FAD,1,TWISTDOFPN*2> C_i,
-                              LINALG::TMatrix<FAD,1,TWISTDOFPN*2> C_i_xi,
+                              LINALG::TMatrix<FAD,1,TWISTDOFS> C_i,
+                              LINALG::TMatrix<FAD,1,TWISTDOFS> C_i_xi,
                               FAD jacobi_local,
                               FAD jacobi2_local,
                               FAD jacobi3_local,
-                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_s,
-                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_ss,
-                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_sss,
-                              LINALG::TMatrix<FAD,1,2*(6+TWISTDOFPN)>& C,
-                              LINALG::TMatrix<FAD,1,2*(6+TWISTDOFPN)>& C_s);
+                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_s,
+                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_ss,
+                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_sss,
+                              LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C,
+                              LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C_s);
 
   //! Assembles the four first shape function derivatives of an element into a 3*dofs_per_element block matrix.
   void AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i,
                                LINALG::TMatrix<FAD,1,4> N_i_xi,
-                               LINALG::TMatrix<FAD,1,2*TWISTDOFPN> C_i,
+                               LINALG::TMatrix<FAD,1,TWISTDOFS> C_i,
                                FAD jacobi_local,
-                               LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N,
-                               LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_s,
-                               LINALG::TMatrix<FAD,1,2*(6+TWISTDOFPN)>& C);
+                               LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N,
+                               LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_s,
+                               LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C);
 
   void AssembleShapefunctions(LINALG::TMatrix<FAD,1,4> N_i_xi,
                               FAD jacobi_local,
-                              LINALG::TMatrix<FAD,3,2*(6+TWISTDOFPN)>& N_s);
+                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_s);
 
   //! Calculate the intermediate triad triad_bar_gp and the corresponding torsion tau_bar_gp at the gauss points
   void CalculateIntermediateTriad(LINALG::TMatrix<FAD,3,1> r_s,
