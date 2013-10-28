@@ -218,13 +218,13 @@ namespace INPAR
       }
     }
 
-    /// type of solution techniques
+    /// Handling of non-converged nonlinear solver
     enum DivContAct
     {
-      divcont_stop,  ///< abort simulation
-      divcont_continue,  ///< continue nevertheless
-      divcont_repeat_step,  ///< repeat time step
-      divcont_halve_step,  ///< halve time step and carry on with simulation
+      divcont_stop,               ///< abort simulation
+      divcont_continue,           ///< continue nevertheless
+      divcont_repeat_step,        ///< repeat time step
+      divcont_halve_step,         ///< halve time step and carry on with simulation
       divcont_repeat_simulation,  ///< repeat the whole simulation
     };
 
