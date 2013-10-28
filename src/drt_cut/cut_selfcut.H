@@ -50,10 +50,14 @@ public:
   void FindCuttingSides();
 
   /// if there are two nodes from cut sides are at the same position, we merge it into one node
-  void MergeCoincidingNodes();
+  bool MergeCoincidingNodes( Side* side1, Side*  side2 );
 
   /// opearations to modify the nodal ids of sides and corresponding edges are performed
   void operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl, Side* side, bool initial );
+
+  /// templated function to delete "nod" by "replwith" in both edge and side data-structures
+  template <typename A, typename B>
+  void ModifyEdgeOrSideMap( std::map<A,B>& data, int nod, int replwith );
 
   /// finds cutpoints by searching the intersection between the edges of one side with the other side and vice versa
   void FindSelfCutPoints();
@@ -173,6 +177,7 @@ public:
   void Debug(const std::string & viewname);
 
 private:
+
   GEO::CUT::Mesh & mesh_;
 
   std::map<plain_int_set, Teuchos::RCP<Side> > selfcut_sides_;

@@ -29,10 +29,13 @@
 GEO::CUT::SelfCut::SelfCut(Mesh & cut_mesh) :
     mesh_(cut_mesh)
 {
-
   CollisionDetection();
   MeshIntersection();
   ElementSelection();
+
+  if( mesh_.Sides().size() == 0 )
+    dserror("All self-cut positions are undecided\n");
+
 //  StatusInspection();
 
 }
@@ -45,7 +48,6 @@ void GEO::CUT::SelfCut::CollisionDetection()
 {
 
   FindCuttingSides();
-  MergeCoincidingNodes();
   FindSelfCutPoints();
   GetSelfCutObjects();
 
@@ -136,6 +138,7 @@ void GEO::CUT::SelfCut::FindCuttingSides()
       cutsides.begin(); i != cutsides.end(); ++i)
   {
     Side * cutside = &*i->second;
+
 #endif
     BoundingBox cutsidebox(*cutside);
     for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
@@ -154,7 +157,21 @@ void GEO::CUT::SelfCut::FindCuttingSides()
       if (sidebox.Within(1.0, cutsidebox)
           and not cutside->HaveCommonNode(*side))
       {
-        cutside->GetCuttingSide(side);
+        // if "side" and "cutside" has two nodes at the same position, we merge them
+        // if these two sides overlap within BB only because of coinciding nodes,
+        // we do not take this as self-cut
+        if( MergeCoincidingNodes( cutside, side ) )
+        {
+          // even after merging nodes, if two sides not have a common node --> self-cut possible
+          if( not cutside->HaveCommonNode(*side) )
+          {
+            cutside->GetCuttingSide(side);
+          }
+        }
+        else
+        {
+          cutside->GetCuttingSide(side);
+        }
       }
     }
   }
@@ -185,73 +202,63 @@ void GEO::CUT::SelfCut::FindCuttingSides()
  *   Rememeber : Which one of the nodes is considered among the coinciding nodes is
  *   not reproducible (just like many operations in cut libraries)
 *-------------------------------------------------------------------------------------*/
-void GEO::CUT::SelfCut::MergeCoincidingNodes()
+bool GEO::CUT::SelfCut::MergeCoincidingNodes( Side* keep, Side* replace )
 {
-  std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = mesh_.Sides();
+  bool merge = false;
 
-  // for each side in the cut mesh
-  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
-      cutsides.begin(); i != cutsides.end(); ++i)
+  const std::vector<Node*> cutnodes = keep->Nodes();
+
+  const std::vector<Node*> scnodes = replace->Nodes();
+
+  // store the nodes that should be replaced with other ids
+  std::vector<std::pair<const Node*,const Node*> > ids_replace;
+
+  for( std::vector<Node*>::const_iterator noit = scnodes.begin(); noit != scnodes.end(); noit++ )
   {
-    Side * cutside = &*i->second;
-    const std::vector<Node*> cutnodes = cutside->Nodes();
+    const Node* scnod = *noit;
 
-    // get all possible selfcut sides that is already available
-    plain_side_set scsides = cutside->CuttingSides();
-
-    // check whether any of the nodes in cut side and any of the nodes
-    // in self-cut sides are in the same position, AND not the same node
-    for (plain_side_set::iterator j = scsides.begin(); j != scsides.end(); ++j)
+    for( std::vector<Node*>::const_iterator cutit = cutnodes.begin(); cutit != cutnodes.end(); cutit++ )
     {
-      Side * scside = *j;
-      const std::vector<Node*> scnodes = scside->Nodes();
+      const Node* cutnod = *cutit;
 
-      // store the nodes that should be replaced with other ids
-      std::vector<std::pair<const Node*,const Node*> > ids_replace;
+      // if both nodes are the same - no need to do anything
+      if( scnod->Id() == cutnod->Id() )
+        continue;
 
-      for( std::vector<Node*>::const_iterator noit = scnodes.begin(); noit != scnodes.end(); noit++ )
+      // Two nodes are at the same location in the initial mesh
+      if( scnod->point()->Id() == cutnod->point()->Id() )
       {
-        const Node* scnod = *noit;
+        std::pair<const Node*,const Node*> nodpair;
+        nodpair.first = scnod;
+        nodpair.second = cutnod;
 
-        for( std::vector<Node*>::const_iterator cutit = cutnodes.begin(); cutit != cutnodes.end(); cutit++ )
-        {
-          const Node* cutnod = *cutit;
+        ids_replace.push_back( nodpair );
+      }
 
-          // if both nodes are the same - no need to do anything
-          if( scnod->Id() == cutnod->Id() )
-            continue;
-
-          // Two nodes are at the same location in the initial mesh
-          if( scnod->point()->Id() == cutnod->point()->Id() )
-          {
-            std::pair<const Node*,const Node*> nodpair;
-            nodpair.first = scnod;
-            nodpair.second = cutnod;
-
-            ids_replace.push_back( nodpair );
-          }
-
-          // In moving boundary simulation, two nodes from different discretizations
-          // move such that two nodes reached to the same position
-          // if we implement this, the previous loop (two nodes at the same position in initial mesh)
-          // can be erased
-          // I am not even sure whether this special check is necessary (Sudhakar)
-          // because we always works with a copy of cut mesh, and only one point is
-          // created for two coinciding nodes ---> need to be checked
-          else if( cutnod->isAtSameLocation( scnod ) )
-          {
-            dserror("not implemented yet");
-          }
-        }
+      // In moving boundary simulation, two nodes from different discretizations
+      // move such that two nodes reached to the same position
+      // if we implement this, the previous loop (two nodes at the same position in initial mesh)
+      // can be erased
+      // I am not even sure whether this special check is necessary (Sudhakar)
+      // because we always works with a copy of cut mesh, and only one point is
+      // created for two coinciding nodes ---> need to be checked
+      else if( cutnod->isAtSameLocation( scnod ) )
+      {
+        dserror("not implemented yet");
       }
 
       // now that we have all the informations about coinciding nodes
       // Do the necessary operations in the mesh to consider only one node
       if( ids_replace.size() > 0 )
-        operationsForNodeMerging( ids_replace, scside, true );
-
+      {
+        operationsForNodeMerging( ids_replace, replace, true );
+        merge = true;
+      }
     }
   }
+
+  return merge;
+
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -262,9 +269,19 @@ void GEO::CUT::SelfCut::MergeCoincidingNodes()
 void GEO::CUT::SelfCut::operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl,
                                                   Side* side, bool initial )
 {
-  // this is an important "edge" data structure we use to to connect nodenumbers-edge information
+  // The following "edge" and "side" data structure has to be modified accodingly
   // the node numbers has to be set accordingly
   std::map<plain_int_set, Teuchos::RCP<Edge> > & edges = const_cast<std::map<plain_int_set, Teuchos::RCP<Edge> > &>(mesh_.Edges());
+  std::map<plain_int_set, Teuchos::RCP<Side> > & sides = const_cast<std::map<plain_int_set, Teuchos::RCP<Side> > &>(mesh_.Sides());
+
+  /*for (std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator it = edges.begin();it!=edges.end();it++)
+  {
+    plain_int_set pis = it->first;
+    std::cout<<"edge ";
+    for( unsigned i=0;i<pis.size();i++ )
+      std::cout<<pis[i]<<" ";
+    std::cout<<"\n";
+  }*/
 
   // consider each node that needs to be replaced
   for( std::vector<std::pair<const Node*,const Node*> >::iterator it = repl.begin();
@@ -285,46 +302,61 @@ void GEO::CUT::SelfCut::operationsForNodeMerging( std::vector<std::pair<const No
       s->replaceNodes( nod, replwith );
     }
 
-    // modify the "edge" data structure for edges in the mesh correspondingly
-    // this is a bit tricky because we need to modify the "key" of this std::map
-    // "Key" of a std::map cannot be modified directly. A new element with
-    // correct information is added, and old element is deleted
-    //
-    // Edge information is already modified when calling the side information
-    //
-    typedef std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator ittype;
-    std::vector<ittype> eraseThese;
+    // modify the "edge" and "side data structure in the mesh
+    // delete node "nod" by "replwith" in both edges and sides data-structure
+    ModifyEdgeOrSideMap<plain_int_set, Teuchos::RCP<Edge> >( edges, nod->Id(), replwith->Id() );
+    ModifyEdgeOrSideMap<plain_int_set, Teuchos::RCP<Side> >( sides, nod->Id(), replwith->Id() );
 
-    for( ittype itmap = edges.begin();itmap!=edges.end(); itmap++ )
+  }
+}
+/*----------------------------------------------------------------------------------------------------*
+ * Templated function to delete "nod" by "replwith" in both edge and side data-structures       sudhakar 10/13
+ * This is a bit tricky because we need to modify the "key" of this std::map
+ * "Key" of a std::map cannot be modified directly.
+ * So, A new element with correct information is added, and old element is deleted
+ *----------------------------------------------------------------------------------------------------*/
+template <typename A, typename B>
+void GEO::CUT::SelfCut::ModifyEdgeOrSideMap( std::map<A,B>& data, int nod, int replwith )
+{
+  typedef typename std::map<A, B>::iterator ittype;
+  std::vector<ittype> eraseThese;
+
+  // -----
+  // loop over each element in data to check whether "nod" is available
+  // if found, then we create a new element for data with correct "key" in the map
+  // we add this and delete the element with wrong key
+  // -----
+  for( ittype itmap = data.begin();itmap!=data.end(); itmap++ )
+  {
+    A idset = itmap->first;
+    A newids;
+    bool modi = false;
+    for( unsigned ii=0; ii<idset.size(); ii++ )
     {
-      plain_int_set idset = itmap->first;
-      plain_int_set newids;
-      bool modi = false;
-      for( unsigned ii=0; ii<idset.size(); ii++ )
+      if( idset[ii] == nod )
       {
-        if( idset[ii] == nod->Id() )
-        {
-          newids.insert( replwith->Id() );
-          modi = true;
-        }
-        else
-          newids.insert( idset[ii] );
+        newids.insert( replwith );
+        modi = true;
       }
-
-      // insert correct elements
-      if( modi )
-      {
-        edges[newids] = edges[idset];
-        eraseThese.push_back( itmap );
-      }
+      else
+        newids.insert( idset[ii] );
     }
 
-    // delete the old elements for which we already added correspoding new elements
-    for( std::vector<ittype>::iterator ite = eraseThese.begin(); ite != eraseThese.end(); ite++ )
+    // insert correct elements
+    if( modi )
     {
-      ittype era = *ite;
-      edges.erase( era );
+      data[newids] = data[idset];
+      eraseThese.push_back( itmap );
     }
+  }
+
+  typedef typename std::vector<ittype>::iterator itc;
+
+  // delete the elements with "wrong" key
+  for( itc ite = eraseThese.begin(); ite != eraseThese.end(); ite++ )
+  {
+    ittype era = *ite;
+    data.erase( era );
   }
 }
 
@@ -420,7 +452,6 @@ void GEO::CUT::SelfCut::GetSelfCutObjects()
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::SelfCut::CreateSelfCutNodes()
 {
-
   std::vector<Node*> cuttedsidesnodes;
   for (std::map<int, Teuchos::RCP<Node> >::iterator i = selfcut_nodes_.begin();
       i != selfcut_nodes_.end(); ++i)
@@ -888,6 +919,16 @@ void GEO::CUT::SelfCut::DetermineSelfCutPosition()
       {
         continue;
       }
+
+      // this means that we are deling with self-cut with coinciding nodes
+      // we already merged the nodes appropriately
+      // hence in this case, all nodes associated are always "outside" --> should be included
+      /*if( selfcutside->HaveCommonNode(*otherselfcutside) )
+      {
+        undecidednode->SelfCutPosition(Point::oncutsurface);
+        continue;
+      }*/
+
       LINALG::Matrix<3, 1> oncut_cord;
       LINALG::Matrix<3, 1> oncut_cord_loc;
       LINALG::Matrix<2, 1> oncut_cord_loc2;
