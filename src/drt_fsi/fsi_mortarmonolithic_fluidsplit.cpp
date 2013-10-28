@@ -1974,6 +1974,7 @@ double FSI::MortarMonolithicFluidSplit::SelectTimeStepSize() const
 	const double dtstr = GetAdaStrDt();         // based on all structure DOFs
 	const double dtstrfsi = GetAdaStrFSIDt();   // based on structure FSI DOFs
 	const double dtflinner = GetAdaFlInnerDt(); // based on inner fluid DOFs
+	const double dtnonlinsolver = GetAdaNonLinSolverDt(); // based on non-convergence of nonlinear solver
 
 	// determine minimum
 	double dt = std::min(std::min(dtstr, dtstrfsi), dtflinner);
@@ -1983,6 +1984,14 @@ double FSI::MortarMonolithicFluidSplit::SelectTimeStepSize() const
 
 	// Time adaptivity not based on structure: use fluid suggestions only
 	if ( strmethod_ == INPAR::FSI::timada_str_none ) { dt = dtflinner; }
+
+  // compare to time step size of non-converged nonlinear solver
+	if ( GetErrorAction() == FSI::Monolithic::erroraction_halve_step )
+	  dt = std::min(dt, dtnonlinsolver);
+
+  // Time adaptivity based only on non-convergence of nonlinear solver
+  if ( flmethod_ == INPAR::FSI::timada_fld_none && strmethod_ == INPAR::FSI::timada_str_none )
+    dt = dtnonlinsolver;
 
 	return dt;
 }

@@ -25,6 +25,8 @@ Maintainer: Matthias Mayr
 #include "fsi_nox_newton.H"
 #include "fsi_statustest.H"
 
+#include "../drt_inpar/inpar_fsi.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -38,6 +40,7 @@ Maintainer: Matthias Mayr
 #include "../drt_constraint/constraint_manager.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -274,6 +277,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
                             const Teuchos::ParameterList& timeparams)
   : MonolithicBase(comm,timeparams),
     firstcall_(true),
+    noxiter_(0),
     log_(Teuchos::null),
     logada_(Teuchos::null)
 {
@@ -293,6 +297,9 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
 
   // "Initialize" interface solution increments due to structural predictor
   ddgpred_ = Teuchos::null;
+
+  erroraction_ = FSI::Monolithic::erroraction_stop;
+  numhalvestep_ = 0;
 
   //-------------------------------------------------------------------------
   // time step size adaptivity
@@ -538,9 +545,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
   // solve the whole thing
   noxstatus_ = solver->solve();
-
-  if (noxstatus_ != NOX::StatusTest::Converged)
-    dserror("Nonlinear solver failed to converge!");
+  noxiter_ = solver->getNumIterations();
 
   // recover Lagrange multiplier \lambda_{\Gamma} at the interface at the end of each time step
   // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step
@@ -561,6 +566,92 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   }
   (*log_) << std::endl;
   lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
+
+  // perform the error check to determine the error action to be performed
+  NonLinErrorCheck();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::NonLinErrorCheck()
+{
+  // if everything is fine, then return right now
+  if ( NoxStatus() == NOX::StatusTest::Converged )
+  {
+    erroraction_ = FSI::Monolithic::erroraction_none;
+    return;
+  }
+
+  // The nonlinear solver did not converge. Thus, we have to take some action
+  // that depends on the user's will given in the input file
+
+  // get the FSI parameter list
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+
+  // get the user's will
+  const INPAR::FSI::DivContAct divcontype
+    = DRT::INPUT::IntegralValue<INPAR::FSI::DivContAct>(fsidyn.sublist("TIMEADAPTIVITY"),("DIVERCONT"));
+
+  if ( NoxStatus() != NOX::StatusTest::Converged )
+  {
+    switch (divcontype)
+    {
+      case INPAR::FSI::divcont_stop:
+      {
+        // set the corresponding error action
+        erroraction_ = FSI::Monolithic::erroraction_stop;
+
+        // stop the simulation
+        dserror("Nonlinear solver did not converge in %i iterations.", noxiter_);
+        break;
+      }
+      case INPAR::FSI::divcont_continue:
+      {
+        // set the corresponding error action
+        erroraction_ = FSI::Monolithic::erroraction_continue;
+
+        // Notify user about non-converged nonlinear solver, but do not abort the simulation
+        if ( Comm().MyPID() == 0 )
+        {
+          IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_ << " iterations. Continue ...\n";
+        }
+        break;
+      }
+      case INPAR::FSI::divcont_halve_step:
+      {
+        // set the corresponding error action
+        erroraction_ = FSI::Monolithic::erroraction_halve_step;
+
+        numhalvestep_++;
+
+        const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+        if ( not timeadapton )
+        {
+          dserror("Nonlinear solver wants to halve the time step size. This is not possible in a time integrator with constant Delta t.");
+        }
+
+        // Notify user about non-converged nonlinear solver, but do not abort the simulation
+        if ( Comm().MyPID() == 0 )
+        {
+          IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_ << " iterations. Halve the time step size.\n";
+        }
+        break;
+      }
+      default:
+      {
+        dserror("Unknown action to cope with non-converged nonlinear solver.");
+        break;
+      }
+    }
+  }
+  else
+  {
+    dserror("Unknown NOX::StatusTest::StatusType.");
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

@@ -250,9 +250,16 @@ namespace FSI
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     //! do new time step
+    //!
+    //! return error code that indicates whether the nonlinear solver converged or not
     virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     //@}
+
+    //! Error check for nonlinear solver
+    //!
+    //! determine the error code that has to be returned by TimeStep()
+    virtual void NonLinErrorCheck();
 
     //! @name NOX methods
 
@@ -266,7 +273,7 @@ namespace FSI
     bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
 
     /// request NOX convergence from outside (needed for coupled problems)
-    NOX::StatusTest::StatusType NoxStatus() { return noxstatus_; };
+    const NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
 
     //@}
 
@@ -448,6 +455,7 @@ namespace FSI
     const double GetAdaFlDt() const       {return dtfl_;}       ///< \f$\Delta t\f$ based on all fluid DOFs
     const double GetAdaFlFSIDt() const    {return dtflfsi_;}    ///< \f$\Delta t\f$ based on fluid FSI DOFs
     const double GetAdaFlInnerDt() const  {return dtflinner_;}  ///< \f$\Delta t\f$ based on inner fluid DOFs
+    const double GetAdaNonLinSolverDt() const { return dtnonlinsolver_; } ///< \f$\Delta t\f$ based on non-convergence of nonlinear solver
 
     // access to error norms
     const double GetAdaStrnorm() const      {return strnorm_;}      ///< error norm based on all structural DOFs
@@ -465,7 +473,17 @@ namespace FSI
     //! Whether the new time step size is accepted also depends on the chosen method!
     virtual bool SetAccepted() const = 0;
 
+    virtual const int GetErrorAction() const { return erroraction_; }
+
     //@}
+
+    enum ErrorAction
+    {
+      erroraction_none = 0,       ///< do noting
+      erroraction_stop = 1,       ///< stop simulation
+      erroraction_continue = 2,   ///< continue (only warning)
+      erroraction_halve_step = 3  ///< halve the time step size
+    };
 
     //! @name Parameters for FSI time adaptivity
     //@{
@@ -556,8 +574,19 @@ namespace FSI
                        Epetra_Vector& extrapolation ///< extrapolation of state vector to \f$t_{n+1}\f$
                       ) const;
 
-    //! find out which field determined the new time step size
-    bool DetermineAdaField(const double dt) const;
+    /*! \brief Who is responsible for changing the time step size
+     *
+     *  Sets a member variable indicating who is responsible for changing the time
+     *  step size. The options are:
+     *    - Structure: based on truncation error violation in structure field
+     *    - Fluid: based on truncation error violation in fluid field
+     *    - Newton: nonlinear solver did not converge and User wants to halve the
+     *              time step size in such cases
+     *
+     *  \author: mayr.mt
+     *  \date: 10/2013
+     */
+    void DetermineAdaReason(const double dt);
 
     //! Prepare a time step for adaptive time stepping which might be repeated
     virtual void PrepareAdaptiveTimeStep();
@@ -665,9 +694,8 @@ namespace FSI
 
     bool accepted_; ///< Indicate whether an acceptable time step size was found
 
-    //! bool to check which field determined the time step size
-    //! true if dt of error calculated to structure field determined dt
-    bool setstrdt_;
+    //! reason/field that is responsible for the new time step size
+    std::string adareason_;
 
     int numstrfsidbcdofs_;  ///< Number of structural interface DOFs with Dirichlet BC
     int numflfsidbcdofs_;   ///< Number of fluid interface DOFs with Dirichlet BC
@@ -681,12 +709,13 @@ namespace FSI
     double flinnernorm_;
 
     // time step sizes calculated according to the 6 available norms
-    double dtstr_;      ///< time step size based on error in entire structure field
-    double dtfl_;       ///< time step size based on error in entire fluid field
-    double dtstrfsi_;   ///< time step size based on error in interface DOFs of structure field
-    double dtflfsi_;    ///< time step size based on error in interface DOFs of fluid field
-    double dtstrinner_; ///< time step size based on error in interior DOFs of structure field
-    double dtflinner_;  ///< time step size based on error in interior DOFs of fluid field
+    double dtstr_;          ///< time step size based on error in entire structure field
+    double dtfl_;           ///< time step size based on error in entire fluid field
+    double dtstrfsi_;       ///< time step size based on error in interface DOFs of structure field
+    double dtflfsi_;        ///< time step size based on error in interface DOFs of fluid field
+    double dtstrinner_;     ///< time step size based on error in interior DOFs of structure field
+    double dtflinner_;      ///< time step size based on error in interior DOFs of fluid field
+    double dtnonlinsolver_; ///< time step size based on non-convergence of nonlinear solver
 
     int estorderfl_;    ///< order of accuracy of auxiliary time integrator in fluid field
     int estorderstr_;   ///< order of accuracy of auxiliary time integrator in structure field
@@ -715,6 +744,15 @@ namespace FSI
     NOX::StatusTest::StatusType noxstatus_;
 
     //@}
+
+    /// number of nonlinear iterations (done by NOX)
+    int noxiter_;
+
+    /// error action
+    FSI::Monolithic::ErrorAction erroraction_;
+
+    /// number of time step halvings in a row
+    int numhalvestep_;
 
     /// output stream for log-file
     Teuchos::RCP<std::ofstream> log_;

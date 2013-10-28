@@ -5668,6 +5668,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                         INPAR::FSI::timada_str_adamsbashforth2),
                                     &fsiadapt);
 
+  setStringToIntegralParameter<int>("DIVERCONT", "stop",
+                                    "What to do if nonlinear solver does not converge?",
+                                    tuple<std::string>(
+                                        "stop",
+                                        "continue",
+                                        "halve_step"),
+                                    tuple<int>(
+                                        INPAR::FSI::divcont_stop,
+                                        INPAR::FSI::divcont_continue,
+                                        INPAR::FSI::divcont_halve_step),
+                                    &fsiadapt);
+
   /*----------------------------------------------------------------------*/
 
   /*----------------------------------------------------------------------*/

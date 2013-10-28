@@ -117,11 +117,19 @@ namespace INPAR
     };
 
     /// type of structure field auxiliary time integrator for time adaptivity
-    enum SructureMethod
+    enum StructureMethod
     {
       timada_str_none,            ///< no time adaptivity based on structure field
       timada_str_expleuler,       ///< use explicit Euler as auxiliary time integrator
       timada_str_adamsbashforth2  ///< use Adams-Bashforth-2 as auxiliary time integrator
+    };
+
+    /// Handling of non-converged nonlinear solver
+    enum DivContAct
+    {
+      divcont_stop,               ///< abort simulation
+      divcont_continue,           ///< continue nevertheless
+      divcont_halve_step,         ///< halve time step and carry on with simulation
     };
 
     //@}

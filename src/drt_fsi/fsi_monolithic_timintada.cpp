@@ -43,7 +43,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   adaptstep_ = 0;
   accepted_ = false;
 
-  setstrdt_ = false;
+  adareason_ = "none";
 
   strnorm_ = 0.0;
   flnorm_ = 0.0;
@@ -58,6 +58,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   dtflfsi_ = 0.0;
   dtstrinner_ = 0.0;
   dtflinner_ = 0.0;
+  dtnonlinsolver_ = 0.0;
 
   dtminused_ = false;
 
@@ -178,7 +179,8 @@ void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::R
 
           if( Comm().MyPID()==0 )
           {
-            IO::cout <<"Repeat current step with time step size dt = " << Dt() << ".\n";
+            IO::cout << "Repeat current time step with dt = " << Dt()
+                     << " based on " << adareason_ << ".\n";
           }
         }
       }
@@ -220,7 +222,7 @@ void FSI::Monolithic::PrepareAdaptiveTimeStep()
   if( Comm().MyPID()==0 )
   {
     IO::cout  << "\n"
-              << "+++++++++++++++++++++++++++NEW TIME STEP+++++++++++++++++++++++++++";
+              << "+++++++++++++++++++++++++++++NEW TIME STEP+++++++++++++++++++++++++++++";
   }
 
   return;
@@ -232,10 +234,10 @@ void FSI::Monolithic::PrintHeaderRepeatedStep() const
 {
   if( adaptstep_!=0 && Comm().MyPID()==0 )
   {
-    IO::cout  << "________REAPEATING TIME STEP " << Step()
+    IO::cout  << "__________REAPEATING TIME STEP " << Step()
               << " WITH DT = " << Dt()
               << " FOR THE " << adaptstep_
-              << ". TIME________"
+              << ". TIME__________"
               << "\n";
   }
 }
@@ -274,12 +276,10 @@ void FSI::Monolithic::WriteAdaFile() const
                 << "\t\t" << dtold_
                 << "\t"   << adaptstep_ ;
 
-    //which field determined the time step size?
-    if(setstrdt_)
-      (*logada_)  << "\t"<< "structure";
-    else
-      (*logada_)  << "\t" << "fluid \t";
+    // Who is responsible for the new time step size?
+    (*logada_)  << "\t"<< adareason_;
 
+    // print norms of the truncation error indications
     (*logada_)  << "\t "<< strnorm_
                 << "\t" << strinnernorm_
                 << "\t" << strfsinorm_
@@ -297,12 +297,18 @@ void FSI::Monolithic::PrintAdaptivitySummary() const
 
   if( Comm().MyPID() == 0 )
   {
-    IO::cout << "\n" << "New Time step size for all fields: " << Dt() << "\n";
+    if ( Dt() != dtold_ ) // only if time step size has changed
+    {
+      IO::cout << "\n" << "New time step size " << Dt()
+               << " is based on " << adareason_ << ".\n";
+    }
 
     if ( dtminused_ )
+    {
       IO::cout << "Time step " << Step()
                << " has been done with minimum time step size."
                << " No further refinement possible. Go to next time step.\n";
+    }
 
     if ( not StepNotAccepted() )
       IO::cout << "Time step " << Step() << " has been accepted after " << adaptstep_ << " repetitions." << "\n";
@@ -323,63 +329,90 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // Save old time step size for ResetTime()
   dtold_ = Dt();
 
-  // Indicate local truncation errors in structure and fluid field
-  IndicateLocalErrorNormsStructure();
-  IndicateLocalErrorNormsFluid();
+  // prepare new time step size
+  double dtnew = Dt();
 
-  if (strmethod_ != INPAR::FSI::timada_str_none )
+  // ---------------------------------------------------------------------------
+
+  // check whether truncation error based time adaptivity is activated for at least one field
+  if ( not (strmethod_ == INPAR::FSI::timada_str_none && flmethod_ == INPAR::FSI::timada_fld_none) )
   {
-    //calculate time step sizes resulting from errors in the structure field
-    dtstr_      = CalculateTimeStepSize(strnorm_, errtolstr_, estorderstr_);
-    dtstrfsi_   = CalculateTimeStepSize(strfsinorm_, errtolstr_, estorderstr_);
-    dtstrinner_ = CalculateTimeStepSize(strinnernorm_, errtolstr_, estorderstr_);
+    // Indicate local truncation errors in structure and fluid field
+    IndicateLocalErrorNormsStructure();
+    IndicateLocalErrorNormsFluid();
+
+    if (strmethod_ != INPAR::FSI::timada_str_none )
+    {
+      //calculate time step sizes resulting from errors in the structure field
+      dtstr_      = CalculateTimeStepSize(strnorm_, errtolstr_, estorderstr_);
+      dtstrfsi_   = CalculateTimeStepSize(strfsinorm_, errtolstr_, estorderstr_);
+      dtstrinner_ = CalculateTimeStepSize(strinnernorm_, errtolstr_, estorderstr_);
+    }
+
+    if (flmethod_ != INPAR::FSI::timada_fld_none )
+    {
+      //calculate time step sizes resulting from errors in the fluid field
+      dtfl_       = CalculateTimeStepSize(flnorm_, errtolfl_, estorderfl_);
+      dtflfsi_    = CalculateTimeStepSize(flfsinorm_, errtolfl_, estorderfl_);
+      dtflinner_  = CalculateTimeStepSize(flinnernorm_, errtolfl_, estorderfl_);
+    }
   }
 
-  if (flmethod_ != INPAR::FSI::timada_fld_none )
+  // ---------------------------------------------------------------------------
+
+  // take care of possibly non-converged nonlinear solver
+  if ( erroraction_ == FSI::Monolithic::erroraction_halve_step && numhalvestep_ > 0 )
+    dtnonlinsolver_ = std::max(Dt()/2, dtmin_);
+  else if ( erroraction_ == FSI::Monolithic::erroraction_none ) //&& numhalvestep_ > 0 )
   {
-    //calculate time step sizes resulting from errors in the fluid field
-    dtfl_       = CalculateTimeStepSize(flnorm_, errtolfl_, estorderfl_);
-    dtflfsi_    = CalculateTimeStepSize(flfsinorm_, errtolfl_, estorderfl_);
-    dtflinner_  = CalculateTimeStepSize(flinnernorm_, errtolfl_, estorderfl_);
+    dtnonlinsolver_ = std::min(std::max(1.1*Dt(), dtmin_), dtmax_);
+    numhalvestep_ -= 1;
   }
+  else
+    dtnonlinsolver_ = Dt();
+
+  // ---------------------------------------------------------------------------
 
   // Select new time step size
-  const double dtnew = SelectTimeStepSize();
+  dtnew = SelectTimeStepSize();
 
   if ( dtnew <= dtmin_ && dtold_ <= dtmin_ )
     dtminused_ = true;
 
-  //find out which field determined the new time step size
-  setstrdt_ = DetermineAdaField(dtnew);
+  // Who is responsible for changing the time step size?
+  DetermineAdaReason(dtnew);
 
   // Check whether the step can be accepted, now
   accepted_ = SetAccepted();
 
-  // Set new time step size
-  if ( not(strmethod_ == INPAR::FSI::timada_str_none && flmethod_ == INPAR::FSI::timada_fld_none) && not isnan(dtnew) )
-    SetDt(dtnew); // at least one field uses time adaptivity
-  else
-    SetDt(Dt());  // structure and fluid field both do not use time adaptivity
+  // take care of possibly non-converged nonlinear solver
+  if ( erroraction_ == FSI::Monolithic::erroraction_halve_step )
+    accepted_ = false;
+
+  // Finally, distribute new time step size to all participating fields/algorithms
+  SetDt(dtnew);
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::Monolithic::DetermineAdaField(const double dt) const
+void FSI::Monolithic::DetermineAdaReason(const double dt)
 {
-  bool setstrdt = true;
+  const std::string oldreason = adareason_;
 
-  //if both fields are used for time step adaption
-  if (dt == dtfl_ || dt == dtflfsi_ || dt == dtflinner_ ) setstrdt = false;
+  if ( strmethod_ != INPAR::FSI::timada_str_none && (dt == dtstr_ || dt == dtstrfsi_ || dt == dtstrinner_) ) // structure field?
+    adareason_ = "Structure";
+  else if ( flmethod_ != INPAR::FSI::timada_fld_none && (dt == dtfl_ || dt == dtflfsi_ || dt == dtflinner_) ) // fluid field?
+    adareason_ = "Fluid";
+  else if ( dt == dtnonlinsolver_ ) // Unconverged nonlinear solver?
+    adareason_ = "Newton";
 
-  //if only one field is used for time step size adaption
-  if ( flmethod_ == INPAR::FSI::timada_fld_none )
-    setstrdt = true;
-  if ( strmethod_ == INPAR::FSI::timada_str_none )
-    setstrdt = false;
+  // no change in time step size
+  if ( dt == dtold_ )
+    adareason_ = oldreason;
 
- return setstrdt;
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -407,9 +440,16 @@ double FSI::Monolithic::CalculateTimeStepSize(const double errnorm,
   const double dtmin = fsidyn.sublist("TIMEADAPTIVITY").get<double>("DTMIN");
   //----------------------------------------------------------------------
 
+  // prepare new time step size
+  double dtnew = dtold_;
+
   // catch case that error norm is (very close to) zero
-  if ( errnorm < 1.0e-14)
-    return dtmax;
+  if ( errnorm < 1.0e-14 )
+  {
+    dtnew = std::min(dtmax, facmax * dtold_);
+
+    return dtnew;
+  }
 
   //----------------------------------------------------------------------
   // Calculate new time step size
@@ -429,7 +469,7 @@ double FSI::Monolithic::CalculateTimeStepSize(const double errnorm,
   fac = std::min( fac, facmax );
 
   // calculate the new time step size (limited by user given bounds)
-  double dtnew = std::max( fac*dtold_, dtmin );
+  dtnew = std::max( fac*dtold_, dtmin );
   dtnew = std::min( dtnew, dtmax );
   //----------------------------------------------------------------------
 
