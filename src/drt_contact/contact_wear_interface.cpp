@@ -127,7 +127,6 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
         // don't check for diagonality
         // since for standard shape functions, as in general when using
         // arbitrary shape function types, this is not the case
-
         // create the d matrix, do not assemble zeros
         if (abs(val)>1.0e-12) tglobal.Assemble(val, row, col);
 
@@ -161,15 +160,26 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
         double val = colcurr->second;
 
         // do not assemble zeros into m matrix
-        if (abs(val)>1.0e-12) eglobal.Assemble(val,row,col);
-        ++k;
+        if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
+        {
+          if (abs(val)>1.0e-12) eglobal.Assemble(val,row,col);
+          ++k;
+        }
+        else if (WearShapeFcn() == INPAR::CONTACT::wear_shape_dual)
+        {
+          if (col==row)
+            if (abs(val)>1.0e-12) eglobal.Assemble(val,row,col);
+          ++k;
+        }
+        else
+          dserror("Choosen wear shape function not supported!");
       }
 
       if (k!=colsize)
         dserror("ERROR: AssembleTE: k = %i but colsize = %i",k,colsize);
-
     }
   }
+
   return;
 }
 
@@ -529,7 +539,7 @@ void CONTACT::WearInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix S containing gap g~ lm derivatives       farah 09/13|
+ |  Assemble matrix S containing gap g~ w derivatives       farah 09/13|
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::AssembleLinG_W(LINALG::SparseMatrix& sglobal)
 {
@@ -3708,8 +3718,8 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
   // i.e. nodes, which were active in the last iteration, are considered. Since you know, that the lagrange
   // multipliers of former inactive nodes are still equal zero.
 
-  Teuchos::RCP<Epetra_Map> inactivenodes  = LINALG::SplitMap(*snoderowmap_, *activenodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs   = LINALG::SplitMap(*sdofrowmap_, *activedofs_);
+  Teuchos::RCP<Epetra_Map> inactivenodes  = LINALG::SplitMap(*snoderowmap_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> inactivedofs   = LINALG::SplitMap(*sdofrowmap_, *slipdofs_);
 
   for (int i=0;i<inactivenodes->NumMyElements();++i)
   {
@@ -3754,7 +3764,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble wear-cond. right hand side                      farah 09/13|
+ |  Assemble wear-cond. right hand side (discr)              farah 09/13|
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
 {
@@ -3764,6 +3774,8 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
   // nothing to do if no active nodes
   if (slipnodes_==Teuchos::null)
     return;
+
+  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(IParams(),"SYSTEM");
 
   double wcoeff = IParams().get<double>("WEARCOEFF");
 
@@ -3805,7 +3817,9 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
     }
 
     /**************************************************** T-matrix ******/
-    if ((fnode->FriDataPlus().GetT()).size()>0)
+    // for condensation of lm and wear we condense the system with absol. lm
+    // --> therefore we do not need the lm^i term...
+    if (((fnode->FriDataPlus().GetT()).size()>0) && systype != INPAR::CONTACT::system_condensed)
     {
       std::map<int,double> tmap = fnode->FriDataPlus().GetT()[0];
 

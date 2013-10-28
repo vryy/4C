@@ -93,6 +93,14 @@ namespace INPAR
       wear_expl,
       wear_discr
     };
+
+    /// Definition of wear shape functions
+    /// (this enum represents the input file parameter WEAR_SHAPEFCN)
+    enum WearShape
+    {
+      wear_shape_dual,
+      wear_shape_standard
+    };
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy

@@ -82,6 +82,26 @@ public:
   */
   void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
+
+  /*!
+  \brief Condense discr. wear and lm. for frictional contact
+
+  */
+  void CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
+                         Teuchos::RCP<Epetra_Vector>& gact);
+
+  /*!
+  \brief Condense lm. for frictional contact with explicit/implicit wear algorithm
+
+  */
+  void CondenseWearImplExpl(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
+                         Teuchos::RCP<Epetra_Vector>& gact);
+
+  /*!
+  \brief Prepare SaddlePointSystem
+
+  */
+  void PrepareSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
   /*!
   \brief Initialize and evaluate Mortar stuff for the next Newton step
 
@@ -272,6 +292,17 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> linslipW_;     // global matrix containing derivatives (LM) of slip condition
   Teuchos::RCP<Epetra_Vector> inactiveWearRhs_;     // inactive wear rhs: -w_i
   Teuchos::RCP<Epetra_Vector> WearCondRhs_;         // rhs wear condition: -E*w_i + k*T*n*lm_i
+
+  // matrix blocks for recovering
+  Teuchos::RCP<LINALG::SparseMatrix> dnblock_;
+  Teuchos::RCP<LINALG::SparseMatrix> dmblock_;
+  Teuchos::RCP<LINALG::SparseMatrix> diblock_;
+  Teuchos::RCP<LINALG::SparseMatrix> dablock_;
+  Teuchos::RCP<Epetra_Vector> fw_;
+
+  Teuchos::RCP<Epetra_Map> gidofs_;
+
+
 }; //class
 
 

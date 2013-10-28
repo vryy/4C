@@ -2051,7 +2051,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     }
 
     //----------------------------------------------------------- THIRD LINE
-    // kin: subtract T(dhat)*kan
+    //------------------- FOR 3D QUADRATIC CASE ----------------------------
+    // kin: subtract T(dhat)*kan --
     Teuchos::RCP<LINALG::SparseMatrix> kinmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
     kinmod->Add(*kin,false,1.0,1.0);
     Teuchos::RCP<LINALG::SparseMatrix> kinadd = LINALG::MLMultiply(*dhat,true,*kan,false,false,false,true);

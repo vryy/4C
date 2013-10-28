@@ -9,10 +9,11 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 3D wear contact
 // - structure-ale approach -- ale: classic_lin
-// - implicit wear algorithm
+// - discrete wear algorithm
 // - first-order interpolation (Hex8 elements)
 // - dual Lagrange multiplier interpolation
 // - solution check done by material displacements (wear)
+// - condensation of lagr. mult. and wear 
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      57
 //NODES                         155
@@ -58,7 +59,8 @@ APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
 WEARLAW                         Archard
-WEARTYPE                        implicit
+WEAR_SHAPEFCN                   dual
+WEARTYPE                        discrete
 BOTH_SIDED_WEAR                 no
 WEARCOEFF                       0.003
 SEMI_SMOOTH_NEWTON              Yes
@@ -104,9 +106,9 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR -1.0 -1.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -2.09490140357847521e-02 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -2.09490140358052912e-02 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE 2.34323752861392065e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -2.10103095813670704e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -2.10103095813867213e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE 2.34767791590627106e-01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2

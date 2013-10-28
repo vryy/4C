@@ -13,6 +13,7 @@ General Data File BACI
 // - first-order interpolation (quad4 elements)
 // - dual Lagrange multiplier interpolation
 // - solution check done by material displacements (wear)
+// - condensation of lagr. mult. and wear 
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      123
 //NODES                         158
@@ -58,12 +59,13 @@ STRATEGY                        Lagrange
 FRICTION                        Coulomb
 WEARLAW                         Archard
 WEARTYPE                        wear_discrete
+WEAR_SHAPEFCN                   dual
 BOTH_SIDED_WEAR                 none
 WEARCOEFF                       0.0003
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  100
-SYSTEM                          spcoupled
+SYSTEM                          condensed
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
 ALE_TYPE                        classic_lin
@@ -103,10 +105,10 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.87479886854702293e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.84410827884767536e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 2.83408291530462542e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.78575294586961475e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.97532344147521854e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.94680891788351906e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 2.99165258579159321e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.89754419922890383e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          16

@@ -7307,7 +7307,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
 
   // normalize interpolated GP tangent back to length 1.0 !!!
   lengtht = sqrt(gpt[0]*gpt[0]+gpt[1]*gpt[1]+gpt[2]*gpt[2]);
-  if (lengtht<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (abs(lengtht)<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i=0;i<3;i++)
     gpt[i]/=lengtht;
@@ -7481,14 +7481,12 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
     for (CI p=dmap_tysl_gp_unit.begin();p!=dmap_tysl_gp_unit.end();++p)
       dweargp[p->first] += xabsx * jump[1] * (p->second);
 
-
     // add tangent lin. to slip linearization for wear Tmatrix
     for (CI p=dmap_txsl_gp_unit.begin();p!=dmap_txsl_gp_unit.end();++p)
       dsliptmatrixgp[p->first] += xabsxT * jump[0] * (p->second);
 
     for (CI p=dmap_tysl_gp_unit.begin();p!=dmap_tysl_gp_unit.end();++p)
       dsliptmatrixgp[p->first] += xabsxT * jump[1] * (p->second);
-
 
     // **********************************************************************
     // (c) build directional derivative of jump
@@ -7696,14 +7694,12 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
   else
     wearval[0] = abs(wearval[0])*jumpval[0];
 
-
   // normal contact stress
   for (int i=0;i<3;++i)
     gplm[i]=lm(i,0);
 
   for (int i=0;i<3;++i)
     lm_lin += gpn[i]*gplm[i];
-
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // TODO: outsource mechdiss to own function !!!!!!
@@ -7716,7 +7712,6 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
    // add to node
    for (int j=0;j<nrow;++j)
@@ -8165,25 +8160,56 @@ void inline CONTACT::CoIntegrator::GP_TE(
 
   int nrow = sele.NumNode();
 
-  for (int k=0; k<nrow; ++k)
+  if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
   {
-    CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(snodes[k]);
-
-    for (int j=0; j<nrow; ++j)
+    for (int k=0; k<nrow; ++k)
     {
-      CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[j]);
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(snodes[k]);
 
-      // multiply the two shape functions
-      double prod1 = sval[k]*lmval[j]*abs(*jumpval)*jac*wgt;
-      double prod2 = sval[k]*sval[j]*jac*wgt;
+      for (int j=0; j<nrow; ++j)
+      {
+        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[j]);
 
-      int col = snode->Dofs()[0];
-      int row = 0;
+        // multiply the two shape functions
+        double prod1 = sval[k]*lmval[j]*abs(*jumpval)*jac*wgt;
+        double prod2 = sval[k]*sval[j]*jac*wgt;
 
-      if(abs(prod1)>1e-12) cnode->AddTValue(row,col,prod1);
-      if(abs(prod2)>1e-12) cnode->AddEValue(row,col,prod2);
+        int col = snode->Dofs()[0];
+        int row = 0;
+
+        if(abs(prod1)>1e-12) cnode->AddTValue(row,col,prod1);
+        if(abs(prod2)>1e-12) cnode->AddEValue(row,col,prod2);
+      }
     }
   }
+  else if (WearShapeFcn() == INPAR::CONTACT::wear_shape_dual)
+  {
+    for (int k=0; k<nrow; ++k)
+    {
+      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(snodes[k]);
+
+      for (int j=0; j<nrow; ++j)
+      {
+        CONTACT::FriNode* snode = static_cast<CONTACT::FriNode*>(snodes[j]);
+
+        // multiply the two shape functions
+        double prod1 = lmval[k]*lmval[j]*abs(*jumpval)*jac*wgt;
+        double prod2 = lmval[k]*sval[j]*jac*wgt;
+
+        int col = snode->Dofs()[0];
+        int row = 0;
+
+        if(abs(prod1)>1e-12) cnode->AddTValue(row,col,prod1);
+
+        //diagonal E matrix
+        if (j==k)
+          if(abs(prod2)>1e-12) cnode->AddEValue(row,col,prod2);
+      }
+    }
+  }
+  else
+    dserror("Choosen wear shape function not supported!");
+
 
   return;
 }
@@ -8220,97 +8246,214 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
   MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
-  // integrate LinT
-  for (int j=0; j<nrow; ++j)
+  if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
   {
-    // global master node ID
-    int mgid = sele.Nodes()[j]->Id();
-    double fac = 0.0;
-
-    // get the correct map as a reference
-    std::map<int,double>& tmmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
-
-    // (1) Lin(Phi) - dual shape functions
-    for (int m=0; m<nrow; ++m)
+    // integrate LinT
+    for (int j=0; j<nrow; ++j)
     {
-      fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
-      for (CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
+
+      // get the correct map as a reference
+      std::map<int,double>& tmmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+
+      // (1) Lin(Phi) - dual shape functions
+      for (int m=0; m<nrow; ++m)
+      {
+        fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
+        for (CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+          tmmap_jk[p->first] += fac*(p->second);
+      }
+
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmderiv(j, 0)*sval[iter]*dsxideta*dxdsxi*abs(jumpval[0]);
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
         tmmap_jk[p->first] += fac*(p->second);
-    }
 
-    // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmderiv(j, 0)*sval[iter]*dsxideta*dxdsxi*abs(jumpval[0]);
-    for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-      tmmap_jk[p->first] += fac*(p->second);
+      // (3) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmval[j]*sderiv(iter,0)*dsxideta*dxdsxi*abs(jumpval[0]);
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        tmmap_jk[p->first] += fac*(p->second);
 
-    // (3) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmval[j]*sderiv(iter,0)*dsxideta*dxdsxi*abs(jumpval[0]);
-    for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-      tmmap_jk[p->first] += fac*(p->second);
+      // (4) Lin(dsxideta) - segment end coordinates
+      fac = wgt*lmval[j]*sval[iter]*dxdsxi*abs(jumpval[0]);
+      for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
+        tmmap_jk[p->first] -= 0.5*fac*(p->second);
+      for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
+        tmmap_jk[p->first] += 0.5*fac*(p->second);
 
-    // (4) Lin(dsxideta) - segment end coordinates
-    fac = wgt*lmval[j]*sval[iter]*dxdsxi*abs(jumpval[0]);
-    for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-      tmmap_jk[p->first] -= 0.5*fac*(p->second);
-    for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-      tmmap_jk[p->first] += 0.5*fac*(p->second);
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[j]*sval[iter]*dsxideta*abs(jumpval[0]);
+      for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+        tmmap_jk[p->first] += fac*(p->second);
 
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*lmval[j]*sval[iter]*dsxideta*abs(jumpval[0]);
-    for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-      tmmap_jk[p->first] += fac*(p->second);
+      // (6) Lin(dxdsxi) - slave GP coordinates
+      fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxidsxi*abs(jumpval[0]);
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        tmmap_jk[p->first] += fac*(p->second);
 
-    // (6) Lin(dxdsxi) - slave GP coordinates
-    fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxidsxi*abs(jumpval[0]);
-    for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-      tmmap_jk[p->first] += fac*(p->second);
+      // (7) Lin(wear)
+      fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxi;
+      for (CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
+      {
+        tmmap_jk[p->first] += fac*(p->second);
+      }
+    } // end integrate linT
 
-    // (7) Lin(wear)
-    fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxi;
-    for (CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
+    //********************************************************************************
+    // integrate LinE
+    for (int j=0; j<nrow; ++j)
     {
-      tmmap_jk[p->first] += fac*(p->second);
-    }
-  } // end integrate linT
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
 
-  //********************************************************************************
-  // integrate LinE
-  for (int j=0; j<nrow; ++j)
+      // get the correct map as a reference
+      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+
+      // (1) Lin(Phi) - slave GP coordinates
+      fac = wgt*sderiv(iter, 0)*sval[j]*dsxideta*dxdsxi;
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*sval[iter]*sderiv(j,0)*dsxideta*dxdsxi;
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (3) Lin(dsxideta) - segment end coordinates
+      fac = wgt*sval[iter]*sval[j]*dxdsxi;
+      for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
+        emmap_jk[p->first] -= 0.5*fac*(p->second);
+      for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
+        emmap_jk[p->first] += 0.5*fac*(p->second);
+
+      // (4) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*sval[iter]*sval[j]*dsxideta;
+      for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (5) Lin(dxdsxi) - slave GP coordinates
+      fac = wgt*sval[iter]*sval[j]*dsxideta*dxdsxidsxi;
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+    } // end integrate linE
+  }
+  else if (WearShapeFcn() == INPAR::CONTACT::wear_shape_dual) //******************************************
   {
-    // global master node ID
-    int mgid = sele.Nodes()[j]->Id();
-    double fac = 0.0;
+    // integrate LinT
+    for (int j=0; j<nrow; ++j)
+    {
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
 
-    // get the correct map as a reference
-    std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      // get the correct map as a reference
+      std::map<int,double>& tmmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
-    // (1) Lin(Phi) - slave GP coordinates
-    fac = wgt*sderiv(iter, 0)*sval[j]*dsxideta*dxdsxi;
-    for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      // (1) Lin(Phi) - dual shape functions
+      for (int m=0; m<nrow; ++m)
+      {
+        fac = wgt*sval[m]*lmval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
+        for (CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+          tmmap_jk[p->first] += fac*(p->second);
+      }
 
-    // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*sval[iter]*sderiv(j,0)*dsxideta*dxdsxi;
-    for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmderiv(j, 0)*lmval[iter]*dsxideta*dxdsxi*abs(jumpval[0]);
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        tmmap_jk[p->first] += fac*(p->second);
 
-    // (3) Lin(dsxideta) - segment end coordinates
-    fac = wgt*sval[iter]*sval[j]*dxdsxi;
-    for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-      emmap_jk[p->first] -= 0.5*fac*(p->second);
-    for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-      emmap_jk[p->first] += 0.5*fac*(p->second);
 
-    // (4) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*sval[iter]*sval[j]*dsxideta;
-    for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      // (1) Lin(Phi) - dual shape functions
+      for (int m=0; m<nrow; ++m)
+      {
+        fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
+        for (CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+          tmmap_jk[p->first] += fac*(p->second);
+      }
 
-    // (5) Lin(dxdsxi) - slave GP coordinates
-    fac = wgt*sval[iter]*sval[j]*dsxideta*dxdsxidsxi;
-    for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
-  } // end integrate linE
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmderiv(iter, 0)*lmval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        tmmap_jk[p->first] += fac*(p->second);
+
+
+      // (4) Lin(dsxideta) - segment end coordinates
+      fac = wgt*lmval[j]*lmval[iter]*dxdsxi*abs(jumpval[0]);
+      for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
+        tmmap_jk[p->first] -= 0.5*fac*(p->second);
+      for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
+        tmmap_jk[p->first] += 0.5*fac*(p->second);
+
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[j]*lmval[iter]*dsxideta*abs(jumpval[0]);
+      for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+        tmmap_jk[p->first] += fac*(p->second);
+
+      // (6) Lin(dxdsxi) - slave GP coordinates
+      fac = wgt*lmval[j]*lmval[iter]*dsxideta*dxdsxidsxi*abs(jumpval[0]);
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        tmmap_jk[p->first] += fac*(p->second);
+
+      // (7) Lin(wear)
+      fac = wgt*lmval[j]*lmval[iter]*dsxideta*dxdsxi;
+      for (CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
+      {
+        tmmap_jk[p->first] += fac*(p->second);
+      }
+    } // end integrate linT
+
+    //********************************************************************************
+    // integrate LinE
+    for (int j=0; j<nrow; ++j)
+    {
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
+
+      // get the correct map as a reference
+      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+
+      // (1) Lin(Phi) - dual shape functions
+      for (int m=0; m<nrow; ++m)
+      {
+        fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi;
+        for (CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+          emmap_jk[p->first] += fac*(p->second);
+      }
+
+      // (1) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmderiv(iter, 0)*sval[j]*dsxideta*dxdsxi;
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmval[iter]*sderiv(j,0)*dsxideta*dxdsxi;
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (3) Lin(dsxideta) - segment end coordinates
+      fac = wgt*lmval[iter]*sval[j]*dxdsxi;
+      for (CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
+        emmap_jk[p->first] -= 0.5*fac*(p->second);
+      for (CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
+        emmap_jk[p->first] += 0.5*fac*(p->second);
+
+      // (4) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[iter]*sval[j]*dsxideta;
+      for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (5) Lin(dxdsxi) - slave GP coordinates
+      fac = wgt*lmval[iter]*sval[j]*dsxideta*dxdsxidsxi;
+      for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+    } // end integrate linE
+  }
+  else
+    dserror("Choosen shapefunctions not supported!");
 
   return;
 }
@@ -8344,91 +8487,210 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
   MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
-  // integrate LinT
-  for (int j=0; j<nrow; ++j)
+  if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
   {
-    // global master node ID
-    int mgid = sele.Nodes()[j]->Id();
-    double fac = 0.0;
+    // integrate LinT
+    for (int j=0; j<nrow; ++j)
+    {
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
 
-    // get the correct map as a reference
-    std::map<int,double>& dtmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      // get the correct map as a reference
+      std::map<int,double>& dtmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
-    // (1) Lin(Phi) - dual shape functions
-    if (duallin)
-      for (int m=0; m<nrow; ++m)
-      {
-        fac = wgt*sval[m]*sval[iter]*jac*abs(jumpval[0]);
-        for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
-          dtmap_jk[p->first] += fac*(p->second);
-      }
+      // (1) Lin(Phi) - dual shape functions
+      if (duallin)
+        for (int m=0; m<nrow; ++m)
+        {
+          fac = wgt*sval[m]*sval[iter]*jac*abs(jumpval[0]);
+          for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
+            dtmap_jk[p->first] += fac*(p->second);
+        }
 
-    // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmderiv(j, 0)*sval[iter]*jac*abs(jumpval[0]);
-    for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-      dtmap_jk[p->first] += fac*(p->second);
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmderiv(j, 0)*sval[iter]*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
 
-    fac = wgt*lmderiv(j, 1)*sval[iter]*jac*abs(jumpval[0]);
-    for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-      dtmap_jk[p->first] += fac*(p->second);
-
-
-    // (3) Lin(NMaster) - master GP coordinates
-    fac = wgt*lmval[j]*sderiv(iter, 0)*jac*abs(jumpval[0]);
-    for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-      dtmap_jk[p->first] += fac*(p->second);
-
-    fac = wgt*lmval[j]*sderiv(iter, 1)*jac*abs(jumpval[0]);
-    for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-      dtmap_jk[p->first] += fac*(p->second);
+      fac = wgt*lmderiv(j, 1)*sval[iter]*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
 
 
-    // (4) Lin(dsxideta) - intcell GP Jacobian
-    fac = wgt*lmval[j]*sval[iter]*abs(jumpval[0]);
-    for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-      dtmap_jk[p->first] += fac*(p->second);
+      // (3) Lin(NMaster) - master GP coordinates
+      fac = wgt*lmval[j]*sderiv(iter, 0)*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
 
-    fac = wgt*lmval[j]*sval[iter]*jac;
-    for (CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p)
-      dtmap_jk[p->first] += fac*(p->second);
+      fac = wgt*lmval[j]*sderiv(iter, 1)*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
+
+
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      fac = wgt*lmval[j]*sval[iter]*abs(jumpval[0]);
+      for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
+
+      fac = wgt*lmval[j]*sval[iter]*jac;
+      for (CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
+    }
+
+    //********************************************************************************
+    // integrate LinE
+    for (int j=0; j<nrow; ++j)
+    {
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
+
+      // get the correct map as a reference
+      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*sderiv(j, 0)*sval[iter]*jac;
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      fac = wgt*sderiv(j, 1)*sval[iter]*jac;
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (3) Lin(NMaster) - master GP coordinates
+      fac = wgt*sval[j]*sderiv(iter, 0)*jac;
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      fac = wgt*sval[j]*sderiv(iter, 1)*jac;
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      fac = wgt*sval[j]*sval[iter];
+      for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+    } // end integrate linE
   }
-
-  //********************************************************************************
-  // integrate LinE
-  for (int j=0; j<nrow; ++j)
+  else if (WearShapeFcn() == INPAR::CONTACT::wear_shape_dual)
   {
-    // global master node ID
-    int mgid = sele.Nodes()[j]->Id();
-    double fac = 0.0;
+    // integrate LinT
+    for (int j=0; j<nrow; ++j)
+    {
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
 
-    // get the correct map as a reference
-    std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      // get the correct map as a reference
+      std::map<int,double>& dtmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
 
-    // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*sderiv(j, 0)*sval[iter]*jac;
-    for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      //**********************************************
+      // LM-shape function lin...
+      //**********************************************
+      // (1) Lin(Phi) - dual shape functions
+      if (duallin)
+        for (int m=0; m<nrow; ++m)
+        {
+          fac = wgt*sval[m]*lmval[j]*jac*abs(jumpval[0]);
+          for (CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+            dtmap_jk[p->first] += fac*(p->second);
+        }
 
-    fac = wgt*sderiv(j, 1)*sval[iter]*jac;
-    for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmderiv(j, 0)*lmval[iter]*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
 
-    // (3) Lin(NMaster) - master GP coordinates
-    fac = wgt*sval[j]*sderiv(iter, 0)*jac;
-    for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      fac = wgt*lmderiv(j, 1)*lmval[iter]*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
 
-    fac = wgt*sval[j]*sderiv(iter, 1)*jac;
-    for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      //**********************************************
+      // wear weighting lin...
+      //**********************************************
+      // (1) Lin(Phi) - dual shape functions
+      if (duallin)
+        for (int m=0; m<nrow; ++m)
+        {
+          fac = wgt*lmval[iter]*sval[m]*jac*abs(jumpval[0]);
+          for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
+            dtmap_jk[p->first] += fac*(p->second);
+        }
 
-    // (4) Lin(dsxideta) - intcell GP Jacobian
-    fac = wgt*sval[j]*sval[iter];
-    for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-      emmap_jk[p->first] += fac*(p->second);
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmval[j]*lmderiv(iter,0)*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
 
-  } // end integrate linE
+      fac = wgt*lmval[j]*lmderiv(iter,1)*jac*abs(jumpval[0]);
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
 
+      //**********************************************
+      // rest
+      //**********************************************
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      fac = wgt*lmval[j]*lmval[iter]*abs(jumpval[0]);
+      for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
+
+      fac = wgt*lmval[j]*lmval[iter]*jac;
+      for (CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p)
+        dtmap_jk[p->first] += fac*(p->second);
+    }
+
+    //********************************************************************************
+    // integrate LinE
+    for (int j=0; j<nrow; ++j)
+    {
+      // global master node ID
+      int mgid = sele.Nodes()[j]->Id();
+      double fac = 0.0;
+
+      // get the correct map as a reference
+      std::map<int,double>& emmap_jk = static_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+
+      //**********************************************
+      // wear weighting lin...
+      //**********************************************
+      // (1) Lin(Phi) - dual shape functions
+      if (duallin)
+        for (int m=0; m<nrow; ++m)
+        {
+          fac = wgt*sval[m]*sval[iter]*jac;
+          for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
+            emmap_jk[p->first] += fac*(p->second);
+        }
+
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*sderiv(j, 0)*lmval[iter]*jac;
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      fac = wgt*sderiv(j, 1)*lmval[iter]*jac;
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (3) Lin(NMaster) - master GP coordinates
+      fac = wgt*sval[j]*lmderiv(iter, 0)*jac;
+      for (CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      fac = wgt*sval[j]*lmderiv(iter, 1)*jac;
+      for (CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      fac = wgt*sval[j]*lmval[iter];
+      for (CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
+        emmap_jk[p->first] += fac*(p->second);
+
+    } // end integrate linE
+  }
+  else
+    dserror("Choosen shapefunctions not supported!");
 
   return;
 }

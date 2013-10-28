@@ -40,7 +40,7 @@ Maintainer: Philipp Farah
 #ifndef CONTACT_WEAR_INTERFACE_H_
 #define CONTACT_WEAR_INTERFACE_H_
 
-
+#include "../drt_inpar/inpar_contact.H"
 #include "contact_interface.H"
 
 namespace CONTACT
@@ -331,6 +331,13 @@ public:
      exit(EXIT_FAILURE); // calm down the compiler
    }
 
+   /*!
+   \brief Get type of wear shapefnct
+
+   */
+   INPAR::CONTACT::WearShape WearShapeFcn()
+       { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearShape>(imortar_,"WEAR_SHAPEFCN"); }
+
 protected:
 
    // both-sided wear specific stuff
@@ -339,7 +346,6 @@ protected:
 
    Teuchos::RCP<Epetra_Map>      wdofmap_;       // row map of all wear dofs
    Teuchos::RCP<Epetra_Map>      sndofmap_;      // row map of all slave dofs (first entries)
-
 
    bool wearimpl_;  //bool for implicit wear
    bool weardiscr_;   //bool for wear with own discretization

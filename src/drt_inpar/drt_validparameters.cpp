@@ -1613,6 +1613,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                  INPAR::CONTACT::wear_archard, INPAR::CONTACT::wear_archard),
       &scontact);
 
+  setStringToIntegralParameter<int>("WEAR_SHAPEFCN","std","Type of employed set of shape functions for wear",
+        tuple<std::string>("Dual", "dual",
+                           "Standard", "standard", "std"),
+        tuple<int>(
+                INPAR::CONTACT::wear_shape_dual, INPAR::CONTACT::wear_shape_dual,
+                INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard),
+        &scontact);
+
   DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
 
   setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",

@@ -829,6 +829,13 @@ public:
                     Epetra_SerialDenseVector& wseg);    
 
   /*!
+  \brief Return the Wear shape fcn type (wear weighting...)
+
+  */
+  INPAR::CONTACT::WearShape WearShapeFcn()
+      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearShape>(imortar_,"WEAR_SHAPEFCN"); }
+
+  /*!
   \brief Return type of wear surface definition
 
   */
