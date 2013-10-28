@@ -110,34 +110,39 @@ NDLINE                          14
 NDSURF                          3
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          14
-// Node set E1 and E2 are located on the "slave side" (partitioned scheme) 
-// of the fsi coupling interface. Dirichlet conditions are not allowed on these node sets!!
-E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none
-E 5 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 7 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 8 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 9 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 10 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 11 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 12 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 13 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 14 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+DPOINT 14
+// fluid
+E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none
+// ale 
+E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none
+E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none
+E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none
+E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none
+// structure
+E 9 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none 
+E 10 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none
+E 11 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none
+E 12 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none
+// fluid
+E 13 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none
+E 14 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           6
-E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none
-E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 7 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 8 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
-E 13 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none
+DLINE 6
+// fluid
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none 
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none 
+// ale
+E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none 
+E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none 
+E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none 
+//fluid
+E 13 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none 
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
-DLINE                           3
+DLINE 3
 E 1 - 1
 E 5 - 1
 E 9 - 1
