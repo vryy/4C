@@ -1,4 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_nox_group.cpp
 
+\brief Implementation of NOX::Group for FSI
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #include "fsi_nox_group.H"
 #include "fsi_monolithicinterface.H"

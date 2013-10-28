@@ -1,4 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_nox_group.H
 
+\brief Implementation of NOX::Group for FSI
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_NOX_GROUP_H
 #define FSI_NOX_GROUP_H

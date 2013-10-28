@@ -1,4 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_overlappprec_fsiamg_smoothers.cpp
 
+\brief Smoothers for FSI AMG preconditioners
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #include "fsi_overlapprec_fsiamg.H"
 #include "../linalg/linalg_precond.H"

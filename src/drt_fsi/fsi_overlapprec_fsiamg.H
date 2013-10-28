@@ -1,4 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_overlappprec_fsiamg.H
 
+\brief Special version of block matrix that includes the FSI block preconditioner
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_OVERLAPPREC_FSIAMG_H
 #define FSI_OVERLAPPREC_FSIAMG_H

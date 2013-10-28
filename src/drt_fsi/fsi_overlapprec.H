@@ -1,4 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_overlappprec.H
 
+\brief Base class for all FSI block preconditioning matrices
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_OVERLAPPREC_H
 #define FSI_OVERLAPPREC_H

@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_overlappprec.cpp
+
+\brief Base class for all FSI block preconditioning matrices
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Epetra_Time.h>
 
