@@ -3128,7 +3128,7 @@ void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& m
   return;
 }
 
-void STATMECH::StatMechManager::ElementToCrosslinkMapping(Teuchos::RCP<Epetra_Vector> element2crosslink)
+void STATMECH::StatMechManager::ElementToCrosslinkMapping(Teuchos::RCP<Epetra_Vector>& element2crosslink)
 {
   // update element2crosslink_ for correct mapping. Reason: Before coming here, elements might have been deleted in
   // SearchAndSetCrosslinkers(). The ElementRowMap might have changed -> Rebuild
@@ -3258,8 +3258,8 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
         (*punlink)[0][crosslid] = 1 - exp(-dt * koffbspot1);
         if (unbindingprobability_ != Teuchos::null)
         {
-          (*unbindingprobability_)[0][crosslid] = 1 - exp(-dt * koffbspot0);
-          (*unbindingprobability_)[1][crosslid] = 1 - exp(-dt * koffbspot1);
+          (*unbindingprobability_)[1][crosslid] = 1 - exp(-dt * koffbspot0);
+          (*unbindingprobability_)[0][crosslid] = 1 - exp(-dt * koffbspot1);
         }
       }
 
