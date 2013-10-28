@@ -158,17 +158,17 @@ E 2 - none 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 Live Mid 1 1 1 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              pressure_point
-E 1 - NUMDOF 6 ONOFF 0 0 1 1 0 0 VAL 0.0 0.0 0.0 1.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 2 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 1  VAL 0.0 0.0 0.0 1.0 CURVE none none none none  FUNCT 0 0 0 2 
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              Fluid_1_wall
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 2 2 2 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0  VAL 1.0 1.0 1.0 0.0  CURVE none none none none  FUNCT 2 2 2 0 
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 //                              fluid_2_volume
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0  VAL 0.0 0.0 0.0 0.0  CURVE none none none none FUNCT 0 0 0 0 
 //                              fluid_1_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0  VAL 0.0 0.0 0.0 0.0  CURVE none none none none  FUNCT 0 0 0 0 
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           1
 //                              xfem
