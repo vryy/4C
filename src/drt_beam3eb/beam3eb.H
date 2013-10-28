@@ -86,6 +86,7 @@ using namespace cln;
 #define NODALDOFS 2             // With this flag it can be switched between third order (2 nodal dofs) and fifth order
                                 // hermitian polynomials (3 nodal dofs). So the valid values of NODALDOFS are 2 and 3
 //#define ANS                     // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
+//#define ANSVALUES 3             //Decide, how many ANS points are applied (2 or 3 possible)
 
 #define mygaussruleeb intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
 

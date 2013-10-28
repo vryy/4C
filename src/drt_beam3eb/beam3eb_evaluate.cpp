@@ -290,7 +290,11 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     //add moments to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 3; i < 6 ; i++)
     {
+#ifndef SIMPLECALC
       elevec1(insert*dofpn + i) -= crossproduct(i-3) / pow(abs_tangent,2.0)*ScaleFactorLine;
+#else
+      elevec1(insert*dofpn + i) -= crossproduct(i-3) *ScaleFactorLine;
+#endif
     }
 
     //assembly for stiffnessmatrix
@@ -322,8 +326,14 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     {
       for(int j = 3; j < 6 ; j++)
       {
+#ifndef SIMPLECALC
         (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0)*Factor;
         (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0)*Factor;
+#else
+        (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3) * Factor;
+        (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3) * Factor;
+#endif
+
       }
     }
 
@@ -356,6 +366,9 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   else if(condition.Type() == DRT::Condition::LineNeumann)
   {
 
+    #ifdef SIMPLECALC
+      dserror("SIMPLECALC not implemented for LineNeumann conditions so far!!!");
+    #endif
     // gaussian points
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
     LINALG::Matrix<1,NODALDOFS*nnodes> N_i;
@@ -364,7 +377,6 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
     {
 
-      //cout << "numgp: " << numgp + 1 << endl;
       //integration points in parameter space and weights
       const double xi = gausspoints.qxg[numgp][0];
       const double wgt = gausspoints.qwgt[numgp];
@@ -663,7 +675,6 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       }
     }
   }
-
   #endif
 
   //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
@@ -776,7 +787,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     DRT::UTILS::shape_function_1D(L_i,xi,line3);
     epsilon_ANS = 0.0;
     lin_epsilon_ANS.Clear();
-    for (int i=0;i<3;i++)
+    for (int i=0;i<ANSVALUES;i++)
     {
       epsilon_ANS+=L_i(i)*epsilon_cp(i);
       for (int j=0;j<nnode*dofpn;j++)
@@ -888,46 +899,46 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   LINALG::PrintSerialDenseMatrixInMatlabFormat(fname,*stiffmatrix);
   */
 
-  //with the following lines the conditioning of the stiffness matrix should be improved: its not fully tested up to now!!!
-  bool precond = PreConditioning;
-  if (precond)
-  {
-    #if NODALDOFS ==3
-      dserror("Preconditioning only implemented for NODALDOFS ==2!!!");
-    #endif
-    double length = jacobi_*2.0;
-    double radius = std::pow(crosssec_/M_PI,0.5);
-    for (int zeile=0; zeile <2; zeile++)
-    {
-      for (int spalte=0; spalte<12; spalte++)
-      {
-        (*stiffmatrix)(6*zeile,spalte)=(*stiffmatrix)(6*zeile,spalte)*length;
-        (*stiffmatrix)(6*zeile+1,spalte)=(*stiffmatrix)(6*zeile+1,spalte)*pow(length,3.0)/pow(radius,2.0);
-        (*stiffmatrix)(6*zeile+2,spalte)=(*stiffmatrix)(6*zeile+2,spalte)*pow(length,3.0)/pow(radius,2.0);
-        (*stiffmatrix)(6*zeile+4,spalte)=(*stiffmatrix)(6*zeile+4,spalte)*pow(length,2.0)/pow(radius,2.0);
-        (*stiffmatrix)(6*zeile+5,spalte)=(*stiffmatrix)(6*zeile+5,spalte)*pow(length,2.0)/pow(radius,2.0);
-      }
-        (*force)(6*zeile)=(*force)(6*zeile)*length;
-        (*force)(6*zeile+1)=(*force)(6*zeile+1)*pow(length,3.0)/pow(radius,2.0);
-        (*force)(6*zeile+2)=(*force)(6*zeile+2)*pow(length,3.0)/pow(radius,2.0);
-        (*force)(6*zeile+4)=(*force)(6*zeile+4)*pow(length,2.0)/pow(radius,2.0);
-        (*force)(6*zeile+5)=(*force)(6*zeile+5)*pow(length,2.0)/pow(radius,2.0);
-    }
-  }
-
-  //with the following lines the conditioning of the stiffness matrix can be improved by multiplying the lines and columns with the factors
-  //ScaleFactorLine and ScaleFactorColumn
-  double Factor = ScaleFactorLine;
-  Factor = Factor * ScaleFactorColumn;
-
-  for (int zeile=0; zeile <nnode*dofpn; zeile++)
-  {
-    for (int spalte=0; spalte<nnode*dofpn; spalte++)
-    {
-      (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
-    }
-    (*force)(zeile)=(*force)(zeile)*ScaleFactorLine;
-  }
+//  //with the following lines the conditioning of the stiffness matrix should be improved: its not fully tested up to now!!!
+//  bool precond = PreConditioning;
+//  if (precond)
+//  {
+//    #if NODALDOFS ==3
+//      dserror("Preconditioning only implemented for NODALDOFS ==2!!!");
+//    #endif
+//    double length = jacobi_*2.0;
+//    double radius = std::pow(crosssec_/M_PI,0.5);
+//    for (int zeile=0; zeile <2; zeile++)
+//    {
+//      for (int spalte=0; spalte<12; spalte++)
+//      {
+//        (*stiffmatrix)(6*zeile,spalte)=(*stiffmatrix)(6*zeile,spalte)*length;
+//        (*stiffmatrix)(6*zeile+1,spalte)=(*stiffmatrix)(6*zeile+1,spalte)*pow(length,3.0)/pow(radius,2.0);
+//        (*stiffmatrix)(6*zeile+2,spalte)=(*stiffmatrix)(6*zeile+2,spalte)*pow(length,3.0)/pow(radius,2.0);
+//        (*stiffmatrix)(6*zeile+4,spalte)=(*stiffmatrix)(6*zeile+4,spalte)*pow(length,2.0)/pow(radius,2.0);
+//        (*stiffmatrix)(6*zeile+5,spalte)=(*stiffmatrix)(6*zeile+5,spalte)*pow(length,2.0)/pow(radius,2.0);
+//      }
+//        (*force)(6*zeile)=(*force)(6*zeile)*length;
+//        (*force)(6*zeile+1)=(*force)(6*zeile+1)*pow(length,3.0)/pow(radius,2.0);
+//        (*force)(6*zeile+2)=(*force)(6*zeile+2)*pow(length,3.0)/pow(radius,2.0);
+//        (*force)(6*zeile+4)=(*force)(6*zeile+4)*pow(length,2.0)/pow(radius,2.0);
+//        (*force)(6*zeile+5)=(*force)(6*zeile+5)*pow(length,2.0)/pow(radius,2.0);
+//    }
+//  }
+//
+//  //with the following lines the conditioning of the stiffness matrix can be improved by multiplying the lines and columns with the factors
+//  //ScaleFactorLine and ScaleFactorColumn
+//  double Factor = ScaleFactorLine;
+//  Factor = Factor * ScaleFactorColumn;
+//
+//  for (int zeile=0; zeile <nnode*dofpn; zeile++)
+//  {
+//    for (int spalte=0; spalte<nnode*dofpn; spalte++)
+//    {
+//      (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
+//    }
+//    (*force)(zeile)=(*force)(zeile)*ScaleFactorLine;
+//  }
 }
 #else
 {
@@ -1273,7 +1284,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     epsilon_ANS = 0.0;
     epsilon_ANS_fad = 0.0;
     lin_epsilon_ANS.Clear();
-    for (int i=0;i<3;i++)
+    for (int i=0;i<ANSVALUES;i++)
     {
       epsilon_ANS+=L_i(i)*epsilon_cp(i);
       epsilon_ANS_fad+=L_i(i)*epsilon_cp_fad(i);
