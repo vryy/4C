@@ -16,6 +16,9 @@ Maintainer: Lena Yoshihara
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_inpar/inpar_artnet.H"
+#include "red_airway_resulttest.H"
+#include "../drt_lib/drt_resulttest.H"
+
 #include <Teuchos_RCP.hpp>
 #include "Epetra_Vector.h"
 
@@ -26,6 +29,7 @@ namespace ADAPTER
 {
   class StructureRedAirway;
 }
+
 namespace DRT
 {
   class Condition;
@@ -68,6 +72,13 @@ public:
       Teuchos::RCP<Epetra_Vector> flux_inc, Teuchos::RCP<Epetra_Vector> scaled_flux_inc, int iter);
 
   void UpdateAndOutput();
+
+  /// access to structural field
+  Teuchos::RCP< ::ADAPTER::StructureRedAirway>& StructureField(){return structure_;}
+
+  /// access to airway field
+  Teuchos::RCP<RedAirwayImplicitTimeInt>& RedAirwayField(){return redairways_;}
+
 
 private:
 

@@ -31,20 +31,20 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
                                          const Teuchos::ParameterList& timeparams)
   : ADAPTER::AlgorithmBase(comm,timeparams)
 {
-  // before setting up the structure time integrator, manipulate coupling conditions -> turn them
-  // into neumann orthopressure conditions
+  //Before setting up the structure time integrator, manipulate coupling conditions -> turn them
+  //into neumann orthopressure conditions
   std::vector<DRT::Condition*> surfneumcond;
   std::vector<int> tmp;
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   if (structdis == Teuchos::null)
     dserror("no structure discretization available");
 
-  // first get all Neumann conditions on structure
+  //First get all Neumann conditions on structure
   structdis->GetCondition("SurfaceNeumann",surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
   if (numneumcond == 0) dserror("no Neumann conditions on structure");
 
-  // now filter those Neumann conditions that are due to the coupling
+  //Now filter those Neumann conditions that are due to the coupling
   std::vector<DRT::Condition*> coupcond;
   for (unsigned int i = 0; i < numneumcond; ++i)
   {
@@ -74,12 +74,12 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   if (redairwaydis == Teuchos::null)
     dserror("no redairway discretization available");
 
-  // first get all redairway prescribed conditions on structure
+  //First get all redairway prescribed conditions on structure
   redairwaydis->GetCondition("RedAirwayPrescribedCond",nodecond);
   unsigned int numnodecond = nodecond.size();
   if (numnodecond == 0) dserror("no redairway prescribed conditions on redairway discretization");
 
-  // now filter those node conditions that are due to the coupling
+  //Now filter those node conditions that are due to the coupling
   std::vector<DRT::Condition*> nodecoupcond;
   for (unsigned int i = 0; i < numnodecond; ++i)
   {
@@ -119,7 +119,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   SetupRedAirways();
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
 
-  // check certain parameters
+  //Check Time integration parameters
   if (sdyn.get<double>("TIMESTEP") != timeparams.get<double>("TIMESTEP") or
       sdyn.get<int>("NUMSTEP") != timeparams.get<int>("NUMSTEP") or
       sdyn.get<double>("MAXTIME") != timeparams.get<double>("MAXTIME") or
@@ -127,37 +127,58 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
       rawdyn.get<int>("NUMSTEP") != timeparams.get<int>("NUMSTEP"))
     dserror("Parameter(s) for time integrators inconsistent");
 
+  //Check Time integration parameters
+  if (sdyn.get<int>("RESTARTEVRY") != rawdyn.get<int>("RESTARTEVRY"))
+    dserror("Parameters for restart inconsistent");
 
-  // get coupling parameters
+  //Get coupling parameters
   const Teuchos::ParameterList& rawtisdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
-  // get max iterations
+  //Get max iterations
   itermax_ = rawtisdyn.get<int>("MAXITER");
 
-  // get tolerance for pressure
+  //Get tolerance for pressure
   tolp_ = rawtisdyn.get<double>("CONVTOL_P");
 
-  // get tolerance for flux
+  //Get tolerance for flux
   tolq_ = rawtisdyn.get<double>("CONVTOL_Q");
   
-  // dynamic relaxation type
+  //Dynamic relaxation type
   relaxtype_ = DRT::INPUT::IntegralValue<INPAR::ARTNET::RELAXTYPE_3D_0D>(rawtisdyn,"RELAXTYPE");
 
-  // get normal direction 
+  //Get normal direction
   // -> if normal == 1.0 : the pressure will be implemented from inside the element to the outside
   // -> if normal ==-1.0 : the pressure will be implemented from outside the element to the inside
   normal_ = rawtisdyn.get<double>("NORMAL");
 
-  // determine initial volume
+  //Determine initial volume
   structure_->InitVol();
-}
+
+  //Read Restart
+  int restart = DRT::Problem::Instance()->Restart();
+  if (restart !=0)
+  {
+    ReadRestart(restart);
+  }
+  std::cout << "Finished constructor with restart: " << restart << std::endl;
+
+} //end of constructor
 
 
 /*----------------------------------------------------------------------*
- |  Read restart                                         yoshihara 09/12|
+ |  Read restart                                              roth 10/13|
  *----------------------------------------------------------------------*/
 void AIRWAY::RedAirwayTissue::ReadRestart(int step)
 {
   dserror("not implemented yet");
+
+  /*structure_->ReadRestart(step);
+  //structure_->SetRestart(step);
+  redairways_->ReadRestart(step,true);
+
+  for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+  {
+    printf(" Time: %f couppres_ip_: %6.3e \n",Time(), (*couppres_ip_)[i]);
+  }*/
 }
 
 
@@ -180,13 +201,14 @@ void AIRWAY::RedAirwayTissue::Integrate()
       iter++;
     }while (NotConverged(iter)&&iter<itermax_);
 
-    if (iter>= itermax_)
+    if ((iter>= itermax_) && (couppres_ip_->Comm().MyPID() == 0))
     {
       dserror("FIELD ITERATION NOT CONVERGED IN %d STEPS AT TIME T=%f",itermax_,Time() );
     }
 
     UpdateAndOutput();
   }
+
 }
 
 
@@ -239,7 +261,6 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
     case INPAR::ARTNET::Aitken:
     {
       // \omega_{i+1} = omega_np_
-
       // Kuettler (2008), Remark 10: Two previous steps are required to calculate the \omega,
       // thus the relaxation factor is fixed for the first two steps to \omega = 1.0
       if (iter < 2)
@@ -261,11 +282,14 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
 
         omega_np_->ReciprocalMultiply(1.0,*denominator,*omega_np_,0.0);
 
-        /*for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+        //Safety check for \omega_i+1
+        for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
         {
-
-          (*omega_np_)[i] = ((*couppres_il_)[i] - (*couppres_im_)[i]) / ((*couppres_il_)[i] - (*couppres_im_tilde_)[i] - (*couppres_im_)[i] + (*couppres_ip_tilde_)[i]);
-        }*/
+          if ((*omega_np_)[i] < 0.0)
+            (*omega_np_)[i] = 0.0;
+          else if ((*omega_np_)[i] > 1.0)
+            (*omega_np_)[i] = 1.0;
+        }
       }
 
       //Aitken Relaxation formula (35)
@@ -276,10 +300,13 @@ void AIRWAY::RedAirwayTissue::RelaxPressure(int iter)
       }
 
       //Print relaxation factor \omega_np_
-      printf("Aitken Relaxation: \n");
-      for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
-        std::cout << "omega_np_["<< i << "]: " << (*omega_np_)[i] << std::endl;
-      std::cout <<  std::endl;
+      if(couppres_ip_->Comm().MyPID() == 0)
+      {
+        printf("Aitken Relaxation: \n");
+        for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
+          std::cout << "omega_np_["<< i << "]: " << (*omega_np_)[i] << std::endl;
+        std::cout <<  std::endl;
+      }
     }
     break;
 
@@ -411,7 +438,7 @@ void AIRWAY::RedAirwayTissue::UpdateAndOutput()
   structure_->Output();
 
   redairways_->TimeUpdate();
-  redairways_->Output();
+  redairways_->Output(true);
 }
 
 

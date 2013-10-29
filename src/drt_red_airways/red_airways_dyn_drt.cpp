@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file red_airways_dyn_drt.cpp
-\brief Main control routine for reduced dimesional airways network
+\brief Main control routine for reduced dimensional airways network
  (time) integration. Calls
 
 
@@ -12,22 +12,22 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
 #include "red_airway_resulttest.H"
 #include "red_airways_dyn_drt.H"
 #include "airwayimplicitintegration.H"
 #include "redairway_tissue.H"
+#include "../drt_adapter/ad_str_redairway.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../drt_inpar/drt_validparameters.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <ctime>
+#include <cstdlib>
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*
@@ -170,6 +170,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 
     Teuchos::RCP<DRT::ResultTest> resulttest
       = Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*airwayimplicit));
+
     DRT::Problem::Instance()->AddFieldTest(resulttest);
     DRT::Problem::Instance()->TestAll(actdis->Comm());
 
@@ -191,8 +192,21 @@ void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
   RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<AIRWAY::RedAirwayTissue> myalgo = Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(),rawdyn));
+  Teuchos::RCP<AIRWAY::RedAirwayTissue> redairway_tissue = Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(),rawdyn));
 
-  myalgo->Integrate();
+  //Time integration loop for red_airway-tissue coupling
+  redairway_tissue->Integrate();
+
+  //Print time monitor
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
+
+  //Resulttest for red_airway-tissue coupling
+  //create result tests for single fields
+  DRT::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(redairway_tissue->StructureField()->CreateFieldTest());
+
+  // do the actual testing
+  DRT::Problem::Instance()->TestAll(actdis->Comm());
+
 }
 

@@ -13,6 +13,7 @@ Maintainer: Mahmoud Ismail
 #include <stdio.h>
 
 #include "airwayimplicitintegration.H"
+#include "red_airway_resulttest.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1025,10 +1026,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     upres       = upres_;
     uprestart   = uprestart_;
     time_backup = time_;
-    step_      = CouplingParams->get<int>("step");
-    upres_     = CouplingParams->get<int>("upres");
-    uprestart_ = CouplingParams->get<int>("uprestart");
-    time_      = CouplingParams->get<double>("time");
+
+    //step_      = CouplingParams->get<int>("step");
+    //upres_     = CouplingParams->get<int>("upres");
+    //uprestart_ = CouplingParams->get<int>("uprestart");
+    //time_      = CouplingParams->get<double>("time");
   }
 
   if (step_%upres_ == 0)
@@ -1126,7 +1128,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
 
     if (CoupledTo3D)
     {
-      output_.WriteDouble("Actual_RedD_step", step);
+      output_.WriteInt("Actual_RedD_step", step);
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -1175,7 +1177,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
 
     if (CoupledTo3D)
     {
-      output_.WriteDouble("Actual_RedD_step", step);
+      output_.WriteInt("Actual_RedD_step", step);
     }
   }
   // -------------------------------------------------------------------
@@ -1252,15 +1254,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
 }//RedAirwayImplicitTimeInt::ReadRestart
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-#if 0
-Teuchos::RCP<DRT::ResultTest>
-AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
+/*----------------------------------------------------------------------*
+ | Create the field test for redairway field                 roth 10/13 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
 {
-  return Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*this));
+  return Teuchos::rcp(new RedAirwayResultTest(*this));
 }
-#endif
 
 /*----------------------------------------------------------------------*
  |                                                                      |

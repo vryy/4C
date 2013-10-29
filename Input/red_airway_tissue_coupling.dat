@@ -34,7 +34,7 @@ FILESTEPS                       1000
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta                  // GenAlpha
 RESULTSEVRY                     1
-RESTARTEVRY                     10000
+RESTARTEVRY                     100
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
 PTCDT                           0.001                         // default is 0.1
 TIMESTEP                        0.002                         // 0.0001 works with FulNewton
@@ -71,7 +71,7 @@ LINEAR_SOLVER                   2
 DYNAMICTYP                      CrankNicolson
 NUMSTEP                         750
 TIMESTEP                        0.002
-RESTARTEVRY                     10
+RESTARTEVRY                     100
 UPRES                           10
 SOLVERTYPE                      Nonlinear                     // Linear Nonlinear
 MAXITERATIONS                   40
@@ -198,6 +198,7 @@ NODE 16 COORD 0.0 -5.0 0.0
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-//STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE 10.0 TOLERANCE 1e-12
+RED_AIRWAY DIS red_airway NODE 13 QUANTITY pressure VALUE 9.99999999999996703e+02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE 6.89246549935759317e-02 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

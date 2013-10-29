@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file red_airways_dyn_drt.H
-\brief Control routine for reduced dimesional airways network
+\brief Control routine for reduced dimensional airways network
  (time) integration. Calls
 
 
