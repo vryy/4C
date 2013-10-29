@@ -1,19 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_iso2pow.H
+\file visco_isoratedep.H
 \brief
 This file contains the routines required to calculate the isochoric contribution
-of a general power-type material.
+of a viscos rate dependent material law, modified from Pioletti,1997
 
 <pre>
-Maintainer: Sophie Rausch
-            rausch@lnm.mw.tum.de
+Maintainer: Anna Birzle
+            anna.birzle@tum.de
             089/289 15255
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_ISO2POW_H_
-#define ELAST_ISO2POW_H_
+#ifndef VISCO_ISORATEDEP_H_
+#define VISCO_ISORATEDEP_H_
 
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -29,28 +29,27 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for isochoric contribution of a general power material
+    /// material parameters for isochoric contribution of a frequency independent viscoelastic material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_Iso2Pow C 1 D 1
-    class Iso2Pow : public MAT::PAR::Parameter
+    /// MAT 1 VISCO_IsoRateDep N 1
+    class IsoRateDep : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      Iso2Pow(
+      IsoRateDep(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~Iso2Pow() { ; }
+      virtual ~IsoRateDep() { ; }
 
       /// @name material parameters
       //@{
 
       /// material parameters
-      double c_;
-      int d_;
+      double n_;
 
       //@}
 
@@ -59,58 +58,59 @@ namespace ELASTIC
 
       /// @name Write methods
       //@{
-      void SetC(const double c) { c_ = c; }
-      void SetD(const int d) { d_ = d; }
+      void SetN(const double n) { n_ = n; }
       //@}
 
-    };  // class Iso2Pow
+    };  // class IsoRateDep
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
   /// Isochoric general power material
   ///
-  /// This is the isochoric part of a variable order hyperelastic, isotropic
-  /// material depending on the seccond invariant of the right Cauchy-Green tensor.
+  /// This is the isochoric part of a viscohyperelastic, isotropic
+  /// material depending on the modified invariants of the rate of the right
+  /// Cauchy-Green tensor.
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = C (\overline{II}_{\boldsymbol{C}}-3)^D.
+  ///   \Psi = n \overline{J}_2 (\overline{I}_1 -3).
   ///\f]
+  /// (n = \eta)
   ///
-  ///
-  /// \author rausch
-  /// \date 03/11
-  class Iso2Pow : public Summand
+  /// \author birzle
+  /// \date 09/13
+  class IsoRateDep : public Summand
   {
 
   public:
 
     /// empty constructor
-    Iso2Pow();
+    IsoRateDep();
 
     /// constructor with given material parameters
-    Iso2Pow(MAT::ELASTIC::PAR::Iso2Pow* params);
+    IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params);
 
     /// @name Access material constants
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_iso2pow; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoratedep; }
 
     //@}
 
     /// Add modified coeffiencts.
-    virtual void AddCoefficientsModified(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
+    virtual void AddCoefficientsViscoModified(
+        const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
+    	LINALG::Matrix<8,1>& modmy,		///<necassary coefficients for piola-kirchhoff-stress
+    	LINALG::Matrix<33,1>& modxi,	///<necassary coefficients for viscosity tensor
+        LINALG::Matrix<7,1>& modrateinv,
+        Teuchos::ParameterList& params
     );
 
     /// @name Access methods
     //@{
-    double C() const { return params_->c_; }
-    int D() const { return params_->d_; }
+    double N() const { return params_->n_; }
 
     //@}
 
@@ -124,17 +124,18 @@ namespace ELASTIC
       )
     {
       isomod = true;
+      isomodvisco = true;
       return;
     };
 
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::Iso2Pow* params_;
+    MAT::ELASTIC::PAR::IsoRateDep* params_;
 
   };
 
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // ISO2POW_H_
+#endif  // ISORATEDEP_H_

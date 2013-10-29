@@ -1,25 +1,25 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elasthyper.cpp
+\file viscoelasthyper.cpp
 \brief
-This file contains the hyperelastic toolbox. It allows summing up several summands
-of several types (isotropic or anisotropic, splitted or not) to build a hyperelastic
-strain energy function.
+This file contains the viscohyperelastic material.
+This model can be applied to any hyperelastic law of the Elasthyper toolbox.
+The viscos part is rate-dependent and summed up with the hyperelastic laws
+to build a viscohyperelastic strain energy function.
+(Description of hysteresis not added jet)
 
 The input line should read
-MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
+MAT 0   MAT_ViscoElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Anna Birzle
+            anna.birzle@tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
 </pre>
 */
 
 /*----------------------------------------------------------------------*/
-
-#include "elasthyper.H"
+#include "viscoelasthyper.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_matelast/elast_summand.H"
 #include "../linalg/linalg_utils.H"
@@ -30,7 +30,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ElastHyper::ElastHyper(
+MAT::PAR::ViscoElastHyper::ViscoElastHyper(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -45,18 +45,18 @@ MAT::PAR::ElastHyper::ElastHyper(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::ElastHyper::CreateMaterial()
+Teuchos::RCP<MAT::Material> MAT::PAR::ViscoElastHyper::CreateMaterial()
 {
-  return Teuchos::rcp(new MAT::ElastHyper(this));
+  return Teuchos::rcp(new MAT::ViscoElastHyper(this));
 }
 
 
-MAT::ElastHyperType MAT::ElastHyperType::instance_;
+MAT::ViscoElastHyperType MAT::ViscoElastHyperType::instance_;
 
 
-DRT::ParObject* MAT::ElastHyperType::Create( const std::vector<char> & data )
+DRT::ParObject* MAT::ViscoElastHyperType::Create( const std::vector<char> & data )
 {
-  MAT::ElastHyper* elhy = new MAT::ElastHyper();
+  MAT::ViscoElastHyper* elhy = new MAT::ViscoElastHyper();
   elhy->Unpack(data);
 
   return elhy;
@@ -67,29 +67,33 @@ DRT::ParObject* MAT::ElastHyperType::Create( const std::vector<char> & data )
  |  initialise static arrays                                 bborn 08/09|
  *----------------------------------------------------------------------*/
 // 6-Voigt C-index                              0 1 2  3 4 5
-const int MAT::ElastHyper::VOIGT6ROW_[6] = {0,1,2, 0,1,2};
-const int MAT::ElastHyper::VOIGT6COL_[6] = {0,1,2, 1,2,0};
+const int MAT::ViscoElastHyper::VOIGT6ROW_[6] = {0,1,2, 0,1,2};
+const int MAT::ViscoElastHyper::VOIGT6COL_[6] = {0,1,2, 1,2,0};
 
 // tensor indices ij = 11, 12, 13, 21, 22, 23, 31, 32, 33
 // C indices           00, 01, 02, 10, 11, 12, 20, 21, 22
 // Access : 3*i+j
 // 6-Voigt C-indices    0   3   5   3   1   4   5   4   2
-const int MAT::ElastHyper::VOIGT3X3SYM_[9] = {0,3,5, 3,1,4, 5,4,2};
+const int MAT::ViscoElastHyper::VOIGT3X3SYM_[9] = {0,3,5, 3,1,4, 5,4,2};
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyper::ElastHyper()
+MAT::ViscoElastHyper::ViscoElastHyper()
   : params_(NULL),
     potsum_(0)
-
 {
+	// history data 09/13
+	isinitvis_=false;
+	histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+	histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
+MAT::ViscoElastHyper::ViscoElastHyper(MAT::PAR::ViscoElastHyper* params)
   : params_(params),
     potsum_(0)
 
@@ -108,7 +112,7 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
+void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -126,6 +130,7 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,anisomod_);
   AddtoPack(data,isomodvisco_);
 
+
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
@@ -134,12 +139,27 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
      potsum_[p]->PackSummand(data);
     }
   }
+
+  //  pack history data 09/13
+    int histsize;
+    if (!Initialized())
+    {
+      histsize=0;
+    }
+    else
+    {
+      histsize = histmodrcglast_->size();
+    }
+    AddtoPack(data,histsize);  // Length of history vector(s)
+    for (int var = 0; var < histsize; ++var)
+      AddtoPack(data,histmodrcglast_->at(var));
+
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Unpack(const std::vector<char>& data)
+void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = NULL;
@@ -150,6 +170,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   anisoprinc_ = false;
   anisomod_ = false;
   isomodvisco_ = false;
+
 
   std::vector<char>::size_type position = 0;
   // extract type
@@ -167,7 +188,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
       const unsigned int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ElastHyper*>(mat);
+        params_ = static_cast<MAT::PAR::ViscoElastHyper*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
@@ -208,6 +229,26 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     {
      potsum_[p]->UnpackSummand(data,position);
     }
+
+    // history data 09/13
+    isinitvis_ = true;
+    int histsize;
+    ExtractfromPack(position,data,histsize);
+
+    if (histsize == 0) isinitvis_=false;
+
+    histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+    histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+
+    for (int var=0; var<histsize; var+=1)
+    {
+      LINALG::Matrix<6,1> tmp(true);
+      histmodrcgcurr_->push_back(tmp);
+
+      ExtractfromPack(position,data,tmp);
+      histmodrcglast_->push_back(tmp);
+    }
+
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
     if (position != data.size())
@@ -217,7 +258,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int MAT::ElastHyper::MatID(
+int MAT::ViscoElastHyper::MatID(
   const unsigned index
 ) const
 {
@@ -232,7 +273,7 @@ int MAT::ElastHyper::MatID(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::ElastHyper::ShearMod() const
+double MAT::ViscoElastHyper::ShearMod() const
 {
   // principal coefficients
   bool haveshearmod = false;
@@ -258,7 +299,7 @@ double MAT::ElastHyper::ShearMod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
+void MAT::ViscoElastHyper::SetupAAA(Teuchos::ParameterList& params)
 {
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -271,7 +312,7 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Setup summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -284,20 +325,69 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   isoprinc_ = false ;
   isomod_ = false ;
   anisoprinc_ = false ;
-  anisomod_ = false;
-  isomodvisco_ = false;
+  anisomod_ = false ;
+  isomodvisco_ = false ;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_);
+    potsum_[p]->SpecifyFormulation(isoprinc_, isomod_, anisoprinc_, anisomod_, isomodvisco_);
   }
+
+  // Initialise/allocate history variables 09/13
+
+  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+  histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+
+  const LINALG::Matrix<6,1> emptyvec(true);
+  histmodrcgcurr_->resize(numgp);
+  histmodrcglast_->resize(numgp);
+
+  for (int j=0; j<numgp; ++j)
+  {
+    histmodrcgcurr_->at(j) = emptyvec;
+    histmodrcglast_->at(j) = emptyvec;
+  }
+  isinitvis_ = true;
 
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Update()
+/*------------------------------------------------------------------------------------------*
+|  Setup internal stress variables - special for the inverse analysis (public)         09/13|
+*-------------------------------------------------------------------------------------------*/
+void MAT::ViscoElastHyper::ResetAll(const int numgp)
+{
+  // Initialise/allocate history variables 09/13
+
+  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+  histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+
+  const LINALG::Matrix<6,1> emptyvec(true);
+  histmodrcgcurr_->resize(numgp);
+  histmodrcglast_->resize(numgp);
+
+  for (int j=0; j<numgp; ++j)
+  {
+    histmodrcgcurr_->at(j) = emptyvec;
+    histmodrcglast_->at(j) = emptyvec;
+  }
+  isinitvis_ = true;
+
+  return ;
+}
+
+/*-------------------------------------------------------------------------------*
+|  Setup time variables - special for the inverse analysis (public)         09/13|
+*-------------------------------------------------------------------------------*/
+void MAT::ViscoElastHyper::SetupTimeVariables()
+{
+  return ;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::ViscoElastHyper::Update()
 {
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -305,12 +395,26 @@ void MAT::ElastHyper::Update()
     potsum_[p]->Update();
   }
 
+  // Update history values 09/13
+  histmodrcglast_=histmodrcgcurr_;
+
+  const LINALG::Matrix<6,1> emptyvec(true);
+  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
+
+  const int numgp=histmodrcglast_->size();
+  histmodrcgcurr_->resize(numgp);
+
+  for (int j=0; j<numgp; ++j)
+  {
+    histmodrcgcurr_->at(j) = emptyvec;
+  }
+
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs)
+void MAT::ViscoElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs)
 {
   if (anisoprinc_ || anisomod_)
   {
@@ -323,7 +427,7 @@ void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateFiberVecs(
+void MAT::ViscoElastHyper::EvaluateFiberVecs(
     const double newgamma,
     const LINALG::Matrix<3,3>& locsys,
     const LINALG::Matrix<3,3>& defgrd)
@@ -339,7 +443,7 @@ void MAT::ElastHyper::EvaluateFiberVecs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::InvariantsPrincipal(
+void MAT::ViscoElastHyper::InvariantsPrincipal(
     LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<6,1>& rcg)
 {
@@ -359,7 +463,7 @@ void MAT::ElastHyper::InvariantsPrincipal(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::InvariantsModified(
+void MAT::ViscoElastHyper::InvariantsModified(
     LINALG::Matrix<3,1>& modinv,  ///< modified invariants
     const LINALG::Matrix<3,1>& prinv  ///< principal invariants
     )
@@ -376,7 +480,7 @@ void MAT::ElastHyper::InvariantsModified(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::StretchesPrincipal(
+void MAT::ViscoElastHyper::StretchesPrincipal(
   LINALG::Matrix<3,1>& prstr,
   LINALG::Matrix<3,3>& prdir,
   const LINALG::Matrix<6,1>& rcg
@@ -404,7 +508,7 @@ void MAT::ElastHyper::StretchesPrincipal(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::StretchesModified(
+void MAT::ViscoElastHyper::StretchesModified(
   LINALG::Matrix<3,1>& modstr,
   const LINALG::Matrix<3,1>& prstr
   )
@@ -420,7 +524,7 @@ void MAT::ElastHyper::StretchesModified(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ElastHyper::HaveCoefficientsStretchesPrincipal()
+bool MAT::ViscoElastHyper::HaveCoefficientsStretchesPrincipal()
 {
   // set default
   bool havecoeff = false;
@@ -439,7 +543,7 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesPrincipal()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
+bool MAT::ViscoElastHyper::HaveCoefficientsStretchesModified()
 {
   // set default
   bool havecoeff = false;
@@ -458,7 +562,7 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+void MAT::ViscoElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
                                    double& psi)
 {
   LINALG::Matrix<6,1> id2(true) ;
@@ -470,10 +574,9 @@ void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
 
   LINALG::Matrix<3,1> prinv(true);
   LINALG::Matrix<3,1> modinv(true);
-  LINALG::Matrix<6,1> pranisoinv(true);
 
   // evluate kinematic quantities
-  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
+  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv);
 
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -486,7 +589,7 @@ void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                const LINALG::Matrix<6,1>* glstrain,
                                Teuchos::ParameterList& params,
                                LINALG::Matrix<6,1>* stress,
@@ -495,6 +598,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   LINALG::Matrix<6,1> id2(true) ;
   LINALG::Matrix<6,1> rcg(true) ;
+  LINALG::Matrix<6,1> modrcg(true) ;
   LINALG::Matrix<6,1> scg(true) ;
   LINALG::Matrix<6,1> icg(true) ;
   LINALG::Matrix<6,6> id4(true) ;
@@ -502,15 +606,26 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   LINALG::Matrix<3,1> prinv(true);
   LINALG::Matrix<3,1> modinv(true);
-  LINALG::Matrix<6,1> pranisoinv(true);
+  LINALG::Matrix<7,1> modrateinv (true);
 
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
   LINALG::Matrix<3,1> modgamma(true);
   LINALG::Matrix<5,1> moddelta(true);
 
-  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
-  EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta);
+  LINALG::Matrix<6,1> modrcgrate(true);
+  // for extension: LINALG::Matrix<6,1> modicgrate(true);
+  LINALG::Matrix<8,1> modmy(true);
+  LINALG::Matrix<33,1> modxi(true);
+
+  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv);
+  EvaluateGammaDelta(rcg,prinv,modinv,gamma,delta,modgamma,moddelta);
+  if (isomodvisco_)
+  {
+	  // calculate viscos quantities
+	  EvaluateKinQuantVis(rcg,modrcg,icg,params,prinv,modrcgrate,modrateinv);
+	  EvaluateMyXi(modinv,modmy,modxi,modrateinv,params);
+  }
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -519,6 +634,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   // build stress response and elasticity tensor
   // for potentials based on principal invariants
+  // (exists not for viscos part)
   if (isoprinc_)
   {
     LINALG::Matrix<NUM_STRESS_3D,1> stressisoprinc(true) ;
@@ -527,19 +643,48 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     stress->Update(1.0, stressisoprinc, 1.0);
     cmat->Update(1.0,cmatisoprinc,1.0);
   }
-
+  // for decoupled potentials
   if (isomod_)
   {
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
-    EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
-    stress->Update(1.0, stressisomodiso, 1.0);
-    stress->Update(1.0, stressisomodvol, 1.0);
-    cmat->Update(1.0,cmatisomodiso,1.0);
-    cmat->Update(1.0,cmatisomodvol,1.0);
+	  if (!isomodvisco_)
+	  {
+		  // just hyperelastic part
+		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
+		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
+		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
+		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
+		  EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
+		  stress->Update(1.0, stressisomodiso, 1.0);
+		  stress->Update(1.0, stressisomodvol, 1.0);
+		  cmat->Update(1.0,cmatisomodiso,1.0);
+		  cmat->Update(1.0,cmatisomodvol,1.0);
+	  }
+	  else
+	  {
+		  // first hyperelastic part
+		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
+		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
+		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
+		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
+		  EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
+		  stress->Update(1.0, stressisomodiso, 1.0);
+		  stress->Update(1.0, stressisomodvol, 1.0);
+		  cmat->Update(1.0,cmatisomodiso,1.0);
+		  cmat->Update(1.0,cmatisomodvol,1.0);
+
+		  // add viscos part
+		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodisovisco(true);
+		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodisovisco(true);
+		  LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvolvisco(true) ;
+		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvolvisco(true) ;
+		  EvaluateIsoModVisco(stressisomodisovisco,stressisomodvolvisco,cmatisomodisovisco,cmatisomodvolvisco,prinv,modinv,modmy,modxi,rcg,id2,icg,id4,modrcgrate);
+		  stress->Update(1.0, stressisomodisovisco, 1.0);
+		  stress->Update(1.0, stressisomodvolvisco, 1.0);
+		  cmat->Update(1.0,cmatisomodisovisco,1.0);
+		  cmat->Update(1.0,cmatisomodvolvisco,1.0);
+	  }
   }
+
 
   /*----------------------------------------------------------------------*/
   // coefficients in principal stretches
@@ -574,7 +719,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateKinQuant(
+void MAT::ViscoElastHyper::EvaluateKinQuant(
     const LINALG::Matrix<6,1>& glstrain,
     LINALG::Matrix<6,1>& id2,
     LINALG::Matrix<6,1>& scg,
@@ -583,8 +728,7 @@ void MAT::ElastHyper::EvaluateKinQuant(
     LINALG::Matrix<6,6>& id4,
     LINALG::Matrix<6,6>& id4sharp,
     LINALG::Matrix<3,1>& prinv,
-    LINALG::Matrix<3,1>& modinv,
-    LINALG::Matrix<6,1>& pranisoinv)
+    LINALG::Matrix<3,1>& modinv)
 
 {
   // build Cartesian identity 2-tensor I_{AB}
@@ -632,12 +776,79 @@ void MAT::ElastHyper::EvaluateKinQuant(
 }
 
 /*----------------------------------------------------------------------*/
+/* Evaluate Quantities for Viscos Part							09/13	*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateGammaDelta(
+void MAT::ViscoElastHyper::EvaluateKinQuantVis(
+    LINALG::Matrix<6,1> rcg,
+    LINALG::Matrix<6,1>& modrcg,
+    LINALG::Matrix<6,1> icg,
+    Teuchos::ParameterList& params,
+    LINALG::Matrix<3,1> prinv,
+    LINALG::Matrix<6,1>& modrcgrate,
+    LINALG::Matrix<7,1>& modrateinv
+    )
+
+{
+	  // modrcg : \overline{C} = J^{-\frac{2}{3}} C
+	  const double modscale = std::pow(prinv(2),-1./3.);
+	  modrcg.Update(modscale,rcg);
+
+	  // get gauss point number of this element
+	  const int gp = params.get<int>("gp",-1);
+	  // get time algorithmic parameters
+	  double dt = params.get<double>("delta time");
+
+      // read history
+	  LINALG::Matrix<6,1> modrcglast (histmodrcglast_->at(gp));
+
+	  // rate of Cauchy-Green Tensor \dot{C} = \frac {overline{C}^n - \overline{C}^{n-1}} {\Delta t}
+	  // REMARK: strain-like 6-Voigt vector
+	  modrcgrate.Update(1.0,modrcg,1.0);
+	  modrcgrate.Update(-1.0,modrcglast,1.0);
+	  modrcgrate.Scale(1/dt);
+
+	  // in the first time step, set modrcgrate to zero (--> first time step is just hyperelastic, not viscos)
+	  const LINALG::Matrix<6,1> emptyvec(true);
+	  if(modrcglast == emptyvec)
+	  {
+		  modrcgrate=emptyvec;
+	  }
+
+	  // Update history of Cauchy-Green Tensor
+      histmodrcgcurr_->at(gp) = modrcg;
+
+      // Second Invariant of modrcgrate \bar{J}_2 = \frac{1}{2} \tr (\dot{\overline{C^2}}
+      modrateinv(1) = 0.5*( modrcgrate(0)*modrcgrate(0) + modrcgrate(1)*modrcgrate(1) + modrcgrate(2)*modrcgrate(2)
+    		                   + .5*modrcgrate(3)*modrcgrate(3) + .5*modrcgrate(4)*modrcgrate(4) + .5*modrcgrate(5)*modrcgrate(5) );
+
+      // For further extension of material law (not necassary at the moment)
+      /*
+      // necassary transfer variable: LINALG::Matrix<6,1>& modicgrate
+      // \overline{J}_3 = determinant of modified rate of right Cauchy-Green-Tensor
+      modrateinv(2) = modrcgrate(0)*modrcgrate(1)*modrcgrate(2)
+        + 0.25 * modrcgrate(3)*modrcgrate(4)*modrcgrate(5)
+        - 0.25 * modrcgrate(1)*modrcgrate(5)*modrcgrate(5)
+        - 0.25 * modrcgrate(2)*modrcgrate(3)*modrcgrate(3)
+        - 0.25 * modrcgrate(0)*modrcgrate(4)*modrcgrate(4);
+
+      // invert modified rate of right Cauchy-Green tensor
+      // REMARK: stress-like 6-Voigt vector
+      {
+        modicgrate(0) = ( modrcgrate(1)*modrcgrate(2) - 0.25*modrcgrate(4)*modrcgrate(4) ) / modrateinv(2);
+        modicgrate(1) = ( modrcgrate(0)*modrcgrate(2) - 0.25*modrcgrate(5)*modrcgrate(5) ) / modrateinv(2);
+        modicgrate(2) = ( modrcgrate(0)*modrcgrate(1) - 0.25*modrcgrate(3)*modrcgrate(3) ) / modrateinv(2);
+        modicgrate(3) = ( 0.25*modrcgrate(5)*modrcgrate(4) - 0.5*modrcgrate(3)*modrcgrate(2) ) / modrateinv(2);
+        modicgrate(4) = ( 0.25*modrcgrate(3)*modrcgrate(5) - 0.5*modrcgrate(0)*modrcgrate(4) ) / modrateinv(2);
+        modicgrate(5) = ( 0.25*modrcgrate(3)*modrcgrate(4) - 0.5*modrcgrate(5)*modrcgrate(1) ) / modrateinv(2);
+      }*/
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ViscoElastHyper::EvaluateGammaDelta(
     const LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<3,1> prinv,
     LINALG::Matrix<3,1> modinv,
-    LINALG::Matrix<6,1> pranisoinv,
     LINALG::Matrix<3,1>& gamma,
     LINALG::Matrix<8,1>& delta,
     LINALG::Matrix<3,1>& modgamma,
@@ -668,8 +879,27 @@ void MAT::ElastHyper::EvaluateGammaDelta(
 }
 
 /*----------------------------------------------------------------------*/
+/* Evaluate Factors for Viscos Quantities					09/13	*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateIsotropicPrinc(
+void MAT::ViscoElastHyper::EvaluateMyXi(
+    LINALG::Matrix<3,1> modinv,
+    LINALG::Matrix<8,1>& modmy,
+    LINALG::Matrix<33,1>& modxi,
+    LINALG::Matrix<7,1>& modrateinv,
+    Teuchos::ParameterList& params
+    )
+{
+  // modified coefficients
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+	  potsum_[p]->AddCoefficientsViscoModified(modinv,modmy,modxi,modrateinv,params);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ViscoElastHyper::EvaluateIsotropicPrinc(
     LINALG::Matrix<6,1>& stressisoprinc,
     LINALG::Matrix<6,6>& cmatisoprinc,
     LINALG::Matrix<6,1> scg,
@@ -712,7 +942,7 @@ void MAT::ElastHyper::EvaluateIsotropicPrinc(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateIsotropicMod(
+void MAT::ViscoElastHyper::EvaluateIsotropicMod(
     LINALG::Matrix<6,1>& stressisomodiso,
     LINALG::Matrix<6,1>& stressisomodvol,
     LINALG::Matrix<6,6>& cmatisomodiso,
@@ -740,6 +970,7 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
   LINALG::Matrix<6,1> modstress(true);
   modstress.Update(modgamma(0), id2);
   modstress.Update(modgamma(1), modrcg, 1.0);
+
   // build 4-tensor for projection as 6x6 tensor
   LINALG::Matrix<6,6> Projection;
   Projection.MultiplyNT(1./3., icg, rcg);
@@ -792,8 +1023,81 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
 }
 
 /*----------------------------------------------------------------------*/
+/* Calculates the stress and constitutive tensor for viscos part  09/13 */
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateAnisotropicPrinc(
+void MAT::ViscoElastHyper::EvaluateIsoModVisco(
+    LINALG::Matrix<6,1>& stressisomodisovisco,
+    LINALG::Matrix<6,1>& stressisomodvolvisco,
+    LINALG::Matrix<6,6>& cmatisomodisovisco,
+    LINALG::Matrix<6,6>& cmatisomodvolvisco,
+    LINALG::Matrix<3,1> prinv,
+    LINALG::Matrix<3,1> modinv,
+    LINALG::Matrix<8,1> modmy,
+    LINALG::Matrix<33,1> modxi,
+    LINALG::Matrix<6,1> rcg,
+    LINALG::Matrix<6,1> id2,
+    LINALG::Matrix<6,1> icg,
+    LINALG::Matrix<6,6> id4,
+    LINALG::Matrix<6,1> modrcgrate
+    )
+{
+	// define necessary variables
+	const double modscale = std::pow(prinv(2),-1./3.);
+
+	// 2nd Piola Kirchhoff stresses
+
+	// isochoric contribution
+	LINALG::Matrix<6,1> modstress(true);
+	modstress.Update(modmy(1), id2);
+	modstress.Update(modmy(2), modrcgrate, 1.0);
+	// build 4-tensor for projection as 6x6 tensor
+	LINALG::Matrix<6,6> Projection;
+	Projection.MultiplyNT(1./3., icg, rcg);
+	Projection.Update(1.0, id4, -1.0);
+	// isochoric stress
+	stressisomodisovisco.MultiplyNN(modscale,Projection,modstress,1.0);
+
+	// volumetric contribution:
+	// with visco_isoratedep: no volumetric part added --> always 0
+
+
+	// Constitutive Tensor
+
+	//isochoric contribution
+	// modified constitutive tensor
+	LINALG::Matrix<6,6> modcmat(true);
+	LINALG::Matrix<6,6> modcmat2(true);
+    // contribution:  Id \otimes \overline{\dot{C}} + \overline{\dot{C}} \otimes Id
+	modcmat.MultiplyNT(modxi(1), id2, modrcgrate);
+	modcmat.MultiplyNT(modxi(1), modrcgrate, id2, 1.0);
+	// contribution: Id4
+	modcmat.Update(modxi(2), id4, 1.0);
+    //scaling
+	modcmat.Scale(std::pow(modinv(2),-4./3.));
+	//contribution: P:\overline{C}:P
+	modcmat2.MultiplyNN(Projection,modcmat);
+	cmatisomodisovisco.MultiplyNT(1.0,modcmat2,Projection,1.0);
+	// contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
+	modcmat.Clear();
+	modcmat.MultiplyNT(-1.0/3.0,icg,icg);
+	AddtoCmatHolzapfelProduct(modcmat, icg, 1.0);
+	LINALG::Matrix<1,1> tracemat;
+	tracemat.MultiplyTN(2./3.*std::pow(modinv(2),-2./3.),modstress,rcg);
+	cmatisomodisovisco.Update(tracemat(0,0),modcmat,1.0);
+	//contribution: -2/3 (Cinv \otimes S_iso^v + S_iso^v \otimes Cinv)
+	cmatisomodisovisco.MultiplyNT(-2./3.,icg,stressisomodisovisco,1.0);
+	cmatisomodisovisco.MultiplyNT(-2./3.,stressisomodisovisco,icg,1.0);
+
+	// volumetric contribution:
+	// with visco_isoratedep: no volumetric part added --> always 0
+
+	return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ViscoElastHyper::EvaluateAnisotropicPrinc(
     LINALG::Matrix<6,1>& stressanisoprinc,
     LINALG::Matrix<6,6>& cmatanisoprinc,
     LINALG::Matrix<6,1> rcg,
@@ -811,7 +1115,7 @@ void MAT::ElastHyper::EvaluateAnisotropicPrinc(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateAnisotropicMod(
+void MAT::ViscoElastHyper::EvaluateAnisotropicMod(
     LINALG::Matrix<6,1>& stressanisomod,
     LINALG::Matrix<6,6>& cmatanisomod,
     LINALG::Matrix<6,1> rcg,
@@ -831,7 +1135,7 @@ void MAT::ElastHyper::EvaluateAnisotropicMod(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::ResponseStretches(
+void MAT::ViscoElastHyper::ResponseStretches(
   LINALG::Matrix<6,6>& cmat,
   LINALG::Matrix<6,1>& stress,
   const LINALG::Matrix<6,1> rcg,
@@ -987,7 +1291,7 @@ void MAT::ElastHyper::ResponseStretches(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::VisNames(std::map<std::string,int>& names)
+void MAT::ViscoElastHyper::VisNames(std::map<std::string,int>& names)
 {
   if (AnisotropicPrincipal() or AnisotropicModified())
   {
@@ -1007,7 +1311,7 @@ void MAT::ElastHyper::VisNames(std::map<std::string,int>& names)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ElastHyper::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::ViscoElastHyper::VisData(const std::string& name, std::vector<double>& data, int numgp)
 {
   if (AnisotropicPrincipal() or AnisotropicModified())
   {

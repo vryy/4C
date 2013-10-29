@@ -1,18 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elasthyper.H
+\file viscoelasthyper.H
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Anna Birzle
+	    anna.birzle@tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
 </pre>
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef ELASTHYPER_H
-#define ELASTHYPER_H
+#ifndef VISCOELASTHYPER_H
+#define VISCOELASTHYPER_H
 
 
 
@@ -29,22 +28,20 @@ namespace MAT
   }
 
   // forward declaration
-  class ElastHyper;
+  class ViscoElastHyper;
 
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
-    /// Collection of hyperelastic materials
+    /// Collection of viscohyperelastic materials
     ///
     /// Storage map of hyperelastic summands.
-    ///
-    /// \author rausch,tk,bborn
-    /// \date 05/09
 
-    class ElastHyper : public Parameter
+
+    class ViscoElastHyper : public Parameter
     {
 
-      friend class MAT::ElastHyper;
+      friend class MAT::ViscoElastHyper;
 
     public:
 
@@ -52,12 +49,12 @@ namespace MAT
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      ElastHyper(
+      ViscoElastHyper(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~ElastHyper() { ; }
+      virtual ~ViscoElastHyper() { ; }
 
       /// @name material parameters
       //@{
@@ -81,23 +78,23 @@ namespace MAT
 
       //@}
 
-    };  // class ElastHyper
+    };  // class ViscoElastHyper
 
   }  // namespace PAR
 
-class ElastHyperType : public DRT::ParObjectType
+class ViscoElastHyperType : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const { return "ElastHyperType"; }
+  std::string Name() const { return "ViscoElastHyperType"; }
 
-  static ElastHyperType & Instance() { return instance_; };
+  static ViscoElastHyperType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
-  static ElastHyperType instance_;
+  static ViscoElastHyperType instance_;
 };
 
 
@@ -130,15 +127,15 @@ private:
   /// \date 05/09
   class Material;
 
-  class ElastHyper : public So3Material
+  class ViscoElastHyper : public So3Material
   {
   public:
 
     /// construct empty material object
-    ElastHyper();
+    ViscoElastHyper();
 
     /// construct the material object given material parameters
-    explicit ElastHyper(MAT::PAR::ElastHyper* params);
+    explicit ViscoElastHyper(MAT::PAR::ViscoElastHyper* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -147,7 +144,7 @@ private:
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return ElastHyperType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const { return ViscoElastHyperType::Instance().UniqueParObjectId(); }
 
     /// \brief Pack this class so it can be communicated
     ///
@@ -174,10 +171,16 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_elasthyper; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_viscoelasthyper; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElastHyper( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ViscoElastHyper( *this ) ); }
+
+    /// Check if history variables are already initialized
+    virtual bool Initialized() const
+    {
+    	return isinitvis_&&(histmodrcgcurr_!=Teuchos::null);
+    }
 
     /// number of materials
     virtual int NumMat() const { return params_->nummat_; }
@@ -209,6 +212,9 @@ private:
 
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
+    virtual void ResetAll(const int numgp);
+    virtual void SetupTimeVariables();
+
     virtual void Update();
 
     /// setup patient-specific AAA stuff
@@ -225,7 +231,7 @@ private:
 
     /// return if anisotropic and splitted formulation
     virtual bool AnisotropicModified() const { return anisomod_;}
-    
+
     /// return if isotropic, splitted and viscos formulation
     virtual bool IsotropicModifiedVisco() const { return isomodvisco_;}
 
@@ -260,21 +266,38 @@ private:
       LINALG::Matrix<6,6>& id4,
       LINALG::Matrix<6,6>& id4sharp,
       LINALG::Matrix<3,1>& prinv,
-      LINALG::Matrix<3,1>& modinv,
-      LINALG::Matrix<6,1>& pranisoinv);
+      LINALG::Matrix<3,1>& modinv);
+
+    /// calculates the kinematic quantities and tensors used afterwards for viscos part
+    virtual void EvaluateKinQuantVis(
+      LINALG::Matrix<6,1> rcg,
+      LINALG::Matrix<6,1>& modrcg,
+      LINALG::Matrix<6,1> icg,
+      Teuchos::ParameterList& params,
+      LINALG::Matrix<3,1> prinv,
+      LINALG::Matrix<6,1>& modrcgrate,
+      LINALG::Matrix<7,1>& modrateinv
+      );
 
     /// calculates the factors associated to the hyperelastic laws
     virtual void EvaluateGammaDelta(
         const LINALG::Matrix<6,1> rcg,
         LINALG::Matrix<3,1> prinv,
         LINALG::Matrix<3,1> modinv,
-        LINALG::Matrix<6,1> pranisoinv,
         LINALG::Matrix<3,1>& gamma,
         LINALG::Matrix<8,1>& delta,
         LINALG::Matrix<3,1>& modgamma,
         LINALG::Matrix<5,1>& moddelta
         );
 
+    /// calculates the factors associated to the viscos laws
+    virtual void EvaluateMyXi(
+        LINALG::Matrix<3,1> modinv,
+        LINALG::Matrix<8,1>& modmy,
+        LINALG::Matrix<33,1>& modxi,
+        LINALG::Matrix<7,1>& modrateinv,
+        Teuchos::ParameterList& params
+        );
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
     virtual void EvaluateIsotropicPrinc(
@@ -303,6 +326,23 @@ private:
         LINALG::Matrix<3,1> prinv,
         LINALG::Matrix<3,1> modgamma,
         LINALG::Matrix<5,1> moddelta
+        );
+
+    /// calculates the isotropic stress and elasticity tensor for viscos decoupled configuration
+    virtual void EvaluateIsoModVisco(
+        LINALG::Matrix<6,1>& stressisomodisovisco,
+        LINALG::Matrix<6,1>& stressisomodvolvisco,
+        LINALG::Matrix<6,6>& cmatisomodisovisco,
+        LINALG::Matrix<6,6>& cmatisomodvolvisco,
+        LINALG::Matrix<3,1> prinv,
+        LINALG::Matrix<3,1> modinv,
+        LINALG::Matrix<8,1> modmy,
+        LINALG::Matrix<33,1> modxi,
+        LINALG::Matrix<6,1> rcg,
+        LINALG::Matrix<6,1> id2,
+        LINALG::Matrix<6,1> icg,
+        LINALG::Matrix<6,6> id4,
+        LINALG::Matrix<6,1> modrcgrate
         );
 
     /// calculates the anisotropic stress and elasticity tensor for coupled configuration
@@ -431,7 +471,7 @@ private:
     bool isomod_;
     bool anisoprinc_ ;
     bool anisomod_ ;
-    bool isomodvisco_ ;
+    bool isomodvisco_;
 
     /// @name Voigt index arrays
     //@{
@@ -442,11 +482,18 @@ private:
     //@}
 
     /// my material parameters
-    MAT::PAR::ElastHyper* params_;
+    MAT::PAR::ViscoElastHyper* params_;
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
 
+  private:
+
+    /// visco history Cauchy-Green-Tensor
+    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histmodrcgcurr_; ///< current Cauchy-Green-Tensor
+    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histmodrcglast_; ///< Cauchy-Green-Tensor of last converged state
+
+    bool isinitvis_;  ///< indicates if #Initialized routine has been called
   };
 
 }

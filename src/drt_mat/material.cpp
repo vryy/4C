@@ -59,6 +59,7 @@ Maintainer: Lena Wiechert
 #include "newman.H"
 #include "compogden.H"
 #include "elasthyper.H"
+#include "viscoelasthyper.H"
 #include "plasticelasthyper.H"
 #include "viscogenmax.H"
 #include "cnst_1d_art.H"
@@ -383,6 +384,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ElastHyper* params = static_cast<MAT::PAR::ElastHyper*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_viscoelasthyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ViscoElastHyper(curmat));
+    MAT::PAR::ViscoElastHyper* params = static_cast<MAT::PAR::ViscoElastHyper*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_plelasthyper:
   {
     if (curmat->Parameter() == NULL)
@@ -439,6 +447,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_isovarga:
   case INPAR::MAT::mes_isovolHUdependentneohooke:
   case INPAR::MAT::mes_isovolaaagasser:
+  case INPAR::MAT::mes_isoratedep:
   {
     return Teuchos::null;
   }

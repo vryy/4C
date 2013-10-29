@@ -164,6 +164,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,isomod_);
   AddtoPack(data,anisoprinc_);
   AddtoPack(data,anisomod_);
+  AddtoPack(data,isomodvisco_);
 
   // hill plasticity
   bool Hill=(bool)(PlAniso_!=Teuchos::null);
@@ -197,6 +198,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   isomod_ = false;
   anisoprinc_ = false;
   anisomod_ = false;
+  isomodvisco_ = false;
 
   std::vector<char>::size_type position = 0;
   // extract type
@@ -224,17 +226,20 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   int isomod;
   int anisoprinc;
   int anisomod;
+  int isomodvisco;
 
   ExtractfromPack(position,data,isoprinc);
   ExtractfromPack(position,data,isomod);
   ExtractfromPack(position,data,anisoprinc);
   ExtractfromPack(position,data,anisomod);
+  ExtractfromPack(position,data,isomodvisco);
 
   if (isoprinc != 0) isoprinc_ = true;
   if (isomod != 0) isomod_ = true;
   if (anisoprinc != 0) anisoprinc_ = true;
   if (anisomod != 0) anisomod_ = true;
-
+  if (isomodvisco != 0) isomodvisco_ = true;
+  
   // hill plasticity information
   bool Hill=(bool)ExtractInt(position,data);
   if (Hill)
@@ -332,10 +337,11 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   isomod_ = false ;
   anisoprinc_ = false ;
   anisomod_ = false;
+  isomodvisco_ = false;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_);
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_);
   }
   // in this case the mandel stress become non-symmetric and the
   // calculated derivatives have to be extended.
@@ -697,6 +703,8 @@ void MAT::PlasticElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
+  LINALG::Matrix<3,1> modgamma(true);
+  LINALG::Matrix<5,1> moddelta(true);
 
   EvaluatePlastKinQuant(defgrd,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
                         id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv);

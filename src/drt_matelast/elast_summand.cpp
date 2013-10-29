@@ -42,6 +42,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isovarga.H"
 #include "elast_isovolHUdependentneohooke.H"
 #include "elast_isovolaaagasser.H"
+#include "visco_isoratedep.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -264,6 +265,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::IsoVarga* params = static_cast<MAT::ELASTIC::PAR::IsoVarga*>(curmat->Parameter());
     return Teuchos::rcp(new IsoVarga(params));
   }
+  case INPAR::MAT::mes_isoratedep:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoRateDep(curmat));
+    MAT::ELASTIC::PAR::IsoRateDep* params = static_cast<MAT::ELASTIC::PAR::IsoRateDep*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoRateDep(params));
+  }  
   default:
     dserror("cannot deal with type %d", curmat->Type());
   }

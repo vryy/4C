@@ -163,7 +163,8 @@ namespace ELASTIC
         bool& isoprinc, ///< global indicator for isotropic principal formulation
         bool& isomod, ///< global indicator for isotropic splitted formulation
         bool& anisoprinc, ///< global indicator for anisotropic principal formulation
-        bool& anisomod ///< global indicator for anisotropic splitted formulation
+        bool& anisomod, ///< global indicator for anisotropic splitted formulation
+        bool& isomodvisco ///< global indicator for isotropic splitted viscos formulation
       )
     {
       anisoprinc = true;

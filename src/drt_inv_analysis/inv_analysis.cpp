@@ -42,12 +42,14 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
+#include "../drt_matelast/visco_isoratedep.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/viscogenmax.H"
+#include "../drt_mat/viscoelasthyper.H"
 #include "../linalg/linalg_utils.H"
 
 
@@ -819,6 +821,217 @@ void STR::InvAnalysis::ReadInParameters()
           }
           break;
         }
+        // viscoelasthyper
+        case INPAR::MAT::m_viscoelasthyper:
+        {
+          // Create a pointer on the Material
+          const MAT::PAR::ViscoElastHyper* params = dynamic_cast<const MAT::PAR::ViscoElastHyper*>(material->Parameter());
+          const int nummat               = params->nummat_;
+          const std::vector<int>* matids = params->matids_;
+
+          // For each of the summands of the viscohyperelastic material we need to add the
+          // parameters to the inverse analysis
+
+          // Problems with beta, is it the only negative parameter? Maybe
+          // we should exclude it
+
+          for (int i=0; i<nummat; ++i)
+          {
+            //get the material of the summand
+            filename_=filename_+"_";
+
+            const int id = (*matids)[i];
+
+            std::set<int> myehmatset = eh_matset_[prob];
+
+            if (myehmatset.size()==0 or myehmatset.find(id)!=myehmatset.end())
+            {
+              const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+
+              switch (actelastmat->Type())
+              {
+              case INPAR::MAT::mes_couplogneohooke:
+              {
+                filename_=filename_+"_couplogneohooke";
+                const MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->mue_;
+                p_[j+1] = params2->lambda_;
+                break;
+              }
+              case INPAR::MAT::mes_coupneohooke:
+              {
+                filename_=filename_+"_coupneohooke";
+                const MAT::ELASTIC::PAR::CoupNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j] = params2->c_;
+                p_[j+1] = params2->beta_;
+                break;
+              }
+              case INPAR::MAT::mes_coupblatzko:
+              {
+                filename_=filename_+"_coupblatzko";
+                const MAT::ELASTIC::PAR::CoupBlatzKo* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->mue_;
+                p_[j+1] = (1./(1.-2.*params2->nue_))-1.;
+                //p_[j+1] = params2->f_;
+                break;
+              }
+              case INPAR::MAT::mes_isoneohooke:
+              {
+                filename_=filename_+"_isoneohooke";
+                const MAT::ELASTIC::PAR::IsoNeoHooke* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->mue_;
+                break;
+              }
+              case INPAR::MAT::mes_isoyeoh:
+              {
+                filename_=filename_+"_isoyeoh";
+                const MAT::ELASTIC::PAR::IsoYeoh* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+3);
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                p_[j+2] = params2->c3_;
+                break;
+              }
+              case INPAR::MAT::mes_isoquad:
+              {
+                filename_=filename_+"_isoquad";
+                const MAT::ELASTIC::PAR::IsoQuad* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_isocub:
+              {
+                filename_=filename_+"_isocub";
+                const MAT::ELASTIC::PAR::IsoCub* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_iso1pow:
+              {
+                filename_=filename_+"_iso1pow";
+                const MAT::ELASTIC::PAR::Iso1Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_iso2pow:
+              {
+                filename_=filename_+"_iso2pow";
+                const MAT::ELASTIC::PAR::Iso2Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_coup1pow:
+              {
+                filename_=filename_+"_coup1pow";
+                const MAT::ELASTIC::PAR::Coup1Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_coup2pow:
+              {
+                filename_=filename_+"_coup2pow";
+                const MAT::ELASTIC::PAR::Coup2Pow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->c_;
+                break;
+              }
+              case INPAR::MAT::mes_coupmooneyrivlin:
+              {
+                filename_=filename_+"_coupmooneyrivlin";
+                const MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+3);
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                p_[j+2] = params2->c3_;
+                break;
+              }
+              case INPAR::MAT::mes_isoexpopow:
+              {
+                filename_=filename_+"_isoexpopow";
+                const MAT::ELASTIC::PAR::IsoExpoPow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->k1_;
+                p_[j+1] = params2->k2_;
+                break;
+              }
+              case INPAR::MAT::mes_isomooneyrivlin:
+              {
+                filename_=filename_+"_isomooneyrivlin";
+                const MAT::ELASTIC::PAR::IsoMooneyRivlin* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->c1_;
+                p_[j+1] = params2->c2_;
+                break;
+              }
+              case INPAR::MAT::mes_volsussmanbathe:
+              {
+                filename_=filename_+"_volsussmanbathe";
+                const MAT::ELASTIC::PAR::VolSussmanBathe* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->kappa_;
+                break;
+              }
+              case INPAR::MAT::mes_volpenalty:
+              {
+                filename_=filename_+"_volpenalty";
+                const MAT::ELASTIC::PAR::VolPenalty* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+2);
+                p_[j]   = params2->eps_;
+                p_[j+1]   = params2->gam_;
+                break;
+              }
+              case INPAR::MAT::mes_vologden:
+              {
+                filename_=filename_+"_vologden";
+                const MAT::ELASTIC::PAR::VolOgden* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->kappa_;
+                //p_[j+1] = params2->beta_;
+                break;
+              }
+              case INPAR::MAT::mes_isoratedep:
+              {
+                filename_=filename_+"_isoratedep";
+                const MAT::ELASTIC::PAR::IsoRateDep* params2 = dynamic_cast<const MAT::ELASTIC::PAR::IsoRateDep*>(actelastmat->Parameter());
+                int j = p_.Length();
+                p_.Resize(j+1);
+                p_[j]   = params2->n_;
+                break;
+              }
+              default:
+                dserror("cannot deal with this material");
+                break;
+              }
+            }
+          }
+          break;
+        }
 
         // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block or an interface to a micro material
         case INPAR::MAT::mes_couplogneohooke:
@@ -838,6 +1051,7 @@ void STR::InvAnalysis::ReadInParameters()
         case INPAR::MAT::mes_volsussmanbathe:
         case INPAR::MAT::mes_volpenalty:
         case INPAR::MAT::mes_vologden:
+	case INPAR::MAT::mes_isoratedep:
         case INPAR::MAT::m_struct_multiscale:
           break;
         default:
@@ -1069,10 +1283,199 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               //params2->SetBeta(abs(p_cur(j+1)));
               j = j+1;
               break;
-            }
+	    }
             default:
               dserror("cannot deal with this material");
               break;
+            }
+          }
+        }
+      }
+      if (material->Type() == INPAR::MAT::m_viscoelasthyper)
+      {
+        MAT::PAR::ViscoElastHyper* params = dynamic_cast<MAT::PAR::ViscoElastHyper*>(material->Parameter());
+        const int nummat               = params->nummat_;
+        const std::vector<int>* matids = params->matids_;
+
+        // For each of the summands of the viscohyperelastic material we need to add the
+        // parameters to the inverse analysis
+
+        // Problems with beta, is it the only negative parameter? Maybe
+        // we should exclude it
+
+        //itterator to go through the parameters
+        int j = 0;
+
+        for (int i=0; i<nummat; i++)
+        {
+          //get the material of the summand
+          const int id = (*matids)[i];
+
+          if (myehmatset.size()==0 or myehmatset.find(id)!=myehmatset.end())
+          {
+            const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+
+            switch (actelastmat->Type())
+            {
+            case INPAR::MAT::mes_couplogneohooke:
+            {
+              MAT::ELASTIC::PAR::CoupLogNeoHooke* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(actelastmat->Parameter());
+              params2->SetMue(abs(p_cur(j)));
+              params2->SetLambda(abs(p_cur(j+1)));
+              j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_coupneohooke:
+            {
+              MAT::ELASTIC::PAR::CoupNeoHooke* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::CoupNeoHooke*>(actelastmat->Parameter());
+              params2->SetC(abs(p_cur(j)));
+              params2->SetBeta(abs(p_cur(j+1)));
+              j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_coupblatzko:
+            {
+              MAT::ELASTIC::PAR::CoupBlatzKo* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
+              params2->SetMue(abs(p_cur(j)));
+              //params2->SetF(abs(p_cur(j+1)));
+              params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+              j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_isoneohooke:
+            {
+              MAT::ELASTIC::PAR::IsoNeoHooke* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(actelastmat->Parameter());
+              params2->SetMue(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_isoyeoh:
+            {
+              MAT::ELASTIC::PAR::IsoYeoh* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+              params2->SetC1(abs(p_cur(j)));
+              params2->SetC2(abs(p_cur(j+1)));
+              params2->SetC3(abs(p_cur(j+2)));
+              j = j+3;
+              break;
+            }
+            case INPAR::MAT::mes_isoquad:
+            {
+              MAT::ELASTIC::PAR::IsoQuad* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::IsoQuad*>(actelastmat->Parameter());
+              params2->SetC(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_isocub:
+            {
+              MAT::ELASTIC::PAR::IsoCub* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::IsoCub*>(actelastmat->Parameter());
+              params2->SetC(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_iso1pow:
+            {
+              MAT::ELASTIC::PAR::Iso1Pow* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::Iso1Pow*>(actelastmat->Parameter());
+              params2->SetC(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_iso2pow:
+            {
+              MAT::ELASTIC::PAR::Iso2Pow* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::Iso2Pow*>(actelastmat->Parameter());
+              params2->SetC(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_coup1pow:
+            {
+              MAT::ELASTIC::PAR::Coup1Pow* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::Coup1Pow*>(actelastmat->Parameter());
+              params2->SetC(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_coup2pow:
+            {
+              MAT::ELASTIC::PAR::Coup2Pow* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::Coup2Pow*>(actelastmat->Parameter());
+              params2->SetC(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_coupmooneyrivlin:
+            {
+              MAT::ELASTIC::PAR::CoupMooneyRivlin* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::CoupMooneyRivlin*>(actelastmat->Parameter());
+              params2->SetC1(abs(p_cur(j)));
+              params2->SetC2(abs(p_cur(j+1)));
+              params2->SetC3(abs(p_cur(j+2)));
+              j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_isoexpopow:
+            {
+              MAT::ELASTIC::PAR::IsoExpoPow* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::IsoExpoPow*>(actelastmat->Parameter());
+              params2->SetK1(abs(p_cur(j)));
+              params2->SetK2(abs(p_cur(j+1)));
+              j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_isomooneyrivlin:
+            {
+              MAT::ELASTIC::PAR::IsoMooneyRivlin* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(actelastmat->Parameter());
+              params2->SetC1(abs(p_cur(j)));
+              params2->SetC2(abs(p_cur(j+1)));
+              j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_volsussmanbathe:
+            {
+              MAT::ELASTIC::PAR::VolSussmanBathe* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(actelastmat->Parameter());
+              params2->SetKappa(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_volpenalty:
+            {
+              MAT::ELASTIC::PAR::VolPenalty* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::VolPenalty*>(actelastmat->Parameter());
+              params2->SetEpsilon(abs(p_cur(j)));
+              params2->SetGamma(abs(p_cur(j+1)));
+              j = j+2;
+              break;
+            }
+            case INPAR::MAT::mes_vologden:
+            {
+              MAT::ELASTIC::PAR::VolOgden* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+              params2->SetKappa(abs(p_cur(j)));
+              //params2->SetBeta(abs(p_cur(j+1)));
+              j = j+1;
+              break;
+            }
+            case INPAR::MAT::mes_isoratedep:
+            {
+              MAT::ELASTIC::PAR::IsoRateDep* params2 =
+                dynamic_cast<MAT::ELASTIC::PAR::IsoRateDep*>(actelastmat->Parameter());
+              params2->SetN(abs(p_cur(j)));
+              j = j+1;
+              break;
+            }
+            default:
+	      dserror("cannot deal with this material");
+            break;
             }
           }
         }

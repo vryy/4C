@@ -472,6 +472,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/robinson.cpp
   src/drt_mat/viscoanisotropic.cpp
   src/drt_mat/visconeohooke.cpp
+  src/drt_mat/viscoelasthyper.cpp
   src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
   src/drt_matelast/elast_coupanisoexpotwocoup.cpp
@@ -500,6 +501,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp
+  src/drt_matelast/visco_isoratedep.cpp
   src/drt_matelast/elast_isovolaaagasser.cpp
   src/drt_matelast/elast_isovolHUdependentneohooke.cpp
   src/drt_patspec/patspec.cpp

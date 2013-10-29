@@ -263,6 +263,9 @@ private:
 
     /// return if anisotropic and splitted formulation
     virtual bool AnisotropicModified() const { return anisomod_;}
+    
+    /// return if isotropic, splitted and viscos formulation
+    virtual bool IsotropicModifiedVisco() const { return isomodvisco_;}
 
     /// get fiber vectors
     virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
@@ -479,6 +482,7 @@ private:
     bool isomod_;
     bool anisoprinc_ ;
     bool anisomod_ ;
+    bool isomodvisco_ ;
 
     /// @name Voigt index arrays
     //@{

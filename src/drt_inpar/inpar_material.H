@@ -70,6 +70,7 @@ namespace INPAR
       m_diffcond,            ///< properties of an ion species in an electrolyte solution
       m_newman,            ///< properties of an ion species in an electrolyte solution
       m_elasthyper,    ///< collection of hyperelastic materials
+      m_viscoelasthyper, ///< viscohyperelastic material
       m_viscogenmax,    ///< generalized Maxell model compatible with the collection of hyperelastic materials
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
       mes_coupneohooke,  ///< Neo-Hooke material as hyperelastic potential summand
@@ -99,6 +100,7 @@ namespace INPAR
       mes_isoanisoexpo,   ///< isochoric anisotropic single fiber material
       mes_coupvarga,  ///< isotropic Varga material
       mes_isovarga,  ///< isotropic isochoric Varga material
+      mes_isoratedep,  ///< isotropic iscochoric frequency dependent viscos potential summand
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_growth,   ///< integration point based growth
       m_constraintmixture,  ///< growth and remodeling of arteries

@@ -378,6 +378,20 @@ namespace MAT
       {
         return;  // do nothing
       };
+      
+      
+      virtual void AddCoefficientsViscoModified(
+       const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
+        LINALG::Matrix<8,1>& modmy,  ///< see above
+        LINALG::Matrix<33,1>& modxi,  ///< see above
+        LINALG::Matrix<7,1>& modrateinv,
+        Teuchos::ParameterList& params
+        )
+      {
+        return;  // do nothing
+      };
+
+      
 
       /// retrieve stress and cmat
       /// of summand for fiber directions with respect to modified strains
@@ -482,7 +496,8 @@ namespace MAT
           bool& isoprinc_, ///< global indicator for anisotropy
           bool& isomod_, ///< global indicator for anisotropy
           bool& anisoprinc_, ///< global indicator for anisotropy
-          bool& anisomod_ ///< global indicator for anisotropy
+          bool& anisomod_, ///< global indicator for anisotropy
+          bool& isomodvisco_ ///< global indicator for isotropic, splitted and viscos formulation
         ) = 0;
 
     };  // class Summand

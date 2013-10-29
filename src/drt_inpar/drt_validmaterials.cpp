@@ -809,6 +809,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+  
+   /*----------------------------------------------------------------------*/
+  // viscohyperelastic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_ViscoElastHyper",
+                                            "Viscohyperelastic material compatible with the collection of hyperelastic materials",
+                                            INPAR::MAT::m_viscoelasthyper));
+
+    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
+    AddNamedReal(m,"DENS","material mass density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*----------------------------------------------------------------------*/
   // collection of hyperelastic materials for finite strain plasticity
@@ -1308,6 +1323,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+  
+  /*--------------------------------------------------------------------*/
+  // isochoric rate dependent viscos material, modified from Pioletti,1997
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("VISCO_IsoRateDep",
+                                            "Isochoric rate dependet viscos material",
+                                            INPAR::MAT::mes_isoratedep));
+
+    AddNamedReal(m,"N","material parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+
 
   /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
