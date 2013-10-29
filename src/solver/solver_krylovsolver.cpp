@@ -367,7 +367,9 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
   xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
 
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
+#ifdef HAVE_Trilinos_Q3_2013
   data_->setlib(Xpetra::UseEpetra);
+#endif 
   data_->Set("A",xOp);
 
 
