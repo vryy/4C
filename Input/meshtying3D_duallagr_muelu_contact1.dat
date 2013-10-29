@@ -123,13 +123,13 @@ ML_COARSEN                      UC                            // UC MIS METIS VB
 ML_AGG_SIZE 6 //12
 ML_PROLONG_SMO                  0.0
 ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                           // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               Umfpack                       // Umfpack KLU Superlu
-ML_SMOTIMES                     3 3 3 3                      
-ML_DAMPFINE                     0.9 //1.95 //1.8             
-ML_DAMPMED                      0.9 //1.95 //1.8             
-ML_DAMPCOARSE                   0.9 //1.95 //1.8              // damping coarse grid
+ML_SMOOTHERFINE                 Jacobi                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  Jacobi                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Jacobi                       // Umfpack KLU Superlu
+ML_SMOTIMES                     5 5 5                     
+ML_DAMPFINE                     0.66 //1.95 //1.8             
+ML_DAMPMED                      0.66 //1.95 //1.8             
+ML_DAMPCOARSE                   0.66 //1.95 //1.8              // damping coarse grid
 SUB_SOLVER1                     -1                            // SchurComplement smoother (finest & intermedium levels)
 SUB_SOLVER2                     -1                            // SchurComplement smoother (coarsest level)
 PERMUTE_SYSTEM                  none                          // none, algebraic, local
