@@ -66,26 +66,26 @@ fi
 # detect operating system
 if [[ ! "$CONFIGURATION_FILE" ]]; then
   if [[ -f /etc/system-release ]]; then
-    if [ "`grep 'Fedora release 17' /etc/system-release`" ]; then
-      echo "Detected Fedora 17"
-      echo "Fedora 17 is not an officially supported system at LNM."
+    if [ "`grep 'Fedora release 19' /etc/system-release`" ]; then
+      echo "Detected Fedora 19"
+      echo "Fedora 19 is not an officially supported system at LNM."
       CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc17_sysTem.config
       echo $CONFIGURATION_FILE
     elif [ "`grep 'Fedora release 16' /etc/system-release`" ]; then
       echo "Detected Fedora 16"
       if [ $TRILINOS_EXPERIMENTAL == 1 ]; then
-	CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q12013.config
-	TRILINOSDEV=ON
+	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q12013.config
+	    TRILINOSDEV=ON
       else
-	CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32012.config
+	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32012.config
       fi
       echo $CONFIGURATION_FILE
     elif [ "`grep 'Fedora release 12' /etc/system-release`" ]; then
       echo "Detected Fedora 12"
       if [ $TRILINOS_EXPERIMENTAL == 1 ]; then
-	echo "no experimental Trilinos version available for FC 12!"
+	    echo "no experimental Trilinos version available for FC 12!"
       fi
-      CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc12_Q12012.config
+        CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc12_Q12012.config
       echo $CONFIGURATION_FILE
     elif [ "`grep 'CentOS release 6.2' /etc/system-release`" ]; then
       echo "Detected CentOS 6.2 (kaiser)"
