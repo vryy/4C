@@ -74,10 +74,11 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
     elif [ "`grep 'Fedora release 16' /etc/system-release`" ]; then
       echo "Detected Fedora 16"
       if [ $TRILINOS_EXPERIMENTAL == 1 ]; then
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q12013.config
+	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32013.config
 	    TRILINOSDEV=ON
       else
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32012.config
+	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q12013.config
+	    TRILINOSDEV=ON
       fi
       echo $CONFIGURATION_FILE
     elif [ "`grep 'Fedora release 12' /etc/system-release`" ]; then
@@ -145,7 +146,7 @@ $CMAKE_COMMAND \
     -D HAVE_MueLu:BOOL=$BUILD_MueLu \
     -D HAVE_Trilinos_Q1_2013:BOOL=$BUILD_HAVE_Trilinos_Q1_2013 \
     -D HAVE_Trilinos_Q3_2013:BOOL=$BUILD_HAVE_Trilinos_Q3_2013 \
-    -D HAVE_Stratimikos:BOOL=OFF \
+    -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
     -D TRILINOS_DEV:BOOL=$TRILINOSDEV \
     -D D_ARTNET:BOOL=ON \
     -D D_RED_AIRWAYS:BOOL=ON \
