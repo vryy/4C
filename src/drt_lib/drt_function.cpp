@@ -721,7 +721,7 @@ namespace UTILS {
   public:
 
     /// ctor
-    ControlledRotationFunction(std::string fileName, std::string type);
+    ControlledRotationFunction(std::string fileName, std::string type, double origin_x, double origin_y, double origin_z);
 
     /// evaluate function at given position in space
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
@@ -729,6 +729,9 @@ namespace UTILS {
   private:
     // Condition type: STRUCTURE=1, FLUID=2
     int type_;
+
+    // Origin, about which the rotation shall be performed
+    LINALG::Matrix<3,1> origin_;
 
     // Time of previous time step (at t-deltaT)
     double timeOld_;
@@ -1014,6 +1017,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("CONTROLLEDROTATION")
     .AddNamedString("FILE")
     .AddNamedString("TYPE")
+    .AddNamedDoubleVector("ORIGIN",3)
     ;
 
   DRT::INPUT::LineDefinition accelerationprofile;
@@ -1400,7 +1404,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           std::string type;
           function->ExtractString("TYPE", type);
 
-          functions_.push_back(Teuchos::rcp(new ControlledRotationFunction(fileName, type)));
+          std::vector<double> origin;
+          function->ExtractDoubleVector("ORIGIN",origin);
+
+          functions_.push_back(Teuchos::rcp(new ControlledRotationFunction(fileName, type, origin[0], origin[1], origin[2])));
       }
       else if (function->HaveNamed("ACCELERATIONPROFILE"))
       {
@@ -3683,7 +3690,7 @@ double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp
 /*----------------------------------------------------------------------*
  | Constructor of ControlledRotation                         hahn 04/13 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(std::string fileName, std::string type) :
+DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(std::string fileName, std::string type, double origin_x, double origin_y, double origin_z) :
 Function(), NUMMANEUVERCELLS_(4)
 {
     // Initialize variables
@@ -3697,6 +3704,11 @@ Function(), NUMMANEUVERCELLS_(4)
     } else {
         dserror("When using the function CONTROLLEDROTATION, the type must be either 'STRUCTURE' or 'FLUID'");
     }
+
+    // Initialize origin, about which the rotation is performed
+    origin_(0,0) = origin_x;
+    origin_(1,0) = origin_y;
+    origin_(2,0) = origin_z;
 
     // Initialize time of previous time step (at t-deltaT)
     timeOld_ = 0.0;
@@ -3849,7 +3861,9 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
         mOmega(2,2) = 1.0;
         mOmega(3,3) = 1.0;
 
-        satAtt_q_IB_.Multiply(mOmega, satAtt_q_IB_);
+        LINALG::Matrix<4,1> satAtt_q_IB_TMP;
+        satAtt_q_IB_TMP.Multiply(mOmega, satAtt_q_IB_);
+        satAtt_q_IB_ = satAtt_q_IB_TMP;
 
         satAtt_q_IB_.Scale(1/satAtt_q_IB_.Norm2()); // Normalize attitude quaternion
 
@@ -3875,7 +3889,10 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
 
     // Obtain the current node position in the inertial system
     // *****************************************************************************
-    // NOTE: 1) Here it is assumed that the mesh is already given in the body system.
+    // NOTE: 1) Here it is assumed that the difference between the mesh system and the
+    //          body system is just given by a constant displacement named origin_.
+    //          Hence the variable origin_ specifies the point, given in the mesh
+    //          system, about which is being rotated.
     //       2) The inertial system used here has position and attitude of the body
     //          system at initial time. Thus it is deviating from the ECI system J2000
     //          at most by a constant displacement that is due to the satellite position
@@ -3885,9 +3902,9 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
 
     // Node reference position, given in the body system
     LINALG::Matrix<3,1> nodeReferencePos_B;
-    nodeReferencePos_B(0,0) = xp[0];
-    nodeReferencePos_B(1,0) = xp[1];
-    nodeReferencePos_B(2,0) = xp[2];
+    nodeReferencePos_B(0,0) = xp[0] - origin_(0,0);
+    nodeReferencePos_B(1,0) = xp[1] - origin_(1,0);
+    nodeReferencePos_B(2,0) = xp[2] - origin_(2,0);
 
     // Node position, given in the inertial system
     LINALG::Matrix<3,1> nodePos_I;
