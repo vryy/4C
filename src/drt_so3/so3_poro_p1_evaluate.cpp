@@ -621,7 +621,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     //--------------------------------------------------------
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    if(my::fluidmat_->Type() == "Darcy-Brinkman")
+    if(my::fluidmat_->Type() == MAT::PAR::darcy_brinkman)
     {
       my::FillMatrixAndVectorsBrinkman(
                                     gp,
@@ -689,7 +689,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
       }
     }
 
-    if(my::fluidmat_->Type() == "Darcy-Brinkman")
+    if(my::fluidmat_->Type() == MAT::PAR::darcy_brinkman)
     {
       double visc = my::fluidmat_->Viscosity();
       LINALG::Matrix<my::numdim_,my::numdim_> CinvFvel;
@@ -913,7 +913,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
                               C_inv,
                               sub_stiff);
 
-    if(my::fluidmat_->Type() == "Darcy-Brinkman")
+    if(my::fluidmat_->Type() == MAT::PAR::darcy_brinkman)
     {
       my::FillMatrixAndVectorsBrinkmanOD(
                                       gp,

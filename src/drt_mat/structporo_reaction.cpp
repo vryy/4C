@@ -218,5 +218,27 @@ void MAT::StructPoroReaction::Reaction(double cnp, Teuchos::ParameterList& param
   refporositydot_= (limitporosity - params_->initporosity_)/tau * exp(-1.0*time/tau);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoroReaction::Evaluate(const LINALG::Matrix<3,3>* defgrd,    ///< (i) deformation gradient
+                            const LINALG::Matrix<6,1>* glstrain,  ///< (i) green lagrange strain
+                            Teuchos::ParameterList& params,       ///< (i) parameter list
+                            LINALG::Matrix<6,1>* stress,          ///< (o) second piola kirchhoff stress
+                            LINALG::Matrix<6,6>* cmat)
+{
+  //call base class
+  StructPoro::Evaluate( defgrd,
+                        glstrain,
+                        params,
+                        stress,
+                        cmat);
 
+  //evaluate change of reference porosity due to reaction
+  double cnp = params.get<double>("scalar");
+  Reaction(cnp,params);
+
+  //scale stresses and cmat
+  stress->Scale((1.0-refporosity_)/(1.0-params_->initporosity_));
+  cmat->Scale((1.0-refporosity_)/(1.0-params_->initporosity_));
+}
 

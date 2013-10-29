@@ -130,13 +130,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       // special case: geometrically linear
       if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
       {
-        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
     }
@@ -162,13 +162,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       // special case: geometrically linear
       if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
       {
-        w1_linstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+        w1_linstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+        w1_nlnstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
 
@@ -196,13 +196,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       // special case: geometrically linear
       if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
       {
-        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
     }
@@ -231,13 +231,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       // special case: geometrically linear
       if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
       {
-        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
     }
@@ -315,12 +315,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         // special case: geometrically linear
         if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
         {
-          w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+          w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,params,iostress,iostrain);
         }
         // standard is: geometrically non-linear with Total Lagrangean approach
         else
         {
-          w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+          w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,params,iostress,iostrain);
         }
 
         {
@@ -612,7 +612,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
           tempstrainerror[2] = strainerror(2,0);
           tempstrainerror[3] = strainerror(3,0);
           Teuchos::RCP<const MAT::Material> material = Material();
-          w1_call_matgeononl(tempstrainerror,tempstress,C,numeps,material);
+          w1_call_matgeononl(tempstrainerror,tempstress,C,numeps,material,params);
           LINALG::Matrix<4,1> stress(true);
           stress(0,0) = tempstress(0,0);
           stress(1,0) = tempstress(1,1);
@@ -854,6 +854,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
   Epetra_SerialDenseMatrix             * elestress  ,
   Epetra_SerialDenseMatrix             * elestrain  ,
   Teuchos::RCP<const MAT::Material>      material   ,
+  Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
   const INPAR::STR::StressType           iostress   ,
   const INPAR::STR::StrainType           iostrain   )
 {
@@ -1105,7 +1106,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
       /*-----total deformation gradient, Green-Lagrange-strain E^F -----------*/
       w1_call_defgrad_tot(F_enh,F_tot,F,strain);
       /* call material law----------------------------------------------------*/
-      w1_call_matgeononl(strain,stress,C,numeps,material);
+      w1_call_matgeononl(strain,stress,C,numeps,material,params);
 
       // return gp strains (only in case of strain output)
       switch (iostrain)
@@ -1167,7 +1168,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
    }
    else
    {
-     w1_call_matgeononl(strain,stress,C,numeps,material);
+     w1_call_matgeononl(strain,stress,C,numeps,material,params);
 
      // return gp strains (only in case of strain output)
      switch (iostrain)
@@ -1284,6 +1285,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(
   Epetra_SerialDenseMatrix             * elestress  ,
   Epetra_SerialDenseMatrix             * elestrain  ,
   Teuchos::RCP<const MAT::Material>      material   ,
+  Teuchos::ParameterList&                params     ,
   const INPAR::STR::StressType           iostress   ,
   const INPAR::STR::StrainType           iostrain   )
 {
@@ -1413,7 +1415,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(
     strain[3] = strain[2];
 
     // material call
-    w1_call_matgeononl(strain,stress,C,numeps,material);
+    w1_call_matgeononl(strain,stress,C,numeps,material,params);
 
     // return gp strains (only in case of strain output)
     switch (iostrain)
@@ -1869,7 +1871,7 @@ void DRT::ELEMENTS::Wall1::StressCauchy(
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::Energy(
-  const Teuchos::ParameterList& params,
+  Teuchos::ParameterList& params,
   const std::vector<int>& lm,
   const std::vector<double>& dis,
   Epetra_SerialDenseVector* energies,
@@ -1984,7 +1986,7 @@ void DRT::ELEMENTS::Wall1::Energy(
     }
 
     // internal/strain energy
-    if (energies) (*energies)(0) += EnergyInternal(material, fac, Ev);
+    if (energies) (*energies)(0) += EnergyInternal(material, fac, params, Ev);
   }  // end loop Gauss points
 
   // bye

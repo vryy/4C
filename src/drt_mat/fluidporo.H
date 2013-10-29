@@ -21,6 +21,13 @@ namespace MAT
 {
   namespace PAR
   {
+    enum PoroFlowType
+    {
+      undefined,
+      darcy,
+      darcy_brinkman
+    };
+
     /*----------------------------------------------------------------------*/
     /// material parameters for Permeable fluid
     ///
@@ -47,11 +54,9 @@ namespace MAT
         const double density_;
         /// permeability
         const double permeability_;
-        /// problem type: Darcy or Darcy-Brinkman
-        const std::string* type_;
-
-        //@}
-
+        /// flow type: Darcy or Darcy-Brinkman
+        PoroFlowType type_;
+        
         /// create material instance of matching type with my parameters
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
@@ -150,11 +155,17 @@ namespace MAT
       /// compute reaction coefficient
       double ComputeReactionCoeff() const;
 
+      /// compute reaction coefficient
+      void ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor) const;
+
+      /// compute reaction coefficient
+      void ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor) const;
+
       /// effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
       double EffectiveViscosity() const;
 
       /// return type
-      std::string Type() const { return *params_->type_; }
+      PAR::PoroFlowType Type() const { return params_->type_; }
 
       /// return viscosity
       double Viscosity() const

@@ -626,7 +626,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
     ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
-    if(fluidmat_->Type() == "Darcy-Brinkman")
+    if(fluidmat_->Type() == MAT::PAR::darcy_brinkman )
     {
       FillMatrixAndVectorsBrinkman(
                                     gp,
@@ -1068,7 +1068,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
                               C_inv,
                               ecoupl);
 
-    if(fluidmat_->Type() == "Darcy-Brinkman")
+    if(fluidmat_->Type() == MAT::PAR::darcy_brinkman )
     {
       FillMatrixAndVectorsBrinkmanOD(
                                       gp,

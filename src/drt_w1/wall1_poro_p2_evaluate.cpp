@@ -653,7 +653,7 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::GaussPointLoopPoroScatraOD(
       }
     }
 
-    if(my::fluidmat_->Type() == "Darcy-Brinkman")
+    if(my::fluidmat_->Type() == MAT::PAR::darcy_brinkman)
     {
       const double visc = my::fluidmat_->Viscosity();
 

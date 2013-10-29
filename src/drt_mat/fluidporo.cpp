@@ -22,8 +22,14 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   viscosity_(matdata->GetDouble("DYNVISCOSITY")),
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY")),
-  type_(matdata->Get<std::string>("TYPE"))
+  type_(undefined)
 {
+  const std::string *typestring = matdata->Get<std::string>("TYPE");
+
+  if(*typestring == "Darcy")
+    type_ = darcy;
+  else if(*typestring == "Darcy-Brinkman")
+    type_ = darcy_brinkman;
 }
 
 /*----------------------------------------------------------------------*/
@@ -126,14 +132,44 @@ double MAT::FluidPoro::ComputeReactionCoeff() const
   return reacoeff;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor) const
+{
+  // viscosity divided by permeability
+  double reacoeff = ComputeReactionCoeff();
+
+  reactiontensor.Clear();
+
+  for(int i =0; i<2;i++)
+    reactiontensor(i,i)=reacoeff;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor) const
+{
+  // viscosity divided by permeability
+  double reacoeff = ComputeReactionCoeff();
+
+  reactiontensor.Clear();
+
+  for(int i =0; i<3;i++)
+    reactiontensor(i,i)=reacoeff;
+
+  return;
+}
+
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
 double MAT::FluidPoro::EffectiveViscosity() const
 {
   // set zero viscosity and only modify it for Darcy-Stokes problems
   double viscosity = -1.0;
-  if(Type() == "Darcy")  viscosity = 0.0;
-  else if (Type() == "Darcy-Brinkman") viscosity = Viscosity();
+  if(Type() == PAR::darcy )  viscosity = 0.0;
+  else if (Type() == PAR::darcy_brinkman) viscosity = Viscosity();
   else dserror("Unknown flow type for porous flow");
 
   return viscosity;

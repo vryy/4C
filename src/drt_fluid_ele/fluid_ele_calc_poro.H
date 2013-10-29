@@ -886,6 +886,8 @@ protected:
   LINALG::Matrix<my::nsd_,1>             refgrad_porosity_;
   //! grid (=structure) velocity at gauss point
   LINALG::Matrix<my::nsd_,1>             gridvelint_;
+  //! convective velocity (fluid - structure) at gauss point
+  LINALG::Matrix<my::nsd_,1>             convel_;
   //! grid (=structure) velocity derivatives w.r.t. reference coordinates at integration point
   LINALG::Matrix<my::nsd_,my::nsd_>             gridvelderiv_;
   //! grid (=structure) velocity divergence at gauss point
@@ -898,6 +900,15 @@ protected:
   double pressdot_;
   //! fluid pressure at gradient w.r.t to reference coordinates at gauss point
   LINALG::Matrix<my::nsd_,1> refgradp_;
+
+  //! reactive tensor
+  LINALG::Matrix<my::nsd_,my::nsd_>             reatensor_;
+
+  LINALG::Matrix<my::nsd_,1>             reavel_;
+
+  LINALG::Matrix<my::nsd_,1>             reagridvel_;
+
+  LINALG::Matrix<my::nsd_,1>             reaconvel_;
 
   //! corresponding solid element
   DRT::ELEMENTS::So_Poro_Interface* so_interface_;

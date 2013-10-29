@@ -633,7 +633,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
 
     // **********************fill stiffness matrix and force vector+++++++++++++++++++++++++
-    if(fluidmat_->Type() == "Darcy-Brinkman")
+    if(fluidmat_->Type() == MAT::PAR::darcy_brinkman)
     {
       FillMatrixAndVectorsBrinkman(
                                     gp,
@@ -849,7 +849,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
                               C_inv,
                               stiffmatrix);
 
-    if(fluidmat_->Type() == "Darcy-Brinkman")
+    if(fluidmat_->Type() == MAT::PAR::darcy_brinkman)
     {
       FillMatrixAndVectorsBrinkmanOD(
                                       gp,

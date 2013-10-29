@@ -38,7 +38,7 @@ Maintainer: Burkhard Bornemann
 /*======================================================================*/
 /* evaluate the element forces and stiffness and mass for GEMM */
 void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
-  const Teuchos::ParameterList& params,
+  Teuchos::ParameterList& params,
   const std::vector<int>& lm,
   const std::vector<double>& dispo,
   const std::vector<double>& disp,
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
 
     // call material law
     if (material->MaterialType() == INPAR::MAT::m_stvenant)
-      w1_call_matgeononl(Evm, Smm, C, Wall1::numstr_, material);
+      w1_call_matgeononl(Evm, Smm, C, Wall1::numstr_, material,params);
     else
       dserror("It must be St.Venant-Kirchhoff material.");
 

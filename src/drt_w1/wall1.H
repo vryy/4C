@@ -402,6 +402,7 @@ private:
     Epetra_SerialDenseMatrix             * elestress  , ///< element stresses
     Epetra_SerialDenseMatrix             * elestrain  , ///< element strains
     Teuchos::RCP<const MAT::Material>      material   , ///< element material
+    Teuchos::ParameterList&                params     , ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType           iostress   , ///< stress output option
     const INPAR::STR::StrainType           iostrain     ///< strain output option
   );
@@ -419,6 +420,7 @@ private:
     Epetra_SerialDenseMatrix             * elestress  , ///< element stresses
     Epetra_SerialDenseMatrix             * elestrain  , ///< element strains
     Teuchos::RCP<const MAT::Material>      material   , ///< element material
+    Teuchos::ParameterList&                params     , ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType           iostress   , ///< stress output option
     const INPAR::STR::StrainType           iostrain     ///< strain output option
   );
@@ -531,7 +533,7 @@ private:
 
   /// determine internal energy
   void Energy(
-    const Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
+    Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
     Epetra_SerialDenseVector* energies,  ///< (in/out) energies
@@ -651,7 +653,8 @@ private:
     Epetra_SerialDenseMatrix& stress,  ///< stress matrix
     Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
     const int numeps,  ///< number of strains
-    Teuchos::RCP<const MAT::Material> material  ///< the material data
+    Teuchos::RCP<const MAT::Material> material,  ///< the material data
+    Teuchos::ParameterList& params ///< element parameter list
   );
 
   /// Stress and constitutive matrix mapper from 3d to 2d
@@ -661,7 +664,8 @@ private:
   void MaterialResponse3dPlane(
     Epetra_SerialDenseMatrix& stress,  ///< stress matrix
     Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
-    const Epetra_SerialDenseVector& strain  ///< Green-Lagrange strain vector
+    const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+    Teuchos::ParameterList& params ///< element parameter list
   );
 
   /// Generic 3D stress response
@@ -670,13 +674,15 @@ private:
   void MaterialResponse3d(
     LINALG::Matrix<6,1>* stress,  ///< 3D 2nd Piola-Kirchhoff stress vector
     LINALG::Matrix<6,6>* cmat,  ///< 3D elasticity matrix
-    const LINALG::Matrix<6,1>* glstrain  ///< 3D Green-Lagrange strain vector
+    const LINALG::Matrix<6,1>* glstrain,  ///< 3D Green-Lagrange strain vector
+    Teuchos::ParameterList& params ///< element parameter list
   );
 
   /// Internal/strain energy
   double EnergyInternal(
     Teuchos::RCP<const MAT::Material> material,  ///< element material
     const double& fac,  ///< integration factor
+    Teuchos::ParameterList& params,///< element parameter list
     const Epetra_SerialDenseVector& Ev  ///< Green-Lagrange strain vector
   );
 
@@ -697,7 +703,7 @@ private:
   /// evaluate the element forces and stiffness and mass for GEMM
   /// \author bborn \date 08/08
   void FintStiffMassGEMM(
-    const Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
+    Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& dispo,  ///< element displacements \f$d_{n+1}^{(e)}\f$ at \f$t_{n}\f$
     const std::vector<double>& disp,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n+1}\f$
