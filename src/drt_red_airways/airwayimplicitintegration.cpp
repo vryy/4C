@@ -1022,15 +1022,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
   // -------------------------------------------------------------------
   if (CoupledTo3D)
   {
-    step        = step_;
-    upres       = upres_;
-    uprestart   = uprestart_;
-    time_backup = time_;
-
-    //step_      = CouplingParams->get<int>("step");
-    //upres_     = CouplingParams->get<int>("upres");
-    //uprestart_ = CouplingParams->get<int>("uprestart");
-    //time_      = CouplingParams->get<double>("time");
+    step_      = CouplingParams->get<int>("step");
+    upres_     = CouplingParams->get<int>("upres");
+    uprestart_ = CouplingParams->get<int>("uprestart");
+    time_      = CouplingParams->get<double>("time");
   }
 
   if (step_%upres_ == 0)

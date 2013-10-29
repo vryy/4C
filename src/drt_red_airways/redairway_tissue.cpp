@@ -438,7 +438,7 @@ void AIRWAY::RedAirwayTissue::UpdateAndOutput()
   structure_->Output();
 
   redairways_->TimeUpdate();
-  redairways_->Output(true);
+  redairways_->Output();
 }
 
 
