@@ -33,7 +33,7 @@ FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta                  // GenAlpha
-RESULTSEVRY                     1
+RESULTSEVRY                     10
 RESTARTEVRY                     100
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
 PTCDT                           0.001                         // default is 0.1
@@ -83,8 +83,6 @@ SOLVER                          UMFPACK
 NAME                            Reduced_dimensional_Airways_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-//MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
-//MAT 2 ELAST_CoupNeoHooke YOUNG 6.75e3 NUE 0.42
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 2 4 5 DENS 0.0002 GAMMA 0
 MAT 2 ELAST_VolOgden KAPPA 30000 BETA -2.0
 MAT 4 ELAST_IsoNeoHooke MUE 10000
@@ -113,7 +111,7 @@ DSURF                           1
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          1
-E 1 - pressure 1.0 1
+E 1 - pressure 5.0 1
 -------------------------------------DESIGN SURF TISSUE REDAIRWAY CONDITIONS
 DSURF                           2
 E 1 - 1
@@ -190,15 +188,19 @@ NODE 16 COORD 0.0 -5.0 0.0
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH8 HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
-3                               RED_AIRWAY LINE2 13 14 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 10.0 Area 2.0 Generation 0 
-4                               RED_AIRWAY LINE2 14 15 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
-5                               RED_AIRWAY LINE2 14 16 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
+3 RED_AIRWAY LINE2 13 14 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 10.0 Area 2.0 Generation 0 
+4 RED_AIRWAY LINE2 14 15 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
+5 RED_AIRWAY LINE2 14 16 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS red_airway NODE 13 QUANTITY pressure VALUE 9.99999999999996703e+02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE 6.89246549935759317e-02 TOLERANCE 1e-12
+RED_AIRWAY DIS red_airway NODE 14 QUANTITY pressure VALUE 5.00051271284095583e+03 TOLERANCE 1e-10
+RED_AIRWAY DIS red_airway NODE 15 QUANTITY pressure VALUE 5.00196288374756477e+03 TOLERANCE 1e-10
+RED_AIRWAY DIS red_airway NODE 16 QUANTITY pressure VALUE 5.00196288374756568e+03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -3.44492399450172071e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -3.44492399450173459e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -8.26678984064800115e-01 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
