@@ -904,10 +904,13 @@ protected:
   //! reactive tensor
   LINALG::Matrix<my::nsd_,my::nsd_>             reatensor_;
 
+  //! reactive tensor x fluid velocity
   LINALG::Matrix<my::nsd_,1>             reavel_;
 
+  //! reactive tensor x structural (grid) velocity
   LINALG::Matrix<my::nsd_,1>             reagridvel_;
 
+  //! reactive tensor x convective velocity
   LINALG::Matrix<my::nsd_,1>             reaconvel_;
 
   //! corresponding solid element

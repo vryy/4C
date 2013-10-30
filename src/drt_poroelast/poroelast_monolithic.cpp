@@ -956,7 +956,7 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
 
   StructureField()->Discretization()->ClearState();
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
-  StructureField()->Discretization()->SetState(0,"velocity",StructureField()->WriteAccessVelnp());
+  StructureField()->Discretization()->SetState(0,"velocity",StructureField()->Velnp());
 
   StructureField()->SetCouplingState();
 
@@ -1135,7 +1135,7 @@ void POROELAST::Monolithic::PoroFDCheck()
     std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
     std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
     std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
-    std::cout << "gridvel struct" << std::endl << *(StructureField()->WriteAccessVelnp());
+    std::cout << "gridvel struct" << std::endl << *(StructureField()->Velnp());
   }
 
   const int zeilennr = -1;
@@ -1188,7 +1188,7 @@ void POROELAST::Monolithic::PoroFDCheck()
         std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
         std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
         std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
-        std::cout << "gridvel struct" << std::endl << *(StructureField()->WriteAccessVelnp());
+        std::cout << "gridvel struct" << std::endl << *(StructureField()->Velnp());
 
         std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
             << (*rhs_copy)[zeilennr] << std::endl;
