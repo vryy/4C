@@ -88,8 +88,12 @@ namespace POROELAST
       const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField(){return fluid_;}
 
       //! composed system matrix
-      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
-          {dserror("system matrix only available for monolithic schemes!"); return Teuchos::null;};
+      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
+          {dserror("SystemSparseMatrix() only available for monolithic schemes!"); return Teuchos::null;};
+
+      //! block system matrix
+      virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemBlockMatrix()
+          {dserror("SystemSparseMatrix() only available for monolithic schemes!"); return Teuchos::null;};
 
       //! full monolithic dof row map
       virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
@@ -106,7 +110,8 @@ namespace POROELAST
       //@}
 
       //! solve time step (depending on algorithm)
-      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc) {};
+      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+          {dserror("Evaluate only available for monolithic schemes!");};
 
       //! solve time step (depending on algorithm)
       virtual void Solve() = 0;

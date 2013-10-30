@@ -63,18 +63,23 @@ POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm&
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicStructureSplit::SetupSystem()
 {
-  // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  {
+    // create combined map
+    std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
-  vecSpaces.push_back(StructureField()->Interface()->OtherMap());
-  vecSpaces.push_back(FluidField()->DofRowMap());
+    vecSpaces.push_back(StructureField()->Interface()->OtherMap());
+    vecSpaces.push_back(FluidField()->DofRowMap());
 
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements()==0)
-    dserror("No fluid equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0)
+      dserror("No structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements()==0)
+      dserror("No fluid equation. Panic.");
 
-  SetDofRowMaps(vecSpaces);
+    // full Poroelasticity-map
+    fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+    // full Poroelasticity-blockmap
+    blockrowdofmap_.Setup(*fullmap_, vecSpaces);
+  }
 
   // Use splitted structure matrix
   StructureField()->UseBlockMatrix();

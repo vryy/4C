@@ -95,7 +95,10 @@ namespace POROELAST
       //! @name Access methods
 
       //! composed system matrix
-      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+      Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix();
+
+      //! block system matrix
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemBlockMatrix(){return systemmatrix_;};
 
       //! full monolithic dof row map
       Teuchos::RCP<const Epetra_Map> DofRowMap() const {return blockrowdofmap_.FullMap();}
@@ -117,16 +120,16 @@ namespace POROELAST
       void IncrementPoroIter();
 
       //! FluidField()->SystemMatrix()->RangeMap()
-      Teuchos::RCP<const Epetra_Map> FluidRangeMap() const {return fluidrangemap_;};
+      const Epetra_Map& FluidRangeMap();
 
       //! FluidField()->SystemMatrix()->DomainMap()
-      Teuchos::RCP<const Epetra_Map> FluidDomainMap() const {return fluiddomainmap_;};
+      const Epetra_Map& FluidDomainMap();
 
       //! StructureField()->SystemMatrix()->RangeMap()
-      Teuchos::RCP<const Epetra_Map> StructureRangeMap() const {return structurerangemap_;};
+      const Epetra_Map& StructureRangeMap();
 
       //! StructureField()->SystemMatrix()->DomainMap()
-      Teuchos::RCP<const Epetra_Map> StructureDomainMap() const {return structuredomainmap_;};
+      const Epetra_Map& StructureDomainMap();
 
       //@}
 
@@ -212,14 +215,10 @@ namespace POROELAST
 
       //@}
 
-      //! velocity calculation given the displacements (like in FSI)
-      Teuchos::RCP<Epetra_Vector> CalcVelocity(
-          Teuchos::RCP<const Epetra_Vector> dispnp);
-
       //! convergence check for Newton solver
       virtual void BuildCovergenceNorms();
 
-      //! extract the field vectors from a given composed vector
+      //! extract the field vectors from a given composed vector. Different for fluid and structure split
       /*!
        x is the sum of all increments up to this point.
        \param x  (i) composed vector that contains all field vectors
@@ -230,22 +229,7 @@ namespace POROELAST
           Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<
               const Epetra_Vector>& fx,
               bool firstcall=false);
-
-      //! set full monolithic dof row map
-      /*!
-       A subclass calls this method (from its constructor) and thereby
-       defines the number of blocks, their maps and the block order. The block
-       maps must be row maps by themselves and must not contain identical GIDs.
-       */
-      void SetDofRowMaps(
-          const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
-
-      void SetInterfaceDofRowMaps(
-          const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
-
-      //! build map of global dofs with DBC
-      virtual void BuildCombinedDBCMap();
-
+              
       //! @name General purpose algorithm members
       //@{
 
@@ -372,12 +356,6 @@ namespace POROELAST
       Teuchos::RCP<Epetra_Vector> delhist_;
       //! Aitken factor
       double mu_;
-
-      //! maps of sparse matrices of single fields
-      Teuchos::RCP<Epetra_Map>   fluidrangemap_;
-      Teuchos::RCP<Epetra_Map>   fluiddomainmap_;
-      Teuchos::RCP<Epetra_Map>   structurerangemap_;
-      Teuchos::RCP<Epetra_Map>   structuredomainmap_;
 
       //@}
   }; // Monolithic

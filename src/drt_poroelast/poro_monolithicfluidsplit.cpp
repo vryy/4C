@@ -62,22 +62,27 @@ POROELAST::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicFluidSplit::SetupSystem()
 {
-  // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+  {
+    // create combined map
+    std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
-  vecSpaces.push_back(StructureField()->DofRowMap());
-#ifdef FLUIDSPLITAMG
-  vecSpaces.push_back(FluidField()    ->DofRowMap());
-#else
-  vecSpaces.push_back(FluidField()    ->Interface()->OtherMap());
-#endif
+    vecSpaces.push_back(StructureField()->DofRowMap());
+  #ifdef FLUIDSPLITAMG
+    vecSpaces.push_back(FluidField()    ->DofRowMap());
+  #else
+    vecSpaces.push_back(FluidField()    ->Interface()->OtherMap());
+  #endif
 
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements()==0)
-    dserror("No fluid equation. Panic.");
+    if (vecSpaces[0]->NumGlobalElements() == 0)
+      dserror("No structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements()==0)
+      dserror("No fluid equation. Panic.");
 
-  SetDofRowMaps(vecSpaces);
+    // full Poroelasticity-map
+    fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+    // full Poroelasticity-blockmap
+    blockrowdofmap_.Setup(*fullmap_, vecSpaces);
+  }
 
   // Switch fluid to interface split block matrix
   FluidField()->UseBlockMatrix(true);

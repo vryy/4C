@@ -788,7 +788,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
 
   k_pf_porofluid -> Zero();
   k_pf          -> UnComplete();
-  temp2          -> Complete(f->DomainMap(),*PoroField()->FluidRangeMap());
+  temp2          -> Complete(f->DomainMap(),PoroField()->FluidRangeMap());
   k_pf->Add(*temp2,         false,1.0,1.0);
   k_pf->Complete(f->DomainMap(),p->RangeMap());
 
@@ -836,7 +836,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
   );
 
   PoroField()     -> FluidField()->Discretization()->EvaluateCondition( fparams, porofluidstrategy, "FSICoupling" );
-  k_fp_porofluid  -> Complete(*PoroField()->FluidDomainMap(),*PoroField()->FluidRangeMap());
+  k_fp_porofluid  -> Complete(PoroField()->FluidDomainMap(),PoroField()->FluidRangeMap());
   //std::cout<<"\n k_fp_porofluid matrix: \n"<<*k_fp_porofluid<<std::endl;
   Teuchos::RCP<LINALG::SparseMatrix> temp = Teuchos::rcp(new LINALG::SparseMatrix((f->RowMap()),81,false));
   {
@@ -848,7 +848,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
                              true);
   }
 
-  temp  -> Complete(*PoroField()->FluidRangeMap(),f->RangeMap());
+  temp  -> Complete(PoroField()->FluidRangeMap(),f->RangeMap());
 
   k_fp -> UnComplete();
   k_fp -> Add(*temp,false,1.0,1.0);
@@ -870,7 +870,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
   );
 
   PoroField() -> FluidField()->Discretization()->EvaluateCondition( fparams, structurestrategy, "FSICoupling" );
-  k_pfs_      -> Complete(*PoroField()->StructureRangeMap(),*PoroField()->FluidRangeMap());
+  k_pfs_      -> Complete(PoroField()->StructureRangeMap(),PoroField()->FluidRangeMap());
   Teuchos::RCP<LINALG::SparseMatrix> temp3 = Teuchos::rcp(new LINALG::SparseMatrix((f->RowMap()),81,false));
   {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
@@ -881,7 +881,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
                              true);
   }
 
-  temp3  -> Complete(*PoroField()->StructureRangeMap(),f->RangeMap());
+  temp3  -> Complete(PoroField()->StructureRangeMap(),f->RangeMap());
   //std::cout<<"temp3 matrix: \n"<<*temp3<<std::endl;
 
   k_fp -> UnComplete();
@@ -918,7 +918,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
                              false); // bool exactmatch = true (default)
   }
 
-  temp32  -> Complete(*PoroField()->StructureRangeMap(),f->RangeMap());
+  temp32  -> Complete(PoroField()->StructureRangeMap(),f->RangeMap());
   k_fp -> UnComplete();
   k_fp -> Add(*temp32,false,1.0,1.0);
   k_fp -> Complete(p->RangeMap(),f->RangeMap());
@@ -973,7 +973,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
                                false);
     }
 
-    temp4  -> Complete(f->DomainMap(),*PoroField()->StructureRangeMap());
+    temp4  -> Complete(f->DomainMap(),PoroField()->StructureRangeMap());
 
     k_pf -> UnComplete();
     k_pf -> Add(*temp4,false,1.0,1.0);
@@ -1234,7 +1234,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
                                      *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(temp33),
                                       false); // bool exactmatch = true (default)
 
-           temp33  -> Complete(*PoroField()->StructureRangeMap(),f->RangeMap());
+           temp33  -> Complete(PoroField()->StructureRangeMap(),f->RangeMap());
            //std::cout<<"Fluid_Structure: \n"<<*temp33<<std::endl;
            k_fp -> UnComplete();
            k_fp -> Add(*temp33,false,1.0,1.0);

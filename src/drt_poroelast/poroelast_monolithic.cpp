@@ -64,11 +64,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
     directsolve_(true),
     del_(Teuchos::null),
     delhist_(Teuchos::null),
-    mu_(0.0),
-    fluidrangemap_(Teuchos::null),
-    fluiddomainmap_(Teuchos::null),
-    structurerangemap_(Teuchos::null),
-    structuredomainmap_(Teuchos::null)
+    mu_(0.0)
 {
   const Teuchos::ParameterList& sdynparams
   = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -116,11 +112,10 @@ void POROELAST::Monolithic::Solve()
   // --> On #rhs_ is the positive force residuum
   // --> On #systemmatrix_ is the effective dynamic tangent matrix
 
-  //initialize norms and increment
+  //---------------------------------------- initialise equilibrium loop and norms
   SetupNewton();
 
   //---------------------------------------------- iteration loop
-  //AitkenReset();
   // equilibrium iteration loop (loop over k)
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
@@ -206,7 +201,7 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   if (x != Teuchos::null)
   {
     // extract displacement sx and fluid fx incremental vector of global
-    // unknown incremental vector x
+    // unknown incremental vector x (different for splits)
     ExtractFieldVectors(x, sx, fx,iter_==1);
   }
 
@@ -266,66 +261,66 @@ void POROELAST::Monolithic::ExtractFieldVectors(Teuchos::RCP<
   fx = Extractor().ExtractVector(x, 1);
 }
 
-
-/*----------------------------------------------------------------------*
- | calculate velocities                                     vuong 01/12 |
- | like InterfaceVelocity(disp) in FSI::DirichletNeumann                |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> POROELAST::Monolithic::CalcVelocity(Teuchos::RCP<
-    const Epetra_Vector> sx)
-{
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
-  // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispn())));
-  // calculate velocity with timestep Dt()
-  //  V_n+1^k = (D_n+1^k - D_n) / Dt
-  vel->Update(1. / Dt(), *sx, -1. / Dt());
-
-  return vel;
-} // CalcVelocity()
-
-
 /*----------------------------------------------------------------------*
  | setup system (called in porolast.cpp)                 vuong 01/12    |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::SetupSystem()
 {
-  // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces2;
 
   if(PoroBase::PartOfMultifieldProblem_)
   {
-    vecSpaces2.push_back(StructureField()->Interface()->Map(0));
-    vecSpaces2.push_back(StructureField()->Interface()->Map(1));
-    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(0));
-    vecSpaces2.push_back(FluidField()->FPSIInterface()->Map(1));
+    std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces_fpsi;
 
-    SetInterfaceDofRowMaps(vecSpaces2);
+    vecSpaces_fpsi.push_back(StructureField()->Interface()->Map(0));
+    vecSpaces_fpsi.push_back(StructureField()->Interface()->Map(1));
+    vecSpaces_fpsi.push_back(FluidField()->FPSIInterface()->Map(0));
+    vecSpaces_fpsi.push_back(FluidField()->FPSIInterface()->Map(1));
+
+    fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces_fpsi);
+    // full Poroelasticity-blockmap
+    porointerfacedofmap_.Setup(*fullmap_, vecSpaces_fpsi);
   }
 
-  // use its own DofRowMap, that is the 0th map of the discretization
-  //
-  // when using constraints applied via Lagrange-Multipliers there is a
-  // difference between StructureField()->DofRowMap() and StructureField()->DofRowMap(0).
-  // StructureField()->DofRowMap(0) returns the DofRowMap
-  // known to the discretization (without lagrange multipliers)
-  // while StructureField()->DofRowMap() returns the DofRowMap known to
-  // the constraint manager (with lagrange multipliers)
-  // In the constrained case we want the "whole" RowDofMap,
-  // otherwise both calls are equivalent
 
-  vecSpaces.push_back(StructureField()->DofRowMap());
-  vecSpaces.push_back(FluidField()->DofRowMap(0));
+  {
+    // -------------------------------------------------------------create combined map
+    std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements()==0)
-    dserror("No fluid equation. Panic.");
+    // Note:
+    // when using constraints applied via Lagrange-Multipliers there is a
+    // difference between StructureField()->DofRowMap() and StructureField()->DofRowMap(0).
+    // StructureField()->DofRowMap(0) returns the DofRowMap
+    // known to the discretization (without lagrange multipliers)
+    // while StructureField()->DofRowMap() returns the DofRowMap known to
+    // the constraint manager (with lagrange multipliers)
+    // In the constrained case we want the "whole" RowDofMap,
+    // otherwise both calls are equivalent
 
-  SetDofRowMaps(vecSpaces);
+    vecSpaces.push_back(StructureField()->DofRowMap());
+    // use its own DofRowMap, that is the 0th map of the discretization
+    vecSpaces.push_back(FluidField()->DofRowMap(0));
 
-  BuildCombinedDBCMap();
+    if (vecSpaces[0]->NumGlobalElements() == 0)
+      dserror("No structure equation. Panic.");
+    if (vecSpaces[1]->NumGlobalElements()==0)
+      dserror("No fluid equation. Panic.");
+
+    // full Poroelasticity-map
+    fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+    // full Poroelasticity-blockmap
+    blockrowdofmap_.Setup(*fullmap_, vecSpaces);
+  }
+  // -------------------------------------------------------------
+
+  //-----------------------------------build map of global dofs with DBC
+  {
+    const Teuchos::RCP<const Epetra_Map> scondmap =
+        StructureField()->GetDBCMapExtractor()->CondMap();
+    const Teuchos::RCP<const Epetra_Map> fcondmap =
+        FluidField()->GetDBCMapExtractor()->CondMap();
+    combinedDBCMap_= LINALG::MergeMap(scondmap, fcondmap, false);
+  }
+  // -------------------------------------------------------------
 
   // initialize Poroelasticity-systemmatrix_
   systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
@@ -347,32 +342,6 @@ void POROELAST::Monolithic::SetupSystem()
 } // SetupSystem()
 
 /*----------------------------------------------------------------------*
- | put the single maps to one full                                      |
- | Poroelasticity map together                              vuong 01/12 |
- *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<
-    const Epetra_Map> >& maps)
-{
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
-
-  // full Poroelasticity-blockmap
-  blockrowdofmap_.Setup(*fullmap_, maps);
-}
-
-/*----------------------------------------------------------------------*
- | put the single maps to one full                                      |
- | Poroelasticity map together                              vuong 01/12 |
- *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::SetInterfaceDofRowMaps(const std::vector<Teuchos::RCP<
-    const Epetra_Map> >& maps)
-{
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
-
-  // full Poroelasticity-blockmap
-  porointerfacedofmap_.Setup(*fullmap_, maps);
-}
-
-/*----------------------------------------------------------------------*
  | setup system matrix of poroelasticity                   vuong 01/12  |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
@@ -387,10 +356,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
-  if(structurerangemap_ == Teuchos::null)
-    structurerangemap_ = Teuchos::rcp(new Epetra_Map(k_ss->RangeMap()));
-  if(structuredomainmap_ == Teuchos::null)
-	structuredomainmap_ = Teuchos::rcp(new Epetra_Map(k_ss->DomainMap()));
 
   if(k_ss==Teuchos::null)
     dserror("structure system matrix null pointer!");
@@ -419,10 +384,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
-  if(fluidrangemap_ == Teuchos::null)
-    fluidrangemap_ = Teuchos::rcp(new Epetra_Map(k_ff->RangeMap()));
-  if(fluiddomainmap_ == Teuchos::null)
-	fluiddomainmap_ = Teuchos::rcp(new Epetra_Map(k_ff->DomainMap()));
 
   if(k_ff==Teuchos::null)
     dserror("fuid system matrix null pointer!");
@@ -1129,18 +1090,6 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
 }    // ApplyFluidCouplMatrix()
 
 /*----------------------------------------------------------------------*
- |  map containing the dofs with Dirichlet BC               vuong 01/12 |
- *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::BuildCombinedDBCMap()
-{
-  const Teuchos::RCP<const Epetra_Map> scondmap =
-      StructureField()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map> fcondmap =
-      FluidField()->GetDBCMapExtractor()->CondMap();
-  combinedDBCMap_= LINALG::MergeMap(scondmap, fcondmap, false);
-} // BuildCombinedDBCMap()
-
-/*----------------------------------------------------------------------*
  |  check tangent stiffness matrix vie finite differences               |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PoroFDCheck()
@@ -1469,8 +1418,6 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROELAST::Monolithic::FluidStructCo
   return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(k_fs_);
 } // FluidStructCouplingBlockMatrix()
 
-
-
 /*----------------------------------------------------------------------*
  | Setup Newton-Raphson iteration            vuong 01/12   |
  *----------------------------------------------------------------------*/
@@ -1495,6 +1442,8 @@ void POROELAST::Monolithic::SetupNewton()
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
+
+  //AitkenReset();
 
   return;
 }
@@ -1616,7 +1565,7 @@ bool POROELAST::Monolithic::SetupSolver()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemMatrix()
+Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemSparseMatrix()
 {
   return systemmatrix_->Merge();
 }
@@ -1699,4 +1648,32 @@ void POROELAST::Monolithic::AitkenReset()
   del_->PutScalar(1.0e20);
   delhist_->PutScalar(0.0);
   mu_=0.0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map& POROELAST::Monolithic::FluidRangeMap()
+{
+  return FluidField()->SystemMatrix()->RangeMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map& POROELAST::Monolithic::FluidDomainMap()
+{
+  return FluidField()->SystemMatrix()->DomainMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map& POROELAST::Monolithic::StructureRangeMap()
+{
+  return StructureField()->SystemMatrix()->RangeMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_Map& POROELAST::Monolithic::StructureDomainMap()
+{
+  return StructureField()->DomainMap();
 }

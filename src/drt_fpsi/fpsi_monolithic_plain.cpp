@@ -223,7 +223,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
 
   // get single field block matrices
-        Teuchos::RCP<LINALG::SparseMatrix>          p      = PoroField() -> SystemMatrix();
+        Teuchos::RCP<LINALG::SparseMatrix>          p      = PoroField() -> SystemSparseMatrix();
   const Teuchos::RCP<LINALG::SparseMatrix>          f      = FluidField()-> SystemSparseMatrix();
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a      = AleField()  -> BlockSystemMatrix();
   /*----------------------------------------------------------------------*/
@@ -371,8 +371,8 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
           false,  // bool exactmatch = true (default)
           false); // bool add
 
-      tempale1  -> Complete(*PoroField()->StructureRangeMap(),f->RangeMap());
-      tempale2  -> Complete(*PoroField()->StructureRangeMap(),f->RangeMap());
+      tempale1  -> Complete(PoroField()->StructureRangeMap(),f->RangeMap());
+      tempale2  -> Complete(PoroField()->StructureRangeMap(),f->RangeMap());
 
       //Teuchos::RCP<LINALG::SparseMatrix> tempale12 = Teuchos::rcp(new LINALG::SparseMatrix((FluidField()->SystemSparseMatrix()->RowMap()),81,false));
       //tempale12->Add(*tempale2,false,1.0,1.0);
