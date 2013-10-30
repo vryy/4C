@@ -134,17 +134,20 @@ namespace ADAPTER {
     /// known displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
 
-    /// unknown velocity at t(n)
+    /// unknown velocity at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
+
+    /// known velocity at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
 
-    /// unknown acc at t(n)
-   virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
-
-    /// unknown displacements at t(n-1)
+    /// known velocity at \f$t_{n-1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnm() = 0;
 
-    /// unknown displacements at t(n-1)
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
+    /// unknown acceleration at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
+
+    /// known acceleration at \f$t_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
 
     /// return displacements at all the time steps
     virtual Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > DispMStep() = 0;
@@ -371,22 +374,19 @@ namespace ADAPTER {
     //! Extract coupling values (displacements)
 
     /// extract displacements, stress and velocities for TSI
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() = 0;
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() = 0;
 
     /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln() = 0;
 
     /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
     /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf() = 0;
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccn() = 0;
 
     /// extract rhs (used to calculate reaction force for post-processing)
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;

@@ -917,7 +917,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
 
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton)
   {
-    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
   }
 
   // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
@@ -931,7 +931,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
     if (Comm().MyPID() == 0)
       IO::cout << "Relaxing Ale.." << IO::endl;
     AleField().SolveAleXFluidFluidFSI();
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
   }
 
 

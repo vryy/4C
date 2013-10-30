@@ -176,7 +176,7 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >&
 
   // extract structure velocities and accelerations
 
-  Teuchos::RCP<Epetra_Vector> velocity = Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->ExtractVelnp())));
+  Teuchos::RCP<Epetra_Vector> velocity = Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->WriteAccessVelnp())));
   vel.push_back(velocity);
   // structure ScaTra: velocity and grid velocity are identical!
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(velocity->Map(),true));

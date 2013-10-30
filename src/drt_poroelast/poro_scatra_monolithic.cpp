@@ -1042,7 +1042,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
 
   PoroField()->StructureField()->Discretization()->ClearState();
   PoroField()->StructureField()->Discretization()->SetState(0,"displacement",PoroField()->StructureField()->Dispnp());
-  PoroField()->StructureField()->Discretization()->SetState(0,"velocity",PoroField()->StructureField()->ExtractVelnp());
+  PoroField()->StructureField()->Discretization()->SetState(0,"velocity",PoroField()->StructureField()->WriteAccessVelnp());
 
   PoroField()->StructureField()->SetCouplingState();
 

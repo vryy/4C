@@ -264,9 +264,9 @@ void POROELAST::PoroBase::SetStructSolution()
     //displacement vector without lagrange-multipliers
     dispnp = consplitter_->ExtractCondVector(StructureField()->Dispnp());
   else
-    dispnp = StructureField()->ExtractDispnp();
+    dispnp = StructureField()->WriteAccessDispnp();
 
-  Teuchos::RCP<Epetra_Vector> velnp = StructureField()->ExtractVelnp();
+  Teuchos::RCP<Epetra_Vector> velnp = StructureField()->WriteAccessVelnp();
 
   // transfer the current structure displacement to the fluid field
   Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispnp);

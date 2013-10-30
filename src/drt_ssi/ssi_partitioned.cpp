@@ -56,7 +56,7 @@ void SSI::SSI_Part::SetVelocityFields()
   scatra_->ScaTraField().SetVelocityField(
       zeros_, //convective vel.
       Teuchos::null, //acceleration
-      structure_->ExtractVelnp(), //velocity
+      structure_->WriteAccessVelnp(), //velocity
       Teuchos::null, //fsvel
       Teuchos::null, //dofset
       structure_->Discretization()); //discretization

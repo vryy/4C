@@ -200,7 +200,7 @@ void TSI::Monolithic::ReadRestart(int step)
   // pass the current coupling varibles to the respective field
   ThermoField()->ApplyStructVariables(
                    StructureField()->Dispnp(),
-                   StructureField()->ExtractVelnp()
+                   StructureField()->WriteAccessVelnp()
                    );
   StructureField()->ApplyCouplingState(
                       ThermoField()->Tempnp(),"temperature"
@@ -624,7 +624,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   else
   {
     // evaluation is at t_{n+1} for one-step-theta and TR-like genalpha
-    veln_ = StructureField()->ExtractVelnp();
+    veln_ = StructureField()->WriteAccessVelnp();
   }
 #ifndef MonTSIwithoutSTR
   // pass the structural values to the thermo field

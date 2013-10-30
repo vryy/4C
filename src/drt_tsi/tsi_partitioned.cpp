@@ -186,8 +186,8 @@ void TSI::Partitioned::SetupSystem()
   // get an idea of the temperatures (like in partitioned FSI)
   temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
   // get an idea of the displacements and velocities
-  disp_ = StructureField()->ExtractDispn();
-  veln_ = StructureField()->ExtractVeln();
+  disp_ = StructureField()->WriteAccessDispn();
+  veln_ = StructureField()->WriteAccessVeln();
 
 }  // SetupSystem()
 
@@ -378,7 +378,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     DoStructureStep();
 
     // now extract the current displacements/velocities
-    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
+    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();
 
     // extract the velocities of the current solution
     Teuchos::RCP<Epetra_Vector> velnp;
@@ -391,7 +391,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     }
     else
     {
-      velnp = StructureField()->ExtractVelnp();
+      velnp = StructureField()->WriteAccessVelnp();
     }
 
     /// thermo field
@@ -411,7 +411,7 @@ void TSI::Partitioned::TimeLoopOneWay()
 
     // extract final displacements,
     // since we did update, this is very easy to extract
-    disp_ = StructureField()->ExtractDispnp();
+    disp_ = StructureField()->WriteAccessDispnp();
 
   } // displacement coupling
 
@@ -464,8 +464,8 @@ void TSI::Partitioned::TimeLoopSequStagg()
     // predict the displacement field (structural predictor for TSI)
 
     // get structure variables of old time step (d_n, v_n)
-    disp_ = StructureField()->ExtractDispn();
-    if(Step() == 0) veln_ = StructureField()->ExtractVeln();
+    disp_ = StructureField()->WriteAccessDispn();
+    if(Step() == 0) veln_ = StructureField()->WriteAccessVeln();
 
     /// thermo field
 
@@ -502,13 +502,13 @@ void TSI::Partitioned::TimeLoopSequStagg()
     // get the velocities needed as predictor for the thermo field for the next
     // time step
     if(quasistatic_)
-      veln_ = CalcVelocity(StructureField()->ExtractDispnp());
+      veln_ = CalcVelocity(StructureField()->WriteAccessDispnp());
     else
-      veln_ = StructureField()->ExtractVelnp();
+      veln_ = StructureField()->WriteAccessVelnp();
 
     // extract final displacements,
     // update is called afterwards, so we extract the newest solution
-    disp_ = StructureField()->ExtractDispnp();
+    disp_ = StructureField()->WriteAccessDispnp();
 
   } // end displacement coupling
 
@@ -536,7 +536,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
     DoStructureStep();
 
     // extract current displacements
-    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
+    const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();
 
     // extract the velocities of the current solution
     // the displacement -> velocity conversion
@@ -544,7 +544,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
       velnp_ = CalcVelocity(dispnp);
     // quasistatic to exlude oszillation
     else
-      velnp_ = StructureField()->ExtractVelnp();
+      velnp_ = StructureField()->WriteAccessVelnp();
 
     /// thermo field
 
@@ -580,7 +580,7 @@ void TSI::Partitioned::TimeLoopFull()
 
   // extract final displacement and velocity
   // update is called afterwards, so we extract the newest solution
-  disp_ = StructureField()->ExtractDispnp();
+  disp_ = StructureField()->WriteAccessDispnp();
   temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
 
 } // TSI::Partitioned::TimeLoopFull()
@@ -631,8 +631,8 @@ void TSI::Partitioned::OuterIterationLoop()
         = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       if (Step() == 1)
       {
-        dispnp->Update(1.0, *(StructureField()->ExtractDispn()),0.0);
-        veln_ = StructureField()->ExtractVeln();
+        dispnp->Update(1.0, *(StructureField()->WriteAccessDispn()),0.0);
+        veln_ = StructureField()->WriteAccessVeln();
       }
       // else: use the velocity of the last converged step
 
@@ -644,7 +644,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // kind of mechanical predictor
         // 1st iteration: get structure variables of old time step (d_n, v_n)
         if (itnum == 1)
-          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
+          dispnp->Update(1.0,*(StructureField()->WriteAccessDispn()),0.0);
         // else (itnum>1) use the current solution dispnp of old iteration step
 
         // store temperature from first solution for convergence check (like in
@@ -692,12 +692,12 @@ void TSI::Partitioned::OuterIterationLoop()
         DoStructureStep();
 
         // extract current displacements
-        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
+        dispnp->Update(1.0,*(StructureField()->WriteAccessDispnp()),0.0);
 
         if(quasistatic_)
           veln_ = CalcVelocity(dispnp);
         else
-          veln_ = StructureField()->ExtractVelnp();
+          veln_ = StructureField()->WriteAccessVelnp();
 
         // check convergence of both field for "partitioned scheme"
         stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -756,7 +756,7 @@ void TSI::Partitioned::OuterIterationLoop()
         DoStructureStep();
 
         // Extract current displacements
-        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();
+        const Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();
 
         // extract the velocities of the current solution
         // the displacement -> velocity conversion
@@ -764,7 +764,7 @@ void TSI::Partitioned::OuterIterationLoop()
           velnp_ = CalcVelocity(dispnp);
         // quasistatic to exlude oszillation
         else
-          velnp_ = StructureField()->ExtractVelnp();
+          velnp_ = StructureField()->WriteAccessVelnp();
 
         // ------------------------------------------------------- thermo field
 
@@ -833,8 +833,8 @@ void TSI::Partitioned::OuterIterationLoop()
         = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       if (Step() == 1)
       {
-        dispnp->Update(1.0, *(StructureField()->ExtractDispn()),0.0);
-        veln_ = StructureField()->ExtractVeln();
+        dispnp->Update(1.0, *(StructureField()->WriteAccessDispn()),0.0);
+        veln_ = StructureField()->WriteAccessVeln();
       }
       // else: use the velocity of the last converged step
 
@@ -864,7 +864,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // kind of mechanical predictor
         // 1st iteration: get structure variables of old time step (d_n, v_n)
         if (itnum == 1)
-          dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
+          dispnp->Update(1.0,*(StructureField()->WriteAccessDispn()),0.0);
         // else (itnum>1) use the current solution dispnp of old iteration step
 
         // store temperature from first solution for convergence check (like in
@@ -916,7 +916,7 @@ void TSI::Partitioned::OuterIterationLoop()
         if (coupling == INPAR::TSI::IterStaggFixedRel)
         {
           // get the displacements of the old iteration step d^i_{n+1}
-          dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
+          dispnp->Update(1.0,*(StructureField()->WriteAccessDispnp()),0.0);
         }
 
         // solve coupled structural equation
@@ -1011,7 +1011,7 @@ void TSI::Partitioned::OuterIterationLoop()
             if(quasistatic_)
               veln_ = CalcVelocity(dispnp);
             else
-              veln_ = StructureField()->ExtractVelnp();
+              veln_ = StructureField()->WriteAccessVelnp();
           }
           else  // (itnum > 1)
           {
@@ -1131,7 +1131,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // now extract the current temperatures and pass it to the structure
         Teuchos::RCP<Epetra_Vector> dispnp
           = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-        dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
+        dispnp->Update(1.0,*(StructureField()->WriteAccessDispnp()),0.0);
 
         // extract the velocities of the current solution
         // the displacement -> velocity conversion
@@ -1139,7 +1139,7 @@ void TSI::Partitioned::OuterIterationLoop()
           velnp_ = CalcVelocity(dispnp);
         // quasistatic to exlude oscillation
         else
-          velnp_ = StructureField()->ExtractVelnp();
+          velnp_ = StructureField()->WriteAccessVelnp();
 
         // ------------------------------------------------------- thermo field
 

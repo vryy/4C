@@ -57,11 +57,11 @@ public:
 
   //! @name Access methods
 
-  /// the whole displacement field at time step \f$t^{n+1}\f$ is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() const;
+  /// write access to whole displacement field at time step \f$t^{n+1}\f$
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const;
 
-  /// the whole displacement field at time step \f$t^{n}\f$ is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() const;
+  /// write access to whole displacement field at time step \f$t^{n}\f$ is extracted here
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() const;
 
   virtual void SolveAleXFluidFluidFSI();
 

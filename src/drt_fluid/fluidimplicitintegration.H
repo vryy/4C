@@ -406,20 +406,20 @@ public:
   /// Return true residual, ie the actual force in Newton [N]
   Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
 
-  Teuchos::RCP<const Epetra_Vector> Velnp()     { return velnp_; }
-  Teuchos::RCP<Epetra_Vector> ViewOfVelnp()     { return velnp_; }
-  Teuchos::RCP<const Epetra_Vector> Velaf()     { return velaf_; }
-  Teuchos::RCP<const Epetra_Vector> Veln()      { return veln_; }
-  Teuchos::RCP<const Epetra_Vector> Velnm()     { return velnm_; }
-  Teuchos::RCP<const Epetra_Vector> Accnp()     { return accnp_; }
-  Teuchos::RCP<const Epetra_Vector> Accn()      { return accn_; }
-  Teuchos::RCP<const Epetra_Vector> Accnm()     { return accnm_; }
-  Teuchos::RCP<const Epetra_Vector> Accam()     { return accam_; }
-  Teuchos::RCP<const Epetra_Vector> Scaaf()     { return scaaf_; }
-  Teuchos::RCP<const Epetra_Vector> Scaam()     { return scaam_; }
-  Teuchos::RCP<const Epetra_Vector> Hist()      { return hist_; }
-  Teuchos::RCP<const Epetra_Vector> GridVel()   { return gridv_; }
-  Teuchos::RCP<Epetra_Vector> ViewOfGridVel()   { return gridv_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp()       { return velnp_; }
+  Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()  { return velnp_; }
+  Teuchos::RCP<const Epetra_Vector> Velaf()       { return velaf_; }
+  Teuchos::RCP<const Epetra_Vector> Veln()        { return veln_; }
+  Teuchos::RCP<const Epetra_Vector> Velnm()       { return velnm_; }
+  Teuchos::RCP<const Epetra_Vector> Accnp()       { return accnp_; }
+  Teuchos::RCP<const Epetra_Vector> Accn()        { return accn_; }
+  Teuchos::RCP<const Epetra_Vector> Accnm()       { return accnm_; }
+  Teuchos::RCP<const Epetra_Vector> Accam()       { return accam_; }
+  Teuchos::RCP<const Epetra_Vector> Scaaf()       { return scaaf_; }
+  Teuchos::RCP<const Epetra_Vector> Scaam()       { return scaam_; }
+  Teuchos::RCP<const Epetra_Vector> Hist()        { return hist_; }
+  Teuchos::RCP<const Epetra_Vector> GridVel()     { return gridv_; }
+  Teuchos::RCP<Epetra_Vector> WriteAccessGridVel(){ return gridv_; }
   Teuchos::RCP<const Epetra_Vector> FsVel() {
     // get fine-scale part of velocity at time n+alpha_F or n+1
     if (Sep_ != Teuchos::null)

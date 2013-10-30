@@ -184,7 +184,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::ExtractFreeSurfaceVeln()
 void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   // apply the interface velocities
-  interface_->InsertFSICondVector(ivel,fluidimpl_->ViewOfVelnp());
+  interface_->InsertFSICondVector(ivel,fluidimpl_->WriteAccessVelnp());
 
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DIVPROJECTION"))
@@ -209,7 +209,7 @@ void ADAPTER::FluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> 
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
 {
-  meshmap_->InsertCondVector(gridvel,fluidimpl_->ViewOfGridVel());
+  meshmap_->InsertCondVector(gridvel,fluidimpl_->WriteAccessGridVel());
 }
 
 /*----------------------------------------------------------------------*
@@ -409,7 +409,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   Teuchos::RCP<LINALG::SparseMatrix> BTB = LINALG::Multiply(*B,true,*B,false,true);
 
   Teuchos::RCP<Epetra_Vector> BTvR = Teuchos::rcp(new Epetra_Vector(*domainmap));
-  B->Multiply(true,*fluidimpl_->ViewOfVelnp(),*BTvR);
+  B->Multiply(true,*fluidimpl_->WriteAccessVelnp(),*BTvR);
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*dbcfsimap, true));
 
   domainmapex->InsertCondVector(zeros,BTvR);
@@ -439,9 +439,9 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   solver->Solve(BTB->EpetraOperator(),x,BTvR,true,true);
 
-  Teuchos::RCP<Epetra_Vector> vmod = Teuchos::rcp(new Epetra_Vector(fluidimpl_->ViewOfVelnp()->Map(),true));
+  Teuchos::RCP<Epetra_Vector> vmod = Teuchos::rcp(new Epetra_Vector(fluidimpl_->WriteAccessVelnp()->Map(),true));
   B->Apply(*x,*vmod);
-  fluidimpl_->ViewOfVelnp()->Update(-1.0, *vmod, 1.0);
+  fluidimpl_->WriteAccessVelnp()->Update(-1.0, *vmod, 1.0);
 }
 
 /*----------------------------------------------------------------------*

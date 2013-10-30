@@ -380,11 +380,11 @@ void STRU_ALE::Algorithm::ApplyMeshDisplacement()
 
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
-  RCP<Epetra_Vector> aledisp = AleField().ExtractDispnp();
+  RCP<Epetra_Vector> aledisp = AleField().WriteAccessDispnp();
   RCP<Epetra_Vector> disale = coupalestru_->MasterToSlave(aledisp);
 
   // vector of current spatial displacements
-  RCP<Epetra_Vector> dispnp = StructureField()->ExtractDispnp();  // change to ExtractDispn() for overlap
+  RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();  // change to ExtractDispn() for overlap
 
   // material displacements
   RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispnp->Map()),true);

@@ -36,7 +36,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
 {
   Teuchos::RCP<Epetra_FEVector> void_volumes = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->ElementRowMap()));
 
-  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->ExtractDispn();
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->WriteAccessDispn();
   Teuchos::RCP<Epetra_Vector> particleradius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadius();
 
   std::set<int> examinedbins;

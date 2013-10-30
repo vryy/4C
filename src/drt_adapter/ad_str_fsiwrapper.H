@@ -58,10 +58,10 @@ namespace ADAPTER
 
     /// @name Extract interface values
 
-    /// extract interface displacements at t_{n}
+    /// extract interface displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn();
 
-    /// extract interface displacements at t_{n+1}
+    /// extract interface displacements at \f$t_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
 
     /// Predictor for interface displacements

@@ -1540,7 +1540,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
   {
     iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->SlaveDofRowMap(),true));
     Teuchos::RCP<Epetra_Vector> idispale =
-        AleToFluidInterface(AleField().Interface()->ExtractFSICondVector(AleField().ExtractDispnp()));
+        AleToFluidInterface(AleField().Interface()->ExtractFSICondVector(AleField().WriteAccessDispnp()));
 
     slideale_->Remeshing(*StructureField(),
                         FluidField().Discretization(),
@@ -1558,7 +1558,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
     temp->ReplaceMap(idispale->Map());
     Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(temp);
     AleField().ApplyInterfaceDisplacements(acx);
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
 
     Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(FluidField().ExtractInterfaceVelnp());
     FluidField().ApplyInterfaceVelocities(unew);

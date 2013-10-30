@@ -416,7 +416,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     FluidField()->Discretization()->ClearState();
     linesearch_counter=0.;
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
-    meshdispold_ = AleToFluid(AleField()->ExtractDispnp());
+    meshdispold_ = AleToFluid(AleField()->WriteAccessDispnp());
     porointerfacedisplacementsold_ = StructToAle(PoroField() -> StructureField() -> ExtractInterfaceDispnp());
   }
 
@@ -443,7 +443,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   AleField()->Interface()->InsertOtherVector(ax,fullax);
   AleField()  -> Evaluate(fullax,"iter");
 
-  Teuchos::RCP<Epetra_Vector> aledisplacements = AleToFluid(AleField()->ExtractDispnp());
+  Teuchos::RCP<Epetra_Vector> aledisplacements = AleToFluid(AleField()->WriteAccessDispnp());
   FluidField()->ApplyMeshDisplacement(aledisplacements);
   FluidField()->UpdateNewton(fx);
   FluidField()->Evaluate(Teuchos::null);

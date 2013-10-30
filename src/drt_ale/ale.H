@@ -76,6 +76,8 @@ namespace UTILS
  */
 class Ale
 {
+  friend class AleResultTest;
+
 public:
 
   Ale(Teuchos::RCP<DRT::Discretization> actdis,
@@ -165,11 +167,11 @@ public:
 
   //! @name Extract displacement
 
-  /// the whole displacement field at time step \f$t^{n+1}\f$ is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() const = 0;
+  /// write access to whole displacement field at time step \f$t^{n+1}\f$
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const = 0;
 
-  /// the whole displacement field at time step \f$t^{n}\f$ is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() const = 0;
+  /// write access to whole displacement field at time step \f$t^{n}\f$
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() const = 0;
 
   //@}
 
@@ -180,9 +182,6 @@ public:
 
   /// rhs of Newton's method
   Teuchos::RCP<Epetra_Vector> RHS() const { return residual_; }
-
-  /// unknown velocities (and pressures) at t(n+1)
-  Teuchos::RCP<Epetra_Vector> Disp() { return dispnp_; }
 
   //@}
 

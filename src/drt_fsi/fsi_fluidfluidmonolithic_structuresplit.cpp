@@ -1682,7 +1682,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
 
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton)
   {
-    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
   }
 
   // calling RecoverLagrangeMultiplier() in nonox inmplementaion happens here.
@@ -1694,7 +1694,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
     if (Comm().MyPID() == 0)
     	std::cout << "Relaxing Ale.." << std::endl;
     AleField().SolveAleXFluidFluidFSI();
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
   }
 
 

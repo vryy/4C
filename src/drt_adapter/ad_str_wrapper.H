@@ -49,19 +49,23 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Dispn()
     { return structure_->Dispn(); }
 
-    ///  velocity at \f$t_{n-1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm()
-    { return structure_->Velnm(); }
-
     /// unknown velocity at \f$t_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp()
     { return structure_->Velnp(); }
 
-    /// unknown velocity at \f$t_{n}\f$
+    /// known velocity at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Veln()
     { return structure_->Veln(); }
 
-    /// unknown velocity at \f$t_{n}\f$
+    /// known velocity at \f$t_{n-1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm()
+    { return structure_->Velnm(); }
+
+    /// unknown acceleration at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp()
+    { return structure_->Accnp(); }
+
+    /// known acceleration at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn()
     { return structure_->Accn(); }
 
@@ -331,32 +335,28 @@ namespace ADAPTER
     //@}
 
 
-    //! @name Extract methods
+    //! @name Access routines with writing access
     //@{
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp()
-    { return structure_->ExtractDispnp(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp()
+    { return structure_->WriteAccessDispnp(); }
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn()
-    { return structure_->ExtractDispn(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn()
+    { return structure_->WriteAccessDispn(); }
 
     /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln()
-    { return structure_->ExtractVeln(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln()
+    { return structure_->WriteAccessVeln(); }
 
     /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp()
-    { return structure_->ExtractVelnp(); }
-
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf()
-    { return structure_->ExtractVelaf(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()
+    { return structure_->WriteAccessVelnp(); }
 
     /// extract accelerations
-    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn()
-    { return structure_->ExtractAccn(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccn()
+    { return structure_->WriteAccessAccn(); }
 
     /// extract rhs (used to calculate reaction force for post-processing)
     virtual Teuchos::RCP<Epetra_Vector> Freact()

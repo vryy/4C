@@ -25,7 +25,7 @@ Maintainer: Ulrich Kuettler
 ALE::AleResultTest::AleResultTest(ALE::Ale& ale)
 : DRT::ResultTest("ALE"),
   aledis_(ale.Discretization()),
-          dispnp_(ale.Disp())
+          dispnp_(ale.dispnp_)
 {
 }
 

@@ -670,48 +670,62 @@ namespace STR
     //! right-hand-side of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
-    //! Return displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
 
-    //! Return material displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Dismat() { return (*dism_)(0); }
-
-    //! known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
-
-    //! Return displacements \f$D_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> DisNew() { return disn_; }
+    //! @name Access from outside via adapter (needed for coupled problems)
+    //@{
 
     //! unknown displacements at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
 
-    //! unknown velocities \f$V_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Veln() { return (*vel_)(0); }
+    //! known displacements at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
 
-    //! unknown accelerations \f$A_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
-
-    //! velocities \f$V_{n-1}\f$
-    //! unknown velocities \f$V_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Velnm() { return (*vel_)(-1); }
-
-    //! Return velocities \f$V_{n+1}\f$
+    //! unknown velocity at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
 
-    //! Return velocities \f$V_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Vel() { return (*vel_)(0); }
+    //! unknown velocity at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Veln() { return (*vel_)(0); }
+
+    //! known velocity at \f$t_{n-1}\f$
+    Teuchos::RCP<const Epetra_Vector> Velnm() { return (*vel_)(-1); }
+
+    //! known accelerations at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
+
+    //! known accelerations at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
+
+    //@}
+
+    //! Access from inside of the structural time integrator
+    //@{
+
+    //! Return material displacements \f$D_{n}\f$
+    Teuchos::RCP<Epetra_Vector> Dismat() { return (*dism_)(0); }
+
+    //! Return displacements \f$D_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> DisNew() { return disn_; }
+
+    //! Return displacements \f$D_{n}\f$
+    Teuchos::RCP<Epetra_Vector> Dis() { return (*dis_)(0); }
 
     //! Return velocities \f$V_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> VelNew() { return veln_; }
 
+    //! Return velocities \f$V_{n}\f$
+    Teuchos::RCP<Epetra_Vector> Vel() { return (*vel_)(0); }
+
     //! Return velocities \f$V_{n+1-a_f}\f$
     virtual Teuchos::RCP<Epetra_Vector> Velaf() = 0;
+
+    //! Return accelerations \f$A_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> AccNew() { return accn_; }
 
     //! Return accelerations \f$A_{n}\f$
     Teuchos::RCP<Epetra_Vector> Acc() { return (*acc_)(0); }
 
-    //! Return accelerations \f$A_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> AccNew() { return accn_; }
+    //@}
+
 
     //! Return external force \f$F_{ext,n}\f$
     virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
@@ -844,22 +858,19 @@ namespace STR
     //@{
 
     /// extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp(){ return DisNew(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp(){ return DisNew(); }
 
     //! extract displacements
-    virtual Teuchos::RCP<Epetra_Vector> ExtractDispn(){ return Dis(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn(){ return Dis(); }
 
     //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVeln(){ return Vel(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln(){ return Vel(); }
 
     //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp(){ return VelNew(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return VelNew(); }
 
     //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf(){ return Velaf(); }
-
-    //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> ExtractAccn(){ return Acc(); }
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccn(){ return Acc(); }
 
     //@}
 

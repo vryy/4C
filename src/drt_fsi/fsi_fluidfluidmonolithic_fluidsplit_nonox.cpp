@@ -1113,7 +1113,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Update()
 	if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
 	{
 		//Set the old state of ALE displacement before relaxation
-		FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+		FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
 	}
 
 	RecoverLagrangeMultiplier();
@@ -1130,7 +1130,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Update()
 		AleField().SolveAleXFluidFluidFSI();
 		//Now apply the ALE-displacement to the (embedded!) fluid and update the
 		//grid velocity!
-		FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+		FluidField().ApplyMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
 	}
 
 	//Call Update() method for all fields

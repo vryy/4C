@@ -253,8 +253,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->SetState("veln",fluid_->Veln());
   fluiddis_->SetState("velnm",fluid_->Velnm());
 
-  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->ExtractDispn();
-  Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->ExtractVeln();
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->WriteAccessDispn();
+  Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->WriteAccessVeln();
   Teuchos::RCP<Epetra_Vector> bubbleradius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadius();
 
   // vectors to be filled with forces, note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
@@ -646,8 +646,8 @@ void CAVITATION::Algorithm::ParticleInflow()
   // insert data for new bubbles into state vectors
   const Epetra_Map* dofrowmap = particledis_->DofRowMap();
   const Epetra_Map* noderowmap = particledis_->NodeRowMap();
-  Teuchos::RCP<Epetra_Vector> disn = particles_->ExtractDispnp();
-  Teuchos::RCP<Epetra_Vector> veln = particles_->ExtractVelnp();
+  Teuchos::RCP<Epetra_Vector> disn = particles_->WriteAccessDispnp();
+  Teuchos::RCP<Epetra_Vector> veln = particles_->WriteAccessVelnp();
   Teuchos::RCP<Epetra_Vector> radiusn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadius();
   Teuchos::RCP<Epetra_Vector> massn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractMass();
   double density = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();

@@ -276,7 +276,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::Monolithic::CalcVelocity(Teuchos::RCP<
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector(*(StructureField()->ExtractDispn())));
+  vel = Teuchos::rcp(new Epetra_Vector(*(StructureField()->WriteAccessDispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / Dt(), *sx, -1. / Dt());
@@ -995,7 +995,7 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
 
   StructureField()->Discretization()->ClearState();
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
-  StructureField()->Discretization()->SetState(0,"velocity",StructureField()->ExtractVelnp());
+  StructureField()->Discretization()->SetState(0,"velocity",StructureField()->WriteAccessVelnp());
 
   StructureField()->SetCouplingState();
 
@@ -1186,7 +1186,7 @@ void POROELAST::Monolithic::PoroFDCheck()
     std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
     std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
     std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
-    std::cout << "gridvel struct" << std::endl << *(StructureField()->ExtractVelnp());
+    std::cout << "gridvel struct" << std::endl << *(StructureField()->WriteAccessVelnp());
   }
 
   const int zeilennr = -1;
@@ -1239,7 +1239,7 @@ void POROELAST::Monolithic::PoroFDCheck()
         std::cout << "fluid vel" << std::endl << *(FluidField()->Velnp());
         std::cout << "fluid acc" << std::endl << *(FluidField()->Accnp());
         std::cout << "gridvel fluid" << std::endl << *(FluidField()->GridVel());
-        std::cout << "gridvel struct" << std::endl << *(StructureField()->ExtractVelnp());
+        std::cout << "gridvel struct" << std::endl << *(StructureField()->WriteAccessVelnp());
 
         std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): "
             << (*rhs_copy)[zeilennr] << std::endl;
