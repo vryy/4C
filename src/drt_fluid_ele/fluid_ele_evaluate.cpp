@@ -150,13 +150,13 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
   const int nsd = DRT::UTILS::getDimension(Shape());
 
   // switch between different physical types as used below
-  std::string physical_type = "std";
+  std::string impltype = "std";
   switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
   {
-  case INPAR::FLUID::loma: physical_type = "loma"; break;
-  case INPAR::FLUID::poro: physical_type = "poro"; break;
-  case INPAR::FLUID::poro_p1: physical_type = "poro_p1"; break;
-  case INPAR::FLUID::poro_p2: physical_type = "poro_p2"; break;
+  case INPAR::FLUID::loma:    impltype = "loma";    break;
+  case INPAR::FLUID::poro:    impltype = "poro";    break;
+  case INPAR::FLUID::poro_p1: impltype = "poro_p1"; break;
+  case INPAR::FLUID::poro_p2: impltype = "poro_p2"; break;
   }
 
   switch(act)
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), physical_type)->Evaluate(
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->Evaluate(
               this,
               discretization,
               lm,
@@ -188,7 +188,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     /***********************************************/
     case FLD::calc_porousflow_fluid_coupling:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), physical_type)->Evaluate(
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->Evaluate(
             this,
             discretization,
             lm,
