@@ -409,7 +409,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   Teuchos::RCP<LINALG::SparseMatrix> BTB = LINALG::Multiply(*B,true,*B,false,true);
 
   Teuchos::RCP<Epetra_Vector> BTvR = Teuchos::rcp(new Epetra_Vector(*domainmap));
-  B->Multiply(true,*fluidimpl_->WriteAccessVelnp(),*BTvR);
+  B->Multiply(true,*fluidimpl_->Velnp(),*BTvR);
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*dbcfsimap, true));
 
   domainmapex->InsertCondVector(zeros,BTvR);
@@ -439,7 +439,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   solver->Solve(BTB->EpetraOperator(),x,BTvR,true,true);
 
-  Teuchos::RCP<Epetra_Vector> vmod = Teuchos::rcp(new Epetra_Vector(fluidimpl_->WriteAccessVelnp()->Map(),true));
+  Teuchos::RCP<Epetra_Vector> vmod = Teuchos::rcp(new Epetra_Vector(fluidimpl_->Velnp()->Map(),true));
   B->Apply(*x,*vmod);
   fluidimpl_->WriteAccessVelnp()->Update(-1.0, *vmod, 1.0);
 }

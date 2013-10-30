@@ -589,21 +589,18 @@ void ALE::AleSprings::EvaluateElements()
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ALE::AleSprings::Dispnp() const
+{
+  return incr_;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ALE::AleSprings::WriteAccessDispnp() const
 {
   return incr_;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ALE::AleSprings::WriteAccessDispn() const
-{
-  dserror("ExtractDispn() not implemented, yet.");
-  return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*

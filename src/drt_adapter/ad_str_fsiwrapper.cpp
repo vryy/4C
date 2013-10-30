@@ -98,7 +98,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     }
     else
     {
-      idis  = interface_->ExtractFSICondVector(WriteAccessDispn());
+      idis  = interface_->ExtractFSICondVector(Dispn());
     }
     break;
   }
@@ -114,9 +114,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
 
     double dt = GetTimeStepSize();
 
-    idis = interface_->ExtractFSICondVector(WriteAccessDispn());
+    idis = interface_->ExtractFSICondVector(Dispn());
     Teuchos::RCP<Epetra_Vector> ivel
-      = interface_->ExtractFSICondVector(WriteAccessVeln());
+      = interface_->ExtractFSICondVector(Veln());
 
     idis->Update(dt,* ivel, 1.0);
     break;
@@ -129,11 +129,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
 
     double dt = GetTimeStepSize();
 
-    idis = interface_->ExtractFSICondVector(WriteAccessDispn());
+    idis = interface_->ExtractFSICondVector(Dispn());
     Teuchos::RCP<Epetra_Vector> ivel
-      = interface_->ExtractFSICondVector(WriteAccessVeln());
+      = interface_->ExtractFSICondVector(Veln());
     Teuchos::RCP<Epetra_Vector> iacc
-      = interface_->ExtractFSICondVector(WriteAccessAccn());
+      = interface_->ExtractFSICondVector(Accn());
 
     idis->Update(dt, *ivel, 0.5*dt*dt, *iacc, 1.0);
     break;
@@ -169,7 +169,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispn(
   }
   else
   {
-    return interface_->ExtractFSICondVector(WriteAccessDispn());
+    return interface_->ExtractFSICondVector(Dispn());
   }
 }
 
@@ -197,7 +197,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
   }
   else
   {
-    return interface_->ExtractFSICondVector(WriteAccessDispnp());
+    return interface_->ExtractFSICondVector(Dispnp());
   }
 }
 

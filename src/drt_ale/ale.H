@@ -165,13 +165,18 @@ public:
 
   //@}
 
-  //! @name Extract displacement
+  //! @name Reading access to displacement
+  //@{
+
+  /// get the whole displacement field at time step \f$t^{n+1}\f$
+  virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
+
+  //@}
+
+  //! @name Writing access to displacement
 
   /// write access to whole displacement field at time step \f$t^{n+1}\f$
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const = 0;
-
-  /// write access to whole displacement field at time step \f$t^{n}\f$
-  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() const = 0;
 
   //@}
 

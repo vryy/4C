@@ -263,12 +263,12 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   {
     Epetra_Time ta(Comm());
-    AleField()      .Evaluate(ax);
+    AleField().Evaluate(ax);
     Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().WriteAccessDispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().Dispnp());
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
   {

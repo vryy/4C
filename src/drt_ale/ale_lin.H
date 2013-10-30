@@ -57,13 +57,18 @@ public:
   virtual void Output();
   //@}
 
-  //! @name Access methods
+  //! @name Reading access to displacement
+  //@{
+
+  /// get the whole displacement field at time step \f$t^{n+1}\f$
+  virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const { return dispnp_; }
+
+  //@}
+
+  //! @name Writing access to displacement
 
   /// write access to whole displacement field at time step \f$t^{n+1}\f$
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const { return dispnp_; }
-
-  /// write access to whole displacement field at time step \f$t^{n}\f$
-  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() const { return dispn_; }
 
   //@}
 

@@ -55,17 +55,22 @@ public:
 
   Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return Teuchos::null; }
 
-  //! @name Access methods
+  //! @name Reading access to displacement
+  //@{
+
+  /// get the whole displacement field at time step \f$t^{n+1}\f$
+  virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
+
+  //@}
+
+  //! @name Writing access to displacement
 
   /// write access to whole displacement field at time step \f$t^{n+1}\f$
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const;
 
-  /// write access to whole displacement field at time step \f$t^{n}\f$ is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() const;
+  //@}
 
   virtual void SolveAleXFluidFluidFSI();
-
-  //@}
 
   // Solve call for biofilm growth
   virtual void SolveBioGr();
