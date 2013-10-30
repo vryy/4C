@@ -20,6 +20,9 @@ Maintainer: Mahmoud Ismail
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/maxwell_0d_acinus.H"
+#include "../drt_mat/air_0d_O2_saturation.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
@@ -27,6 +30,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_gder2.H"
 #include <fstream>
 #include <iomanip>
 
@@ -80,7 +84,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   RCP<MAT::Material> mat)
 {
   //  const int   myrank  = discretization.Comm().MyPID();
-  
+
   //  const int numnode = iel;
   const int elemVecdim = elevec1_epetra.Length () ;
   std::vector<int>::iterator it_vcr;
@@ -127,7 +131,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
   RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
   RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
-  
+
   RCP<Epetra_Vector> sysmat_iad = params.get<RCP<Epetra_Vector> >("sysmat_iad");
 
  if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
@@ -196,20 +200,16 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
          time,
          dt);
 
+  elemat1_epetra(1,0)=0.0;
+  elemat1_epetra(1,1)=0.0;
+  elevec1_epetra(1)  =0.0;
+
   for (unsigned int i=0;i<lm.size();i++)
   {
     int    gid = lm[i];
     double val = elemat1_epetra(i,i);
     sysmat_iad->ReplaceGlobalValues(1,&val,&gid);
   }
-
-#if 0
-  std::cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
-  std::cout<<"sysmat: "<<elemat1_epetra<<std::endl;
-  std::cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
-  std::cout<<"rhs: "<<elevec1_epetra<<std::endl;
-  std::cout<<">>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
-#endif
 
   return 0;
 }
@@ -221,7 +221,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   RedAcinus*                             ele,
-  Teuchos::ParameterList&                         params,
+  Teuchos::ParameterList&                params,
   DRT::Discretization&                   discretization,
   std::vector<int>&                      lm,
   Teuchos::RCP<const MAT::Material>      material)
@@ -233,8 +233,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   RCP<Epetra_Vector> p0n     = params.get<RCP<Epetra_Vector> >("p0n");
   RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
 
-  RCP<Epetra_Vector> radii   = params.get<RCP<Epetra_Vector> >("radii");
-
   RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
   RCP<Epetra_Vector> a_bc          = params.get<RCP<Epetra_Vector> >("acini_bc");
 
@@ -243,7 +241,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
 
   //  std::vector<int>::iterator it = lm.begin();
 
-  //vector<int> lmowner;
+  //std::vector<int> lmowner;
   std::vector<int> lmstride;
   RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
@@ -260,9 +258,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
     p0nm->ReplaceGlobalValues(1,&val,&gid);
 
   }
+
+  // find the volume of an acinus conditions
   {
-    
-    // find the volume of an acinus condition
     int    gid2 = ele->Id();
     double acin_vol = 0.0;
     ele->getParams("AcinusVolume",acin_vol);
@@ -275,7 +273,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   //  if(myrank == ele->Owner())
   for (int i = 0; i<2; i++)
   {
-    if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond")||ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+    if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
     {
       // find the acinus condition
       int    gid = ele->Id();
@@ -290,12 +288,73 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
     generations->ReplaceGlobalValues(1,&val,&gid);
   }
 
-#if 0
-  std::cout<<"!!!!!!!!!!!!-----------------------!!!!!!!!!!!!"<<std::endl;
-  std::cout<<"!!!!!!!!!!!!------ BRILLIANT ------!!!!!!!!!!!!"<<std::endl;
-  std::cout<<"!!!!!!!!!!!!-----------------------!!!!!!!!!!!!"<<std::endl;
-#endif
+  bool solveScatra = params.get<bool>("solveScatra");
+  RCP<Epetra_Vector>  junVolMix_Corrector;
+  RCP<Epetra_Vector>  scatranp;
+  RCP<Epetra_Vector>  e1scatranp;
+  RCP<Epetra_Vector>  e2scatranp;
 
+  if (solveScatra)
+  {
+    junVolMix_Corrector  = params.get<RCP<Epetra_Vector> >("junVolMix_Corrector");
+    scatranp             = params.get<RCP<Epetra_Vector> >("scatranp");
+    e1scatranp           = params.get<RCP<Epetra_Vector> >("e1scatranp");
+    e2scatranp           = params.get<RCP<Epetra_Vector> >("e2scatranp");
+  }
+
+  if (solveScatra)
+  {
+    double A=0.0;
+    double V=0.0;
+    ele->getParams("AcinusVolume",V);
+    ele->getParams("Area",A);
+    int    gid = lm[1];
+    junVolMix_Corrector->ReplaceGlobalValues(1,&A,&gid);
+
+    for (int sci=0;sci<iel;sci++)
+    {
+      int sgid = lm[sci];
+      int    esgid = ele->Id();
+      // -------------------------------------------------------------
+      //
+      // -------------------------------------------------------------
+      if (ele->Nodes()[sci]->GetCondition("RedAirwayScatraAirCond"))
+      {
+        double intSat = ele->Nodes()[sci]->GetCondition("RedAirwayScatraAirCond")->GetDouble("INITIAL_CONCENTRATION");
+        int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+        // check if O2 properties material exists
+        if (id==-1)
+        {
+          dserror("A material defining O2 properties in air could not be found");
+          exit(1);
+        }
+        const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+        const MAT::PAR::Air_0d_O2_saturation* actmat = static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+
+        // get atmospheric pressure
+        double patm = actmat->atmospheric_p_;
+        // get number of O2 moles per unit volume of O2
+        double nO2perVO2 = actmat->nO2_per_VO2_;
+
+        // calculate the PO2 at nodes
+        double pO2 = intSat*patm;
+
+        // calculate VO2
+        double vO2 = V*(pO2/patm);
+        // evaluate initial concentration
+        double intConc = nO2perVO2*vO2/V;
+
+        scatranp->ReplaceGlobalValues(1,&intConc,&sgid);
+        e1scatranp->ReplaceGlobalValues(1,&intConc,&esgid);
+        e2scatranp->ReplaceGlobalValues(1,&intConc,&esgid);
+      }
+      else
+      {
+        dserror("0D Acinus scatra must be predefined as \"air\" only");
+        exit(1);
+      }
+    }
+  }
 }//AcinusImpl::Initial
 
 /*----------------------------------------------------------------------*
@@ -328,12 +387,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     E2 = actmat->Stiffness2();
     Rt = actmat->Viscosity1();
     Ra = actmat->Viscosity2();
-#if 0
-    std::cout<<"E1: "<<E1<<std::endl;
-    std::cout<<"E2: "<<E2<<std::endl;
-    std::cout<<"Rt: "<<Rt<<std::endl;
-    std::cout<<"Ra: "<<Ra<<std::endl;
-#endif
   }
   else
   {
@@ -341,41 +394,13 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     exit(1);
   }
 
-#if 0
-  // set element data
-  const int numnode = iel;
-  // get node coordinates and number of elements per node
-  DRT::Node** nodes = ele->Nodes();
-
-  LINALG::Matrix<3,iel> xyze;
-  for (int inode=0; inode<numnode; inode++)
-  {
-    const double* x = nodes[inode]->X();
-    xyze(0,inode) = x[0];
-    xyze(1,inode) = x[1];
-    xyze(2,inode) = x[2];
-  }
-
-  // Calculate the length of acinus element
-  const double L=sqrt(
-            pow(xyze(0,0) - xyze(0,1),2)
-          + pow(xyze(1,0) - xyze(1,1),2)
-          + pow(xyze(2,0) - xyze(2,1),2));
-#endif
-
-
   // check here, if we really have an acinus !!
-
 
   rhs.Scale(0.0);
   sysmat.Scale(0.0);
 
 
   double q_out    = params.get<double>("qout_n");
-  //  double qout_np  = params.get<double>("qout_np");
-
-  //  double q_in    = params.get<double>("qin_n");
-  //  double qin_np  = params.get<double>("qin_np");
 
   // get the generation number
   int generation = 0;
@@ -387,11 +412,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
   // -------------------------------------------------------------------
   // Adding the acinus model if Prescribed
   // -------------------------------------------------------------------
-  
+
   double acin_vnp = params.get<double>("acin_vnp");
   double acin_vn  = params.get<double>("acin_vn");
-  
-  
+
+
   //------------------------------------------------------------------
   // Evaluate the number of acini on the end of an outlet.
   // This is hard coded for now, but will be fixed later
@@ -400,12 +425,12 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
   // Thus we should be given the total-acini-volume/total-t-bronchi-area
   // to calculate the number of Schroters acini at each outlet
   //------------------------------------------------------------------
-  
+
   double qnp = params.get<double>("qin_np");
   double qn  = params.get<double>("qin_n");
   double qnm = params.get<double>("qin_nm");
- 
-  
+
+
   //----------------------------------------------------------------
   // Read in the material information
   //----------------------------------------------------------------
@@ -416,30 +441,30 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
   //  std::cout<<"Acinus Vol: "<<VolAcinus<<std::endl;
   //  std::cout<<"AlvDuc Vol: "<<volAlvDuct<<std::endl;
   const double NumOfAcini = double(floor(VolAcinus/volAlvDuct));
-  
+
   if (NumOfAcini < 1.0)
   {
     dserror("Acinus condition at node (%d) has zero acini",ele->Id());
   }
-  
-  
+
+
   double p1nm = epnm(0);
   double p1n  = epn(0);
 
   double p2nm = epnm(1);
   double p2n  = epn(1);
-  
+
   double vnp= acin_vnp;
-  double vn = acin_vn;  
+  double vn = acin_vn;
 
   if (ele->Type() ==  "NeoHookean")
   {
     const double Kp_np = 1.0/(E1*dt);
     const double Kp_n  = 1.0/(E1*dt);
-    
+
     sysmat(0,0) = -1.0*(Kp_np)*NumOfAcini; sysmat(0,1) =  1.0*(Kp_np)*NumOfAcini;
     sysmat(1,0) =  1.0*(Kp_np)*NumOfAcini; sysmat(1,1) = -1.0*(Kp_np)*NumOfAcini;
-    
+
     rhs(0)      = -1.0*(Kp_n*(p1n-p2n))*NumOfAcini;
     rhs(1)      =  1.0*(Kp_n*(p1n-p2n))*NumOfAcini;
   }
@@ -447,10 +472,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
   {
     const double Kp_np = 2.0/(E1*dt) + 1.0/Rt;
     const double Kp_n  = 2.0/(E1*dt) - 1.0/Rt;
-    
+
     sysmat(0,0)  = -1.0*(Kp_np*NumOfAcini); sysmat(0,1)  =  1.0*(Kp_np*NumOfAcini);
     sysmat(1,0)  =  1.0*(Kp_np*NumOfAcini); sysmat(1,1)  = -1.0*(Kp_np*NumOfAcini);
-    
+
     rhs(0)       = -1.0*(q_out + p1n*NumOfAcini * Kp_n);
     rhs(1)       =  1.0*(q_out + p1n*NumOfAcini * Kp_n);
   }
@@ -461,119 +486,97 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     const double Kp_nm = -Rt/(dt*dt);
     const double Kq_np = E1*E2 + Rt*(E1 + E2)/dt;
     const double Kq_n  = -Rt*(E1+E2)/dt;
-    
+
     sysmat(0,0) = -1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( Kp_np/Kq_np)*NumOfAcini;
     sysmat(1,0) =  1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( Kp_np/Kq_np)*NumOfAcini;
-    
+
     rhs(0)      = -1.0*((Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
     rhs(1)      =  1.0*((Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
-    
+
   }
   else if (ele->Type() ==  "ViscoElastic_3dof")
   {
     const double Kp_np = Rt/(dt*dt) + E2/dt;
     const double Kp_n  = -2.0*Rt/(dt*dt) - E2/dt;
     const double Kp_nm = Rt/(dt*dt);
-    
+
     const double Kq_np = Ra*Rt/(dt*dt) + (E1*Rt + E2*Ra + E2*Rt)/dt + E1*E2;
     const double Kq_n  = -2.0*Ra*Rt/(dt*dt) - (E1*Rt + E2*Ra + E2*Rt)/dt;
     const double Kq_nm = Ra*Rt/(dt*dt);
-    
+
     sysmat(0,0) = -1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( Kp_np/Kq_np)*NumOfAcini;
     sysmat(1,0) =  1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( Kp_np/Kq_np)*NumOfAcini;
-    
+
     rhs(0)      = -1.0*(-(Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
     rhs(1)      =  1.0*(-(Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
-    
+
   }
   else if (ele->Type() ==  "Exponential")
   {
     const double Vo  = volAlvDuct;
     double dvnp= (vnp/NumOfAcini)- Vo;
-    double dvn = (vn /NumOfAcini)- Vo; 
-    
+    double dvn = (vn /NumOfAcini)- Vo;
+
     //------------------------------------------------------------
     // V  = A + B*exp(-K*P)
     //
     // The P-V curve is fitted to create the following
     // P1 = E1.(V-Vo)
-    // 
+    //
     // E1 = a + b.(V-Vo) + c.exp(d.(V-Vo))
     //------------------------------------------------------------
-    
+
     double kp_np = Rt/(E2*dt)+1;
     double kp_n  =-Rt/(E2*dt);
     double kq_np = Rt*Ra/(E2*dt) + (Ra+Rt);
     double kq_n  =-Rt*Ra/(E2*dt);
-    
+
     double term_nonlin = 0.0;
 
     //------------------------------------------------------------
-    // for now the (a,b,c,d) components are not read from the 
+    // for now the (a,b,c,d) components are not read from the
     // input file
     //------------------------------------------------------------
     double a = 6449.0 ;
     double b = 33557.7;
     double c = 6.5158;
     double d = 47.9892;
-    
+
     //------------------------------------------------------------
-    // get the terms assosciated with the nonlinear behavior of 
+    // get the terms assosciated with the nonlinear behavior of
     // E1
     //------------------------------------------------------------
     double pnpi = 0.0;
     double pnpi2= 0.0;
     double dpnpi_dt = 0.0;
     double dpnpi2_dt= 0.0;
-    
+
     // componets of linearized E1
     pnpi      = (a + b*dvnp + c*exp(d*dvnp))*dvnp;
     pnpi2     = (a + 2*b*dvnp + c*exp(d*dvnp)*(d*dvnp+1));
-    
+
     // componets of linearized d(E1)/dt
     dpnpi_dt  = (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))*(dvnp-dvn)/dt;
     dpnpi2_dt = (2*b+d*c*exp(d*dvnp)*(1+d*dvnp) + c*d*exp(d*dvnp))*(dvnp-dvn)/dt + (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))/dt;
-    
-#if 0
-    std::cout<<"+------+++++++ DEBUG +++++++------+"<<std::endl;
-    std::cout<<"pnpi: "<<pnpi<<std::endl;
-    std::cout<<"dvnp: "<<dvnp<<std::endl;
-    std::cout<<"pnpi2: "<<pnpi2<<std::endl;
-    std::cout<<"dpnpi_dt: "<<dpnpi_dt<<std::endl;
-    std::cout<<"dvn: "<<dvn<<std::endl;
-    std::cout<<"dt: "<<dt<<std::endl;
-    std::cout<<"dpnpi2_dt: "<<dpnpi2_dt<<std::endl;
-    std::cout<<"qn: "<<qn<<std::endl;
-    std::cout<<"+------+++++++ DEBUG +++++++------+"<<std::endl;
-#endif
-    
+
     term_nonlin = pnpi + pnpi2*(-(dvnp) +(qn/NumOfAcini)*dt/2 + dvn);
     kq_np = kq_np + pnpi2/2*dt;
     term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2 + dvn);
     kq_np = kq_np + dpnpi2_dt*Rt/E2/2*dt;
-    
-#if 0
-    std::cout<<"+------------- DEBUG -------------+"<<std::endl;
-    std::cout<<"NumOfAcini: "<<NumOfAcini<<std::endl;
-    std::cout<<"kp_np: "<< kp_np<<"\t"<<"kp_n: "<<kp_n<<std::endl;
-    std::cout<<"kq_np: "<< kq_np<<"\t"<<"kq_n: "<<kq_n<<"\t"<<"term_nonlin: "<<term_nonlin<<std::endl;
-    std::cout<<"+------------- DEBUG -------------+"<<std::endl;
-#endif
 
-
-    sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini; 
-    sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini; 
+    sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini;
+    sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini;
 
     rhs(0)      = -1.0*(-(kp_n*(p1n-p2n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
     rhs(1)      =  1.0*(-(kp_n*(p1n-p2n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
-   
+
   }
   else if (ele->Type() ==  "DoubleExponential")
   {
     const double Vo  = volAlvDuct;
     double dvnp= (vnp/NumOfAcini)- Vo;
     double dvn = (vn /NumOfAcini)- Vo;
-    
+
     //------------------------------------------------------------
     // V  = A + B*exp(-K*P)
     //
@@ -586,7 +589,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     double kp_n  =-Rt/(E2*dt);
     double kq_np = Rt*Ra/(E2*dt) + (Ra+Rt);
     double kq_n  =-Rt*Ra/(E2*dt);
-    
+
     double term_nonlin = 0.0;
     //------------------------------------------------------------
     // for now the (a,b,c,d) components are not read from the
@@ -597,18 +600,18 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     //        double b = 33557.7;
     //        double c = 6.5158;
     //        double d = 47.9892;
-    
+
     // NEW VALUES
     double a = 6510.99;
     double b = 3.5228E04;
     double c = 6.97154E-06;
     double d = 144.716;
-        
+
     double a2= 0.0;
     double b2= 0.0;
     double c2= 38000.0*1.4;
     double d2=-90.0000;
-    
+
     //------------------------------------------------------------
     // get the terms assosciated with the nonlinear behavior of
     // E1
@@ -621,30 +624,30 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
     // componets of linearized E1
     pnpi      = (a + b *dvnp + c *exp(d *dvnp))*dvnp;
     pnpi     += (a2+ b2*dvnp + c2*exp(d2*dvnp))*dvnp;
-    
+
     pnpi2     = (a + 2.0*b *dvnp + c *exp(d *dvnp)*(d *dvnp+1.0));
     pnpi2    += (a2+ 2.0*b2*dvnp + c2*exp(d2*dvnp)*(d2*dvnp+1.0));
 
     // componets of linearized d(E1)/dt
     dpnpi_dt  = (a +2.0*b *dvnp+c *exp(d *dvnp)*(1.0+d *dvnp))*(dvnp-dvn)/dt;
     dpnpi_dt += (a2+2.0*b2*dvnp+c2*exp(d2*dvnp)*(1.0+d2*dvnp))*(dvnp-dvn)/dt;
-    
+
     dpnpi2_dt = (2.0*b +d *c *exp(d *dvnp)*(1.0+d *dvnp) + c *d *exp(d *dvnp))*(dvnp-dvn)/dt + (a +2.0*b *dvnp+c *exp(d *dvnp)*(1.0+d *dvnp))/dt;
     dpnpi2_dt+= (2.0*b2+d2*c2*exp(d2*dvnp)*(1.0+d2*dvnp) + c2*d2*exp(d2*dvnp))*(dvnp-dvn)/dt + (a2+2.0*b2*dvnp+c2*exp(d2*dvnp)*(1.0+d2*dvnp))/dt;
-    
-    // Add up the nonlinear terms
-    
 
-    
+    // Add up the nonlinear terms
+
+
+
     //---------------
     term_nonlin = pnpi + pnpi2*(-(dvnp) +(qn/NumOfAcini)*dt/2.0 + dvn);
     kq_np = kq_np + pnpi2/2.0*dt;
     term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2.0 + dvn);
     kq_np = kq_np + dpnpi2_dt*Rt/E2/2.0*dt;
-    
+
     sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini;
     sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini;
-    
+
     rhs(0)      = -1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
     rhs(1)      =  1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
   }
@@ -719,8 +722,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = *(condition->Get<std::string>("boundarycond"));
-          
-        
+
           const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
           double curvefac = 1.0;
           const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
@@ -739,17 +741,25 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             dserror("no boundary condition defined!");
             exit(1);
           }
-          
+
           int functnum = -1;
           if (functions) functnum = (*functions)[0];
           else functnum = -1;
-          
+
           double functionfac = 0.0;
           if(functnum>0)
           {
             functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
           }
-          BCin += functionfac;
+
+          // get curve2
+          int curve2num = -1;
+          double curve2fac = 1.0;
+          if (curve) curve2num = (*curve)[1];
+          if (curve2num>=0 )
+            curve2fac = DRT::Problem::Instance()->Curve(curve2num).f(time);
+
+          BCin += functionfac*curve2fac;
 
           // -----------------------------------------------------------------------------
           // get the local id of the node to whome the bc is prescribed
@@ -775,7 +785,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
             exit(1);
           }
-          
+
           // -----------------------------------------------------------------
           // Read in Condition type
           // -----------------------------------------------------------------
@@ -785,7 +795,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           //
           //     In this case a map called map3D has the following form:
           //     +-----------------------------------------------------------+
-          //     |           std::map< std::string               ,  double        >    |
+          //     |           map< string               ,  double        >    |
           //     |     +------------------------------------------------+    |
           //     |     |  ID  | coupling variable name | variable value |    |
           //     |     +------------------------------------------------+    |
@@ -799,11 +809,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           //     |     +------+------------------------+----------------+    |
           //     +-----------------------------------------------------------+
           // -----------------------------------------------------------------
-          
+
           int ID = condition->GetInt("ConditionID");
           RCP<std::map<std::string,double> > map3D;
           map3D   = CoupledTo3DParams->get<RCP<std::map<std::string,double > > >("3D map of values");
-          
+
           // find the applied boundary variable
           std::stringstream stringID;
           stringID<< "_"<<ID;
@@ -826,7 +836,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
           // Get the type of prescribed bc
           Bc  = *(condition->Get<std::string>("phase1"));
-        
+
           double period  = condition->GetDouble("period");
           double period1 = condition->GetDouble("phase1_period");
 
@@ -864,7 +874,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           {
             dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i]->Id(),discretization.Comm().MyPID());
             exit(1);
-          } 
+          }
         }
         else
         {
@@ -875,13 +885,13 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         {
           RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-          
+
           if (bcval==null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
           }
-          
+
           if (Bc == "ExponentialPleuralPressure")
           {
             const double ap =  -977.203;
@@ -890,24 +900,24 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             const double dp =  2034.470;
             const double VFR   = 1240000.0;
             const double TLC   = 4760000.0 - VFR;
-            
+
             const double lungVolumenp = params.get<double>("lungVolume_np") - VFR;
 
             const double TLCnp= lungVolumenp/TLC;
 
             double Pp_np = ap + bp*exp(cp*TLCnp) + dp*TLCnp;
-            
+
             BCin += Pp_np;
-          }          
-          
+          }
+
           // set pressure at node i
-          int    gid; 
-          double val; 
-          
+          int    gid;
+          double val;
+
           gid = lm[i];
           val = BCin;
           bcval->ReplaceGlobalValues(1,&val,&gid);
-      
+
           gid = lm[i];
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
@@ -916,7 +926,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         else if (Bc == "flow")
         {
           // ----------------------------------------------------------
-          // Since a node might belong to multiple elements then the 
+          // Since a node might belong to multiple elements then the
           // flow might be added to the rhs multiple time.
           // To fix this the flow is devided by the number of elements
           // (which is the number of branches). Thus the sum of the
@@ -932,11 +942,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           //            dserror("Cannot get state vector 'rhs'");
           //            exit(1);
           //          }
-          
+
           // set pressure at node i
-          //          int    gid; 
-          //          double val; 
-          
+          //          int    gid;
+          //          double val;
+
           //          gid =  lm[i];
           //          std::cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<std::endl;
           rhs(i) += -BCin + rhs(i);
@@ -948,29 +958,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           dserror("precribed [%s] is not defined for reduced acinuss",Bc.c_str());
           exit(1);
         }
-        
-      }
-      
-      else if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
-      {
-        #if 0
-        int gid;
-        double val;
-        RCP<Epetra_Vector> abc  = params.get<RCP<Epetra_Vector> >("abc");
-        gid = lm[i];
-        val = 1;
-        abc->ReplaceGlobalValues(1,&val,&gid);
-        #endif
-        // ---------------------------------------------------------------
-        // If the node is conected to a reduced dimesnional acinus
-        // ---------------------------------------------------------------
-        
-        // At this state do nothing, since this boundary is resolved
-        // during the assembly of Sysmat and RHS
+
       }
       else
       {
-        #if 1
         // ---------------------------------------------------------------
         // If the node is a terminal node, but no b.c is prescribed to it
         // then a zero output pressure is assumed
@@ -987,25 +978,25 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
             exit(1);
           }
-          
+
           RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
-          
+
           if (bcval==null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
-          }        
-          
-          
+          }
+
+
           // set pressure at node i
-          int    gid; 
-          double val; 
-          
+          int    gid;
+          double val;
+
           gid = lm[i];
           val = 0.0;
           bcval->ReplaceGlobalValues(1,&val,&gid);
-          
+
           gid = lm[i];
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
@@ -1013,33 +1004,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           //          const double* X = ele->Nodes()[i]->X();
           //          printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
         }
-        #endif
-
-        #if 0
-        // ---------------------------------------------------------------
-        // If the node is a terminal node, but no b.c is prescribed to it
-        // then a zero output pressure is assumed
-        // ---------------------------------------------------------------
-        if (ele->Nodes()[i]->NumElement() == 1)
-        {
-          RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
-          if (rhs==Teuchos::null)
-          {
-            dserror("Cannot get state vector 'rhs'");
-            exit(1);
-          }
-          
-          // set pressure at node i
-          int    gid; 
-          double val; 
-          
-          gid =  lm[i];
-          val =  0.0;
-          //rhs->ReplaceGlobalValues(1,&val,&gid);
-        }
-        #endif
       } // END of if there is no BC but the node still is at the terminal
-      
+
     } // END of if node is available on this processor
   } // End of node i has a condition
 }
@@ -1054,17 +1020,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   RedAcinus*                   ele,
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  Epetra_SerialDenseVector&    elevec1, //a_volumenp,
-  Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
   std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 
-#if 1
 {
-  
+
   //  const int numnode = iel;
-  const int elemVecdim = elevec1.Length () ;
-  std::vector<int>::iterator it_vcr;
+  const int elemVecdim = lm.size() ;
+//  std::vector<int>::iterator it_vcr;
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -1176,18 +1139,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
 
   double qn = (*qin_n  )[ele->LID()];
   double qnp= -1.0*(sysmat(0,0)*epnp(0) + sysmat(0,1)*epnp(1) - rhs(0));
-#if 0
-  std::cout<<"Calculating FLOWRATE (Q): "<<qnp<<std::endl;
-  std::cout<<"["<<ele->LID()<<"] Q calc: -("<<sysmat(0,0)<<"*"<<epnp(0)<<"+"<<sysmat(0,1)<<"*"<<epnp(1)<<"-"<<rhs(0)<<")"<<std::endl;
-  std::cout<<"p1: "<<epnp(0)<<" \tp2: "<<epnp(1)<<std::endl;
-  std::cout<<"rhs=("<<rhs(0)<<","<<rhs(1)<<")"<<std::endl;
-  std::cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
-  std::cout<<"Q sysmat: "<<sysmat<<std::endl;
-  std::cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
-  std::cout<<"Q rhs: "<<rhs<<std::endl;
-  std::cout<<"Q>>>>>>>>>>>>>>>>>===================>>>>>>>>>>>>>>>>>"<<std::endl;
-#endif
-
 
   //  ele->setVars("flow_in",qin);
   //  ele->setVars("flow_out",qout);
@@ -1199,7 +1150,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
     double acinus_volume = e_acin_vn;
     acinus_volume +=  0.5*(qnp+qn)*dt;
     acinar_vnp-> ReplaceGlobalValues(1,& acinus_volume,&gid);
-    
+
     //----------------------------------------------------------------
     // Read in the material information
     //----------------------------------------------------------------
@@ -1208,312 +1159,36 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
     double avs_np = (acinus_volume - vo)/vo;
     a_volume_strain_np -> ReplaceGlobalValues(1,&avs_np,&gid);
   }
-
-
 }
-#else
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate the values of the degrees of freedom           ismail 07/13|
+ |  at terminal nodes.                                                  |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(
+  RedAcinus*                   ele,
+  Teuchos::ParameterList&      params,
+  DRT::Discretization&         discretization,
+  std::vector<int>&            lm,
+  RCP<MAT::Material>   material)
+
 {
-  //  const int   myrank  = discretization.Comm().MyPID();
+  // get all essential vector variables
+  RCP<Epetra_Vector> acinar_vnp   = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  RCP<Epetra_Vector> elemVolumenp = params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
-  //  const int numnode = iel;
+  // get acinus size
+  double evolnp = (*elemVolumenp)[ele->LID()];
 
-  RCP<const Epetra_Vector> pnp   = discretization.GetState("pnp");
-  RCP<const Epetra_Vector> pn    = discretization.GetState("pn");
-  RCP<const Epetra_Vector> acinar_vn = discretization.GetState("acinar_vn");
-
-  RCP<Epetra_Vector> qin_np      = params.get<RCP<Epetra_Vector> >("qin_np");
-  RCP<Epetra_Vector> qout_np     = params.get<RCP<Epetra_Vector> >("qout_np");
-  RCP<Epetra_Vector> qin_n       = params.get<RCP<Epetra_Vector> >("qin_n");
-  RCP<Epetra_Vector> qout_n      = params.get<RCP<Epetra_Vector> >("qout_n");
-
-  // get time-step size
-  const double dt = params.get<double>("time step size");
-
-  double dens = 0.0;
-  double visc = 0.0;
-
-  if(material->MaterialType() == INPAR::MAT::m_fluid)
-  {
-    // get actual material
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
-
-    // get density
-    dens = actmat->Density();
-    
-    // get dynamic viscosity
-    visc = actmat->Viscosity();
-  }
-  else
-  {
-    dserror("Material law is not a Newtonia fluid");
-    exit(1);
-  }
-
-  // extract local values from the global vectors
-  std::vector<double> mypnp(lm.size());
-  std::vector<double> mypn (lm.size());
-  std::vector<double> myacinar_vn (lm.size());
-
-  DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
-  DRT::UTILS::ExtractMyValues(*pn ,mypn ,lm);
-  DRT::UTILS::ExtractMyValues(*acinar_vn,myacinar_vn,lm);
-
-  const int numnode = lm.size();
-
-  // create objects for element arrays
-  //  LINALG::Matrix<numnode,1> epnp;
-  Epetra_SerialDenseVector epnp(numnode);
-  Epetra_SerialDenseVector epn(numnode);
-  Epetra_SerialDenseVector a_volumen(numnode);
-  for (unsigned int i=0;i<lm.size();++i)
-  {
-    // split area and volumetric flow rate, insert into element arrays
-    epnp(i)      = mypnp[i];
-    epn(i)       = mypn[i];
-    a_volumen(i) = myacinar_vn[i];    
-  }
-
-
-  // get node coordinates and number of elements per node
-  DRT::Node** nodes = ele->Nodes();
-
-  LINALG::Matrix<3,iel> xyze;
-  for (int inode=0; inode<iel; inode++)
-  {
-    const double* x = nodes[inode]->X();
-    xyze(0,inode) = x[0];
-    xyze(1,inode) = x[1];
-    xyze(2,inode) = x[2];
-  }
-
-
-  // Calculate the length of acinus element
-  const double L=sqrt(
-            pow(xyze(0,0) - xyze(0,1),2)
-          + pow(xyze(1,0) - xyze(1,1),2)
-          + pow(xyze(2,0) - xyze(2,1),2));
-
-
-  //--------------------------------------------------------------
-  //               Get the elements flow in/out
-  //--------------------------------------------------------------
-  double eqin_n   = (*qin_n  )[ele->LID()];
-  double eqout_n  = (*qout_n )[ele->LID()];
-  double eqin_np  = (*qin_np )[ele->LID()];
-  double eqout_np = (*qout_np)[ele->LID()];
-
-  // get the generation number
-  int generation = 0;
-  ele->getParams("Generation",generation);
-
-  double R = -1.0;
-
-  // get element information
-  double A;
-  ele->getParams("Area",A);
-  // evaluate Poiseuille resistance
-  double Rp = 8.0*PI*visc*L/(pow(A,2));
-  // evaluate the Reynolds number
-  const double Re = 2.0*fabs(eqout_np)/(visc/dens*sqrt(A*PI));
-  if (ele->Resistance() == "Poiseuille")
-  {
-    R = Rp;
-  }
-  else if (ele->Resistance() == "Pedley")
-  {
-    //-----------------------------------------------------------------
-    // resistance evaluated using Pedley's model from :
-    // Pedley et al (1970)
-    //-----------------------------------------------------------------
-    double gamma = 0.327;
-    R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-    
-    //-----------------------------------------------------------------
-    // Correct any resistance smaller than Poiseuille's one
-    //-----------------------------------------------------------------
-    //  if (R < Rp)
-    //    {
-    //      R = Rp;
-    //    }
-    double alfa = sqrt(2.0*sqrt(A/PI)/L);
-    double Rep  = 1.0/((gamma*alfa)*(gamma*alfa));
-    double k    = 0.50;
-    double st   = 1.0/(1.0+exp(-2*k*(Re-Rep)));
-    
-    R = R*st + Rp*(1.0-st);
-
-  }
-  else if (ele->Resistance() == "Generation_Dependent_Pedley")
-  {
-    //-----------------------------------------------------------------
-    // Gamma is taken from Ertbruggen et al
-    //-----------------------------------------------------------------
-    double gamma = 0.327;
-    switch(generation)
-    {
-    case 0: 
-      gamma = 0.162;
-      break;
-    case 1: 
-      gamma = 0.239;
-      break;
-    case 2: 
-      gamma = 0.244;
-      break;
-    case 3: 
-      gamma = 0.295;
-      break;
-    case 4: 
-      gamma = 0.175;
-      break;
-    case 5: 
-      gamma = 0.303;
-      break;
-    case 6: 
-      gamma = 0.356;
-      break;
-    case 7: 
-      gamma = 0.566;
-      break;
-    default:
-      gamma = 0.327;
-    }
-    //-----------------------------------------------------------------
-    // resistance evaluated using Pedley's model from :
-    // Pedley et al (1970)
-    //-----------------------------------------------------------------
-    R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-    
-    //-----------------------------------------------------------------
-    // Correct any resistance smaller than Poiseuille's one
-    //-----------------------------------------------------------------
-    if (R < Rp)
-    {
-      R = Rp;
-    }
-  }
-  else if (ele->Resistance() == "Reynolds")
-  {
-    R = Rp *(3.4+2.1e-3 *Re);
-  }
-  else
-  {
-    dserror("[%s] is not a defined resistance model",ele->Resistance().c_str());
-  }
-  
-  // ------------------------------------------------------------------
-  // Find the acinus type
-  // ------------------------------------------------------------------
-  if(ele->Type() == "Resistive")
-  {
-    eqin_np = eqout_np = (epnp(0)-epnp(1))/R;
-  }
-  else if(ele->Type() == "InductoResistive")
-  {
-    // get element information
-    double  Ew, tw;
-    ele->getParams("WallCompliance",Ew);
-    ele->getParams("WallThickness",tw);
-  }
-  else if(ele->Type() == "ComplientResistive")
-  {
-    // get element information
-    double Ew, tw;
-    ele->getParams("WallCompliance",Ew);
-    ele->getParams("WallThickness",tw);
-
- 
-    // find Capacitance C
-    const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
-
-    // get element information from the previous time step
-    double qcn =  eqin_n - eqout_n;
-
-    // -----------------------------------------------------------
-    // calculate capacitance flow at time step n+1
-    // -----------------------------------------------------------
-    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
-
-    eqout_np = (epnp(0)-epnp(1))/R;
-
-    eqin_np  = eqout_np + qcnp_val;
-    
-  }
-  else if(ele->Type() == "RLC")
-  {
-    // get element information
-    double Ew, tw;
-    ele->getParams("WallCompliance",Ew);
-    ele->getParams("WallThickness",tw);
-
-    // find Capacitance C
-    const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
-
-    // find Inductance I
-    //    const double I = dens*L/A;
-
-    // get element information from the previous time step
-    double qcn,qln;
-    qcn = eqin_n - eqout_n;
-
-    // -----------------------------------------------------------
-    // calculate the inductance flow at time step n and n+1
-    // qln = qRn (qRn: flow in resistor at n)
-    // -----------------------------------------------------------
-    double qlnp = 0.0;
-    qln  = eqout_n;
-    qlnp = (epnp(2) - epnp(1))/R;
-
-    // -----------------------------------------------------------
-    // calculate capacitance flow at time step n+1
-    // -----------------------------------------------------------
-#if 1
-    double qcnp_val = (C/dt)*(epnp(0)-epn(0));
-#else
-    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
-#endif
-
-    
-    eqout_np = qlnp;
-    eqin_np  = eqout_np + qcnp_val;
-  }
-  else if(ele->Type() == "SUKI")
-  {
-    
-  }
-  else
-  {
-    dserror("[%s] is not an implimented elements yet",(ele->Type()).c_str());
-    exit(1);
-  }
-
-  //  ele->setVars("flow_in",qin);
-  //  ele->setVars("flow_out",qout);
+  // get element global ID
   int gid = ele->Id();
 
-  qin_np  -> ReplaceGlobalValues(1,&eqin_np ,&gid);
-  qout_np -> ReplaceGlobalValues(1,&eqout_np,&gid);
+  // update elem
+  elemVolumenp->ReplaceGlobalValues(1,& evolnp,&gid);
 
-  for (int i = 0; i<2; i++)
-  {
-    if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
-    {
-      double acinus_volume = a_volumen(i);
-      acinus_volume +=  0.5*(eqout_np+eqout_n)*dt;
-      a_volumenp(i) = acinus_volume;
-
-      //----------------------------------------------------------------
-      // Read in the material information
-      //----------------------------------------------------------------
-      const double VolPerArea = (ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))->GetDouble("VolumePerArea");
-      const double VolAcinus  = (ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))->GetDouble("Acinus_Volume");
-      double vo =  VolPerArea*A;
-      a_volume_strain_np(i) =  (acinus_volume - vo)/vo;
-    }
-  }
-
-}//CalcFlowRates
-#endif
+}
 
 /*----------------------------------------------------------------------*
  |  Get the coupled the values on the coupling interface    ismail 07/10|
@@ -1571,7 +1246,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
       if(ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
 
-          const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");        
+          const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
           RCP<Teuchos::ParameterList> CoupledTo3DParams  =
             params.get<RCP<ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
@@ -1590,7 +1265,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
         //
         //     In this case a map called map1D has the following form:
         //     +-----------------------------------------------------------+
-        //     |              std::map< std::string            ,  double        > >  |
+        //     |              std::map< string            ,  double        > >  |
         //     |     +------------------------------------------------+    |
         //     |     |  ID  | coupling variable name | variable value |    |
         //     |     +------------------------------------------------+    |
@@ -1628,7 +1303,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
         }
         std::stringstream returnedBCwithId;
         returnedBCwithId << returnedBC <<"_" << ID;
-        
+
         //        std::cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<std::endl;
 
         // -----------------------------------------------------------------
@@ -1637,7 +1312,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
         // because of the preassumption that the map is filled and sorted
         // Thus we can use parallel addition
         // -----------------------------------------------------------------
-        
+
         std::map<std::string,double>::iterator itrMap1D;
         itrMap1D = map1D->find(returnedBCwithId.str());
         if (itrMap1D == map1D->end())
@@ -1645,11 +1320,580 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
           dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",returnedBC.c_str(),ID );
           exit(1);
         }
-        
+
         // update the 1D map
         (*map1D)[returnedBCwithId.str()] = BC3d;
-      }   
+      }
     } // END of if node is available on this processor
   } // End of node i has a condition
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate the ammount of fluid mixing inside a          ismail 02/13|
+ |  junction                                                            |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus*                   ele,
+                                                              Teuchos::ParameterList&      params,
+                                                              DRT::Discretization&         discretization,
+                                                              Epetra_SerialDenseVector&    volumeMix_np,
+                                                              std::vector<int>&            lm,
+                                                              RCP<MAT::Material>           material)
+{
+  // get flow rate out at time step n+1
+  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  // get acinar volumes at time step n+1
+  RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+
+  // get the element qout
+  double q_out = (*qout_np)[ele->LID()];
+
+  // if transport is flowing into the acinus
+  if( q_out >= 0.0)
+  {
+    ele->getParams("Area",volumeMix_np(1));
+  }
+  // els if transport is flowing out of the acinus
+  else
+  {
+    ele->getParams("Area",volumeMix_np(0));
+    ele->getParams("Area",volumeMix_np(1));
+  }
+
+  // extra treatment if an acinus is not connected to anything else
+  for (int i=0;i<iel;i++)
+  {
+    if( ele->Nodes()[i]->NumElement()==1)
+      ele->getParams("Area",volumeMix_np(i));
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate the scalar transport                          ismail 02/13|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus*                   ele,
+                                                     Teuchos::ParameterList&      params,
+                                                     DRT::Discretization&         discretization,
+                                                     Epetra_SerialDenseVector&    scatranp,
+                                                     Epetra_SerialDenseVector&    volumeMix_np,
+                                                     std::vector<int>&            lm,
+                                                     RCP<MAT::Material>           material)
+{
+  const int   myrank  = discretization.Comm().MyPID();
+  RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
+
+  RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
+
+  RCP<Epetra_Vector> e1scatran = params.get<RCP<Epetra_Vector> >("e1scatran");
+  RCP<Epetra_Vector> e2scatran = params.get<RCP<Epetra_Vector> >("e2scatran");
+
+  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+
+  RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+
+  RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
+  RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+
+  double volumenp = (*acinar_vnp)[ele->LID()];
+  double volumen = (*acinar_vn )[ele->LID()];
+
+  // extract local values from the global vectors
+  std::vector<double> myvolmix(lm.size());
+  DRT::UTILS::ExtractMyValues(*volumeMix,myvolmix,lm);
+  // get area
+  double area = myvolmix[1];
+
+  // get the elements Qin and Qout
+  double q_out = (*qout_np)[ele->LID()];
+  double q_in  = (*qin_np)[ele->LID()];
+  double e1s   = (*e1scatran)[ele->LID()];
+  double e2s   = (*e2scatran)[ele->LID()];
+
+  // get time step size
+  // const double dt = params.get<double>("time step size");
+
+  // get time
+  const double time = params.get<double>("total time");
+
+  //--------------------------------------------------------------------
+  // get element length
+  //--------------------------------------------------------------------
+
+  // evaluate velocity at nodes (1) and (2)
+  double vel1 = q_in /area;
+  double vel2 = q_out/area;
+
+  LINALG::Matrix<2,1> velv;
+  velv(0,0)=vel1;
+  velv(1,0)=vel2;
+  // get average velocity
+  double vel = vel2;
+
+  //--------------------------------------------------------------------
+  // if vel>=0 then node(2) is analytically evaluated;
+  //  ---> node(1) is either prescribed or comes from the junction
+  // if vel< 0 then node(1) is analytically evaluated;
+  //  ---> node(2) is either prescribed or comes from the junction
+  //--------------------------------------------------------------------
+
+  if (vel >=0.0)
+  {
+    // extrapolate the analytical solution
+    int gid = ele->Id();
+    double scnp = 0.0;
+    scnp = (e2s*volumen + e1s*(volumenp-volumen))/(volumenp);
+    e2scatranp->ReplaceGlobalValues(1,&scnp,&gid);
+  }
+  else
+  {
+    // extrapolate the analytical solution
+    double scnp = 0.0;
+    int gid = ele->Id();
+    scnp = (e2s*volumen + e2s*(volumenp-volumen))/(volumenp);
+    {
+      e2scatranp->ReplaceGlobalValues(1,&scnp,&gid);
+      e1scatranp->ReplaceGlobalValues(1,&scnp,&gid);
+    }
+  }
+
+  for (int i=0;i<2;i++)
+  {
+    if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond") &&     myrank == ele->Nodes()[i]->Owner())
+    {
+      double scnp =0.0;
+      DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedScatraCond");
+      // Get the type of prescribed bc
+
+      const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+      double curvefac = 1.0;
+      const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
+
+      // -----------------------------------------------------------------
+      // Read in the value of the applied BC
+      // -----------------------------------------------------------------
+      int curvenum = -1;
+      if (curve) curvenum = (*curve)[0];
+      if (curvenum>=0 )
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+      scnp = (*vals)[0]*curvefac;
+
+      const std::vector<int>*    functions = condition->Get<std::vector<int> >("funct");
+      int functnum = -1;
+      if (functions) functnum = (*functions)[0];
+      else functnum = -1;
+
+      double functionfac = 0.0;
+      if(functnum>0)
+      {
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
+      }
+      scnp += functionfac;
+
+      // ----------------------------------------------------
+      // convert O2 saturation to O2 concentration
+      // ----------------------------------------------------
+      // get O2 properties in air
+      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+      // check if O2 properties material exists
+      if (id==-1)
+      {
+        dserror("A material defining O2 properties in air could not be found");
+        exit(1);
+      }
+      const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::Air_0d_O2_saturation* actmat = static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+
+      // get atmospheric pressure
+      double patm = actmat->atmospheric_p_;
+      // get number of O2 moles per unit volume of O2
+      double nO2perVO2 = actmat->nO2_per_VO2_;
+      // calculate the PO2 at nodes
+      double pO2 = scnp*patm;
+      // calculate VO2
+      double vO2 = volumenp*(pO2/patm);
+      // evaluate initial concentration
+      scnp = nO2perVO2*vO2/volumenp;
+      //------------
+      if(i==0)
+      {
+        int    gid = ele->Id();
+        double val = scnp;
+        if (vel<0.0)
+          val = (*e1scatranp)[ele->LID()];
+//        if (ele->Owner()==myrank)
+        {
+          e1scatranp->ReplaceGlobalValues(1,&val,&gid);
+        }
+        scatranp(0) = val*area;
+      }
+      else
+      {
+        int    gid = ele->Id();
+        double val = scnp;
+        if (vel>=0.0)
+          val = (*e2scatranp)[ele->LID()];
+//        if (ele->Owner()==myrank)
+        {
+          e2scatranp->ReplaceGlobalValues(1,&val,&gid);
+        }
+        scatranp(1) = val*area;
+      }
+    }
+  }
+
+
+  {
+    scatranp(1) = (*e2scatranp)[ele->LID()]*area;
+  }
+  if (vel <  0.0)
+  {
+    scatranp(0) = (*e1scatranp)[ele->LID()]*area;
+  }
+}//SolveScatra
+
+
+
+/*----------------------------------------------------------------------*
+ |  calculate the scalar transport                          ismail 02/13|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(
+  RedAcinus*                   ele,
+  Teuchos::ParameterList&      params,
+  DRT::Discretization&         discretization,
+  Epetra_SerialDenseVector&    scatranp,
+  Epetra_SerialDenseVector&    volumeMix_np,
+  std::vector<int>&            lm,
+  RCP<MAT::Material>           material)
+{
+//  const int   myrank  = discretization.Comm().MyPID();
+
+  RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
+
+  RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
+
+  //  RCP<Epetra_Vector> scatran = params.get<RCP<Epetra_Vector> >("scatran");
+  RCP<const Epetra_Vector> scatran  = discretization.GetState("scatranp");
+
+  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+
+  RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+
+  // extract local values from the global vectors
+  std::vector<double> myvolmix(lm.size());
+  DRT::UTILS::ExtractMyValues(*volumeMix,myvolmix,lm);
+  // get area
+  double area = myvolmix[1];
+
+  // get the elements Qin and Qout
+  double q_out = (*qout_np)[ele->LID()];
+  double q_in  = (*qin_np)[ele->LID()];
+
+  // extract local values from the global vectors
+  std::vector<double> myscatran(lm.size());
+  DRT::UTILS::ExtractMyValues(*scatran,myscatran,lm);
+
+  // evaluate velocity at nodes (1) and (2)
+  double vel1 = q_in /area;
+  double vel2 = q_out/area;
+
+  LINALG::Matrix<2,1> velv;
+  velv(0,0)=vel1;
+  velv(1,0)=vel2;
+  // get average velocity
+  double vel = 0.5*(vel1+vel2);
+
+  //--------------------------------------------------------------------
+  // if vel>=0 then node(2) is analytically evaluated;
+  //  ---> node(1) is either prescribed or comes from the junction
+  // if vel< 0 then node(1) is analytically evaluated;
+  //  ---> node(2) is either prescribed or comes from the junction
+  //--------------------------------------------------------------------
+  if (vel >=0.0)
+  {
+    // extrapolate the analytical solution
+    double scnp = myscatran[0];
+    int gid = ele->Id();
+    e1scatranp->ReplaceGlobalValues(1,&scnp,&gid);
+  }
+  else
+  {
+    // extrapolate the analytical solution
+    double scnp = myscatran[1];
+    int gid = ele->Id();
+    e2scatranp->ReplaceGlobalValues(1,&scnp,&gid);
+  }
+}//SolveScatraBifurcations
+
+
+/*----------------------------------------------------------------------*
+ |  calculate the scalar transport                          ismail 02/13|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(
+  RedAcinus*                   ele,
+  Teuchos::ParameterList&      params,
+  DRT::Discretization&         discretization,
+  std::vector<int>&            lm,
+  RCP<MAT::Material>           material)
+{
+
+  const int   myrank  = discretization.Comm().MyPID();
+
+  RCP<const Epetra_Vector> dscatranp  = discretization.GetState("dscatranp");
+  RCP<Epetra_Vector> dscatranp_m = params.get<RCP<Epetra_Vector> >("dscatranp");
+  RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
+
+  // get flowrate
+  double qin = (*qin_np)[ele->LID()];
+
+  // extract local values from the global vectors
+  std::vector<double> mydscatra(lm.size());
+  DRT::UTILS::ExtractMyValues(*dscatranp,mydscatra,lm);
+
+  //--------------------------------------------------------------------
+  // if vel>=0 then node(2) is analytically evaluated;
+  //  ---> node(1) is either prescribed or comes from the junction
+  // if vel< 0 then node(1) is analytically evaluated;
+  //  ---> node(2) is either prescribed or comes from the junction
+  //--------------------------------------------------------------------
+  if (qin<0.0)
+  {
+    int gid = lm[1];
+    double val = mydscatra[1];
+    if (myrank == ele->Nodes()[1]->Owner())
+    {
+      dscatranp_m->ReplaceGlobalValues(1,&val,&gid);
+    }
+  }
+}//UpdateScatra
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(
+  RedAcinus*                  ele,
+  Teuchos::ParameterList&      params,
+  DRT::Discretization&         discretization,
+  std::vector<int>&            lm,
+  RCP<MAT::Material>           material)
+{
+  RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+  RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
+  RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+
+  RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
+  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+
+  // extract local values from the global vectors
+  std::vector<double> myscatranp(lm.size());
+  DRT::UTILS::ExtractMyValues(*scatranp,myscatranp,lm);
+
+  // extract local values from the global vectors
+  std::vector<double> mydscatranp(lm.size());
+  DRT::UTILS::ExtractMyValues(*dscatranp,mydscatranp,lm);
+
+  // extract local values from the global vectors
+  std::vector<double> myvolmix(lm.size());
+  DRT::UTILS::ExtractMyValues(*volumeMix,myvolmix,lm);
+
+  // get flowrate
+  double qin = (*qin_np)[ele->LID()];
+  // Get the average concentration
+
+  // ---------------------------------------------------------------------
+  // element scatra must be updated only at the capillary nodes.
+  // ---------------------------------------------------------------------
+  //  double e2s = (*e2scatranp)[ele->LID()] + mydscatranp[1]*myvolmix[1];
+  double e2s = myscatranp[1];
+
+  int gid = ele->Id();
+  e2scatranp->ReplaceGlobalValues(1,&e2s,&gid);
+  if (qin<0.0)
+  {
+    e1scatranp->ReplaceGlobalValues(1,&e2s,&gid);
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  calculate PO2 from concentration                        ismail 06/13|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(
+  RedAcinus*                   ele,
+  Teuchos::ParameterList&      params,
+  DRT::Discretization&         discretization,
+  std::vector<int>&            lm,
+  RCP<MAT::Material>           material)
+{
+  const int   myrank  = discretization.Comm().MyPID();
+
+  // get Po2 vector
+  RCP<Epetra_Vector> po2        = params.get<RCP<Epetra_Vector> >("PO2");
+  // get Po2 vector
+  RCP<const Epetra_Vector> scatran = discretization.GetState("scatranp");
+  // get acinar volume
+  RCP<Epetra_Vector> acinar_vnp = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  // -------------------------------------------------------------------
+  // extract scatra values
+  // -------------------------------------------------------------------
+  // extract local values from the global vectors
+  std::vector<double> myscatran(lm.size());
+  DRT::UTILS::ExtractMyValues(*scatran,myscatran,lm);
+
+  // -------------------------------------------------------------------
+  // find out if the material type is Air or Blood
+  // -------------------------------------------------------------------
+  std::string fluidType = "none";
+  // if RedAirwayScatraAirCond then material type is air
+  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraAirCond")!=NULL
+    && ele->Nodes()[1]->GetCondition("RedAirwayScatraAirCond")!=NULL)
+  {
+    fluidType = "air";
+  }
+  else
+  {
+    dserror("A scalar transport element must be defined either as \"air\"");
+    exit(1);
+  }
+
+  // define a empty pO2 vector
+  double pO2 = 0.0;
+
+  // -------------------------------------------------------------------
+  // Get O2 properties in air
+  // -------------------------------------------------------------------
+  if (fluidType == "air")
+  {
+    // -----------------------------------------------------------------
+    // Get O2 properties in air
+    // -----------------------------------------------------------------
+
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_0d_o2_air_saturation);
+    // check if O2 properties material exists
+    if (id==-1)
+    {
+      dserror("A material defining O2 properties in air could not be found");
+      exit(1);
+    }
+    const MAT::PAR::Parameter* smat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Air_0d_O2_saturation* actmat = static_cast<const MAT::PAR::Air_0d_O2_saturation*>(smat);
+
+    // get atmospheric pressure
+    double patm = actmat->atmospheric_p_;
+    // get number of O2 moles per unit volume of O2
+    double nO2perVO2 = actmat->nO2_per_VO2_;
+
+    // -----------------------------------------------------------------
+    // Calculate Vo2 in air
+    // -----------------------------------------------------------------
+    // get airway volume
+    double vAir = (*acinar_vnp)[ele->LID()];
+    // calculate the VO2 at nodes
+    double vO2 = (vAir*myscatran[lm.size()-1])/nO2perVO2;
+    // calculate PO2 at nodes
+    pO2 = patm*vO2/vAir;
+  }
+  else
+  {
+    dserror("A scalar transport element must be defined either as \"air\" or \"blood\"");
+    exit(1);
+  }
+
+  // -------------------------------------------------------------------
+  // Set element pO2 to PO2 vector
+  // -------------------------------------------------------------------
+  int    gid = lm[lm.size()-1];
+  double val = pO2;
+  if(myrank == ele->Nodes()[lm.size()-1]->Owner())
+  {
+    po2->ReplaceGlobalValues(1,&val,&gid);
+  }
+
+}// EvalPO2FromScatra
+
+
+/*----------------------------------------------------------------------*
+ |  calculate essential nodal values                        ismail 06/13|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(
+  RedAcinus*                   ele,
+  Teuchos::ParameterList&      params,
+  DRT::Discretization&         discretization,
+  Epetra_SerialDenseVector&    nodal_surface,
+  Epetra_SerialDenseVector&    nodal_volume,
+  Epetra_SerialDenseVector&    nodal_avg_scatra,
+  std::vector<int>&            lm,
+  RCP<MAT::Material>           material)
+{
+  // ---------------------------------------------------------------------
+  // get all general state vectors: flow, pressure,
+  // ---------------------------------------------------------------------
+  RCP<Epetra_Vector> acinar_e_v  = params.get<RCP<Epetra_Vector> >("acinar_v");
+  RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+
+  // -------------------------------------------------------------------
+  // extract scatra values
+  // -------------------------------------------------------------------
+  // extract local values from the global vectors
+  std::vector<double> myscatranp(lm.size());
+  DRT::UTILS::ExtractMyValues(*scatranp,myscatranp,lm);
+
+  //----------------------------------------------------------------
+  // find the volume of an acinus
+  //----------------------------------------------------------------
+  // get the current acinar volume
+  double volAcinus = (*acinar_e_v)[ele->LID()];
+  // set nodal volume
+  nodal_volume[1] = volAcinus;
+
+  //----------------------------------------------------------------
+  // find the average scalar transport concentration
+  //----------------------------------------------------------------
+  // set nodal flowrate
+  nodal_avg_scatra[0] = myscatranp[1];
+  nodal_avg_scatra[1] = myscatranp[1];
+
+  //----------------------------------------------------------------
+  // find the total gas exchange surface inside an acinus
+  //----------------------------------------------------------------
+  // get the initial volume of an acinus
+  double volAcinus0;
+  ele->getParams("AcinusVolume",volAcinus0);
+  // get the initial volume of an alveolar duct
+  double volAlvDuct0;
+  ele->getParams("AlveolarDuctVolume",volAlvDuct0);
+  // find the  number of alveolar duct
+  const double numOfAlvDucts = double(floor(volAcinus0/volAlvDuct0));
+  // define the number of alveoli per alveolar duct
+  const double nAlveoliPerAlveolarDuct = 36.0;
+  // define the number of alveoli per duct
+  const double nAlveoliPerDuct = 4.0;
+  // find the volume of one alveolus
+  const double volAlveolus = volAcinus/numOfAlvDucts/nAlveoliPerAlveolarDuct;
+  // find the surface of one alveolus
+  const double surfAlveolus = (6.0+12.0*sqrt(3.0))*pow(volAlveolus/(8.0*sqrt(2.0)),2.0/3.0);
+  // get the length of an edge of an alveolus
+  const double al = pow(volAlveolus/(8.0*sqrt(2.0)),1.0/3.0)/3.0;
+  // find the surface of an alveolar duct
+  const double surfAlveolarDuct = (nAlveoliPerAlveolarDuct - 2.0*nAlveoliPerDuct)*surfAlveolus + 6.0*(al*al);
+  // find the surface of an acinus
+  const double surfAcinus = surfAlveolarDuct*numOfAlvDucts;
+  // set nodal surface area
+  nodal_surface[1] = surfAcinus;
 }
 

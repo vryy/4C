@@ -507,6 +507,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isovolHUdependentneohooke.cpp
   src/drt_patspec/patspec.cpp
   src/drt_mat/maxwell_0d_acinus.cpp
+  src/drt_mat/hemoglobin_0d_O2_saturation.cpp
+  src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
 )
 set(OBJS_DRT_STATMECH
@@ -557,12 +559,18 @@ set(OBJS_DRT_RED_AIRWAYS_LIB
   src/drt_red_airways/airway_evaluate.cpp
   src/drt_red_airways/acinus_evaluate.cpp
   src/drt_red_airways/inter_acinar_dep_evaluate.cpp
+  src/drt_red_airways/red_air_blood_scatra_evaluate.cpp
+  src/drt_red_airways/red_air_blood_scatraLine3_evaluate.cpp
   src/drt_red_airways/airway_impl.cpp
   src/drt_red_airways/acinus_impl.cpp
   src/drt_red_airways/inter_acinar_dep_impl.cpp
+  src/drt_red_airways/red_air_blood_scatra_impl.cpp
+  src/drt_red_airways/red_air_blood_scatraLine3_impl.cpp
   src/drt_red_airways/red_airway.cpp
   src/drt_red_airways/red_acinus.cpp
   src/drt_red_airways/red_inter_acinar_dep.cpp
+  src/drt_red_airways/red_air_blood_scatra.cpp
+  src/drt_red_airways/red_air_blood_scatraLine3.cpp
   src/drt_red_airways/red_airway_input.cpp
   src/drt_red_airways/red_airway_resulttest.cpp
   src/drt_red_airways/redairway_tissue.cpp

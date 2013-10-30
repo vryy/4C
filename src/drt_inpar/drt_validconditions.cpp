@@ -991,7 +991,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   std::vector<Teuchos::RCP<ConditionComponent> > flowdeppressurecomponents;
 
   // flow-dependent pressure conditions can be imposed either based on
-  // (out)flow rate or (out)flow volume (e.g., for air-cushion condition)  
+  // (out)flow rate or (out)flow volume (e.g., for air-cushion condition)
   flowdeppressurecomponents.push_back(
     Teuchos::rcp(
       new StringConditionComponent(
@@ -1015,7 +1015,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // adiabatic exponent
   flowdeppressurecomponents.push_back(Teuchos::rcp(new RealConditionComponent("AdiabaticExponent")));
 
-  
+
   Teuchos::RCP<ConditionDefinition> lineflowdeppressure
     =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS",
@@ -3151,7 +3151,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > redairwayinletcomponents;
   redairwayinletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
-  redairwayinletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  redairwayinletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",2,true,true)));
   redairwayinletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1, false, false, true)));
   for (unsigned i=0; i<redairwayinletcomponents.size(); ++i)
     raw_in_bc->AddComponent(redairwayinletcomponents[i]);
@@ -3160,42 +3160,121 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
-  // Acinus model for reduced dimensional airways
+  // Prescribed BC for reduced dimensional airways external pressure
 
-  Teuchos::RCP<ConditionDefinition> acinus_bc =
-    Teuchos::rcp(new ConditionDefinition("DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS",
-                                         "RedLungAcinusCond",
-                                         "Reduced dimensional lung acinus boundary condition",
-                                         DRT::Condition::RedLungAcinusCond,
+  Teuchos::RCP<ConditionDefinition> raw_pext_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS PRESCRIBED EXTERNAL PRESSURE CONDITIONS",
+                                         "RedAirwayPrescribedExternalPressure",
+                                         "Reduced d airway prescribed external pressure boundary condition",
+                                         DRT::Condition::RedAirwayPrescribedExternalPressure,
+                                         true,
+                                         DRT::Condition::Line));
+
+  raw_pext_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("boundarycond","ExternalPressure",
+    Teuchos::tuple<std::string>("ExternalPressure"),
+    Teuchos::tuple<std::string>("ExternalPressure"),
+    true)));
+
+  std::vector<Teuchos::RCP<ConditionComponent> > redairwaypextcomponents;
+  redairwaypextcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  redairwaypextcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",2,true,true)));
+  redairwaypextcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1, false, false, true)));
+  for (unsigned i=0; i<redairwaypextcomponents.size(); ++i)
+    raw_pext_bc->AddComponent(redairwaypextcomponents[i]);
+
+  condlist.push_back(raw_pext_bc);
+
+
+  /*--------------------------------------------------------------------*/
+  // Prescribed BC for reduced dimensional scalar transpirt in airways
+
+  Teuchos::RCP<ConditionDefinition> raw_in_scatra_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS PRESCRIBED SCATRA CONDITIONS",
+                                         "RedAirwayPrescribedScatraCond",
+                                         "Reduced d airway prescribed scatra boundary condition",
+                                         DRT::Condition::RedAirwayPrescribedScatraCond,
                                          true,
                                          DRT::Condition::Point));
 
-  acinus_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("materialType", "NeoHookean",
-                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential","DoubleExponential"),
-                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential","DoubleExponential"),
+  std::vector<Teuchos::RCP<ConditionComponent> > redairwayinletscatracomponents;
+  redairwayinletscatracomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  redairwayinletscatracomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  redairwayinletscatracomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1, false, false, true)));
+  for (unsigned i=0; i<redairwayinletscatracomponents.size(); ++i)
+    raw_in_scatra_bc->AddComponent(redairwayinletscatracomponents[i]);
+
+  condlist.push_back(raw_in_scatra_bc);
+
+  /*--------------------------------------------------------------------*/
+  // Prescribed BC for intial values of the scalar transport in reduced dimensional airways
+
+  Teuchos::RCP<ConditionDefinition> raw_int_scatra_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS INITIAL SCATRA CONDITIONS",
+                                         "RedAirwayInitialScatraCond",
+                                         "Reduced d airway initial scatra boundary condition",
+                                         DRT::Condition::RedAirwayInitialScatraCond,
+                                         true,
+                                         DRT::Condition::Line));
+
+  raw_int_scatra_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("scalar", "O2",
+    Teuchos::tuple<std::string>("O2","CO2"),
+    Teuchos::tuple<std::string>("O2","CO2"),
     true)));
 
-  AddNamedReal(acinus_bc,"Acinus_Volume");
-  AddNamedReal(acinus_bc,"VolumePerArea");
-  AddNamedReal(acinus_bc,"Stiffness1");
-  AddNamedReal(acinus_bc,"Stiffness2");
-  AddNamedReal(acinus_bc,"Viscosity1");
-  AddNamedReal(acinus_bc,"Viscosity2");
+  AddNamedReal(raw_int_scatra_bc,"CONCENTRATION");
+  condlist.push_back(raw_int_scatra_bc);
 
-  acinus_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("PlueralPressureType", "FromCurve",
-                                                                    Teuchos::tuple<std::string>("FromCurve","Exponential"),
-                                                                    Teuchos::tuple<std::string>("FromCurve","Exponential"),
-                                                                    true)));
+  /*--------------------------------------------------------------------*/
+  // Reduced D airway Scatra condition for regions of scatra exchange
+  Teuchos::RCP<ConditionDefinition> scatra_exchange_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS SCATRA EXCHANGE CONDITIONS",
+                                         "RedAirwayScatraExchangeCond",
+                                         "scatra exchange condition",
+                                         DRT::Condition::RedAirwayScatraExchangeCond,
+                                         true,
+                                         DRT::Condition::Line));
 
-  // add the pleural pressure
-  std::vector<Teuchos::RCP<ConditionComponent> > acinus_pleural_p_components;
-  acinus_pleural_p_components.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
-  acinus_pleural_p_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
-  acinus_pleural_p_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1, false, false, true)));
-  for (unsigned i=0; i<acinus_pleural_p_components.size(); ++i)
-    acinus_bc->AddComponent(acinus_pleural_p_components[i]);
+  scatra_exchange_cond->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
-  condlist.push_back(acinus_bc);
+  condlist.push_back(scatra_exchange_cond);
+
+  /*--------------------------------------------------------------------*/
+  // Reduced D airway Scatra condition for regions with hemoglobin
+  Teuchos::RCP<ConditionDefinition> scatra_hemoglobin_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS HEMOGLOBIN CONDITIONS",
+                                         "RedAirwayScatraHemoglobinCond",
+                                         "scatra hemoglobin condition",
+                                         DRT::Condition::RedAirwayScatraHemoglobinCond,
+                                         false,
+                                         DRT::Condition::Line));
+
+  AddNamedReal(scatra_hemoglobin_cond,"INITIAL_CONCENTRATION");
+  condlist.push_back(scatra_hemoglobin_cond);
+
+  /*--------------------------------------------------------------------*/
+  // Reduced D airway Scatra condition for regions with hemoglobin
+  Teuchos::RCP<ConditionDefinition> scatra_air_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS AIR CONDITIONS",
+                                         "RedAirwayScatraAirCond",
+                                         "scatra air condition",
+                                         DRT::Condition::RedAirwayScatraAirCond,
+                                         false,
+                                         DRT::Condition::Line));
+
+  AddNamedReal(scatra_air_cond,"INITIAL_CONCENTRATION");
+  condlist.push_back(scatra_air_cond);
+
+  /*--------------------------------------------------------------------*/
+  // Reduced D airway Scatra condition for regions with hemoglobin
+  Teuchos::RCP<ConditionDefinition> scatra_capillary_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS CAPILLARY CONDITIONS",
+                                         "RedAirwayScatraCapillaryCond",
+                                         "scatra capillary condition",
+                                         DRT::Condition::RedAirwayScatraCapillaryCond,
+                                         false,
+                                         DRT::Condition::Line));
+
+  condlist.push_back(scatra_capillary_cond);
 
   /*--------------------------------------------------------------------*/
   // Prescribed Ventilator BC for reduced dimensional airways
@@ -3213,13 +3292,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                                       Teuchos::tuple<std::string>("flow","pressure"),
                                                                       true)));
 
+  raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("Phase1Smoothness", "smooth",
+                                                                      Teuchos::tuple<std::string>("smooth","discontinous"),
+                                                                      Teuchos::tuple<std::string>("smooth","discontinous"),
+                                                                      true)));
+
   raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("phase2", "pressure",
                                                                       Teuchos::tuple<std::string>("pressure","flow"),
                                                                       Teuchos::tuple<std::string>("pressure","flow"),
                                                                       true)));
 
+  raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("Phase2Smoothness", "smooth",
+                                                                      Teuchos::tuple<std::string>("smooth","discontinous"),
+                                                                      Teuchos::tuple<std::string>("smooth","discontinous"),
+                                                                      true)));
+
   AddNamedReal(raw_vent_bc,"period");
   AddNamedReal(raw_vent_bc,"phase1_period");
+  AddNamedReal(raw_vent_bc,"smoothness_period1");
+  AddNamedReal(raw_vent_bc,"smoothness_period2");
 
   std::vector<Teuchos::RCP<ConditionComponent> > redairwayventcomponents;
   redairwayventcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",2)));

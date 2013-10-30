@@ -80,89 +80,14 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra,
   RCP<MAT::Material> mat)
 {
-
-#if 0
-  const int   myrank  = discretization.Comm().MyPID();
-  // get then nodes connected to this element
-  DRT::Node** nodes = ele->Nodes();
-
-  for (int i=0;i<2;i++)
-  {
-    // get the acinar element connected to the ith (i=0;1) nodes
-    DRT::Element ** elems = (nodes[i])->Elements();
-
-    int numOfElems = (nodes[i])->NumElement();
-    //RedAirwayType::Instance().UniqueParObjectId()
-    for (int j=0;j<numOfElems;j++)
-    {
-      int generation;
-
-      DRT::ELEMENTS::RedAcinus * actele = dynamic_cast<DRT::ELEMENTS::RedAcinus*>(elems[j]);
-      if (actele)
-      {
-        if (actele->Owner()!=myrank)
-        {
-          std::cout<<"+-------------- WOOOOOOW --------------+"<<std::endl;
-        }
-        std::cout<<"Element ("<<actele->Id()<<") rank("<<myrank<<") and HasGlobalElement("<<discretization.HaveGlobalElement(actele->Id())<<")"<<std::endl;
-
-        std::vector<int> la;
-        // get element location vector, dirichlet flags and ownerships
-        discretization.Dof(elems[j],la);
-        //        elems[j]->LocationVector(discretization,la,false);
-
-        Epetra_SerialDenseMatrix  elemat_epetra(elemat1_epetra);
-
-        (elems[j])->Evaluate(params,
-                         discretization,
-                         la,
-                         elemat_epetra,
-                         elemat2_epetra,
-                         elevec1_epetra,
-                         elevec2_epetra,
-                         elevec3_epetra);
-
-        int index = 0;
-        if (i==0)
-          index = 1;
-
-        for (int k=0;k<elevec1_epetra.Length();k++)
-        {
-          elemat1_epetra(index,k) = elemat_epetra(index,k);
-        }
-        elevec1_epetra.Scale(0.0);
-      }
-    }
-  }
-
-
-  std::cout<<"sysmat: "<<elemat1_epetra<<std::endl;
-  fflush(stdout);
-#else
-  RCP<const Epetra_Vector> sysmat_iad  = discretization.GetState("sysmat_iad");
-  RCP<const Epetra_Vector> pn  = discretization.GetState("pn");
-
-  // extract local values from the global vectors
-  std::vector<double> my_sysmat_iad(lm.size());
-  DRT::UTILS::ExtractMyValues(*sysmat_iad,my_sysmat_iad,lm);
-  std::vector<double> my_pn(lm.size());
-  DRT::UTILS::ExtractMyValues(*pn,my_pn,lm);
-
-
-#if 0
   double N0 = double(ele->Nodes()[0]->NumElement());
   double N1 = double(ele->Nodes()[1]->NumElement());
-#endif
-
-  elemat1_epetra(0,0) =  my_sysmat_iad[0];
-  elemat1_epetra(0,1) = -my_sysmat_iad[0];
-  elemat1_epetra(1,0) = -my_sysmat_iad[1];
-  elemat1_epetra(1,1) =  my_sysmat_iad[1];
-
+  elemat1_epetra(0,0) =  1.0/(N0-1.0);
+  elemat1_epetra(0,1) = -1.0/(N0-1.0);
+  elemat1_epetra(1,0) = -1.0/(N1-1.0);
+  elemat1_epetra(1,1) =  1.0/(N1-1.0);
   elevec1_epetra.Scale(0.0);
-  elevec1_epetra(0)= -my_sysmat_iad[0]*(my_pn[0]-my_pn[1]);
-  elevec1_epetra(1)= -my_sysmat_iad[1]*(my_pn[1]-my_pn[0]);
-#endif
+
   return 0;
 }
 
@@ -173,7 +98,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
   RedInterAcinarDep*                     ele,
-  Teuchos::ParameterList&                         params,
+  Teuchos::ParameterList&                params,
   DRT::Discretization&                   discretization,
   std::vector<int>&                      lm,
   Teuchos::RCP<const MAT::Material>      material)
@@ -213,7 +138,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
+ |  Evaluate the values of the degrees of freedom           ismail 04/13|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -225,7 +150,197 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
   Epetra_SerialDenseVector&    rhs,
   RCP<MAT::Material>   material)
 {
+  const int   myrank  = discretization.Comm().MyPID();
 
+  // get total time
+  const double time = params.get<double>("total time");
+
+  // get time-step size
+  //  const double dt = params.get<double>("time step size");
+
+  // the number of nodes
+  const int numnode = lm.size();
+  std::vector<int>::iterator it_vcr;
+
+  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+
+  if (pnp==Teuchos::null)
+    dserror("Cannot get state vectors 'pnp'");
+
+  // extract local values from the global vectors
+  std::vector<double> mypnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
+
+  // create objects for element arrays
+  Epetra_SerialDenseVector epnp(numnode);
+
+  //get time step size
+  //  const double dt = params.get<double>("time step size");
+
+  //get all values at the last computed time step
+  for (int i=0;i<numnode;++i)
+  {
+    // split area and volumetric flow rate, insert into element arrays
+    epnp(i)    = mypnp[i];
+  }
+
+  // ---------------------------------------------------------------------------------
+  // Resolve the BCs
+  // ---------------------------------------------------------------------------------
+
+  for(int i = 0; i<ele->NumNode(); i++)
+  {
+    if (ele->Nodes()[i]->Owner()== myrank)
+    {
+      if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") )
+      {
+        std::string Bc;
+        double BCin = 0.0;
+        if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
+        {
+          DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
+          // Get the type of prescribed bc
+          Bc = *(condition->Get<std::string>("boundarycond"));
+
+
+          const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+          double curvefac = 1.0;
+          const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
+          const std::vector<int>*     functions = condition->Get<std::vector<int> >("funct");
+
+          // -----------------------------------------------------------------
+          // Read in the value of the applied BC
+          // -----------------------------------------------------------------
+          if((*curve)[0]>=0)
+          {
+            curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+            BCin = (*vals)[0]*curvefac;
+          }
+          else
+          {
+            dserror("no boundary condition defined!");
+            exit(1);
+          }
+
+          int functnum = -1;
+          if (functions) functnum = (*functions)[0];
+          else functnum = -1;
+
+          double functionfac = 0.0;
+          if(functnum>0)
+          {
+            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
+          }
+          BCin += functionfac;
+
+          // -----------------------------------------------------------------------------
+          // get the local id of the node to whome the bc is prescribed
+          // -----------------------------------------------------------------------------
+          int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          if (local_id< 0 )
+          {
+            dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i]->Id(),discretization.Comm().MyPID());
+            exit(1);
+          }
+        }
+        else
+        {
+
+        }
+
+        if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
+        {
+          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+
+          if (bcval==null||dbctog==Teuchos::null)
+          {
+            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
+            exit(1);
+          }
+
+          if (Bc == "ExponentialPleuralPressure")
+          {
+            const double ap =  -977.203;
+            const double bp = -3338.290;
+            const double cp =    -7.686;
+            const double dp =  2034.470;
+            const double VFR   = 1240000.0;
+            const double TLC   = 4760000.0 - VFR;
+
+            const double lungVolumenp = params.get<double>("lungVolume_np") - VFR;
+
+            const double TLCnp= lungVolumenp/TLC;
+
+            double Pp_np = ap + bp*exp(cp*TLCnp) + dp*TLCnp;
+
+            BCin += Pp_np;
+          }
+
+          // set pressure at node i
+          int    gid;
+          double val;
+
+          gid = lm[i];
+          val = BCin;
+          bcval->ReplaceGlobalValues(1,&val,&gid);
+
+          gid = lm[i];
+          val = 1;
+          dbctog->ReplaceGlobalValues(1,&val,&gid);
+
+        }
+        else
+        {
+          dserror("precribed [%s] is not defined for reduced-inter-acinar-linkers",Bc.c_str());
+          exit(1);
+        }
+
+      }
+      else
+      {
+        // ---------------------------------------------------------------
+        // If the node is a terminal node, but no b.c is prescribed to it
+        // then a zero output pressure is assumed
+        // ---------------------------------------------------------------
+        if (ele->Nodes()[i]->NumElement() == 1)
+        {
+          // -------------------------------------------------------------
+          // get the local id of the node to whome the bc is prescribed
+          // -------------------------------------------------------------
+
+          int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          if (local_id< 0 )
+          {
+            dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
+            exit(1);
+          }
+
+          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+
+          if (bcval==null||dbctog==Teuchos::null)
+          {
+            dserror("Cannot get state vectors 'bcval' and 'dbctog'");
+            exit(1);
+          }
+
+
+          // set pressure at node i
+          int    gid;
+          double val;
+
+          gid = lm[i];
+          val = 0.0;
+          bcval->ReplaceGlobalValues(1,&val,&gid);
+
+          gid = lm[i];
+          val = 1;
+          dbctog->ReplaceGlobalValues(1,&val,&gid);
+        }
+      } // END of if there is no BC but the node still is at the terminal
+    } // END of if node is available on this processor
+  } // End of node i has a condition
 }
 
 
@@ -253,11 +368,11 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(
-  RedInterAcinarDep*                   ele,
-  Teuchos::ParameterList&      params,
-  DRT::Discretization&         discretization,
-  std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  RedInterAcinarDep*      ele,
+  Teuchos::ParameterList& params,
+  DRT::Discretization&    discretization,
+  std::vector<int>&       lm,
+  RCP<MAT::Material>      material)
 {
 
 }

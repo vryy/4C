@@ -79,6 +79,15 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("pnp", "pressure", dofbased, 1);
   EnsightWriter::WriteResult("NodeIDs", "NodeIDs", dofbased, 1);
   EnsightWriter::WriteResult("radii", "radii", dofbased, 1);
+//  EnsightWriter::WriteResult("juncVolMix", "juncVolMix", dofbased, 1);
+//  EnsightWriter::WriteResult("forwardVolume","forwardVolume", dofbased, 1);
+  EnsightWriter::WriteResult("scatraO2np", "scatraO2", dofbased, 1);
+  EnsightWriter::WriteResult("PO2", "PO2", dofbased, 1);
+  EnsightWriter::WriteResult("dVO2","dVO2", dofbased, 1);
+    EnsightWriter::WriteResult("AcinarPO2","AcinarPO2", dofbased, 1);
+//  EnsightWriter::WriteResult("e1scatranp","e1scatranp",elementbased, 1);
+//  EnsightWriter::WriteResult("e2scatranp","e2scatranp",elementbased, 1);
+  EnsightWriter::WriteResult("juncVolMix","juncVolMix", dofbased, 1);
 
   EnsightWriter::WriteResult("acini_vnp", "acini_volume",elementbased, 1);
   EnsightWriter::WriteResult("acini_volumetric_strain", "acini_volume_strain",elementbased, 1);
@@ -88,6 +97,8 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("qin_np", "flow_in", elementbased, 1);
   EnsightWriter::WriteResult("qout_np", "flow_out", elementbased, 1);
   EnsightWriter::WriteResult("generations", "generations", elementbased, 1);
+  EnsightWriter::WriteResult("elemVolumenp", "elemVolumenp", elementbased, 1);
+
 
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());

@@ -201,7 +201,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ArtRedTo3DCouplingCond)        os << "Artery reduced D 3D coupling condition";
   else if (Type()==Art3DToRedCouplingCond)        os << "Artery 3D reduced D coupling condition";
   else if (Type()==RedAirwayPrescribedCond)       os << "Reduced d airway prescribed boundary condition";
-  else if (Type()==RedLungAcinusCond)             os << "Reduced dimensional lung acinus boundary condition";
+  else if (Type()==RedAirwayPrescribedExternalPressure) os << "Reduced d airway prescribed external pressure boundary condition";
   else if (Type()==PatientSpecificData)           os << "Various Geometric Patient Specific Data";
   else if (Type()==VolumetricSurfaceFlowCond)     os << "Volumetric Surface Flow Profile";
   else if (Type()==VolumetricFlowBorderNodes)     os << "Border Nodes of the volumetric flow Surface";
@@ -220,6 +220,13 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==PoroPartInt)                   os << "porous media partial integration condition";
   else if (Type()==PoroPresInt)                   os << "porous media pressure integration condition";
   else if (Type()==ScaTraCoupling)                os << "scatra coupling condition";
+  else if (Type()==RedAirwayPrescribedScatraCond) os << "Reduced d airway prescribed scatra boundary condition";
+  else if (Type()==ArtPrescribedScatraCond)       os << "one-D Arterial prescribed scatra boundary condition";
+  else if (Type()==RedAirwayInitialScatraCond)    os << "Reduced d airway initial scatra boundary condition";
+  else if (Type()==RedAirwayScatraExchangeCond)   os << "Reduced d airway scatra exchange condition";
+  else if (Type()==RedAirwayScatraHemoglobinCond) os << "Reduced d airway scatra hemoglobin condition";
+  else if (Type()==RedAirwayScatraAirCond)        os << "Reduced d airway scatra air condition";
+  else if (Type()==RedAirwayScatraCapillaryCond)  os << "Reduced d airway scatra capillary condition";
   else if (Type()==ParticleInflow)                os << "particle inflow condition";
   else if (Type()==ParticleInitRadius)            os << "particle initial radius condition";
   else if (Type()==ParticleWall)                  os << "particle wall condition";

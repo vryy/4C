@@ -44,7 +44,7 @@ This is the enumeration of all types of different integration schemes
 *-----------------------------------------------------------------------*/
 typedef enum _RED_AIRWAYS_DYNTYPE
 {
-  typ_crank_nicolson,
+  one_step_theta,
   linear,
   nonlinear
 } _RED_AIRWAYS_DYNTYPE;

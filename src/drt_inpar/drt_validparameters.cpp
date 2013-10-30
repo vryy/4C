@@ -1570,9 +1570,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         INPAR::MORTAR::inttype_elements, INPAR::MORTAR::inttype_elements,
         INPAR::MORTAR::inttype_elements_BS, INPAR::MORTAR::inttype_elements_BS),
     &mortar);
-    
+
   IntParameter("NUMGP_PER_DIM",0,"Number of employed integration points per dimension",&mortar);
-  
+
   /*----------------------------------------------------------------------*/
   /* parameters for structural meshtying and contact */
   Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC",false,"");
@@ -4150,16 +4150,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     /*----------------------------------------------------------------------*/
      Teuchos::ParameterList& redawdyn = list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",false,"");
 
-     setStringToIntegralParameter<int>("DYNAMICTYP","CrankNicolson",
-                                  "CrankNicolson Scheme",
+     setStringToIntegralParameter<int>("DYNAMICTYP","OneStepTheta",
+                                  "OneStepTheta Scheme",
                                   tuple<std::string>(
-                                    "CrankNicolson"
+                                    "OneStepTheta"
                                     ),
                                   tuple<int>(
-                                   typ_crank_nicolson
+                                   one_step_theta
                                    ),
                                   &redawdyn);
-
 
      setStringToIntegralParameter<int>("SOLVERTYPE","Linear",
                                   "Solver type",
@@ -4177,12 +4176,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
      IntParameter("NUMSTEP",0,"Number of Time Steps",&redawdyn);
      IntParameter("RESTARTEVRY",1,"Increment for writing restart",&redawdyn);
      IntParameter("UPRES",1,"Increment for writing solution",&redawdyn);
+     DoubleParameter("THETA",1.0,"One-step-theta time integration factor",&redawdyn);
 
      IntParameter("MAXITERATIONS",1,"maximum iteration steps",&redawdyn);
      DoubleParameter("TOLERANCE",1.0E-6,"tolerance",&redawdyn);
 
      // number of linear solver used for reduced dimensional airways dynamic
      IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for reduced dim arterial dynamics",&redawdyn);
+
+     // Solve scatra flag
+     setStringToIntegralParameter<int>("SOLVESCATRA",
+                                       "no",
+                                       "Flag to (de)activate solving scalar transport in blood",
+                                       tuple<std::string>(
+                                         "no",
+                                         "yes"),
+                                       tuple<std::string>(
+                                         "do not solve scatra",
+                                         "solve scatra"),
+                                       tuple<int>(0,1),
+                                       &redawdyn);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
@@ -6485,7 +6499,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   IntParameter("MueLu_INITSMOO_SWEEPS", 1  ,"number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree",&list);
   DoubleParameter("MueLu_INITSMOO_DAMPING",1.,"damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter",&list);
-  
+
   setStringToIntegralParameter<int>(
     "MueLu_REBALANCE","No","activate rebalancing using Zoltan/Isorropia",
     tuple<std::string>("NO", "No","no","YES","Yes","yes"),
@@ -6590,7 +6604,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
       );
   }
   DoubleParameter("NON_DIAGDOMINANCE_RATIO",1.,"matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)",&list);
-  
+
   // verbosity flag (for Belos)
   IntParameter("VERBOSITY",0,"verbosity level (0=no output,... 10=extreme), for Belos only",&list);
 

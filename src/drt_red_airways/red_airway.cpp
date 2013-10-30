@@ -58,10 +58,14 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,
   defs["LINE2"]
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
+    .AddNamedString("ElemSolvingType")
     .AddNamedString("TYPE")
     .AddNamedString("Resistance")
-    .AddNamedDouble("WallCompliance")
-    .AddNamedDouble("AirCompliance")
+    .AddNamedDouble("PowerOfVelocityProfile")
+    .AddNamedDouble("WallElasticity")
+    .AddNamedDouble("PoissonsRatio")
+    .AddNamedDouble("ViscousTs")
+    .AddNamedDouble("ViscousPhaseShift")
     .AddNamedDouble("WallThickness")
     .AddNamedDouble("Area")
     .AddNamedInt("Generation")
@@ -136,6 +140,7 @@ void DRT::ELEMENTS::RedAirway::Pack(DRT::PackBuffer& data) const
 
   AddtoPack(data,elemType_);
   AddtoPack(data,resistance_);
+  AddtoPack(data,elemsolvingType_);
 
   std::map<std::string,double>::const_iterator it;
 
@@ -171,6 +176,7 @@ void DRT::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
 
   ExtractfromPack(position,data,elemType_);
   ExtractfromPack(position,data,resistance_);
+  ExtractfromPack(position,data,elemsolvingType_);
   std::map<std::string,double> it;
   int n = 0;
 
@@ -277,7 +283,7 @@ void DRT::ELEMENTS::RedAirway::getParams(std::string name, int & var)
 
   if (name == "Generation")
   {
-    var = generation_; 
+    var = generation_;
   }
   else
   {
@@ -287,3 +293,34 @@ void DRT::ELEMENTS::RedAirway::getParams(std::string name, int & var)
 
 }
 
+/*----------------------------------------------------------------------*
+ |  get vector of lines              (public)              ismail  02/13|
+ *----------------------------------------------------------------------*/
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::RedAirway::Lines()
+{
+  // do NOT store line or surface elements inside the parent element
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization,
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+
+  if (NumLine()>1) // 1D boundary element and 2D/3D parent element
+  {
+    dserror("RED_AIRWAY element must have one and only one line");
+    exit(1);
+  }
+  else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
+  {
+    // 1D (we return the element itself)
+    std::vector<RCP<Element> > lines(1);
+    lines[0]= Teuchos::rcp(this, false);
+    return lines;
+  }
+  else
+  {
+    dserror("Lines() does not exist for points ");
+    return DRT::Element::Surfaces();
+  }
+}

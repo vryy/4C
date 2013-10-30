@@ -325,7 +325,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Initial(
     // Read in blood density
     const double  dens  = actmat->Density();
     // Read in blood viscosity
-    const double visc  = actmat->Viscosity();
+    // const double visc  = actmat->Viscosity();
     // Read in artery's thickness at node 1
     const double t1    = actmat->Th();
     // Read in artery's thickness at node 2
@@ -1534,7 +1534,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateScatraBC(
   std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
-  const int numnode = iel;
+//  const int numnode = iel;
 
   // loop over the nodes
   for (int i = 0; i<2; i++)
@@ -2000,7 +2000,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
   LINALG::Matrix<numnode,1> eqn;
 
   //get time step size
-  const double dt = params.get<double>("time step size");
+  //  const double dt = params.get<double>("time step size");
 
   //get all values at the last computed time step
   for (int i=0;i<numnode;++i)
@@ -2022,11 +2022,11 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
     xyze(1,inode) = x[1];
     xyze(2,inode) = x[2];
   }
-  const double L=sqrt(
-            pow(xyze(0,0) - xyze(0,1),2)
-          + pow(xyze(1,0) - xyze(1,1),2)
-          + pow(xyze(2,0) - xyze(2,1),2));
-  bool BCnodes= false;
+//  const double L=sqrt(
+//            pow(xyze(0,0) - xyze(0,1),2)
+//          + pow(xyze(1,0) - xyze(1,1),2)
+//          + pow(xyze(2,0) - xyze(2,1),2));
+//  bool BCnodes= false;
 
   //get the number of nodes per element
   const int numnds = ele->NumNode();

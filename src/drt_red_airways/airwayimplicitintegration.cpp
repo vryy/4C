@@ -1,4 +1,3 @@
-
 /*!----------------------------------------------------------------------
 \file airwayimplicitintegration.cpp
 \brief Control routine for reduced airway solvers,
@@ -78,6 +77,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   maxiter_     = params_.get<int> ("maximum iteration steps");
   // tolerance of nonlinear solution
   non_lin_tol_ = params_.get<double> ("tolerance");
+  // solve scatra
+  solveScatra_ = params_.get<bool> ("SolveScatra");
 
 
   // ensure that degrees of freedom in the discretization have been set
@@ -134,6 +135,12 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   qexp_         = LINALG::CreateVector(*elementrowmap,true);
   pexp_         = LINALG::CreateVector(*dofrowmap,true);
 
+  // element volume at time n+1, n and n-1
+  elemVolumenp_ = LINALG::CreateVector(*elementcolmap,true);
+  elemVolumen_  = LINALG::CreateVector(*elementcolmap,true);
+  elemVolumenm_ = LINALG::CreateVector(*elementcolmap,true);
+  elemVolume0_  = LINALG::CreateVector(*elementcolmap,true);
+
   // This vector will be used to test convergence
   residual_     = LINALG::CreateVector(*dofrowmap,true);
   bc_residual_  = LINALG::CreateVector(*dofcolmap,true);
@@ -160,6 +167,46 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   acini_e_volumenp_     = LINALG::CreateVector(*elementcolmap,true);
   acini_e_volume_strain_= LINALG::CreateVector(*elementcolmap,true);
 
+  //--------------------------------------------------------------------
+  // Initialize "scalar transpor" variables
+  //--------------------------------------------------------------------
+  if (solveScatra_)
+  {
+    // Nodal values of the scalar transport
+    scatraO2nm_  = LINALG::CreateVector(*dofrowmap,true);
+    scatraO2n_   = LINALG::CreateVector(*dofrowmap,true);
+    scatraO2np_  = LINALG::CreateVector(*dofrowmap,true);
+    dscatraO2_   = LINALG::CreateVector(*dofrowmap,true);
+    dVolumeO2_   = LINALG::CreateVector(*dofrowmap,true);
+    acinarDO2_   = LINALG::CreateVector(*dofrowmap,true);
+
+    // Element values of the scalar transport (Needed to resolve the
+    // the transport at the branching parts
+    e1scatraO2nm_= LINALG::CreateVector(*elementcolmap,true);
+    e1scatraO2n_ = LINALG::CreateVector(*elementcolmap,true);
+    e1scatraO2np_= LINALG::CreateVector(*elementcolmap,true);
+
+    e2scatraO2nm_= LINALG::CreateVector(*elementcolmap,true);
+    e2scatraO2n_ = LINALG::CreateVector(*elementcolmap,true);
+    e2scatraO2np_= LINALG::CreateVector(*elementcolmap,true);
+
+    cfls_        = LINALG::CreateVector(*elementrowmap,true);
+
+    scatraCO2nm_ = LINALG::CreateVector(*dofrowmap,true);
+    scatraCO2n_  = LINALG::CreateVector(*dofrowmap,true);
+    scatraCO2np_ = LINALG::CreateVector(*dofrowmap,true);
+
+    //junctionVolumeInMix_ = LINALG::CreateVector(*dofcolmap,true);
+    //junVolMix_Corrector_ = LINALG::CreateVector(*dofcolmap,true);
+    //jVDofRowMix_         = LINALG::CreateVector(*dofrowmap,true);
+    //diffusionArea_       = LINALG::CreateVector(*dofcolmap,true);
+
+    junctionVolumeInMix_ = LINALG::CreateVector(*dofrowmap,true);
+    junVolMix_Corrector_ = LINALG::CreateVector(*dofrowmap,true);
+    jVDofRowMix_         = LINALG::CreateVector(*dofrowmap,true);
+    diffusionArea_       = LINALG::CreateVector(*dofrowmap,true);
+  }
+
   // Vectors used for solution process
   // ---------------------------------
 
@@ -179,17 +226,60 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   eleparams.set("p0n",pn_);
   eleparams.set("p0nm",pnm_);
 
-  eleparams.set("radii",radii_);
+//  eleparams.set("radii",radii_);
   eleparams.set("generations",generations_);
   eleparams.set("acini_bc",acini_bc_);
   eleparams.set("acini_e_volume",acini_e_volumenp_);
+  eleparams.set("solveScatra",solveScatra_);
+  eleparams.set("elemVolume",elemVolumenp_);
+  if (solveScatra_)
+  {
+    eleparams.set("junVolMix_Corrector",junVolMix_Corrector_);
+    eleparams.set("scatranp",scatraO2np_);
+    eleparams.set("e1scatranp",e1scatraO2np_);
+    eleparams.set("e2scatranp",e2scatraO2np_);
+  }
 
   eleparams.set("action","get_initial_state");
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  RCP <Epetra_Vector> radii_in = LINALG::CreateVector(*dofrowmap,true);
+  RCP <Epetra_Vector> radii_out = LINALG::CreateVector(*dofrowmap,true);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,radii_in,radii_out,Teuchos::null);
+
+  for(int i=0;i<radii_->MyLength();i++)
+  {
+    if ((*radii_in)[i]==0.0)
+    {
+      (*radii_)[i] = (*radii_out)[i];
+    }
+    else if ((*radii_out)[i]==0.0)
+    {
+      (*radii_)[i] = (*radii_in)[i];
+    }
+    else
+    {
+      (*radii_)[i] = 0.5*((*radii_in)[i]+(*radii_out)[i]);
+    }
+  }
+
+  if (solveScatra_)
+  {
+    scatraO2n_ ->Update(1.0,*scatraO2np_,0.0);
+    scatraO2nm_->Update(1.0,*scatraO2np_,0.0);
+
+    e1scatraO2n_->Update(1.0,*e1scatraO2np_,0.0);
+    e1scatraO2nm_->Update(1.0,*e1scatraO2np_,0.0);
+
+    e2scatraO2n_->Update(1.0,*e2scatraO2np_,0.0);
+    e2scatraO2nm_->Update(1.0,*e2scatraO2np_,0.0);
+  }
 
   acini_e_volumen_->Update(1.0,*acini_e_volumenp_,0.0);
   acini_e_volumenm_->Update(1.0,*acini_e_volumenp_,0.0);
   acini_e_volume0_->Update(1.0,*acini_e_volumenp_,0.0);
+  elemVolumen_ ->Update(1.0,*elemVolumenp_,0.0);
+  elemVolumenm_->Update(1.0,*elemVolumenp_,0.0);
+  elemVolume0_ ->Update(1.0,*elemVolumenp_,0.0);
 
   // Fill the NodeId vector
   for (int nele=0;nele<discret_->NumMyColElements();++nele)
@@ -220,24 +310,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
     }
   }
 
-#if 0
-  const Epetra_Map* nodeColwmap      = discret_->NodeColMap();
-  for (int nnode=0;nnode<discret_->NumMyColNodes();++nnode)
-  {
-    DRT::Node * node = discret_->lColNode(nnode);
-    int dofgid = discret_->Dof(node,0) ;
-    int doflid = num_of_inter_acinar_linkers_->Map().LID(dofgid);
-
-    for (int k=0;k<node->NumElement();k++)
-    {
-      {
-        double val = (*num_of_inter_acinar_linkers_)[doflid]+1;
-        num_of_inter_acinar_linkers_->ReplaceGlobalValues(1,&val,&dofgid);
-      }
-    }
-  }
-#endif
-
+  std::vector<DRT::Condition*> conds;
+  discret_->GetCondition("RedAirwayScatraExchangeCond",conds);
 } // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
 
@@ -383,6 +457,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
   else
   {
     dserror("[%s] is not a defined solver",(params_.get<std::string> ("solver type")).c_str() );
+  }
+
+  // -------------------------------------------------------------------
+  // Solve Scatra
+  // -------------------------------------------------------------------
+  {
+    if (solveScatra_)
+    {
+      this->SolveScatra(CouplingTo3DParams);
+    }
   }
 
   // -------------------------------------------------------------------
@@ -537,7 +621,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::Parame
 
     this->EvalResidual(CouplingTo3DParams);
     residual_->Norm2 (&error_norm2);
-    //    std::cout<<"Proc: "<<myrank_<<" Norm: "<<error_norm<<" length: "<<p_nonlin_->GlobalLength()<<std::endl;
+
 
     //------------------------------------------------------------------
     // if L2 norm is smaller then tolerance then proceed
@@ -549,8 +633,28 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::Parame
     }
     if(error_norm1 <= non_lin_tol_)
       break;
-
   }
+  {
+    double maxQ = 0.0;
+    double maxP = 0.0;
+    double minQ = 0.0;
+    double minP = 0.0;
+    Teuchos::RCP<Epetra_Vector> qabs = Teuchos::rcp(new Epetra_Vector(*qin_np_));
+    Teuchos::RCP<Epetra_Vector> pabs = Teuchos::rcp(new Epetra_Vector(*pnp_));
+    qabs->Abs(*qin_np_);
+    pabs->Abs(*pnp_);
+
+    qabs->MaxValue(&maxQ);
+    pabs->MaxValue(&maxP);
+    qabs->MinValue(&minQ);
+    pabs->MinValue(&minP);
+    if (!myrank_)
+    {
+      printf(" |Pressure|_max: %10.3E \t\t\t |Q|_max: %10.3E\n",maxP,maxQ);
+      printf(" |Pressure|_min: %10.3E \t\t\t |Q|_min: %10.3E\n",minP,minQ);
+    }
+  }
+
   if (!myrank_)
     printf("\n");
 }
@@ -622,6 +726,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("qout_n" ,qout_n_ );
     eleparams.set("qout_nm",qout_nm_ );
 
+    eleparams.set("elemVolumen",elemVolumen_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
     //------------------------------------------------------------------
     // Evaluate Lung volumes
     //------------------------------------------------------------------
@@ -652,7 +758,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     sysmat_iad_->PutScalar(0.0);
     eleparams.set("sysmat_iad",sysmat_iad_);
-//    eleparams.set("num_of_inter_acinar_linkers",num_of_inter_acinar_linkers_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -676,7 +781,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
       std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
     }
 #endif
-
   }
   {
     // create the parameters for the discretization
@@ -709,7 +813,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
       std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
     }
 #endif
-
   }
   // end time measurement for element
 
@@ -746,7 +849,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     //    discret_->SetState("qin_nm",qin_nm_);
 
     eleparams.set("qout_np",qout_np_);
-    //    discret_->SetState("qout_n" ,qout_n_ );
+    eleparams.set("qout_n" ,qout_n_ );
     //    discret_->SetState("qout_nm",qout_nm_);
 
     eleparams.set("time step size",dta_);
@@ -874,7 +977,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qout_np",qout_np_);
     eleparams.set("sysmat_iad",sysmat_iad_);
-
+    eleparams.set("elemVolumen",elemVolumen_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
 
     //    acini_e_volumenp_->PutScalar(0.0);
     //    acini_e_volume_strain_->PutScalar(0.0);
@@ -883,7 +987,34 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("acinar_vnp",acini_e_volumenp_);
 
     // call standard loop over all elements
-    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,rhs_,Teuchos::null,Teuchos::null);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    discret_->ClearState();
+  }
+
+  // find the element volume
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calc_elem_volumes");
+
+    // set vecotr values needed by elements
+    discret_->ClearState();
+
+    eleparams.set("acinar_vn" ,acini_e_volumen_);
+
+    eleparams.set("time step size",dta_);
+    eleparams.set("qin_n",qin_n_);
+    eleparams.set("qout_n",qout_n_);
+    eleparams.set("qin_np",qin_np_);
+    eleparams.set("qout_np",qout_np_);
+    eleparams.set("acinar_vnp",acini_e_volumenp_);
+    eleparams.set("elemVolumen",elemVolumen_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     discret_->ClearState();
   }
 
@@ -915,10 +1046,272 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
   }
-
 } // RedAirwayImplicitTimeInt::Solve
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | the solver for solving the scalar transport             ismail 02/13 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*
+Some detials!!
+*/
+void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+{
+  if (fmod(time_,4.0) < 2.1 && fmod(time_,4.0) >= 2.0)
+  {
+    return;
+  }
+  //---------------------------------------------------------------------
+  // Get the largest CFL number in the airways to scale down
+  // the time if CFL>1
+  //---------------------------------------------------------------------
+  double cflmax = 0.0;
+  {
+  // create the parameters for the discretization
+  ParameterList eleparams;
+  // action for elements
+  eleparams.set("action","calc_cfl");
+  eleparams.set("time step size",dta_);
+
+  // other parameters that might be needed by the elements
+  eleparams.set("total time",time_);
+  eleparams.set("elemVolumenp",elemVolumenp_);
+  eleparams.set("qin_np" ,qin_np_);
+  eleparams.set("qout_np",qout_np_);
+
+  eleparams.set("cfl" ,cfls_);
+
+  cfls_->PutScalar(0.0);
+
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->ClearState();
+
+  // get largest CFL number
+  cfls_->NormInf(&cflmax);
+
+  if (!myrank_)
+    cout<<"MAX CFL NUMBER IS!!!"<<cflmax<<endl;
+  }
+
+  //---------------------------------------------------------------------
+  // Get the junctions area in which a scatran is flowing
+  //---------------------------------------------------------------------
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","get_junction_volume_mix");
+    eleparams.set("time step size",dta_);
+
+    // other parameters that might be needed by the elements
+    eleparams.set("total time",time_);
+
+    // set vector values needed to evaluate O2 transport elements
+    discret_->ClearState();
+
+    eleparams.set("qin_np",qin_np_);
+    eleparams.set("qout_np",qout_np_);
+
+    eleparams.set("acinar_vn" ,acini_e_volumen_);
+    eleparams.set("acinar_vnp",acini_e_volumenp_);
+
+    junctionVolumeInMix_->PutScalar(0.0);
+    discret_->SetState("junVolMix_Corrector",junVolMix_Corrector_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
+
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,junctionVolumeInMix_,Teuchos::null,Teuchos::null);
+  }
+  //---------------------------------------------------------------------
+  // Find/ Solve the scatran that is flowing forward
+  //---------------------------------------------------------------------
+  {
+    scatraO2np_->PutScalar(0.0);
+    e1scatraO2np_->PutScalar(0.0);
+    e2scatraO2np_->PutScalar(0.0);
+    // create the parameters for the discretization
+    ParameterList eleparams;
+  // action for elements
+    eleparams.set("action","solve_scatra");
+    eleparams.set("time step size",dta_);
+
+  // other parameters that might be needed by the elements
+    eleparams.set("total time",time_);
+
+  // set vector values needed to evaluate O2 transport elements
+    discret_->ClearState();
+    discret_->SetState("scatran"  ,scatraO2n_);
+
+    eleparams.set("e1scatran" ,e1scatraO2n_ );
+    eleparams.set("e1scatranp",e1scatraO2np_);
+
+    eleparams.set("e2scatran" ,e2scatraO2n_ );
+    eleparams.set("e2scatranp",e2scatraO2np_);
+
+    eleparams.set("qin_np",qin_np_);
+    eleparams.set("qout_np",qout_np_);
+
+    eleparams.set("acinar_vn" ,acini_e_volumen_);
+    eleparams.set("acinar_vnp",acini_e_volumenp_);
+
+    eleparams.set("elemVolumenp",elemVolumenp_);
+    eleparams.set("elemVolumen" ,elemVolumen_);
+
+    discret_->SetState("junctionVolumeInMix",junctionVolumeInMix_);
+    const Epetra_Map* dofrowmap  = discret_->DofRowMap();
+    RCP <Epetra_Vector> dummy    = LINALG::CreateVector(*dofrowmap,true);
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,scatraO2np_,dummy,Teuchos::null);
+    discret_->ClearState();
+
+  }
+  //---------------------------------------------------------------------
+  // Reconvert the scatran from 'number of moles' into a concentration
+  //---------------------------------------------------------------------
+  {
+    Epetra_Export exporter(junctionVolumeInMix_->Map(),jVDofRowMix_->Map());
+    int err = jVDofRowMix_->Export(*junctionVolumeInMix_,exporter,Zero);
+    if (err) dserror("Export using exporter returned err=%d",err);
+  }
+  for(int i=0;i<scatraO2np_->MyLength();i++)
+  {
+    if ((*jVDofRowMix_)[i]!=0.0)
+    {
+      (*scatraO2np_)[i] /= (*jVDofRowMix_)[i];
+    }
+  }
+
+  //---------------------------------------------------------------------
+  // Solve the scatran for the nodes that recieve their values from the
+  // neighbouring element/airway-branch
+  //---------------------------------------------------------------------
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+  // action for elements
+    eleparams.set("action","solve_junction_scatra");
+    eleparams.set("time step size",dta_);
+
+  // other parameters that might be needed by the elements
+    eleparams.set("total time",time_);
+
+  // set vector values needed to evaluate O2 transport elements
+    discret_->ClearState();
+    eleparams.set("e1scatranp",e1scatraO2np_);
+    eleparams.set("e2scatranp",e2scatraO2np_);
+
+    discret_->SetState("scatranp" ,scatraO2np_);
+
+    eleparams.set("qin_np",qin_np_);
+
+    eleparams.set("qout_np",qout_np_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
+    discret_->SetState("junctionVolumeInMix",junctionVolumeInMix_);
+
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,scatraO2np_,junctionVolumeInMix_,Teuchos::null);
+    discret_->ClearState();
+  }
+
+  //---------------------------------------------------------------------
+  // Solve the scatra between air and blood region
+  //---------------------------------------------------------------------
+  // define an empty capillary flowrate vector
+  const Epetra_Map* dofrowmap      = discret_->DofRowMap();
+  // Diffusion surface (from the acinar side)
+  RCP <Epetra_Vector> nodal_surfaces = LINALG::CreateVector(*dofrowmap,true);
+  // Fluid volume
+  RCP <Epetra_Vector> nodal_volumes  = LINALG::CreateVector(*dofrowmap,true);
+  // Average concentration in Acini and in Capillar
+  RCP <Epetra_Vector> nodal_avg_conc = LINALG::CreateVector(*dofrowmap,true);
+
+  {
+    // get the diffusion surfaces at the acini
+    ParameterList eleparams;
+    eleparams.set("action","eval_nodal_essential_values");
+
+    // set vector values of flow rates
+    discret_->SetState("scatranp",scatraO2np_);
+    eleparams.set("acinar_v",acini_e_volumenp_);
+
+    // set vector values of flow rates
+    eleparams.set("time step size",dta_);
+    eleparams.set("qnp",qin_np_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,nodal_surfaces,nodal_volumes,nodal_avg_conc);
+    discret_->ClearState();
+  }
+
+  // evaluate the transport of O2 between air and blood
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","solve_blood_air_transport");
+    eleparams.set("time step size",dta_);
+
+    // other parameters that might be needed by the elements
+    eleparams.set("total time",time_);
+
+    discret_->SetState("areanp",nodal_surfaces);
+    discret_->SetState("volumenp",nodal_volumes);
+    discret_->SetState("scatranp",nodal_avg_conc);
+    eleparams.set("elemVolumenp",elemVolumenp_);
+    dscatraO2_->PutScalar(0.0);
+    dVolumeO2_->PutScalar(0.0);
+    acinarDO2_->PutScalar(0.0);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,dscatraO2_,dVolumeO2_,acinarDO2_);
+    discret_->ClearState();
+  }
+
+  //---------------------------------------------------------------------
+  // Update scatra
+  //---------------------------------------------------------------------
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","update_scatra");
+
+    // set vector values needed to evaluate O2 transport elements
+    discret_->ClearState();
+    eleparams.set("qin_np",qin_np_);
+    eleparams.set("e1scatranp",e1scatraO2np_);
+    eleparams.set("e2scatranp",e2scatraO2np_);
+    eleparams.set("dscatranp",dscatraO2_);
+    discret_->SetState("dscatranp",dscatraO2_);
+    discret_->SetState("avg_scatranp",nodal_avg_conc);
+    discret_->SetState("scatranp",scatraO2np_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,Teuchos::null,Teuchos::null,Teuchos::null);
+    discret_->ClearState();
+  }
+  scatraO2np_->Update(1.0,*dscatraO2_,1.0);
+  //---------------------------------------------------------------------
+  // Update element12 scatra
+  //---------------------------------------------------------------------
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","update_elem12_scatra");
+
+    // set vector values needed to evaluate O2 transport elements
+    discret_->ClearState();
+    eleparams.set("qin_np",qin_np_);
+    eleparams.set("e1scatranp",e1scatraO2np_);
+    eleparams.set("e2scatranp",e2scatraO2np_);
+    discret_->SetState("dscatranp",dscatraO2_);
+    discret_->SetState("scatranp",scatraO2np_);
+    discret_->SetState("junctionVolumeInMix",junctionVolumeInMix_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,Teuchos::null,Teuchos::null,Teuchos::null);
+    discret_->ClearState();
+  }
+} // RedAirwayImplicitTimeInt::SolveScatra
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -981,8 +1374,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 {
-
-
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
   pnm_->Update(1.0,*pn_ ,0.0);
   pn_ ->Update(1.0,*pnp_,0.0);
@@ -995,6 +1386,21 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 
   acini_e_volumenm_->Update(1.0,*acini_e_volumen_,0.0);
   acini_e_volumen_->Update(1.0,*acini_e_volumenp_,0.0);
+
+  elemVolumenm_->Update(1.0,*elemVolumen_,0.0);
+  elemVolumen_->Update(1.0,*elemVolumenp_,0.0);
+
+  if (solveScatra_)
+  {
+    scatraO2nm_->Update(1.0,*scatraO2n_,0.0);
+    scatraO2n_->Update(1.0,*scatraO2np_,0.0);
+
+    e1scatraO2nm_->Update(1.0,*e1scatraO2n_,0.0);
+    e1scatraO2n_ ->Update(1.0,*e1scatraO2np_,0.0);
+
+    e2scatraO2nm_->Update(1.0,*e2scatraO2n_,0.0);
+    e2scatraO2n_ ->Update(1.0,*e2scatraO2np_,0.0);
+  }
 
   return;
 }// RedAirwayImplicitTimeInt::TimeUpdate
@@ -1037,6 +1443,94 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("pnm",pnm_);
     output_.WriteVector("pn",pn_);
     output_.WriteVector("pnp",pnp_);
+    if (solveScatra_)
+    {
+      output_.WriteVector("scatraO2np",scatraO2np_);
+      output_.WriteVector("scatraO2n",scatraO2n_);
+      output_.WriteVector("scatraO2nm",scatraO2nm_);
+      output_.WriteVector("dVO2",dVolumeO2_);
+      {
+        // Export PO2
+        // create the parameters for the discretization
+        ParameterList eleparams;
+        // action for elements
+        eleparams.set("elemVolumenp",elemVolumenp_);
+        eleparams.set("action","eval_PO2_from_concentration");
+
+        const Epetra_Map* dofrowmap      = discret_->DofRowMap();
+        RCP <Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap,true);
+        discret_->ClearState();
+
+        eleparams.set("PO2" ,po2 );
+        discret_->SetState("scatranp" ,scatraO2np_);
+        eleparams.set("acinar_vnp",acini_e_volumenp_);
+        discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,Teuchos::null,Teuchos::null,Teuchos::null);
+        discret_->ClearState();
+        output_.WriteVector("PO2",po2);
+      }
+      // Export acinar PO2
+      {
+        // create the parameters for the discretization
+        ParameterList eleparams;
+        // action for elements
+        eleparams.set("elemVolumenp",elemVolumenp_);
+        eleparams.set("action","eval_PO2_from_concentration");
+
+        const Epetra_Map* dofrowmap      = discret_->DofRowMap();
+        RCP <Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap,true);
+        discret_->ClearState();
+
+        eleparams.set("PO2" ,po2 );
+        discret_->SetState("scatranp" ,acinarDO2_);
+        eleparams.set("acinar_vnp",acini_e_volumenp_);
+        discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,Teuchos::null,Teuchos::null,Teuchos::null);
+        discret_->ClearState();
+        output_.WriteVector("AcinarPO2",po2);
+      }
+      {
+        Epetra_Export exporter(e1scatraO2np_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e1scatraO2np_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e1scatraO2np",qexp_);
+      {
+        Epetra_Export exporter(e1scatraO2n_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e1scatraO2n_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e1scatraO2n",qexp_);
+      {
+        Epetra_Export exporter(e1scatraO2nm_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e1scatraO2nm_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e1scatraO2nm",qexp_);
+
+      {
+        Epetra_Export exporter(e2scatraO2np_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e2scatraO2np_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e2scatraO2np",qexp_);
+      {
+        Epetra_Export exporter(e2scatraO2n_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e2scatraO2n_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e2scatraO2n",qexp_);
+      {
+        Epetra_Export exporter(e2scatraO2nm_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e2scatraO2nm_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e2scatraO2nm",qexp_);
+      {
+        Epetra_Export exporter(junctionVolumeInMix_->Map(),jVDofRowMix_->Map());
+        int err = jVDofRowMix_->Export(*junctionVolumeInMix_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("juncVolMix",jVDofRowMix_);
+    }
 
     // "flow" vectors for capacitances
     //    output_.WriteVector("qcnm",qcnm_);
@@ -1061,19 +1555,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
 
-#if 0
-    // write the acinar values
-    LINALG::Export(*acini_e_volumenm_,*qexp_);
-    output_.WriteVector("acini_vnm",qexp_);
-    LINALG::Export(*acini_e_volumen_,*qexp_);
-    output_.WriteVector("acini_vn",qexp_);
-    LINALG::Export(*acini_e_volumenp_,*qexp_);
-    output_.WriteVector("acini_vnp",qexp_);
-    LINALG::Export(*acini_e_volume_strain_,*qexp_);
-    output_.WriteVector("acini_volumetric_strain",qexp_);
-    LINALG::Export(*acini_e_volume0_,*qexp_);
-    output_.WriteVector("acini_v0",qexp_);
-#else
+
+    LINALG::Export(*elemVolumenm_,*qexp_);
+    output_.WriteVector("elemVolumenm",qexp_);
+    LINALG::Export(*elemVolumen_,*qexp_);
+    output_.WriteVector("elemVolumen",qexp_);
+    LINALG::Export(*elemVolumenp_,*qexp_);
+    output_.WriteVector("elemVolumenp",qexp_);
+
     {
       Epetra_Export exporter(acini_e_volumenm_->Map(),qexp_->Map());
       int err = qexp_->Export(*acini_e_volumenm_,exporter,Zero);
@@ -1104,10 +1593,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       if (err) dserror("Export using exporter returned err=%d",err);
       output_.WriteVector("acini_v0",qexp_);
     }
-#endif
 
     if (step_==upres_)
     {
+      LINALG::Export(*elemVolume0_,*qexp_);
+      output_.WriteVector("elemVolume0",qexp_);
       output_.WriteVector("NodeIDs",nodeIds_);
       output_.WriteVector("radii",radii_);
       LINALG::Export(*generations_,*qexp_);
@@ -1137,7 +1627,56 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("pn",pn_);
     output_.WriteVector("pnp",pnp_);
 
+    if (solveScatra_)
+    {
+      output_.WriteVector("scatraO2np",scatraO2np_);
+      output_.WriteVector("scatraO2n",scatraO2n_);
+      output_.WriteVector("scatraO2nm",scatraO2nm_);
+      output_.WriteVector("dVO2",dVolumeO2_);
+      {
+        Epetra_Export exporter(e1scatraO2np_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e1scatraO2np_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e1scatraO2np",qexp_);
+      {
+        Epetra_Export exporter(e1scatraO2n_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e1scatraO2n_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e1scatraO2n",qexp_);
+      {
+        Epetra_Export exporter(e1scatraO2nm_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e1scatraO2nm_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e1scatraO2nm",qexp_);
 
+      {
+        Epetra_Export exporter(e2scatraO2np_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e2scatraO2np_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e2scatraO2np",qexp_);
+      {
+        Epetra_Export exporter(e2scatraO2n_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e2scatraO2n_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e2scatraO2n",qexp_);
+      {
+        Epetra_Export exporter(e2scatraO2nm_->Map(),qexp_->Map());
+        int err = qexp_->Export(*e2scatraO2nm_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("e2scatraO2nm",qexp_);
+      {
+        Epetra_Export exporter(junctionVolumeInMix_->Map(),jVDofRowMix_->Map());
+        int err = jVDofRowMix_->Export(*junctionVolumeInMix_,exporter,Zero);
+        if (err) dserror("Export using exporter returned err=%d",err);
+      }
+      output_.WriteVector("juncVolMix",jVDofRowMix_);
+    }
     // write the flow values
     LINALG::Export(*qin_nm_,*qexp_);
     output_.WriteVector("qin_nm",qexp_);
@@ -1152,6 +1691,14 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("qout_n" ,qexp_);
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
+
+    LINALG::Export(*elemVolumenm_,*qexp_);
+    output_.WriteVector("elemVolumenm",qexp_);
+    LINALG::Export(*elemVolumen_,*qexp_);
+    output_.WriteVector("elemVolumen",qexp_);
+    LINALG::Export(*elemVolumenp_,*qexp_);
+    output_.WriteVector("elemVolumenp",qexp_);
+
     //
     LINALG::Export(*acini_e_volumenm_,*qexp_);
     output_.WriteVector("acini_vnm",qexp_);
@@ -1163,8 +1710,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("acini_volumetric_strain",qexp_);
     LINALG::Export(*acini_e_volume0_,*qexp_);
     output_.WriteVector("acini_v0",qexp_);
-
-
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -1243,8 +1788,38 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
   reader.ReadVector(qexp_, "qout_np");
   LINALG::Export(*qexp_,*qout_np_);
 
+  reader.ReadVector(qexp_, "elemVolumenm");
+  LINALG::Export(*qexp_,*elemVolumenm_);
+  reader.ReadVector(qexp_ , "elemVolumen" );
+  LINALG::Export(*qexp_,*elemVolumen_);
+  reader.ReadVector(qexp_, "elemVolumenp");
+  LINALG::Export(*qexp_,*elemVolumenp_);
+
   // read the previously written elements including the history data
   //reader.ReadMesh(step_);
+  if (solveScatra_)
+  {
+    reader.ReadVector(scatraO2np_,"scatraO2np");
+    reader.ReadVector(scatraO2n_, "scatraO2n");
+    reader.ReadVector(scatraO2nm_,"scatraO2nm");
+
+    reader.ReadVector(qexp_,"e1scatraO2np");
+    LINALG::Export(*qexp_,*e1scatraO2np_);
+    reader.ReadVector(qexp_,"e1scatraO2n");
+    LINALG::Export(*qexp_,*e1scatraO2n_);
+    reader.ReadVector(qexp_,"e1scatraO2nm");
+    LINALG::Export(*qexp_,*e1scatraO2nm_);
+
+    reader.ReadVector(qexp_,"e2scatraO2np");
+    LINALG::Export(*qexp_,*e2scatraO2np_);
+    reader.ReadVector(qexp_,"e2scatraO2n");
+    LINALG::Export(*qexp_,*e2scatraO2n_);
+    reader.ReadVector(qexp_,"e2scatraO2nm");
+    LINALG::Export(*qexp_,*e2scatraO2nm_);
+
+    reader.ReadVector(jVDofRowMix_,"juncVolMix");
+    LINALG::Export(*jVDofRowMix_,*junctionVolumeInMix_);
+  }
 
 }//RedAirwayImplicitTimeInt::ReadRestart
 
@@ -1290,17 +1865,17 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
 
     eleparams.set("acinar_vn" ,acini_e_volumen_);
     eleparams.set("acinar_vnp",acini_e_volumenp_);
-    //    discret_->SetState("acinar_vn" ,acini_e_volumen_);
-    //    discret_->SetState("acinar_vnp",acini_e_volumenp_);
 
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qin_n" ,qin_n_);
     eleparams.set("qin_nm",qin_nm_);
 
-
     eleparams.set("qout_np",qout_np_);
     eleparams.set("qout_n" ,qout_n_ );
     eleparams.set("qout_nm",qout_nm_ );
+
+    eleparams.set("elemVolumen",elemVolumen_);
+    eleparams.set("elemVolumenp",elemVolumenp_);
 
     // get lung volume
     double lung_volume_np = 0.0;
@@ -1323,8 +1898,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     {
       dserror("Error by summing all acinar volumes");
     }
-
-
 
     eleparams.set("lungVolume_np",lung_volume_np);
     eleparams.set("lungVolume_n" ,lung_volume_n);
@@ -1401,6 +1974,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     eleparams.set("qin_n",qin_n_);
 
     eleparams.set("qout_np",qout_np_);
+    eleparams.set("qout_n",qout_n_);
 
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
@@ -1563,4 +2137,3 @@ bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(Teuchos::RCP<Epetra_Vect
   // return all is fine
   return false;
 }
-

@@ -11,8 +11,6 @@ Maintainer: Mahmoud Ismail
 </pre>
 
 *----------------------------------------------------------------------*/
-
-
 #include "red_airway.H"
 #include "airway_impl.H"
 
@@ -61,6 +59,26 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
     act = RedAirway::get_coupled_values;
   else if (action == "calc_sys_matrix_rhs_iad")
     act = RedAirway::calc_sys_matrix_rhs_iad;
+  else if (action == "get_junction_volume_mix")
+    act = RedAirway::get_junction_volume_mix;
+  else if (action == "solve_scatra")
+    act = RedAirway::solve_scatra;
+  else if (action == "solve_junction_scatra")
+    act = RedAirway::solve_junction_scatra;
+  else if (action == "calc_cfl")
+    act = RedAirway::calc_cfl;
+  else if (action == "eval_nodal_essential_values")
+    act = RedAirway::eval_nodal_ess_vals;
+  else if (action == "solve_blood_air_transport")
+    act = RedAirway::solve_blood_air_transport;
+  else if (action == "update_scatra")
+    act = RedAirway::update_scatra;
+  else if (action == "update_elem12_scatra")
+    act = RedAirway::update_elem12_scatra;
+  else if (action == "eval_PO2_from_concentration")
+    act = RedAirway::eval_PO2_from_concentration;
+  else if (action == "calc_elem_volumes")
+    act = RedAirway::calc_elem_volumes;
   else
   {
 
@@ -101,8 +119,10 @@ Here must add the steps for evaluating an element
                                                                params,
                                                                discretization,
                                                                lm,
+                                                               elevec1,
+                                                               elevec2,
                                                                mat);
-    
+
   }
   break;
   case set_bc:
@@ -113,7 +133,7 @@ Here must add the steps for evaluating an element
                                                                           lm,
                                                                           elevec1,
                                                                           mat);
-    
+
   }
   break;
   case calc_flow_rates:
@@ -121,8 +141,6 @@ Here must add the steps for evaluating an element
     DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcFlowRates(this,
                                                                      params,
                                                                      discretization,
-                                                                     elevec1,
-                                                                     elevec2,
                                                                      lm,
                                                                      mat);
 
@@ -135,13 +153,108 @@ Here must add the steps for evaluating an element
                                                                         discretization,
                                                                         lm,
                                                                         mat);
-    
+
+  }
+  break;
+  case get_junction_volume_mix:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->GetJunctionVolumeMix(this,
+                                                                            params,
+                                                                            discretization,
+                                                                            elevec1,
+                                                                            lm,
+                                                                            mat);
+  }
+  break;
+  case solve_scatra:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->SolveScatra(this,
+                                                                   params,
+                                                                   discretization,
+                                                                   elevec1,
+                                                                   elevec2,
+                                                                   lm,
+                                                                   mat);
+  }
+  break;
+  case solve_junction_scatra:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->SolveScatraBifurcations(this,
+                                                                               params,
+                                                                               discretization,
+                                                                               elevec1,
+                                                                               elevec2,
+                                                                               lm,
+                                                                               mat);
+  }
+  break;
+  case calc_cfl:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcCFL(this,
+                                                               params,
+                                                               discretization,
+                                                               lm,
+                                                               mat);
+  }
+  break;
+  case solve_blood_air_transport:
+  {
+    // do nothing
+  }
+  break;
+  case eval_nodal_ess_vals:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvalNodalEssentialValues(this,
+                                                                                params,
+                                                                                discretization,
+                                                                                elevec1,
+                                                                                elevec2,
+                                                                                elevec3,
+                                                                                lm,
+                                                                                mat);
+  }
+  break;
+  case eval_PO2_from_concentration:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->EvalPO2FromScatra(this,
+                                                                         params,
+                                                                         discretization,
+                                                                         lm,
+                                                                         mat);
+  }
+  break;
+  case update_scatra:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->UpdateScatra(this,
+                                                                    params,
+                                                                    discretization,
+                                                                    lm,
+                                                                    mat);
+  }
+  break;
+  case update_elem12_scatra:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->UpdateElem12Scatra(this,
+                                                                    params,
+                                                                    discretization,
+                                                                    lm,
+                                                                    mat);
+  }
+  break;
+  case calc_elem_volumes:
+  {
+    DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcElemVolume(this,
+                                                                      params,
+                                                                      discretization,
+                                                                      lm,
+                                                                      mat);
+
   }
   break;
   default:
     dserror("Unkown type of action for reduced dimensional airways");
   }// end of switch(act)
-  
+
   return 0;
 } // end of DRT::ELEMENTS::RedAirway::Evaluate
 

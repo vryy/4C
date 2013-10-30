@@ -256,6 +256,8 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::RedAirwayType::Instance().Name() << " "
     << DRT::ELEMENTS::RedAcinusType::Instance().Name() << " "
     << DRT::ELEMENTS::RedInterAcinarDepType::Instance().Name() << " "
+    << DRT::ELEMENTS::RedAirBloodScatraType::Instance().Name() << " "
+    << DRT::ELEMENTS::RedAirBloodScatraLine3Type::Instance().Name() << " "
     << MAT::TopOptDensType::Instance().Name() << " "
     << STR::INVANA::SMCParticleType::Instance().Name() << " "
 

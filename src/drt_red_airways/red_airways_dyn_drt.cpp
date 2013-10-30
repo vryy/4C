@@ -135,6 +135,11 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   airwaystimeparams.set                  ("tolerance"               ,rawdyn.get<double>("TOLERANCE"));
   // maximum number of iterations
   airwaystimeparams.set                  ("maximum iteration steps" ,rawdyn.get<int>("MAXITERATIONS"));
+  // solveScatra
+  if (rawdyn.get<string>("SOLVESCATRA")=="yes")
+    airwaystimeparams.set                  ("SolveScatra" ,true);
+  else
+    airwaystimeparams.set                  ("SolveScatra" ,false);
 
   //------------------------------------------------------------------
   // create all vectors and variables associated with the time

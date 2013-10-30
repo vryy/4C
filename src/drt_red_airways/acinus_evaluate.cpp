@@ -58,8 +58,28 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
     act = RedAcinus::set_bc;
   else if (action == "calc_flow_rates")
     act = RedAcinus::calc_flow_rates;
+  else if (action == "calc_elem_volumes")
+    act = RedAcinus::calc_elem_volumes;
   else if (action == "get_coupled_values")
     act = RedAcinus::get_coupled_values;
+  else if (action == "get_junction_volume_mix")
+    act = RedAcinus::get_junction_volume_mix;
+  else if (action == "solve_scatra")
+    act = RedAcinus::solve_scatra;
+  else if (action == "solve_junction_scatra")
+    act = RedAcinus::solve_junction_scatra;
+  else if (action == "calc_cfl")
+    act = RedAcinus::calc_cfl;
+  else if (action == "eval_nodal_essential_values")
+    act = RedAcinus::eval_nodal_ess_vals;
+  else if (action == "solve_blood_air_transport")
+    act = RedAcinus::solve_blood_air_transport;
+  else if (action == "update_scatra")
+    act = RedAcinus::update_scatra;
+  else if (action == "update_elem12_scatra")
+    act = RedAcinus::update_elem12_scatra;
+  else if (action == "eval_PO2_from_concentration")
+    act = RedAcinus::eval_PO2_from_concentration;
   else
   {
 
@@ -101,7 +121,7 @@ Here must add the steps for evaluating an element
                                                                discretization,
                                                                lm,
                                                                mat);
-    
+
   }
   break;
   case set_bc:
@@ -112,7 +132,7 @@ Here must add the steps for evaluating an element
                                                                           lm,
                                                                           elevec1,
                                                                           mat);
-    
+
   }
   break;
   case calc_flow_rates:
@@ -120,11 +140,19 @@ Here must add the steps for evaluating an element
     DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->CalcFlowRates(this,
                                                                      params,
                                                                      discretization,
-                                                                     elevec1,
-                                                                     elevec2,
                                                                      lm,
                                                                      mat);
-    
+
+  }
+  break;
+  case calc_elem_volumes:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->CalcElemVolume(this,
+                                                                     params,
+                                                                     discretization,
+                                                                     lm,
+                                                                     mat);
+
   }
   break;
   case get_coupled_values:
@@ -134,13 +162,94 @@ Here must add the steps for evaluating an element
                                                                         discretization,
                                                                         lm,
                                                                         mat);
-    
+
+  }
+  break;
+  case get_junction_volume_mix:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->GetJunctionVolumeMix(this,
+                                                                            params,
+                                                                            discretization,
+                                                                            elevec1,
+                                                                            lm,
+                                                                            mat);
+  }
+  break;
+  case solve_scatra:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->SolveScatra(this,
+                                                                   params,
+                                                                   discretization,
+                                                                   elevec1,
+                                                                   elevec2,
+                                                                   lm,
+                                                                   mat);
+  }
+  break;
+  case solve_junction_scatra:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->SolveScatraBifurcations(this,
+                                                                               params,
+                                                                               discretization,
+                                                                               elevec1,
+                                                                               elevec2,
+                                                                               lm,
+                                                                               mat);
+  }
+  break;
+  case update_scatra:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->UpdateScatra(this,
+                                                                    params,
+                                                                    discretization,
+                                                                    lm,
+                                                                    mat);
+  }
+  break;
+  case update_elem12_scatra:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->UpdateElem12Scatra(this,
+                                                                    params,
+                                                                    discretization,
+                                                                    lm,
+                                                                    mat);
+  }
+  break;
+  case calc_cfl:
+  {
+    //do  nothing
+  }
+  break;
+  case solve_blood_air_transport:
+  {
+    // do nothing
+  }
+  break;
+  case eval_nodal_ess_vals:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->EvalNodalEssentialValues(this,
+                                                                                params,
+                                                                                discretization,
+                                                                                elevec1,
+                                                                                elevec2,
+                                                                                elevec3,
+                                                                                lm,
+                                                                                mat);
+  }
+  break;
+  case eval_PO2_from_concentration:
+  {
+    DRT::ELEMENTS::RedAcinusImplInterface::Impl(this)->EvalPO2FromScatra(this,
+                                                                         params,
+                                                                         discretization,
+                                                                         lm,
+                                                                         mat);
   }
   break;
   default:
     dserror("Unkown type of action for reduced dimensional acinuss");
   }// end of switch(act)
-  
+
   return 0;
 } // end of DRT::ELEMENTS::RedAcinus::Evaluate
 

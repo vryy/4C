@@ -153,6 +153,11 @@ public:
   */
   void NonLin_Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
+  /*!
+  \brief solve the scalar transport
+
+  */
+  void SolveScatra(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
   /*!
     \brief build linear system matrix and rhs
@@ -334,6 +339,13 @@ protected:
   RCP<Epetra_Vector>          pexp_;
   //@}
 
+  //! @name element volume at time n+1, n and n-1
+  RCP<Epetra_Vector>          elemVolumenp_;
+  RCP<Epetra_Vector>          elemVolumen_;
+  RCP<Epetra_Vector>          elemVolumenm_;
+  RCP<Epetra_Vector>          elemVolume0_;
+
+  //@}
   //! @name node Id vector
   RCP<Epetra_Vector>          nodeIds_;
   //@}
@@ -358,6 +370,33 @@ protected:
   RCP<Epetra_Vector>          acini_e_volumenp_;
   RCP<Epetra_Vector>          acini_e_volume_strain_;
 
+  //@}
+
+  //! @name sclar transport variables inside airways
+  RCP<Epetra_Vector>          scatraO2nm_;
+  RCP<Epetra_Vector>          e1scatraO2nm_;
+  RCP<Epetra_Vector>          e2scatraO2nm_;
+  RCP<Epetra_Vector>          scatraO2n_;
+  RCP<Epetra_Vector>          e1scatraO2n_;
+  RCP<Epetra_Vector>          e2scatraO2n_;
+  RCP<Epetra_Vector>          scatraO2np_;
+  RCP<Epetra_Vector>          e1scatraO2np_;
+  RCP<Epetra_Vector>          e2scatraO2np_;
+  RCP<Epetra_Vector>          dscatraO2_;
+  RCP<Epetra_Vector>          dVolumeO2_;
+  RCP<Epetra_Vector>          acinarDO2_;
+
+  RCP<Epetra_Vector>          scatraCO2nm_;
+  RCP<Epetra_Vector>          scatraCO2n_;
+  RCP<Epetra_Vector>          scatraCO2np_;
+
+  RCP<Epetra_Vector>          junctionVolumeInMix_;
+  RCP<Epetra_Vector>          jVDofRowMix_;
+  RCP<Epetra_Vector>          junVolMix_Corrector_;
+  RCP<Epetra_Vector>          diffusionArea_;
+  RCP<Epetra_Vector>          cfls_;
+
+  bool                        solveScatra_;
   //@}
 
   //! Error vector that shows the convergenece of the nonlinear problem

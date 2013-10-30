@@ -113,6 +113,8 @@ namespace INPAR
       m_opti_dens,    ///< density field for topology optimization
       m_0d_maxwell_acinus, ///< 0D acinar Maxwell material
       m_particlemat,  ///< particle material
+      m_0d_o2_hemoglobin_saturation, ///< 0D hemoglobin o2 saturation material
+      m_0d_o2_air_saturation, ///< 0D air o2 saturation material
       m_none          ///< undefined
     };
 

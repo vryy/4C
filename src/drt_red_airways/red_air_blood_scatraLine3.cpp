@@ -1,4 +1,3 @@
-
 /*!----------------------------------------------------------------------
 \file red_inter_acinar_dep.cpp
 \brief
@@ -19,53 +18,56 @@ Maintainer: Mahmoud Ismail
 
 using namespace DRT::UTILS;
 
-DRT::ELEMENTS::RedInterAcinarDepType DRT::ELEMENTS::RedInterAcinarDepType::instance_;
+DRT::ELEMENTS::RedAirBloodScatraLine3Type DRT::ELEMENTS::RedAirBloodScatraLine3Type::instance_;
 
 
-DRT::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::RedInterAcinarDep* object = new DRT::ELEMENTS::RedInterAcinarDep(-1,-1);
+  DRT::ELEMENTS::RedAirBloodScatraLine3* object = new DRT::ELEMENTS::RedAirBloodScatraLine3(-1,-1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::string eletype,
-                                                            const std::string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create( const string eletype,
+                                                            const string eledistype,
                                                             const int id,
                                                             const int owner )
 {
-  if ( eletype=="RED_ACINAR_INTER_DEP" )
+  if ( eletype=="RED_AIR_BLOOD_SCATRA_LINE3" )
   {
-    Teuchos::RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::RedInterAcinarDep(id,owner));
+    Teuchos::RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatraLine3(id,owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::RedInterAcinarDep(id,owner));
+  Teuchos::RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::RedAirBloodScatraLine3(id,owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::RedInterAcinarDepType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::RedAirBloodScatraLine3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["RED_AIR_BLOOD_SCATRA_LINE3"];
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedDouble("DiffusionCoefficient")
+    .AddNamedDouble("WallThickness")
+    .AddNamedDouble("PercentageOfDiffusionArea");
     ;
 }
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                           ismail 01/10|
+ |  ctor (public)                                           ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(int id, int owner) :
+DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(int id, int owner) :
 DRT::Element(id,owner),
 data_()
 {
@@ -73,10 +75,10 @@ data_()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                      ismail 01/10|
+ |  copy-ctor (public)                                      ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(const DRT::ELEMENTS::RedInterAcinarDep& old) :
+DRT::ELEMENTS::RedAirBloodScatraLine3::RedAirBloodScatraLine3(const DRT::ELEMENTS::RedAirBloodScatraLine3& old) :
 DRT::Element(old),
 data_(old.data_)
 {
@@ -84,21 +86,21 @@ data_(old.data_)
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of RedInterAcinarDep and return pointer             |
+ |  Deep copy this instance of RedAirBloodScatraLine3 and return pointer             |
  |  to it                                                      (public) |
- |                                                         ismail 01/10 |
+ |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::RedInterAcinarDep::Clone() const
+DRT::Element* DRT::ELEMENTS::RedAirBloodScatraLine3::Clone() const
 {
-  DRT::ELEMENTS::RedInterAcinarDep* newelement = new DRT::ELEMENTS::RedInterAcinarDep(*this);
+  DRT::ELEMENTS::RedAirBloodScatraLine3* newelement = new DRT::ELEMENTS::RedAirBloodScatraLine3(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
- |                                                         ismail 01/10 |
+ |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::RedAirBloodScatraLine3::Shape() const
 {
   switch (NumNode())
   {
@@ -112,9 +114,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                         ismail 01/10 |
+ |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -127,7 +129,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
 
 
-  std::map<std::string,double>::const_iterator it;
+  map<std::string,double>::const_iterator it;
 
   AddtoPack(data,(int)(elemParams_.size()));
   for (it = elemParams_.begin(); it!= elemParams_.end(); it++)
@@ -136,17 +138,15 @@ void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,it->second);
   }
 
-  AddtoPack(data,generation_);
-
   return;
 }
 
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                         ismail 01/10 |
+ |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::RedAirBloodScatraLine3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -159,7 +159,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  std::map<std::string,double> it;
+  map<std::string,double> it;
   int n = 0;
 
   ExtractfromPack(position,data,n);
@@ -173,8 +173,6 @@ void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
     elemParams_[name] = val;
   }
 
-  // extract generation
-  ExtractfromPack(position,data,generation_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -184,30 +182,32 @@ void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 01/10|
+ |  dtor (public)                                           ismail 05/13|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDep::~RedInterAcinarDep()
+DRT::ELEMENTS::RedAirBloodScatraLine3::~RedAirBloodScatraLine3()
 {
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                             ismail 01/10|
+ |  print this element (public)                             ismail 05/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::Print(std::ostream& os) const
+void DRT::ELEMENTS::RedAirBloodScatraLine3::Print(ostream& os) const
 {
-  os << "RedInterAcinarDep ";
+  os << "RedAirBloodScatraLine3 ";
   Element::Print(os);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Return names of visualization data                     ismail 01/10 |
+ |  Return names of visualization data                     ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<std::string,int>& names)
+void DRT::ELEMENTS::RedAirBloodScatraLine3::VisNames(std::map<string,int>& names)
 {
+  // Put the owner of this element into the file (use base class method for this)
+  DRT::Element::VisNames(names);
 
 #if 0
   // see whether we have additional data for visualization in our container
@@ -215,12 +215,12 @@ void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<std::string,int>& names
   temp << 1;
 
   // in flow of volumetric flow profile
-  std::string name = "flow_in";
-  names.insert(std::pair<std::string,int>(name,1));
+  string name = "flow_in";
+  names.insert(std::pair<string,int>(name,1));
 
   // out flow of volumetric flow profile
   name = "flow_out";
-  names.insert(std::pair<std::string,int>(name,1));
+  names.insert(std::pair<string,int>(name,1));
 #endif
 
   return;
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<std::string,int>& names
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedInterAcinarDep::VisData(const std::string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::RedAirBloodScatraLine3::VisData(const string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -243,10 +243,10 @@ bool DRT::ELEMENTS::RedInterAcinarDep::VisData(const std::string& name, std::vec
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 04/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, double & var)
+void DRT::ELEMENTS::RedAirBloodScatraLine3::getParams(std::string name, double & var)
 {
 
-  std::map<std::string,double>::iterator it;
+  map<std::string,double>::iterator it;
   it = elemParams_.find(name);
   if (it == elemParams_.end())
   {
@@ -260,14 +260,14 @@ void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, double & var)
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 03/11 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, int & var)
+void DRT::ELEMENTS::RedAirBloodScatraLine3::getParams(std::string name, int & var)
 {
 
-  if (name == "Generation")
-  {
-    var = generation_;
-  }
-  else
+//  if (name == "Generation")
+//  {
+//    var = generation_;
+//  }
+//  else
   {
     dserror ("[%s] is not found with in the element INT variables",name.c_str());
     exit(1);
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, int & var)
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::RedInterAcinarDep::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::RedAirBloodScatraLine3::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -288,12 +288,12 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::RedInterAcinarDep::Lines
 
   // so we have to allocate new line elements:
 
-  if (NumLine()>1) // 1D boundary element and 2D/3D parent element
+  if (NumLine()!=2) // 1D boundary element and 2D/3D parent element
   {
-    dserror("RED_AIRWAY element must have one and only one line");
+    dserror("RED_AIR_BLOOD_SCATRA_LINE3 element must have one and only one line");
     exit(1);
   }
-  else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
+  else if (NumLine()==2) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
     // 1D (we return the element itself)
     std::vector<RCP<Element> > lines(1);

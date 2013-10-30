@@ -1564,7 +1564,36 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-  /*----------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------*/
+  // O2 hemoglobin saturation material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_HEMOGLOBIN_SATURATION",
+                                            "0D O2 hemoglobin saturation material",
+                                            INPAR::MAT::m_0d_o2_hemoglobin_saturation));
+
+    AddNamedReal(m,"PerVolumeBlood","how much of blood satisfies this rule (usually 100ml)");
+    AddNamedReal(m,"O2SaturationPerVolBlood","O2 saturation per volume blood (In healthy blood 21.36ml/100ml of blood)");
+    AddNamedReal(m,"PressureHalf","PO2 of 50\% saturated O2 (In healthy blood 26mmHg)");
+    AddNamedReal(m,"Power","Power of the Sigmoidal saturation curve (2.5)");
+    AddNamedReal(m,"NumberOfO2PerVO2","Number of O2 moles per unit volume of O2");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // O2 air saturation material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_0D_O2_AIR_SATURATION",
+                                            "0D O2 air saturation material",
+                                            INPAR::MAT::m_0d_o2_air_saturation));
+
+    AddNamedReal(m,"AtmosphericPressure","The atmospheric pressure");
+    AddNamedReal(m,"NumberOfO2PerVO2","Number of O2 moles per unit volume of O2");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*----------------------------------------------------------------------*/
   // particle material

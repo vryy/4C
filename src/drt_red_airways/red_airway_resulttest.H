@@ -35,10 +35,6 @@ public:
   RedAirwayResultTest(RedAirwayImplicitTimeInt& red_airways);
 
 
-  /// our version of nodal value tests
-  /*!
-    Possible position flags is only "phi"
-   */
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
 private:

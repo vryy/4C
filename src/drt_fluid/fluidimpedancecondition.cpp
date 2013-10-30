@@ -386,6 +386,13 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RCP<DRT::Discretization> actdis,
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // initialize all of the variables
+  Pin_n_  = 0.0;
+  Pin_np_ = 0.0;
+  Pc_n_   = 0.0;
+  Pc_np_  = 0.0;
+  Qin_np_ = 0.0;
+
   if(treetype_ == "windkessel_freq_indp")
   {
     // initialize all of the variables

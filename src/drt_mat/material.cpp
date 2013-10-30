@@ -73,6 +73,8 @@ Maintainer: Lena Wiechert
 #include "structporo_reaction.H"
 #include "spring.H"
 #include "maxwell_0d_acinus.H"
+#include "hemoglobin_0d_O2_saturation.H"
+#include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
 
 /*----------------------------------------------------------------------*
@@ -441,7 +443,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupanisoexpotwocoup:
   case INPAR::MAT::mes_coupanisoneohooke:
   case INPAR::MAT::mes_coupanisoneohooke_activestress:
-  case INPAR::MAT::mes_coupanisoneohooke_varprop:    
+  case INPAR::MAT::mes_coupanisoneohooke_varprop:
   case INPAR::MAT::mes_isoanisoexpo:
   case INPAR::MAT::mes_isoanisoexpodispersion:
   case INPAR::MAT::mes_coupvarga:
@@ -464,6 +466,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus(curmat));
     MAT::PAR::Maxwell_0d_acinus* params = static_cast<MAT::PAR::Maxwell_0d_acinus*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_0d_o2_hemoglobin_saturation:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Hemoglobin_0d_O2_saturation(curmat));
+    MAT::PAR::Hemoglobin_0d_O2_saturation* params = static_cast<MAT::PAR::Hemoglobin_0d_O2_saturation*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_0d_o2_air_saturation:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Air_0d_O2_saturation(curmat));
+    MAT::PAR::Air_0d_O2_saturation* params = static_cast<MAT::PAR::Air_0d_O2_saturation*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_th_fourier_iso:

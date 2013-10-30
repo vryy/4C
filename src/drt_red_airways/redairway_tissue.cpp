@@ -141,7 +141,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
 
   //Get tolerance for flux
   tolq_ = rawtisdyn.get<double>("CONVTOL_Q");
-  
+
   //Dynamic relaxation type
   relaxtype_ = DRT::INPUT::IntegralValue<INPAR::ARTNET::RELAXTYPE_3D_0D>(rawtisdyn,"RELAXTYPE");
 
@@ -499,6 +499,12 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   airwaystimeparams.set                  ("tolerance"               ,rawdyn.get<double>("TOLERANCE"));
   // Maximum number of iterations
   airwaystimeparams.set                  ("maximum iteration steps" ,rawdyn.get<int>("MAXITERATIONS"));
+  // solve scatra flag
+  if (rawdyn.get<string>("SOLVESCATRA")=="yes")
+    airwaystimeparams.set                  ("SolveScatra" ,true);
+  else
+    airwaystimeparams.set                  ("SolveScatra" ,false);
+
 
   airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 

@@ -68,7 +68,7 @@ TIMESTEP                        0.002
 RELAXTYPE			Aitken
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   2
-DYNAMICTYP                      CrankNicolson
+DYNAMICTYP                      OneStepTheta
 NUMSTEP                         750
 TIMESTEP                        0.002
 RESTARTEVRY                     100
@@ -111,7 +111,7 @@ DSURF                           1
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          1
-E 1 - pressure 5.0 1
+E 1 - pressure 5.0 1 none none
 -------------------------------------DESIGN SURF TISSUE REDAIRWAY CONDITIONS
 DSURF                           2
 E 1 - 1
@@ -188,9 +188,9 @@ NODE 16 COORD 0.0 -5.0 0.0
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH8 HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
-3 RED_AIRWAY LINE2 13 14 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 10.0 Area 2.0 Generation 0 
-4 RED_AIRWAY LINE2 14 15 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
-5 RED_AIRWAY LINE2 14 16 MAT 3 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 08.0 Area 1.0 Generation 1 
+3 RED_AIRWAY LINE2 13 14 MAT 3 ElemSolvingType NonLinear TYPE Resistive Resistance Generation_Dependent_Pedley PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.0 Area 2.0 Generation 0 
+4 RED_AIRWAY LINE2 14 15 MAT 3 ElemSolvingType NonLinear TYPE Resistive Resistance Generation_Dependent_Pedley PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.0 Area 1.0 Generation 1 
+5 RED_AIRWAY LINE2 14 16 MAT 3 ElemSolvingType NonLinear TYPE Resistive Resistance Generation_Dependent_Pedley PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.0 Area 1.0 Generation 1 
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
