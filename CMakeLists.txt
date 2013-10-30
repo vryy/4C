@@ -1117,11 +1117,13 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/matpar_manager_uniform.cpp
   src/drt_inv_analysis/stat_inv_ana_graddesc.cpp
   src/drt_inv_analysis/stat_inv_ana_mc.cpp
-  src/drt_inv_analysis/smc_particle.cpp
   src/drt_inv_analysis/smc_particle_list.cpp
   src/drt_inv_analysis/stat_inv_ana_lbfgs.cpp
   src/drt_inv_analysis/invana_resulttest.cpp
 )  
+set(OBJS_STATINV_ANALYSIS_LIB
+	src/drt_inv_analysis/smc_particle.cpp
+)
 set(OBJS_MLMC
   src/drt_mlmc/mlmc.cpp
   src/drt_structure/str_mlmc.cpp 
@@ -1799,6 +1801,7 @@ add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 add_library(drt_lib_cut ${OBJS_DRT_CUT})
 add_library(drt_lib_crack ${OBJS_DRT_CRACK})
+add_library(drt_lib_statinv_anal ${OBJS_STATINV_ANALYSIS_LIB})
 
 set(SUPPORT_LIBRARIES
   drt_lib
@@ -1817,6 +1820,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_io
   drt_lib_nurbs 
   drt_lib_meshfree
+  drt_lib_statinv_anal
   )
 
 # filter framework
