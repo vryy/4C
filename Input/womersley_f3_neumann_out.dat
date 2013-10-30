@@ -113,7 +113,7 @@ INFNORMSCALING                  yes
 ALE_TYPE                        classic_lin                   // classic_lin,incr_lin,springs
 RESULTSEVRY                     1
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
-DYNAMICTYP                      CrankNicolson
+DYNAMICTYP                      OneStepTheta
 NUMSTEP                         100
 TIMESTEP                        1.0e-2
 RESTARTEVRY                     5
