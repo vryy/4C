@@ -1106,8 +1106,11 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/timint_adjoint.cpp
   src/drt_inv_analysis/objective_funct.cpp
   src/drt_inv_analysis/matpar_manager.cpp
+  src/drt_inv_analysis/matpar_manager_uniform.cpp
   src/drt_inv_analysis/stat_inv_ana_graddesc.cpp
   src/drt_inv_analysis/stat_inv_ana_mc.cpp
+  src/drt_inv_analysis/smc_particle.cpp
+  src/drt_inv_analysis/smc_particle_list.cpp
   src/drt_inv_analysis/stat_inv_ana_lbfgs.cpp
   src/drt_inv_analysis/invana_resulttest.cpp
 )  

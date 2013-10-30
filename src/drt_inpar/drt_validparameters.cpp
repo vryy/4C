@@ -1269,11 +1269,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<std::string>(
                                       "none",
                                       "kernelsmoothing",
-                                      "elementwise"),
+                                      "elementwise",
+                                      "uniform"),
                                     tuple<int>(
                                       INPAR::STR::stat_inv_mp_none,
                                       INPAR::STR::stat_inv_mp_smoothkernel,
-                                      INPAR::STR::stat_inv_mp_elementwise),
+                                      INPAR::STR::stat_inv_mp_elementwise,
+                                      INPAR::STR::stat_inv_mp_uniform),
                                     &statinvp);
 
   // want some regularization
@@ -1304,7 +1306,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // list of parameters for the respective material
   StringParameter("PARAMLIST","none",
-                  "list of std::string of parameters to be optimized, order as in INV_LIST",
+                  "list of std::string of parameters to be optimized, order as in INV_LIST e.g. 1 YOUNG BETA",
                   &statinvp);
 
   // number of optimization steps

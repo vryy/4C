@@ -18,22 +18,55 @@ namespace STR
 {
 namespace INVANA
 {
+// forward declaration
+class SMCParticle;
+class SMCParticleList;
 
 class StatInvAnaMC : public StatInvAnalysis
 {
 
 private:
 
+
   //! do the update on the parameter vector
   void UpdateOptStep(Epetra_MultiVector* objgrad, int nstep);
+
+  // deal with communicators
+  Teuchos::RCP<Epetra_Comm> lcomm_ ;
+  Teuchos::RCP<Epetra_Comm> gcomm_ ;
+  int mylocalpid_ ;
+  int myglobalpid_;
 
 public:
 
   //! standard constructor
   StatInvAnaMC(Teuchos::RCP<DRT::Discretization> dis);
 
-  //! start the optimization routine
+  //! soptimization routine
   void Optimize();
+
+  //! \brief propose reweighting of all particles
+  void PropReweight(Teuchos::RCP<SMCParticleList> ,int iteration);
+
+  //! \brief check reweighting based on ess
+  void CheckReweight(Teuchos::RCP<SMCParticleList> my_particles, double& gamma);
+
+  //! \brief propose move
+  void PropMove(Teuchos::RCP<SMCParticleList> my_particle_list, int seed);
+
+  //! \brief acceppt/reject proposal (Metropolis Hastings step)
+  void CheckPropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed);
+
+  //! \brief compute Log of Likelihood to the power of gamma
+  double LogLike(SMCParticle my_particle,bool eval_prop_pos);
+
+  //! \brief compute Log of Likelihood to the power of gamma but use real forward problem
+  double LogLikeRealForwardProblem(SMCParticle my_particle,bool eval_prop_pos);
+
+
+  //! brief set optimization parameters using matman
+  int SetMatParamsBasedOnParticle(SMCParticle my_particle, bool eval_prop_pos);
+
 
 }; // class StatInvAnaGradDesc
 }  // namespace INVANA

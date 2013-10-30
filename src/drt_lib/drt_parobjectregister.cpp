@@ -117,6 +117,7 @@
 #include "../drt_red_airways/red_airway.H"
 #include "../drt_opti/topopt_optimizer_ele.H"
 #include "../drt_crack/dcohesive.H"
+#include "../drt_inv_analysis/smc_particle.H"
 
 
 std::string DRT::ParObjectList()
@@ -256,6 +257,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::RedAcinusType::Instance().Name() << " "
     << DRT::ELEMENTS::RedInterAcinarDepType::Instance().Name() << " "
     << MAT::TopOptDensType::Instance().Name() << " "
+    << STR::INVANA::SMCParticleType::Instance().Name() << " "
 
     ;
   return s.str();

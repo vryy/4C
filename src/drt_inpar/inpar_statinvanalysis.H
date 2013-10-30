@@ -32,7 +32,8 @@ namespace INPAR
     {
       stat_inv_mp_none,                  // nothing defined
       stat_inv_mp_smoothkernel,          // smooth kernel approximation
-      stat_inv_mp_elementwise            // parameters per element
+      stat_inv_mp_elementwise,            // parameters per element
+      stat_inv_mp_uniform                // uniform i.e spatially constant parameters
     };
 
     /// Type of Inverse Analysis

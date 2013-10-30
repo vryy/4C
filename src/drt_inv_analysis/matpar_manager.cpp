@@ -26,6 +26,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/inpar_material.H"
+#include "smc_particle.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -312,3 +313,14 @@ int STR::INVANA::MatParManager::GetParameterLocation(int eleid, std::string name
 return loc;
 
 }
+
+
+void STR::INVANA::MatParManager::ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector> & params, std::vector<double> my_global_params)
+{
+  dserror("No implementatio in base class");
+}
+
+
+
+
+

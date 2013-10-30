@@ -37,6 +37,8 @@ namespace INVANA
 
 {
 
+
+
   /*!
   \brief A class to handle material parameters for optimization
 
@@ -89,14 +91,19 @@ namespace INVANA
     //! Put vector index of a given material parameter <string> into loc
     int GetParameterLocation(int eleid, std::string name);
 
-
+    //! brief compute optimization parameter multivector from an SMC Particle position
+    virtual void ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector> &params , std::vector<double> my_global_params);
   protected:
 
     //! map of names for each material parameter
     //! key: matid, value: vector of names of the parameters
+    //! i.e  < 1 ;  ( youngs, beta)>
+    //!      < 2 ;  ( k1 , k2   )  >
     std::map<int, std::vector<std::string> > paramap_;
 
     //! map of matids to parameterids for the parameter vector
+    //! i.e  < 1 ; (1 , 2)>
+    //! i.e  < 2 ; (3 , 4)>
     std::map<int,std::vector<int> > parapos_;
 
     //! number of physically different material parameters

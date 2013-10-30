@@ -39,6 +39,7 @@ Maintainer: Jonas Biehler
 #include "objective_funct.H"
 #include "timint_adjoint.H"
 #include "matpar_manager.H"
+#include "matpar_manager_uniform.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -108,6 +109,11 @@ regweight_(0.0)
       matman_ = Teuchos::rcp(new STR::INVANA::MatParManager(discret_));
     }
     break;
+    case INPAR::STR::stat_inv_mp_uniform:
+    {
+      matman_ = Teuchos::rcp(new STR::INVANA::MatParManagerUniform(discret_));
+    }
+      break;
     default:
       dserror("choose a valid method of parametrizing the material parameter field");
     break;
@@ -171,6 +177,7 @@ void STR::INVANA::StatInvAnalysis::SolveForwardProblem()
       //output_ = structadaptor.DiscWriter();
 
       // get displacement and time
+      //IO::cout << "test before mstep" <<IO::endl;
       MStepEpetraToEpetraMulti(structadaptor.DispMStep(), dis_);
       MStepDToStdVecD(structadaptor.TimeMStep(), time_);
 
