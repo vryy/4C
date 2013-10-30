@@ -406,8 +406,6 @@ DSURF                           0
 DSURF                           0
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          0
---------------------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
-DPOINT                          0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 2 DNODE 2
