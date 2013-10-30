@@ -252,37 +252,12 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
     // number of Dof's is fluid-specific.
-    // Therefore, it is not pushed into drt_utilis_local_connectivity
-    switch(distype_)
-    {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
-    case DRT::Element::pyramid5:
-    case DRT::Element::nurbs8:
-    case DRT::Element::nurbs27:
-      return 4;
-      break;
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-      return 3;
-      break;
-    case DRT::Element::line2:
-    case DRT::Element::line3: dserror("1D Fluid elements are not supported"); break;
-      break;
-    default:
-      dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
-      break;
-    }
+    const int nsd = DRT::UTILS::getDimension(distype_);
+    if (nsd > 1)
+      return nsd+1;
+    else
+      dserror("1D Fluid elements are not supported");
+
     return 0;
   }
 

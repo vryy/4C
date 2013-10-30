@@ -347,9 +347,9 @@ DRT::ELEMENTS::Fluid::Fluid(int id, int owner) :
 DRT::Element(id,owner),
 is_ale_(false)
 {
-    distype_= dis_none;
-    tds_=Teuchos::null;
-    return;
+  distype_= dis_none;
+  tds_=Teuchos::null;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -610,17 +610,17 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
         case INPAR::FLUID::poro_p2:
           if (disname == "porofluid")
           {
-            return DRT::Problem::Instance()->NDim();
+            return DRT::UTILS::getDimension(distype_);
             break;
           }
           else if (disname == "fluid")
           {
-        	return DRT::Problem::Instance()->NDim()+1;
+        	return DRT::UTILS::getDimension(distype_)+1;
         	break;
           }
           break;
         case INPAR::FLUID::poro_p1:
-          return DRT::Problem::Instance()->NDim()+1;
+          return DRT::UTILS::getDimension(distype_)+1;
           break;
         default:
           dserror("invalid fluid physical type for porous media");

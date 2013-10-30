@@ -149,6 +149,16 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
   // get space dimensions
   const int nsd = DRT::UTILS::getDimension(Shape());
 
+  // switch between different physical types as used below
+  std::string physical_type = "std";
+  switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+  {
+  case INPAR::FLUID::loma: physical_type = "loma"; break;
+  case INPAR::FLUID::poro: physical_type = "poro"; break;
+  case INPAR::FLUID::poro_p1: physical_type = "poro_p1"; break;
+  case INPAR::FLUID::poro_p2: physical_type = "poro_p2"; break;
+  }
+
   switch(act)
   {
     //-----------------------------------------------------------------------
@@ -157,11 +167,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
-      {
-      case INPAR::FLUID::loma:
-      {
-          return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "loma")->Evaluate(
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), physical_type)->Evaluate(
               this,
               discretization,
               lm,
@@ -172,67 +178,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
               elevec1,
               elevec2,
               elevec3 );
-          break;
-      }
-      case INPAR::FLUID::poro:
-      {
-        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro")->Evaluate(
-            this,
-            discretization,
-            lm,
-            params,
-            mat,
-            elemat1,
-            elemat2,
-            elevec1,
-            elevec2,
-            elevec3 );
-        break;
-      }
-      case INPAR::FLUID::poro_p1:
-      {
-        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p1")->Evaluate(
-            this,
-            discretization,
-            lm,
-            params,
-            mat,
-            elemat1,
-            elemat2,
-            elevec1,
-            elevec2,
-            elevec3 );
-        break;
-      }
-      case INPAR::FLUID::poro_p2:
-      {
-        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
-            this,
-            discretization,
-            lm,
-            params,
-            mat,
-            elemat1,
-            elemat2,
-            elevec1,
-            elevec2,
-            elevec3 );
-        break;
-      }
-      default:
-        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->Evaluate(
-            this,
-            discretization,
-            lm,
-            params,
-            mat,
-            elemat1,
-            elemat2,
-            elevec1,
-            elevec2,
-            elevec3);
-      }
-
     }
     break;
     //-----------------------------------------------------------------------
@@ -243,11 +188,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     /***********************************************/
     case FLD::calc_porousflow_fluid_coupling:
     {
-      switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
-      {
-      case INPAR::FLUID::poro:
-      {
-        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro")->Evaluate(
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), physical_type)->Evaluate(
             this,
             discretization,
             lm,
@@ -259,44 +200,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             elevec2,
             elevec3,
             true);
-        break;
-      }
-      case INPAR::FLUID::poro_p1:
-      {
-        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p1")->Evaluate(
-            this,
-            discretization,
-            lm,
-            params,
-            mat,
-            elemat1,
-            elemat2,
-            elevec1,
-            elevec2,
-            elevec3,
-            true);
-        break;
-      }
-      case INPAR::FLUID::poro_p2:
-      {
-        return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
-            this,
-            discretization,
-            lm,
-            params,
-            mat,
-            elemat1,
-            elemat2,
-            elevec1,
-            elevec2,
-            elevec3,
-            true);
-        break;
-      }
-      default:
-        dserror("Unknown physical type for poroelasticity\n");
-      break;
-      }
     }
     break;
     //-----------------------------------------------------------------------
