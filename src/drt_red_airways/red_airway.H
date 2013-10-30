@@ -1399,7 +1399,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual RedAirBloodScatraType & ElementType() const
   { return RedAirBloodScatraType::Instance(); }
@@ -1787,7 +1787,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   virtual RedAirBloodScatraLine3Type & ElementType() const
   { return RedAirBloodScatraLine3Type::Instance(); }
