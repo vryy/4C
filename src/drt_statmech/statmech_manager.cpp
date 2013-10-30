@@ -793,7 +793,9 @@ void STATMECH::StatMechManager::GetNodePositionsFromDisVec(Epetra_Vector&       
 /*----------------------------------------------------------------------*
  | Retrieve binding spot positions              (public)   mueller 10/12|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GetBindingSpotPositions(Epetra_Vector& discol, Teuchos::RCP<Epetra_MultiVector> bspotpositions, Teuchos::RCP<Epetra_MultiVector> bspotrotations)
+void STATMECH::StatMechManager::GetBindingSpotPositions(Epetra_Vector& discol,
+                                                        Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                                        Teuchos::RCP<Epetra_MultiVector> bspotrotations)
 {
   /*in preparation for later decision whether a crosslink should be established between two nodes (binding spots) we first store the
    * current positions of all column map nodes (column map binding spots) in the map currentpositions; additionally we store the rotational displacements

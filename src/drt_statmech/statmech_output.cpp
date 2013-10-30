@@ -866,8 +866,12 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         nodepairfilename << outputrootpath_ << "/StatMechOutput/NodePairPosition_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
         OutputSlidingMotion(dis, nodepairfilename);
 
+        std::ostringstream freefillengthname;
+        freefillengthname << outputrootpath_ << "/StatMechOutput/FreeFilLength_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        OutputFreeFilamentLength(dis,freefillengthname);
+
         std::ostringstream matforcefilename;
-        matforcefilename << outputrootpath_ <<"/StatMechOutput/IntMatForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        matforcefilename << outputrootpath_ << "/StatMechOutput/IntMatForces_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
         OutputElementMaterialInternalForces(dis,matforcefilename);
   
         if(statmechparams_.get<double>("DELTABELLSEQ", 0.0)!=0.0 && (linkermodel_==statmech_linker_bellseq || linkermodel_==statmech_linker_bellseqintpol))
@@ -4672,9 +4676,98 @@ void STATMECH::StatMechManager::OutputElementSpatialInternalForces(const std::os
   }
   return;
 }
+/*----------------------------------------------------------------------*
+ | output of free filament length segments       (private) mueller 10/13|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&      disrow,
+                                                         const std::ostringstream& filename)
+{
+  Epetra_Vector discol(*(discret_->DofColMap()),true);
+  LINALG::Export(disrow,discol);
+  Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_, 3, true));
+  GetBindingSpotPositions(discol, bspotpositions, Teuchos::null);
+
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "w");
+
+    std::stringstream freefillength;
+
+    double freelength = 0.0;
+//    double summedlength = 0.0;
+    for(int n=1; n<bspotpositions->MyLength(); n++)
+    {
+      bool addtofreelength = false;
+      // standard linkers: bspot is equal to node
+      int bspotn = n-1;
+      int bspotnp = n;
+      // interpolated binding sites require additional measures in order to acquire the required node IDs
+      if(linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol)
+      {
+        // take the first node (0) associated with the binding spots n-1 and n. Due to the design of the interpolated binding sites,
+        // it is impossible that nodes 0 and 1 lie on different filaments.
+        bspotn = discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][n-1]);
+        bspotnp = discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][n]);
+      }
+      // binding spots have to be on the same filament
+      if((*filamentnumber_)[bspotn] == (*filamentnumber_)[bspotnp])
+      {
+        if((*bspotstatus_)[bspotn]>-0.1) // a crosslinker is attached
+        {
+          if((*numbond_)[(*bspotstatus_)[bspotn]]>1.9) // it is a doubly-bound crosslinker (i.e. actually limiting thermal fluctuations)
+          {
+            if(freelength>0.0)
+            {
+//              cout<<"bspots "<<bspotn<<", "<<bspotnp<<": filament "<<(*filamentnumber_)[bspotn]<<endl;
+//              cout<<"   written length on filament "<<(*filamentnumber_)[bspotn]<<": "<<freelength<<endl;
+              freefillength<<std::setprecision(6)<<freelength<<std::endl;
+//              summedlength += freelength;
+            }
+            freelength = 0.0;
+          }
+          else
+            addtofreelength = true;
+        }
+        else
+          addtofreelength = true;
+        if(addtofreelength)
+        {
+          std::vector<double> bspotpos(6,0.0);
+          bspotpos[0] = (*bspotpositions)[0][bspotn];
+          bspotpos[1] = (*bspotpositions)[1][bspotn];
+          bspotpos[2] = (*bspotpositions)[2][bspotn];
+          bspotpos[3] = (*bspotpositions)[0][bspotnp];
+          bspotpos[4] = (*bspotpositions)[1][bspotnp];
+          bspotpos[5] = (*bspotpositions)[2][bspotnp];
+          UnshiftPositions(bspotpos, 2, false);
+          double addedlength = sqrt((bspotpos[3]-bspotpos[0])*(bspotpos[3]-bspotpos[0]) +
+                                    (bspotpos[4]-bspotpos[1])*(bspotpos[4]-bspotpos[1]) +
+                                    (bspotpos[5]-bspotpos[2])*(bspotpos[5]-bspotpos[2]));
+          freelength += addedlength;
+        }
+      }
+      else // last binding spot of one and first binding spot of another filament
+      {
+//        summedlength += freelength;
+//        cout<<"   written length at fil change: "<<freelength<<endl;
+//        cout<<"     check: summed length      : "<<summedlength<<endl;
+//        summedlength = 0.0;
+//        cout<<"filament "<<(*filamentnumber_)[bspotn]<<" end, filament"<<(*filamentnumber_)[bspotnp]<<" begin"<<endl;
+        freefillength<<std::setprecision(6)<<freelength<<std::endl;
+//        cout<<" BSPOT "<<bspotnp<<endl;
+        freelength = 0.0;
+      }
+    }
+    fprintf(fp, freefillength.str().c_str());
+    fclose(fp);
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
- | output of internal forces in material coords   (public) mueller 10/13|
+ | output of internal forces in material coords  (private) mueller 10/13|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra_Vector&      disrow,
                                                                     const std::ostringstream& filename)

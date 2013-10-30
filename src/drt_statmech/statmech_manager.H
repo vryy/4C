@@ -602,6 +602,10 @@ protected:
   //! \brief output of spatial element internal forces
   void OutputElementSpatialInternalForces(const std::ostringstream& filename);
 
+  //! \brief output of free filament length
+  void OutputFreeFilamentLength(const Epetra_Vector&      disrow,
+                                const std::ostringstream& filename);
+
   //! \brief output of material element internal forces
   void OutputElementMaterialInternalForces(const Epetra_Vector&      disrow,
                                            const std::ostringstream& filename);
