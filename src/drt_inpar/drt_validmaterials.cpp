@@ -1276,7 +1276,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-
   /*--------------------------------------------------------------------*/
   // isochoric anisotropic material with one exponential fiber family
   {
@@ -1293,6 +1292,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // isochoric anisotropic material with one exponential fiber family and fiber dispersion
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoAnisoExpoDispersion",
+                                            "anisotropic part with one exp. fiber with isotropic fiber dispersion",
+                                            INPAR::MAT::mes_isoanisoexpodispersion));
+
+    AddNamedReal(m,"K1","linear constant");
+    AddNamedReal(m,"K2","exponential constant");
+    AddNamedReal(m,"GAMMA","angle");
+    AddNamedReal(m,"K1COMP","linear constant");
+    AddNamedReal(m,"K2COMP","exponential constant");
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
+    AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
+    AddNamedReal(m,"KAPPA","fiber dispersion constant");
+    
     AppendMaterialDefinition(matlist,m);
   }
 

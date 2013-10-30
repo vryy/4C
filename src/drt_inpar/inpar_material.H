@@ -98,6 +98,7 @@ namespace INPAR
       mes_coupanisoneohooke_activestress,  ///< anisotropic Neo-Hooke single fiber summand with active stress computed through a simplified Bestel-Clement-Sorine model
       mes_coupanisoneohooke_varprop,  ///< anisotropic Neo-Hooke single fiber summand with space-time variable coefficient
       mes_isoanisoexpo,   ///< isochoric anisotropic single fiber material
+      mes_isoanisoexpodispersion,   ///< isochoric anisotropic single fiber material, with isotropic fiber dispersion
       mes_coupvarga,  ///< isotropic Varga material
       mes_isovarga,  ///< isotropic isochoric Varga material
       mes_isoratedep,  ///< isotropic iscochoric frequency dependent viscos potential summand
