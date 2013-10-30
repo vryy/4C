@@ -2601,7 +2601,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TimInt::MassMatrix()
 
 /*----------------------------------------------------------------------*/
 /* Return domain map of mass matrix                                     */
-const Epetra_Map& STR::TimInt::GetDomainMap()
+const Epetra_Map& STR::TimInt::DomainMap() const
 {
   return mass_->DomainMap();
 }

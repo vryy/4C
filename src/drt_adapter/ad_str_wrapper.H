@@ -96,7 +96,7 @@ namespace ADAPTER
     { return structure_->DofRowMapView(); }
 
     /// domain map of system matrix
-    virtual const Epetra_Map& DomainMap()
+    virtual const Epetra_Map& DomainMap() const
     { return structure_->DomainMap(); }
 
     /// direct access to system matrix

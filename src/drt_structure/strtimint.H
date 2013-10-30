@@ -761,11 +761,8 @@ namespace STR
     //! Return sparse mass matrix
     Teuchos::RCP<LINALG::SparseMatrix> MassMatrix();
 
-    //! Return domain map of mass matrix
-    const Epetra_Map& GetDomainMap();
-
-    //! domain map of system matrix (do we really need this?)
-    virtual const Epetra_Map& DomainMap(){ return GetDomainMap(); }
+    //! domain map of system matrix
+    virtual const Epetra_Map& DomainMap() const;
 
     //! are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;

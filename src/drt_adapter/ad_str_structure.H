@@ -172,7 +172,7 @@ namespace ADAPTER {
     virtual const Epetra_Map* DofRowMapView() = 0;
 
     /// domain map of system matrix (do we really need this?)
-    virtual const Epetra_Map& DomainMap() = 0;
+    virtual const Epetra_Map& DomainMap() const = 0;
 
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;

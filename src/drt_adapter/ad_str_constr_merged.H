@@ -110,8 +110,8 @@ namespace ADAPTER {
       return structure_->GetDBCMapExtractor();
     };
 
-    /// domain map of system matrix (do we really need this?)
-    virtual const Epetra_Map& DomainMap();
+    /// domain map of system matrix
+    virtual const Epetra_Map& DomainMap() const;
 
     /// are there any algebraic constraints?
      virtual bool HaveConstraint()

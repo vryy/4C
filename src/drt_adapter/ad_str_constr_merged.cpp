@@ -194,7 +194,7 @@ void ADAPTER::StructureConstrMerged::Evaluate(
 
 /*----------------------------------------------------------------------*/
 /* domain map */
-const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap()
+const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap() const
 {
   return *(LINALG::MergeMap(structure_->DomainMap(),
                             *(structure_->GetConstraintManager()->GetConstraintMap()),
