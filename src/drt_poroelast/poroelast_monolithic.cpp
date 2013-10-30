@@ -276,7 +276,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::Monolithic::CalcVelocity(Teuchos::RCP<
 {
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector(*(StructureField()->WriteAccessDispn())));
+  vel = Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / Dt(), *sx, -1. / Dt());

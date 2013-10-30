@@ -141,9 +141,6 @@ namespace POROELAST
       return dbcmaps_;
     }
 
-    //! build map of global dofs with DBC
-    void BuildCombinedDBCMap();
-
     //! set full monolithic dof row map
     /*!
      A subclass calls this method (from its constructor) and thereby
@@ -179,9 +176,6 @@ namespace POROELAST
     void PrepareOutput();
 
     //! @name helper methods for Newton loop
-
-    //! prepare newton loop
-    void SetupNewton();
 
     void BuildCovergenceNorms();
 

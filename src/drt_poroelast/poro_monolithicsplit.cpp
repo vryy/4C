@@ -74,9 +74,9 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
 
     double timescale = FluidField()->TimeScaling();
 
-    Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->WriteAccessDispnp());
-    Teuchos::RCP<Epetra_Vector> idispn = StructureField()->Interface()->ExtractFSICondVector(StructureField()->WriteAccessDispn());
-    Teuchos::RCP<Epetra_Vector> ivelnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->WriteAccessVelnp());
+    Teuchos::RCP<const Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->Dispnp());
+    Teuchos::RCP<const Epetra_Vector> idispn = StructureField()->Interface()->ExtractFSICondVector(StructureField()->Dispn());
+    Teuchos::RCP<const Epetra_Vector> ivelnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->Velnp());
     Teuchos::RCP<Epetra_Vector> ifvelnp = FluidField()->ExtractInterfaceVelnp();
     Teuchos::RCP<Epetra_Vector> ifveln = FluidField()->ExtractInterfaceVeln();
 
@@ -195,7 +195,7 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
 
     fsibcextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField()->Interface()->FSICondMap(), fsibcmap_));
 
-    Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->WriteAccessDispnp());
+    Teuchos::RCP<const Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->Dispnp());
     ddi_=Teuchos::rcp(new Epetra_Vector(idispnp->Map(),true));
   }
 

@@ -258,15 +258,15 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::FluidToStructureField(
 /*----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetStructSolution()
 {
-  Teuchos::RCP<Epetra_Vector> dispnp;
+  Teuchos::RCP<const Epetra_Vector> dispnp;
     // apply current displacements and velocities to the fluid field
   if (StructureField()->HaveConstraint())
     //displacement vector without lagrange-multipliers
     dispnp = consplitter_->ExtractCondVector(StructureField()->Dispnp());
   else
-    dispnp = StructureField()->WriteAccessDispnp();
+    dispnp = StructureField()->Dispnp();
 
-  Teuchos::RCP<Epetra_Vector> velnp = StructureField()->WriteAccessVelnp();
+  Teuchos::RCP<const Epetra_Vector> velnp = StructureField()->Velnp();
 
   // transfer the current structure displacement to the fluid field
   Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispnp);

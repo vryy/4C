@@ -179,8 +179,18 @@ void POROELAST::PORO_SCATRA_Mono::Solve()
   // --> On #rhs_ is the positive force residuum
   // --> On #systemmatrix_ is the effective dynamic tangent matrix
 
-  //initialize norms and increment
-  SetupNewton();
+  //-------------------------------------- initialize variables needed in newton loop
+  iter_ = 1;
+  normrhs_ = 0.0;
+  norminc_ = 0.0;
+
+  // incremental solution vector with length of all dofs
+  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_->PutScalar(0.0);
+
+  // a zero vector of full length
+  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_->PutScalar(0.0);
 
   //---------------------------------------------- iteration loop
 
@@ -333,7 +343,18 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
   SetDofRowMaps(vecSpaces);
 
   // build dbc map of monolithic system
-  BuildCombinedDBCMap();
+  {
+    const Teuchos::RCP<const Epetra_Map> porocondmap =
+        PoroField()->CombinedDBCMap();
+    const Teuchos::RCP<const Epetra_Map> scatracondmap =
+        ScatraField().DirichMaps()->CondMap();
+    Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MergeMap(porocondmap, scatracondmap, false);
+
+    // Finally, create the global FSI Dirichlet map extractor
+    dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(),dbcmap,true));
+    if (dbcmaps_ == Teuchos::null)
+      dserror("Creation of Dirichlet map extractor failed.");
+  }
 
   // initialize Poroelasticity-systemmatrix_
   systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
@@ -582,28 +603,6 @@ bool POROELAST::PORO_SCATRA_Mono::SetupSolver()
   tolfres_ = poroscatradyn.get<double> ("RESTOL");
 
   return true;
-}
-
-/*----------------------------------------------------------------------*
- | Setup Newton-Raphson iteration            vuong 01/12   |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Mono::SetupNewton()
-{
-
-  // initialize variables needed in newton loop
-  iter_ = 1;
-  normrhs_ = 0.0;
-  norminc_ = 0.0;
-
-  // incremental solution vector with length of all dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
-  iterinc_->PutScalar(0.0);
-
-  // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
-  zeros_->PutScalar(0.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -916,22 +915,6 @@ void POROELAST::PORO_SCATRA_Mono::SetDofRowMaps(const std::vector<Teuchos::RCP<
   blockrowdofmap_.Setup(*fullmap, maps);
 }
 
-/*----------------------------------------------------------------------*
- |  map containing the dofs with Dirichlet BC               vuong 01/12 |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Mono::BuildCombinedDBCMap()
-{
-  const Teuchos::RCP<const Epetra_Map> porocondmap =
-      PoroField()->CombinedDBCMap();
-  const Teuchos::RCP<const Epetra_Map> scatracondmap =
-      ScatraField().DirichMaps()->CondMap();
-  Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MergeMap(porocondmap, scatracondmap, false);
-
-  // Finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(),dbcmap,true));
-  if (dbcmaps_ == Teuchos::null) { dserror("Creation of Dirichlet map extractor failed."); }
-
-} // BuildCombinedDBCMap()
 
 /*----------------------------------------------------------------------*
  |  Evaluate off diagonal matrix in poro row                     |
@@ -1042,7 +1025,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
 
   PoroField()->StructureField()->Discretization()->ClearState();
   PoroField()->StructureField()->Discretization()->SetState(0,"displacement",PoroField()->StructureField()->Dispnp());
-  PoroField()->StructureField()->Discretization()->SetState(0,"velocity",PoroField()->StructureField()->WriteAccessVelnp());
+  PoroField()->StructureField()->Discretization()->SetState(0,"velocity",PoroField()->StructureField()->Velnp());
 
   PoroField()->StructureField()->SetCouplingState();
 
