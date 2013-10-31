@@ -199,7 +199,7 @@ void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ive
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
-  meshmap_->InsertCondVector(fluiddisp,fluidimpl_->ViewOfDispnp());
+  meshmap_->InsertCondVector(fluiddisp,fluidimpl_->WriteAccessDispnp());
 
   // new grid velocity
   fluidimpl_->UpdateGridv();

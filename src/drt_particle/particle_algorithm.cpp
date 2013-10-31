@@ -285,8 +285,8 @@ void PARTICLE::Algorithm::Integrate()
     structure_->Solve();
 
     // extract displacement and velocity from full structural field to obtain wall states
-    walldisn = wallextractor_->ExtractCondVector(structure_->WriteAccessDispnp());
-    wallveln = wallextractor_->ExtractCondVector(structure_->WriteAccessVelnp());
+    walldisn = wallextractor_->ExtractCondVector(structure_->Dispnp());
+    wallveln = wallextractor_->ExtractCondVector(structure_->Velnp());
   }
   else
   {
@@ -861,7 +861,7 @@ void PARTICLE::Algorithm::TransferParticles()
   std::set<Teuchos::RCP<DRT::Node>,Less> homelessparticles;
 
   // current positions of particles
-  Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
+  Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
 
   std::set<int> examinedbins;
   // check in each bin whether particles have moved out

@@ -198,7 +198,7 @@ namespace FS3I
       Teuchos::RCP<Epetra_Vector> StrExtractInterfaceVal
       (
         int interf,   ///< interface id
-        Teuchos::RCP<Epetra_Vector> fullvector  ///< state vector of the full structural field
+        Teuchos::RCP<const Epetra_Vector> fullvector  ///< state vector of the full structural field
       );
 
       /// extract thermal interface values for a given full field

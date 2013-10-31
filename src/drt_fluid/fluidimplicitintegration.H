@@ -491,7 +491,7 @@ public:
   );
 
   Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }
-  Teuchos::RCP<      Epetra_Vector> ViewOfDispnp() { return dispnp_; }
+  Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() { return dispnp_; }
   Teuchos::RCP<const Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_)->Merge(); }

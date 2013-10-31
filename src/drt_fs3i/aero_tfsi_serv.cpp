@@ -1083,7 +1083,7 @@ void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluidDual
 Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::StrExtractInterfaceVal
 (
   int interf,
-  Teuchos::RCP<Epetra_Vector> fullvector
+  Teuchos::RCP<const Epetra_Vector> fullvector
 )
 {
   return structrowmapext_[interf]->ExtractCondVector(fullvector);

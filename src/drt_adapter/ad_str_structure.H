@@ -368,12 +368,10 @@ namespace ADAPTER {
 
     //@}
 
-    //! @name Extract methods
+    //! @name Extract methods with writing access
     //@{
 
-    //! Extract coupling values (displacements)
-
-    /// extract displacements, stress and velocities for TSI
+    /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() = 0;
 
     /// extract displacements
