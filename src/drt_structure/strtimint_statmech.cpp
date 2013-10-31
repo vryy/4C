@@ -195,11 +195,11 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
     else if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
     {
 //      //see whether current element needs more random numbers per time step than any other before
-//      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3eb*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3eb*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 //
 //      //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
-//      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
-//        statmechman_->PeriodicBoundaryBeam3ebInit(discret_->lColElement(i));
+      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
+        statmechman_->PeriodicBoundaryBeam3ebInit(discret_->lColElement(i));
     }
     else if ( eot == DRT::ELEMENTS::Beam2Type::Instance() )
     {
@@ -490,13 +490,13 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
   // set vector values needed by elements
   discret_->ClearState();
 
-  //discret_->SetState("displacement",disn_);
-  //discret_->SetState("velocity",veln_);
+  discret_->SetState("displacement",disn_);
+  discret_->SetState("velocity",veln_);
   // predicted dirichlet values
   // disn then also holds prescribed new dirichlet displacements
 
   // determine DBC evaluation mode (new vs. old)
-  statmechman_->EvaluateDirichletStatMech(p, dis, vel, dbcmaps_);
+  statmechman_->EvaluateDirichletStatMech(p, disn_, veln_, dbcmaps_);
 
   discret_->ClearState();
 
@@ -806,10 +806,12 @@ void STR::TimIntStatMech::NewtonFull()
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
     if(normfres_>1.0e4 && iter_>4)
+    {
       break;
     std::cout<<"normfres_ = "<<normfres_<<std::endl;
     std::cout<<"normdisi_ = "<<normdisi_<<std::endl;
     dserror("BREAK AFTER NEWTON LOOP 1");
+    }
   }  // end equilibrium loop
 
   // correct iteration counter
