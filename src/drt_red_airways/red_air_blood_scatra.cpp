@@ -197,7 +197,7 @@ DRT::ELEMENTS::RedAirBloodScatra::~RedAirBloodScatra()
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 05/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::Print(ostream& os) const
+void DRT::ELEMENTS::RedAirBloodScatra::Print(std::ostream& os) const
 {
   os << "RedAirBloodScatra ";
   Element::Print(os);
