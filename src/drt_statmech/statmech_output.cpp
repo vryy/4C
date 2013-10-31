@@ -4687,6 +4687,7 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
   Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_, 3, true));
   GetBindingSpotPositions(discol, bspotpositions, Teuchos::null);
 
+  // Proc 0 only
   if(!discret_->Comm().MyPID())
   {
     FILE* fp = NULL;
@@ -4695,10 +4696,9 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
     std::stringstream freefillength;
 
     double freelength = 0.0;
-//    double summedlength = 0.0;
+    //double summedlength = 0.0;
     for(int n=1; n<bspotpositions->MyLength(); n++)
     {
-      bool addtofreelength = false;
       // standard linkers: bspot is equal to node
       int bspotn = n-1;
       int bspotnp = n;
@@ -4713,49 +4713,37 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
       // binding spots have to be on the same filament
       if((*filamentnumber_)[bspotn] == (*filamentnumber_)[bspotnp])
       {
-        if((*bspotstatus_)[bspotn]>-0.1) // a crosslinker is attached
+        // first binding spot pair of a) a filament or b) after a doubly bound crosslinker
+        if(freelength>0.0 && crosslinkermap_->LID((int)(*bspotstatus_)[bspotn])>-1) // = crosslinker attached
         {
-          if((*numbond_)[(*bspotstatus_)[bspotn]]>1.9) // it is a doubly-bound crosslinker (i.e. actually limiting thermal fluctuations)
+          if((*crosslink2element_)[(*bspotstatus_)[bspotn]]>1.9) //  = crosslinker element
           {
-            if(freelength>0.0)
-            {
-//              cout<<"bspots "<<bspotn<<", "<<bspotnp<<": filament "<<(*filamentnumber_)[bspotn]<<endl;
-//              cout<<"   written length on filament "<<(*filamentnumber_)[bspotn]<<": "<<freelength<<endl;
-              freefillength<<std::setprecision(6)<<freelength<<std::endl;
-//              summedlength += freelength;
-            }
+            freefillength<<std::setprecision(6)<<freelength<<std::endl;
+            //summedlength += freelength;
+            // after every crosslinker element, a new free filament segment begins. Hence reset.
             freelength = 0.0;
           }
-          else
-            addtofreelength = true;
         }
-        else
-          addtofreelength = true;
-        if(addtofreelength)
-        {
-          std::vector<double> bspotpos(6,0.0);
-          bspotpos[0] = (*bspotpositions)[0][bspotn];
-          bspotpos[1] = (*bspotpositions)[1][bspotn];
-          bspotpos[2] = (*bspotpositions)[2][bspotn];
-          bspotpos[3] = (*bspotpositions)[0][bspotnp];
-          bspotpos[4] = (*bspotpositions)[1][bspotnp];
-          bspotpos[5] = (*bspotpositions)[2][bspotnp];
-          UnshiftPositions(bspotpos, 2, false);
-          double addedlength = sqrt((bspotpos[3]-bspotpos[0])*(bspotpos[3]-bspotpos[0]) +
-                                    (bspotpos[4]-bspotpos[1])*(bspotpos[4]-bspotpos[1]) +
-                                    (bspotpos[5]-bspotpos[2])*(bspotpos[5]-bspotpos[2]));
-          freelength += addedlength;
-        }
+
+        std::vector<double> bspotpos(6,0.0);
+        bspotpos[0] = (*bspotpositions)[0][bspotn];
+        bspotpos[1] = (*bspotpositions)[1][bspotn];
+        bspotpos[2] = (*bspotpositions)[2][bspotn];
+        bspotpos[3] = (*bspotpositions)[0][bspotnp];
+        bspotpos[4] = (*bspotpositions)[1][bspotnp];
+        bspotpos[5] = (*bspotpositions)[2][bspotnp];
+        UnshiftPositions(bspotpos, 2, false);
+        double addedlength = sqrt((bspotpos[3]-bspotpos[0])*(bspotpos[3]-bspotpos[0]) +
+                                  (bspotpos[4]-bspotpos[1])*(bspotpos[4]-bspotpos[1]) +
+                                  (bspotpos[5]-bspotpos[2])*(bspotpos[5]-bspotpos[2]));
+        freelength += addedlength;
       }
-      else // last binding spot of one and first binding spot of another filament
+      else // write whatever is left as free filament length before hopping to the nex filament
       {
-//        summedlength += freelength;
-//        cout<<"   written length at fil change: "<<freelength<<endl;
-//        cout<<"     check: summed length      : "<<summedlength<<endl;
-//        summedlength = 0.0;
-//        cout<<"filament "<<(*filamentnumber_)[bspotn]<<" end, filament"<<(*filamentnumber_)[bspotnp]<<" begin"<<endl;
+        //summedlength += freelength;
+        //summedlength = 0.0;
         freefillength<<std::setprecision(6)<<freelength<<std::endl;
-//        cout<<" BSPOT "<<bspotnp<<endl;
+        // reset in order to start fresh with the next filament
         freelength = 0.0;
       }
     }

@@ -284,6 +284,6 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -3.51727563320921088e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -3.79938641465452087e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
