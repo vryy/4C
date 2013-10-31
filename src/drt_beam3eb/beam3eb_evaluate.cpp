@@ -45,7 +45,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
                                      Epetra_SerialDenseVector& elevec2,
                                      Epetra_SerialDenseVector& elevec3)
 {
-//  cout << __LINE__ << " " << __FILE__  << endl;
+
   DRT::ELEMENTS::Beam3eb::ActionType act = Beam3eb::calc_none;
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
@@ -105,7 +105,6 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-      //cout << __LINE__ << " " << __FILE__  << endl;
 
       // get residual displacements
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -116,8 +115,6 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       //TODO: Only in the dynamic case the velocities are needed.
       // get element velocities
-//      std::vector<double> myvel(lm.size());
-      // get element velocities (UNCOMMENT IF NEEDED)
       RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
       if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
@@ -127,33 +124,29 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
       {
-        //cout << __LINE__ << " " << __FILE__  << endl;
         RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-        //cout << __LINE__ << " " << __FILE__  << endl;
       }
       if (act == Beam3eb::calc_struct_nlnstiffmass)
       {
-			eb_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+			eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       }
       else if (act == Beam3eb::calc_struct_nlnstifflmass)
       {
-  	  		eb_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
+  	  		eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
   	  		lumpmass(&elemat2);
       }
       else if (act == Beam3eb::calc_struct_nlnstiff)
       {
-  	  		eb_nlnstiffmass<2>(params,myvel,mydisp,&elemat1,NULL,&elevec1);
+  	  		eb_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
       }
       else if (act == Beam3eb::calc_struct_internalforce)
       {
-  	  		eb_nlnstiffmass<2>(params,myvel,mydisp,NULL,NULL,&elevec1);
+  	  		eb_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
       }
     }
     break;
-
-    //cout << __LINE__ << " " << __FILE__  << endl;
 
     case calc_struct_stress:
     	dserror("No stress output implemented for beam3 elements");
@@ -492,7 +485,6 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   meier 05/12|
  *-----------------------------------------------------------------------------------------------------------*/
-template<int nnode>
 void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
                                               std::vector<double>& vel,
                                               std::vector<double>& disp,
@@ -501,15 +493,15 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
                                               Epetra_SerialDenseVector* force)
 {
 
+  //number of nodes fixed for these element
+  const int nnode = 2;
+
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
    *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
   NodeShift<nnode,3>(params,disp);
-  //cout << __LINE__ << " " << __FILE__  << endl;
-
 
 #ifdef SIMPLECALC
 {
-//  cout << __LINE__ << " " << __FILE__  << endl;
   //dimensions of freedom per node
   const int dofpn = 3*NODALDOFS;
 
@@ -906,10 +898,10 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     } //if (force != NULL)
 
     //assemble massmatrix if requested
-    if (massmatrix != NULL)
-    {
-      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
-    }//if (massmatrix != NULL)
+//    if (massmatrix != NULL)
+//    {
+//      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
+//    }//if (massmatrix != NULL)
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   //Uncomment the following line to print the elment stiffness matrix to matlab format
@@ -962,12 +954,8 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 }
 #else
 {
-//  cout << __LINE__ << " " << __FILE__  << endl;
    //dimensions of freedom per node
   const int dofpn = 3*NODALDOFS;
-
-  //number of nodes fixed for these element
-  //const int nnode = 2;
 
   //matrix for current positions and tangents
   std::vector<double> disp_totlag(nnode*dofpn, 0.0);
@@ -1431,10 +1419,10 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     } //if (force != NULL)
 
     //assemble massmatrix if requested
-    if (massmatrix != NULL)
-    {
-      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
-    }//if (massmatrix != NULL)
+//    if (massmatrix != NULL)
+//    {
+//      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
+//    }//if (massmatrix != NULL)
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   //Uncomment the following line to print the elment stiffness matrix to matlab format
@@ -1876,48 +1864,15 @@ inline void DRT::ELEMENTS::Beam3eb::CalcBrownian(Teuchos::ParameterList& params,
   if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
 
-  //Evaluatoin of force vectors and stiffness matrices
+  //Evaluation of force vectors and stiffness matrices
 
-  /*if(force->Norm2()>100)
-  {
-    cout<<"pre: "<<Id()<<endl;
-    for(int i=0; i<force->M(); i++)
-      cout<<(*force)[i]<<" ";
-    cout<<endl;
-  }*/
-  //cout << __LINE__ << " " << __FILE__  << endl;
   //add stiffness and forces due to translational damping effects
   MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
  //cout<<"Force="<<*force<<endl;
-//  if(force->Norm2()>100)
-//  {
-//    cout<<"post TransDamp: "<<Id()<<endl;
-//    for(int i=0; i<force->M(); i++)
-//      cout<<(*force)[i]<<" ";
-//    cout<<endl;
-//  }
 
-
-  /*if(force->Norm2()>100)
-  {
-    cout<<"post RotDamp: "<<Id()<<endl;
-    for(int i=0; i<force->M(); i++)
-      cout<<(*force)[i]<<" ";
-    cout<<endl;
-  }*/
   //add stochastic forces and (if required) resulting stiffness
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
   //cout<<"Stocastic Force="<<*force<<endl;
-  /*if(force->Norm2()>100)
-  {
-    cout<<"post Stoch: "<<Id()<<endl;
-    for(int i=0; i<force->M(); i++)
-      cout<<(*force)[i]<<" ";
-    cout<<"\n\n"<<endl;
-  }*/
-  //add stochastic moments and resulting stiffness
-  //MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force,gausspointsdamping,Idamping,Itildedamping,Qconvdamping,Qnewdamping);
-
 return;
 
 }//DRT::ELEMENTS::Beam3eb::CalcBrownian(.)
@@ -1928,7 +1883,7 @@ return;
  | nodes within one element are separated by a periodic boundary, one of them is shifted such that the final |
  | distance in R^3 is the same as the initial distance in the periodic space; the shift affects computation  |
  | on element level within that very iteration step, only (no change in global variables performed)          |                                 |
- |                                                                                   (public) Mukherjee 10/09|
+ |                                                                                   (public) Mukherjee 10/13|
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Beam3eb::NodeShift(Teuchos::ParameterList& params,  //!<parameter list

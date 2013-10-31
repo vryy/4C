@@ -449,7 +449,6 @@ private:
   //! @name Internal calculation methods
 
   //!calculation of nonlinear stiffness and mass matrix
-  template<int nnode>
   void eb_nlnstiffmass( Teuchos::ParameterList&   params,
                         std::vector<double>&      vel,
                         std::vector<double>&      disp,
