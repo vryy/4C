@@ -4229,10 +4229,6 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
           {
             // nodes coming into contact
             static_cast<FriNode*>(cnode)->FriData().Slip() = true;
-#ifdef CONTACTFRICTIONLESSFIRST
-            if (static_cast<FriNode*>(cnode)->CoData().ActiveOld()==false)
-              static_cast<FriNode*>(cnode)->FriData().Slip() = true;
-#endif
           }
         }
       }
@@ -4285,18 +4281,8 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
                // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->CoData().ActiveOld()==false)
-                {}
-                else
-                {
-                 frinode->FriData().Slip() = false;
-                 activesetconv_ = false;
-                }
-#else
                 frinode->FriData().Slip() = false;
                 activesetconv_ = false;
-#endif
               }
             }
           } // if (fytpe=="tresca")
@@ -4327,18 +4313,8 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
               // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->CoData().ActiveOld()==false)
-                {}
-                else
-                {
-                 frinode->FriData().Slip() = false;
-                 activesetconv_ = false;
-                }
-#else
                 frinode->FriData().Slip() = false;
                 activesetconv_ = false;
-#endif
               }
             }
           } // if (ftype == INPAR::CONTACT::friction_coulomb)

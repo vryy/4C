@@ -598,6 +598,14 @@ Teuchos::RCP<const Epetra_Vector> ALE::AleSprings::Dispnp() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ALE::AleSprings::Dispn() const
+{
+  dserror("not implemented!");
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ALE::AleSprings::WriteAccessDispnp() const
 {
   return incr_;

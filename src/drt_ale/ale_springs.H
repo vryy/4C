@@ -61,6 +61,9 @@ public:
   /// get the whole displacement field at time step \f$t^{n+1}\f$
   virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
 
+  /// get the whole displacement field at time step \f$t^{n}\f$
+  virtual Teuchos::RCP<const Epetra_Vector> Dispn() const;
+
   //@}
 
   //! @name Writing access to displacement

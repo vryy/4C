@@ -4882,6 +4882,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           std::map<int,double> derivjump1 = cnode->FriData().GetDerivVarJump()[0];
           std::map<int,double> derivjump2 = cnode->FriData().GetDerivVarJump()[1];
 
+          // TODO: if dim 3...
           for (colcurr=derivjump1.begin();colcurr!=derivjump1.end();++colcurr)
           {
             int col = colcurr->first;
@@ -4890,7 +4891,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
             if (abs(valtxi1)>1.0e-12) linslipDISglobal.Assemble(valtxi1,row[0],col);
             if (abs(valteta1)>1.0e-12) linslipDISglobal.Assemble(valteta1,row[1],col);
-
           }
 
           if (Dim()==3)

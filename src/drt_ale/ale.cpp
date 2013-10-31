@@ -230,7 +230,7 @@ void ALE::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
   if(DRT::Problem::Instance()->ProblemType()!=prb_struct_ale)
     interface_->InsertFSICondVector(idisp,dispnp_);
   else
-    interface_->InsertAleWearCondVector(idisp,dispnp_);
+    interface_->AddAleWearCondVector(idisp,dispnp_);
 }
 
 /*---------------------------------------------------------------*/

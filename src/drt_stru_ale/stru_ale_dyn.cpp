@@ -5,10 +5,10 @@
 
 
 <pre>
-Maintainer: Markus Gitterle
-            gitterle@lnm.mw.tum.de
+Maintainer: Philipp Farah
+            farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15251
+            089 - 289-15257
 </pre>
 */
 

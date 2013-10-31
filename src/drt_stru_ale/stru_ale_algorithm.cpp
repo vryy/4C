@@ -5,10 +5,10 @@
 \brief  Basis of all structure approaches with ale
         (Lagrangian step followed by Eulerian step )
 <pre>
-Maintainer: Markus Gitterle
-            gitterle@lnm.mw.tum.de
+Maintainer: Philipp Farah
+            farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15251
+            089 - 289-15257
 </pre>
 */
 
@@ -109,7 +109,7 @@ STRU_ALE::Algorithm::~Algorithm()
 }
 
 /*----------------------------------------------------------------------*
- | time loop                                                 mgit 05/11 |
+ | time loop                                                farah 10/13 |
  *----------------------------------------------------------------------*/
 void STRU_ALE::Algorithm::TimeLoop()
 {
@@ -157,13 +157,16 @@ void STRU_ALE::Algorithm::TimeLoop()
     // solution
     AleField().Solve();
 
-    // output
-    AleField().Output();
-
     // 2.-----------------------------------------------------------------     
     // application of mesh displacements to structural field, 
     // update spatial and material displacements
     ApplyMeshDisplacement();
+
+    // update
+    AleField().Update();
+
+    // output
+    AleField().Output();
 
     /********************************************************************/
     /* FINISH LAGRANGE STEP                                             */
@@ -380,8 +383,14 @@ void STRU_ALE::Algorithm::ApplyMeshDisplacement()
 
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
-  RCP<Epetra_Vector> aledisp = AleField().WriteAccessDispnp();
-  RCP<Epetra_Vector> disale = coupalestru_->MasterToSlave(aledisp);
+  RCP<const Epetra_Vector> aledispnp = AleField().Dispnp();
+  RCP<const Epetra_Vector> aledispn  = AleField().Dispn();
+
+  RCP<Epetra_Vector> disale   = coupalestru_->MasterToSlave(aledispnp);
+  RCP<Epetra_Vector> disalen  = coupalestru_->MasterToSlave(aledispn);
+
+  // build increment between aledispn and aledispnp
+  disale->Update(-1.0,*disalen,1.0);
 
   // vector of current spatial displacements
   RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();  // change to ExtractDispn() for overlap
@@ -439,8 +448,8 @@ void STRU_ALE::Algorithm::ApplyMeshDisplacement()
       XMesh[2]=node->X()[2]+(*dispnp)[locid+2]+(*disale)[locid+2];
 
     // create updated  XMat --> via nonlinear interpolation between nodes (like gp projection)
-    //if (ndim==2)
     AdvectionMap(&XMat[0],&XMat[1],&XMat[2],&XMesh[0],&XMesh[1],&XMesh[2],ElementPtr,numelement);
+
     // create delta displacement in material configuration
     (*dismat)[locid] = XMat[0]-node->X()[0];
     (*dismat)[locid+1] = XMat[1]-node->X()[1];
@@ -541,7 +550,7 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
 }  // STUE_ALE::Algorithm::AdvectionMap()
 
 /*----------------------------------------------------------------------*
- | read restart information for given time step (public)     mgit 05/11 |
+ | read restart information for given time step (public)    farah 10/13 |
  *----------------------------------------------------------------------*/
 void STRU_ALE::Algorithm::ReadRestart(int step)
 {
