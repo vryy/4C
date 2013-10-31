@@ -30,7 +30,6 @@ Maintainer: Kei Müller
 #include "../drt_beamcontact/beam3contact_octtree.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
-
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
@@ -572,7 +571,7 @@ void STATMECH::StatMechManager::Update(const int&                               
    * periodic boundary conditions, i.e. no node lies outside a cube of edge length periodlength_*/
 
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
-  if (linkermodel_ != statmech_linker_none)
+  if (linkermodel_ != statmech_linker_none && statmechparams_.get<int>("N_crosslink",0)>0)
   {
 #ifdef MEASURETIME
     const double t1 = Teuchos::Time::wallTime();
@@ -1479,25 +1478,25 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3ebInit(DRT::Element* elemen
 {
   // note: in analogy to PeriodicBoundaryBeam3Init()
 
-//  DRT::ELEMENTS::Beam3eb* beam = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element);
-//  const int ndim = 3;
-//  std::vector<double> xrefe(beam->NumNode()*ndim,0);
-//
-//  for(int i=0;i<beam->NumNode();i++)
-//    for(int dof=0; dof<ndim; dof++)
-//      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
-//
-//  for(int i=1;i<beam->NumNode();i++)
-//  {
-//    for(int dof=0; dof<ndim; dof++)
-//    {
-//      if( fabs( (beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
-//        xrefe[3*i+dof] += periodlength_->at(dof);
-//      if( fabs( (beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
-//        xrefe[3*i+dof] -= periodlength_->at(dof);
-//    }
-//  }
-//  beam->SetUpReferenceGeometry(xrefe,true);
+  DRT::ELEMENTS::Beam3eb* beam = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element);
+  const int ndim = 3;
+  std::vector<double> xrefe(beam->NumNode()*ndim,0);
+
+  for(int i=0;i<beam->NumNode();i++)
+    for(int dof=0; dof<ndim; dof++)
+      xrefe[3*i+dof] = beam->Nodes()[i]->X()[dof];
+
+  for(int i=1;i<beam->NumNode();i++)
+  {
+    for(int dof=0; dof<ndim; dof++)
+    {
+      if( fabs( (beam->Nodes()[i]->X()[dof]) + periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] += periodlength_->at(dof);
+      if( fabs( (beam->Nodes()[i]->X()[dof]) - periodlength_->at(dof) - (beam->Nodes()[0]->X()[dof]) ) < fabs( (beam->Nodes()[i]->X()[dof]) - (beam->Nodes()[0]->X()[dof]) ) )
+        xrefe[3*i+dof] -= periodlength_->at(dof);
+    }
+  }
+  beam->SetUpReferenceGeometry(xrefe,true);
 }
 
 /*------------------------------------------------------------------------*
@@ -5197,7 +5196,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
 }//StatMechManager::CrosslinkerMoleculeInit
 
 /*----------------------------------------------------------------------*
-| Set crosslinkers wherever possible before the first time step        |
+| Set crosslinkers wherever possible before the first time step         |
 |                                                (private) mueller 11/11|
 *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)

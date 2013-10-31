@@ -27,6 +27,7 @@ Maintainer: Kei Müller
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3eb/beam3eb.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_beam3cl/beam3cl.H"
 
@@ -1221,7 +1222,8 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           bool kinked = CheckForKinkedVisual(element->Id());
           if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
               eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
-              eot==DRT::ELEMENTS::BeamCLType::Instance() )
+              eot==DRT::ELEMENTS::BeamCLType::Instance() ||
+              eot==DRT::ELEMENTS::Beam3ebType::Instance())
           {
             if (!kinked)
             {
@@ -1365,6 +1367,8 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
       dotline = eot == DRT::ELEMENTS::Beam3Type::Instance();
     else if(element->ElementType().Name()=="BeamCLType")
       dotline = eot==DRT::ELEMENTS::BeamCLType::Instance();
+    else if(element->ElementType().Name()=="Beam3ebType")
+      dotline = eot==DRT::ELEMENTS::Beam3ebType::Instance();
     else if (element->ElementType().Name() == "Truss3Type")
       dotline = dotline or eot == DRT::ELEMENTS::Truss3Type::Instance();
     // draw spheres at node positions ("beads" of the bead spring model)
@@ -2101,6 +2105,8 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
     else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::BeamCL*>(thisele))->Izz()) / M_PI));
+    else if(eot == DRT::ELEMENTS::Beam3ebType::Instance())
+      radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(thisele))->Izz()) / M_PI));
     else if(eot == DRT::ELEMENTS::Truss3Type::Instance())
       radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3*>(thisele))->CSec() / M_PI);
     else
