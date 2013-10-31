@@ -22,6 +22,7 @@ Maintainer: Christoph Meier
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_inpar/inpar_statmech.H"
 
 
 DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
@@ -435,3 +436,4 @@ double DRT::ELEMENTS::Beam3eb::Iyy()
 {
   return Iyy_;
 }
+

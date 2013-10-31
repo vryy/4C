@@ -64,6 +64,9 @@ high precission calculation. The following facts have to be considered when doin
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 #include "../drt_lib/drt_elementtype.H"
+#include "../drt_fem_general/largerotations.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 #include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;
@@ -215,6 +218,14 @@ public:
   */
   virtual int NumLine() const {return 1;}
 
+  /*!
+   \brief Get moment of inertia of area Izz_ of this element
+   */
+  const double& Izz() const
+  {
+    return Izz_;
+  }
+
 
   /*!
   \brief Get vector of RCPs to the lines of this element
@@ -348,6 +359,12 @@ public:
 
 
   //@}
+  //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
+  void SetUpReferenceGeometry(const std::vector<double>& xrefe,const bool secondinit = false);
+
+  /* computes the number of different random numbers required in each time step for generation of stochastic
+   forces                                                                    */
+  int HowManyRandomNumbersINeed();
 
 
 private:
@@ -369,7 +386,8 @@ private:
     calc_struct_reset_istep,
     calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
   };
-
+  //! vector storing the internal force vector
+  Epetra_SerialDenseVector internalforces_;
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
@@ -395,6 +413,7 @@ private:
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;
 
+
 #if NODALDOFS == 3
   //! Matrix holding the derivatives of the tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Kref_;
@@ -418,9 +437,6 @@ private:
 
   //! @name methods for initilization of the element
 
-  //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
-  void SetUpReferenceGeometry(const std::vector<double>& xrefe,const bool secondinit = false);
-
   //@}
 
   //! @name auxiliary computation methods for non-additive, large rotation variables
@@ -433,6 +449,7 @@ private:
   //! @name Internal calculation methods
 
   //!calculation of nonlinear stiffness and mass matrix
+  template<int nnode>
   void eb_nlnstiffmass( Teuchos::ParameterList&   params,
                         std::vector<double>&      vel,
                         std::vector<double>&      disp,
@@ -484,7 +501,62 @@ private:
 
   // don't want = operator
   Beam3eb& operator = (const Beam3eb& old);
+  // computes translational damping forces and stiffness (private)
+  template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
+  void MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+                                                    const std::vector<double>& vel,  //!< vector containing first order time derivative of nodal positions and nodal tangents of an element
+                                                    const std::vector<double>& disp, //!< vector containing nodal positions and nodal tangents of an element
+                                                    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                                    Epetra_SerialDenseVector* force);//!< element internal force vector
+  /*-----------------------------------------------------------------------------------------------------------*
+   | computes stochastic forces and resulting stiffness (public)                              mukherjee   10/13|
+   *----------------------------------------------------------------------------------------------------------*/
+  template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+  void MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+                                                const std::vector<double>& vel,  //!< element velocity vector
+                                                const std::vector<double>& disp, //!<element disp vector
+                                                Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                                Epetra_SerialDenseVector* force);//!< element internal force vector
+  /*-----------------------------------------------------------------------------------------------------------*
+    | computes damping coefficients per lengthand stores them in a matrix in the following order: damping of    |
+    | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
+    | rotation around filament axis                                             (private)      mukherjee   10/13|
+    *----------------------------------------------------------------------------------------------------------*/
+   void MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma);
 
+   /*computes velocity of background fluid and gradient of that velocity at a certain evaluation point in
+     the physical space   */
+   template<int ndim> //number of dimensions of embedding space
+   void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
+                                                     const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                                                     LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
+                                                     LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+
+   /*-----------------------------------------------------------------------------------------------------------*
+    | Assemble stochastic and viscous forces and respective stiffness according to fluctuation dissipation      |
+    | theorem                                                                           (public) Mukherjee 10/09|
+    *----------------------------------------------------------------------------------------------------------*/
+   template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
+   void CalcBrownian(Teuchos::ParameterList& params,
+                                                 const std::vector<double>&       vel,  //!< element velocity vector
+                                                 const std::vector<double>&       disp, //!< element displacement vector
+                                                 Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                                                 Epetra_SerialDenseVector* force);        //!< element internal force vector
+
+
+   /*-----------------------------------------------------------------------------------------------------------*
+    | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
+    | nodes within one element are separated by a periodic boundary, one of them is shifted such that the final |
+    | distance in R^3 is the same as the initial distance in the periodic space; the shift affects computation  |
+    | on element level within that very iteration step, only (no change in global variables performed)          |                                 |
+    |                                                                                  (public) mukherjee  10/13|
+    *----------------------------------------------------------------------------------------------------------*/
+   template<int nnode, int ndim> //number of nodes, number of dimensions
+   void NodeShift(Teuchos::ParameterList& params,  //!<parameter list
+                                                 std::vector<double>& disp); //!<element disp vector
+
+   // don't want = operator
+   //Beam3eb& operator = (const Beam3eb& old);
 
 }; // class Beam3eb
 
