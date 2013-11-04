@@ -5389,13 +5389,13 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
   if (alefluid_)
   {
     const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_,gridv_,dispnp_, condstring);
-    const std::map<int,double> volume = FLD::UTILS::ComputeVolume(*discret_, velnp_,gridv_,dispnp_);
+    //const std::map<int,double> volume = FLD::UTILS::ComputeVolume(*discret_, velnp_,gridv_,dispnp_);
 
     // write to file
     if(discret_->Comm().MyPID() == 0)
     {
       FLD::UTILS::WriteDoublesToFile(time_, step_, flowrates,"flowrate" );
-      FLD::UTILS::WriteDoublesToFile(time_, step_, volume,"volume" );
+      //FLD::UTILS::WriteDoublesToFile(time_, step_, volume,"volume" );
     }
   }
   else

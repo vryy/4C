@@ -626,41 +626,38 @@ std::map<int,double> FLD::UTILS::ComputeVolume(
   // set action for elements
   eleparams.set<int>("action",FLD::calc_volume);
 
-  // note that the flowrate is not yet divided by the area
-  std::map<int,double> volumeflowrateperline;
+  std::map<int,double> volumeperline;
 
-    // get a vector layout from the discretization to construct matching
-    // vectors and matrices local <-> global dof numbering
-    const Epetra_Map* dofrowmap = dis.DofRowMap();
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices local <-> global dof numbering
+  const Epetra_Map* dofrowmap = dis.DofRowMap();
 
-    // create vector (+ initialization with zeros)
-    Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+  // create vector (+ initialization with zeros)
+  Teuchos::RCP<Epetra_Vector> volumes = LINALG::CreateVector(*dofrowmap,true);
 
-    // call loop over elements
-    dis.ClearState();
-    dis.SetState("velnp",velnp);
+  // call loop over elements
+  dis.ClearState();
+  dis.SetState("velnp",velnp);
+  if(dispnp != Teuchos::null)
     dis.SetState("dispnp",dispnp);
+  if(gridv != Teuchos::null)
     dis.SetState("gridv",gridv);
 
-    dis.Evaluate(eleparams,Teuchos::null,flowrates);
-    dis.ClearState();
+  dis.Evaluate(eleparams,Teuchos::null,volumes);
+  dis.ClearState();
 
-    double local_flowrate = 0.0;
-    for (int i=0; i < dofrowmap->NumMyElements(); i++)
-    {
-      local_flowrate +=((*flowrates)[i]);
-    }
+  double local_volume = 0.0;
+  for (int i=0; i < dofrowmap->NumMyElements(); i++)
+  {
+    local_volume +=((*volumes)[i]);
+  }
 
-    double flowrate = 0.0;
-    dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
+  double volume = 0.0;
+  dofrowmap->Comm().SumAll(&local_volume,&volume,1);
 
-    //if(dofrowmap->Comm().MyPID()==0)
-    //  std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;
+  volumeperline[0] = volume;
 
-    //ATTENTION: new definition: outflow is positive and inflow is negative
-    volumeflowrateperline[0] = flowrate;
-
-  return volumeflowrateperline;
+  return volumeperline;
 }
 
 
