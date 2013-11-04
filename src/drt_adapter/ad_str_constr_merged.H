@@ -90,9 +90,6 @@ namespace ADAPTER {
     /// direct access to system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
-    /// External force at t_{n+1}
-//    Teuchos::RCP<const Epetra_Vector> FExtn();
-
     /// update displacement and evaluate elements
     void Evaluate(
       Teuchos::RCP<const Epetra_Vector> dispstepinc  ///< solution increment between time step n and n+1
@@ -164,13 +161,11 @@ namespace ADAPTER {
 
     /// @name local copies of input parameters
     //{@
-    Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretisation
-    Teuchos::RCP<Teuchos::ParameterList> ioparams_;  ///< I/O flags ... not sure of really needed
-    Teuchos::RCP<Teuchos::ParameterList> sdynparams_;  ///< dynamic control flags ... used,
-                                                       ///< but could/should be circumvented
-    Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
-    Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
+    Teuchos::RCP<DRT::Discretization> discret_;       ///< the discretization
+    Teuchos::RCP<Teuchos::ParameterList> sdynparams_; ///< dynamic control flags ... used, but could/should be circumvented
+    Teuchos::RCP<Teuchos::ParameterList> xparams_;    ///< eXtra input parameters
+    Teuchos::RCP<LINALG::Solver> solver_;             ///< the linear solver
+    Teuchos::RCP<IO::DiscretizationWriter> output_;   ///< the output writer
 
     //@}
 
