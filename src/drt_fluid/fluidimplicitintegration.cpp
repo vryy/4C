@@ -1146,6 +1146,11 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // set thermodynamic pressure
     eleparams.set("thermodynamic pressure",thermpressaf_);
 
+    if (alefluid_)
+    {
+      discret_->SetState("dispnp", dispnp_);
+    }
+
     // evaluate Neumann conditions
     neumann_loads_->PutScalar(0.0);
     discret_->SetState("scaaf",scaaf_);
@@ -2763,6 +2768,19 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     GenAlphaUpdateAcceleration();
 
     GenAlphaIntermediateValues();
+  }
+
+  if (alefluid_)
+  {
+    // account for potential moving neumann boundaries
+    Teuchos::ParameterList eleparams;
+    discret_->SetState("dispnp", dispnp_);
+
+    // evaluate Neumann conditions
+    neumann_loads_->PutScalar(0.0);
+    discret_->SetState("scaaf",scaaf_);
+    discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+    discret_->ClearState();
   }
 
   // add Neumann loads
@@ -4964,6 +4982,7 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
   case INPAR::FLUID::gravitation:
   case INPAR::FLUID::shear_flow:
   case INPAR::FLUID::fsi_fluid_pusher:
+  case INPAR::FLUID::byfunct1:
   {
     // std::vector containing
     // [0]: relative velocity error
@@ -5367,11 +5386,27 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
   else
     dserror("flow rate computation is not implemented for the 1D case");
 
-  const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_, condstring);
+  if (alefluid_)
+  {
+    const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_,gridv_,dispnp_, condstring);
+    const std::map<int,double> volume = FLD::UTILS::ComputeVolume(*discret_, velnp_,gridv_,dispnp_);
 
-  // write to file
-  if(discret_->Comm().MyPID() == 0)
-    FLD::UTILS::WriteFlowRatesToFile(time_, step_, flowrates );
+    // write to file
+    if(discret_->Comm().MyPID() == 0)
+    {
+      FLD::UTILS::WriteDoublesToFile(time_, step_, flowrates,"flowrate" );
+      FLD::UTILS::WriteDoublesToFile(time_, step_, volume,"volume" );
+    }
+  }
+  else
+  {
+    const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_, condstring);
+
+    // write to file
+    if(discret_->Comm().MyPID() == 0)
+      FLD::UTILS::WriteDoublesToFile(time_, step_, flowrates,"flowrate" );
+  }
+
 
   return;
 }

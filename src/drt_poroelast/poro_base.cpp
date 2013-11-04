@@ -304,7 +304,7 @@ void POROELAST::PoroBase::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  FluidField()->Output();
+  FluidField()->StatisticsAndOutput();
   StructureField()->Output();
 } // Monolithic::Output()
 

@@ -182,6 +182,20 @@ namespace ELEMENTS
       Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
     );
 
+    /// Evaluate a Neumann boundary condition
+    ///
+    /// this method evaluates a surfaces Neumann condition on the wall element
+    ///
+    /// \return 0 if successful, negative otherwise
+    virtual int EvaluateNeumann(
+      Teuchos::ParameterList& params,   ///< (in/out) ParameterList for communication between control routine
+                               ///< and elements
+      DRT::Discretization& discretization,  ///< A reference to the underlying discretization
+      DRT::Condition& condition,  ///<  The condition to be evaluated
+      std::vector<int>& lm,  ///< location vector of this element
+      Epetra_SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on input
+      Epetra_SerialDenseMatrix* elemat1 = NULL);
+
     //@}
 
     //! initialize the inverse of the jacobian and its determinant in the material configuration

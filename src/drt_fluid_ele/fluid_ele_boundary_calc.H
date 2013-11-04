@@ -208,6 +208,14 @@ public:
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
+  virtual void PoroFlowRate(
+      DRT::ELEMENTS::FluidBoundary*  ele1,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseVector&       elevec1
+  ) = 0;
+
   virtual void PressureCoupling(
       DRT::ELEMENTS::FluidBoundary*   ele1,
       Teuchos::ParameterList&         params,
@@ -579,8 +587,9 @@ public:
       std::vector<int>&          lm);
 
   /*!
-  \brief apply boundary integral for porous media problems
+  \brief apply boundary integral (mass flux over boundary in continuity equation) for porous media problems
 
+  \param ele (in)           : Boundary element
   \param params (in)        : ParameterList for communication between control routine
   \param discretization (in): A reference to the underlying discretization
   \param lm (in)            : location vector of this element
@@ -603,6 +612,40 @@ public:
       Epetra_SerialDenseMatrix&      elemat1,
       Epetra_SerialDenseVector&      elevec1);
 
+  /*!
+  \brief compute flow rate over boundary for porous media problems
+
+  \param ele (in)           : Boundary element
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+
+  */
+  void PoroFlowRate(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseVector&  elevec1);
+
+  /*!
+  \brief apply boundary integral (pressure at boundary) for porous media problems
+
+  \param ele (in)           : Boundary element
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                            the controling method does not epxect the element to fill
+                            this matrix.
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+
+  */
   void PressureCoupling(
       DRT::ELEMENTS::FluidBoundary*   ele1,
       Teuchos::ParameterList&         params,
@@ -628,8 +671,9 @@ private:
       const int& nnode);
 
   /*!
-  \brief apply boundary integral for porous media problems
+  \brief apply boundary integral (mass flux over boundary in continuity equation) for porous media problems
 
+  \param ele (in)           : Boundary element
   \param params (in)        : ParameterList for communication between control routine
   \param discretization (in): A reference to the underlying discretization
   \param lm (in)            : location vector of this element
@@ -651,6 +695,26 @@ private:
       DRT::Discretization&       discretization,
       std::vector<int>&          lm,
       Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseVector&  elevec1);
+
+  /*!
+  \brief compute flow rate over boundary for porous media problems
+
+  \param ele (in)           : Boundary element
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+
+  */
+  template <DRT::Element::DiscretizationType pdistype>
+  void PoroFlowRate(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
       Epetra_SerialDenseVector&  elevec1);
 
     /*!

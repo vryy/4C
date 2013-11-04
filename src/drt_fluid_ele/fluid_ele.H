@@ -709,15 +709,15 @@ public:
   the weak dirichlet boundary condtion) a surface element will assemble
   into the dofs of a volume element.<br>
 
-  \note The degrees of freedom returned are not neccessarily only nodal dofs.
+  \note The degrees of freedom returned are not necessarily only nodal dofs.
         Depending on the element implementation, output might also include
         element dofs.
 
-  \param dis (in)      : the discretization this element belongs to
-  \param la (out)      : location data for all dofsets of the discretization
+  \param dis (in)        : the discretization this element belongs to
+  \param la (out)        : location data for all dofsets of the discretization
   \param doDirichlet (in): whether to get the Dirichlet flags
-  \param condstring (in): Name of condition to be evaluated
-  \param condstring (in):  List of parameters for use at element level
+  \param condstring (in) : Name of condition to be evaluated
+  \param params (in)     : List of parameters for use at element level
   */
   virtual void LocationVector(const Discretization&   dis,
                               LocationArray&          la,

@@ -55,7 +55,8 @@ enum Action {
     calc_adjoint_systemmat_and_residual,
 //    calc_adjoint_neumann,
     set_general_adjoint_parameter,
-    set_adjoint_time_parameter
+    set_adjoint_time_parameter,
+    calc_volume
 }; // enum Action
 
 /*--------------------------------------------------------------------------

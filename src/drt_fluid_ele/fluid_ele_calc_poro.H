@@ -134,6 +134,23 @@ public:
                              const DRT::UTILS::GaussIntegration & intpoints);
 
 
+    /// Evaluate supporting methods of the element
+    /*!
+      Interface function for supporting methods of the element
+     */
+    virtual int EvaluateService(
+      DRT::ELEMENTS::Fluid*     ele,
+      Teuchos::ParameterList&   params,
+      Teuchos::RCP<MAT::Material> & mat,
+      DRT::Discretization&      discretization,
+      std::vector<int>&         lm,
+      Epetra_SerialDenseMatrix& elemat1,
+      Epetra_SerialDenseMatrix& elemat2,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2,
+      Epetra_SerialDenseVector& elevec3
+      );
+
 protected:
 
     /*!
@@ -858,6 +875,35 @@ protected:
 
   /// get compute RHS of contiuity equation of time step n
   void ComputeOldRHSConti();
+
+  virtual int ComputeVolume(
+      Teuchos::ParameterList&              params,
+      DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
+      DRT::Discretization&            discretization,   //< fluid discretization
+      std::vector<int>&                    lm,               //< location vector for DOF management
+      Epetra_SerialDenseVector&       elevec1           //< reference to element vector to be filled
+      );
+
+  /// Evaluate element ERROR
+  /*!
+      general function to compute the error (analytical solution) for particular problem type
+   */
+  int ComputeError(
+      DRT::ELEMENTS::Fluid*         ele,
+      Teuchos::ParameterList&       params,
+      Teuchos::RCP<MAT::Material>&  mat,
+      DRT::Discretization&          discretization,
+      std::vector<int>&             lm,
+      Epetra_SerialDenseVector&     elevec);
+
+  int ComputeError(
+      DRT::ELEMENTS::Fluid*                ele,
+      Teuchos::ParameterList&              params,
+      Teuchos::RCP<MAT::Material>&         mat,
+      DRT::Discretization&                 discretization,
+      std::vector<int>&                    lm,
+      Epetra_SerialDenseVector&            elevec1,
+      const DRT::UTILS::GaussIntegration & intpoints2);
 
   ///effective viscosity (zero for Darcy flow )
   double visceff_;

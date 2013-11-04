@@ -251,6 +251,27 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   // get thermodynamic pressure at n+1/n+alpha_F
   const double thermpressaf = params.get<double>("thermodynamic pressure",0.0);
 
+  // add potential ALE displacements
+  if (ele->ParentElement()->IsAle())
+  {
+    Teuchos::RCP<const Epetra_Vector>  dispnp;
+    std::vector<double>                mydispnp;
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp != Teuchos::null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for(int idim=0;idim<(nsd_);++idim)
+      {
+        xyze_(idim,inode) += mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   // --------------------------------------------------
@@ -2897,7 +2918,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   }
   default:
   {
-    dserror("not implemented yet\n");
+    dserror("surface/parent element pair not yet implemented. Just do it.\n");
     break;
   }
 
@@ -3089,9 +3110,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     xjm.MultiplyNT(pderiv_loc,xcurr);
     Jmat.MultiplyNT(pderiv_loc,xrefe);
     // jacobian determinant "det(dx/ds)"
-    double det = xjm.Determinant();
+    const double det = xjm.Determinant();
     // jacobian determinant "det(dX/ds)"
-    double detJ = Jmat.Determinant();
+    const double detJ = Jmat.Determinant();
     // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det/detJ;
 
@@ -3405,6 +3426,390 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureCoupling(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroFlowRate(
+                                                 DRT::ELEMENTS::FluidBoundary*    ele,
+                                                 Teuchos::ParameterList&          params,
+                                                 DRT::Discretization&             discretization,
+                                                 std::vector<int>&                plm,
+                                                 Epetra_SerialDenseVector&        elevec1)
+{
+  switch (distype)
+  {
+  // 2D:
+  case DRT::Element::line2:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::quad4)
+    {
+      PoroFlowRate<DRT::Element::quad4>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination line2/quad4 for line/parent pair");
+    }
+    break;
+  }
+  case DRT::Element::line3:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::quad9)
+    {
+      PoroFlowRate<DRT::Element::quad9>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination line3/quad9 for line/parent pair");
+    }
+    break;
+  }
+  // 3D:
+  case DRT::Element::quad4:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::hex8)
+    {
+      PoroFlowRate<DRT::Element::hex8>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8 for surface/parent pair");
+    }
+    break;
+  }
+  case DRT::Element::tri3:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::tet4)
+    {
+      PoroFlowRate<DRT::Element::tet4>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination tri3/tet4 for surface/parent pair");
+    }
+    break;
+  }
+  case DRT::Element::tri6:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::tet10)
+    {
+      PoroFlowRate<DRT::Element::tet10>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination tri6/tet10 for surface/parent pair");
+    }
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::hex27)
+    {
+      PoroFlowRate<DRT::Element::hex27>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination hex27/hex27 for surface/parent pair");
+    }
+    break;
+  }
+  default:
+  {
+    dserror("surface/parent element pair not yet implemented. Just do it.\n");
+    break;
+  }
+
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType pdistype>
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroFlowRate(
+                                                 DRT::ELEMENTS::FluidBoundary*   ele,
+                                                 Teuchos::ParameterList&          params,
+                                                 DRT::Discretization&             discretization,
+                                                 std::vector<int>&                plm,
+                                                 Epetra_SerialDenseVector&        elevec1)
+{
+  // This function is only implemented for 3D and 2D
+  if(bdrynsd_!=2 and bdrynsd_!=1)
+    dserror("PoroBoundary is only implemented for 3D and 2D!");
+
+  // get element location vector and ownerships
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+  ele->DRT::Element::LocationVector(discretization,lm,lmowner,lmstride);
+
+  /// number of parentnodes
+  static const int nenparent    = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+  // get the parent element
+  DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
+
+  const int peleid = pele->Id();
+  //access structure discretization
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  structdis = DRT::Problem::Instance()->GetDis("structure");
+  //get corresponding structure element (it has the same global ID as the scatra element)
+  DRT::Element* structele = structdis->gElement(peleid);
+  if (structele == NULL)
+    dserror("Structure element %i not on local processor", peleid);
+
+  DRT::ELEMENTS::So_Poro_Interface* so_interface = dynamic_cast<DRT::ELEMENTS::So_Poro_Interface*>(structele);
+  if(so_interface == NULL)
+    dserror("cast to so_interface failed!");
+
+  //ask if the structure element has a porosity dof
+  const bool porositydof = so_interface->HasExtraDof();
+
+  // get integration rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
+
+  // displacements
+  Teuchos::RCP<const Epetra_Vector>      dispnp;
+  std::vector<double>                mydispnp;
+  std::vector<double>                parentdispnp;
+
+  dispnp = discretization.GetState("dispnp");
+  if (dispnp!=Teuchos::null)
+  {
+    mydispnp.resize(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    DRT::UTILS::ExtractMyValues(*dispnp,parentdispnp,plm);
+  }
+  dsassert(mydispnp.size()!=0,"no displacement values for boundary element");
+  dsassert(parentdispnp.size()!=0,"no displacement values for parent element");
+
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  for (int inode=0;inode<bdrynen_;++inode)
+    for (int idim=0; idim<nsd_; ++idim)
+      xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+
+  // update element geometry of parent element
+  LINALG::Matrix<nsd_,nenparent>  xrefe; // material coord. of parent element
+  LINALG::Matrix<nsd_,nenparent> xcurr; // current  coord. of parent element
+  {
+    DRT::Node** nodes = pele->Nodes();
+    for (int i=0; i<nenparent; ++i)
+    {
+      for (int j=0; j<nsd_; ++j)
+      {
+        const double* x = nodes[i]->X();
+        xrefe(j,i) = x[j];
+        xcurr(j,i) = xrefe(j,i) + parentdispnp[i*numdofpernode_+j];
+      }
+    }
+  }
+
+  // extract local values from the global vectors
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
+
+  if (velnp==Teuchos::null)
+    dserror("Cannot get state vector 'velnp'");
+  if (gridvel==Teuchos::null)
+    dserror("Cannot get state vector 'gridv'");
+
+  std::vector<double> myvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+  std::vector<double> mygridvel(lm.size());
+  DRT::UTILS::ExtractMyValues(*gridvel,mygridvel,lm);
+
+  // allocate velocity vectors
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
+  LINALG::Matrix<bdrynen_,1> epressnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> edispnp(true);
+  LINALG::Matrix<nsd_,bdrynen_> egridvel(true);
+  LINALG::Matrix<bdrynen_,1> escaaf(true);
+  LINALG::Matrix<bdrynen_,1> eporosity(true);
+
+  // split velocity and pressure, insert into element arrays
+  for (int inode=0;inode<bdrynen_;inode++)
+  {
+    for (int idim=0; idim< nsd_; idim++)
+    {
+      evelnp(idim,inode)   = myvelnp[idim+(inode*numdofpernode_)];
+      edispnp(idim,inode)  = mydispnp[idim+(inode*numdofpernode_)];
+      egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
+    }
+    epressnp(inode) = myvelnp[nsd_+(inode*numdofpernode_)];
+  }
+
+  if(porositydof)
+  {
+    for (int inode=0;inode<bdrynen_;inode++)
+      eporosity(inode) = mydispnp[nsd_+(inode*numdofpernode_)];
+  }
+
+  // get coordinates of gauss points w.r.t. local parent coordinate system
+  Epetra_SerialDenseMatrix pqxg(intpoints.IP().nquad,nsd_);
+  LINALG::Matrix<nsd_,nsd_>  derivtrafo(true);
+
+  DRT::UTILS::BoundaryGPToParentGP<nsd_>( pqxg     ,
+                                          derivtrafo,
+                                          intpoints,
+                                          pdistype ,
+                                          distype  ,
+                                          ele->SurfaceNumber());
+
+
+  //structure velocity at gausspoint
+  LINALG::Matrix<nsd_,1> gridvelint;
+
+  //coordinates of gauss points of parent element
+  LINALG::Matrix<nsd_ , 1>    pxsi(true);
+
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // get shape functions and derivatives in the plane of the element
+    LINALG::Matrix<nenparent,1> pfunct(true);
+    LINALG::Matrix<nsd_,nenparent> pderiv;
+    LINALG::Matrix<nsd_,nenparent> pderiv_loc;
+
+    // coordinates of the current integration point
+    for (int idim=0;idim<nsd_ ;idim++)
+      pxsi(idim) = pqxg(gpid,idim);
+
+    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_loc);
+
+    pderiv.Multiply(derivtrafo,pderiv_loc);
+
+    // get Jacobian matrix and determinant w.r.t. spatial configuration
+    // transposed jacobian "dx/ds"
+    LINALG::Matrix<nsd_,nsd_>  xjm;
+    LINALG::Matrix<nsd_,nsd_> Jmat;
+    xjm.MultiplyNT(pderiv_loc,xcurr);
+    Jmat.MultiplyNT(pderiv_loc,xrefe);
+    // jacobian determinant "det(dx/ds)"
+    const double det = xjm.Determinant();
+    // jacobian determinant "det(dX/ds)"
+    const double detJ = Jmat.Determinant();
+    // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
+    const double J = det/detJ;
+
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+
+    velint_.Multiply(evelnp,funct_);
+    gridvelint.Multiply(egridvel,funct_);
+    double press = epressnp.Dot(funct_);
+
+    //double scalar = escaaf.Dot(funct_);
+
+    double dphi_dp=0.0;
+    double dphi_dJ=0.0;
+    double porosity_gp=0.0;
+
+   // params.set<double>("scalar",scalar);
+
+    if(porositydof)
+    {
+      dserror("not implemented");
+      //porosity_gp = eporosity.Dot(funct_);
+    }
+    else
+    {
+      so_interface->ComputeSurfPorosity(params,
+                                     press,
+                                     J,
+                                     ele->SurfaceNumber(),
+                                     gpid,
+                                     porosity_gp,
+                                     &dphi_dp,
+                                     &dphi_dJ,
+                                     NULL,                  //dphi_dJdp not needed
+                                     NULL,                  //dphi_dJJ not needed
+                                     NULL,                   //dphi_dpp not needed
+                                     true
+                                     );
+    }
+
+    // flowrate = uint o normal
+    const double flowrate = ( velint_.Dot(unitnormal_)//- gridvelint.Dot(unitnormal_)
+        ) * porosity_gp;
+
+    // store flowrate at first dof of each node
+    // use negative value so that inflow is positiv
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      // see "A better consistency for low order stabilized finite element methods"
+      // Jansen, Collis, Whiting, Shakib
+      //
+      // Here the principle is used to bring the flow rate to the outside world!!
+      //
+      // funct_ *  velint * n * fac
+      //   |      |________________|
+      //   |              |
+      //   |         flow rate * fac  -> integral over Gamma
+      //   |
+      // flow rate is distributed to the single nodes of the element
+      // = flow rate per node
+      //
+      // adding up all nodes (ghost elements are handled by the assembling strategy)
+      // -> total flow rate at the desired boundary
+      //
+      // it can be interpreted as a rhs term
+      //
+      //  ( v , u o n)
+      //               Gamma
+      //
+      elevec1[inode*numdofpernode_] += funct_(inode)* fac_ * flowrate;
+
+      // alternative way:
+      //
+      //  velint * n * fac
+      // |________________|
+      //         |
+      //    flow rate * fac  -> integral over Gamma
+      //     = flow rate per element
+      //
+      //  adding up all elements (be aware of ghost elements!!)
+      //  -> total flow rate at the desired boundary
+      //     (is identical to the total flow rate computed above)
+    }
+  }
+}//DRT::ELEMENTS::FluidSurface::ComputeFlowRate
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
                                                  DRT::ELEMENTS::FluidBoundary*    ele,
                                                  Teuchos::ParameterList&          params,
@@ -3455,7 +3860,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FPSICoupling(
   }
   default:
   {
-    dserror(" not implemented yet \n");
+    dserror("surface/parent element pair not yet implemented. Just do it.\n");
     break;
   }
 

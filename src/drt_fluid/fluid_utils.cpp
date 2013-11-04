@@ -542,13 +542,24 @@ void FLD::UTILS::WriteLiftDragToFile(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<int,double> FLD::UTILS::ComputeFlowRates(
+    DRT::Discretization&           dis  ,
+    const RCP<Epetra_Vector>       velnp,
+    const std::string              condstring)
+{
+  return ComputeFlowRates(dis,velnp,Teuchos::null,Teuchos::null,condstring);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeFlowRates(
     DRT::Discretization&           dis  ,
     const RCP<Epetra_Vector>       velnp,
-    const std::string                   condstring)
+    const RCP<Epetra_Vector>       gridv,
+    const RCP<Epetra_Vector>       dispnp,
+    const std::string              condstring)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -577,6 +588,10 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
     // call loop over elements
     dis.ClearState();
     dis.SetState("velnp",velnp);
+    if(dispnp != Teuchos::null)
+      dis.SetState("dispnp",dispnp);
+    if(gridv != Teuchos::null)
+      dis.SetState("gridv",gridv);
 
     dis.EvaluateCondition(eleparams,flowrates,condstring,condID);
     dis.ClearState();
@@ -596,6 +611,55 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
     //ATTENTION: new definition: outflow is positive and inflow is negative
     volumeflowrateperline[condID] = flowrate;
   }
+  return volumeflowrateperline;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<int,double> FLD::UTILS::ComputeVolume(
+    DRT::Discretization&           dis  ,
+    const RCP<Epetra_Vector>       velnp,
+    const RCP<Epetra_Vector>       gridv,
+    const RCP<Epetra_Vector>       dispnp)
+{
+  Teuchos::ParameterList eleparams;
+  // set action for elements
+  eleparams.set<int>("action",FLD::calc_volume);
+
+  // note that the flowrate is not yet divided by the area
+  std::map<int,double> volumeflowrateperline;
+
+    // get a vector layout from the discretization to construct matching
+    // vectors and matrices local <-> global dof numbering
+    const Epetra_Map* dofrowmap = dis.DofRowMap();
+
+    // create vector (+ initialization with zeros)
+    Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
+
+    // call loop over elements
+    dis.ClearState();
+    dis.SetState("velnp",velnp);
+    dis.SetState("dispnp",dispnp);
+    dis.SetState("gridv",gridv);
+
+    dis.Evaluate(eleparams,Teuchos::null,flowrates);
+    dis.ClearState();
+
+    double local_flowrate = 0.0;
+    for (int i=0; i < dofrowmap->NumMyElements(); i++)
+    {
+      local_flowrate +=((*flowrates)[i]);
+    }
+
+    double flowrate = 0.0;
+    dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
+
+    //if(dofrowmap->Comm().MyPID()==0)
+    //  std::cout << "gobal flow rate = " << flowrate << "\t condition ID = " << condID << std::endl;
+
+    //ATTENTION: new definition: outflow is positive and inflow is negative
+    volumeflowrateperline[0] = flowrate;
+
   return volumeflowrateperline;
 }
 
@@ -668,35 +732,36 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::WriteFlowRatesToFile(
+void FLD::UTILS::WriteDoublesToFile(
   const double                     time,
   const int                        step,
-  const std::map<int,double>&      flowrates
+  const std::map<int,double>&      data,
+  const std::string                name
   )
 {
-  if (flowrates.empty())
-    dserror("flowratevector is empty");
+  if (data.empty())
+    dserror("data vector is empty");
 
   // print to file
   std::ostringstream header;
   header << std::right << std::setw(16) << "Time"
          << std::right << std::setw(10) << "Step"
          << std::right << std::setw(10) << "ID"
-         << std::right << std::setw(16) << "Flowrate";
+         << std::right << std::setw(16) << name;
 
-  for(std::map<int,double >::const_iterator flowrate = flowrates.begin(); flowrate != flowrates.end(); ++flowrate)
+  for(std::map<int,double >::const_iterator iter = data.begin(); iter != data.end(); ++iter)
   {
     std::ostringstream s;
     s << std::right << std::setw(16) << std::scientific << time
       << std::right << std::setw(10) << std::scientific << step
-      << std::right << std::setw(10) << std::scientific << flowrate->first
-      << std::right << std::setw(16) << std::scientific << flowrate->second;
+      << std::right << std::setw(10) << std::scientific << iter->first
+      << std::right << std::setw(16) << std::scientific << iter->second;
 
     std::ostringstream slabel;
-    slabel << std::setw(3) << std::setfill('0') << flowrate->first;
+    slabel << std::setw(3) << std::setfill('0') << iter->first;
     std::ofstream f;
     const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
-                            + ".flowrate_ID_"+slabel.str()+".txt";
+                            + "." + name + "_ID_"+slabel.str()+".txt";
 
     if (step <= 1)
       f.open(fname.c_str(),std::fstream::trunc); //f << header.str() << std::endl;
@@ -707,4 +772,3 @@ void FLD::UTILS::WriteFlowRatesToFile(
     f.close();
   }
 }
-

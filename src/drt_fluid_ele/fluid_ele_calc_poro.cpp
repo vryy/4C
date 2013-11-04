@@ -17,6 +17,7 @@ Maintainer: Anh-Tu Vuong
 #include "fluid_ele.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_utils.H"
+#include "fluid_ele_action.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
@@ -126,6 +127,44 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PreEvaluate(
 {
  //do nothing
   return;
+}
+
+/*----------------------------------------------------------------------*
+ * Evaluate supporting methods of the element
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateService(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    Teuchos::RCP<MAT::Material> & mat,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
+{
+  // get the action required
+  const FLD::Action act = DRT::INPUT::get<FLD::Action>(params,"action");
+
+  switch(act)
+  {
+  case FLD::calc_volume:
+  {
+    return ComputeVolume(params,ele, discretization, lm, elevec1);
+    break;
+  }
+  case FLD::calc_fluid_error:
+  {
+    return ComputeError(ele, params, mat, discretization, lm, elevec1);
+    break;
+  }
+  default:
+    dserror("unknown action for EvaluateService() in poro fluid element");
+    break;
+  }
+  return -1;
 }
 
 /*----------------------------------------------------------------------*
@@ -920,7 +959,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
       preforce(vi) += rhsfac_rhscon*my::funct_(vi) ;
     }
 
-    //additional left hand side term as history values are multiplied by dphi_dp
+    //additional left hand side term as history values are multiplied by dphi_dp^(n+1)
     for (int vi=0; vi<my::nen_; ++vi)
     {
       for (int ui=0; ui<my::nen_; ++ui)
@@ -1119,7 +1158,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
        preforce(vi) -= -1.0* rhsfac * porosity_ * deriv_vel(vi)
                   ;
     }
-
 
     // pressure terms on left-hand side
     /*
@@ -2671,7 +2709,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 
     // part 1: derivative of 1/det
 
-    double v = visceff_*timefac*my::fac_;
+    double v = visceff_*timefac*my::fac_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double derinvJ0 = -v*(my::deriv_(0,ui)*xji_00 + my::deriv_(1,ui)*xji_01 + my::deriv_(2,ui)*xji_02);
@@ -2759,7 +2797,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 
     // part 2: derivative of viscosity residual
 
-     v = timefacfac*visceff_/my::det_;
+     v = timefacfac*visceff_/my::det_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double v0 = - my::vderiv_(0,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
@@ -3641,7 +3679,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
 
     // part 1: derivative of det
 
-    double v = visceff_*timefac*my::fac_;
+    double v = visceff_*timefac*my::fac_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double derinvJ0 = -v*(my::deriv_(0,ui)*my::xji_(0,0) + my::deriv_(1,ui)*my::xji_(0,1) );
@@ -3686,7 +3724,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
 
     // part 2: derivative of viscosity residual
 
-     v = timefacfac*visceff_/my::det_;
+     v = timefacfac*visceff_/my::det_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double v0 = - my::vderiv_(0,0)*(my::xji_(1,0)*my::deriv_(1,ui) + my::xji_(1,0)*my::deriv_(1,ui) )
@@ -5041,6 +5079,277 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
     }
   }
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
+    Teuchos::ParameterList&              params,
+    DRT::ELEMENTS::Fluid*           ele,
+    DRT::Discretization&            discretization,
+    std::vector<int>&               lm,
+    Epetra_SerialDenseVector&       elevec1)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+  // set element id
+  my::eid_ = ele->Id();
+
+  LINALG::Matrix<my::nsd_,my::nen_> edispnp(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+  // get new node positions of ALE mesh
+  my::xyze_ += edispnp;
+
+  // integration loop
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+
+    //-----------------------------------auxilary variables for computing the porosity
+    porosity_=0.0;
+
+    // compute scalar at n+alpha_F or n+1
+    //const double scalaraf = my::funct_.Dot(escaaf);
+    //params.set<double>("scalar",scalaraf);
+
+    ComputePorosity(  params,
+                      press_,
+                      J_,
+                      *(iquad),
+                      my::funct_,
+                      NULL,
+                      porosity_,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL, //dphi_dJJ not needed
+                      NULL,
+                      false);
+
+    for (int nodes = 0; nodes < my::nen_; nodes++) // loop over nodes
+    {
+      elevec1((my::numdofpernode_) * nodes) += my::funct_(nodes) * porosity_* my::fac_;
+    }
+  } // end of integration loop
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ * Action type: Compute Error                              shahmiri 01/12
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
+    DRT::ELEMENTS::Fluid*           ele,
+    Teuchos::ParameterList&         params,
+    Teuchos::RCP<MAT::Material>&    mat,
+    DRT::Discretization&            discretization,
+    std::vector<int>&               lm,
+    Epetra_SerialDenseVector&       elevec1
+    )
+{
+  // integrations points and weights
+  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+  // degree 5
+  const DRT::UTILS::GaussIntegration intpoints(distype, 5);
+  return ComputeError( ele, params, mat,
+                       discretization, lm,
+                       elevec1, intpoints);
+}
+
+/*----------------------------------------------------------------------*
+ * Action type: Compute Error                              shahmiri 01/12
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
+    DRT::ELEMENTS::Fluid*           ele,
+    Teuchos::ParameterList&         params,
+    Teuchos::RCP<MAT::Material>&    mat,
+    DRT::Discretization&            discretization,
+    std::vector<int>&               lm,
+    Epetra_SerialDenseVector&       elevec1,
+    const DRT::UTILS::GaussIntegration & intpoints
+    )
+{
+  // analytical solution
+  LINALG::Matrix<my::nsd_,1>  u(true);
+  double p = 0.0;
+
+  // error
+  LINALG::Matrix<my::nsd_,1> deltavel(true);
+  double         deltap=0.0;
+
+  const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
+
+  //----------------------------------------------------------------------------
+  //   Extract velocity/pressure from global vectors
+  //----------------------------------------------------------------------------
+
+  // fill the local element vector/matrix with the global values
+  // af_genalpha: velocity/pressure at time n+alpha_F
+  // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
+  // ost:         velocity/pressure at time n+1
+  LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
+  LINALG::Matrix<my::nen_,1>    epreaf(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelaf, &epreaf,"velaf");
+
+  // np_genalpha: additional vector for velocity at time n+1
+  LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
+  LINALG::Matrix<my::nen_,1>    eprenp(true);
+  if (my::fldpara_->IsGenalphaNP())
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, &eprenp,"velnp");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+  // set element id
+  my::eid_ = ele->Id();
+
+  LINALG::Matrix<my::nsd_,my::nen_>       edispnp(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+  // get new node positions for isale
+  my::xyze_ += edispnp;
+
+//------------------------------------------------------------------
+//                       INTEGRATION LOOP
+//------------------------------------------------------------------
+
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+
+    // get velocity at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    my::velint_.Multiply(evelaf,my::funct_);
+
+    // get pressure at integration point
+    // (value at n+alpha_F for generalized-alpha scheme,
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    double preint(true);
+    if(my::fldpara_->IsGenalphaNP())
+      preint= my::funct_.Dot(eprenp);
+    else
+      preint = my::funct_.Dot(epreaf);
+
+    /* H1 -error norm
+    // compute first derivative of the velocity
+    LINALG::Matrix<my::nsd_,my::nsd_> dervelint;
+    dervelint.MultiplyNT(evelaf,derxy_);
+    */
+
+    // get coordinates at integration point
+    LINALG::Matrix<my::nsd_,1> xyzint(true);
+    xyzint.Multiply(my::xyze_,my::funct_);
+
+    //  the error is evaluated at the specific time of the used time integration scheme
+    //  n+alpha_F for generalized-alpha scheme
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    const double t = my::fldpara_->Time();
+
+    // Compute analytical solution
+    switch(calcerr)
+    {
+    case INPAR::FLUID::byfunct1:
+    {
+      const int func_no = 1;
+
+
+      // function evaluation requires a 3D position vector!!
+      double position[3];
+
+      if (my::nsd_ == 2)
+      {
+
+        position[0] = xyzint(0);
+        position[1] = xyzint(1);
+        position[2] = 0.0;
+      }
+      else if(my::nsd_ == 3)
+      {
+        position[0] = xyzint(0);
+        position[1] = xyzint(1);
+        position[2] = xyzint(2);
+      }
+      else dserror("invalid nsd %d", my::nsd_);
+
+      if(my::nsd_ == 2)
+      {
+        const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
+        const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
+        const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+
+        u(0) = u_exact_x;
+        u(1) = u_exact_y;
+        p    = p_exact;
+      }
+      else if(my::nsd_==3)
+      {
+        const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
+        const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
+        const double u_exact_z = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+        const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(3,position,t,NULL);
+
+        u(0) = u_exact_x;
+        u(1) = u_exact_y;
+        u(2) = u_exact_z;
+        p    = p_exact;
+      }
+      else dserror("invalid dimension");
+
+    }
+    break;
+    default:
+      dserror("analytical solution is not defined");
+      break;
+    }
+
+    // compute difference between analytical solution and numerical solution
+    deltap    = preint - p;
+    deltavel.Update(1.0, my::velint_, -1.0, u);
+
+    /* H1 -error norm
+    // compute error for first velocity derivative
+    for(int i=0;i<my::nsd_;++i)
+      for(int j=0;j<my::nsd_;++j)
+        deltadervel(i,j)= dervelint(i,j) - dervel(i,j);
+    */
+
+    // L2 error
+    // 0: vel_mag
+    // 1: p
+    // 2: vel_mag,analytical
+    // 3: p_analytic
+    // (4: vel_x)
+    // (5: vel_y)
+    // (6: vel_z)
+    for (int isd=0;isd<my::nsd_;isd++)
+    {
+      elevec1[0] += deltavel(isd)*deltavel(isd)*my::fac_;
+      //integrate analytical velocity (computation of relative error)
+      elevec1[2] += u(isd)*u(isd)*my::fac_;
+      // velocity components
+      //elevec1[isd+4] += deltavel(isd)*deltavel(isd)*fac_;
+    }
+    elevec1[1] += deltap*deltap*my::fac_;
+    //integrate analytical pressure (computation of relative error)
+    elevec1[3] += p*p*my::fac_;
+
+    /*
+    //H1-error norm: first derivative of the velocity
+    elevec1[4] += deltadervel.Dot(deltadervel)*fac_;
+    */
+  }
+
+  return 0;
 }
 
 /*----------------------------------------------------------------------*

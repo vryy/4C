@@ -91,12 +91,34 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   // general action to calculate the flow rate
   case FLD::calc_flowrate:
   {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ComputeFlowRate(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1);
+    // pointer to class FluidEleParameter (access to the general parameter)
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    switch(fldpara->PhysicalType())
+    {
+    case INPAR::FLUID::incompressible:
+    {
+      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ComputeFlowRate(
+          this,
+          params,
+          discretization,
+          lm,
+          elevec1);
+      break;
+    }
+    case INPAR::FLUID::poro:
+    {
+      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PoroFlowRate(
+          this,
+          params,
+          discretization,
+          lm,
+          elevec1);
+      break;
+    }
+    default:
+      dserror("action 'calc_flowrate' not implemented for this physical type");
+    break;
+    }
     break;
   }
   case FLD::flowratederiv:
@@ -435,10 +457,37 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
     //       as input in the respective evaluate routines
     parent_->LocationVector(dis,la,doDirichlet);
     break;
+  case FLD::calc_flowrate:
+  {
+    // pointer to class FluidEleParameter (access to the general parameter)
+    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+    switch(fldpara->PhysicalType())
+    {
+    case INPAR::FLUID::incompressible:
+    {
+      DRT::Element::LocationVector(dis,la,doDirichlet);
+      break;
+    }
+    case INPAR::FLUID::poro:
+    {
+      // special cases: the boundary element assembles also into
+      // the inner dofs of its parent element
+      // note: using these actions, the element will get the parent location vector
+      //       as input in the respective evaluate routines
+      parent_->LocationVector(dis,la,doDirichlet);
+      break;
+    }
+    default:
+      dserror("action 'calc_flowrate' not implemented for this physical type");
+    break;
+    }
+    break;
+  }
   case FLD::ba_none:
     dserror("No action supplied");
     break;
   default:
+    // standard case: element assembles into its own dofs only
     DRT::Element::LocationVector(dis,la,doDirichlet);
     break;
   }

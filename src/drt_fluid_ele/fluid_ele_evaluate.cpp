@@ -929,8 +929,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::calc_divop:
     case FLD::calc_mat_deriv_u_and_rot_u:
     case FLD::void_fraction_gaussian_integration:
+    case FLD::calc_volume:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->EvaluateService(this,
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->EvaluateService(this,
                                                                        params,
                                                                        mat,
                                                                        discretization,

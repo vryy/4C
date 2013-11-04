@@ -473,7 +473,20 @@ std::map<int,double> ComputeFlowRates(
     const std::string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
     );
 
+std::map<int,double> ComputeFlowRates(
+    DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
+    const RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
+    const RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
+    const RCP<Epetra_Vector>       dispnp,         ///< solution vector with velocities (and pressure)
+    const std::string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
+    );
 
+std::map<int,double> ComputeVolume(
+    DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
+    const RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
+    const RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
+    const RCP<Epetra_Vector>       dispnp         ///< solution vector with velocities (and pressure)
+    );
 
 /*!
  * \brief proc 0 writes the flow rate values for each condition ID to a file
@@ -481,12 +494,19 @@ std::map<int,double> ComputeFlowRates(
  * \author mayer
  * \date 01/10
  */
-void WriteFlowRatesToFile(
+void WriteDoublesToFile(
+    const double                     time,
+    const int                        step,
+    const std::map<int,double>&      data,
+    const std::string                name
+  );
+
+
+void WriteVolumeToFile(
   const double                     time,
   const int                        step,
   const std::map<int,double>&      flowrates
   );
-
 
 /*!
   \brief integrate impulse rate over surfaces

@@ -946,6 +946,96 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
 }
 
 /*----------------------------------------------------------------------*
+ |  Integrate a Surface Neumann boundary condition (public)  |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList&   params,
+                                          DRT::Discretization&      discretization,
+                                          DRT::Condition&           condition,
+                                          std::vector<int>&         lm,
+                                          Epetra_SerialDenseVector& elevec1,
+                                          Epetra_SerialDenseMatrix* elemat1)
+{
+  LINALG::Matrix<my::numdim_,my::numnod_> disp(true);
+  LINALG::Matrix<my::numnod_,1> myporosity(true);
+  my::ExtractValuesFromGlobalVector(discretization,0,lm, &disp, &myporosity,"displacement");
+
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;  // default time curve factor
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+  /*----------------------------------------------------- geometry update */
+  // update element geometry
+  LINALG::Matrix<my::numdim_,my::numnod_> xrefe; // material coord. of element
+  LINALG::Matrix<my::numdim_,my::numnod_> xcurr; // current  coord. of element
+
+  DRT::Node** nodes = my::Nodes();
+  for (int i=0; i<my::numnod_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    for(int j=0; j<my::numdim_;j++)
+    {
+      xrefe(j,i) = x[j];
+      xcurr(j,i) = xrefe(j,i) + disp(j,i);
+    }
+  }
+
+
+  // get values and switches from the condition
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
+
+  LINALG::Matrix<my::numdim_,my::numnod_> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  // in case of prestressing, build defgrd wrt to last stored configuration
+  // CAUTION: defgrd(true): filled with zeros!
+  LINALG::Matrix<my::numdim_,my::numdim_> defgrd(true);
+  LINALG::Matrix<my::numnod_,1> shapefct;
+  LINALG::Matrix<my::numdim_,my::numnod_> deriv ;
+
+  LINALG::Matrix<my::numstr_,1> fstress(true);
+
+  for (int gp=0; gp<my::numgpt_; ++gp)
+  {
+    //evaluate shape functions and derivatives at integration point
+    my::ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
+
+    //jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    my::ComputeJacobianDeterminant(gp,xcurr,deriv);
+
+    /*------------------------------------ integration factor  -------*/
+    double fac=0;
+    fac = my::detJ_[gp]*my::intpoints_.Weight(gp);
+
+    // load vector ar
+    double ar[2];
+    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
+    for (int i=0; i<my::numdim_; ++i)
+    {
+      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefac;
+    }
+
+    // add load components
+    for (int node=0; node< my::numnod_; ++node)
+      for (int dim=0; dim<my::numdim_; ++dim)
+         elevec1[node*noddof_+dim] += shapefct(node) * ar[dim];
+
+  } // for (int ip=0; ip<totngp; ++ip)
+
+  // finished
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>;
