@@ -13,19 +13,19 @@
 
 /*-------------------------------------------------------------------------------------------------------------*
           Project the integration rule available in the local coordinates of the integationcells to the
-          local coordinates of volumecells
+          local coordinates of background element
  *-------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( GEO::CUT::IntegrationCell * ic )
+Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( const std::vector<GEO::CUT::Point*> & cpoints,
+                                                                                Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic )
 {
   const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   LINALG::Matrix<3, nen> xie;
-
-  const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
   if ( cpoints.size() != nen )
     throw std::runtime_error( "non-matching number of points" );
 
+	// Find the local coordinates of given corner points w.r to background ELementHandle
   for ( unsigned i=0; i<nen; ++i )
   {
     GEO::CUT::Point * p = cpoints[i];
@@ -33,9 +33,12 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
     std::copy( xi.A(), xi.A()+3, &xie( 0, i ) );
   }
 
-  Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
-    DRT::UTILS::GaussIntegration::CreateProjected<distype>( xie, ic->CubatureDegree( Shape() ) );
-  return gp;
+  DRT::UTILS::GaussIntegration intpoints( gp_ic );
+  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( gp_ic->NumPoints() ) );
+
+	// Perform actual mapping to correct local coordinates
+  DRT::UTILS::GaussIntegration::ProjectGaussPoints<distype> ( xie, intpoints, cgp );
+  return cgp;
 }
 
 /*----------------------------------------------------------------------------------------------------------*
@@ -52,74 +55,140 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   intpoints.clear();
   intpoints.reserve( cells.size() );
 
-
+  //---------------
+  // For tessellation, we have Gauss points calculated at local coordinates of each integrationcells
+  // we transform this to local coordinates of background ElementHandle
+  //----------------
   if(gausstype == "Tessellation")
   {
-        for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+    for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      GEO::CUT::VolumeCell * vc = *i;
+
+      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+          Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+
+      const plain_integrationcell_set & cells = vc->IntegrationCells();
+      for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        GEO::CUT::IntegrationCell * ic = *i;
+
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = DRT::UTILS::GaussPointCache::Instance().
+                                                                    Create( ic->Shape(), ic->CubatureDegree( ic->Shape() ) );
+        const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
+
+        switch ( ic->Shape() )
         {
-            GEO::CUT::VolumeCell * vc = *i;
-
-            Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-                Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
-
-            const plain_integrationcell_set & cells = vc->IntegrationCells();
-            for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-            {
-              GEO::CUT::IntegrationCell * ic = *i;
-              switch ( ic->Shape() )
-              {
-              case DRT::Element::hex8:
-              {
-                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( ic );
-                gpc->Append( gp );
-                break;
-              }
-              case DRT::Element::tet4:
-              {
-                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( ic );
-                gpc->Append( gp );
-                break;
-              }
-              case DRT::Element::wedge6:
-              {
-                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( ic );
-                gpc->Append( gp );
-                break;
-              }
-              case DRT::Element::pyramid5:
-              {
-                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( ic );
-                gpc->Append( gp );
-                break;
-              }
-              default:
-                throw std::runtime_error( "unsupported integration cell type" );
-              }
-          }
-
-        intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+        case DRT::Element::hex8:
+        {
+          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
+          gpc->Append( gp );
+          break;
         }
+        case DRT::Element::tet4:
+        {
+          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
+          gpc->Append( gp );
+          break;
+        }
+        case DRT::Element::wedge6:
+        {
+          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( cpoints, gp_ic );
+          gpc->Append( gp );
+          break;
+        }
+        case DRT::Element::pyramid5:
+        {
+          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( cpoints, gp_ic );
+          gpc->Append( gp );
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported integration cell type" );
+        }
+      }
+
+    intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+    }
   }
 
-  else if( gausstype == "MomentFitting" || gausstype=="DirectDivergence" )
+  //-------------------
+  // For MomentFitting, we have Gauss points that are calculated w.r to local coordinates of linear shadow element
+  // If background ElementHandle is linear, then no need for any mapping
+  // Else, we map these points to local coordinates of corresponding Quad element
+  //-------------------
+  else if( gausstype == "MomentFitting" )
   {
-       for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
-       {
-               GEO::CUT::VolumeCell *vc = *i;
-               Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
-               Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-                        Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
-               gpc->Append(gp);
-               intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
-       }
+    for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
+    {
+      GEO::CUT::VolumeCell *vc = *i;
+
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = vc->GetGaussRule();
+      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+                      Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+
+      const std::vector<GEO::CUT::Point*> & cpoints = vc->ParentElement()->Points();
+
+      switch( Shape() )
+      {
+      case DRT::Element::hex8:
+      case DRT::Element::tet4:
+      case DRT::Element::wedge6:
+      case DRT::Element::pyramid5:
+      {
+        gpc->Append(gp_ic);
+        break;
+      }
+
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      default:
+      {
+        dserror("element handle for this element is not available\n");
+        break;
+      }
+      }
+
+      intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+    }
   }
 
+  //-------------------
+  // For DirectDivergence, we calculate Gauss points at the correct local coord. during construction itself
+  // This method is handled separately because
+  // 1. main Gauss pts should be mapped w.r to each facet of vcell
+  //         --> element volume mapping as done for tessellation and moment fitting do not work
+  // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
+  //-------------------
+  else if( gausstype=="DirectDivergence" )
+  {
+    for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
+    {
+      GEO::CUT::VolumeCell *vc = *i;
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
+      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+               Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+      gpc->Append(gp);
+      intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+    }
+  }
 
   /*if(IsCut())
   {
 	  static int eeno=0;
 	  eeno++;
-	  if(eeno==1 || eeno==2 || eeno==3)
+	  if(1)//eeno==1 || eeno==2 || eeno==3)
 	  {
   for(std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin();i!=intpoints.end();i++)
   {
@@ -249,29 +318,34 @@ Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPoi
         for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
         {
           GEO::CUT::IntegrationCell * ic = *i;
+
+          Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = DRT::UTILS::GaussPointCache::Instance().
+                                                                              Create( ic->Shape(), ic->CubatureDegree( ic->Shape() ) );
+          const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
+
           switch ( ic->Shape() )
           {
           case DRT::Element::hex8:
           {
-            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( ic );
+            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
             gpc->Append( gp );
             break;
           }
           case DRT::Element::tet4:
           {
-            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( ic );
+            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
             gpc->Append( gp );
             break;
           }
           case DRT::Element::wedge6:
           {
-            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( ic );
+            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( cpoints, gp_ic );
             gpc->Append( gp );
             break;
           }
           case DRT::Element::pyramid5:
           {
-            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( ic );
+            Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( cpoints, gp_ic );
             gpc->Append( gp );
             break;
           }
@@ -422,10 +496,6 @@ double det_ele =0.0;
 //  derxy_.Multiply(xji_,deriv_);
 
 }
-
-
-
-
     cgp->Append( xi , iquad.Weight()*det / det_ele);
   }
   return cgp;
@@ -678,13 +748,13 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLevelset( LevelSetIntersect
       {
       case DRT::Element::tri3:
       {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = side->CreateProjected<DRT::Element::tri3>( bc );
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = side->CreateProjected<DRT::Element::tri3, GEO::CUT::BoundaryCell *>( bc );
         cell_points.push_back( DRT::UTILS::GaussIntegration( gp ) );
         break;
       }
       case DRT::Element::quad4:
       {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = side->CreateProjected<DRT::Element::quad4>( bc );
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = side->CreateProjected<DRT::Element::quad4, GEO::CUT::BoundaryCell *>( bc );
         cell_points.push_back( DRT::UTILS::GaussIntegration( gp ) );
         break;
       }
@@ -1081,7 +1151,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = node21_id;
   nids[6] = node26_id;
   nids[7] = node24_id;
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub1 = mesh.GetElement( -1, nids, *top_data );
+  sub1->setAsShadowElem();
+  sub1->setQuadCorners( mesh, nodes );
+  sub1->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub1 );
 
   nids[0] = nodes[ 8];
   nids[1] = nodes[ 1];
@@ -1091,7 +1165,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[13];
   nids[6] = node22_id;
   nids[7] = node26_id;
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub2 = mesh.GetElement( -1, nids, *top_data );
+  sub2->setAsShadowElem();
+  sub2->setQuadCorners( mesh, nodes );
+  sub2->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub2 );
 
   nids[0] = node20_id;
   nids[1] = nodes[ 9];
@@ -1101,7 +1179,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = node22_id;
   nids[6] = nodes[14];
   nids[7] = node23_id;
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub3 = mesh.GetElement( -1, nids, *top_data );
+  sub3->setAsShadowElem();
+  sub3->setQuadCorners( mesh, nodes );
+  sub3->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub3 );
 
   nids[0] = nodes[11];
   nids[1] = node20_id;
@@ -1111,7 +1193,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = node26_id;
   nids[6] = node23_id;
   nids[7] = nodes[15];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub4 = mesh.GetElement( -1, nids, *top_data );
+  sub4->setAsShadowElem();
+  sub4->setQuadCorners( mesh, nodes );
+  sub4->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub4 );
 
   /////////////////////////////////////////////////////////////////
 
@@ -1123,7 +1209,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[16];
   nids[6] = node25_id;
   nids[7] = nodes[19];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub5 = mesh.GetElement( -1, nids, *top_data );
+  sub5->setAsShadowElem();
+  sub5->setQuadCorners( mesh, nodes );
+  sub5->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub5 );
 
   nids[0] = node21_id;
   nids[1] = nodes[13];
@@ -1133,7 +1223,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[ 5];
   nids[6] = nodes[17];
   nids[7] = node25_id;
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub6 = mesh.GetElement( -1, nids, *top_data );
+  sub6->setAsShadowElem();
+  sub6->setQuadCorners( mesh, nodes );
+  sub6->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub6 );
 
   nids[0] = node26_id;
   nids[1] = node22_id;
@@ -1143,7 +1237,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[17];
   nids[6] = nodes[ 6];
   nids[7] = nodes[18];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub7 = mesh.GetElement( -1, nids, *top_data );
+  sub7->setAsShadowElem();
+  sub7->setQuadCorners( mesh, nodes );
+  sub7->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub7 );
 
   nids[0] = node24_id;
   nids[1] = node26_id;
@@ -1153,7 +1251,11 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = node25_id;
   nids[6] = nodes[18];
   nids[7] = nodes[ 7];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub8 = mesh.GetElement( -1, nids, *top_data );
+  sub8->setAsShadowElem();
+  sub8->setQuadCorners( mesh, nodes );
+  sub8->setQuadShape( DRT::Element::hex20 );
+  subelements_.push_back( sub8 );
 }
 
 GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nodes )
@@ -1180,7 +1282,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[21];
   nids[6] = nodes[26];
   nids[7] = nodes[24];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub1 = mesh.GetElement( -1, nids, *top_data );
+  sub1->setAsShadowElem();
+  sub1->setQuadCorners( mesh, nodes );
+  sub1->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub1 );
 
   nids[0] = nodes[ 8];
   nids[1] = nodes[ 1];
@@ -1190,7 +1296,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[13];
   nids[6] = nodes[22];
   nids[7] = nodes[26];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub2 = mesh.GetElement( -1, nids, *top_data );
+  sub2->setAsShadowElem();
+  sub2->setQuadCorners( mesh, nodes );
+  sub2->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub2 );
 
   nids[0] = nodes[20];
   nids[1] = nodes[ 9];
@@ -1200,7 +1310,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[22];
   nids[6] = nodes[14];
   nids[7] = nodes[23];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub3 = mesh.GetElement( -1, nids, *top_data );
+  sub3->setAsShadowElem();
+  sub3->setQuadCorners( mesh, nodes );
+  sub3->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub3 );
 
   nids[0] = nodes[11];
   nids[1] = nodes[20];
@@ -1210,7 +1324,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[26];
   nids[6] = nodes[23];
   nids[7] = nodes[15];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub4 = mesh.GetElement( -1, nids, *top_data );
+  sub4->setAsShadowElem();
+  sub4->setQuadCorners( mesh, nodes );
+  sub4->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub4 );
 
   /////////////////////////////////////////////////////////////////
 
@@ -1222,7 +1340,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[16];
   nids[6] = nodes[25];
   nids[7] = nodes[19];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub5 = mesh.GetElement( -1, nids, *top_data );
+  sub5->setAsShadowElem();
+  sub5->setQuadCorners( mesh, nodes );
+  sub5->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub5 );
 
   nids[0] = nodes[21];
   nids[1] = nodes[13];
@@ -1232,7 +1354,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[ 5];
   nids[6] = nodes[17];
   nids[7] = nodes[25];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub6 = mesh.GetElement( -1, nids, *top_data );
+  sub6->setAsShadowElem();
+  sub6->setQuadCorners( mesh, nodes );
+  sub6->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub6 );
 
   nids[0] = nodes[26];
   nids[1] = nodes[22];
@@ -1242,7 +1368,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[17];
   nids[6] = nodes[ 6];
   nids[7] = nodes[18];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub7 = mesh.GetElement( -1, nids, *top_data );
+  sub7->setAsShadowElem();
+  sub7->setQuadCorners( mesh, nodes );
+  sub7->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub7 );
 
   nids[0] = nodes[24];
   nids[1] = nodes[26];
@@ -1252,7 +1382,11 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nids[5] = nodes[25];
   nids[6] = nodes[18];
   nids[7] = nodes[ 7];
-  subelements_.push_back( mesh.GetElement( -1, nids, *top_data ) );
+  Element* sub8 = mesh.GetElement( -1, nids, *top_data );
+  sub8->setAsShadowElem();
+  sub8->setQuadCorners( mesh, nodes );
+  sub8->setQuadShape( DRT::Element::hex27 );
+  subelements_.push_back( sub8 );
 }
 
 GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nids )
@@ -1275,25 +1409,41 @@ GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const st
   subnids[1] = nids[ 4];
   subnids[2] = nids[ 6];
   subnids[3] = nids[ 7];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub1 = mesh.GetElement( -1, subnids, *top_data );
+  sub1->setAsShadowElem();
+  sub1->setQuadCorners( mesh, nids );
+  sub1->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub1 );
 
   subnids[0] = nids[ 4];
   subnids[1] = nids[ 1];
   subnids[2] = nids[ 5];
   subnids[3] = nids[ 8];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub2 = mesh.GetElement( -1, subnids, *top_data );
+  sub2->setAsShadowElem();
+  sub2->setQuadCorners( mesh, nids );
+  sub2->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub2 );
 
   subnids[0] = nids[ 6];
   subnids[1] = nids[ 5];
   subnids[2] = nids[ 2];
   subnids[3] = nids[ 9];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub3 = mesh.GetElement( -1, subnids, *top_data );
+  sub3->setAsShadowElem();
+  sub3->setQuadCorners( mesh, nids );
+  sub3->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub3 );
 
   subnids[0] = nids[ 7];
   subnids[1] = nids[ 8];
   subnids[2] = nids[ 9];
   subnids[3] = nids[ 3];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub4 = mesh.GetElement( -1, subnids, *top_data );
+  sub4->setAsShadowElem();
+  sub4->setQuadCorners( mesh, nids );
+  sub4->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub4 );
 
   /////////////////////////////////////////////////////////////////
 
@@ -1301,38 +1451,47 @@ GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const st
   subnids[1] = nids[ 5];
   subnids[2] = nids[ 6];
   subnids[3] = nids[ 8];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub5 = mesh.GetElement( -1, subnids, *top_data );
+  sub5->setAsShadowElem();
+  sub5->setQuadCorners( mesh, nids );
+  sub5->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub5 );
 
   subnids[0] = nids[ 6];
   subnids[1] = nids[ 9];
   subnids[2] = nids[ 7];
   subnids[3] = nids[ 8];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub6 = mesh.GetElement( -1, subnids, *top_data );
+  sub6->setAsShadowElem();
+  sub6->setQuadCorners( mesh, nids );
+  sub6->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub6 );
 
   subnids[0] = nids[ 4];
   subnids[1] = nids[ 6];
   subnids[2] = nids[ 7];
   subnids[3] = nids[ 8];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub7 = mesh.GetElement( -1, subnids, *top_data );
+  sub7->setAsShadowElem();
+  sub7->setQuadCorners( mesh, nids );
+  sub7->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub7 );
 
   subnids[0] = nids[ 9];
   subnids[1] = nids[ 6];
   subnids[2] = nids[ 5];
   subnids[3] = nids[ 8];
-  subelements_.push_back( mesh.GetElement( -1, subnids, *top_data ) );
+  Element* sub8 = mesh.GetElement( -1, subnids, *top_data );
+  sub8->setAsShadowElem();
+  sub8->setQuadCorners( mesh, nids );
+  sub8->setQuadShape( DRT::Element::tet10 );
+  subelements_.push_back( sub8 );
 }
 
 void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
-  LINALG::Matrix<3, 20> xyze;
+  Position<DRT::Element::hex20> pos( nodes_, xyz );
 
-  for ( int i=0; i<20; ++i )
-  {
-    Node * n = nodes_[i];
-    n->Coordinates( &xyze( 0, i ) );
-  }
-
-  Position<DRT::Element::hex20> pos( xyze, xyz );
   bool success = pos.Compute();
   if ( not success )
   {
@@ -1343,15 +1502,7 @@ void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
 
 void GEO::CUT::Hex27ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
-  LINALG::Matrix<3, 27> xyze;
-
-  for ( int i=0; i<27; ++i )
-  {
-    Node * n = nodes_[i];
-    n->Coordinates( &xyze( 0, i ) );
-  }
-
-  Position<DRT::Element::hex27> pos( xyze, xyz );
+  Position<DRT::Element::hex27> pos( nodes_, xyz );
   bool success = pos.Compute();
   if ( not success )
   {
@@ -1361,15 +1512,7 @@ void GEO::CUT::Hex27ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
 
 void GEO::CUT::Tet10ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
-  LINALG::Matrix<3, 10> xyze;
-
-  for ( int i=0; i<10; ++i )
-  {
-    Node * n = nodes_[i];
-    n->Coordinates( &xyze( 0, i ) );
-  }
-
-  Position<DRT::Element::tet10> pos( xyze, xyz );
+  Position<DRT::Element::tet10> pos( nodes_, xyz );
   bool success = pos.Compute();
   if ( not success )
   {

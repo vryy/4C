@@ -873,7 +873,7 @@ void GEO::CUT::MeshIntersection::Status(std::string gausstype)
     DumpGmshIntegrationCells( "integrationcells.pos" );
     DumpGmshVolumeCells("volumecells.pos");
   }
-  else if(gausstype=="MomentFitting")
+  else
     DumpGmshVolumeCells("volumecells.pos");
 #endif
 #endif

@@ -106,7 +106,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   {
     Facet *fe = *i;
 
-    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_,true);
     FacetIntegration faee1(fe,elem1_,position_,false,false);
 
     std::vector<double> RefPlaneTemp = faee1.equation_plane(cornersLocal);
@@ -344,30 +344,58 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
   //set the volume of this volumecell
   //the volume from local coordinates is converted in terms of global coordinates
   double volGlobal=0.0;
-  switch ( elem1_->Shape() )
+
+  if( not elem1_->isShadow() )
   {
-    case DRT::Element::hex8:
+    switch ( elem1_->Shape() )
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::hex8>(TotalInteg,"LocalToGlobal");
+      case DRT::Element::hex8:
+      {
+        volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::hex8>(TotalInteg,"LocalToGlobal");
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::tet4>(TotalInteg,"LocalToGlobal");
+        break;
+      }
+      case DRT::Element::wedge6:
+      {
+        volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::wedge6>(TotalInteg,"LocalToGlobal");
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::pyramid5>(TotalInteg,"LocalToGlobal");
+        break;
+      }
+      default:
+        throw std::runtime_error( "unsupported element type" );
+    }
+  }
+
+  else
+  {
+    switch( elem1_->getQuadShape() )
+    {
+    case DRT::Element::hex20:
+    {
+      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::hex20>(TotalInteg,"LocalToGlobal",true);
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::hex27:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::tet4>(TotalInteg,"LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::hex27>(TotalInteg,"LocalToGlobal",true);
       break;
     }
-    case DRT::Element::wedge6:
+    case DRT::Element::tet10:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::wedge6>(TotalInteg,"LocalToGlobal");
-      break;
-    }
-    case DRT::Element::pyramid5:
-    {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::pyramid5>(TotalInteg,"LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::tet10>(TotalInteg,"LocalToGlobal",true);
       break;
     }
     default:
-      throw std::runtime_error( "unsupported integration cell type" );
+      throw std::runtime_error( "unsupported parent Quad element type" );
+    }
   }
 
   if( volGlobal<0.0 || TotalInteg<0.0 )

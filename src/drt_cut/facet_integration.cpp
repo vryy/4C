@@ -633,7 +633,7 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
       Point* pt1 = ptl[ii];
       LINALG::Matrix<3,1> global1,local1;
       pt1->Coordinates(global1.A());
-      elem1_->LocalCoordinates( global1, local1 );
+      elem1_->LocalCoordinatesQuad( global1, local1 );
       file<<"Point("<<mm<<")="<<"{"<<local1(0,0)<<","<<local1(1,0)<<","<<local1(2,0)<<"};\n";
       //file<<"Point("<<mm<<")="<<"{"<<global1(0,0)<<","<<global1(1,0)<<","<<global1(2,0)<<"};\n";
       mm++;
@@ -656,12 +656,12 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
       {
         case DRT::Element::tri3:
         {
-          bcell->TransformLocalCoords<DRT::Element::tri3>(elem1_,eta, x_gp_loc, normal, drs);
+          bcell->TransformLocalCoords<DRT::Element::tri3>(elem1_,eta, x_gp_loc, normal, drs, true);
           break;
         }
         case DRT::Element::quad4:
         {
-          bcell->TransformLocalCoords<DRT::Element::quad4>(elem1_,eta, x_gp_loc, normal, drs);
+          bcell->TransformLocalCoords<DRT::Element::quad4>(elem1_,eta, x_gp_loc, normal, drs, true);
           break;
         }
         default:
@@ -724,7 +724,7 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       std::vector<std::vector<Point*> > split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
-      if( face1_->IsPlanar( mesh, face1_->CornerPoints() ) ==false )
+      if( not face1_->IsPlanar( mesh, face1_->CornerPoints() ) )
       {
         if(!face1_->IsTriangulated())
           face1_->DoTriangulation( mesh, corners );

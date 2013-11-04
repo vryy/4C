@@ -1082,9 +1082,10 @@ GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
-            return the local coordinates of corner points with respect to the given element
+  return the local coordinates of corner points with respect to the given element
+  if shadow=true, then the mapping is w.r. to the parent quad element from which this element is derived
 *------------------------------------------------------------------------------------------------------------*/
-const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Element *elem1)
+const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal( Element *elem1, bool shadow )
 {
   const std::vector<Point*> & corners = CornerPoints();
   int mm=0;
@@ -1100,7 +1101,10 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
       glo(1,0) = coords[1];
       glo(2,0) = coords[2];
 
-      elem1->LocalCoordinates(glo,loc);
+      if( shadow and elem1->isShadow() )
+        elem1->LocalCoordinatesQuad( glo, loc );
+      else
+        elem1->LocalCoordinates(glo,loc);
 
       pt_local.push_back(loc(0,0));
       pt_local.push_back(loc(1,0));

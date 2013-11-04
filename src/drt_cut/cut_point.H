@@ -168,12 +168,13 @@ public:
            << std::setprecision( 16 ) << x_[2] << ")";
   }
 
-  void Plot( std::ostream & f )
+  void Plot( std::ostream & f, int nid = -50 )
   {
     f << std::setprecision( 10 ) << x_[0] << " "
       << std::setprecision( 10 ) << x_[1] << " "
       << std::setprecision( 10 ) << x_[2] << " # "
-      << pid_;
+      << pid_<<" "
+      <<nid;
     DumpDoubles( f, X(), 3 );
     f << "\n";
   }

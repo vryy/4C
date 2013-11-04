@@ -137,7 +137,7 @@ public:
   /*!
   \brief Get the corner points of the facet in element local coordinates. Used in Moment fitting method
    */
-  const std::vector<std::vector<double> > CornerPointsLocal(Element *elem1);
+  const std::vector<std::vector<double> > CornerPointsLocal( Element *elem1, bool shadow = false );
 
   /*!
   \brief Get the triangulated sides of this facet

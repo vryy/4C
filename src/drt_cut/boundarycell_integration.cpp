@@ -29,8 +29,8 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 
   while(1)
   {
-#ifdef DEBUGCUTLIBRARY
-    IO::cout<<"pts on each line = "<<ptsEachLine<<"\n";
+#if 0
+    std::cout<<"pts on each line = "<<ptsEachLine<<"\n";
 #endif
 
     std::vector<double> eqn = faee1.get_equation();
@@ -115,8 +115,8 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
     }
 
     double maxerr = err.InfNorm();
-#ifdef DEBUGCUTLIBRARY
-    IO::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
+#if 0
+    std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
 #endif
 
     if(maxerr<1e-10 || ptsEachLine>25)

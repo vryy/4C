@@ -13,9 +13,13 @@ namespace CUT
   class IntegrationCell;
   class BoundaryCell;
   class Creator;
+  class Node;
+
 
 /*!
 \brief Base class of all elements. Contains all the information about volumecells, facets, sides and nodes associated with this element
+This class handles only linear elements. When a quadratic element is passed to cut library, it is split into a number of linear
+elements through elementhandle.
  */
 class Element
 {
@@ -43,7 +47,11 @@ public:
     {
       Node * n = *i;
       n->Register( this );
+      points_.push_back( n->point() );
     }
+
+    // shadow elements are initialized separately
+    isShadow_ = false;
   }
 
   virtual ~Element() {}
@@ -175,7 +183,7 @@ public:
   }
 
   /*!
-  \brief Get the coordinates of all the nodes
+  \brief Get the coordinates of all the nodes of this linear shadow element
    */
   void Coordinates( double * xyze )
   {
@@ -188,10 +196,30 @@ public:
     }
   }
 
+/*!
+\brief Get the coordinates of all node of parent Quad element
+ */
+  void CoordinatesQuad( double * xyze )
+  {
+    double *x = xyze;
+    for ( std::vector<Node*>::iterator i=quadCorners_.begin(); i!=quadCorners_.end(); ++i )
+    {
+      Node & n = **i;
+      n.Coordinates( x );
+      x += 3;
+    }
+  }
+
   /*!
   \brief Get all the nodes of this element
    */
   const std::vector<Node*> & Nodes() { return nodes_; }
+
+
+	/*!
+  \brief Points that are associated with nodes of this shadow element 
+  */
+  const std::vector<Point*> & Points() const { return points_; }
 
   /*!
   \brief Get the cutsides of this element
@@ -243,16 +271,23 @@ public:
 
   /*!
   \brief Transform the scalar variable either from local coordinates to the global coordinates or the other way specified by
-  TransformType which can be "LocalToGlobal" or "GlobalToLocal"
+  TransformType which can be "LocalToGlobal" or "GlobalToLocal".
+  If set shadow = true, then the mapping is done w.r to the parent Quad element from which this shadow element is derived
    */
   template <DRT::Element::DiscretizationType distype>
-  double ScalarFromLocalToGlobal(double scalar, std::string transformType)
+  double ScalarFromLocalToGlobal( double scalar, std::string transformType, bool shadow = false )
   {
     const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     LINALG::Matrix<3,nen> xyze;
     LINALG::Matrix<3,1> xei;
     xei = 0.1; //the determinant of the Jacobian is independent of the considered point (true only for linear elements???)
-    Coordinates(xyze.A());
+
+		// get coordiantes of parent Quad element
+    if( shadow )
+      CoordinatesQuad( xyze.A() );
+    // get coordinates of linear shadow element
+    else
+      Coordinates(xyze.A());
 
     LINALG::Matrix<3,nen> deriv;
     LINALG::Matrix<3,3> xjm;
@@ -276,6 +311,42 @@ public:
    */
   void integrateSpecificFunctionsTessellation();
 
+  /*!
+   \brief set this element as shadow element
+   */
+  void setAsShadowElem(){ isShadow_ = true; }
+
+  /*!
+  \brief Return true if this is a shadow element
+   */
+  bool isShadow(){ return isShadow_; }
+
+  /*!
+  \brief Store the corners of parent Quad element from which this shadow element is derived
+   */
+  void setQuadCorners( Mesh & mesh, const std::vector<int> & nodeids );
+
+  /*!
+  \brief Get corner nodes of parent Quad element from which this shadow element is derived
+   */
+  std::vector<Node*> getQuadCorners();
+
+	/*!
+	\brief Set the discretization type of parent quad element
+	 */
+  void setQuadShape( DRT::Element::DiscretizationType dis ){ quadshape_ = dis; }
+
+  /*!
+  \brief Get shape of parent Quad element from which this shadow element is derived
+   */
+  DRT::Element::DiscretizationType getQuadShape(){ return quadshape_; }
+
+  /*!
+  \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from which
+  this shadow element is derived
+   */
+  void LocalCoordinatesQuad( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }
@@ -297,12 +368,24 @@ private:
 
   std::vector<Node*> nodes_;
 
+  std::vector<Point*> points_;
+
   /// sides that cut this element
   plain_side_set cut_faces_;
 
   plain_facet_set facets_;
 
   plain_volumecell_set cells_;
+
+  /// For originally linear elements, this just stores the corner points. However, if this linear element is derived from
+  // a Quadratic element, then this contains the corner points of quad element.
+  std::vector<Node*> quadCorners_;
+
+  /// True if this is a linear (shadow) element derived from  a Quadratic element
+  bool isShadow_;
+
+	/// Discretization shape of the parent quad element
+  DRT::Element::DiscretizationType quadshape_;
 };
 
 /// tet4 element

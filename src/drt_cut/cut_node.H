@@ -105,7 +105,7 @@ public:
   void Print( std::ostream & f=std::cout ){ point_->Print(); }
 
   /// plot node's or its point's information to the stream
-  void Plot( std::ostream & f ){ point_->Plot( f ); };
+  void Plot( std::ostream & f ){ point_->Plot( f, this->Id() ); };
 
 
   /*========================================================================*/

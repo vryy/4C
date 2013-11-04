@@ -301,7 +301,7 @@ private:
   /// Equation of plane which contains the reference facet when using DirectDivergence
   std::vector<double> RefEqnPlane_;
 
-  /// Gauss rule for this volumecell
+  /// Gauss rule for this volumecell. In case of DirectDivergence method, this just stores main Gauss points
   Teuchos::RCP<DRT::UTILS::GaussPoints>  gp_;
 
   /// The internal Gauss rule for every facet gauss point

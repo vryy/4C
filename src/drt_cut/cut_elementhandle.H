@@ -134,10 +134,11 @@ public:
 private:
   /*!
    \brief Project the integration rule available in the local coordinates of the integationcells to the
-   local coordinates of volumecells
+   local coordinates of background element
    */
   template <DRT::Element::DiscretizationType distype>
-  Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::IntegrationCell * ic );
+  Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( const std::vector<GEO::CUT::Point*> & cpoints,
+                                                         Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic );
 
 #if 0
   template <DRT::Element::DiscretizationType distype>

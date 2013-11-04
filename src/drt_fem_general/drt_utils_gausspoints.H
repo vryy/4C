@@ -379,18 +379,35 @@ public:
   }
 #endif
 
-  /// create projected gauss points
+  /// Create Gauss integration rule of given degree
   template <DRT::Element::DiscretizationType distype>
   static Teuchos::RCP<GaussPoints> CreateProjected(
     const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
                          DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
     int degree )
   {
-    const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
-    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create( distype, degree );
     Teuchos::RCP<CollectedGaussPoints> cgp = Teuchos::rcp( new CollectedGaussPoints( gp->NumPoints() ) );
+
+    GaussIntegration intpoints( gp );
+
+    ProjectGaussPoints<distype>( xie, intpoints, cgp );
+
+    return cgp;
+  }
+
+  /// Project the given Gauss integration rule over the given element coordinates
+  template <DRT::Element::DiscretizationType distype>
+  static void ProjectGaussPoints( const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
+                                        DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+                                  GaussIntegration& intpoints,
+                                  Teuchos::RCP<CollectedGaussPoints>& cgp
+                                )
+  {
+
+    const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     LINALG::Matrix<nen,1> funct;
     LINALG::Matrix<nsd,nen> deriv;
@@ -398,10 +415,9 @@ public:
     LINALG::Matrix<nsd,nsd> xjm;
     LINALG::Matrix<nsd,1> xi;
 
-    GaussIntegration intpoints( gp );
     for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
-          iquad!=intpoints.end();
-          ++iquad )
+              iquad!=intpoints.end();
+              ++iquad )
     {
       LINALG::Matrix<nsd,1> eta( iquad.Point() );
 
@@ -409,7 +425,7 @@ public:
       DRT::UTILS::shape_function<distype>(eta,funct);
       DRT::UTILS::shape_function_deriv1<distype>(eta,deriv);
 
-      // local coordinates of gauss point
+      // local coordinates of gauss point w.r.to background element
       xi.Multiply( xie, funct );
 
       // get transposed of the jacobian matrix d x / d \xi
@@ -420,8 +436,8 @@ public:
 
       cgp->Append( xi, iquad.Weight()*det );
     }
-    return cgp;
   }
+
 
 private:
 

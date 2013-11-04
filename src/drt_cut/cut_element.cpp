@@ -108,7 +108,30 @@ struct nextSideAlongRay {
    LINALG::Matrix<3,1> cutpoint_xyz_;
 };
 
+ /*-----------------------------------------------------------------------------------*
+  *  For this shadow element, set corner nodes of parent Quad element      sudhakar 11/13
+  *-----------------------------------------------------------------------------------*/
+  void GEO::CUT::Element::setQuadCorners( Mesh & mesh, const std::vector<int> & nodeids )
+  {
+    if( not isShadow_ )
+      dserror( "You can't set Quad-corners for non-shadow element\n" );
 
+    for( unsigned i=0; i<nodeids.size(); i++ )
+    {
+      Node * n1 = mesh.GetNode( nodeids[i] );
+      quadCorners_.push_back( n1 );
+    }
+  }
+
+  /*----------------------------------------------------------------------------------------------------*
+   *  Get corner nodes of parent Quad element from which this shadow element is derived       sudhakar 11/13
+   *----------------------------------------------------------------------------------------------------*/
+  std::vector<GEO::CUT::Node*> GEO::CUT::Element::getQuadCorners()
+  {
+    if( (not isShadow_) or quadCorners_.size() == 0 )
+      dserror("what?! you want Quadratic element corners for linear element?\n");
+    return quadCorners_;
+  }
 
 /*--------------------------------------------------------------------*
  *            cut this element with given cut_side
@@ -237,6 +260,7 @@ void GEO::CUT::Element::MakeFacets( Mesh & mesh )
       Side & side = **i;
       side.MakeOwnedSideFacets( mesh, this, facets_ );
     }
+
     for ( plain_side_set::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
     {
       Side & cut_side = **i;
@@ -254,8 +278,7 @@ void GEO::CUT::Element::FindNodePositions()
 
   // DEBUG flag for FindNodePositions
   // compute positions for nodes again, also if already set by other nodes, facets, vcs (safety check)
-//  #define check_for_all_nodes
-
+ //  #define check_for_all_nodes
 
 #if(1)
   //----------------------------------------------------------------------------------------
@@ -699,7 +722,8 @@ bool GEO::CUT::Element::ComputePosition(Point * p,                        // the
   // shoot a ray starting from point p through the midpoint of one of the two sides and find another intersection point
   // the local coordinates along this ray determines the order of the sides
   //------------------------------------------------------------------------
-  std::sort(point_cut_sides.begin(), point_cut_sides.end(), nextSideAlongRay(p, cutpoint));
+  if( point_cut_sides.size() > 1 )
+    std::sort(point_cut_sides.begin(), point_cut_sides.end(), nextSideAlongRay(p, cutpoint));
 
 
   //------------------------------------------------------------------------
@@ -1153,6 +1177,48 @@ void GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::LocalCoordinates( const 
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
+}
+
+/*-------------------------------------------------------------------------------------------------------------*
+ * Find local coodinates of given point w.r to the parent Quad element														sudhakar 11/13
+ *-------------------------------------------------------------------------------------------------------------*/
+void GEO::CUT::Element::LocalCoordinatesQuad( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+{
+  if( not isShadow_ )
+    dserror("This is not a shadow elemenet\n");
+
+  switch( getQuadShape() )
+  {
+  case DRT::Element::hex20:
+  {
+    Position<DRT::Element::hex20> pos( quadCorners_, xyz );
+    bool success = pos.Compute();
+    if( success ){}
+    rst = pos.LocalCoordinates();
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    Position<DRT::Element::hex27> pos( quadCorners_, xyz );
+    bool success = pos.Compute();
+    if( success ){}
+    rst = pos.LocalCoordinates();
+    break;
+  }
+  case DRT::Element::tet10:
+  {
+    Position<DRT::Element::tet10> pos( quadCorners_, xyz );
+    bool success = pos.Compute();
+    if( success ){}
+    rst = pos.LocalCoordinates();
+    break;
+  }
+  default:
+  {
+    dserror("not implemented yet\n");
+    break;
+  }
+  }
 }
 
 int GEO::CUT::Element::NumGaussPoints( DRT::Element::DiscretizationType shape )

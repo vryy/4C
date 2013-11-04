@@ -43,6 +43,22 @@ public:
     Scale();
   }
 
+  Position( const std::vector<Node*> nodes,
+            const LINALG::Matrix<3,1> & xyz )
+      :px_( xyz )
+  {
+    if( not nodes.size() == numNodesElement )
+      dserror( "nodes for this element are not correct\n" );
+
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      Node * n = nodes[i];
+      n->Coordinates( &xyze_( 0, i ) );
+    }
+
+    Scale();
+  }
+
   /*!
   \brief Computes local coordinates of the point and returns true if it is within the element
   Uses tolerance set in cut_tolerance.H

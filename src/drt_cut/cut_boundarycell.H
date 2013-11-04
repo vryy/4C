@@ -132,35 +132,50 @@ public:
   }
 
   /*!
-  \brief Compute the location of Gauss points on the boundary cell's local coordinate system
+  \brief Compute the location of Gauss points on the background element's local coordinate system
+  setting shadow = true means the mapping is done w.r. to the parent quad element from which elem1 is derived
    */
   template <DRT::Element::DiscretizationType celldistype>
   void TransformLocalCoords( Element * elem1,
                              const LINALG::Matrix<2,1> & eta,
                              LINALG::Matrix<3,1>       & x_gp_lin,
                              LINALG::Matrix<3,1>       & normal,
-                             double                    & drs )
+                             double                    & drs,
+                             bool                      shadow = false )
   {
-      const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
-      LINALG::Matrix<3,numnodes> xyzeGlo( this->xyz_, true ), xyze;
+    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+    LINALG::Matrix<3,numnodes> xyzeGlo( this->xyz_, true ), xyze;
 
-      for(int i=0;i<numnodes;i++)
+    for(int i=0;i<numnodes;i++)
+    {
+      LINALG::Matrix<3,1> glo (&xyzeGlo(0,i)),loc;
+
+			// map w.r to linear shadow element
+      if( not shadow )
       {
-        LINALG::Matrix<3,1> glo (&xyzeGlo(0,i)),loc;
         elem1->LocalCoordinates(glo,loc);
-        xyze(0,i)=loc(0);xyze(1,i)=loc(1);xyze(2,i)=loc(2);
       }
-      LINALG::Matrix<numnodes,1> funct;
-      LINALG::Matrix<2,numnodes> deriv;
-      LINALG::Matrix<2,2> metrictensor;
+      // map w.r to parent quad element
+      else
+      {
+        if( not elem1->isShadow() )
+          elem1->LocalCoordinates(glo,loc);
+        else
+          elem1->LocalCoordinatesQuad( glo, loc );
+      }
+      xyze(0,i)=loc(0);xyze(1,i)=loc(1);xyze(2,i)=loc(2);
+    }
+    LINALG::Matrix<numnodes,1> funct;
+    LINALG::Matrix<2,numnodes> deriv;
+    LINALG::Matrix<2,2> metrictensor;
 
-      DRT::UTILS::shape_function_2D( funct, eta(0), eta(1), celldistype );
-      DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
-      DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
+    DRT::UTILS::shape_function_2D( funct, eta(0), eta(1), celldistype );
+    DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
 
-      x_gp_lin.Multiply(xyze, funct);
+    x_gp_lin.Multiply(xyze, funct);
 
-      return;
+    return;
   }
 
 protected:
