@@ -4702,6 +4702,11 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
     std::stringstream freefillength;
 
     double freelength = 0.0;
+
+    std::vector<double> endtoend(6,0.0);
+    // initialize with first bspot position of 1st filament
+    for(int i=0; i<bspotpositions->NumVectors(); i++)
+      endtoend[i] = (*bspotpositions)[i][0];
     //double summedlength = 0.0;
     for(int n=1; n<bspotpositions->MyLength(); n++)
     {
@@ -4724,7 +4729,21 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
         {
           if((*crosslink2element_)[(*bspotstatus_)[bspotn]]>1.9) //  = crosslinker element
           {
-            freefillength<<std::setprecision(6)<<freelength<<std::endl;
+            // calculate end-to-end distance
+            std::vector<double> tmppos(3,0.0);
+            for(int i=0; i<bspotpositions->NumVectors(); i++)
+            {
+              tmppos[i] = (*bspotpositions)[i][bspotn];
+              endtoend[i+3] = (*bspotpositions)[i][bspotn]; 
+            }
+            UnshiftPositions(endtoend,2,false);
+            double e2elength = sqrt((endtoend[3]-endtoend[0])*(endtoend[3]-endtoend[0]) +
+                                    (endtoend[4]-endtoend[1])*(endtoend[4]-endtoend[1]) +
+                                    (endtoend[5]-endtoend[2])*(endtoend[5]-endtoend[2]));
+            // prepare for next end to end distance measurement
+            for(int i=0; i<bspotpositions->NumVectors(); i++)
+              endtoend[i] = (*bspotpositions)[i][bspotn];
+            freefillength<<std::setprecision(6)<<freelength<<"\t"<<e2elength<<std::endl;
             //summedlength += freelength;
             // after every crosslinker element, a new free filament segment begins. Hence reset.
             freelength = 0.0;
@@ -4732,12 +4751,11 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
         }
 
         std::vector<double> bspotpos(6,0.0);
-        bspotpos[0] = (*bspotpositions)[0][bspotn];
-        bspotpos[1] = (*bspotpositions)[1][bspotn];
-        bspotpos[2] = (*bspotpositions)[2][bspotn];
-        bspotpos[3] = (*bspotpositions)[0][bspotnp];
-        bspotpos[4] = (*bspotpositions)[1][bspotnp];
-        bspotpos[5] = (*bspotpositions)[2][bspotnp];
+        for(int i=0; i<bspotpositions->NumVectors(); i++)
+        {
+          bspotpos[i] = (*bspotpositions)[i][bspotn];
+          bspotpos[i+3] = (*bspotpositions)[i][bspotnp];
+        }
         UnshiftPositions(bspotpos, 2, false);
         double addedlength = sqrt((bspotpos[3]-bspotpos[0])*(bspotpos[3]-bspotpos[0]) +
                                   (bspotpos[4]-bspotpos[1])*(bspotpos[4]-bspotpos[1]) +
@@ -4746,9 +4764,18 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
       }
       else // write whatever is left as free filament length before hopping to the nex filament
       {
+        for(int i=0; i<bspotpositions->NumVectors(); i++)
+          endtoend[i+3] = (*bspotpositions)[i][bspotn];
+        UnshiftPositions(endtoend,2,false);
+        double e2elength = sqrt((endtoend[3]-endtoend[0])*(endtoend[3]-endtoend[0]) +
+                                (endtoend[4]-endtoend[1])*(endtoend[4]-endtoend[1]) +
+                                (endtoend[5]-endtoend[2])*(endtoend[5]-endtoend[2]));
+        // prepare for next filament
+        for(int i=0; i<bspotpositions->NumVectors(); i++)
+          endtoend[i] = (*bspotpositions)[i][bspotnp];
         //summedlength += freelength;
         //summedlength = 0.0;
-        freefillength<<std::setprecision(6)<<freelength<<std::endl;
+        freefillength<<std::setprecision(6)<<freelength<<"\t"<<e2elength<<std::endl;
         // reset in order to start fresh with the next filament
         freelength = 0.0;
       }
