@@ -255,6 +255,15 @@ public:
   void SetAirwayFluxFromTissue(Teuchos::RCP<Epetra_Vector> coupflux);
   void ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres);
 
+  /// Hand over outputwriter to redairway_tissue
+  IO::DiscretizationWriter& GetOutputWriter() {return output_; }
+
+  /// Hand over restartreader to redairway_tissue
+  Teuchos::RCP<IO::DiscretizationReader> GetRestartReader(int step)
+  {
+    return  Teuchos::rcp(new IO::DiscretizationReader(discret_, step));
+  }
+
   //@}
 
 protected:
