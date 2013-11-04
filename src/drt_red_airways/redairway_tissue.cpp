@@ -12,7 +12,6 @@ Maintainer: Lena Yoshihara
 
 
 #include <stdio.h>
-//#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "redairway_tissue.H"
 #include "airwayimplicitintegration.H"
@@ -153,32 +152,28 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   //Determine initial volume
   structure_->InitVol();
 
-  //Read Restart
-  int restart = DRT::Problem::Instance()->Restart();
-  if (restart !=0)
-  {
-    ReadRestart(restart);
-  }
-  std::cout << "Finished constructor with restart: " << restart << std::endl;
-
 } //end of constructor
 
 
 /*----------------------------------------------------------------------*
  |  Read restart                                              roth 10/13|
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayTissue::ReadRestart(int step)
+void AIRWAY::RedAirwayTissue::ReadRestart(const int step)
 {
-  dserror("not implemented yet");
+  structure_->ReadRestart(step);
+  structure_->InitVol();
+  redairways_->ReadRestart(step);
 
-  /*structure_->ReadRestart(step);
-  //structure_->SetRestart(step);
-  redairways_->ReadRestart(step,true);
+  //Read the coupling variables at restart
+  redairways_->GetRestartReader(step)->ReadVector(couppres_im_,"couppres_im");
+  redairways_->GetRestartReader(step)->ReadVector(coupflux_im_,"coupflux_im");
+  redairways_->GetRestartReader(step)->ReadVector(coupflux_ip_,"coupflux_im");
+  redairways_->GetRestartReader(step)->ReadVector(coupvol_im_,"coupvol_im");
 
-  for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
-  {
-    printf(" Time: %f couppres_ip_: %6.3e \n",Time(), (*couppres_ip_)[i]);
-  }*/
+  //Set timestep and time after restart
+  double restartTime = redairways_->Time();
+  SetTimeStep(restartTime, step);
+
 }
 
 
@@ -439,6 +434,14 @@ void AIRWAY::RedAirwayTissue::UpdateAndOutput()
 
   redairways_->TimeUpdate();
   redairways_->Output();
+
+  //In case of restart write all coupling variables to restart file
+  if (redairways_->Step()%uprestart_ == 0)
+  {
+    redairways_->GetOutputWriter().WriteVector("couppres_im",couppres_im_);
+    redairways_->GetOutputWriter().WriteVector("coupflux_im",coupflux_im_);
+    redairways_->GetOutputWriter().WriteVector("coupvol_im",coupvol_im_);
+  }
 }
 
 
@@ -507,6 +510,9 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
 
 
   airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+
+  //Get restart timestep
+  uprestart_ = rawdyn.get<int>("RESTARTEVRY");
 
   //------------------------------------------------------------------
   // create all vectors and variables associated with the time

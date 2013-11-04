@@ -52,7 +52,7 @@ public:
   /// Destructor
   virtual ~RedAirwayTissue() { return; };
 
-  virtual void ReadRestart(int step);
+  virtual void ReadRestart(const int step);
 
   void SetupRedAirways();
 
@@ -122,6 +122,9 @@ private:
 
   /// internal iteration step
   int itermax_;
+
+  /// restart step
+  int uprestart_;
 
   /// internal tolerance for pressure
   double tolp_;

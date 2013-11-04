@@ -193,11 +193,21 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 } // end of dyn_red_airways_drt()
 
 
+/*----------------------------------------------------------------------*
+ | dyn routine for redairway_tissue coupling                 roth 10/13 |
+ *----------------------------------------------------------------------*/
 void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
   RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<AIRWAY::RedAirwayTissue> redairway_tissue = Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(),rawdyn));
+
+  //Read the restart information, set vectors and variables
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    redairway_tissue->ReadRestart(restart);
+  }
 
   //Time integration loop for red_airway-tissue coupling
   redairway_tissue->Integrate();

@@ -569,7 +569,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*
-Some detials!!
+Some details!!
 */
 void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
@@ -669,7 +669,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::Parame
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*
-Some detials!!
+Some details!!
 */
 void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
