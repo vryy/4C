@@ -212,7 +212,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Surfaces()
     // 2D (we return the element itself)
     std::vector<Teuchos::RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
-    cout<<*this<<endl;
     return surfaces;
   }
   else  // 1D elements
@@ -248,7 +247,6 @@ void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
 {
   os << "FluidPoro ";
   Element::Print(os);
-  //cout << endl;
   return;
 }
 
