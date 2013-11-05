@@ -106,8 +106,8 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
 
   // build a proxy of the fluid discretization for the structure field
-  aledofset        = Teuchos::null;
-  aledofset =                      AleField()->Discretization()->GetDofSetProxy();
+  aledofset = Teuchos::null;
+  aledofset = AleField()->Discretization()->GetDofSetProxy();
 
   if (FluidField()->Discretization()->AddDofSet(aledofset) != 1)
   {
@@ -174,43 +174,43 @@ void FPSI::MonolithicBase::Output()
 /*----------------------------------------------------------------------*/
 /*                          Coupling Methods                            */
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::SmallFluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::SmallFluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return smallcoupsf_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::SmallStructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::SmallStructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return smallcoupsf_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->MasterToSlave(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToPorofluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::FluidToPorofluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return couple_porofluid_fluid_->SlaveToMaster(iv);
 }
-Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::PorofluidToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FPSI::MonolithicBase::PorofluidToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return couple_porofluid_fluid_->MasterToSlave(iv);
 }
@@ -416,7 +416,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     FluidField()->Discretization()->ClearState();
     linesearch_counter=0.;
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
-    meshdispold_ = AleToFluid(AleField()->WriteAccessDispnp());
+    meshdispold_ = AleToFluid(AleField()->Dispnp());
     porointerfacedisplacementsold_ = StructToAle(PoroField() -> StructureField() -> ExtractInterfaceDispnp());
   }
 
@@ -443,7 +443,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   AleField()->Interface()->InsertOtherVector(ax,fullax);
   AleField()  -> Evaluate(fullax,"iter");
 
-  Teuchos::RCP<Epetra_Vector> aledisplacements = AleToFluid(AleField()->WriteAccessDispnp());
+  Teuchos::RCP<const Epetra_Vector> aledisplacements = AleToFluid(AleField()->Dispnp());
   FluidField()->ApplyMeshDisplacement(aledisplacements);
   FluidField()->UpdateNewton(fx);
   FluidField()->Evaluate(Teuchos::null);
@@ -717,6 +717,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
 
   const ADAPTER::Coupling& couppff      = PoroFluidFluidCoupling();
   const ADAPTER::Coupling& coupsf       = StructureFluidCoupling();
+  const ADAPTER::Coupling& coupfa      = FluidAleCoupling();
 //  const ADAPTER::Coupling& smallcoupsf  = SmallStructureFluidCoupling();
 
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -1019,18 +1020,38 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
         a -> Zero();
         a -> UnComplete();
 
+        //temporal matrix
+        //todo (initialization should be avoided in every iteration...)
+        Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > temp6 =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<
+                  LINALG::DefaultBlockMatrixStrategy>(*FluidField()->Interface(),*FluidField()->Interface(), 81, false, true));
+
+        //assemble into fluid row and column dofs -> need to transform rows to structure dofs and cols to ale dofs
         DRT::AssembleStrategy structurealestrategy(
             0,                   // fluid dofset for row
-            1,                   // ale dofset for column
-            a,                   // coupling matrix with fluid rowmap
+            0,                   // fluid dofset for column
+            temp6,               // coupling matrix with fluid rowmap
             Teuchos::null,       // no other matrix or vectors
             Teuchos::null,
             Teuchos::null,
             Teuchos::null
         );
 
+        // evaluate coupling terms
         FluidField()   ->Discretization()->EvaluateCondition( fparams, structurealestrategy, "FSICoupling" );
 
+        //complete needed for transformation object
+        temp6->Complete();
+
+        //transform column from fluid to ale (rows will be transformed later in fpsi_monolithic_plain: SetupSystemMatrix())
+        // only transform inner ale - interface structure
+        (*couplingcoltransform_)( temp6->Matrix(1,0).RowMap(), //full row map of source matrix
+                                  temp6->Matrix(1,0).ColMap(), //full column map of source matrix
+                                  temp6->Matrix(1,0),
+                                   1.0,
+                                   ADAPTER::CouplingMasterConverter(coupfa), // row converter: important to use master converter
+                                   Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(a)->Matrix(1,0),
+                                   false); // bool exactmatch = true (default)
   } // if monolithic
   else
   {

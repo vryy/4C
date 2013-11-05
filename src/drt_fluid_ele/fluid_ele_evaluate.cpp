@@ -26,7 +26,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_geometry/position_array.H"
 
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_fpsi.H"
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -70,17 +69,6 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
   const FLD::Action action = DRT::INPUT::get<FLD::Action>(p,"action");
 
   int num=0;
-  if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
-  {
-    if(dis.Name()=="fluid")
-    {
-      num=INPAR::FPSI::fluid;
-    }
-    else if(dis.Name()=="porofluid")
-    {
-      num=INPAR::FPSI::porofluid;
-    }
-   }
   p.set<int>("numfield",num);
 
   if (action == FLD::set_general_fluid_parameter)
@@ -102,11 +90,6 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
   {
     Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
     fldpara->SetElementLomaParameter(p);
-  }
-  else if (action == FLD::set_poro_parameter)
-  {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
-    fldpara->SetElementPoroParameter(p);
   }
   else if (action == FLD::set_topopt_parameter)
   {
@@ -154,9 +137,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
   switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
   {
   case INPAR::FLUID::loma:    impltype = "loma";    break;
-  case INPAR::FLUID::poro:    impltype = "poro";    break;
-  case INPAR::FLUID::poro_p1: impltype = "poro_p1"; break;
-  case INPAR::FLUID::poro_p2: impltype = "poro_p2"; break;
   }
 
   switch(act)
@@ -183,28 +163,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     //-----------------------------------------------------------------------
     // standard implementation enabling time-integration schemes such as
     // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
-    // for the particular case of porous flow
-    //-----------------------------------------------------------------------
-    /***********************************************/
-    case FLD::calc_porousflow_fluid_coupling:
-    {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->Evaluate(
-            this,
-            discretization,
-            lm,
-            params,
-            mat,
-            elemat1,
-            elemat2,
-            elevec1,
-            elevec2,
-            elevec3,
-            true);
-    }
-    break;
-    //-----------------------------------------------------------------------
-    // standard implementation enabling time-integration schemes such as
-    // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
     // for evaluation of off-diagonal matrix block for monolithic
     // low-Mach-number solver
     //-----------------------------------------------------------------------
@@ -222,38 +180,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           elevec2,
           elevec3,
           true);
-    }
-    break;
-    //-----------------------------------------------------------------------
-    // standard implementation enabling time-integration schemes such as
-    // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
-    // for evaluation of off-diagonal matrix block for monolithic
-    // porous flow with scalar transport
-    //-----------------------------------------------------------------------
-    case FLD::calc_poroscatra_mono_odblock:
-    {
-      switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
-      {
-      case INPAR::FLUID::poro_p2:
-      {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "poro_p2")->Evaluate(
-          this,
-          discretization,
-          lm,
-          params,
-          mat,
-          elemat1,
-          elemat2,
-          elevec1,
-          elevec2,
-          elevec3,
-          true);
-      }
-      break;
-      default:
-        dserror("Unknown physical type for poroelasticity\n");
-      break;
-      }
     }
     break;
     case FLD::calc_turbulence_statistics:
@@ -929,7 +855,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::calc_divop:
     case FLD::calc_mat_deriv_u_and_rot_u:
     case FLD::void_fraction_gaussian_integration:
-    case FLD::calc_volume:
     {
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->EvaluateService(this,
                                                                        params,
@@ -947,7 +872,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::set_time_parameter:
     case FLD::set_turbulence_parameter:
     case FLD::set_loma_parameter:
-    case FLD::set_poro_parameter:
     case FLD::set_topopt_parameter:
     case FLD::set_general_adjoint_parameter:
     case FLD::set_adjoint_time_parameter:
@@ -970,7 +894,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       break;
     }
     default:
-      dserror("Unknown type of action for Fluid");
+      dserror("Unknown type of action '%i' for Fluid", act);
       break;
   } // end of switch(act)
 

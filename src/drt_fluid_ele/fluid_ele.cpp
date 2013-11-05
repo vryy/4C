@@ -493,7 +493,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
     // 1D (we return the element itself)
-    std::vector<RCP<Element> > surfaces(1);
+    std::vector<Teuchos::RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
@@ -523,7 +523,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
   else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
     // 2D (we return the element itself)
-    std::vector<RCP<Element> > surfaces(1);
+    std::vector<Teuchos::RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
@@ -542,7 +542,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 {
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {
-    std::vector<RCP<Element> > volumes(1);
+    std::vector<Teuchos::RCP<Element> > volumes(1);
     volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }
@@ -594,67 +594,8 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
   }
   else if (nds==1)
   {
-    // what's the current problem type?
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-    switch (probtype)
-    {
-      case prb_poroelast:
-      case prb_poroscatra:
-      case prb_fpsi:
-      {
-        const Teuchos::ParameterList& params= DRT::Problem::Instance()->FluidDynamicParams();
-        INPAR::FLUID::PhysicalType physicaltype = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(params,"PHYSICAL_TYPE");
-        switch(physicaltype)
-        {
-        case INPAR::FLUID::poro:
-        case INPAR::FLUID::poro_p2:
-          if (disname == "porofluid")
-          {
-            return DRT::UTILS::getDimension(distype_);
-            break;
-          }
-          else if (disname == "fluid")
-          {
-        	return DRT::UTILS::getDimension(distype_)+1;
-        	break;
-          }
-          break;
-        case INPAR::FLUID::poro_p1:
-          return DRT::UTILS::getDimension(distype_)+1;
-          break;
-        default:
-          dserror("invalid fluid physical type for porous media");
-          return -1;
-          break;
-        }
-        break;
-      }
-      default: // scalar transport
-      {
-        return 1;
-        break;
-      }
-    }
-  }
-  else if(nds==2)
-  {
-    // what's the current problem type?
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-    switch (probtype)
-    {
-      case prb_poroscatra:
-      {
-        //scalar transport
-        return 1;
-        break;
-      }
-      default:
-      {
-        dserror("invalid number of dofsets (3) for this problem type");
-        return -1;
-        break;
-      }
-    }
+    // scalar transport/loma
+    return 1;
   }
   else
   {

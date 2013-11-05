@@ -1380,6 +1380,8 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_input.cpp
   src/drt_fluid_ele/fluid_ele_parameter.cpp
   src/drt_fluid_ele/fluid_ele_tds.cpp
+  src/drt_fluid_ele/fluid_ele_poro.cpp
+  src/drt_fluid_ele/fluid_ele_poro_evaluate.cpp
   src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp

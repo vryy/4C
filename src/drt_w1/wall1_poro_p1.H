@@ -106,6 +106,12 @@ namespace ELEMENTS
     */
     virtual void Unpack(const std::vector<char>& data);
 
+    /// Get vector of RCPs to the lines of this element
+    virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+
+    /// Get vector of RCPs to the surfaces of this element
+    virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
+
     //! @name Access methods
 
     /*!

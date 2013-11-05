@@ -40,7 +40,7 @@
 #include <Epetra_Time.h>
 #include <Epetra_MpiComm.h>
 
-#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_so3/so3_poro_eletypes.H"
 #include "../drt_so3/so3_poro_p1_eletypes.H"
 #include "../drt_w1/wall1_poro_eletypes.H"
@@ -144,7 +144,7 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
   if (CheckPoro(actele))
   {
     // we only support fluid elements here
-    eletype.push_back("FLUID");
+    eletype.push_back("FLUIDPORO");
     return true;
   }
 

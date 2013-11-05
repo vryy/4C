@@ -16,8 +16,12 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_utils_factory.H"
 
 #include "so3_poro_eletypes.H"
+
+#include "so_surface.H"
+#include "so_line.H"
 
 //for ReadElement()
 #include "../drt_mat/structporo.H"
@@ -173,6 +177,50 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get vector of volumes (length 1) (public)                 vuong 11/13|
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Volumes()
+{
+  std::vector<Teuchos::RCP<Element> > volumes(1);
+  volumes[0]= Teuchos::rcp(this, false);
+  return volumes;
+}
+
+ /*----------------------------------------------------------------------*
+ |  get vector of surfaces (public)                           vuong 11/13|
+ |  surface normals always point outward                                 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Surfaces()
+{
+  // do NOT store line or surface elements inside the parent element
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization,
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new surface elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
+}
+
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                             vuong 11/13|
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Lines()
+{
+  // do NOT store line or surface elements inside the parent element
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization,
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
 }
 
 /*----------------------------------------------------------------------*

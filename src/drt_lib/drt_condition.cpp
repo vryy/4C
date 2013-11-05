@@ -215,10 +215,10 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==TotalTractionCorrectionBorderNodes)  os << "Total traction correction border nodes condition";
   else if (Type()==RedAirwayVentilatorCond)       os << "Reduced d airway prescribed ventilator condition";
   else if (Type()==RedAirwayTissue)               os << "tissue RedAirway coupling surface condition";
-  else if (Type()==RedAirwayNodeTissue)           os << "tissue RedAirway coupling node condition";
-  else if (Type()==PoroCoupling)                  os << "porous media coupling condition";
-  else if (Type()==PoroPartInt)                   os << "porous media partial integration condition";
-  else if (Type()==PoroPresInt)                   os << "porous media pressure integration condition";
+  else if (Type()==RedAirwayNodeTissue)           os << "tissue RedAirway coupling node condition: ";
+  else if (Type()==PoroCoupling)                  os << "porous media coupling condition: ";
+  else if (Type()==PoroPartInt)                   os << "porous media partial integration condition: ";
+  else if (Type()==PoroPresInt)                   os << "porous media pressure integration condition: ";
   else if (Type()==ScaTraCoupling)                os << "scatra coupling condition";
   else if (Type()==RedAirwayPrescribedScatraCond) os << "Reduced d airway prescribed scatra boundary condition";
   else if (Type()==ArtPrescribedScatraCond)       os << "one-D Arterial prescribed scatra boundary condition";

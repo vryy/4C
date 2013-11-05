@@ -332,7 +332,7 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(Teuchos::ParameterList&   params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
                std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,

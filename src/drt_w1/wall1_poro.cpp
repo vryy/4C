@@ -16,6 +16,7 @@
 
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils_factory.H"
 
 //for secondDerivativesZero
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
@@ -164,6 +165,32 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
   init_=true;
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_Poro<distype>::Lines()
+{
+  // do NOT store line or surface elements inside the parent element
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization,
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<Wall1Line,Wall1_Poro>(DRT::UTILS::buildLines,this);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_Poro<distype>::Surfaces()
+{
+  std::vector<Teuchos::RCP<Element> > surfaces(1);
+  surfaces[0]= Teuchos::rcp(this, false);
+  return surfaces;
 }
 
 /*----------------------------------------------------------------------*

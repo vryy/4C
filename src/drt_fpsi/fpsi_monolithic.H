@@ -136,16 +136,16 @@ class MonolithicBase : public FPSI_Base
     const ADAPTER::Coupling& StructureAleCoupling()       const { return *coupsa_; }
     const ADAPTER::Coupling& InnerStructureFluidCoupling()const { return *innercoupsf_;}
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid   (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct   (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> SmallFluidToStruct   (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> SmallStructToFluid   (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle     (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct     (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle      (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid      (Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToPorofluid(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> PorofluidToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> StructToFluid   (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct   (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> SmallFluidToStruct   (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> SmallStructToFluid   (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> StructToAle     (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToStruct     (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAle      (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluid      (Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToPorofluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> PorofluidToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     Teuchos::RCP<ADAPTER::Coupling>                  couple_porofluid_fluid_matching_;
     Teuchos::RCP<ADAPTER::Coupling>                  couple_porofluid_fluid_;

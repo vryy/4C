@@ -109,6 +109,24 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
+  /*!
+  \brief Get vector of RCPs to the lines of this element
+
+  */
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+
+  /*!
+  \brief Get vector of RCPs to the surfaces of this element
+
+  */
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
+
+  /*!
+  \brief Get vector of RCPs to the volumes of this element
+
+  */
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
+
   //! @name Access methods
 
   /*!
