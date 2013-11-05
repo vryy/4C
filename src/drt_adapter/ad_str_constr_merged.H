@@ -69,37 +69,52 @@ namespace ADAPTER {
     );
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS();
+    virtual Teuchos::RCP<const Epetra_Vector> RHS();
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispnp();
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
 
     /// known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> Dispn();
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn();
+
+    /*! \brief known velocity at \f$t_{n}\f$
+     *
+     *  Lagrange multiplier does not have a time derivative. Though we need a map
+     *  including the Lagrange multiplier, thus, we include it and set it to zero.
+     */
+    virtual Teuchos::RCP<const Epetra_Vector> Veln();
+
+    /*! known acceleration at \f$t_{n}\f$
+     *
+     *  Lagrange multiplier does not have a time derivative. Though we need a map
+     *  including the Lagrange multiplier, thus, we include it and set it to zero.
+     */
+    virtual Teuchos::RCP<const Epetra_Vector> Accn();
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
 
+    /// apply interface forces to structural solver
+    ///
+    /// This prepares a new solve of the structural field within one time
+    /// step. The middle values are newly created.
+    ///
+    /// \note This is not yet the most efficient implementation.
+    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// update displacement and evaluate elements
-    void Evaluate(
+    virtual void Evaluate(
       Teuchos::RCP<const Epetra_Vector> dispstepinc  ///< solution increment between time step n and n+1
     );
-
-    /// communication object at the interface
-    virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const
-    {
-      return interface_;
-    }
 
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
@@ -149,9 +164,6 @@ namespace ADAPTER {
     virtual int Integrate() { return structure_->Integrate(); }
 
   private:
-
-    /// the interface map setup for interface <-> full translation
-    Teuchos::RCP<STR::AUX::MapExtractor> interface_;
 
     /// the constraint map setup for full <-> stuct+constr transition
     Teuchos::RCP<LINALG::MapExtractor> conmerger_;

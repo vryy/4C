@@ -35,7 +35,7 @@ namespace ADAPTER
   {
   public:
 
-    // constructor
+    /// constructor
     explicit FSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
 
@@ -45,7 +45,7 @@ namespace ADAPTER
       return interface_;
     }
 
-    //! switch structure field to block matrix in fsi simulations
+    /// switch structure field to block matrix in fsi simulations
     virtual void UseBlockMatrix();
 
     /// linear structure solve with just a interface load
@@ -77,14 +77,15 @@ namespace ADAPTER
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
 
-		//! rebuild FSI interface from structure side
+		/// rebuild FSI interface from structure side
     virtual void RebuildInterface();
 
-
-  private:
+  protected:
 
     /// the interface map setup for interface <-> full translation
     Teuchos::RCP<STR::AUX::MapExtractor> interface_;
+
+  private:
 
     /// predictor type
     int predictor_;

@@ -204,17 +204,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/// @name Apply interface forces
-
-/// apply interface forces to structural solver
-///
-/// This prepares a new solve of the structural field within one time
-/// step. The middle values are newly created.
-///
-/// \note This is not yet the most efficient implementation.
+// Apply interface forces
 void ADAPTER::FSIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
 {
-  Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*Discretization()->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
 
   interface_->AddFSICondVector(iforce, fifc);
 

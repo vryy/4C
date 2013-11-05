@@ -126,6 +126,40 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Dispn()
 }
 
 /*----------------------------------------------------------------------*/
+/* get last converged velocities V_{n} with zeroed Lagrange multiplier */
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Veln()
+{
+  //get last converged state from structure and constraintmanager
+  Teuchos::RCP<const Epetra_Vector> strudis = structure_->Veln();
+  Teuchos::RCP<const Epetra_Vector> lagrmult
+    = Teuchos::rcp(new Epetra_Vector(structure_->GetConstraintManager()->GetLagrMultVectorOld()->Map(),true));
+
+  //merge stuff together
+  Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+  conmerger_->AddCondVector(strudis,mergedstat);
+  conmerger_->AddOtherVector(lagrmult,mergedstat);
+
+  return mergedstat;
+}
+
+/*----------------------------------------------------------------------*/
+/* get last converged accelerations A_{n} with zeroed Lagrange multiplier */
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::Accn()
+{
+  //get last converged state from structure and constraintmanager
+  Teuchos::RCP<const Epetra_Vector> strudis = structure_->Accn();
+  Teuchos::RCP<const Epetra_Vector> lagrmult
+    = Teuchos::rcp(new Epetra_Vector(structure_->GetConstraintManager()->GetLagrMultVectorOld()->Map(),true));
+
+  //merge stuff together
+  Teuchos::RCP<Epetra_Vector> mergedstat = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+  conmerger_->AddCondVector(strudis,mergedstat);
+  conmerger_->AddOtherVector(lagrmult,mergedstat);
+
+  return mergedstat;
+}
+
+/*----------------------------------------------------------------------*/
 /* non-overlapping DOF map */
 Teuchos::RCP<const Epetra_Map> ADAPTER::StructureConstrMerged::DofRowMap()
 {
@@ -199,4 +233,26 @@ const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap() const
   return *(LINALG::MergeMap(structure_->DomainMap(),
                             *(structure_->GetConstraintManager()->GetConstraintMap()),
                             false));
+}
+
+/*----------------------------------------------------------------------*/
+// Apply interface forces
+void ADAPTER::StructureConstrMerged::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
+{
+  // create vector with displacement and constraint DOFs
+  Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
+
+  // insert interface forces
+  interface_->AddFSICondVector(iforce, fifc);
+
+  // extract the force values from the displacement DOFs only
+  Teuchos::RCP<Epetra_Vector> fifcdisp = LINALG::CreateVector(*conmerger_->CondMap(), true);
+  conmerger_->ExtractCondVector(fifc,fifcdisp);
+
+  // set interface forces within the structural time integrator
+  SetForceInterface(fifcdisp);
+
+  PreparePartitionStep();
+
+  return;
 }
