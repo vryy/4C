@@ -354,10 +354,6 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()
     { return structure_->WriteAccessVelnp(); }
 
-    /// extract accelerations
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccn()
-    { return structure_->WriteAccessAccn(); }
-
     /// extract rhs (used to calculate reaction force for post-processing)
     virtual Teuchos::RCP<Epetra_Vector> Freact()
     { return structure_->Freact(); }

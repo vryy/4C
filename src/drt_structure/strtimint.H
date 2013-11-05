@@ -866,9 +866,6 @@ namespace STR
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return VelNew(); }
 
-    //! extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccn(){ return Acc(); }
-
     //@}
 
     //! @name TSI specific methods

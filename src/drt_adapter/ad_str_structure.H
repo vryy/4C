@@ -383,9 +383,6 @@ namespace ADAPTER {
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
-    /// extract velocities
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccn() = 0;
-
     /// extract rhs (used to calculate reaction force for post-processing)
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
