@@ -6701,3 +6701,145 @@ void test_hex8quad4selfcut92()
   intersection.Cut( true, "DirectDivergence" );
 
 }
+
+/*------------------------------------------------------------------------------------*
+ * hex8 background element is cut by two quad cut surfaces. An edge of one cut surface
+ * coincides with an edge of another cut surface
+ *------------------------------------------------------------------------------------*/
+void test_hex8quad4alignedEdges()
+{
+  GEO::CUT::MeshIntersection intersection;
+  std::vector<int> nids;
+
+  int sidecount = 0;
+
+  {
+    Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+    quad4_xyze(0,0) = 0.5;//0.8;
+    quad4_xyze(1,0) = -0.1;
+    quad4_xyze(2,0) = 1.1;
+
+    quad4_xyze(0,1) = 0.5;//0.8;
+    quad4_xyze(1,1) = -0.1;
+    quad4_xyze(2,1) = -0.1;
+
+    quad4_xyze(0,2) = 0.5;
+    quad4_xyze(1,2) = 0.5;
+    quad4_xyze(2,2) = -0.1;
+
+    quad4_xyze(0,3) = 0.5;
+    quad4_xyze(1,3) = 0.5;
+    quad4_xyze(2,3) = 1.1;
+
+    nids.clear();
+    nids.push_back( 11 );
+    nids.push_back( 12 );
+    nids.push_back( 13 );
+    nids.push_back( 14 );
+    intersection.AddCutSide( ++sidecount, nids, quad4_xyze, DRT::Element::quad4 );
+  }
+
+  {
+    Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+    quad4_xyze(0,0) = 0.5;
+    quad4_xyze(1,0) = 0.5;
+    quad4_xyze(2,0) = 1.1;
+
+    quad4_xyze(0,1) = 0.5;
+    quad4_xyze(1,1) = 0.5;
+    quad4_xyze(2,1) = -0.1;
+
+    quad4_xyze(0,2) = 0.5;//0.6;
+    quad4_xyze(1,2) = 1.1;
+    quad4_xyze(2,2) = -0.1;
+
+    quad4_xyze(0,3) = 0.5;//0.6;
+    quad4_xyze(1,3) = 1.1;
+    quad4_xyze(2,3) = 1.1;
+
+    nids.clear();
+    nids.push_back( 15 );
+    nids.push_back( 16 );
+    nids.push_back( 17 );
+    nids.push_back( 18 );
+    intersection.AddCutSide( ++sidecount, nids, quad4_xyze, DRT::Element::quad4 );
+  }
+
+  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+  hex8_xyze(0,0) = 1.0;
+  hex8_xyze(1,0) = 1.0;
+  hex8_xyze(2,0) = 1.0;
+  hex8_xyze(0,1) = 1.0;
+  hex8_xyze(1,1) = 0.0;
+  hex8_xyze(2,1) = 1.0;
+  hex8_xyze(0,2) = 0.0;
+  hex8_xyze(1,2) = 0.0;
+  hex8_xyze(2,2) = 1.0;
+  hex8_xyze(0,3) = 0.0;
+  hex8_xyze(1,3) = 1.0;
+  hex8_xyze(2,3) = 1.0;
+  hex8_xyze(0,4) = 1.0;
+  hex8_xyze(1,4) = 1.0;
+  hex8_xyze(2,4) = 0.0;
+  hex8_xyze(0,5) = 1.0;
+  hex8_xyze(1,5) = 0.0;
+  hex8_xyze(2,5) = 0.0;
+  hex8_xyze(0,6) = 0.0;
+  hex8_xyze(1,6) = 0.0;
+  hex8_xyze(2,6) = 0.0;
+  hex8_xyze(0,7) = 0.0;
+  hex8_xyze(1,7) = 1.0;
+  hex8_xyze(2,7) = 0.0;
+
+  nids.clear();
+  for ( int i=0; i<8; ++i )
+    nids.push_back( i );
+
+  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+
+  intersection.Status();
+  intersection.Cut( true, "Tessellation" );
+
+  std::vector<double> tessVol,momFitVol,dirDivVol;
+
+  GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+        i!=other_cells.end();
+        ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    tessVol.push_back(vc->Volume());
+  }
+
+  intersection.Status();
+
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+        i!=other_cells.end();
+        ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,"Tessellation");
+    momFitVol.push_back(vc->Volume());
+  }
+
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+           i!=other_cells.end();
+           ++i )
+   {
+     GEO::CUT::VolumeCell * vc = &**i;
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,"Tessellation");
+     dirDivVol.push_back(vc->Volume());
+   }
+
+  std::cout<<"the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
+  for(unsigned i=0;i<tessVol.size();i++)
+  {
+    std::cout<<tessVol[i]<<"\t"<<momFitVol[i]<<"\t"<<dirDivVol[i]<<"\n";
+    if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-9 )
+      dserror("volume predicted by either one of the method is wrong");
+  }
+}

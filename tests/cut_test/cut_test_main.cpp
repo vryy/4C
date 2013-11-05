@@ -206,6 +206,7 @@ void test_cut_volumes3();
 void test_fluidfluid();
 void test_fluidfluid2();
 
+//--- test cases for self-cut library---
 void test_hex8quad4selfcut20();
 void test_hex8quad4selfcut21();
 void test_hex8quad4selfcut22();
@@ -250,6 +251,8 @@ void test_hex8quad4selfcut86();
 
 void test_hex8quad4selfcut91();
 void test_hex8quad4selfcut92();
+
+void test_hex8quad4alignedEdges();
 
 typedef void ( *testfunct )();
 
@@ -409,6 +412,8 @@ int main( int argc, char ** argv )
 
   functable["sc91"] = test_hex8quad4selfcut91;
   functable["sc92"] = test_hex8quad4selfcut92;
+
+  functable["sc101"] = test_hex8quad4alignedEdges;
 
   functable["quad4_line2"] = test_quad4_line2;
   functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;
