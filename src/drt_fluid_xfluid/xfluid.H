@@ -546,10 +546,20 @@ namespace FLD
     void ReadRestartBound(int step);
 
     /// Get elemets of boundary discretization that defines the tip of propagating crack
-    void GetCrackTipElements( std::map<int, Teuchos::RCP<DRT::Element> >& tip ) { tip = crackTip_; }
+    //void GetCrackTipElements( std::map<int, Teuchos::RCP<DRT::Element> >& tip ) { tip = crackTip_; }
 
     /// Given the nodes that defines crack tip, this function builds proper crack tip elements and add to boundary discretization
-    void addCrackTipElements( const std::vector<int>* tipNodes );
+    //void addCrackTipElements( const std::vector<int>* tipNodes );
+
+    /// Get the nodes that defines crack tip
+    void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ){tip_nodes = tip_nodes_;}
+
+    void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
+    {
+      tip_nodes_.clear();
+      if( tip_nodes.size() > 0 )
+        tip_nodes_.insert( tip_nodes.begin(), tip_nodes.end() );
+    }
 
 
   private:
@@ -831,8 +841,12 @@ namespace FLD
 
     //-----------------------------FSI with cracking structure ------------------------
 
-    /// crack tip elements in case of FSI with cracking structure
-    std::map<int, Teuchos::RCP<DRT::Element> > crackTip_;
+		/// nodes of the crack tip when simulating FSI with crack
+    std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
+    
+    
+/*    /// crack tip elements in case of FSI with cracking structure
+    std::map<int, Teuchos::RCP<DRT::Element> > crackTip_;*/
 
 
   };

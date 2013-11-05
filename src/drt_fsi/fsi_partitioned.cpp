@@ -494,11 +494,18 @@ void FSI::Partitioned::modifyCutInterfaceXFEM()
 
   Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
   ad_flui.BoundaryDis( boundary_dis );
-
+  
+  /*// old method of dealing with crack tip elements rather than nodes
   std::map<int, Teuchos::RCP<DRT::Element> > tipele;
   ad_flui.GetCrackTipElements( tipele );
 
-  structfield->addCrackSurfacesToCutSides( boundary_dis, tipele );
+  structfield->addCrackSurfacesToCutSides( boundary_dis, tipele );*/
+
+  std::map<int, LINALG::Matrix<3,1> > tip_nodes;
+  ad_flui.GetCrackTipNodes( tip_nodes );
+  structfield->addCrackSurfacesToCutSides( boundary_dis, tip_nodes );
+  ad_flui.SetCrackTipNodes( tip_nodes );
+
 }
 
 

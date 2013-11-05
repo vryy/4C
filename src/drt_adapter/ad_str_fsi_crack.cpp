@@ -50,8 +50,6 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
   // TO-DO is to find a suitable way of including nodes and elements into structural discretization
   // after time integration is built
 
-  std::vector<dcohDetails_> allDcohe;
-
   {
     structdis_ = DRT::Problem::Instance()->GetDis("structure");
 
@@ -61,13 +59,14 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
     for (int i=0; i<totEle; i++)
     {
       DRT::Element* Ele = structdis_->lRowElement(i);
+
       switch( Ele->Shape() )
       {
       case DRT::Element::line2:
       {
         const int* nodes = Ele->NodeIds();
-        dcohDetails_ dcoh = { nodes[0], nodes[1], Ele->Id() };
-        allDcohe.push_back( dcoh );
+        coheEleMasSla_[Ele->Id()] = std::make_pair( nodes[0], nodes[1] );
+
         break;
       }
       default:
@@ -104,18 +103,16 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
   const int numSlaSur = slaveCrackDis_->NumMyRowElements();
 
   //structdis_->Print(std::cout);//blockkk
-  std::cout<<"--------printing Master crack discretization---------\n";//blockkk
-  masterCrackDis_->Print(std::cout);//blockkk
-  std::cout<<"--------printing Slave crack discretization---------\n";//blockkk
-  slaveCrackDis_->Print(std::cout);//blockkk
+  //std::cout<<"--------printing Master crack discretization---------\n";//blockkk
+  //masterCrackDis_->Print(std::cout);//blockkk
+  //std::cout<<"--------printing Slave crack discretization---------\n";//blockkk
+  //slaveCrackDis_->Print(std::cout);//blockkk
+
+  //dserror("done");//blockkk
 
   for ( int i=0; i<numMasSur; i++ )
   {
     DRT::Element* mSurEle = masterCrackDis_->lRowElement(i);
-
-    /**********-----------------------------------------*/ //blockkkk
-    mSurEle->Print(std::cout);
-    /**********-----------------------------------------*/
 
     // ------------------------------------------------------------------------------------
     // STEP 1 : find all dcohesive elements connected to this surface
@@ -131,17 +128,21 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
     // for this master surface element, the corresponding slave element should have these nodes
     std::vector<int> reqdSlaNod;
     std::vector<int> tempMas;
-    for( std::vector<dcohDetails_>::iterator cohit = allDcohe.begin(); cohit != allDcohe.end(); cohit++ )
+
+    for( std::map<int, std::pair<int,int> >::iterator cohit = coheEleMasSla_.begin();
+                                                      cohit != coheEleMasSla_.end(); cohit ++ )
     {
-      int mas_coh = cohit->masNodId;
+      std::pair<int,int> pai = cohit->second;
+      int mas_coh = pai.first;
 
       for( int mnod=0; mnod<mSurEle->NumNode(); mnod++ )
       {
         if( mas_coh == mEleNodes[mnod] )
         {
           tempMas.push_back( mas_coh );
-          dcohMasEle.push_back( cohit->dcohId );
-          reqdSlaNod.push_back( cohit->slaNodId );
+          dcohMasEle.push_back( cohit->first );
+          reqdSlaNod.push_back( pai.second );
+
           break;
         }
       }
@@ -198,6 +199,7 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
       DRT::Element* sSurEle = slaveCrackDis_->lRowElement(j);
       const int* sEleNodes = sSurEle->NodeIds();
 
+      // only tri-tri or quad-quad combination can be master-slave
       if( mSurEle->NumNode() != sSurEle->NumNode() )
         continue;
 
@@ -271,6 +273,15 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
   }
   dserror("done printing\n");//blockkk*/
   /******************************************************************///blockkk
+
+  /********************/ //blockkk
+  /*for( std::map<int, std::pair<int,int> >::iterator cohit = coheEleMasSla_.begin();
+                                                        cohit != coheEleMasSla_.end(); cohit ++ )
+  {
+    std::cout<<"ele id = "<<cohit->first<<" mas sla = "<<cohit->second.first<<" "<<cohit->second.second<<"\n";
+  }
+  dserror("done");*/
+  /********************/ //blockkk
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -292,31 +303,17 @@ void ADAPTER::FSICrackingStructure::checkAllDone()
   }
 
   allDone_ = true;
+
+
 }
 
-void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+/*void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
                                                                 std::map<int, Teuchos::RCP<DRT::Element> >& tipele )
 {
   if( allDone_ )
   {
     return;
   }
-
-
-  /******************************************************************///blockkk
-  /*std::cout<<"number of poss surf = "<<possSurfaces_.size()<<"\n";//blockkk
-  for( std::map<DRT::Element*,crackSurface_>::iterator ip=possSurfaces_.begin();ip!=possSurfaces_.end();ip++ )
-  {
-    crackSurface_ crs1 = ip->second;
-    std::cout<<"number of cohesive elements = "<<crs1.dcoh_.size()<<"\n";
-    std::cout<<"they are = "<<crs1.dcoh_[0]<<"\t"<<crs1.dcoh_[1]<<"\n";
-    std::cout<<"master element id = "<<crs1.mas_->Id()<<"\n";
-    std::cout<<"number of nodes = "<<crs1.mas_->NumNode()<<"\n";
-    crs1.mas_->Print(std::cout);
-    crs1.sla_->Print(std::cout);
-  }*/
-  //dserror("done printing new\n");//blockkk
-  /******************************************************************///blockkk
 
   std::vector<DRT::Element*> crk_sur;           // crack surface elements to be added to cut sides
   int tipeleno = 0;                             // counter to see how many tip elements are added
@@ -364,8 +361,8 @@ void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT
     crs1.mas_->Print(std::cout);//blockkk
 
     // no cohesive elements attached with this crack surface fails
-    /*if( workele.size() == crs1.mas_->NumNode() )
-      continue;*/
+    //if( workele.size() == crs1.mas_->NumNode() )
+    //  continue;
 
     std::cout<<"number faile = "<<failno<<"\t working = "<<workele.size()<<"\n";//blockkk
 
@@ -378,15 +375,6 @@ void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT
       crk_sur.push_back( crs1.sla_ );
       crs1.setProcInfo( true );
     }
-
-    /****************************/ //blockkk
-    /*std::cout<<"number of surfaces to be added = "<<crk_sur.size()<<"\n";
-    for( std::vector<DRT::Element*>::iterator itcrk = crk_sur.begin(); itcrk!=crk_sur.end(); itcrk++ )
-    {
-      DRT::Element* cr = *itcrk;
-      cr->Print(std::cout);//blockkk
-    }*/
-    /****************************/
 
     // TODO: this works only for quad elements
     // this means that the virtual crack closing elements should be added with these spring elements
@@ -430,11 +418,11 @@ void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT
   boundary_dis->Print(std::cout);//blockkk
   std::cout<<"number of crack surfaces to be = "<<crk_sur.size()<<"\n";//blockkk
 
-  /*for( unsigned ma=0; ma<mascrk.size();ma++ )
-  {
-    DRT::Element* masele = masterCrackDis_->gElement( mascrk[ma] );
-    this->addThisElementBoundary( boundary_dis, masele );
-  }*/
+  //for( unsigned ma=0; ma<mascrk.size();ma++ )
+  //{
+   // DRT::Element* masele = masterCrackDis_->gElement( mascrk[ma] );
+   // this->addThisElementBoundary( boundary_dis, masele );
+  //}
 
   //-------------
   std::map<std::string,Teuchos::RCP<DRT::Condition> > fool;
@@ -443,10 +431,6 @@ void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT
 
   const DRT::Condition* co2 = boundary_dis->GetCondition( "XFEMCoupling" );
   Teuchos::RCP<DRT::Condition> condi2 = Teuchos::rcp(new DRT::Condition(*co2));
-
-  /*condi1->Print(std::cout);//blockkk
-  condi2->Print(std::cout);//blockkk
-  dserror("condi\n");//blockkk*/
 
   fool["FSICoupling"] = condi1;
   fool["XFEMCoupling"] = condi2;
@@ -492,17 +476,6 @@ void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT
 
     boundary_dis->FillComplete();
 
-    //-----------------
-    /*const DRT::Condition* co1 = boundary_dis->GetCondition( "FSICoupling" );
-    Teuchos::RCP<DRT::Condition> condi = Teuchos::rcp(new DRT::Condition(*co1));
-    spr->SetCondition( "FSICoupling", condi );
-
-    co1 = boundary_dis->GetCondition( "XFEMCoupling" );
-    condi = Teuchos::rcp(new DRT::Condition(*co1));
-    spr->SetCondition( "XFEMCoupling", condi );*/
-    //-----------------
-
-    boundary_dis->FillComplete();
     std::cout<<"element added once\n";//blockkk
   }
 
@@ -513,17 +486,194 @@ void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT
 
   // if to_add > 0 and tipeleno > 0 -- meaning we are adding atleast one crack surface into cut surface
   // unless all crack surfaces are processed, atleast one virtual tip closing element should be added
-  /*if( (not allDone_) and tipeleno == 0 and crk_sur.size() > 0 )
-  {
-    dserror( "either all crack surfaces should have been processed or at least one virtual tip closing element should"
-        "be added at each time step" );
-  }*/
+  //if( (not allDone_) and tipeleno == 0 and crk_sur.size() > 0 )
+  //{
+   // dserror( "either all crack surfaces should have been processed or at least one virtual tip closing element should"
+    //    "be added at each time step" );
+  //}
 
   //boundary_dis->Print(std::cout);//blockkk
   //dserror("done");//blockkk
 
   boundary_dis->Print(std::cout);//blockkk
   //dserror("done");//blockkk
+}*/
+
+void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+                                                                std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
+{
+  if( allDone_ )
+  {
+    return;
+  }
+
+  std::vector<DRT::Element*> crk_sur;           // crack surface elements to be added to cut sides
+
+  std::cout<<"----------------------I am inserting new crack surface elemts--------------------\n";//blockkk
+
+  std::cout<<"number of crack surfaces = "<<possSurfaces_.size()<<"\n";//blockkk
+
+  for( std::map<DRT::Element*,crackSurface_>::iterator it = possSurfaces_.begin();
+                                                       it != possSurfaces_.end(); it++ )
+  {
+    crackSurface_& crs1 = it->second;
+
+    // this master-slave combination is already processed
+    if( crs1.isDone_ )
+      continue;
+
+    // element ids of all cohesive elements attached with this surface
+    std::vector<int> cohele = crs1.dcoh_;
+                     // no of failed cohesive elements
+    bool allfailed = true;              // if all cohesive elements failed
+    std::vector<int> workele, failele;           // Ids of cohesive elements that are still working
+
+    //structdis_->Print(std::cout);//blockkk
+
+    for( unsigned cohno=0; cohno<cohele.size();cohno++ )
+    {
+      int cohid = cohele[cohno];
+      DRT::ELEMENTS::Dcohesive* ele = dynamic_cast<DRT::ELEMENTS::Dcohesive*>(structdis_->gElement( cohid ));
+
+      if( ele->isFailed() )
+      {
+        failele.push_back( cohid );
+        //std::cout<<"fail no = "<<failele.size()<<"\n";//blockkk
+      }
+      else
+      {
+        allfailed = false;
+        workele.push_back( cohid );
+      }
+    }
+
+    //std::cout<<"workele = "<<workele.size()<<"\tnumnode = "<<crs1.mas_->NumNode()<<"\n";//blockkk
+    //crs1.mas_->Print(std::cout);//blockkk
+
+    // no cohesive elements attached with this crack surface fails
+    //if( workele.size() == crs1.mas_->NumNode() )
+    //  continue;
+
+    //std::cout<<"number faile = "<<failele.size()<<"\t working = "<<workele.size()<<"\n";//blockkk
+
+    //std::cout<<"failed ele = "<<failele.size()<<"\n";//blockkk
+
+    //TODO: Check whether this strategy works for triangular elements
+    if( allfailed or failele.size() > 1 )
+    {
+      crk_sur.push_back( crs1.mas_ );
+      crk_sur.push_back( crs1.sla_ );
+      crs1.setProcInfo( true );
+    }
+
+    // If a cohesive element has failed, the nodes of these elements cannot be
+    // defining crack tip
+    for( unsigned failno = 0; failno < failele.size(); failno++ )
+    {
+      int coheleno = failele[failno];
+      std::pair<int,int> pai = coheEleMasSla_[coheleno];
+
+      std::map<int, LINALG::Matrix<3,1> >::iterator it1 = tip_nodes.find( pai.first );
+      std::map<int, LINALG::Matrix<3,1> >::iterator it2 = tip_nodes.find( pai.second );
+
+      if( it1 == tip_nodes.end() and it2 == tip_nodes.end() )
+        continue;
+
+#ifdef DEBUG
+      if( ( it1 != tip_nodes.end() and it2 == tip_nodes.end() ) or
+          ( it1 == tip_nodes.end() and it2 != tip_nodes.end() ) )
+      {
+        dserror( "if one node of a cohesive element is on crack tip, another node should also be so" );
+      }
+#endif
+
+      tip_nodes.erase( it1 );
+      tip_nodes.erase( it2 );
+    }
+  }
+
+  //std::cout<<"number of crack surfaces to be = "<<crk_sur.size()<<"\n";//blockkk
+  //if( crk_sur.size() > 0 )
+  //  dserror("done");
+
+  /**************************************///blockkk
+  /*for( std::vector<DRT::Element*>::iterator itcrk = crk_sur.begin(); itcrk!=crk_sur.end(); itcrk++ )
+  {
+    DRT::Element* cr = *itcrk;
+
+    cr->Print(std::cout);//blockkk
+  }
+  dserror("okay");*/
+  /**************************************///blockkk
+
+  //for( unsigned ma=0; ma<mascrk.size();ma++ )
+  //{
+   // DRT::Element* masele = masterCrackDis_->gElement( mascrk[ma] );
+   // this->addThisElementBoundary( boundary_dis, masele );
+  //}
+
+  //-------------
+  std::map<std::string,Teuchos::RCP<DRT::Condition> > fool;
+  const DRT::Condition* co1 = boundary_dis->GetCondition( "FSICoupling" );
+  Teuchos::RCP<DRT::Condition> condi1 = Teuchos::rcp(new DRT::Condition(*co1));
+
+  const DRT::Condition* co2 = boundary_dis->GetCondition( "XFEMCoupling" );
+  Teuchos::RCP<DRT::Condition> condi2 = Teuchos::rcp(new DRT::Condition(*co2));
+
+  fool["FSICoupling"] = condi1;
+  fool["XFEMCoupling"] = condi2;
+  //-------------
+
+  //TODO: Check whether the newly added elements preserves correct normal direction
+  // if not decide and set this normal appropriately
+  for( std::vector<DRT::Element*>::iterator itcrk = crk_sur.begin(); itcrk!=crk_sur.end(); itcrk++ )
+  {
+    DRT::Element* cr = *itcrk;
+
+    //cr->Print(std::cout);//blockkk
+    //std::cout<<"crack element added\n";//blockkk
+
+    int neweleid = boundary_dis->NumGlobalElements();
+    Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","quad4", neweleid, cr->Owner() );
+
+    spr->SetNodeIds( cr->NumNode(), cr->NodeIds() );
+
+    //spr->Print(std::cout);//blockkk
+    //dserror("got this new elt");//blockkk
+
+    //const int* nodesele = cr->NodeIds();
+    DRT::Node** nodesele = cr->Nodes();
+    for( int noid = 0; noid<cr->NumNode(); noid++ )
+    {
+
+      const DRT::Node* nod = nodesele[noid];
+      int gloid = nod->Id();
+      if( not boundary_dis->HaveGlobalNode( gloid ) )
+      {
+        Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp( new DRT::Node( gloid, nod->X(), nod->Owner() ) );
+
+        boundary_dis->AddNode( newnode );
+
+        newnode->SetCondition( fool.begin()->first, fool.begin()->second );
+        newnode->SetCondition( (fool.begin()++)->first, (fool.begin()++)->second );
+      }
+    }
+
+    boundary_dis->AddElement( spr );
+
+    boundary_dis->FillComplete();
+  }
+
+  // after adding the elements, check whether all possible crack surfaces are added
+  this->checkAllDone();
+
+  // if to_add > 0 and tipeleno > 0 -- meaning we are adding atleast one crack surface into cut surface
+  // unless all crack surfaces are processed, atleast one virtual tip closing element should be added
+  //if( (not allDone_) and tipeleno == 0 and crk_sur.size() > 0 )
+  //{
+   // dserror( "either all crack surfaces should have been processed or at least one virtual tip closing element should"
+    //    "be added at each time step" );
+  //}
 }
 
 void ADAPTER::FSICrackingStructure::deleteOldTipElements( Teuchos::RCP<DRT::Discretization>& boundary,
@@ -556,23 +706,16 @@ void ADAPTER::FSICrackingStructure::addThisElementBoundary( Teuchos::RCP<DRT::Di
 
 
   DRT::Node** nodes = spr->Nodes();
-  std::cout<<"got the nodes\n";//blockkk
   for( int noid = 0; noid<spr->NumNode(); noid++ )
   {
     DRT::Node* node = nodes[noid];
-    std::cout<<"I fot this node\n";//blockkk
     if( not boundary_dis->HaveGlobalNode( node->Id() ) )
     {
-      std::cout<<"not found node = "<<node->Id()<<"\n";//blockkk
-
-      std::cout<<"i got old node\n";//blockkk
       //Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp( new DRT::Node( old->Id(), old->X(), old->Owner() ) );
       Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp( node->Clone() );
-      std::cout<<"new node created\n";//blockkk
       boundary_dis->AddNode( newnode );
     }
   }
-  std::cout<<"added the required nodes\n";//blockkk
 
   //-----------------
   std::map<std::string,Teuchos::RCP<DRT::Condition> > cond;
@@ -584,11 +727,6 @@ void ADAPTER::FSICrackingStructure::addThisElementBoundary( Teuchos::RCP<DRT::Di
 
   boundary_dis->AddElement( spr );
 
-  spr->Print(std::cout);//blockkk
-  dserror("done");//blockkk
-
-  //boundary_dis->Print(std::cout);//blockkk
 
   boundary_dis->FillComplete();
-  std::cout<<"element added once\n";//blockkk
 }

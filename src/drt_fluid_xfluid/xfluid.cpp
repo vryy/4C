@@ -94,6 +94,9 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   // increase the state-class counter
   xfluid_.state_it_++;
 
+  // --- set crack tip nodes to fluid-wizard ---
+  wizard_->setCrackTipNodes( xfluid_.tip_nodes_ );
+
   //--------------------------------------------------------------------------------------
   // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizard creates also a cut-object of type GEO::CutWizard which performs the "CUT"
@@ -268,6 +271,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
     xfluid_.fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
   }
 
+  xfluid_.boundarydofrowmap_ = xfluid_.boundarydis2_->DofRowMap();
 
   C_fs_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
   C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid.boundarydofrowmap_,0,true,false,LINALG::SparseMatrix::FE_MATRIX));
@@ -2237,7 +2241,28 @@ FLD::XFluid::XFluid(
   boundarydis2_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis2_->FillComplete();
 
+  /*----------- POSSIBILITY 1 --- adding zero displacement at crack tip nodes----------------------*/
   if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  {
+    DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
+
+    const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
+
+    for(std::vector<int>::const_iterator inod=tipnodes->begin(); inod!=tipnodes->end();inod++ )
+    {
+      const int nodid = *inod;
+      LINALG::Matrix<3, 1> xnod( soliddis_->gNode( nodid )->X() );
+
+      tip_nodes_[nodid] = xnod;
+    }
+
+    if( tipnodes->size() == 0 )
+      dserror("crack initiation points unspecified\n");
+
+  }
+
+  /*---------------------- POSSIBILITY 2 --- adding crack tip elements ----------------------------*/
+  /*if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
   {
     DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
 
@@ -2247,7 +2272,7 @@ FLD::XFluid::XFluid(
       dserror("crack initiation points unspecified\n");
 
     addCrackTipElements( tipnodes );
-  }
+  }*/
 
 /*  RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
 
@@ -2309,7 +2334,7 @@ FLD::XFluid::XFluid(
   //--------------------------------------------------------
   // create interface fields
   // -------------------------------------------------------
-  boundarydofrowmap_ = boundarydis_->DofRowMap();
+  boundarydofrowmap_ = boundarydis2_->DofRowMap();
   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
   iveln_  = LINALG::CreateVector(*boundarydofrowmap_,true);
   ivelnm_ = LINALG::CreateVector(*boundarydofrowmap_,true);
@@ -4337,16 +4362,16 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     //------------------------------------------------------------------------------------
     //                      SEMILAGRANGE RECONSTRUCTION of std values
     //------------------------------------------------------------------------------------
-    //return;
+    //return;  // Do nothing in time integration----> active for crack-fsi problem ???
     if(timint_semi_lagrangean)
     {
 
       if(myrank_==0) std::cout << "\t ...SemiLagrangean...";
 
-      boundarydis_->ClearState();
+      boundarydis2_->ClearState();
 
-      boundarydis_->SetState("idispnp",idispnp_);
-      boundarydis_->SetState("idispn",idispn_);
+      boundarydis2_->SetState("idispnp",idispnp_);
+      boundarydis2_->SetState("idispn",idispn_);
 
       RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
       LINALG::Export(*veln_Intn_,*veln_col);
@@ -6228,7 +6253,7 @@ void FLD::XFluid::ReadRestartBound(int step)
  * Define crack tip elements from given nodes                                 sudhakar 09/13
  * Add them to boundary discretization
  *---------------------------------------------------------------------------------------------*/
-void FLD::XFluid::addCrackTipElements( const std::vector<int>* tipNodes )
+/*void FLD::XFluid::addCrackTipElements( const std::vector<int>* tipNodes )
 {
   if( not tipNodes->size() == 4 )
     dserror( "at the moment handle only one element in z-direction -- pseudo-2D" );
@@ -6415,7 +6440,7 @@ void FLD::XFluid::addCrackTipElements( const std::vector<int>* tipNodes )
   }
   else
     dserror("Tip element should be either Tri or Quad\n");
-}
+}*/
 
 /*------------------------------------------------------------------------------------------------*
  | create field test

@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 
 namespace LINALG
@@ -585,8 +586,11 @@ namespace ADAPTER {
     /// return the boundary discretization of XFEM problems
     virtual void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) = 0;
 
-		/// Get crack tip elements from boundary discretization of XFEM
-    virtual void GetCrackTipElements( std::map<int, Teuchos::RCP<DRT::Element> >& tip ) = 0;
+    /// Get crack tip nodes in case of crack-FSI simulations
+    virtual void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ) = 0;
+
+		/// set crack tip nodes in case of crack-FSI simulations
+    virtual void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ) = 0;
   };
 }
 

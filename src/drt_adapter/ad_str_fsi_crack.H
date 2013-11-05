@@ -140,8 +140,11 @@ namespace ADAPTER {
     //! this means that the crack has propagated fully through the structure, and no need to calculate any further
     bool allDone_;
 
+    /*void addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+                                     std::map<int, Teuchos::RCP<DRT::Element> >& tipele );*/
+
     void addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                     std::map<int, Teuchos::RCP<DRT::Element> >& tipele );
+                                      std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
 
 
   private:
@@ -150,6 +153,9 @@ namespace ADAPTER {
 
     //! all possible surfaces that can be added as a crack surface
     std::map<DRT::Element*,crackSurface_> possSurfaces_;
+
+    //! store cohesive element id and its corresponding master and slave node ids
+    std::map<int, std::pair<int,int> > coheEleMasSla_;   // std::map<cohesive element id, std::pair<masternodeid, slavenodeid> >
 
     /*!
      * \brief Check whether all dcohesive elements are added to the FSI interface

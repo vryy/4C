@@ -99,8 +99,10 @@ public:
   //! get the node created within the cut
   GEO::CUT::Node * GetNode( int nid );
 
-private:
+  //! set the nodes representing crack tip in FSI with crack structure simulations
+  void setCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & tip ){ tip_nodes_ = tip; }
 
+private:
 
   /// cut wizard
   Teuchos::RCP<GEO::CutWizard> cut_;
@@ -110,6 +112,9 @@ private:
 
   /// cutter discretization
   DRT::Discretization & cutterdis_;
+
+  /// nodes of the crack tip when simulating FSI with crack
+  std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
 
 
 };

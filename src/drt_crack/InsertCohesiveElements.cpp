@@ -188,7 +188,7 @@ bool DRT::CRACK::InsertCohesiveElements::AreAtSameLocation( const DRT::Node* n1,
   const double* masco = n1->X();
   const double* slaco = n2->X();
 
-  if( //fabs(masco[0]-slaco[0]) > 1e-14 or
+  if( fabs(masco[0]-slaco[0]) > 1e-14 or
       fabs(masco[1]-slaco[1]) > 1e-14 or
       fabs(masco[2]-slaco[2]) > 1e-14 )
   {

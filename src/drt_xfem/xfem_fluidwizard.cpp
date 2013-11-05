@@ -53,6 +53,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   std::vector<int> lm;
   std::vector<double> mydisp;
 
+  bool is_crack = tip_nodes_.size() != 0;
+
 
   // fill the cutwizard cw with information:
   // build up the mesh_ (normal background mesh) and the cut_mesh_ (cutter mesh) created by the meshhandle:
@@ -60,6 +62,11 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   // 1. Add CutSides (sides of the cutterdiscretization)
   //      -> Update the current position of all cutter-nodes dependent on displacement idispcol
   // 2. Add Elements (elements of the background discretization)
+
+  // Ordering is very important because first we add all cut sides, and create a bounding box which contains
+  // all the cut sides
+  // Then, when adding elements from background discret, only the elements that intersect this
+  // bounding box are added
 
   // 1. Add CutSides (sides of the cutterdiscretization)
   int numcutelements = cutterdis_.NumMyColElements();
@@ -80,7 +87,6 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
       mydisp.clear();
       cutterdis_.Dof(&node, lm);
 
-
       if(lm.size() == 3) // case for BELE3 boundary elements
       {
         DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
@@ -99,17 +105,33 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
       if (mydisp.size() != 3)
         dserror("we need 3 displacements here");
 
-
       LINALG::Matrix<3, 1> disp( &mydisp[0], true ); //std::cout << "disp " << disp << std::endl;
       LINALG::Matrix<3, 1> x( node.X() ); //std::cout << "x " << x << std::endl;
 
       // update x-position of cutter node for current time step (update with displacement)
       x.Update( 1, disp, 1 );
 
+      // ------------------------------------------------------------------------------------------------
+      // --- when simulating FSI with crack, nodes that represent crack are treated separately        ---
+      // --- These nodes deform until the spring that connects them break. Only after the springs are ---
+      // --- broken, we consider it as a real displacement and introduce crack opening there.         ---
+      // --- this is advantageous. otherwise we need to introduce pseudo-elements there and should    ---
+      // --- deal with them correctly. This becomes problematic when simulating extrinsic cohesive    ---
+      // --- zone modeling                                                                            ---
+      // ------------------------------------------------------------------------------------------------
+      if( is_crack )
+      {
+        std::map<int, LINALG::Matrix<3,1> >::iterator itt = tip_nodes_.find( node.Id() );
+        if( itt != tip_nodes_.end() )
+        {
+          x = itt->second;
+        }
+      }
+
       std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
     }
-
-    // add the side of the cutter-discretization to the FluidWizard
+    
+		// add the side of the cutter-discretization to the FluidWizard
     cw.AddCutSide( 0, element, xyze );
   }
 
