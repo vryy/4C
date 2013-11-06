@@ -40,21 +40,6 @@ Maintainer: Alexander Popp
 #ifndef CONTACT_DEFINES_H
 #define CONTACT_DEFINES_H
 
-/************************************************************************/
-/* Wear algorithm options                                               */
-/************************************************************************/
-//                        IMPLICIT WEAR
-//#define WEARIMPLICITFD            /* flag for FD-check w.r.t. disp. */
-//#define WEARIMPLICITFDLM          /* flag for FD-check w.r.t. lm-mult. */
-
-//-----------------------------------------------------------------------
-
-//                        DISCRETE WEAR
-//#define CONTACTFDT_D              /* flag for FD check of mortar matrix T lin for wear cond */
-//#define CONTACTFDE_D              /* flag for FD check of mortar matrix E lin for wear cond */
-//#define CONTACTFDMORTART          /* flag for FD check of mortar matrix T */
-//#define CONTACTFDMORTARE          /* flag for FD check of mortar matrix E */
-
 
 /************************************************************************/
 /* Contact algorithm options                                            */
@@ -65,7 +50,7 @@ Maintainer: Alexander Popp
 //#define CONSISTENTSTICK		        /* flag for consistent stick branch of the complementarity function */
 //#define CONSISTENTSLIP			      /* flag for consistent slip branch of the complementarity function */
 //#define OBJECTVARSLIPINCREMENT    /* flag for object-variant slip increment created in integrator*/
-#define SIMPLETANGENT             /* flag for simple tangent formulation*/
+#define SIMPLETANGENT               /* flag for simple tangent formulation*/
 //#define TANGENTCHECK              /* Check tangents from solution step n-1 to n --> enforcing same orientation */
 //#define CONTACTCONSTRAINTXYZ
 
@@ -96,15 +81,25 @@ Maintainer: Alexander Popp
 // PENALTY DEBUGGING OPTIONS
 //#define CONTACTFDPENALTYTRAC      /* flag for FD check of penalty tractions */
 
+// IMPLICIT WEAR DEBUGGING OPTIONS
+//#define WEARIMPLICITFD            /* flag for FD-check w.r.t. disp. */
+//#define WEARIMPLICITFDLM          /* flag for FD-check w.r.t. lm-mult. */
+
+// DISCRETE WEAR DEBUGGING OPTIONS
+//#define CONTACTFDT_D              /* flag for FD check of mortar matrix T lin for wear cond */
+//#define CONTACTFDE_D              /* flag for FD check of mortar matrix E lin for wear cond */
+//#define CONTACTFDMORTART          /* flag for FD check of mortar matrix T */
+//#define CONTACTFDMORTARE          /* flag for FD check of mortar matrix E */
+
 /************************************************************************/
 /* Printing and patient specific options                                */
 /************************************************************************/
 
 // PRINTING OF SPECIFIC INFORMATION
-//#define MASTERNODESINCONTACT     /* flag for printing master nodes in contact - CONTACTFORCEOUTPUT also has to be switched on*/
-//#define PRINTSTRUCTDEFORMEDNODECOORDS /* flag for printing all nodes and xspatial in current configuration - only works for 1 processor*/
+//#define MASTERNODESINCONTACT           /* flag for printing master nodes in contact - CONTACTFORCEOUTPUT also has to be switched on*/
+//#define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag for printing all nodes and xspatial in current configuration - only works for 1 processor*/
 
 // PRESTRESSING CUSTOMIZATIONS
-//#define RESTARTAFTERPRESTRESSING /* flag for allowing restart with contact switched on after prestressing - NOTE: no contact has yet occured */
+//#define RESTARTAFTERPRESTRESSING       /* flag for allowing restart with contact switched on after prestressing - NOTE: no contact has yet occured */
 
 #endif  // #ifndef CONTACT_DEFINES_H
