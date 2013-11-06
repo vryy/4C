@@ -35,7 +35,7 @@ TIMEINTEGR                      BDF2
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
 COUPALGO                        iter_monolithicstructuresplit
-ITEMAX                          100
+ITEMAX                          10
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXTIME                         1.0
 NUMSTEP                         10
