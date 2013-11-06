@@ -124,6 +124,8 @@ public:
     VolumeInitfield,
     Mortar,
     AleWear,
+    LineMrtrSym,
+    PointMrtrSym,
     PointLocsys,
     LineLocsys,
     SurfaceLocsys,

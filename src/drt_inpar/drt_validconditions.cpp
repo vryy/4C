@@ -737,6 +737,41 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfmortar);
 
   /*--------------------------------------------------------------------*/
+  // mortar coupling symmetry condition
+
+  std::vector<Teuchos::RCP<ConditionComponent> > mrtrsymcomponents;
+  mrtrsymcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  mrtrsymcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",3)));
+
+  Teuchos::RCP<ConditionDefinition> linemrtrsym =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D",
+                                         "mrtrsym",
+                                         "Symmetry plane normal for 3D contact",
+                                         DRT::Condition::LineMrtrSym,
+                                         true,
+                                         DRT::Condition::Line));
+
+  Teuchos::RCP<ConditionDefinition> pointmrtrsym =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT MORTAR SYMMETRY CONDITIONS 2D/3D",
+                                         "mrtrsym",
+                                         "Symmetry plane normal for 2D/3D contact",
+                                         DRT::Condition::PointMrtrSym,
+                                         true,
+                                         DRT::Condition::Point));
+
+  for (unsigned i=0; i<mrtrsymcomponents.size(); ++i)
+  {
+    linemrtrsym->AddComponent(mrtrsymcomponents[i]);
+    pointmrtrsym->AddComponent(mrtrsymcomponents[i]);
+  }
+
+  condlist.push_back(linemrtrsym);
+  condlist.push_back(pointmrtrsym);
+
+
+
+
+  /*--------------------------------------------------------------------*/
   // wear in ALE description
 
   Teuchos::RCP<ConditionDefinition> linealewear =

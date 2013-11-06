@@ -138,6 +138,8 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==VolumeInitfield)               os << "Volume Initfield boundary condition: ";
   else if (Type()==Mortar)                        os << "Mortar coupling boundary condition: ";
   else if (Type()==AleWear)                       os << "ALE Wear boundary condition: ";
+  else if (Type()==LineMrtrSym)                   os << "Line contact symmetry condition: ";
+  else if (Type()==PointMrtrSym)                  os << "Point contact symmetry condition: ";
   else if (Type()==PointLocsys)                   os << "Point local coordinate system condition: ";
   else if (Type()==LineLocsys)                    os << "Line local coordinate system condition: ";
   else if (Type()==SurfaceLocsys)                 os << "Surface local coordinate system condition: ";

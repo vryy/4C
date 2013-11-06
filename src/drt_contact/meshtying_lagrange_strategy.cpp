@@ -349,7 +349,42 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
 
   // print message
   if(Comm().MyPID()==0) std::cout << "done!\n" << std::endl;
-      
+
+//#ifdef CONTACTCONSTRAINTXYZ
+  /**********************************************************************/
+  /* blank symmetry rows in dinv                                        */
+  /**********************************************************************/
+  invd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
+  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+  int err = 0;
+
+  // extract diagonal of invd into diag
+  invd_->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+  //#ifdef CONTACTCONSTRAINTXYZ
+      Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
+      LINALG::Export(*pgsdirichtoggle_,*lmDBC);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_,true);
+      tmp->Multiply(1.,*diag,*lmDBC,0.);
+      diag->Update(-1.,*tmp,1.);
+  //#endif
+
+  // re-insert inverted diagonal into invd
+  err = invd_->ReplaceDiagonalValues(*diag);
+  // we cannot use this check, as we deliberately replaced zero entries
+  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+
+  // do the multiplication M^ = inv(D) * M
+  mhatmatrix_ = LINALG::MLMultiply(*invd_,false,*mmatrix_,false,false,false,true);
+//#endif
   return;  
 }
 
@@ -1025,11 +1060,39 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   //**********************************************************************
   if (systype==INPAR::CONTACT::system_spcoupled)
   {
+    // adapt dirichtoggle vector and apply DBC
+    Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*dirichtoggle,*dirichtoggleexp);
+
     // build merged matrix
     mergedmt = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
     mergedmt->Add(*stiffmt,false,1.0,1.0);
     mergedmt->Add(*constrmt,false,1.0-alphaf_,1.0);
     mergedmt->Add(*constrmt,true,1.0,1.0);
+
+//#ifdef CONTACTCONSTRAINTXYZ
+    // we need a kzz block with the appropriate graph to apply the symmetry
+    // dirichlet condition for the Lagrange multipliers
+    Teuchos::RCP<LINALG::SparseMatrix> kzz    = Teuchos::null;
+    kzz=Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,1,false,true));
+    Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
+    LINALG::Export(*pgsdirichtoggle_,*lmDBC);
+    for (int i=0; i<lmDBC->MyLength(); ++i)
+      if ((*lmDBC)[i]==1.)
+        kzz->Assemble(0.,gsdofrowmap_->GID(i),gsdofrowmap_->GID(i));
+    kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
+
+    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+    Teuchos::RCP<LINALG::SparseMatrix> trkzz;
+    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
+    mergedmt->Add(*trkzz,false,1.,1.);
+
+    LINALG::Export(*dirichtoggle,*lmDBC);
+    lmDBC->ReplaceMap(*glmdofrowmap_);
+    Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+    LINALG::Export(*lmDBC,*lmDBCexp);
+    dirichtoggleexp->Update(1.,*lmDBCexp,1.);
+//#endif
     mergedmt->Complete();    
        
     // build merged rhs
@@ -1040,9 +1103,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*constrrhs,*constrexp);
     mergedrhs->Update(1.0,*constrexp,1.0);
     
-    // adapt dirichtoggle vector and apply DBC
-    Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*dirichtoggle,*dirichtoggleexp);
+    // apply Dirichlet B.C. to mergedrhs and mergedsol
     LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
     
     //std::cout << "sdofrowmap\n" << *gsdofrowmap_;

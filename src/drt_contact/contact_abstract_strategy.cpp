@@ -874,7 +874,11 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
   dmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+#ifdef CONTACTCONSTRAINTXYZ
+  g_       = LINALG::CreateVector(*gsdofrowmap_, true);
+#else
   g_       = LINALG::CreateVector(*gsnoderowmap_, true);
+#endif
   
   // matrix A for tsi problems
   if (tsi_) amatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
@@ -1299,9 +1303,6 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           // throw a dserror if node is Active and DBC
           if (cnode->IsDbc() && cnode->Active())
             dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
-
-          // explicity set global Lag. Mult. to zero for D.B.C nodes
-          if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
 #endif // #ifndef CONTACTPSEUDO2D
 
           // explicity set global Lag. Mult. to zero for inactive nodes
@@ -1474,14 +1475,28 @@ void CONTACT::CoAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapE
         int lid = (dbcmaps->CondMap())->LID(currdof);
 
         // store dbc status if found
-        if (lid>=0)
-        {
+        if (lid>=0 && cnode->DbcDofs()[k]==false)
           cnode->SetDbc() = true;
-          break;
+
+#ifdef CONTACTCONSTRAINTXYZ
+        // check compatibility of contact symmetry condition and displacement dirichlet conditions
+        if (lid<0 && cnode->DbcDofs()[k]==true)
+        {
+          std::cout << "node " << cnode->Id() << " at: " << cnode->X()[0] << " " << cnode->X()[1] << " " << cnode->X()[2] << std::endl;
+          std::cout << "dbcdofs: " << cnode->DbcDofs()[0] << cnode->DbcDofs()[1] << cnode->DbcDofs()[2] << std::endl;
+          dserror("Inconsistency in structure Dirichlet conditions and Mortar symmetry conditions");
         }
+#endif
       }
     }
   }
+#ifdef CONTACTCONSTRAINTXYZ
+  // create old style dirichtoggle vector (supposed to go away)
+  pgsdirichtoggle_ = LINALG::CreateVector(*gsdofrowmap_,true);
+  RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  temp->PutScalar(1.0);
+  LINALG::Export(*temp,*pgsdirichtoggle_);
+#endif
 
   return;
 }

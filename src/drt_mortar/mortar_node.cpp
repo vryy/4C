@@ -133,6 +133,7 @@ hassegment_(false)
   {
     uold()[i]=0.0;
     xspatial()[i]=X()[i];
+    dbcdofs_[i]=false;
   }
 
   return;
@@ -156,6 +157,7 @@ hassegment_(old.hassegment_)
   {
     uold()[i]=old.uold_[i];
     xspatial()[i]=old.xspatial_[i];
+    dbcdofs_[i]=false;
   }
 
   // not yet used and thus not necessarily consistent
@@ -223,6 +225,10 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,isonbound_);
   // add isdbc_
   AddtoPack(data,isdbc_);
+  // add dbcdofs_
+  AddtoPack(data,dbcdofs_[0]);
+  AddtoPack(data,dbcdofs_[1]);
+  AddtoPack(data,dbcdofs_[2]);
   // add numdof_
   AddtoPack(data,numdof_);
   // add dofs_
@@ -268,6 +274,10 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
   isonbound_ = ExtractInt(position,data);
   // isdbc_
   isdbc_ = ExtractInt(position,data);
+  // dbcdofs_
+  dbcdofs_[0] = ExtractInt(position,data);
+  dbcdofs_[1] = ExtractInt(position,data);
+  dbcdofs_[2] = ExtractInt(position,data);
   // numdof_
   ExtractfromPack(position,data,numdof_);
   // dofs_

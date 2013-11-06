@@ -242,6 +242,21 @@ discret_(discret)
                                                               Discret().Dof(node),
                                                               isslave[j]));
 
+//#ifdef CONTACTCONSTRAINTXYZ
+        // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
+        std::vector<DRT::Condition*> contactSymconditions(0);
+        Discret().GetCondition("mrtrsym",contactSymconditions);
+
+        for (unsigned j=0; j<contactSymconditions.size(); j++)
+          if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+          {
+            const std::vector<int>*    onoff  = contactSymconditions.at(j)->Get<std::vector<int> >("onoff");
+            for (unsigned k=0; k<onoff->size(); k++)
+              if (onoff->at(k)==1)
+                mtnode->DbcDofs()[k]=true;
+          }
+//#endif
+
         // note that we do not have to worry about double entries
         // as the AddNode function can deal with this case!
         interface->AddMortarNode(mtnode);

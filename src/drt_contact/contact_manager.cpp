@@ -365,6 +365,26 @@ discret_(discret)
                                                              isslave[j],isactive[j]+foundinitialactive,
                                                              friplus));
 
+#ifdef CONTACTCONSTRAINTXYZ
+           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
+           std::vector<DRT::Condition*> contactSymconditions(0);
+           Discret().GetCondition("mrtrsym",contactSymconditions);
+
+           for (unsigned j=0; j<contactSymconditions.size(); j++)
+             if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+             {
+               const std::vector<int>*    onoff  = contactSymconditions.at(j)->Get<std::vector<int> >("onoff");
+               for (unsigned k=0; k<onoff->size(); k++)
+                 if (onoff->at(k)==1)
+                   cnode->DbcDofs()[k]=true;
+             }
+#else
+           std::vector<DRT::Condition*> contactSymconditions(0);
+           Discret().GetCondition("mrtrsym",contactSymconditions);
+           if (contactSymconditions.size()!=0)
+             dserror("Contact symmetry condition only with CONTACTCONSTRAINTXYZ flag");
+#endif
+
           // note that we do not have to worry about double entries
           // as the AddNode function can deal with this case!
           // the only problem would have occured for the initial active nodes,
@@ -379,6 +399,20 @@ discret_(discret)
                                                            Discret().NumDof(node),
                                                            Discret().Dof(node),
                                                            isslave[j],isactive[j]+foundinitialactive));
+
+          // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
+          std::vector<DRT::Condition*> contactSymconditions(0);
+          Discret().GetCondition("mrtrsym",contactSymconditions);
+
+          for (unsigned j=0; j<contactSymconditions.size(); j++)
+            if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+            {
+              const std::vector<int>*    onoff  = contactSymconditions.at(j)->Get<std::vector<int> >("onoff");
+              for (unsigned k=0; k<onoff->size(); k++)
+                if (onoff->at(k)==1)
+                  cnode->DbcDofs()[k]=true;
+            }
+
           // note that we do not have to worry about double entries
           // as the AddNode function can deal with this case!
           // the only problem would have occured for the initial active nodes,

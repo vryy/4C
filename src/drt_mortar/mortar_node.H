@@ -477,6 +477,10 @@ public:
   */
   virtual void ResetDataContainer();
 
+  // for CONTACTCONSTRAINTXYZ
+  // return dirichlet satus at node
+    bool*  DbcDofs() {return dbcdofs_;}
+
   //@}
 
 
@@ -486,6 +490,7 @@ protected:
   bool              istiedslave_;    // true if cnode is on slave side and actually tied
   bool              isonbound_;      // true if cnode is on slave side boundary
   bool              isdbc_;          // true if cnode has D.B.C.applied to at least one dof
+  bool              dbcdofs_[3];      // true at each cnode has D.B.C applied at i-th dof
   int               numdof_;         // number of degrees of freedom (length of dofs_)
   std::vector<int>  dofs_;           // degrees of freedom of this node
   double            xspatial_[3];    // current configuration

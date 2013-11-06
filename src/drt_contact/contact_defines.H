@@ -67,6 +67,7 @@ Maintainer: Alexander Popp
 //#define OBJECTVARSLIPINCREMENT    /* flag for object-variant slip increment created in integrator*/
 #define SIMPLETANGENT             /* flag for simple tangent formulation*/
 //#define TANGENTCHECK              /* Check tangents from solution step n-1 to n --> enforcing same orientation */
+//#define CONTACTCONSTRAINTXYZ
 
 /************************************************************************/
 /* Debugging options                                                    */

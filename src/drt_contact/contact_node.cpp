@@ -465,6 +465,9 @@ void CONTACT::CoNode::BuildAveragedNormal()
   //**********************************************************************
   Epetra_SerialDenseMatrix elens(6,nseg);
 
+  // temporary vector to store nodal normal
+  double n_tmp[3]={0.,0.,0.};
+
   // loop over all adjacent elements
   for (int i=0;i<nseg;++i)
   {
@@ -477,13 +480,20 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
     // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
-      MoData().n()[j]+=elens(j,i)/elens(4,i);
+      n_tmp[j]+=elens(j,i)/elens(4,i);
   }
 
+#ifdef CONTACTCONSTRAINTXYZ
+  // modify normal in case of symmetry condition
+  for (int i=0; i<3; i++)
+    if (DbcDofs()[i])
+      n_tmp[i]=0.;
+#endif // CONTACTCONSTRAINTXYZ
+
   // create unit normal vector
-  double length = sqrt(MoData().n()[0]*MoData().n()[0]+MoData().n()[1]*MoData().n()[1]+MoData().n()[2]*MoData().n()[2]);
+  double length = sqrt(n_tmp[0]*n_tmp[0]+n_tmp[1]*n_tmp[1]+n_tmp[2]*n_tmp[2]);
   if (length==0.0) dserror("ERROR: Nodal normal length 0, node ID %i",Id());
-  else             for (int j=0;j<3;++j) MoData().n()[j]/=length;
+  else             for (int j=0;j<3;++j) MoData().n()[j]=n_tmp[j]/length;
 
   // create unit tangent vectors
   // (note that this definition is not unique in 3D!)
@@ -665,6 +675,13 @@ void CONTACT::CoNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     // build element normal derivative at current node
     adjcele->DerivNormalAtNode(Id(),i,elens,CoData().GetDerivN());
   }
+
+#ifdef CONTACTCONSTRAINTXYZ
+  // modify normal in case of symmetry condition
+  for (int i=0; i<3; i++)
+    if (DbcDofs()[i])
+      CoData().GetDerivN()[i].clear();
+#endif // CONTACTCONSTRAINTXYZ
 
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
