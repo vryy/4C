@@ -94,7 +94,8 @@ namespace INPAR
     {
       ghosting_redundant,  ///< redundant storage of master or master&slave surfaces
       roundrobinevaluate,           ///< round robin loop for interface evaluation
-      roundrobinghost
+      roundrobinghost,
+      binningstrategy
     };
 
     /// Type of parallel redistribution algorithm

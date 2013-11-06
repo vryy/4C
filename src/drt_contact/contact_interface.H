@@ -271,6 +271,8 @@ public:
   void RoundRobinDetectGhosting();
 
   void RoundRobinExtendGhosting(bool firstevaluation);
+
+  void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel);
   /*!
   \brief Collect data concering load balance and parallel distribution
 
@@ -287,7 +289,7 @@ public:
   Derived version!
 
   */
-  void CreateSearchTree(bool roundrobinghosted=false);
+  void CreateSearchTree();
   
   /*!
   \brief Initialize / reset interface for contact

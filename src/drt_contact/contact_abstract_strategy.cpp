@@ -53,7 +53,6 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
  *----------------------------------------------------------------------*/
@@ -299,6 +298,8 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   gactiven_         = Teuchos::null;
   gactivet_         = Teuchos::null;
   if (!redistributed) gndofrowmap_= Teuchos::null;
+  if (init) initial_elecolmap_.clear();
+  initial_elecolmap_.resize(0);
 
   if (friction_)
   {
@@ -334,6 +335,9 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
     gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
     gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
+
+    // store initial element col map for binning strategy
+    initial_elecolmap_.push_back(Teuchos::rcp(new Epetra_Map (*interface_[i]->Discret().ElementColMap())));
 
     // ****************************************************
     // friction
@@ -648,8 +652,71 @@ void CONTACT::CoAbstractStrategy::UpdateMasterSlaveSetsGlobal()
 
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_,interface_[i]->SlaveRowNodes());
-    gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_,interface_[i]->SlaveRowDofs());
-    gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_,interface_[i]->MasterRowDofs());
+    gsdofrowmap_  = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
+    gmdofrowmap_  = LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate mean. vel. for bin size                         farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::CalcMeanVelforBinning(Teuchos::RCP<Epetra_Vector> vel)
+{
+  ivel_.clear();
+  ivel_.resize(0);
+
+  // for dynamic problems
+  if (alphaf_!=0.0)
+  {
+    // create vector of interface velocities
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      // interface node map
+      Teuchos::RCP<Epetra_Vector> velidofs = Teuchos::rcp(new Epetra_Vector(*(interface_[i]->Discret().DofRowMap())));
+      LINALG::Export(*vel,*velidofs);
+
+      double mean = 0.0;
+
+      int err = velidofs->MeanValue(&mean);
+      if(err) dserror("error for meanvalue calculation");
+      mean=abs(mean);
+
+      ivel_.push_back(mean);
+    }
+  }
+  // static problems
+  else
+  {
+    // TODO: should be fixed for static problems!
+    dserror("Binning Strategy is only recommended for dynamic problems! Please use a different Parallel Strategy!");
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Prepare binning                                           farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel)
+{
+  // calc mean value of contact interfaces
+  CalcMeanVelforBinning(vel);
+
+  // create bins and perform ghosting for each interface
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // init interface
+    interface_[i]->Initialize();
+
+    // call binning strategy
+    interface_[i]->BinningStrategy(initial_elecolmap_[i], ivel_[i]);
+
+    //build new search tree or do nothing for bruteforce
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(Params(),"SEARCH_ALGORITHM")==INPAR::MORTAR::search_binarytree)
+      interface_[i]->CreateSearchTree();
+    else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(Params(),"SEARCH_ALGORITHM")!=INPAR::MORTAR::search_bfele)
+      dserror("ERROR: Invalid search algorithm");
   }
 
   return;
@@ -666,6 +733,8 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
   // get type of parallel strategy
   INPAR::MORTAR::ParallelStrategy strat =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(Params(),"PARALLEL_STRATEGY");
+  INPAR::MORTAR::RedundantStorage redundant =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(Params(),"REDUNDANT_STORAGE");
 
   // Evaluation for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -679,7 +748,6 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     if (strat==INPAR::MORTAR::roundrobinevaluate)
     {
       // check redundant input
-      INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(Params(),"REDUNDANT_STORAGE");
       if (redundant != INPAR::MORTAR::redundant_none)
         dserror("Round-Robin-Loop only for none-redundant storage of interface!");
 
@@ -689,7 +757,6 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     else if(strat==INPAR::MORTAR::roundrobinghost)
     {
       // check redundant input
-      INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(Params(),"REDUNDANT_STORAGE");
       if (redundant != INPAR::MORTAR::redundant_none)
         dserror("Round-Robin-Loop only for none-redundant storage of interface!");
 
@@ -699,9 +766,25 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
       // second step --> evaluate
       interface_[i]->Evaluate();
     }
-    else //std. evaluation fro redundant ghosting
+    else if(strat==INPAR::MORTAR::binningstrategy)
+    {
+      // check redundant input
+      if (redundant != INPAR::MORTAR::redundant_none)
+        dserror("Binning strategy only for none-redundant storage of interface!");
+
+      // *********************************************************************
+      // required master elements are already ghosted (preparestepcontact) !!!
+      // *********************************************************************
+
+      // call evaluation
       interface_[i]->Evaluate();
-  }
+    }
+    else //std. evaluation for redundant ghosting
+    {
+      // evaluate
+      interface_[i]->Evaluate();
+    }
+  } // end interface loop
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION

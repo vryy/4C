@@ -1229,12 +1229,13 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_PARTICLE
-  src/drt_particle/particle_algorithm.cpp
   src/drt_particle/particle_dyn.cpp
+  src/drt_particle/binning_strategy.cpp
+  src/drt_particle/particle_algorithm.cpp
   src/drt_particle/cavitation_algorithm.cpp
   src/drt_particle/cavitation_service.cpp
   src/drt_particle/particle_contact.cpp
-	src/drt_particle/scatra_particle_coupling.cpp
+  src/drt_particle/scatra_particle_coupling.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp

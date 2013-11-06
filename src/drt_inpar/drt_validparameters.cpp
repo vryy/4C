@@ -1540,11 +1540,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("PARALLEL_STRATEGY","redundant_ghosting","Type of parallel interface evaluation",
       tuple<std::string>("rg","redundant_ghosting", "ghosting",
                          "rre", "roundrobinevaluate","RoundRobinEvaluate",
-                         "rrg", "roundrobinghost", "RoundRobinGhost"),
+                         "rrg", "roundrobinghost", "RoundRobinGhost",
+                         "bs", "binningstrategy", "binning"),
       tuple<int>(
               INPAR::MORTAR::ghosting_redundant, INPAR::MORTAR::ghosting_redundant,INPAR::MORTAR::ghosting_redundant,
               INPAR::MORTAR::roundrobinevaluate, INPAR::MORTAR::roundrobinevaluate,INPAR::MORTAR::roundrobinevaluate,
-              INPAR::MORTAR::roundrobinghost, INPAR::MORTAR::roundrobinghost,INPAR::MORTAR::roundrobinghost),
+              INPAR::MORTAR::roundrobinghost, INPAR::MORTAR::roundrobinghost,INPAR::MORTAR::roundrobinghost,
+              INPAR::MORTAR::binningstrategy, INPAR::MORTAR::binningstrategy, INPAR::MORTAR::binningstrategy),
       &mortar);
 
   setStringToIntegralParameter<int>("PARALLEL_REDIST","Static","Type of redistribution algorithm",

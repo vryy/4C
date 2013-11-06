@@ -536,8 +536,10 @@ discret_(discret)
 bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
   // read parameter lists and problemtype from DRT::Problem
-  const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& mortar  = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& stru    = DRT::Problem::Instance()->StructuralDynamicParams();
+
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
   int dim = DRT::Problem::Instance()->NDim();
 
@@ -779,6 +781,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // store contents of BOTH ParameterLists in local parameter list
   cparams.setParameters(mortar);
   cparams.setParameters(contact);
+  cparams.set<double>("TIMESTEP",stru.get<double>("TIMESTEP"));
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types

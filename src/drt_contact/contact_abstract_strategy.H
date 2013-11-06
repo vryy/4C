@@ -435,6 +435,11 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     void EvaluateReferenceState(int step,const Teuchos::RCP<Epetra_Vector> vec);
 
+
+    void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel);
+
+    void CalcMeanVelforBinning(Teuchos::RCP<Epetra_Vector> vel);
+
     /*!
     \brief Initialize and evaluate Mortar stuff for the next Newton step
 
@@ -723,6 +728,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;        // global slave and master dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;   // global dirichlet toggle of all slave dofs (before parallel redistribution)
 
+    std::vector<Teuchos::RCP<Epetra_Map> > initial_elecolmap_; // initla col ele map for binning strategy (s m)
+
     Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
@@ -769,7 +776,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
 
     double inttime_;                                      // integration time
-
+    std::vector<double > ivel_;                            // mean interface velocity
 }; // class CoAbstractStrategy
 } // namespace CONTACT
 

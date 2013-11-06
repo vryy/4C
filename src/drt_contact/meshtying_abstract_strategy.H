@@ -429,6 +429,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;}
+    void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel) {}
     void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle, Teuchos::RCP<Epetra_Vector>& sliptoggle, Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false) {}
     void InitEvalInterface() {}
     void InitEvalMortar() {}

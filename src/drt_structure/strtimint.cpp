@@ -673,6 +673,15 @@ void STR::TimInt::PrepareStepContact()
     // dynamic parallel redistribution of interfaces
     cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
 
+    // get type of parallel strategy
+    const Teuchos::ParameterList&   paramsmortar = DRT::Problem::Instance()->MortarCouplingParams();
+    INPAR::MORTAR::ParallelStrategy strat =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(paramsmortar,"PARALLEL_STRATEGY");
+
+    // prepare binstrategy for timestep
+    if(strat==INPAR::MORTAR::binningstrategy)
+      cmtman_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
+
     // evaluation of reference state for friction (only at t=0)
     cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
   }

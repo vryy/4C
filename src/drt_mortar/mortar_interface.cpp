@@ -1660,12 +1660,18 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   // create fully overlapping map of all master elements
   // for non-redundant storage (RRloop) we handle the master elements
   // like the slave elements --> melecolmap_
-  INPAR::MORTAR::RedundantStorage redunt = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(IParams(),"REDUNDANT_STORAGE");
+  INPAR::MORTAR::ParallelStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(IParams(),"PARALLEL_STRATEGY");
   Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
-  if (redunt != INPAR::MORTAR::redundant_none)
+
+  if (strat==INPAR::MORTAR::ghosting_redundant)
     melefullmap = LINALG::AllreduceEMap(*melerowmap_);
-  else
+  else if (strat==INPAR::MORTAR::roundrobinevaluate || strat==INPAR::MORTAR::roundrobinghost)
     melefullmap = melerowmap_;
+  else if (strat==INPAR::MORTAR::binningstrategy)
+    melefullmap = melecolmap_;
+  else
+    dserror("Choosen parallel strategy not supported!");
 
   // loop over all slave elements on this proc.
   for (int i=0;i<selecolmap_->NumMyElements();++i)

@@ -37,9 +37,6 @@ Maintainer: Alexander Popp
 
 *----------------------------------------------------------------------*/
 
-#ifndef PARALLEL
-#include "Epetra_SerialComm.h"
-#endif
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Time.h>
 #include "contact_interface.H"
@@ -57,6 +54,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_particle/binning_strategy.H"
 
 
 /*----------------------------------------------------------------------*
@@ -148,7 +146,111 @@ void CONTACT::CoInterface::AddCoElement(Teuchos::RCP<CONTACT::CoElement> cele)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Parallel Strategy based on bin distribution (public)     farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel)
+{
+  // init XAABB
+  LINALG::Matrix<3,2> XAABB(false);
+  for(int dim=0; dim<3; ++dim)
+  {
+    XAABB(dim,0) = +1.0e12;
+    XAABB(dim,1) = -1.0e12;
+  }
 
+  // loop all slave nodes and merge XAABB with their eXtendedAxisAlignedBoundingBox
+  for (int lid = 0; lid <SlaveColNodes()->NumMyElements(); ++lid) //Discret().NumMyColNodes()
+  {
+    int gid = SlaveColNodes()->GID(lid);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %i",gid);
+    MORTAR::MortarNode* mtrnode = static_cast<MORTAR::MortarNode*>(node);
+
+    for(int dim=0; dim<3; ++dim)
+    {
+      XAABB(dim, 0) = std::min( XAABB(dim, 0), mtrnode->xspatial()[dim] - MORTARPROJLIM);
+      XAABB(dim, 1) = std::max( XAABB(dim, 1), mtrnode->xspatial()[dim] + MORTARPROJLIM);
+    }
+  }
+
+  // local bounding box
+  double locmin[3] = {XAABB(0,0), XAABB(1,0), XAABB(2,0)};
+  double locmax[3] = {XAABB(0,1), XAABB(1,1), XAABB(2,1)};
+
+  // global bounding box
+  double globmin[3];
+  double globmax[3];
+
+  // do the necessary communication
+  Comm().MinAll(&locmin[0], &globmin[0], 3);
+  Comm().MaxAll(&locmax[0], &globmax[0], 3);
+
+  // compute cutoff radius:
+  double totalsme = -1.0;
+  for (int lid = 0; lid < SlaveColElements()->NumMyElements(); ++lid)
+  {
+    int gid = SlaveColElements()->GID(lid);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find element with gid %i",gid);
+    MORTAR::MortarElement* mtrele = static_cast<MORTAR::MortarElement*>(ele);
+
+    // to be thought about, whether this is enough (safety = 2??)
+    double sme = mtrele->MaxEdgeSize();
+    totalsme = std::max(sme,totalsme);
+  }
+
+  double cutoff = -1.0;
+  Comm().MaxAll(&totalsme, &cutoff, 1);
+
+  // extend cutoff based on problem interface velocity
+  double dt = IParams().get<double>("TIMESTEP");
+  cutoff = cutoff + 2 * dt * vel;
+
+  // increase XAABB by 2xcutoff radius
+  for(int dim=0; dim<3; ++dim)
+  {
+    XAABB(dim,0) = globmin[dim] - cutoff;
+    XAABB(dim,1) = globmax[dim] + cutoff;
+  }
+
+  /// binning strategy is created
+  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(Comm(),cutoff,XAABB));
+
+  // fill master and slave elements into bins
+  std::map<int, std::set<int> > slavebinelemap;
+  binningstrategy->DistributeElesToBins(Discret(), slavebinelemap, true);
+  std::map<int, std::set<int> > masterbinelemap;
+  binningstrategy->DistributeElesToBins(Discret(), masterbinelemap, false);
+
+  // ghosting is extended
+  Teuchos::RCP<Epetra_Map> extendedmastercolmap = binningstrategy->ExtendGhosting(Discret(), initial_elecolmap, slavebinelemap, masterbinelemap);
+
+  // adapt layout to extended ghosting in discret
+  // first export the elements according to the processor local element column maps
+  Discret().ExportColumnElements(*extendedmastercolmap);
+
+  // get the node ids of the elements that are to be ghosted and create a proper node column map for their export
+  std::set<int> nodes;
+  for (int lid=0;lid<extendedmastercolmap->NumMyElements();++lid)
+  {
+    DRT::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+    const int* nodeids = ele->NodeIds();
+    for(int inode=0; inode<ele->NumNode(); ++inode)
+      nodes.insert(nodeids[inode]);
+  }
+
+  std::vector<int> colnodes(nodes.begin(),nodes.end());
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,Comm()));
+
+  // now ghost the nodes
+  Discret().ExportColumnNodes(*nodecolmap);
+
+  // fillcomplete interface
+  FillComplete();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  store the required ghosting within a round              farah 10/13 |
@@ -620,7 +722,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
   nextendedghosting_ = Teuchos::null;
 
   //build new search tree or do nothing for bruteforce
-  if (SearchAlg()==INPAR::MORTAR::search_binarytree)   CreateSearchTree(true);
+  if (SearchAlg()==INPAR::MORTAR::search_binarytree)   CreateSearchTree();
   else if (SearchAlg()!=INPAR::MORTAR::search_bfele)   dserror("ERROR: Invalid search algorithm");
 
   // final output for loop
@@ -1095,7 +1197,7 @@ void CONTACT::CoInterface::CollectDistributionData(int& loadele, int& crowele)
 /*----------------------------------------------------------------------*
  |  create search tree (public)                               popp 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::CreateSearchTree(bool roundrobinghosted)
+void CONTACT::CoInterface::CreateSearchTree()
 {
   // ***WARNING:*** This is commented out here, as idiscret_->SetState()
   // needs all the procs around, not only the interface local ones!
@@ -1138,19 +1240,24 @@ void CONTACT::CoInterface::CreateSearchTree(bool roundrobinghosted)
       // create fully overlapping map of all master elements
       // for non-redundant storage (RRloop) we handle the master elements
       // like the slave elements --> melecolmap_
-      INPAR::MORTAR::RedundantStorage redunt = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(IParams(),"REDUNDANT_STORAGE");
+      INPAR::MORTAR::ParallelStrategy strat =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(IParams(),"PARALLEL_STRATEGY");
+
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
-      if (roundrobinghosted)
+      if (strat==INPAR::MORTAR::roundrobinghost || strat==INPAR::MORTAR::binningstrategy)
       {
         melefullmap = melecolmap_;
       }
-      else
+      else if (strat==INPAR::MORTAR::roundrobinevaluate)
       {
-        if (redunt != INPAR::MORTAR::redundant_none)
-          melefullmap = LINALG::AllreduceEMap(*melerowmap_);
-        else
-          melefullmap = melerowmap_;
+        melefullmap = melerowmap_;
       }
+      else if (strat==INPAR::MORTAR::ghosting_redundant)
+      {
+        melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+      }
+      else
+        dserror("Choosen parallel strategy not supported!");
       
       // create binary tree object for contact search and setup tree
       binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
