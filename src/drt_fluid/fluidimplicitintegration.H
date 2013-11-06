@@ -248,8 +248,8 @@ public:
   Therefore, we need to reset the solution back to the initial solution of the
   time step.
 
-  \author: mayr.mt
-  \date: 08/2013
+  \author mayr.mt
+  \date 08/2013
   */
   void ResetStep()
   {
@@ -269,8 +269,8 @@ public:
   and, thus, everything will be fine. Currently, this is needed for time step size
   adaptivity in FSI.
 
-  \author: mayr.mt
-  \date: 08/2013
+  \author mayr.mt
+  \date 08/2013
    */
   void ResetTime(const double dtold) { SetTimeStep(Time()-dtold, Step()-1); }
 

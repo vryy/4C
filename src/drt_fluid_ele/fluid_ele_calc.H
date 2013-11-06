@@ -133,8 +133,8 @@ namespace ELEMENTS
      *   The vector valued operator \f$B\f$ is constructed such that
      *   \f$\int_\Omega div (u) \,\mathrm{d}\Omega = B^T u = 0\f$
      *
-     *   \author: mayr.mt
-     *   \date:   04/2012
+     *   \author mayr.mt
+     *   \date   04/2012
      */
     virtual int CalcDivOp
     (
@@ -150,8 +150,8 @@ namespace ELEMENTS
      *   The vector valued operator \f$B\f$ is constructed such that
      *   \f$\frac{Du}{Dt} = \frac{du}{dt} + u grad(u)\f$
      *
-     *   \author: ghamm
-     *   \date:   01/2013
+     *   \author ghamm
+     *   \date   01/2013
      */
     virtual int CalcMatDerivAndRotU(
         DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
@@ -166,8 +166,8 @@ namespace ELEMENTS
 
     /*! \brief Calculate void fraction for this element by using a fourth order clipped polynomial
      *
-     *   \author: ghamm
-     *   \date:   07/2013
+     *   \author ghamm
+     *   \date   07/2013
      */
     virtual int ComputeVoidFraction(
       DRT::ELEMENTS::Fluid*     ele,
@@ -181,8 +181,8 @@ namespace ELEMENTS
 
     /*! \brief Calculate a divergence of velocity at the element center
      *
-     *   \author: ehrl
-     *   \date:   12/2012
+     *   \author ehrl
+     *   \date   12/2012
      */
     virtual int ComputeDivU(
         DRT::ELEMENTS::Fluid*           ele,              //< current fluid element

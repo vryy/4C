@@ -197,8 +197,8 @@ public:
   Therefore, we need to reset the solution back to the initial solution of the
   time step.
 
-  \author: mayr.mt
-  \date: 08/2013
+  \author mayr.mt
+  \date 08/2013
   */
   virtual void ResetStep() { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
@@ -211,8 +211,8 @@ public:
   and, thus, everything will be fine. Currently, this is needed for time step size
   adaptivity in FSI.
 
-  \author: mayr.mt
-  \date: 08/2013
+  \author mayr.mt
+  \date 08/2013
    */
   virtual void ResetTime(const double dtold) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 

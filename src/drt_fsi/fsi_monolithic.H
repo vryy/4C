@@ -543,8 +543,8 @@ namespace FSI
     //! <h3> References </h3>
     //! Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013 (supervised by Matthias Mayr)
     //!
-    //! \author: mayr.mt
-    //! \date: 08/2013
+    //! \author mayr.mt
+    //! \date 08/2013
     void TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     //@}
@@ -583,8 +583,8 @@ namespace FSI
      *    - Newton: nonlinear solver did not converge and User wants to halve the
      *              time step size in such cases
      *
-     *  \author: mayr.mt
-     *  \date: 10/2013
+     *  \author mayr.mt
+     *  \date 10/2013
      */
     void DetermineAdaReason(const double dt);
 
@@ -623,8 +623,8 @@ namespace FSI
      *  from error indication, too. In the end, we extract certain portions only
      *  to use some of them for time step size calculation.
      *
-     * \author: mayr.mt
-     * \date: 09/2013
+     * \author mayr.mt
+     * \date 09/2013
      !*/
     void IndicateLocalErrorNormsStructure();
 
@@ -645,8 +645,8 @@ namespace FSI
      *  from error indication, too. In the end, we extract certain portions only
      *  to use some of them for time step size calculation.
      *
-     * \author: mayr.mt
-     * \date: 09/2013
+     * \author mayr.mt
+     * \date 09/2013
      !*/
     void IndicateLocalErrorNormsFluid();
 
@@ -664,8 +664,8 @@ namespace FSI
     //! tolerance \f$tol\f$, the L2-norm of the local truncation error \f$error\f$ and the order \f$p\f$ of the time integration
     //! scheme
     //!
-    //! \author: mayr.mt
-    //! \date: 09/2013
+    //! \author mayr.mt
+    //! \date 09/2013
     double CalculateTimeStepSize(const double errnorm,  ///< L2-norm of local truncation error
                                  const double errtol,   ///< user given error tolerance
                                  const double estorder  ///< order of accuracy of time integration scheme

@@ -151,8 +151,8 @@ namespace FSI
     //! 6 available norms are useful. Each of these three norms delivers a new
     //! time step size. Select the minimum of these three as the new time step size.
     //!
-    //! \author: mayr.mt
-    //! \date: 08/2013
+    //! \author mayr.mt
+    //! \date 08/2013
     virtual double SelectTimeStepSize() const;
 
     //! \brief Check whether time step is accepted or not
@@ -160,8 +160,8 @@ namespace FSI
     //! In case that the local truncation error is small enough, the time step is
     //! accepted.
     //!
-    //! \author: mayr.mt
-    //! \date: 08/2013
+    //! \author mayr.mt
+    //! \date 08/2013
     virtual bool SetAccepted() const;
 
     //@}

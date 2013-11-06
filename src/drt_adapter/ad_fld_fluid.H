@@ -360,8 +360,8 @@ namespace ADAPTER {
     Therefore, we need to reset the solution back to the initial solution of the
     time step.
 
-    \author: mayr.mt
-    \date: 08/2013
+    \author mayr.mt
+    \date 08/2013
     */
     virtual void ResetStep() = 0;
 
@@ -374,8 +374,8 @@ namespace ADAPTER {
     and, thus, everything will be fine. Currently, this is needed for time step size
     adaptivity in FSI.
 
-    \author: mayr.mt
-    \date: 08/2013
+    \author mayr.mt
+    \date 08/2013
      */
     virtual void ResetTime(const double dtold) = 0;
 

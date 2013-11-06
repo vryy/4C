@@ -146,7 +146,7 @@ namespace ADAPTER {
     //! The vector \$f R \$f ensures that interface and Dirichlet DOFs are not modified.
     //!
     //! \autor: mayr.mt
-    //! \date:  06/2012
+    //! \date  06/2012
     void ProjVelToDivZero();
 
     /// reset state vectors
