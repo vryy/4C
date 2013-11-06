@@ -52,6 +52,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_linedefinition.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_io/io.H"
 
 namespace DRT {
 namespace UTILS {
@@ -735,9 +736,6 @@ namespace UTILS {
 
     // Time of previous time step (at t-deltaT)
     double timeOld_;
-
-    // Time step size
-    double deltaT_;
 
     // Number of maneuver cells (variables)
     const int NUMMANEUVERCELLS_;
@@ -3713,9 +3711,6 @@ Function(), NUMMANEUVERCELLS_(4)
     // Initialize time of previous time step (at t-deltaT)
     timeOld_ = 0.0;
 
-    // Initialize time step size
-    deltaT_ = 0.0;
-
     // Initialize previous angular acceleration (at t-deltaT)
     omegaDotOld_B_(0,0) = 0;
     omegaDotOld_B_(1,0) = 0;
@@ -3808,13 +3803,45 @@ Function(), NUMMANEUVERCELLS_(4)
  *----------------------------------------------------------------------*/
 double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
-    // Determine time difference
-    double deltaT = t - timeOld_;
+    // Check, if a restart has been performed
+    // *****************************************************************************
+    const int step = DRT::Problem::Instance()->Restart();
+    if ((step > 0) && (timeOld_ == 0.0)) {
+
+      if (type_ != 1) { // fluid
+        dserror("When using the function CONTROLLEDROTATION, the restart functionality only works for structures");
+      }
+
+      Teuchos::RCP<DRT::Discretization> rcpdis = Teuchos::rcp(dis, false);
+      IO::DiscretizationReader reader(rcpdis,step-1);
+
+      // Set time from last completed time step
+      timeOld_ = reader.ReadDouble("timeOld");
+
+      // Set angular rate from last completed time step
+      omega_B_(0,0) = reader.ReadDouble("omega_B_x");
+      omega_B_(1,0) = reader.ReadDouble("omega_B_y");
+      omega_B_(2,0) = reader.ReadDouble("omega_B_z");
+
+      // Set angular acceleration from next-to-last completed time step
+      omegaDotOld_B_(0,0) = reader.ReadDouble("omegaDotOld_B_x");
+      omegaDotOld_B_(1,0) = reader.ReadDouble("omegaDotOld_B_y");
+      omegaDotOld_B_(2,0) = reader.ReadDouble("omegaDotOld_B_z");
+
+      // Set attitude quaternion from last completed time step
+      satAtt_q_IB_(0,0) = reader.ReadDouble("satAtt_q_IB_1");
+      satAtt_q_IB_(1,0) = reader.ReadDouble("satAtt_q_IB_2");
+      satAtt_q_IB_(2,0) = reader.ReadDouble("satAtt_q_IB_3");
+      satAtt_q_IB_(3,0) = reader.ReadDouble("satAtt_q_IB_4");
+    }
 
     // If new time step, apply angular acceleration (if desired) and determine
     // new attitude satAtt_dcm_IB_
     // *****************************************************************************
-    if (deltaT > 1e-9) { // new time step
+    // Determine time difference
+    double deltaT = t - timeOld_;
+
+    if (deltaT > 1e-12) { // new time step
 
         // Determine current angular acceleration (at t)
         // -----------------------------------------------------------------------------
@@ -3878,13 +3905,37 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
         satAtt_dcm_IB_(1,0) = 2.0*(q1*q2+q3*q4);       satAtt_dcm_IB_(1,1) = -q1*q1+q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(1,2) = 2.0*(q2*q3-q1*q4);
         satAtt_dcm_IB_(2,0) = 2.0*(q1*q3-q2*q4);       satAtt_dcm_IB_(2,1) = 2.0*(q2*q3+q1*q4);        satAtt_dcm_IB_(2,2) = -q1*q1-q2*q2+q3*q3+q4*q4;
 
-        // Update time step size
-        // -----------------------------------------------------------------------------
-        deltaT_ = deltaT;
-
         // Update time of last time step
         // -----------------------------------------------------------------------------
         timeOld_ = t;
+
+        // Write restart information
+        // -----------------------------------------------------------------------------
+        Teuchos::RCP<DRT::Discretization> rcpdis = Teuchos::rcp(dis, false);
+        Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(rcpdis));
+
+        // Write time
+        // Note: this is needed due to the fact that the restart information of the current
+        // time step X is written to the time step X-1 in the control file. This is due to
+        // the fact that output->NewStep() is only called after this function by the
+        // corresponding structure or fluid function.
+        output->WriteDouble("timeOld", timeOld_);
+
+        // Write angular rate
+        output->WriteDouble("omega_B_x", omega_B_(0,0));
+        output->WriteDouble("omega_B_y", omega_B_(1,0));
+        output->WriteDouble("omega_B_z", omega_B_(2,0));
+
+        // Write previous angular acceleration
+        output->WriteDouble("omegaDotOld_B_x", omegaDotOld_B_(0,0));
+        output->WriteDouble("omegaDotOld_B_y", omegaDotOld_B_(1,0));
+        output->WriteDouble("omegaDotOld_B_z", omegaDotOld_B_(2,0));
+
+        // Write attitude quaternion
+        output->WriteDouble("satAtt_q_IB_1", satAtt_q_IB_(0,0));
+        output->WriteDouble("satAtt_q_IB_2", satAtt_q_IB_(1,0));
+        output->WriteDouble("satAtt_q_IB_3", satAtt_q_IB_(2,0));
+        output->WriteDouble("satAtt_q_IB_4", satAtt_q_IB_(3,0));
     }
 
     // Obtain the current node position in the inertial system
