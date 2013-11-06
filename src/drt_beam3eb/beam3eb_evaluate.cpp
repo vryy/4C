@@ -898,10 +898,14 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     } //if (force != NULL)
 
     //assemble massmatrix if requested
-//    if (massmatrix != NULL)
-//    {
-//      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
-//    }//if (massmatrix != NULL)
+    //calculating mass matrix (local version = global version)
+    //note: the mass matrix currently implemented is just a dummy and should not yet be used
+    if (massmatrix != NULL)
+    {
+      for (int i=0; i<6*nnode; i++)
+        (*massmatrix)(i,i) = 1;
+
+    }//if (massmatrix != NULL)
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   //Uncomment the following line to print the elment stiffness matrix to matlab format
@@ -1419,10 +1423,14 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     } //if (force != NULL)
 
     //assemble massmatrix if requested
-//    if (massmatrix != NULL)
-//    {
-//      std::cout << "\n\nWarning: Massmatrix not implemented yet!";
-//    }//if (massmatrix != NULL)
+    //calculating mass matrix (local version = global version)
+    //note: the mass matrix currently implemented is just a dummy and should not yet be used
+    if (massmatrix != NULL)
+    {
+      for (int i=0; i<6*nnode; i++)
+        (*massmatrix)(i,i) = 1;
+
+    }//if (massmatrix != NULL)
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   //Uncomment the following line to print the elment stiffness matrix to matlab format
