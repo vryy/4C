@@ -39,7 +39,8 @@ FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
+STRUCT_STRESS                   Yes
+STRUCT_STRESS                   Yes
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
