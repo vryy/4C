@@ -46,7 +46,6 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 //#define MORTARTRAFO           /* flag for basis trafo for quadratic FE */
-//#define MORTARNEWCOUPLING     /* flag for new coupling with consistent LM */
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
