@@ -1404,6 +1404,14 @@ void FLD::FluidImplicitTimeInt::Solve()
     ConvergenceCheck(0,itmax,ittol);
   }
 
+  if (optimizer_!=Teuchos::null)
+  {
+    optimizer_->ImportFluidData(velnp_,step_);
+
+    // initial solution (=u_0) is old solution at time step 1
+    if (step_==1 and timealgo_!=INPAR::FLUID::timeint_stationary)
+      optimizer_->ImportFluidData(velnm_,0); // currently velnm contains veln because timeupdate was called before
+  }
 } // FluidImplicitTimeInt::Solve
 
 /*----------------------------------------------------------------------*
@@ -3814,15 +3822,6 @@ void FLD::FluidImplicitTimeInt::Output()
   }
 #endif //PRINTALEDEFORMEDNODECOORDS
 
-  if (optimizer_!=Teuchos::null)
-  {
-    optimizer_->ImportFluidData(velnp_,step_);
-
-    // initial solution (=u_0) is old solution at time step 1
-    if (step_==1 and timealgo_!=INPAR::FLUID::timeint_stationary)
-      optimizer_->ImportFluidData(velnm_,0); // currently velnm contains veln because timeupdate was called before
-  }
-
   return;
 } // FluidImplicitTimeInt::Output
 
@@ -5406,7 +5405,6 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
     if(discret_->Comm().MyPID() == 0)
       FLD::UTILS::WriteDoublesToFile(time_, step_, flowrates,"flowrate" );
   }
-
 
   return;
 }
