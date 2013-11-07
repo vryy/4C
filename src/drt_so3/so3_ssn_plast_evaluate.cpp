@@ -3003,8 +3003,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
           if (MyPID == so3_ele::Owner())
           {
             params.get<int>("number_active_plastic_gp")++;
-            params.get<double>("sum_apl") += apl;
-            if (apl<params.get<double>("minimum_apl")) params.get<double>("minimum_apl") = apl;
           }
           
           // **************************************************************
