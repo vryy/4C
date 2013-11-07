@@ -173,7 +173,7 @@ bool DRT::Problem::BandWidthOpt() const
   // in case of filters (e.g. post_drt_ensight) we don't have the list
   Teuchos::RCP<const Teuchos::ParameterList> list = getParameterList();
   if (list==Teuchos::null) return false;
-  
+
   const Teuchos::ParameterList& typeparams = ProblemTypeParams();
   bool yesno = Teuchos::getIntegralValue<int>(typeparams,"BANDWIDTHOPT");
   return yesno;
@@ -1378,7 +1378,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     if(distype == "Polynomial")
     {
       airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway",reader.Comm()));
-      AddDis("airway", airwaydis);
+      AddDis("red_airway", airwaydis);
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
     }
   }

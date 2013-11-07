@@ -3400,9 +3400,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     volumetric_surface_flow_cond->AddComponent(inflowprofilecomponents[i]);
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "self_evaluate_normal",
-                                                                                       Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
-                                                                                       Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "SelfEvaluateNormal",
+                                                                                       Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
+                                                                                       Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
                                                                                        true)));
 
 
@@ -3411,9 +3411,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n3")));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CenterOfMass", "self_evaluate_center_of_mass",
-                                                                                       Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
-                                                                                       Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CenterOfMass", "SelfEvaluateCenterOfMass",
+                                                                                       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass","UsePrescribedCenterOfMass"),
+                                                                                       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass","UsePrescribedCenterOfMass"),
                                                                                        true)));
 
   volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c1")));
@@ -3482,21 +3482,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   for (unsigned i=0; i<flowbiasingcomponents.size(); ++i)
   total_traction_correction_cond->AddComponent(flowbiasingcomponents[i]);
 
-
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "self_evaluate_normal",
-                                                                                         Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
-                                                                                         Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "SelfEvaluateNormal",
+                                                                                         Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
+                                                                                         Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
                                                                                          true)));
-
 
   total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n1")));
   total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n2")));
   total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n3")));
 
-
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CenterOfMass", "self_evaluate_center_of_mass",
-                                                                                         Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
-                                                                                         Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CenterOfMass", "SelfEvaluateCenterOfMass",
+                                                                                         Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass","UsePrescribedCenterOfMass"),
+                                                                                         Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass","UsePrescribedCenterOfMass"),
                                                                                          true)));
 
   total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c1")));

@@ -2,7 +2,7 @@
 \file fluid_ele_boundary_calc.cpp
 \brief
 
-evaluate boundary conditions not requiring parent-element evaluations 
+evaluate boundary conditions not requiring parent-element evaluations
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -1422,7 +1422,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
 
   // set final value for pressure boundary integral
   params.set<double>("pressure boundary integral",press_int);
-  
+
 }//DRT::ELEMENTS::FluidSurface::PressureBoundaryIntegral
 
 
@@ -2311,7 +2311,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   //-------------------------------------------------------------------
   // get the tractions velocity component
   //-------------------------------------------------------------------
- 
+
   // get Gaussrule
   //  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToGaussRuleForExactSol<distype>::rule);
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -2369,7 +2369,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
     {
       n_vel += vel_gps[idim]*(unitnormal_(idim));
     }
-
     // loop over all node and add the corresponding effect of the Neumann-Inflow condition
     for (int inode=0;inode<bdrynen_;++inode)
     {
@@ -2401,93 +2400,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
   std::vector<int>&                 lm,
   Epetra_SerialDenseVector&         elevec1)
 {
-  // get integration rule
-  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-  // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-
-  if (velnp==Teuchos::null)
-    dserror("Cannot get state vector 'velnp'");
-
-  std::vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-  // allocate velocity vector
-  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
-
-  // split velocity and pressure, insert into element arrays
-  for (int inode=0;inode<bdrynen_;inode++)
-  {
-    double radius = sqrt(pow(xyze_(0,inode),2.0)+pow(xyze_(1,inode),2.0));
-    std::cout<<"RAD: "<<radius<<"\t";
-    for (int idim=0; idim< nsd_; idim++)
-    {
-      evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
-      std::cout<<evelnp(idim,inode)<<"\t";
-    }
-    std::cout<<std::endl;
-  }
-
-  // get node coordinates
-  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
-  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
-
-#ifdef D_ALE_BFLOW
-  // Add the deformation of the ALE mesh to the nodes coordinates
-  // displacements
-  Teuchos::RCP<const Epetra_Vector>  dispnp;
-  std::vector<double>                mydispnp;
-
-  if (ele->ParentElement()->IsAle())
-  {
-    dispnp = discretization.GetState("dispnp");
-    if (dispnp!=Teuchos::null)
-    {
-      mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-    }
-    dsassert(mydispnp.size()!=0,"paranoid");
-    for (int inode=0;inode<bdrynen_;++inode)
-    {
-      for (int idim=0; idim<nsd_; ++idim)
-      {
-        xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
-      }
-    }
-  }
-#endif // D_ALE_BFLOW
-
-
-  //const IntegrationPoints2D  intpoints(gaussrule);
-  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-  {
-    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // Computation of the unit normal vector at the Gauss points
-    // Computation of nurb specific stuff is not activated here
-    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
-
-    //compute flowrate at gauss point
-    velint_.Multiply(evelnp,funct_);
-
-    // flowrate = uint o normal
-    const double flowrate = velint_.Dot(unitnormal_);
-
-    // store flowrate at first dof of each node
-    // use negative value so that inflow is positiv
-    for (int inode=0;inode<bdrynen_;++inode)
-    {
-      double term = 0.0;
-      //      if (funct_(inode)* fac_ * flowrate < 0.0)
-      {
-        //        term = funct_(inode)*  flowrate * funct_(inode)* flowrate *fac_;
-        term = funct_(inode) * flowrate * flowrate *fac_;
-      }
-      elevec1[inode*numdofpernode_] +=  term;//
-    }
-  }
-}//DRT::ELEMENTS::FluidSurface::ComputeNeumannUvIntegral
+}
+//DRT::ELEMENTS::FluidSurface::ComputeNeumannUvIntegral
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

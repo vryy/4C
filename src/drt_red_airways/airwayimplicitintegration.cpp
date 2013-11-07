@@ -417,8 +417,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
   if(coupledTo3D_)
   {
     time3D  = CouplingTo3DParams->get<double>("time");
+    time_ = time3D-dta_;
   }
-  if(time3D!=time_ || !coupledTo3D_)
+//  if(time3D!=time_ || !coupledTo3D_)
   {
     PrepareTimeStep();
   }
@@ -554,7 +555,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   step_ += 1;
   time_ += dta_;
-
 } //RedAirwayImplicitTimeInt::PrepareTimeStep
 
 
@@ -876,7 +876,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
   }
-
 
   double norm_bc_tog = 0.0;
   rhs_->Norm1(&norm_bc_tog);

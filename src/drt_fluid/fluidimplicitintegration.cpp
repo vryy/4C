@@ -256,7 +256,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       gridvn_ = LINALG::CreateVector(*dofrowmap,true);
   }
 
-  // initialize flow-rate and flow-volume vectors (fixed to length of four, 
+  // initialize flow-rate and flow-volume vectors (fixed to length of four,
   // for the time being) in case of flow-dependent pressure boundary conditions,
   // including check of respective conditions
   if (nonlinearbc_)
@@ -278,7 +278,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       flowvolumenp_(true);
       flowvolumenpi_(true);
       flowvolumen_(true);
-      flowvolumenm_(true);         
+      flowvolumenm_(true);
 
       if (flowdeppressureline.size() > 4 or flowdeppressuresurf.size() > 4)
         dserror("More than four flow-dependent pressure line or surface conditions assigned -> correction required!");
@@ -1742,8 +1742,8 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     std::vector<DRT::Condition*> fdpcond;
     discret_->GetCondition(fdpcondname,fdpcond);
 
-    // define vectors for flow rate and volume for actual evaluation of boundary 
-    // conditions according to time-integration scheme and potential relaxation 
+    // define vectors for flow rate and volume for actual evaluation of boundary
+    // conditions according to time-integration scheme and potential relaxation
     // within nonlinear iteration loop
     // (relaxation parameter 1.0, for the time being, that is, no relaxation)
     LINALG::Matrix<4,1> flowraterel(true);
@@ -1768,7 +1768,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     if (myrank_ == 0)
     {
       const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
-      
+
       std::ofstream f1;
 
       // create file for output in first time step or append to existing file
@@ -1840,14 +1840,14 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
       // clear state
       discret_->ClearState();
-      
+
       //--------------------------------------------------------------------
       // b) flow volume
       //--------------------------------------------------------------------
       // compute current flow volume as integral of flow rate according to
       // trapezoidal rule
       flowvolumenp_(fdpcondid) = flowvolumen_(fdpcondid) + 0.5*dta_*(flowratenp_(fdpcondid)+flowraten_(fdpcondid));
-      
+
       // set current flow volume to zero if value smaller than zero,
       // meaning that no flow volume may be sucked in from outside
       if (flowvolumenp_(fdpcondid) < 0.0) flowvolumenp_(fdpcondid) = 0.0;
@@ -1913,7 +1913,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       if (myrank_ == 0)
       {
         const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
-      
+
         std::ofstream f1;
         f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
 
@@ -1925,7 +1925,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     if (myrank_ == 0)
     {
       const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+".fdpressure";
-      
+
       std::ofstream f1;
       f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
 
@@ -1965,13 +1965,13 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->EvaluateCondition(flowdeppressureparams,sysmat_,Teuchos::null,
                                   residual_,Teuchos::null,Teuchos::null,
                                   fdpcondname,fdpcondid);
-  
+
       // clear state
       discret_->ClearState();
 
       // update iteration values
       flowratenpi_(fdpcondid)   = flowratenp_(fdpcondid);
-      flowvolumenpi_(fdpcondid) = flowvolumenp_(fdpcondid);      
+      flowvolumenpi_(fdpcondid) = flowvolumenp_(fdpcondid);
     }
   }
 
@@ -3202,7 +3202,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
         f1 << "\n";
         f1.flush();
         f1.close();
-      }      
+      }
     }
   }
 

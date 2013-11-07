@@ -173,7 +173,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(RCP<Epetr
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++ )
   {
-    
+
     double flowrate =  mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateFlowrate("VolumetricSurfaceFlowCond",time);
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"VolumetricSurfaceFlowCond",time);
@@ -309,7 +309,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   // get the normal
   normal_ =  Teuchos::rcp(new std::vector<double>(*normal));
   std::string normal_info = *(conditions[surf_numcond])->Get<std::string>("NORMAL");
-  if(normal_info == "self_evaluate_normal")
+  if(normal_info == "SelfEvaluateNormal")
   {
     if(!myrank_)
     {
@@ -317,7 +317,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     }
     vnormal_ =  Teuchos::rcp(new std::vector<double>(*normal));
   }
-  else if (normal_info ==  "use_prescribed_normal")
+  else if (normal_info ==  "UsePrescribedNormal")
   {
     if(!myrank_)
     {
@@ -336,7 +336,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
 
   // get the center of mass
   std::string c_mass_info = *(conditions[surf_numcond])->Get<std::string>("CenterOfMass");
-  if(c_mass_info == "self_evaluate_center_of_mass")
+  if(c_mass_info == "SelfEvaluateCenterOfMass")
   {
     if(!myrank_)
     {
@@ -344,7 +344,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     }
     cmass_ =  Teuchos::rcp(new std::vector<double>(*cmass));
   }
-  else if (c_mass_info ==  "use_prescribed_center_of_mass")
+  else if (c_mass_info ==  "UsePrescribedCenterOfMass")
   {
     if(!myrank_)
     {
@@ -460,7 +460,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CenterOfMassCalculation(RCP<std::
   eleparams.set<RCP<std::vector<double> > >("normal", normal);
 
   const std::string condstring(ds_condname);
- 
+
   discret_->EvaluateCondition(eleparams,cond_velocities_,condstring,condid_);
 
   // get center of mass in parallel case
@@ -1131,7 +1131,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp()
-{  
+{
   cond_traction_vel_->Scale(0.0);
 }
 
@@ -1165,10 +1165,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
   eleparams.set("flowrate",flowrate);
   eleparams.set("area",area_);
 
-  eleparams.set<int>("action",FLD::traction_velocity_component);
-
-  //  eleparams.set("velocities",cond_velocities_);
-  discret_->EvaluateCondition(eleparams,cond_traction_vel_,condname,condid_);
+#if 1
+    eleparams.set<int>("action",FLD::traction_velocity_component);
+    eleparams.set("velocities",cond_velocities_);
+    discret_->EvaluateCondition(eleparams,cond_traction_vel_,condname,condid_);
+#else
+    eleparams.set<int>("action",FLD::traction_Uv_integral_component);
+    discret_->EvaluateCondition(eleparams,cond_traction_vel_,condname,condid_);
+#endif
 }
 
 
@@ -1293,14 +1297,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
     {
       dserror("The number of Womersley harmonics is %d (less than 1)",n_harmonics);
     }
-  
+
     this->DFT(velocities,Vn,flowratespos_);
-    
+
     Bn  = std::vector<double>(n_harmonics,0.0);
-    
+
     double rl = real((*Vn)[0]);
     double im = imag((*Vn)[0]);
-    
+
     Bn[0] = 0.5*rl;
 
     for(unsigned int k = 1; k<Bn.size(); k++)
@@ -1385,7 +1389,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
             const double Phik = atan2(-imag((*Vn)[k]),real((*Vn)[k]));
             Bn[k] = Mk* cos(2.0*M_PI*double(k) - Phik);
             // Bn[k] = Mk* cos(2.0*M_PI*double(k)*time/period - Phik);
-            
+
             velocity_wom += this->WomersleyVelocity(r,R,Mk,Phik,k,period);
           }
           velocity += velocity_wom;
@@ -1430,7 +1434,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
  double             time,
  bool               force_correction)
 {
-  
+
   if(!force_correction)
   {
     if(!correct_flow_)
@@ -1525,7 +1529,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
     {
       int gid = correction_velnp->Map().GID(lid);
       correction = correction_factor_*(*correction_velnp)[lid];
-      
+
       int bc_lid = cond_velocities_->Map().LID(gid);
       (*cond_velocities_)[bc_lid] += correction;
     }
@@ -1539,7 +1543,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
     {
       int gid = correction_velnp->Map().GID(lid);
       correction = correction_factor_*(*correction_velnp)[lid];
-      
+
       int bc_lid = cond_velocities_->Map().LID(gid);
       (*cond_velocities_)[bc_lid] = correction;
     }
@@ -1774,7 +1778,7 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
   {
     alpha = 1;
   }
-  
+
   for(int m=0;m<end;m++)
   {
     double fac   = 1.0;
@@ -1791,7 +1795,7 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(std::co
     Jmine += std::pow(z*std::complex<double>(0.5),double(alpha))
       *  pow(-std::complex<double>(0.25)*z*z,double(m))
       /(std::complex<double> (fac) * std::complex<double> (gamma));
-      
+
   }
 #if 1
   // Bessel function of the first kind and order 0
@@ -2066,7 +2070,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::UpdateResidual(RCP<Epetra_Vector>
   //  std::cout<<"DIR("<<flow_dir_<<"): Residual Norm: "<<norm2<<std::endl;
   //  residual->Update(1.0,*cond_traction_vel_,1.0);
   residual->Update(1.0,*cond_traction_vel_,1.0);
-  
+
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2192,8 +2196,9 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(RCP<Epetra_Vector> v
     }
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"TotalTractionCorrectionCond",time);
-    
+
     discret_->SetState("velnp",velocities);
+
     //    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond","calculate Uv integral component",time,true);
     mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond",FLD::calc_flowrate,time,true);
 
