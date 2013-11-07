@@ -1410,7 +1410,7 @@ void FLD::FluidImplicitTimeInt::Solve()
 
     // initial solution (=u_0) is old solution at time step 1
     if (step_==1 and timealgo_!=INPAR::FLUID::timeint_stationary)
-      optimizer_->ImportFluidData(velnm_,0); // currently velnm contains veln because timeupdate was called before
+      optimizer_->ImportFluidData(veln_,0);
   }
 } // FluidImplicitTimeInt::Solve
 
