@@ -574,11 +574,11 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
 
     // Newton iteration unconverged
     if (conv > MORTARCONVTOL)
-		{
-		  xi[0]=1e12;
+    {
+      xi[0]=1e12;
       xi[1]=1e12;
-		}
-		else
+    }
+    else
     {
       xi[0]=eta[0];
       xi[1]=eta[1];

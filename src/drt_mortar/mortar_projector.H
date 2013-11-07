@@ -196,19 +196,19 @@ public:
                            MORTAR::MortarElement& ele,
                            double* xi, double& par);
 
-	/*!
-	\brief 	Check intersection of projection normal with warped element
-					to project on.
+  /*!
+  \brief Check intersection of projection normal with warped element to project on.
 
-					Create aux-plane for every ele-node with adjacent element edges.
-					If all intersection points of the projection normal and the aux-planes
-					are located inside the corresponding ele-edges, then the gp lie on the element.
-					--> return false for projection check
+  Create aux-plane for every ele-node with adjacent element edges.
+  If all intersection points of the projection normal and the aux-planes
+  are located inside the corresponding ele-edges, then the gp lie on the element.
+  --> return false for projection check
 
-					\param ele(in)    : element to project on
-					\param ngp(in)    : gp-normal to project along
-					\param globgp(in) : global gp coordinates
- 	*/
+  \param ele(in)    : element to project on
+  \param ngp(in)    : gp-normal to project along
+  \param globgp(in) : global gp coordinates
+
+  */
   bool CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
                        double* ngp, double* globgp);
 
