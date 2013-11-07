@@ -78,6 +78,7 @@ namespace ELEMENTS
     friend class So_hex8PlastType;
     friend class So_hex8fbarPlastType;
     friend class So_tet4PlastType;
+    friend class So_hex27PlastType;
 
   public:
 

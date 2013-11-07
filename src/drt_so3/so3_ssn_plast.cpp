@@ -369,6 +369,8 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UniqueParObjectId() const
   }  // hex8
   case DRT::Element::tet4:
     return So_tet4PlastType::Instance().UniqueParObjectId();
+  case DRT::Element::hex27:
+    return So_hex27PlastType::Instance().UniqueParObjectId();
     break;
   default:
     dserror("unknown element type!");
@@ -402,6 +404,8 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ElementType() const
   }
   case DRT::Element::tet4:
     return So_tet4PlastType::Instance();
+  case DRT::Element::hex27:
+    return So_hex27PlastType::Instance();
     break;
   default:
     dserror("unknown element type!");
