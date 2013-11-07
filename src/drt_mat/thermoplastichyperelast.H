@@ -300,7 +300,6 @@ namespace MAT
       const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element
       LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature dependent material tangent
       LINALG::Matrix<NUM_STRESS_3D,1>& stresstemp,  //!< temperature dependent stress term
-      const LINALG::Matrix<3,3>& defgrd,  //!< F_{n+1}
       Teuchos::ParameterList& params  //!< parameter list
       );
       
@@ -308,7 +307,6 @@ namespace MAT
     //! notion for 3d
     void SetupCthermo(
       LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature dependent material tangent
-      const LINALG::Matrix<3,3>& defgrd,  //!< F_{n+1}
       Teuchos::ParameterList& params  //!< parameter list
       );
 

@@ -370,7 +370,6 @@ namespace ELEMENTS
       LINALG::Matrix<numstr_,1>* ctemp,  //!< (o): temperature dependent tangent matrix at current gp
       LINALG::Matrix<1,1>* Ntemp,  // element temperature: (shapefcts . element temperature) at current gp
       LINALG::Matrix<numstr_,numstr_>* cmat,  //!< (o): material tangent matrix at current gp
-      LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
       LINALG::Matrix<numstr_,1>* glstrain,  //!< (o): total strain
       Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
@@ -378,7 +377,6 @@ namespace ELEMENTS
     //! calculate the constant temperature tangent for stresstemp
     void Ctemp(
       LINALG::Matrix<numstr_,1>* ctemp,  //!< temperature dependent material tangent
-      LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
       Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
 

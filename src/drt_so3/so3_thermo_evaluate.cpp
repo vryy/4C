@@ -904,7 +904,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
     if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-      Materialize(&couplstress,&ctemp,&NT,&cmat,&defgrd,&glstrain,params);
+      Materialize(&couplstress,&ctemp,&NT,&cmat,&glstrain,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1085,13 +1085,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
     // get thermal material tangent
     else
     {
-      // geometrically linear, i.e. reference == current state, i.e. F == I
-      // set to initial state (defgrd == identity)
-      LINALG::Matrix<nsd_,nsd_> defgrd(true);
-      for (int i=0; i<3; ++i)
-        defgrd(i,i) = 1.0;
-        
-      Ctemp(&ctemp,&defgrd,params);
+      Ctemp(&ctemp,params);
     }
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1243,7 +1237,9 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
     if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-      Materialize(&couplstress,&ctemp,&NT,&cmattemp,&defgrd,&glstrain,params);
+      Materialize(&couplstress,&ctemp,&NT,&cmattemp,&glstrain,params);
+    if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+      dserror("use F-bar with thermo-elasto-plastic material!");
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1494,7 +1490,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
     
     // get thermal material tangent
     else
-      Ctemp(&ctemp,&defgrd,params);
+      Ctemp(&ctemp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1663,13 +1659,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       // inverse of Right Cauchy-Green tensor(Fbar) = F_bar^{-1} . F_bar^{-T}
       LINALG::Matrix<nsd_,nsd_> Cinv_bar(false);
       Cinv_bar.Invert(cauchygreen_bar);
-      LINALG::Matrix<6,1> Cinv_barvct(false);
+      LINALG::Matrix<numstr_,1> Cinv_barvct(false);
       Cinv_barvct(0) = Cinv_bar(0,0);
       Cinv_barvct(1) = Cinv_bar(1,1);
       Cinv_barvct(2) = Cinv_bar(2,2);
       Cinv_barvct(3) = Cinv_bar(0,1);
       Cinv_barvct(4) = Cinv_bar(1,2);
-      Cinv_barvct(0) = Cinv_bar(2,0);
+      Cinv_barvct(5) = Cinv_bar(2,0);
 
       // Green-Lagrange strains(F_bar) matrix E = 0.5 . (Cauchygreen(F_bar) - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -1712,12 +1708,15 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       // calculate iterative strains
       LINALG::Matrix<numstr_,1> straininc(true);
       params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
-      // take care: current temperature ( N . T ) is passed to the element
-      //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
+      // insert matrices into parameter list which are only required for thrplasthyperelast
+      params.set<LINALG::Matrix<nsd_,nsd_> >("defgrd", defgrd_bar);
+      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("Cinv_vct", Cinv_barvct);
+      // take care: current temperature (N . T) is passed to the element
+      //            in the material: 1.) Delta T = subtract (N . T - T_0)
       //                             2.) couplstress = C . Delta T
       // do not call the material for Robinson's material
       if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-        Materialize(&couplstress_bar,&ctemp,&NT,&cmattemp,&defgrd_bar,&glstrain_bar,params);
+        Materialize(&couplstress_bar,&ctemp,&NT,&cmattemp,&glstrain_bar,params);
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1847,7 +1846,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
             // (24x24)             (24x1)       (1x24)
             (*stiffmatrix)(i,j) += bops(i,0) * htensor[j];
           }
-        } // end of integrate additional `fbar' stiffness
+        }  // end of integrate additional `fbar' stiffness
 
         // --------------------------------------------------------------------
         // because thermal stresses depend on the deformation, add the
@@ -1962,8 +1961,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
           //      = - B^T . m_0 . (J_bar + 1/J_bar) . (N_T . T_{n+1} -T) .
           //        . (detF/detF_0) . dCinv_dd
           double fac_3 = detJ_w * (-1) * m_0 * (J_bar + 1/J_bar) * DeltaT * detF/detF_0;
-                    stiffmatrix->MultiplyTN(fac_3, bop, dCinv_dd, 1.0);
-
+          stiffmatrix->MultiplyTN(fac_3, bop, dCinv_dd, 1.0);
         }  //  m_thermoplhyperelast: additional linearisations due to dC_T/dd
 
       }  // if (stiffmatrix != NULL), fill k_dd
@@ -2070,18 +2068,58 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
       double detF = defgrd.Determinant();
 
       // -------------------------------------------- F_bar modifications
-      // F_bar deformation gradient =(detF_0/detF)^1/3 . F
+      // F_bar deformation gradient: F_bar := (detF_0 / detF)^1/3 . F
+      LINALG::Matrix<nsd_,nsd_> defgrd_bar(defgrd);
+      // f_bar_factor := (detF_0/detF)^{1/3}
       double f_bar_factor = pow(detF_0/detF,1.0/3.0);
+      defgrd_bar.Scale(f_bar_factor);
+
+      // Right Cauchy-Green tensor(Fbar) = F_bar^T . F_bar
+      LINALG::Matrix<nsd_,nsd_> cauchygreen_bar(false);
+      cauchygreen_bar.MultiplyTN(defgrd_bar,defgrd_bar);
+
+      // inverse of Right Cauchy-Green tensor(Fbar) = F_bar^{-1} . F_bar^{-T}
+      LINALG::Matrix<nsd_,nsd_> Cinv_bar(false);
+      Cinv_bar.Invert(cauchygreen_bar);
+      LINALG::Matrix<numstr_,1> Cinv_barvct(false);
+      Cinv_barvct(0) = Cinv_bar(0,0);
+      Cinv_barvct(1) = Cinv_bar(1,1);
+      Cinv_barvct(2) = Cinv_bar(2,2);
+      Cinv_barvct(3) = Cinv_bar(0,1);
+      Cinv_barvct(4) = Cinv_bar(1,2);
+      Cinv_barvct(5) = Cinv_bar(2,0);
 
       // calculate nonlinear B-operator
       LINALG::Matrix<numstr_,numdofperelement_> bop(false);
       CalculateBop(&bop,&defgrd,&N_XYZ);
 
-      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
       // get the thermal material tangent
       LINALG::Matrix<numstr_,1> ctemp(true);
-      Ctemp(&ctemp,&defgrd,params);
-      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+      LINALG::Matrix<numstr_,1> Cmat_kdT(true);
+
+      // --------------------------------------------------------------
+      // in case of thermo-elasto-plastic material we get additional terms due
+      // to temperature-dependence of the plastic multiplier Dgamma
+      if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+      {
+        params.set<LINALG::Matrix<nsd_,nsd_> > ("defgrd",defgrd_bar);
+        params.set<LINALG::Matrix<numstr_,1> > ("Cinv_vct",Cinv_barvct);
+
+        Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
+          = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(Material(),true);
+        // dCmat_dT = F^{-1} . 1/Dt . ds_{n+1}/dT_{n+1} . F^{-T}
+        //          = - 2 . mubar . 1/Dt . dDgamma/dT . N_bar
+        // with dDgamma/dT= - sqrt(2/3) . dsigma_y(astrain_p^{n+1},T_{n+1})/dT
+        //                  . 1/(2 . mubar . beta0)
+        Cmat_kdT.Update(1.0,thrplastichyperelast->CMat_kdT(gp),0.0);
+      }
+
+      // get temperature-dependent material tangent
+      // in case of m_thermoplhyperelast: F, Cinv are passed via params
+      Ctemp(&ctemp,params);
+
+      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
 
       double detJ_w = detJ * intpoints_.Weight(gp);
       // update linear coupling matrix K_dT
@@ -2089,15 +2127,25 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
       {
         // C_temp . N_temp
         LINALG::Matrix<numstr_,nen_> cn(true);
-        cn.MultiplyNT(ctemp,shapefunct); // (6x8)=(6x1)(1x8)
+        cn.MultiplyNT(ctemp,shapefunct);  // (6x8)=(6x1)(1x8)
         // integrate stiffness term
-        // k_dT = k_dT + (B^T . C_temp . N_temp) . detJ . w(gp)
+        // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . C_temp . N_temp) . detJ . w(gp)
         stiffmatrix_kdT->MultiplyTN(detJ_w/f_bar_factor, bop, cn, 1.0);
+
+        if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+        {
+          const double stepsize = params.get<double>("delta time");
+          // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . 1/Dt . Cmat,T . N_temp) . detJ . w(gp)
+          // (24x8)                            (24x6)         (6x1)    (1x8)
+          LINALG::Matrix<numstr_,nen_> cmatn(true);
+          cmatn.MultiplyNT(Cmat_kdT,shapefunct); // (6x8)=(6x1)(1x8)
+          stiffmatrix_kdT->MultiplyTN(detJ_w/(f_bar_factor*stepsize), bop, cmatn, 1.0);
+        }
       }  // (stiffmatrix_kdT != NULL)
 
-     /* =========================================================================*/
-    }/* ==================================================== end of Loop over GP */
-     /* =========================================================================*/
+     /* =====================================================================*/
+    }/* ================================================ end of Loop over GP */
+     /* =====================================================================*/
 
   }  // end HEX8FBAR
   else
@@ -2116,7 +2164,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   LINALG::Matrix<numstr_,1>* ctemp,  // temperature-dependent material tangent
   LINALG::Matrix<1,1>* Ntemp,  // temperature of element
   LINALG::Matrix<numstr_,numstr_>* cmat,  // (mechanical) material tangent
-  LINALG::Matrix<nsd_,nsd_>* defgrd,  // deformation gradient
   LINALG::Matrix<numstr_,1>* glstrain,  // Green-Lagrange strain tensor
   Teuchos::ParameterList& params  // parameter
   )
@@ -2161,7 +2208,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   {
     Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
       = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
-    thrplastichyperelast->Evaluate(*Ntemp,*ctemp,*couplstress,*defgrd,params);
+    thrplastichyperelast->Evaluate(*Ntemp,*ctemp,*couplstress,params);
     return;
     break;
   }
@@ -2181,7 +2228,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   LINALG::Matrix<numstr_,1>* ctemp,
-  LINALG::Matrix<nsd_,nsd_>* defgrd,
   Teuchos::ParameterList& params
   )
 {
@@ -2216,7 +2262,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   {
     Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
       = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
-    thrplastichyperelast->SetupCthermo(*ctemp,*defgrd,params);
+    thrplastichyperelast->SetupCthermo(*ctemp,params);
     return;
     break;
   }

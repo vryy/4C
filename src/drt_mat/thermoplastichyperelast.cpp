@@ -769,15 +769,21 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     LINALG::Matrix<3,3> Cmat_kdT_trial(false);
     Cmat_kdT_trial.Update( (- 2 * mubar * dDgamma_dT), N, 0.0);
 
-    LINALG::Matrix<6,1> kdT(false);
-    kdT(0) = Cmat_kdT_trial(0,0);
-    kdT(1) = Cmat_kdT_trial(1,1);
-    kdT(2) = Cmat_kdT_trial(2,2);
-    kdT(3) = 0.5 * (Cmat_kdT_trial(0,1) + Cmat_kdT_trial(1,0));
-    kdT(4) = 0.5 * (Cmat_kdT_trial(1,2) + Cmat_kdT_trial(2,1));
-    kdT(5) = 0.5 * (Cmat_kdT_trial(0,2) + Cmat_kdT_trial(2,0));
+    LINALG::Matrix<6,1> Cmat_kdT_vct(false);
+    Cmat_kdT_vct(0) = Cmat_kdT_trial(0,0);
+    Cmat_kdT_vct(1) = Cmat_kdT_trial(1,1);
+    Cmat_kdT_vct(2) = Cmat_kdT_trial(2,2);
+    Cmat_kdT_vct(3) = 0.5 * (Cmat_kdT_trial(0,1) + Cmat_kdT_trial(1,0));
+    Cmat_kdT_vct(4) = 0.5 * (Cmat_kdT_trial(1,2) + Cmat_kdT_trial(2,1));
+    Cmat_kdT_vct(5) = 0.5 * (Cmat_kdT_trial(0,2) + Cmat_kdT_trial(2,0));
 
-    Cmat_kdT_->at(gp) = kdT;
+    Cmat_kdT_->at(gp).Update(1.0, Cmat_kdT_vct, 0.0);
+
+/* TODO 2013-11-07    std::cout << "mubar = " << mubar << std::endl;
+    std::cout << "dDgamma_dT = " << dDgamma_dT << std::endl;
+    std::cout << "N = " << N << std::endl;
+    std::cout << "Cmat_kdT_vct = " << Cmat_kdT_vct << std::endl;
+*/
 
   }  // end plastic step
 
@@ -1016,12 +1022,11 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   const LINALG::Matrix<1,1>& Ntemp,  // shapefcts . temperatures
   LINALG::Matrix<6,1>& ctemp,
   LINALG::Matrix<6,1>& stresstemp,
-  const LINALG::Matrix<3,3>& defgrd,
   Teuchos::ParameterList& params
   )
 {
   // get the temperature-dependent material tangent
-  SetupCthermo(ctemp, defgrd, params);
+  SetupCthermo(ctemp, params);
 
   // calculate the temperature difference
   LINALG::Matrix<1,1> init(true);
@@ -1033,30 +1038,11 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   deltaT.Update(Ntemp, init);
 
   // calculate thermal stresses
-  // tau = ctemp . Delta T = (m_0 . (J^2 +1)/J . I) . Delta T
-  stresstemp.MultiplyNN(ctemp,deltaT);
-  LINALG::Matrix<3,3> tautemp_matrix(true);
-  for (int i=0; i<3; ++i)
-  {
-    tautemp_matrix(i,i) = stresstemp(i);
-  }
-
+  // tau = ctemp_AK . Delta T = (m_0 . (J + 1/J) . I . Delta T
   // pull-back of Kirchhoff-stresses to PK2-stresses
   // PK2 = F^{-1} . tau . F^{-T}
-  LINALG::Matrix<3,3> PK2;
-  LINALG::Matrix<3,3> tmp;
-  LINALG::Matrix<3,3> invdefgrdcurr(defgrd);
-  invdefgrdcurr.Invert();
-  tmp.Multiply(invdefgrdcurr, tautemp_matrix);
-  PK2.MultiplyNT(tmp, invdefgrdcurr);
-
-  // output PK2-stress in Voigt-notation
-  stresstemp(0) = PK2(0,0);
-  stresstemp(1) = PK2(1,1);
-  stresstemp(2) = PK2(2,2);
-  stresstemp(3) = 0.5 * (PK2(0,1) + PK2(1,0));
-  stresstemp(4) = 0.5 * (PK2(1,2) + PK2(2,1));
-  stresstemp(5) = 0.5 * (PK2(0,2) + PK2(2,0));
+  // --> PK2 = ctemp . Delta T = (m_0 . (J + 1/J). Cinv . Delta T
+  stresstemp.MultiplyNN(ctemp, deltaT);
 
 }  // THREvaluate()
 
@@ -1067,26 +1053,29 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticHyperElast::SetupCthermo(
   LINALG::Matrix<6,1>& ctemp,
-  const LINALG::Matrix<3,3>& defgrd,
   Teuchos::ParameterList& params
   )
 {
+  // temperature-dependent material tangent
+  // C_T = m_0 . (J + 1/J) . Cinv
+
+  // extract F and Cinv from params
+  LINALG::Matrix<3,3> defgrd
+    = params.get<LINALG::Matrix<3,3> >("defgrd");
+  LINALG::Matrix<6,1> Cinv
+    = params.get<LINALG::Matrix<6,1> >("Cinv_vct");
+
+  // temperature-dependent stress temperature modulus
+  // m = m(J) = m_0 .(J+1)/J = m_0 . (J + 1/J)
   double m_0 = STModulus();
+  double J = defgrd.Determinant();
+  double m = m_0 * (J + 1.0 / J);
 
   // clear the material tangent
   ctemp.Clear();
 
-  // temperature-dependent stress temperature modulus
-  // m = m(J) = m_0 .(J+1)/J = m_0 . (J + 1/J)
-  double J = defgrd.Determinant();
-  double m = m_0 * (J + 1.0 / J);
-
-  // loop over the element nodes
-  for (int i = 0; i < 3; ++i)
-    // non-zero entries only in main directions
-    ctemp(i,0) = m;
-  for (int i = 3; i < 6; ++i)
-    ctemp(i,0) = 0;
+  // C_T = m_0 . (J + 1/J) . Cinv
+  ctemp.Update(m, Cinv, 0.0);
 
 }  // SetupCthermo()
 
