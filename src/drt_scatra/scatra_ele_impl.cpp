@@ -2920,8 +2920,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
       {
-        cout << "ESTOY EN EL PRIMER myocard en GetMaterialParams" << endl;
-
         Teuchos::RCP< MAT::Myocard> actsinglemat
         = Teuchos::rcp_dynamic_cast<MAT::Myocard>(singlemat);
 
