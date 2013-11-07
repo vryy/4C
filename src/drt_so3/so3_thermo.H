@@ -384,11 +384,18 @@ namespace ELEMENTS
 
     //@}
 
-    //! calculate nonlinear B-operator
+    //! calculate nonlinear B-operator (6x24)
     void CalculateBop(
       LINALG::Matrix<numstr_,numdofperelement_>* bop,
       LINALG::Matrix<nsd_,nsd_>* defgrd,
       LINALG::Matrix<nsd_,nen_>* N_XYZ
+      );
+
+    //! calculates nonlinear B-operator in vector notation (1x24)
+    void CalculateBopVec(
+      LINALG::Matrix<1,numdofperelement_>& bopvec,
+      LINALG::Matrix<nsd_,nsd_>& defgrd,
+      LINALG::Matrix<nsd_,nen_>& N_XYZ
       );
 
     //! calculate linear B-operator

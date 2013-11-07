@@ -14,10 +14,10 @@
        geometrically nonlinear, for finite strains, rate-independent, thermo-plastic
 
        example input line:
-       [mm,ms,kg,K]
+       [mm,ms,kg,K,GPa]
        MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.8e-6
-       CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715
-       HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06 
+         CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715
+         HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06 
 
 <pre>
 Maintainer: Caroline Danowski
@@ -182,7 +182,7 @@ namespace MAT
     virtual double Density() const { return params_->density_; }
 
     //! shear modulus
-    double ShearMod() const { return 0.5 * params_->youngs_/(1.0 + params_->poissonratio_); }
+    double ShearMod() const { return 0.5 * (params_->youngs_) / (1.0 + params_->poissonratio_); }
 
     //! yield stress
     virtual double Yield() const { return params_->yield_; }
@@ -208,7 +208,6 @@ namespace MAT
     //! initial, reference temperature
     virtual double InitTemp() const { return params_->inittemp_; }
 
-
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
@@ -222,19 +221,21 @@ namespace MAT
 
     //! mechanical dissipation
     double MechDiss(int gp)
-    const { return ( mechdisscurr_->at(gp) ); }
+    const { return ( mechdiss_->at(gp) ); }
+
+    // Couple Dissipation K
+    double MechDiss_kTT(int gp)
+    const { return ( mechdiss_kTT_->at(gp) ); }
 
     //! linearisation of the mechanical dissipation w.r.t. displacements d_{n+1}
+    //! contribution to K_Td
     LINALG::Matrix<NUM_STRESS_3D,1> MechDiss_kTd(int gp)
     const { return ( mechdiss_kTd_->at(gp) ); }
 
     //! linearisation of material tangent w.r.t. temperatures T_{n+1}
+    //! contribution to K_dT
     LINALG::Matrix<NUM_STRESS_3D,1> CMat_kdT(int gp)
     const { return ( Cmat_kdT_->at(gp) ); }
-
-    // Couple Dissipation K
-    double MechDiss_kTT(int gp)
-    const { return ( mechdiss_kTT_curr_->at(gp) ); }
 
     //! check if history variables are already initialized
     bool Initialized() const
@@ -252,7 +253,7 @@ namespace MAT
 
     //! @name Evaluation methods
 
-    //! initialise internal stress variables
+    //! initialize internal stress variables
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     //! update internal stress variables
@@ -283,7 +284,7 @@ namespace MAT
       double kappa,  //!< bulk modulus
       int gp  //!< current Gauss-point
       );
-    
+
     //! calculate updated value of bebar_{n+1}
     void CalculateCurrentBebar(
       const LINALG::Matrix<3,3>& devtau,  //!< s_{n+1}
@@ -310,7 +311,6 @@ namespace MAT
       const LINALG::Matrix<3,3>& defgrd,  //!< F_{n+1}
       Teuchos::ParameterList& params  //!< parameter list
       );
-    
 
     //! calculates stress-temperature modulus
     double STModulus();
@@ -322,6 +322,8 @@ namespace MAT
     //! my material parameters
     MAT::PAR::ThermoPlasticHyperElast* params_;
 
+    //! @name internal / history variables
+
     //! plastic history variables
     //! old (i.e. at t_n)  deformation gradient at each Gauss-point
     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > defgrdlast_;
@@ -332,24 +334,23 @@ namespace MAT
     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > bebarlast_;
     //! current (i.e. at t_n+1) elastic, isochoric right Cauchy-Green tensor
     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > bebarcurr_;
-    
+
     //! old (i.e. at t_n) accumulated plastic strain
     Teuchos::RCP<std::vector<double> > accplstrainlast_;
     //! current (i.e. at t_n+1) accumulated plastic strain
     Teuchos::RCP<std::vector<double> > accplstraincurr_;
 
-    //! old (i.e. at t_n) mechanical dissipation
-    Teuchos::RCP<std::vector<double> > mechdisslast_;
     //! current (i.e. at t_n+1) mechanical dissipation
-    Teuchos::RCP<std::vector<double> > mechdisscurr_;
-
-    //! current (i.e. at t_n+1) linearised mechanical dissipation
-    Teuchos::RCP<std::vector<double> > mechdiss_kTT_curr_;
-
-    //! current (i.e. at t_n+1) coupling term: mechanical dissipation structure linearization
+    Teuchos::RCP<std::vector<double> > mechdiss_;
+    //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. T_{n+1}
+    Teuchos::RCP<std::vector<double> > mechdiss_kTT_;
+    //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. d_{n+1}
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > mechdiss_kTd_;
-    //! current (i.e. at t_n+1) coupling term: mechanical dissipation temperature linearization
+
+    //! current (i.e. at t_n+1) linearised material tangent w.r.t. T_{n+1}
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > Cmat_kdT_;
+
+    //@}
 
     //! indicator if #Initialize routine has been called
     bool isinit_;

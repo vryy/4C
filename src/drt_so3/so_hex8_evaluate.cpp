@@ -3151,7 +3151,7 @@ void DRT::ELEMENTS::So_hex8::AdvectionMapElement(double* XMat1,
 }
 
 /*----------------------------------------------------------------------*
- | Evaluates Material coordinates from spatial coordinates   farah 05/13|
+ | get and set temperature required for some materials        dano 09/13|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
   const LINALG::Matrix<NUMNOD_SOH8,1>& shapefctsGP,  // shape function of current Gauss-point
@@ -3185,10 +3185,10 @@ void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
     // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
     if (temperature_vector == Teuchos::null)
     {
-      Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
-        = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(Material(),true);
+      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyp
+        = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(Material(),true);
       // initialise the temperature field
-      scalartemp = thrstvk->InitTemp();
+      scalartemp = thrplhyp->InitTemp();
     }
   }  // m_thermoplhyperelast
 

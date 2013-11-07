@@ -19,6 +19,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/so3_material.H"
+#include "../drt_mat/thermoplastichyperelast.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -890,6 +891,14 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress_bar(true);
+
+    // in case of temperature-dependent material parameters, e.g. Young's modulus,
+    // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
+    if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+    {
+      GetTemperatureForStructuralMaterial(shapefcts[gp],params);
+    }
+
     params.set<int>("gp",gp);
     params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
