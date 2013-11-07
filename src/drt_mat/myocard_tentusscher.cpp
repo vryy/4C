@@ -27,7 +27,7 @@ Maintainer: Cristobal Bertogloi
    There are a total of 19 entries in each of the rate and state variable arrays.
    There are a total of 53 entries in the constant variable array.
 
- * VOI is time in component environment (millisecond).
+ * VOI_ is time in component environment (millisecond).
  * c_[0] is R in component membrane (joule_per_mole_kelvin).
  * c_[1] is T in component membrane (kelvin).
  * c_[2] is F in component membrane (coulomb_per_millimole).
@@ -137,7 +137,7 @@ Maintainer: Cristobal Bertogloi
  * a_[51] is i_b_Na in component sodium_background_current (picoA_per_picoF).
  * a_[52] is i_CaL in component L_type_Ca_current (picoA_per_picoF).
  * a_[53] is i_b_Ca in component calcium_background_current (picoA_per_picoF).
- * a_[54] is i_to in component transient_outward_current (picoA_per_picoF).
+ * a_[54] is i_to in component transient_outward_current (pihttp://iutam.org/the-pan-american-congress-of-applied-mechanics-pacam-2/coA_per_picoF).
  * a_[55] is i_NaK in component sodium_potassium_pump_current (picoA_per_picoF).
  * a_[56] is i_NaCa in component sodium_calcium_exchanger_current (picoA_per_picoF).
  * a_[57] is i_p_Ca in component calcium_pump_current (picoA_per_picoF).
@@ -218,7 +218,7 @@ Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard,const st
   c_(63, 0.0)
 
 {
-
+  VOI_ = 0.0;
   eps_deriv_ = eps_deriv_myocard;
 
   if (tissue == "M"){
@@ -242,8 +242,6 @@ Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard,const st
   s0_[16] = 2.347e-8;
   s0_[17] = 4.272;
   s0_[18] = 0.8978;
-
-  s_ = s0_;
 
   // Model constants
   c_[0] = 8314.472;
@@ -322,8 +320,6 @@ Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard,const st
     s0_[17] = 3.64;
     s0_[18] = 0.9073;
 
-    s_ = s0_;
-
     // Model constants
     c_[0] = 8314.472;
     c_[1] = 310;
@@ -401,8 +397,6 @@ Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard,const st
     s0_[17] = 3.715;
     s0_[18] = 0.9068;
 
-    s_ = s0_;
-
     // Model constants
     c_[0] = 8314.472;
     c_[1] = 310;
@@ -458,6 +452,9 @@ Myocard_TenTusscher::Myocard_TenTusscher(const double eps_deriv_myocard,const st
     c_[51] = 0.001094;
     c_[52] = 0.00005468;
   }
+
+  s_ = s0_;
+
 }
 
 
@@ -582,7 +579,7 @@ double Myocard_TenTusscher::ComputeReactionCoeff(const double phi, const double 
   a_[53] =  c_[19]*(s_[0] - a_[43]);
   a_[58] = ( c_[32]*(s_[0] - a_[33]))/(1.0+(exp(((25.0 - s_[0])/5.98))));
   a_[57] = ( c_[30]*s_[3])/(s_[3]+c_[31]);
-  a_[12] = 0;//(VOI -  (floor((VOI/c_[6])))*c_[6]>=c_[5]&&VOI -  (floor((VOI/c_[6])))*c_[6]<=c_[5]+c_[7] ? - c_[8] : 0.0);
+  a_[12] = (VOI_ -  (floor((VOI_/c_[6])))*c_[6]>=c_[5]&&VOI_ -  (floor((VOI_/c_[6])))*c_[6]<=c_[5]+c_[7] ? - c_[8] : 0.0); // EXTERNAL STIMULUS
 
   // Compute reaction coefficient (I_K1 + I_to + I_Kr + I_Ks + I_CaL + I_NaK + I_Na + I_b_Na + I_NaCa + I_b_Ca + I_p_K + I_stim)
   // ---------------------------------------------------------------------------------------------------------------------------
@@ -666,6 +663,24 @@ void Myocard_TenTusscher::SetInternalState(const int k, const double val)
 }
 
 /*----------------------------------------------------------------------*
+ |  returns number of internal state variables of the material  cbert 08/13 |
+ *----------------------------------------------------------------------*/
+int Myocard_TenTusscher::GetNumberOfIonicCurrents() const
+{
+  return 15;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+double Myocard_TenTusscher::GetIonicCurrents(const int k) const
+{
+  double val=0.0;
+  val = a_[47+k];
+  return val;
+}
+
+/*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
 void Myocard_TenTusscher::Update(const double phi, const double dt)
@@ -673,6 +688,7 @@ void Myocard_TenTusscher::Update(const double phi, const double dt)
   // update initial values for next time step
   for (int i=0; i<19; i++)
     s0_[i] = s_[i];
+  VOI_ += dt;
 
     return;
 }

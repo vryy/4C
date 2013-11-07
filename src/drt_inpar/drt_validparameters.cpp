@@ -4360,6 +4360,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Parameters for reaction-diffusion systems (for example cardiac electrophysiology)
   IntParameter("WRITEMAXINTSTATE",0,"number of maximal internal state variables to be postprocessed",&scatradyn);
+  IntParameter("WRITEMAXIONICCURRENTS",0,"number of maximal ionic currents to be postprocessed",&scatradyn);
   DoubleParameter("ACTTHRES",1.0,"threshold for the potential for computing and postprocessing activation time ",&scatradyn);
 
   setNumericStringParameter("WRITEFLUX_IDS","-1",

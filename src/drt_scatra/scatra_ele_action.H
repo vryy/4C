@@ -32,6 +32,7 @@ enum Action {
   get_material_parameters,         // get_material_parameters,
   get_material_internal_state,     // get material internal state (for postprocessing for example),
   set_material_internal_state,     // set material internal state (for restart for example),
+  get_material_ionic_currents,     // get material ionic currents (for postprocessing for example),
   integrate_shape_functions,       // integrate_shape_functions,
   time_update_material,            // time update for materials
   calc_initial_time_deriv,         // calc_initial_time_deriv,

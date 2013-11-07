@@ -33,7 +33,7 @@ LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
-RESTARTEVRY                     10
+RESTARTEVRY                     1
 NUMSTEP                         100000
 MAXTIME                         10.0
 TIMESTEP                        0.1

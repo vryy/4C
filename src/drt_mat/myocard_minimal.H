@@ -70,6 +70,12 @@ public:
   ///  set internal state of the material
   void SetInternalState(const int k, const double val);
 
+  ///  return number of ionic currents
+  int GetNumberOfIonicCurrents() const;
+
+  ///  return ionic currents
+  double GetIonicCurrents(const int k) const;
+
   /// time update for this material
   void Update(const double phi, const double dt);
 
@@ -82,16 +88,20 @@ private:
 
    /// last gating variables MV
   double v0_; /// fast inward current
-  double w0_; /// slow inward current
+  double w0_; /// slow outward current
   double s0_; /// slow inward current
 
   /// current gating variables MV
   double v_; /// fast inward current
-  double w_; /// slow inward current
+  double w_; /// slow outward current
   double s_; /// slow inward current
 
-  /// model parameters
+  /// ionic currents MV
+  double Jfi_; /// fast inward current
+  double Jso_; /// slow outward current
+  double Jsi_; /// slow inward current
 
+  /// model parameters
   double u_o_;// = 0.0;
   double u_u_;// = 1.55;//1.58;
   double Theta_v_;// = 0.3;

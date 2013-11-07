@@ -64,11 +64,17 @@ public:
   ///  returns number of internal state variables of the material
   int GetNumberOfInternalStateVariables() const;
 
-  ///  returns current internal state of the material
+  ///  return current internal state of the material
   double GetInternalState(const int k) const;
 
   ///  set internal state of the material
   void SetInternalState(const int k, const double val);
+
+  ///  return number of ionic currents
+  int GetNumberOfIonicCurrents() const;
+
+  ///  return ionic currents
+  double GetIonicCurrents(const int k) const;
 
   /// time update for this material
   void Update(const double phi, const double dt);
@@ -86,6 +92,8 @@ private:
   std::vector<double> r_;
   std::vector<double> a_;
   std::vector<double> c_;
+
+  double VOI_; // current time (for debugging with CellML)
 
 }; // Myocard_TenTusscher
 

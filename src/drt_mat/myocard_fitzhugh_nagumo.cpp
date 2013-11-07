@@ -54,7 +54,9 @@ double Myocard_Fitzhugh_Nagumo::ComputeReactionCoeff(const double phi, const dou
 
      double reacoeff;
      r_ = tools_.GatingVarCalc(dt, r0_, phi/d_, 1.0/(b_*d_));
-     reacoeff = c1_*phi*(phi-a_)*(phi-1.0)+c2_*phi*r_;
+     J1_ = c1_*phi*(phi-a_)*(phi-1.0);
+     J2_ = c2_*phi*r_;
+     reacoeff = J1_+J2_;
      return reacoeff;
 }
 
@@ -89,6 +91,28 @@ void Myocard_Fitzhugh_Nagumo::SetInternalState(const int k, const double val)
   }
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  returns number of internal state variables of the material  cbert 08/13 |
+ *----------------------------------------------------------------------*/
+int Myocard_Fitzhugh_Nagumo::GetNumberOfIonicCurrents() const
+{
+  return 2;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+double Myocard_Fitzhugh_Nagumo::GetIonicCurrents(const int k) const
+{
+  double val=0.0;
+  switch(k){
+    case 0: {val=J1_; break;}
+    case 1: {val=J2_; break;}
+  }
+  return val;
+}
+
 
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |

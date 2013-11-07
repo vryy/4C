@@ -57,6 +57,12 @@ public:
   ///  set internal state of the material
   virtual void SetInternalState(const int k, const double val) = 0;
 
+  ///  return number of ionic currents
+  virtual int GetNumberOfIonicCurrents() const = 0;
+
+  ///  return ionic currents
+  virtual double GetIonicCurrents(const int k) const = 0;
+
   /// time update for this material
   virtual void Update(const double phi, const double dt) = 0;
 

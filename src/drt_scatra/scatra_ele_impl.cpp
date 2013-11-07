@@ -375,7 +375,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     lengthLine3D_ = sqrt( (xyze3D_(0,0)-xyze3D_(0,1))*(xyze3D_(0,0)-xyze3D_(0,1)) + (xyze3D_(1,0)-xyze3D_(1,1))*(xyze3D_(1,0)-xyze3D_(1,1)) + (xyze3D_(2,0)-xyze3D_(2,1))*(xyze3D_(2,0)-xyze3D_(2,1)));
     xyze_(0,0)=0.0;
     xyze_(0,1)=lengthLine3D_;
-  }else{
+  }  else{
     GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
   }
 
@@ -1183,21 +1183,18 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
           if(err != 0) dserror("%i",err);
         }
       }
-
       params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state);
-
     }
 
     break;
 
   }
+
   case SCATRA::set_material_internal_state:
   {
-
     // NOTE: add integral values only for elements which are NOT ghosted!
     if (ele->Owner() == discretization.Comm().MyPID())
     {
-
       // access the general material
       Teuchos::RCP<MAT::Material> material = ele->Material();
       Teuchos::RCP<Epetra_Vector> material_internal_state_component = params.get< Teuchos::RCP<Epetra_Vector> >("material_internal_state_component");
@@ -1214,6 +1211,38 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     break;
 
   }
+
+  case SCATRA::get_material_ionic_currents:
+  {
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    if (ele->Owner() == discretization.Comm().MyPID())
+    {
+      // access the general material
+      Teuchos::RCP<MAT::Material> material = ele->Material();
+      Teuchos::RCP<Epetra_MultiVector> material_ionic_currents = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_ionic_currents");
+
+      if( material->MaterialType() == INPAR::MAT::m_myocard)
+      {
+        Teuchos::RCP<MAT::Myocard> material = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+        for (int k = 0; k< material_ionic_currents->NumVectors(); ++k)
+        {
+          int err = material_ionic_currents->ReplaceGlobalValue(ele->Id(),k, material->GetIonicCurrents(k));
+          if(err != 0) dserror("%i",err);
+        }
+      }
+      params.set< Teuchos::RCP<Epetra_MultiVector> >("material_ionic_currents", material_ionic_currents);
+    }
+
+    break;
+
+  }
+
+
+
+
+
+
+
   case SCATRA::calc_flux_domain:
   {
     // get velocity values at the nodes
@@ -1855,7 +1884,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
   )
 {
-//  std::cout << "TEST CRISTOBAL SysMat" << std::endl;
+
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -1873,7 +1902,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not mat_gp_ or not tau_gp_) {
-  //  cout << "TEST CRISTOBAL  im here 1" << endl;
     GetMaterialParams(ele,scatratype,dt);
   }
 
@@ -1884,6 +1912,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
   if (not tau_gp_)
   {
+
     // get velocity at element center
     velint_.Multiply(evelnp_,funct_);
     convelint_.Multiply(econvelnp_,funct_);
@@ -1987,6 +2016,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+  // TEST CRISTOBAL
+  // cout << SCATRA::DisTypeToOptGaussRule<distype>::rule << endl;
+
+
   // integration loop
   if (is_elch_) // electrochemistry problem
   {
@@ -2012,7 +2045,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
-
       if (mat_gp_) GetMaterialParams(ele, scatratype,dt);
 
       // get velocity at integration point
@@ -2888,6 +2920,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
       {
+        cout << "ESTOY EN EL PRIMER myocard en GetMaterialParams" << endl;
+
         Teuchos::RCP< MAT::Myocard> actsinglemat
         = Teuchos::rcp_dynamic_cast<MAT::Myocard>(singlemat);
 
@@ -3413,7 +3447,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   }
   else if (material->MaterialType() == INPAR::MAT::m_myocard)
   {
-
+   // cout << "TEST CRISTOBAL: ESTOY EN EL SEGUNDO myocard en GetMaterialParams" << endl;
     //Teuchos::RCP<MAT::Myocard>& actmat
     Teuchos::RCP<MAT::Myocard> actmat
       = Teuchos::rcp_dynamic_cast<MAT::Myocard>(material);
@@ -3447,6 +3481,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     //cout << "Calling reaction coefficients" << endl;
     reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp, dt);
     reacterm_[0] = actmat->ComputeReactionCoeff(csnp, dt);
+    // cout << "TEST CRISTOBAL: reacterm_ " << reacterm_[0] << endl;
     reatemprhs_[0] = 0.0;
   }
   else if (material->MaterialType() == INPAR::MAT::m_elchmat)
@@ -3473,6 +3508,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
   const int                             k
   )
 {
+  // std::cout << "TEST CRISTOBAL CalMatAndRHS" << std::endl;
+
 //----------------------------------------------------------------
 // 1) element matrix: stationary terms
 //----------------------------------------------------------------
@@ -4016,6 +4053,7 @@ else if (is_coupled_)
   }
   else if (is_incremental_ and not is_genalpha_)
   {
+
     if (not is_stationary_)
     {
       scatrares_[k] *= dt;
@@ -4151,6 +4189,10 @@ else if (is_coupled_)
 // standard Galerkin term
   if (is_reactive_)
   {
+    // cout << "rhsfac " << rhsfac << endl;
+    // cout << "TEST CRISTOBAL: rea_phi_ " << rea_phi_[k] << endl;
+//    dserror("TEST CRISTOBAL");
+
     vrhs = rhsfac*rea_phi_[k];
     for (int vi=0; vi<nen_; ++vi)
     {

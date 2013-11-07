@@ -42,6 +42,10 @@ Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::strin
   v_ = v0_;
   w_ = w0_;
   s_ = s0_;
+  Jfi_ = 0.0; /// fast inward current
+  Jso_ = 0.0; /// slow outward current
+  Jsi_ = 0.0; /// slow inward current
+
 
   eps_deriv_ = eps_deriv_myocard;
   // Model parameter (To pack later in the parameter list of inputfile!)
@@ -143,11 +147,11 @@ double Myocard_Minimal::ComputeReactionCoeff(const double phi, const double dt)
     s_ = tools_.GatingVarCalc(dt, s0_, s_inf, Tau_s);
 
     // calculate currents J_fi, J_so and J_si ([7] page 545)
-    const double J_fi = -tools_.GatingFunction(0.0, v_*(phi - Theta_v_)*(u_u_ - phi)/Tau_fi_, p, phi, Theta_v_); // fast inward current
-    const double J_so =  tools_.GatingFunction((phi - u_o_)/Tau_o, 1.0/Tau_so, p, phi, Theta_w_);// slow outward current
-    const double J_si = -tools_.GatingFunction(0.0, w_*s_/Tau_si_, p, phi, Theta_w_); // slow inward current
+    Jfi_ = -tools_.GatingFunction(0.0, v_*(phi - Theta_v_)*(u_u_ - phi)/Tau_fi_, p, phi, Theta_v_); // fast inward current
+    Jso_ =  tools_.GatingFunction((phi - u_o_)/Tau_o, 1.0/Tau_so, p, phi, Theta_w_);// slow outward current
+    Jsi_ = -tools_.GatingFunction(0.0, w_*s_/Tau_si_, p, phi, Theta_w_); // slow inward current
 
-    reacoeff = (J_fi + J_so + J_si);
+    reacoeff = (Jfi_ + Jso_ + Jsi_);
 
   return reacoeff;
 }
@@ -185,6 +189,29 @@ void Myocard_Minimal::SetInternalState(const int k, const double val)
     case 2: {s0_ = val; s_ = val; break;}
     default: {dserror("There are only 3 internal variables in this material!"); break;}
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  returns number of internal state variables of the material  cbert 08/13 |
+ *----------------------------------------------------------------------*/
+int Myocard_Minimal::GetNumberOfIonicCurrents() const
+{
+  return 3;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+double Myocard_Minimal::GetIonicCurrents(const int k) const
+{
+  double val=0.0;
+  switch(k){
+    case 0: {val=Jfi_; break;}
+    case 1: {val=Jso_; break;}
+    case 2: {val=Jsi_; break;}
+  }
+  return val;
 }
 
 /*----------------------------------------------------------------------*

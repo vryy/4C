@@ -234,9 +234,8 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
 
 double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
 {
- // std::cout << "ComputeReactionCoeff" << std::endl;
-  double reacoeff = 0.0;
-  reacoeff = myocard_mat_->ComputeReactionCoeff(phi, dt*params_->time_scale);
+  double reacoeff = params_->time_scale;
+  reacoeff *= myocard_mat_->ComputeReactionCoeff(phi, dt*params_->time_scale);
   return reacoeff;
 }
 
@@ -246,15 +245,18 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt)
  *----------------------------------------------------------------------*/
 double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt)
 {
-  // std::cout << "ComputeReactionCoeffDeriv Out" << std::endl;
-
   double ReaCoeffDeriv=0.0;
   if(params_->dt_deriv != 0.0)
   {
-    double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv*params_->time_scale), dt*params_->time_scale);
+//<<<<<<< .mine
+    double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv), dt*params_->time_scale);
     double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt*params_->time_scale);
-
-    ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv*params_->time_scale);
+    ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
+//=======
+  //  double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv*params_->time_scale), dt*params_->time_scale);
+   // double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt*params_->time_scale);
+//    ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv*params_->time_scale);
+//>>>>>>> .r18409
   }
   return ReaCoeffDeriv;
 }
@@ -289,15 +291,36 @@ void MAT::Myocard::SetInternalState(const int k, const double val)
 }
 
 /*----------------------------------------------------------------------*
+ |  returns number of internal state variables of the material  cbert 08/13 |
+ *----------------------------------------------------------------------*/
+int MAT::Myocard::GetNumberOfIonicCurrents() const
+{
+  int val=0;
+  val = myocard_mat_->GetNumberOfIonicCurrents();
+  return val;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents          cbert 08/13 |
+ *----------------------------------------------------------------------*/
+double MAT::Myocard::GetIonicCurrents(const int k) const
+{
+  double val=0.0;
+  val = myocard_mat_->GetIonicCurrents(k);
+  return val;
+}
+
+
+/*----------------------------------------------------------------------*
  |  initialize internal variables (called by constructors)   cbert 09/12 |
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Initialize()
 {
-  if (*(params_->model) == "MV") myocard_mat_ = Teuchos::rcp(new Myocard_Minimal(params_->dt_deriv*params_->time_scale,*(params_->tissue)));
-  else if (*(params_->model) == "FHN") myocard_mat_ = Teuchos::rcp(new Myocard_Fitzhugh_Nagumo(params_->dt_deriv*params_->time_scale,*(params_->tissue)));
-  else if (*(params_->model) == "INADA") myocard_mat_ = Teuchos::rcp(new Myocard_Inada(params_->dt_deriv*params_->time_scale,*(params_->tissue)));
-  else if (*(params_->model) == "TNNP") myocard_mat_ = Teuchos::rcp(new Myocard_TenTusscher(params_->dt_deriv*params_->time_scale,*(params_->tissue)));
-  else if (*(params_->model) == "SAN") myocard_mat_ = Teuchos::rcp(new Myocard_SAN_Garny(params_->dt_deriv*params_->time_scale,*(params_->tissue)));
+  if (*(params_->model) == "MV") myocard_mat_ = Teuchos::rcp(new Myocard_Minimal(params_->dt_deriv,*(params_->tissue)));
+  else if (*(params_->model) == "FHN") myocard_mat_ = Teuchos::rcp(new Myocard_Fitzhugh_Nagumo(params_->dt_deriv,*(params_->tissue)));
+  //else if (*(params_->model) == "INADA") myocard_mat_ = Teuchos::rcp(new Myocard_Inada(params_->dt_deriv,*(params_->tissue)));
+  else if (*(params_->model) == "TNNP") myocard_mat_ = Teuchos::rcp(new Myocard_TenTusscher(params_->dt_deriv,*(params_->tissue)));
+  //else if (*(params_->model) == "SAN") myocard_mat_ = Teuchos::rcp(new Myocard_SAN_Garny(params_->dt_deriv,*(params_->tissue)));
   else dserror("Myocard Material type is not supported! (for the moment only MV,FHN,INADA and TNNP)");
 
   return;
@@ -308,7 +331,7 @@ void MAT::Myocard::Initialize()
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Update(const double phi, const double dt)
 {
-  myocard_mat_->Update(phi, dt*params_->time_scale);
+  myocard_mat_->Update(phi, dt*(params_->time_scale));
   return;
 }
 

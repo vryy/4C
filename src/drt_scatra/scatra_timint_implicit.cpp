@@ -285,6 +285,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
       material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
     }
+    // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
+    nb_max_mat_ionic_currents_=params->get<int>("WRITEMAXIONICCURRENTS"); // number of maximal internal state variables to be postprocessed
+    if(nb_max_mat_ionic_currents_)
+    {
+      material_ionic_currents_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_ionic_currents_,true));
+      material_ionic_currents_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+    }
 
   }
 
@@ -1199,6 +1206,20 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
       old = material_internal_state_np_component_;
       material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
       LINALG::Export(*old, *material_internal_state_np_component_);
+    }
+
+  if (material_ionic_currents_np_ != Teuchos::null and  nb_max_mat_ionic_currents_)
+  {
+    oldMulti = material_ionic_currents_np_;
+    material_ionic_currents_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_ionic_currents_,true));
+    LINALG::Export(*oldMulti, *material_ionic_currents_np_);
+  }
+
+  if (material_ionic_currents_np_component_ != Teuchos::null and nb_max_mat_ionic_currents_)
+    {
+      old = material_ionic_currents_np_component_;
+      material_ionic_currents_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+      LINALG::Export(*old, *material_ionic_currents_np_component_);
     }
 
   if (phinp_ != Teuchos::null)
@@ -3213,6 +3234,30 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
      }
 
   }
+
+  // Recover internal ionic currents of the material (for electrophysiology)
+  if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
+  {
+    Teuchos::ParameterList params;
+    params.set<int>("scatratype", scatratype_);
+    params.set<int>("action", SCATRA::get_material_ionic_currents);
+    params.set< Teuchos::RCP<Epetra_MultiVector> >("material_ionic_currents", material_ionic_currents_np_);     // Probably do it once at the beginning
+    discret_->Evaluate(params);
+    material_internal_state_np_ = params.get< Teuchos::RCP<Epetra_MultiVector> >("material_ionic_currents");
+
+   for(int k = 0; k < material_ionic_currents_np_->NumVectors(); ++k)
+     {
+       std::ostringstream temp;
+       temp << k+1;
+       material_ionic_currents_np_component_ = Teuchos::rcp((*material_ionic_currents_np_)(k),false);
+       output_->WriteVector("mat_ionic_currents_"+temp.str(), material_ionic_currents_np_component_,IO::DiscretizationWriter::elementvector);
+     }
+
+  }
+
+
+
+
 
   // convective velocity (not written in case of coupled simulations)
 //  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)

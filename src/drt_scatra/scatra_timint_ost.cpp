@@ -697,21 +697,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   {
     reader.ReadVector(activation_time_np_, "activation_time_np");
     reader.ReadMesh(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
-
-/*    Teuchos::ParameterList params; // THIS HAS TO BE EREASED LATER
-    params.set<int>("scatratype", scatratype_);
-    params.set<int>("action", SCATRA::set_material_internal_state);
-    for(int k = 0; k < material_internal_state_np_->NumVectors(); ++k)
-      {
-        std::ostringstream temp;
-        temp << k+1;
-        reader.ReadVector(material_internal_state_np_component_, "mat_int_state_"+temp.str());
-        params.set< int >("k", k);
-        params.set< Teuchos::RCP<Epetra_Vector> >("material_internal_state_component", material_internal_state_np_component_);     // Probably do it once at the beginning
-        discret_->Evaluate(params);
-        //(*material_internal_state_np_)(k) = *material_internal_state_np_component_;
-      }
-      */
   }
 
   return;
