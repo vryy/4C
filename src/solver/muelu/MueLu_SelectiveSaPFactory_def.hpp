@@ -130,12 +130,12 @@ namespace MueLu {
         bool optimizeStorage=true;  // false
         //FIXME but once fixed, reenable the next line.
         if (A->getRowMap()->lib() == Xpetra::UseTpetra) optimizeStorage=false;
-#if HAVE_Trilinos_Q1_2014
+#if HAVE_Trilinos_Q3_2013 //HAVE_Trilinos_Q1_2014
         RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
         AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage);
-#elif defined(HAVE_Trilinos_Q3_2013)
-        RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
-        AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage,false /* use Xpetra matrix-matrix multiply */);
+//#elif defined(HAVE_Trilinos_Q3_2013)
+//        RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+//        AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage,false /* use Xpetra matrix-matrix multiply */);
 #else
         AP = Utils::Multiply(*A, false, *Ptent, false, doFillComplete, optimizeStorage);
 #endif
