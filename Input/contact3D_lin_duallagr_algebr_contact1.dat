@@ -119,19 +119,19 @@ IFPACKCOMBINE                   Add
 IFPACKFILL                      1
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
+ML_AGG_SIZE                     9 //27
 ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     0.8
 ML_DAMPMED                      0.8
 ML_MAXCOARSESIZE                10
-ML_MAXLEVEL 3 //2
+ML_MAXLEVEL 2 //2
 ML_PRINT                        10
 ML_PROLONG_SMO 0.0 //1.33
 ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  SGS
+ML_SMOOTHERCOARSE               Jacobi
+ML_SMOOTHERFINE                 Jacobi
+ML_SMOOTHERMED                  Jacobi
 ML_SMOTIMES                     1 1 1 1 1                    
 MueLu_INITSMOOTHER              Jacobi
 MueLu_INITSMOO_SWEEPS           3
