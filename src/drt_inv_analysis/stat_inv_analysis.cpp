@@ -36,10 +36,11 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/inpar_material.H"
 
-#include "objective_funct.H"
 #include "timint_adjoint.H"
 #include "matpar_manager.H"
 #include "matpar_manager_uniform.H"
+#include "objective_funct_disp.H"
+#include "objective_funct_surfcurr.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -75,7 +76,24 @@ regweight_(0.0)
   }
 
   // set up an objective function
-  objfunct_ = Teuchos::rcp(new STR::INVANA::ObjectiveFunct(discret_, msteps_, time_));
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::StatInvObjFunctType>(statinvp,"OBJECTIVEFUNCT"))
+  {
+    case INPAR::STR::stat_inv_obj_disp:
+    {
+      objfunct_ = Teuchos::rcp(new STR::INVANA::ObjectiveFunctDisp(discret_, msteps_, time_));
+    }
+    break;
+    case INPAR::STR::stat_inv_obj_surfcurr:
+    {
+      objfunct_ = Teuchos::rcp(new STR::INVANA::ObjectiveFunctSurfCurr(discret_, msteps_, time_));
+    }
+    break;
+    case INPAR::STR::stat_inv_obj_none:
+    {
+      dserror("choose some type of objective function");
+    }
+    break;
+  }
 
   // do we have regularization!
   switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvRegularization>(statinvp,"REGULARIZATION"))

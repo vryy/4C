@@ -16,8 +16,6 @@ Maintainer: Jonas Biehler
 #include "Epetra_Vector.h"
 #include "../drt_structure/strtimint_mstep.H"
 
-#include "objective_funct.H"
-
 // forward declarations
 
 namespace COMM_UTILS
@@ -52,6 +50,7 @@ namespace STR
 
 namespace INVANA
 {
+class ObjectiveFunct;
 
 class MatParManager;
 

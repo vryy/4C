@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file matpar_manager.H
+\file matpar_manager_unif.H
 \brief Class to handle calls to material parameters from an optimization routine
 
 <pre>
@@ -31,8 +31,6 @@ namespace DRT
   class Discretization;
 }
 
-/*----------------------------------------------------------------------*/
-//! Material parameters manager
 namespace STR
 {
 
@@ -40,23 +38,22 @@ namespace INVANA
 
 {
   class SMCParticle;
+
+
+
   class MatParManagerUniform  : public MatParManager
   {
 
   public:
 
-   //! Constructor
+  //! Constructor
   MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
 
-   //!destructor
-   ~MatParManagerUniform(){};
+  //!destructor
+  ~MatParManagerUniform(){};
 
 
-   void ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector>& params, std::vector<double> my_global_params);
-
-  protected:
-
-
+  void ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector>& params, std::vector<double> my_global_params);
 
   };
 

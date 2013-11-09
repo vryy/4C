@@ -1112,7 +1112,8 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/stat_inv_analysis.cpp
   src/drt_structure/str_statinvanalysis.cpp
   src/drt_inv_analysis/timint_adjoint.cpp
-  src/drt_inv_analysis/objective_funct.cpp
+  src/drt_inv_analysis/objective_funct_disp.cpp
+  src/drt_inv_analysis/objective_funct_surfcurr.cpp
   src/drt_inv_analysis/matpar_manager.cpp
   src/drt_inv_analysis/matpar_manager_uniform.cpp
   src/drt_inv_analysis/stat_inv_ana_graddesc.cpp

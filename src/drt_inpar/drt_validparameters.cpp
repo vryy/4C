@@ -1289,6 +1289,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::STR::stat_inv_reg_thikonov),
                                     &statinvp);
 
+  // want some regularization
+  setStringToIntegralParameter<int>("OBJECTIVEFUNCT","none",
+                                    "choose type of objective function ('displacements', 'surfcurr')",
+                                    tuple<std::string>(
+                                      "none",
+                                      "displacements",
+                                      "surfcurr"),
+                                    tuple<int>(
+                                      INPAR::STR::stat_inv_obj_none,
+                                      INPAR::STR::stat_inv_obj_disp,
+                                      INPAR::STR::stat_inv_obj_surfcurr),
+                                    &statinvp);
+
   // monitorfile to provide measurements
   StringParameter("MONITORFILE","none.monitor",
                   "filename of file containing measured displacements",

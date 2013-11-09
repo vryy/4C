@@ -14,16 +14,7 @@ Maintainer: Sebastian Kehl
 #define OBJECTIVE_FUNCT_H
 
 #include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../drt_structure/strtimint_mstep.H"
-
-// forward declarations
-namespace DRT
-{
-  class Discretization;
-}
 
 namespace STR
 {
@@ -35,69 +26,27 @@ class MatParManager;
 
 
   /*!
-  \brief An objective function to be used by the inverse analysis
+  \brief objective function interface
 
-  This is the standard least square displacement based error measure.
-  Dof's to be used for computation must be given in a monitor file using
-  this specific format:
-
-  --MONITOR FILE START (not part of the file itself)
-
-  steps [numtimesteps to be monitored] nnodes [number of nodes being monitored]
-  [baci internal nodeid 1] [numdofs of this nodes] [<local dofids>]
-  ...
-  [baci internal nodeid n] [numdofs of this nodes] [<local dofids>]
-  #arbitrary number of comment lines beginning with [#]
-  [time(1)] [[value of dof1 node(1)] ... [value of dofn node(1)]] ... [[value of dof1 node(n)] ... [value of dofn node(1)]]
-  ...
-  [time(n)] [[value of dof1 node(1)] ... [value of dofn node(1)]] ... [[value of dof1 node(n)] ... [value of dofn node(1)]]
-
-  -- MONITOR FILE END (not part of the file itself)
-
-  The number of monitored time steps must not exceed the number of timesteps simulated.
-
-  This class provides access to the objective functions value as well as access to its derivative w.r.t
-  the displacments.
+  This is a general interface type class for objective functions to be derived from. Since
+  an objective function can actually be anything you like this is just an interface. It only
+  makes sure you have to implement the "Evaluate" and "EvaluateGradient" routine which should
+  have a meaning to any type of objective function.
 
   */
 class ObjectiveFunct
 {
-private:
-
-  void ReadMonitor(std::string monitorfilename);
-
-  //! discretization
-  Teuchos::RCP<DRT::Discretization> discret_;
-
-  //! dofrowmap of the discretization
-  const Epetra_Map* dofrowmap_;
-
-  //! dof mask on measurements
-  Teuchos::RCP<Epetra_Vector> mask_;
-
-  //! measured displacements
-  Teuchos::RCP<Epetra_MultiVector> mdisp_;
-
-  //! simulated timesteps
-  Teuchos::RCP<std::vector<double> > timesteps_;
-
-  //! number of vectors in MultiVectors mdisp_ and disp
-  int msteps_;
-
 
 public:
 
-  //! constructor
-  ObjectiveFunct(Teuchos::RCP<DRT::Discretization> discret, int steps, Teuchos::RCP<std::vector<double> > timesteps);
-
   //! standard destructor
-  ~ObjectiveFunct(){};
+  virtual ~ObjectiveFunct(){};
 
   //! evaluate value of the objective function
-  void Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double& val);
+  virtual void Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double& val) = 0;
 
   //! evaluate gradient of objective function w.r.t to displacements
-  void EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<Epetra_MultiVector> gradient);
+  virtual void EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<Epetra_MultiVector> gradient) = 0;
 
 }; // class ObjectiveFunct
 }  // namespace INVANA

@@ -28,6 +28,7 @@ namespace INPAR
       stat_inv_reg_thikonov,          // thikonov regularization
     };
 
+    // Parametrization of material parameters
     enum StatInvMatParametrization
     {
       stat_inv_mp_none,                  // nothing defined
@@ -43,6 +44,14 @@ namespace INPAR
       stat_inv_mc,            // statistical inverse analysis using montecarlo
       stat_inv_graddesc,      // deterministic inverse analysis using gradient descent
       stat_inv_lbfgs          // deterministic inverse analysis using limited memory bfgs
+    };
+
+    /// Type of the objective function
+    enum StatInvObjFunctType
+    {
+      stat_inv_obj_none,         // none
+      stat_inv_obj_disp,         // based on per dof displacement measurements
+      stat_inv_obj_surfcurr      // based on a current representation of surfaces
     };
 
   }  // namespace STR
