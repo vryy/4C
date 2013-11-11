@@ -484,6 +484,134 @@ void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Evaluate for GEMM time integration                        popp 11/13|
+ *----------------------------------------------------------------------*/
+void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                                   double* density,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
+                                   LINALG::Matrix<3,3>* rcg_new,
+                                   LINALG::Matrix<3,3>* rcg_old)
+{
+  #ifdef DEBUG
+  if (!stress) dserror("No stress vector supplied");
+  if (!cmat) dserror("No material tangent matrix supplied");
+  if (!glstrain_m) dserror("No GL strains supplied");
+  if (!glstrain_new) dserror("No GL strains supplied");
+  if (!glstrain_old) dserror("No GL strains supplied");
+#endif
+
+  // standard material evaluate call at midpoint t_{n+1/2}
+  Teuchos::ParameterList params;
+  LINALG::Matrix<3,3> defgrd(true);
+  Evaluate(&defgrd,glstrain_m,params,stress,cmat);
+  *density = Density();
+
+  //**********************************************************************
+  // CHECK IF GEMM ALGORITHMIC STRESSES NEED TO BE APPLIED
+  //**********************************************************************
+  // increment of Cauchy-Green tensor in Voigt notation
+  LINALG::Matrix<6,1> M;
+  M(0) = (*rcg_new)(0,0) - (*rcg_old)(0,0);
+  M(1) = (*rcg_new)(1,1) - (*rcg_old)(1,1);
+  M(2) = (*rcg_new)(2,2) - (*rcg_old)(2,2);
+  M(3) = (*rcg_new)(0,1) + (*rcg_new)(1,0) - (*rcg_old)(0,1) - (*rcg_old)(1,0);
+  M(4) = (*rcg_new)(1,2) + (*rcg_new)(2,1) - (*rcg_old)(1,2) - (*rcg_old)(2,1);
+  M(5) = (*rcg_new)(0,2) + (*rcg_new)(2,0) - (*rcg_old)(0,2) - (*rcg_old)(2,0);
+
+  // second variant of M in Voigt notation
+  LINALG::Matrix<6,1> Mtilde;
+  Mtilde(0) = M(0);
+  Mtilde(1) = M(1);
+  Mtilde(2) = M(2);
+  Mtilde(3) = 0.5 * M(3);
+  Mtilde(4) = 0.5 * M(4);
+  Mtilde(5) = 0.5 * M(5);
+
+  // dot product M * Mtilde
+  double Mb = M(0)*Mtilde(0) + M(1)*Mtilde(1) + M(2)*Mtilde(2)
+            + M(3)*Mtilde(3) + M(4)*Mtilde(4) + M(5)*Mtilde(5);
+
+  // second term in algorithmic stresses only exists if Mb > 0
+  // see: O. Gonzalez, Exact energy and momentum conserving algorithms for
+  // general models in nonlinear elasticity, CMAME, 190(2000), pp. 1763-1783
+  if (Mb < 1.0e-12) return;
+
+  //**********************************************************************
+  // COMPUTE GEMM ALGORITHMIC STRESSES
+  //**********************************************************************
+  // some helper definitions
+  LINALG::Matrix<6,1> vecid(true);
+  for (int k=0;k<6;++k) vecid(k) = 1.0;
+  LINALG::Matrix<6,6> halfid(true);
+  for (int k=0;k<3;++k) halfid(k,k) = 1.0;
+  for (int k=3;k<6;++k) halfid(k,k) = 0.5;
+
+  // strain energy function at t_{n+1} and t_{n}
+  double psi = 0.0;
+  double psio = 0.0;
+  StrainEnergy(*glstrain_new,psi);
+  StrainEnergy(*glstrain_old,psio);
+
+  // derivative of strain energy function dpsi = 0.5*stress
+  // double contraction dpsi : M
+  double dpsiM = 0.5*(*stress)(0)*M(0) + 0.5*(*stress)(1)*M(1) + 0.5*(*stress)(2)*M(2)
+               + 0.5*(*stress)(3)*M(3) + 0.5*(*stress)(4)*M(4) + 0.5*(*stress)(5)*M(5);
+
+  // factor for algorithmic stresses
+  double fac = 2.0 * ((psi - psio - dpsiM) / Mb);
+
+  // algorithmic stresses
+  LINALG::Matrix<6,1> algstress(true);
+  algstress.Update(fac,Mtilde,1.0);
+
+  //**********************************************************************
+  // COMPUTE GEMM ALGORITHMIC MATERIAL TENSOR
+  //**********************************************************************
+  // algorithmic material tensor requires stresses at t_{n+1}
+  LINALG::Matrix<6,1> stressnew(true);
+  LINALG::Matrix<6,6> cmatnew(true);
+  Evaluate(&defgrd,glstrain_new,params,&stressnew,&cmatnew);
+
+  // initialize algorithmic material tensor
+  LINALG::Matrix<6,6> algcmat(true);
+
+  // part 1 (derivative of Mtilde)
+  algcmat.Update(4.0*fac,halfid,1.0);
+
+  // part 2a (derivative of strain energy in fac)
+  LINALG::Matrix<6,1> dfac(true);
+  dfac.Update(2.0/Mb,stressnew,1.0);
+
+  // part 2b (derivative of dpsiM in fac)
+  LINALG::Matrix<6,1> tmp(true);
+  tmp.Multiply(*cmat,M);
+  dfac.Update(-0.5/Mb,tmp,1.0);
+  dfac.Update(-2.0/Mb,*stress,1.0);
+
+  // part 2c (derivative of Mb in fac)
+  tmp.Multiply(halfid,M);
+  dfac.Update(-4.0*(psi-psio-dpsiM)/(Mb*Mb),tmp,1.0);
+  dfac.Update(-4.0*(psi-psio-dpsiM)/(Mb*Mb),Mtilde,1.0);
+
+  // part 2 (derivative of fac, put together parts 2a,2b and 2c)
+  LINALG::Matrix<6,6> tmpmat(true);
+  tmpmat.MultiplyNT(2.0,Mtilde,dfac);
+  algcmat.Update(1.0,tmpmat,1.0);
+
+  //**********************************************************************
+  // EXTEND ORIGINAL STRESSES / CMAT WITH GEMM CONTRIBUTIONS
+  //**********************************************************************
+  stress->Update(1.0,algstress,1.0);
+  cmat->Update(1.0,algcmat,1.0);
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,

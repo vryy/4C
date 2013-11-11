@@ -207,8 +207,20 @@ private:
                           LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
                           LINALG::Matrix<6,6>* cmat);         ///< Constitutive matrix
 
+    /// evaluate for GEMM
+    virtual void EvaluateGEMM(LINALG::Matrix<6,1>* stress,          ///< 2nd Piola-Kirchhoff stresses
+                              LINALG::Matrix<6,6>* cmat,            ///< Constitutive matrix
+                              double* density,                      ///< Density
+                              LINALG::Matrix<6,1>* glstrain_m,      ///< Green-Lagrange strain at t_{n+1/2}
+                              LINALG::Matrix<6,1>* glstrain_new,    ///< Green-Lagrange strain at t_{n+1}
+                              LINALG::Matrix<6,1>* glstrain_old,    ///< Green-Lagrange strain at t_{n}
+                              LINALG::Matrix<3,3>* rcg_new,         ///< Right Cauchy-Green tensor at t_{n+1}
+                              LINALG::Matrix<3,3>* rcg_old);        ///< Right Cauchy-Green tensor at t_{n}
+
+    /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
+    /// update
     virtual void Update();
 
     /// setup patient-specific AAA stuff
