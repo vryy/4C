@@ -167,20 +167,6 @@ private:
                           LINALG::Matrix<6,6>& cmat,
                           LINALG::Matrix<6,1>& stress);
 
-    /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                              double& psi);
-
-    /// evaluate for GEMM
-    virtual void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
-                              LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
-                              double* density,
-                              LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
-                              LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
-                              LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
-                              LINALG::Matrix<3,3>* rcg_new,
-                              LINALG::Matrix<3,3>* rcg_old);
-
     //@}
 
   private:
