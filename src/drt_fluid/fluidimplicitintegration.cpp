@@ -6412,7 +6412,7 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
 
 
 /// return time integration factor
-double FLD::FluidImplicitTimeInt::TimIntParam() const
+const double FLD::FluidImplicitTimeInt::TimIntParam() const
 {
   double retval = 0.0;
   switch (TimIntScheme())

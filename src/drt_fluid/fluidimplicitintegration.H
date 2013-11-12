@@ -526,7 +526,7 @@ public:
   }
 
   /// return time integration factor
-  double TimIntParam() const;
+  const double TimIntParam() const;
 
   /// update velocity increment after Newton step
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel);

@@ -551,7 +551,7 @@ namespace STR
     virtual int MethodSteps() = 0;
 
     //! return time integration factor
-    virtual double TimIntParam() = 0;
+    virtual const double TimIntParam() const = 0;
 
     //! Give order of accuracy
     int MethodOrderOfAccuracy()

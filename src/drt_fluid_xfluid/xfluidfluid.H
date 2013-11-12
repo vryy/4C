@@ -444,7 +444,7 @@ namespace FLD
     }
 
     /// return time integration factor
-    double TimIntParam() const;
+    const double TimIntParam() const;
 
     void LiftDrag() const;
 

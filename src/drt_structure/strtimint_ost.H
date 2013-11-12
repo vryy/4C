@@ -200,7 +200,7 @@ namespace STR
     }
 
     //! return time integration factor
-    virtual double TimIntParam(){return 1.0 - theta_; }
+    virtual const double TimIntParam() const {return 1.0 - theta_; }
 
     //! Linear error coefficent if 1st order accurate
     double MethodLinErrCoeff1()

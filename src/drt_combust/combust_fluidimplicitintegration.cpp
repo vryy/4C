@@ -5626,7 +5626,7 @@ Teuchos::RCP<const Epetra_Map> FLD::CombustFluidImplicitTimeInt::PressureRowMap(
 
 
 /// return time integration factor
-double FLD::CombustFluidImplicitTimeInt::TimIntParam() const
+const double FLD::CombustFluidImplicitTimeInt::TimIntParam() const
 {
   double retval = 1.0;
   switch (TimIntScheme())

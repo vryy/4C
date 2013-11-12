@@ -4926,7 +4926,7 @@ void FLD::XFluid::LiftDrag() const
 
 
 /// return time integration factor
-double FLD::XFluid::TimIntParam() const
+const double FLD::XFluid::TimIntParam() const
 {
   double retval = 0.0;
   switch (TimIntScheme())

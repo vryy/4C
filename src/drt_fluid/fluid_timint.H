@@ -152,7 +152,7 @@ public:
   virtual double TimeScaling() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 1337.0; }
 
   /// return time integration factor
-  virtual double TimIntParam() const = 0;
+  virtual const double TimIntParam() const = 0;
 
   /// communication object at the interface (neglecting pressure dofs)
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes");

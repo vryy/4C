@@ -413,7 +413,7 @@ public:
   }
 
   /// return time integration factor
-  double TimIntParam() const;
+  const double TimIntParam() const;
 
   /// calculate lift&drag forces and angular moments
   /*!

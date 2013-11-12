@@ -4747,7 +4747,7 @@ void FLD::XFluidFluid::SetElementTimeParameter()
 // -------------------------------------------------------------------
 // return time integration factor
 // -------------------------------------------------------------------
-double FLD::XFluidFluid::TimIntParam() const
+const double FLD::XFluidFluid::TimIntParam() const
 {
   double retval = 0.0;
   switch (TimIntScheme())

@@ -445,7 +445,7 @@ namespace ADAPTER {
     virtual double TimeScaling() const = 0;
 
     /// return time integration factor
-    virtual double TimIntParam() const = 0;
+    virtual const double TimIntParam() const = 0;
 
     /// communication object at the interface (neglecting pressure dofs)
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;

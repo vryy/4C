@@ -218,7 +218,7 @@ namespace ADAPTER
     { return fluid_->TimeScaling(); }
 
     /// return time integration factor
-    virtual double TimIntParam() const
+    virtual const double TimIntParam() const
     { return fluid_->TimIntParam(); }
 
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const

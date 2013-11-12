@@ -523,7 +523,7 @@ namespace FLD
     }
 
     /// return time integration factor
-    virtual double TimIntParam() const;
+    virtual const double TimIntParam() const;
 
     /// turbulence statistics manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()

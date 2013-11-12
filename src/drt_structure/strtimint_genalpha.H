@@ -105,7 +105,7 @@ namespace STR
     }
 
     //! return time integration factor
-    virtual double TimIntParam(){return alphaf_; }
+    virtual const double TimIntParam() const {return alphaf_; }
 
     //! Return linear error coefficient of displacements
     double MethodLinErrCoeffDis()

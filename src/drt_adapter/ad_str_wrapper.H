@@ -178,7 +178,7 @@ namespace ADAPTER
     //@{
 
     /// return time integration factor
-    virtual double TimIntParam()
+    virtual const double TimIntParam() const
     { return structure_->TimIntParam(); }
 
     //! Sets the current time \f$t_{n}\f$

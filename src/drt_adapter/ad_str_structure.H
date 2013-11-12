@@ -228,7 +228,7 @@ namespace ADAPTER {
     //@{
 
     /// return time integration factor
-    virtual double TimIntParam() = 0;
+    virtual const double TimIntParam() const = 0;
 
     /// Get the current time
     virtual double GetTime() const = 0;
